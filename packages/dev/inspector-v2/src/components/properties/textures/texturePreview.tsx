@@ -1,10 +1,11 @@
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Button, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useContext } from "react";
 import type { FunctionComponent } from "react";
 import { GetTextureDataAsync, WhenTextureReadyAsync } from "core/Misc/textureTools";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import type { Texture } from "core/Materials";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 const useStyles = makeStyles({
     root: {
@@ -56,6 +57,8 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
     const [channels, setChannels] = useState<(typeof TextureChannelStates)[keyof typeof TextureChannelStates]>(TextureChannelStates.ALL);
     const [face, setFace] = useState(0);
     const internalTexture = useProperty(texture, "_texture");
+
+    const { size } = useContext(ToolContext);
 
     const updatePreviewCanvasSize = useCallback(
         (previewCanvas: HTMLCanvasElement) => {
@@ -111,7 +114,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
     return (
         <div className={classes.root}>
             {texture.isCube ? (
-                <Toolbar className={classes.controls} aria-label="Cube Faces">
+                <Toolbar className={classes.controls} size={size} aria-label="Cube Faces">
                     {["+X", "-X", "+Y", "-Y", "+Z", "-Z"].map((label, idx) => (
                         <ToolbarButton className={classes.controlButton} key={label} appearance={face === idx ? "primary" : "subtle"} onClick={() => setFace(idx)}>
                             {label}
@@ -119,7 +122,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
                     ))}
                 </Toolbar>
             ) : (
-                <Toolbar className={classes.controls} aria-label="Channels">
+                <Toolbar className={classes.controls} size={size} aria-label="Channels">
                     {(["R", "G", "B", "A", "ALL"] as const).map((ch) => (
                         <ToolbarButton
                             className={classes.controlButton}

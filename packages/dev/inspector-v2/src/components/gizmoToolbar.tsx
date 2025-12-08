@@ -25,7 +25,7 @@ type GizmoMode = "translate" | "rotate" | "scale" | "boundingBox";
 
 const useStyles = makeStyles({
     coordinatesModeButton: {
-        margin: `0 ${tokens.spacingVerticalXS}`,
+        margin: `0 0 0 ${tokens.spacingHorizontalXS}`,
     },
     coordinatesModeMenu: {
         minWidth: 0,

@@ -183,11 +183,19 @@ export class SphereDirectedParticleEmitter extends SphereParticleEmitter {
      * Called by the particle System when the direction is computed for the created particle.
      * @param worldMatrix is the world matrix of the particle system
      * @param directionToUpdate is the direction vector to update with the result
+     * @param particle is the particle we are computed the position for
+     * @param isLocal defines if the direction should be set in local space
      */
-    public override startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3): void {
+    public override startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         const randX = RandomRange(this.direction1.x, this.direction2.x);
         const randY = RandomRange(this.direction1.y, this.direction2.y);
         const randZ = RandomRange(this.direction1.z, this.direction2.z);
+
+        if (isLocal) {
+            directionToUpdate.copyFromFloats(randX, randY, randZ);
+            return;
+        }
+
         Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, worldMatrix, directionToUpdate);
     }
 

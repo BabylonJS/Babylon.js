@@ -1,7 +1,16 @@
-import type { FrameGraph, FrameGraphTextureHandle, DrawWrapper, FrameGraphRenderPass, FrameGraphRenderContext, EffectWrapper, IStencilState } from "core/index";
+import type {
+    FrameGraph,
+    FrameGraphTextureHandle,
+    DrawWrapper,
+    FrameGraphRenderPass,
+    FrameGraphRenderContext,
+    EffectWrapper,
+    IViewportLike,
+    Nullable,
+    IStencilStateProperties,
+} from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphTask } from "../../frameGraphTask";
-import { textureSizeIsObject } from "../../../Materials/Textures/textureCreationOptions";
 
 /**
  * Task which applies a post process.
@@ -28,7 +37,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
     /**
      * The stencil state to use for the post process (optional).
      */
-    public stencilState?: IStencilState;
+    public stencilState?: IStencilStateProperties;
 
     /**
      * The depth attachment texture to use for the post process (optional).
@@ -67,6 +76,13 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
      * If depth testing should be enabled (default is true).
      */
     public depthTest = true;
+
+    /**
+     * The viewport to use when applying the post process.
+     * If set to null, the currently active viewport is used.
+     * If undefined (default), the viewport is reset to a full screen viewport before applying the post process.
+     */
+    public viewport?: Nullable<IViewportLike>;
 
     /**
      * The output texture of the post process.
@@ -112,16 +128,14 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.outputDepthAttachmentTexture = this._frameGraph.textureManager.createDanglingHandle();
-
-        this.onTexturesAllocatedObservable.add((context) => {
-            if (this.sourceTexture !== undefined) {
-                context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
-            }
-        });
     }
 
     public override isReady() {
         return this.postProcess.isReady();
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphPostProcessTask";
     }
 
     public record(
@@ -144,11 +158,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         }
 
         if (sourceTextureCreationOptions) {
-            const sourceSize = !sourceTextureCreationOptions.sizeIsPercentage
-                ? textureSizeIsObject(sourceTextureCreationOptions.size)
-                    ? sourceTextureCreationOptions.size
-                    : { width: sourceTextureCreationOptions.size, height: sourceTextureCreationOptions.size }
-                : this._frameGraph.textureManager.getAbsoluteDimensions(sourceTextureCreationOptions.size);
+            const sourceSize = this._frameGraph.textureManager.getTextureAbsoluteDimensions(sourceTextureCreationOptions);
 
             this._sourceWidth = sourceSize.width;
             this._sourceHeight = sourceSize.height;
@@ -169,7 +179,13 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         pass.setRenderTarget(this.outputTexture);
         pass.setRenderTargetDepth(this.depthAttachmentTexture);
         pass.setExecuteFunc((context) => {
+            if (this.sourceTexture !== undefined) {
+                context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
+            }
             additionalExecute?.(context);
+            if (this.viewport) {
+                context.setViewport(this.viewport);
+            }
             context.applyFullScreenEffect(
                 this._postProcessDrawWrapper,
                 () => {
@@ -182,7 +198,8 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
                 this.stencilState,
                 this.disableColorWrite,
                 this.drawBackFace,
-                this.depthTest
+                this.depthTest,
+                this.viewport !== undefined
             );
         });
 
@@ -198,7 +215,10 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
             passDisabled.setRenderTargetDepth(this.depthAttachmentTexture);
             passDisabled.setExecuteFunc((context) => {
                 if (this.sourceTexture !== undefined) {
-                    context.copyTexture(this.sourceTexture);
+                    if (this.viewport) {
+                        context.setViewport(this.viewport);
+                    }
+                    context.copyTexture(this.sourceTexture, undefined, this.viewport !== undefined);
                 }
             });
         }

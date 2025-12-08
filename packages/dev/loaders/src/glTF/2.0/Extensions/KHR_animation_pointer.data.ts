@@ -333,6 +333,11 @@ SetInterpolationForKey("/extensions/KHR_lights_punctual/lights/{}/spot/outerCone
     new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "angle", getFloatBy2, () => 1),
 ]);
 
+SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);
+SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/intensity", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)]);
+SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/size", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "radius", getFloat, () => 1)]);
+SetInterpolationForKey("/extensions/EXT_lights_area/lights/{}/rect/aspect", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "radius", getFloat, () => 1)]);
+
 SetInterpolationForKey("/nodes/{}/extensions/EXT_lights_ies/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);
 SetInterpolationForKey("/nodes/{}/extensions/EXT_lights_ies/multiplier", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)]);
 

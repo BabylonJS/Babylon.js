@@ -1,10 +1,11 @@
 import type { FunctionComponent, KeyboardEvent, ChangeEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import type { InputOnChangeData } from "@fluentui/react-components";
 import { Input as FluentInput, mergeClasses, useId } from "@fluentui/react-components";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
 import { HandleOnBlur, HandleKeyDown, useInputStyles } from "./utils";
+import { ToolContext } from "../hoc/fluentToolWrapper";
 
 export type TextInputProps = PrimitiveProps<string> & {
     validator?: (value: string) => boolean;
@@ -15,7 +16,7 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
     const classes = useInputStyles();
     const [value, setValue] = useState(props.value);
     const lastCommittedValue = useRef(props.value);
-
+    const { size } = useContext(ToolContext);
     useEffect(() => {
         if (props.value !== lastCommittedValue.current) {
             setValue(props.value); // Update local state when props.value changes
@@ -57,7 +58,7 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
                 {...props}
                 input={{ className: classes.inputSlot }}
                 id={id}
-                size="medium"
+                size={size}
                 value={value}
                 onChange={handleChange}
                 onKeyUp={handleKeyUp}

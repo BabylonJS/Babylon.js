@@ -1,8 +1,9 @@
 import { Dropdown as FluentDropdown, makeStyles, mergeClasses, Option, useId } from "@fluentui/react-components";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
+import { ToolContext } from "../hoc/fluentToolWrapper";
 
 const useDropdownStyles = makeStyles({
     dropdown: {
@@ -13,7 +14,6 @@ const useDropdownStyles = makeStyles({
         display: "flex",
         flexDirection: "column",
         justifyContent: "center", // align items vertically
-        gap: "4px",
     },
     dropdownText: { textAlign: "end", textOverflow: "ellipsis", whiteSpace: "nowrap", overflowX: "hidden" },
 });
@@ -45,6 +45,7 @@ export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> =
     const classes = useDropdownStyles();
     const { options, value } = props;
     const [defaultVal, setDefaultVal] = useState(props.value);
+    const { size } = useContext(ToolContext);
 
     useEffect(() => {
         setDefaultVal(value);
@@ -61,7 +62,7 @@ export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> =
             <FluentDropdown
                 id={id}
                 disabled={props.disabled}
-                size="medium"
+                size={size}
                 className={classes.dropdown}
                 button={<span className={classes.dropdownText}>{optionLabel}</span>}
                 onOptionSelect={(evt, data) => {

@@ -43,7 +43,7 @@ var geometry_tangent: vec2f = vec2f(1.0, 0.0);
 #endif
 
 #ifdef GEOMETRY_OPACITY
-    let opacityFromTexture: vec4f = textureSample(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
+    let opacityFromTexture: vec4f = textureSample(geometryOpacitySampler, geometryOpacitySamplerSampler, fragmentInputs.vGeometryOpacityUV + uvOffset);
 #endif
 
 #ifdef DECAL
@@ -66,7 +66,7 @@ var geometry_tangent: vec2f = vec2f(1.0, 0.0);
     #endif
 #endif
 
-#ifdef ANISOTROPIC
+#if defined(ANISOTROPIC) || defined(FUZZ)
     let noise = textureSample(blueNoiseSampler, blueNoiseSamplerSampler, fragmentInputs.position.xy / 256.0).xyz;
 #endif
 

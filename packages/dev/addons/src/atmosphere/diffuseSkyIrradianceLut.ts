@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 import type { Atmosphere } from "./atmosphere";
 import type { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
@@ -11,6 +11,7 @@ import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like } from "core/
 import type { Nullable } from "core/types";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
+import { Vector3Dot } from "core/Maths/math.vector.functions";
 import "./Shaders/diffuseSkyIrradiance.fragment";
 import "./Shaders/fullscreenTriangle.vertex";
 
@@ -97,22 +98,24 @@ export class DiffuseSkyIrradianceLut {
         renderTarget.anisotropicFilteringLevel = 1;
         renderTarget.skipInitialClear = true;
 
-        const useUbo = atmosphere.uniformBuffer.useUbo;
+        const atmosphereUbo = atmosphere.uniformBuffer;
+        const useUbo = atmosphereUbo.useUbo;
 
+        const heightParam = engine.isWebGPU ? "radius" : "filteringInfo.x";
         this._effectWrapper = new EffectWrapper({
             engine,
             name,
             vertexShader: "fullscreenTriangle",
             fragmentShader: "diffuseSkyIrradiance",
             attributeNames: ["position"],
-            uniformNames: ["depth", ...(useUbo ? [] : atmosphere.uniformBuffer.getUniformNames())],
-            uniformBuffers: useUbo ? [atmosphere.uniformBuffer.name] : [],
+            uniformNames: ["depth", ...(useUbo ? [] : atmosphereUbo.getUniformNames())],
+            uniformBuffers: useUbo ? [atmosphereUbo.name] : [],
             defines: [
                 "#define POSITION_VEC2",
                 `#define NUM_SAMPLES ${RaySamples}u`,
                 "#define CUSTOM_IRRADIANCE_FILTERING_INPUT /* empty */", // empty, no input texture needed as the radiance is procedurally generated from ray marching.
                 // The following ray marches the atmosphere to get the radiance.
-                "#define CUSTOM_IRRADIANCE_FILTERING_FUNCTION vec3 c = integrateForIrradiance(n, Ls, vec3(0., filteringInfo.x, 0.));",
+                `#define CUSTOM_IRRADIANCE_FILTERING_FUNCTION vec3 c = integrateForIrradiance(n, Ls, vec3(0., ${heightParam}, 0.));`,
             ],
             samplers: ["transmittanceLut", "multiScatteringLut"],
             useShaderStore: true,
@@ -161,7 +164,7 @@ export class DiffuseSkyIrradianceLut {
             return result;
         }
 
-        const cosAngleLightToZenith = directionToLight.x * cameraGeocentricNormal.x + directionToLight.y * cameraGeocentricNormal.y + directionToLight.z * cameraGeocentricNormal.z;
+        const cosAngleLightToZenith = Vector3Dot(directionToLight, cameraGeocentricNormal);
         ComputeLutUVToRef(properties, radius, cosAngleLightToZenith, UvTemp);
         Sample2DRgbaToRef(UvTemp.x, UvTemp.y, LutWidthPx, LutHeightPx, this._lutData, Color4Temp, FromHalfFloat);
 

@@ -1,10 +1,11 @@
 import { SpinButton as FluentSpinButton, mergeClasses, useId } from "@fluentui/react-components";
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent, KeyboardEvent } from "react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
 import { CalculatePrecision, HandleKeyDown, HandleOnBlur, useInputStyles } from "./utils";
+import { ToolContext } from "../hoc/fluentToolWrapper";
 
 export type SpinButtonProps = PrimitiveProps<number> & {
     min?: number;
@@ -20,6 +21,7 @@ export type SpinButtonProps = PrimitiveProps<number> & {
 export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     SpinButton.displayName = "SpinButton";
     const classes = useInputStyles();
+    const { size } = useContext(ToolContext);
 
     const { min, max } = props;
 
@@ -81,7 +83,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
                 input={{ className: classes.inputSlot }}
                 step={step}
                 id={id}
-                size="medium"
+                size={size}
                 precision={precision}
                 displayValue={`${value.toFixed(precision)}${props.unit ? " " + props.unit : ""}`}
                 value={value}

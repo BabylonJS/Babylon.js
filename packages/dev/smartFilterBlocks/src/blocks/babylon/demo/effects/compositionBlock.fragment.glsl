@@ -1,9 +1,11 @@
 uniform sampler2D background; // main
 uniform sampler2D foreground;
 
+// { "property": true }
+const float alphaMode = 1;
+
 uniform vec2 scaleUV;
 uniform vec2 translateUV;
-uniform float alphaMode;
 uniform float foregroundAlphaScale;
 
 vec4 composition(vec2 vUV) { // main

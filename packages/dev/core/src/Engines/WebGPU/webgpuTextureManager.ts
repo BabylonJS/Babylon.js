@@ -151,7 +151,6 @@ const clearVertexSource = `
 const clearFragmentSource = `
     uniform color: vec4f;
 
-
     @fragment
     fn main(input: FragmentInputs) -> FragmentOutputs {
         fragmentOutputs.color = uniforms.color;
@@ -214,11 +213,41 @@ const copyVideoToTextureInvertYFragmentSource = `
     }
     `;
 
+const resolveDepthVertexSource = `
+    const pos = array<vec2<f32>, 4>( vec2f(-1.0f, 1.0f),  vec2f(1.0f, 1.0f),  vec2f(-1.0f, -1.0f),  vec2f(1.0f, -1.0f));
+
+    @vertex
+    fn main(input : VertexInputs) -> FragmentInputs {
+        vertexOutputs.position = vec4f(pos[input.vertexIndex], 0.0, 1.0);
+    }
+    `;
+
+const resolveDepthFragmentSource = `
+    var msaaDepthTexture: texture_depth_multisampled_2d;
+
+    @fragment
+    fn main(input: FragmentInputs) -> FragmentOutputs {
+    #ifdef USE_MIN
+        let numSamples = textureNumSamples(msaaDepthTexture);
+        var depth = 1.0;
+
+        for (var i = 0u; i < numSamples; i = i + 1u) {
+            depth = min(depth, textureLoad(msaaDepthTexture, vec2u(input.position.xy), i));
+        }
+        
+        fragmentOutputs.color = vec4f(depth);
+    #else
+        fragmentOutputs.color = vec4f(textureLoad(msaaDepthTexture, vec2u(input.position.xy), 0)); // do like WebGL, take the first sample
+    #endif
+    }
+    `;
+
 enum PipelineType {
     MipMap = 0,
     InvertYPremultiplyAlpha = 1,
     Clear = 2,
     InvertYPremultiplyAlphaWithOfst = 3,
+    ResolveDepth = 4,
 }
 
 enum VideoPipelineType {
@@ -236,6 +265,7 @@ const shadersForPipelineType = [
     { vertex: invertYPreMultiplyAlphaVertexSource, fragment: invertYPreMultiplyAlphaFragmentSource },
     { vertex: clearVertexSource, fragment: clearFragmentSource },
     { vertex: invertYPreMultiplyAlphaWithOfstVertexSource, fragment: invertYPreMultiplyAlphaWithOfstFragmentSource },
+    { vertex: resolveDepthVertexSource, fragment: resolveDepthFragmentSource },
 ];
 
 /**
@@ -350,7 +380,9 @@ export class WebGPUTextureManager {
                     ? 1 << 3
                     : type === PipelineType.InvertYPremultiplyAlphaWithOfst
                       ? ((params!.invertY ? 1 : 0) << 4) + ((params!.premultiplyAlpha ? 1 : 0) << 5)
-                      : 0;
+                      : type === PipelineType.ResolveDepth
+                        ? 1 << 6
+                        : 0;
 
         if (!this._pipelines[format]) {
             this._pipelines[format] = [];
@@ -1001,10 +1033,33 @@ export class WebGPUTextureManager {
             depth = texture.depth;
         }
 
+        texture.width = texture.baseWidth = width;
+        texture.height = texture.baseHeight = height;
+        texture.depth = texture.baseDepth = depth;
+
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
         const isStorageTexture = ((creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE) !== 0;
 
         gpuTextureWrapper.format = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, texture._useSRGBBuffer);
+
+        if (!dontCreateMSAATexture) {
+            this.createMSAATexture(texture, texture.samples);
+        }
+
+        if (texture.samples > 1) {
+            // In case of a MSAA texture, the current texture will be the "resolve" texture, which cannot have a depth format
+            switch (gpuTextureWrapper.format) {
+                case WebGPUConstants.TextureFormat.Depth16Unorm:
+                    gpuTextureWrapper.format = WebGPUConstants.TextureFormat.R16Unorm;
+                    break;
+                case WebGPUConstants.TextureFormat.Depth24Plus:
+                case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
+                case WebGPUConstants.TextureFormat.Depth32Float:
+                case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
+                    gpuTextureWrapper.format = WebGPUConstants.TextureFormat.R32Float;
+                    break;
+            }
+        }
 
         gpuTextureWrapper.textureUsages =
             texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget
@@ -1105,14 +1160,6 @@ export class WebGPUTextureManager {
             );
         }
 
-        texture.width = texture.baseWidth = width;
-        texture.height = texture.baseHeight = height;
-        texture.depth = texture.baseDepth = depth;
-
-        if (!dontCreateMSAATexture) {
-            this.createMSAATexture(texture, texture.samples);
-        }
-
         return gpuTextureWrapper;
     }
 
@@ -1140,11 +1187,68 @@ export class WebGPUTextureManager {
             gpuTextureWrapper.format,
             samples,
             this._commandEncoderForCreation,
-            WebGPUConstants.TextureUsage.RenderAttachment,
+            WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.TextureBinding,
             0,
             texture.label ? "MSAA_" + texture.label : "MSAA"
         );
         gpuTextureWrapper.setMSAATexture(gpuMSAATexture, index);
+    }
+
+    public resolveMSAADepthTexture(msaaTexture: GPUTexture, outputTexture: GPUTexture, commandEncoder?: GPUCommandEncoder): void {
+        const format = outputTexture.format;
+
+        const useOwnCommandEncoder = commandEncoder === undefined;
+        const [pipeline, bindGroupLayout] = this._getPipeline(format, PipelineType.ResolveDepth);
+
+        if (useOwnCommandEncoder) {
+            commandEncoder = this._device.createCommandEncoder({});
+        }
+
+        commandEncoder!.pushDebugGroup(`resolve MSAA Depth texture${msaaTexture.label ? " - " + msaaTexture.label : ""}`);
+
+        const renderPassDescriptor: GPURenderPassDescriptor = {
+            label: `BabylonWebGPUDevice${this._engine.uniqueId}_resolveMSAADepthTexture${msaaTexture.label ? "_" + msaaTexture.label : ""}`,
+            colorAttachments: [
+                {
+                    view: outputTexture,
+                    loadOp: WebGPUConstants.LoadOp.Load,
+                    storeOp: WebGPUConstants.StoreOp.Store,
+                },
+            ],
+        };
+        const passEncoder = commandEncoder!.beginRenderPass(renderPassDescriptor);
+
+        const descriptor: GPUBindGroupDescriptor = {
+            layout: bindGroupLayout,
+            entries: [
+                {
+                    binding: 0,
+                    resource: msaaTexture.createView({
+                        format: WebGPUTextureHelper.GetDepthFormatOnly(msaaTexture.format),
+                        dimension: WebGPUConstants.TextureViewDimension.E2d,
+                        mipLevelCount: 1,
+                        baseArrayLayer: 0,
+                        baseMipLevel: 0,
+                        arrayLayerCount: 1,
+                        aspect: WebGPUConstants.TextureAspect.DepthOnly,
+                    }),
+                },
+            ],
+        };
+
+        const bindGroup = this._device.createBindGroup(descriptor);
+
+        passEncoder.setPipeline(pipeline);
+        passEncoder.setBindGroup(0, bindGroup);
+        passEncoder.draw(4, 1, 0, 0);
+        passEncoder.end();
+
+        commandEncoder!.popDebugGroup();
+
+        if (useOwnCommandEncoder) {
+            this._device.queue.submit([commandEncoder!.finish()]);
+            commandEncoder = null as any;
+        }
     }
 
     //------------------------------------------------------------------------------
@@ -1235,7 +1339,7 @@ export class WebGPUTextureManager {
                         buffer: buffer,
                         offset: 0,
                         bytesPerRow,
-                        rowsPerImage: height,
+                        rowsPerImage: textureExtent.height / blockInformation.height,
                     },
                     textureCopyView,
                     textureExtent
@@ -1251,7 +1355,7 @@ export class WebGPUTextureManager {
                     {
                         offset: 0,
                         bytesPerRow,
-                        rowsPerImage: height,
+                        rowsPerImage: textureExtent.height / blockInformation.height,
                     },
                     textureExtent
                 );

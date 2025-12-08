@@ -1,6 +1,7 @@
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { AbstractNamedAudioNode } from "../abstractAudio/abstractAudioNode";
+import type { AbstractSound } from "../abstractAudio/abstractSound";
 import type { AbstractSoundSource, ISoundSourceOptions } from "../abstractAudio/abstractSoundSource";
 import type { AudioBus, IAudioBusOptions } from "../abstractAudio/audioBus";
 import type { AudioEngineV2State, IAudioEngineV2Options } from "../abstractAudio/audioEngineV2";
@@ -381,6 +382,9 @@ export class _WebAudioEngine extends AudioEngineV2 {
         }
 
         this._resumePromise = this._audioContext.resume();
+
+        this.stateChangedObservable.notifyObservers(this.state);
+
         return this._resumePromise;
     }
 
@@ -411,6 +415,16 @@ export class _WebAudioEngine extends AudioEngineV2 {
     /** @internal */
     public override _removeNode(node: AbstractNamedAudioNode): void {
         super._removeNode(node);
+    }
+
+    /** @internal */
+    public override _addSound(sound: AbstractSound): void {
+        super._addSound(sound);
+    }
+
+    /** @internal */
+    public override _removeSound(sound: AbstractSound): void {
+        super._removeSound(sound);
     }
 
     /** @internal */

@@ -8,7 +8,7 @@ import type { TransformNode } from "core/Meshes/transformNode";
 import { TransformNode as BabylonTransformNode } from "core/Meshes/transformNode";
 
 import type { IEXTLightsArea_LightReference } from "babylonjs-gltf2interface";
-import { EXTLightsArea_LightShape } from "babylonjs-gltf2interface";
+import { EXTLightsArea_LightType } from "babylonjs-gltf2interface";
 import type { INode, IEXTLightsArea_Light } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
@@ -85,27 +85,27 @@ export class EXT_lights_area implements IGLTFLoaderExtension {
                 const name = light.name || babylonMesh.name;
 
                 this._loader.babylonScene._blockEntityCollection = !!this._loader._assetContainer;
+                const size = light.size !== undefined ? light.size : 1.0;
 
-                switch (light.shape) {
-                    case EXTLightsArea_LightShape.RECT: {
-                        const width = light.width !== undefined ? light.width : 1.0;
-                        const height = light.height !== undefined ? light.height : 1.0;
+                switch (light.type) {
+                    case EXTLightsArea_LightType.RECT: {
+                        const width = light.rect?.aspect !== undefined ? light.rect.aspect * size : size;
+                        const height = size;
                         const babylonRectAreaLight = new RectAreaLight(name, Vector3.Zero(), width, height, this._loader.babylonScene);
                         babylonLight = babylonRectAreaLight;
                         break;
                     }
-                    case EXTLightsArea_LightShape.DISK: {
-                        // For disk lights, we'll use RectAreaLight with equal width and height to approximate a square area
+                    case EXTLightsArea_LightType.DISK: {
+                        // For disk lights, we'll use a rectangle light with the same area to approximate the disk light
                         // In the future, this could be extended to support actual disk area lights
-                        const radius = light.radius !== undefined ? light.radius : 0.5;
-                        const size = radius * 2; // Convert radius to square size
-                        const babylonRectAreaLight = new RectAreaLight(name, Vector3.Zero(), size, size, this._loader.babylonScene);
+                        const newSize = Math.sqrt(size * size * 0.25 * Math.PI); // Area of the disk
+                        const babylonRectAreaLight = new RectAreaLight(name, Vector3.Zero(), newSize, newSize, this._loader.babylonScene);
                         babylonLight = babylonRectAreaLight;
                         break;
                     }
                     default: {
                         this._loader.babylonScene._blockEntityCollection = false;
-                        throw new Error(`${extensionContext}: Invalid area light shape (${light.shape})`);
+                        throw new Error(`${extensionContext}: Invalid area light type (${light.type})`);
                     }
                 }
 

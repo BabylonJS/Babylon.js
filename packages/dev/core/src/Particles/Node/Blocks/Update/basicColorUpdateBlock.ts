@@ -12,7 +12,7 @@ import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
  */
 export class BasicColorUpdateBlock extends NodeParticleBlock {
     /**
-     * Create a new UpdateScaleBlock
+     * Create a new BasicColorUpdateBlock
      * @param name defines the block name
      */
     public constructor(name: string) {

@@ -2345,6 +2345,14 @@ export class NodeMaterial extends NodeMaterialBase {
             this.clear();
         }
 
+        const id = this.id;
+        const uniqueId = this.uniqueId;
+
+        SerializationHelper.ParseProperties(source, this, this.getScene(), rootUrl);
+
+        this.id = id;
+        this.uniqueId = uniqueId;
+
         const map: { [key: number]: NodeMaterialBlock } = {};
 
         // Create blocks
@@ -2421,7 +2429,7 @@ export class NodeMaterial extends NodeMaterialBase {
                 this.editorData.locations = locations;
             }
 
-            const blockMap: number[] = [];
+            const blockMap: { [key: number]: number } = {};
 
             for (const key in map) {
                 blockMap[key] = map[key].uniqueId;
@@ -2445,7 +2453,6 @@ export class NodeMaterial extends NodeMaterialBase {
      * @deprecated Please use the parseSerializedObject method instead
      */
     public loadFromSerialization(source: any, rootUrl: string = "", merge = false) {
-        SerializationHelper.ParseProperties(source, this, this.getScene(), rootUrl);
         this.parseSerializedObject(source, rootUrl, merge);
     }
 
@@ -2459,11 +2466,13 @@ export class NodeMaterial extends NodeMaterialBase {
         const serializationObject = this.serialize();
 
         const clone = SerializationHelper.Clone(() => new NodeMaterial(name, this.getScene(), this.options), this);
-        clone.id = name;
-        clone.name = name;
 
         clone.parseSerializedObject(serializationObject);
+
+        clone.id = name;
+        clone.name = name;
         clone._buildId = this._buildId;
+
         clone.build(false, !shareEffect);
 
         return clone;
@@ -2538,10 +2547,12 @@ export class NodeMaterial extends NodeMaterialBase {
         options?: Partial<INodeMaterialOptions>
     ): Promise<NodeMaterial> {
         const material = targetMaterial ?? new NodeMaterial(name, scene, options);
+        const finalName = material.name;
 
         const data = await scene._loadFileAsync(url);
         const serializationObject = JSON.parse(data);
         material.parseSerializedObject(serializationObject, rootUrl, undefined, urlRewriter);
+        material.name = finalName; // in case it was changed during parse
         if (!skipBuild) {
             material.build();
         }

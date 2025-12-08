@@ -1,6 +1,6 @@
 import { EvaluateAbstractAudioNodeTestAsync } from "../utils/abstractAudioNode.utils";
 import type { AudioNodeType } from "../utils/audioV2.utils";
-import { Channel, EvaluateErrorMessageAsync, EvaluateVolumesAtTimeAsync, ExpectValueToBeCloseTo } from "../utils/audioV2.utils";
+import { Channel, EvaluateErrorMessageAsync, EvaluateVolumesAtTimeAsync, ExpectValueToBeCloseTo, RealtimeVolumeRange, VolumePrecision } from "../utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
@@ -395,7 +395,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.3);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.3, VolumePrecision, RealtimeVolumeRange * 2);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 0.3x volume at 0.1 seconds with shape set to exponential", async ({ page }) => {
@@ -577,58 +577,6 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
                 await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.5);
-            });
-        });
-
-        test.describe("Overlapping ramps", () => {
-            test('Overlapping ramps should throw error "Audio parameter not set. Wait for current ramp to finish."', async ({ page }) => {
-                await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
-                    await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
-                    const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
-                        volume: 1,
-                    });
-
-                    outputNode.setVolume(0, { duration: 1 });
-                    sound.play();
-
-                    await AudioV2Test.WaitAsync(0.5, () => {
-                        try {
-                            outputNode.setVolume(1, { duration: 1 });
-                        } catch (e) {
-                            errorMessage = e.message;
-                        }
-                        sound.stop();
-                    });
-                });
-
-                const message = await EvaluateErrorMessageAsync(page);
-
-                expect(message).toBe("Audio parameter not set. Wait for current ramp to finish.");
-            });
-
-            test("Non-overlapping ramps should not throw an error", async ({ page }) => {
-                await EvaluateAbstractAudioNodeTestAsync(page, audioNodeType, async ({ audioNodeType }) => {
-                    await AudioV2Test.CreateAudioEngineAsync(audioNodeType, undefined, { volume: 1 });
-                    const { sound, outputNode } = await AudioV2Test.CreateAbstractSoundAndOutputNodeAsync(audioNodeType, audioTestConfig.pulseTrainSoundFile, {
-                        volume: 1,
-                    });
-
-                    outputNode.setVolume(0, { duration: 1 });
-                    sound.play();
-
-                    await AudioV2Test.WaitAsync(1.5, () => {
-                        try {
-                            outputNode.setVolume(1, { duration: 1 });
-                        } catch (e) {
-                            errorMessage = e.message;
-                        }
-                        sound.stop();
-                    });
-                });
-
-                const message = await EvaluateErrorMessageAsync(page);
-
-                expect(message).toBe("No error");
             });
         });
     });

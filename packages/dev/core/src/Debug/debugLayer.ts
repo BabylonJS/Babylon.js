@@ -174,7 +174,7 @@ declare module "../scene" {
          * @internal
          * Backing field
          */
-        _debugLayer: DebugLayer;
+        _debugLayer?: DebugLayer;
 
         /**
          * Gets the debug layer (aka Inspector) associated with the scene
@@ -248,7 +248,7 @@ export class DebugLayer {
     private _scene: Scene;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    private BJSINSPECTOR = this._getGlobalInspector();
+    protected BJSINSPECTOR = this._getGlobalInspector();
 
     private _onPropertyChangedObservable?: Observable<{ object: any; property: string; value: any; initialValue: any }>;
     /**

@@ -19,6 +19,7 @@ import type { Material } from "core/Materials/material";
 import { Scalar } from "core/Maths/math.scalar";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
 import { EngineStore } from "core/Engines/engineStore";
+import type { Camera } from "core/Cameras/camera";
 
 interface IDelayedTextureUpdate {
     covA: Uint16Array;
@@ -86,6 +87,25 @@ interface ICompressedPLYChunk {
 interface IPLYConversionBuffers {
     buffer: ArrayBuffer;
     sh?: [];
+}
+
+/**
+ * To support multiple camera rendering, rendered mesh is separated from the GaussianSplattingMesh itself.
+ * The GS mesh serves as a proxy and a different mesh is rendered for each camera. This hot switch is done
+ * in the render() function. Each camera has a corresponding ICameraViewInfo object. The key is the camera unique id.
+ * ICameraViewInfo and the rendered mesh are created in method `_postToWorker`
+ * Mesh are disabled to not let the scene render them directly.
+ * ICameraViewInfo are sorted per last frame id update to prioritize the less recently updated ones.
+ * There is 1 web worker per GaussianSplattingMesh to avoid too many copies between main thread and workers.
+ * So, only one sort is being done at a time per GaussianSplattingMesh. If multiple cameras need an update,
+ * they will be processed one by one in subsequent frames.
+ */
+interface ICameraViewInfo {
+    camera: Camera;
+    cameraDirection: Vector3;
+    mesh: Mesh;
+    frameIdLastUpdate: number;
+    splatIndexBufferSet: boolean;
 }
 /**
  * Representation of the types
@@ -275,7 +295,6 @@ export interface PLYHeader {
 export class GaussianSplattingMesh extends Mesh {
     private _vertexCount = 0;
     private _worker: Nullable<Worker> = null;
-    private _frameIdLastUpdate = -1;
     private _modelViewMatrix = Matrix.Identity();
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
@@ -292,7 +311,6 @@ export class GaussianSplattingMesh extends Mesh {
     private readonly _keepInRam: boolean = false;
 
     private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
-    private _oldDirection = new Vector3();
     private _useRGBACovariants = false;
     private _material: Nullable<Material> = null;
 
@@ -309,6 +327,8 @@ export class GaussianSplattingMesh extends Mesh {
     private _shDegree = 0;
     private _viewDirectionFactor = new Vector3(1, 1, -1);
 
+    private static readonly _BatchSize = 16; // 16 splats per instance
+    private _cameraViewInfos = new Map<number, ICameraViewInfo>();
     /**
      * View direction factor used to compute the SH view direction in the shader.
      */
@@ -412,6 +432,29 @@ export class GaussianSplattingMesh extends Mesh {
         return this._material;
     }
 
+    private static _MakeSplatGeometryForMesh(mesh: Mesh): void {
+        const vertexData = new VertexData();
+        const originPositions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
+        const originIndices = [0, 1, 2, 0, 2, 3];
+        const positions = [];
+        const indices = [];
+        for (let i = 0; i < GaussianSplattingMesh._BatchSize; i++) {
+            for (let j = 0; j < 12; j++) {
+                if (j == 2 || j == 5 || j == 8 || j == 11) {
+                    positions.push(i); // local splat index
+                } else {
+                    positions.push(originPositions[j]);
+                }
+            }
+            indices.push(originIndices.map((v) => v + i * 4));
+        }
+
+        vertexData.positions = positions;
+        vertexData.indices = indices.flat();
+
+        vertexData.applyToMesh(mesh);
+    }
+
     /**
      * Creates a new gaussian splatting mesh
      * @param name defines the name of the mesh
@@ -422,14 +465,8 @@ export class GaussianSplattingMesh extends Mesh {
     constructor(name: string, url: Nullable<string> = null, scene: Nullable<Scene> = null, keepInRam: boolean = false) {
         super(name, scene);
 
-        const vertexData = new VertexData();
-
-        vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
-        vertexData.indices = [0, 1, 2, 0, 2, 3];
-        vertexData.applyToMesh(this);
-
         this.subMeshes = [];
-        new SubMesh(0, 0, 4, 0, 6, this);
+        new SubMesh(0, 0, 4 * GaussianSplattingMesh._BatchSize, 0, 6 * GaussianSplattingMesh._BatchSize, this);
 
         this.setEnabled(false);
         // webGL2 and webGPU support for RG texture with float16 is fine. not webGL1
@@ -440,7 +477,20 @@ export class GaussianSplattingMesh extends Mesh {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.loadFileAsync(url);
         }
-        this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
+        const gaussianSplattingMaterial = new GaussianSplattingMaterial(this.name + "_material", this._scene);
+        gaussianSplattingMaterial.setSourceMesh(this);
+        this._material = gaussianSplattingMaterial;
+
+        // delete meshes created for cameras on camera removal
+        this._scene.onCameraRemovedObservable.add((camera: Camera) => {
+            const cameraId = camera.uniqueId;
+            // delete mesh for this camera
+            if (this._cameraViewInfos.has(cameraId)) {
+                const cameraViewInfos = this._cameraViewInfos.get(cameraId);
+                cameraViewInfos?.mesh.dispose();
+                this._cameraViewInfos.delete(cameraId);
+            }
+        });
     }
 
     /**
@@ -474,29 +524,88 @@ export class GaussianSplattingMesh extends Mesh {
             this._postToWorker(true);
             return false;
         }
+
         return true;
+    }
+
+    public _getCameraDirection(camera: Camera): Vector3 {
+        const cameraMatrix = camera.getViewMatrix();
+        this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
+        cameraMatrix.invertToRef(TmpVectors.Matrix[0]);
+        this.getWorldMatrix().multiplyToRef(TmpVectors.Matrix[0], TmpVectors.Matrix[1]);
+        Vector3.TransformNormalToRef(Vector3.Forward(this._scene.useRightHandedSystem), TmpVectors.Matrix[1], TmpVectors.Vector3[2]);
+        TmpVectors.Vector3[2].normalize();
+        return TmpVectors.Vector3[2];
     }
 
     /** @internal */
     public _postToWorker(forced = false): void {
-        const frameId = this.getScene().getFrameId();
-        if ((forced || frameId !== this._frameIdLastUpdate) && this._worker && this._scene.activeCamera && this._canPostToWorker) {
-            const cameraMatrix = this._scene.activeCamera.getViewMatrix();
-            this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
-            cameraMatrix.invertToRef(TmpVectors.Matrix[0]);
-            this.getWorldMatrix().multiplyToRef(TmpVectors.Matrix[0], TmpVectors.Matrix[1]);
-            Vector3.TransformNormalToRef(Vector3.Forward(this._scene.useRightHandedSystem), TmpVectors.Matrix[1], TmpVectors.Vector3[2]);
-            TmpVectors.Vector3[2].normalize();
-
-            const dot = Vector3.Dot(TmpVectors.Vector3[2], this._oldDirection);
-            if (forced || Math.abs(dot - 1) >= 0.01) {
-                this._oldDirection.copyFrom(TmpVectors.Vector3[2]);
-                this._frameIdLastUpdate = frameId;
-                this._canPostToWorker = false;
-                this._worker.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem }, [
-                    this._depthMix.buffer,
-                ]);
+        const scene = this._scene;
+        const frameId = scene.getFrameId();
+        // force update or at least frame update for camera is outdated
+        let outdated = false;
+        this._cameraViewInfos.forEach((cameraViewInfos) => {
+            if (cameraViewInfos.frameIdLastUpdate !== frameId) {
+                outdated = true;
             }
+        });
+
+        if ((forced || outdated) && this._worker && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
+            // array of cameras used for rendering
+            const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
+            // list view infos for active cameras
+            const activeViewInfos: ICameraViewInfo[] = [];
+            cameras.forEach((camera) => {
+                const cameraId = camera.uniqueId;
+
+                const cameraViewInfos = this._cameraViewInfos.get(cameraId);
+                if (cameraViewInfos) {
+                    activeViewInfos.push(cameraViewInfos);
+                } else {
+                    // mesh doesn't exist yet for this camera
+                    const cameraMesh = new Mesh(this.name + "_cameraMesh_" + cameraId, this._scene);
+                    // not visible with inspector or the scene graph
+                    cameraMesh.reservedDataStore = { hidden: true };
+                    cameraMesh.setEnabled(false);
+                    cameraMesh.material = this.material;
+                    GaussianSplattingMesh._MakeSplatGeometryForMesh(cameraMesh);
+
+                    const newViewInfos: ICameraViewInfo = {
+                        camera: camera,
+                        cameraDirection: new Vector3(0, 0, 0),
+                        mesh: cameraMesh,
+                        frameIdLastUpdate: frameId,
+                        splatIndexBufferSet: false,
+                    };
+                    activeViewInfos.push(newViewInfos);
+                    this._cameraViewInfos.set(cameraId, newViewInfos);
+                }
+            });
+            // sort view infos by last updated frame id: first item is the least recently updated
+            activeViewInfos.sort((a, b) => a.frameIdLastUpdate - b.frameIdLastUpdate);
+
+            // view infos sorted by least recent updated frame id
+            activeViewInfos.forEach((cameraViewInfos) => {
+                const camera = cameraViewInfos.camera;
+                const cameraDirection = this._getCameraDirection(camera);
+
+                const previousCameraDirection = cameraViewInfos.cameraDirection;
+                const dot = Vector3.Dot(cameraDirection, previousCameraDirection);
+                if ((forced || Math.abs(dot - 1) >= 0.01) && this._canPostToWorker) {
+                    cameraViewInfos.cameraDirection.copyFrom(cameraDirection);
+                    cameraViewInfos.frameIdLastUpdate = frameId;
+                    this._canPostToWorker = false;
+                    this._worker!.postMessage(
+                        {
+                            view: this._modelViewMatrix.m,
+                            depthMix: this._depthMix,
+                            useRightHandedSystem: this._scene.useRightHandedSystem,
+                            cameraId: camera.uniqueId,
+                        },
+                        [this._depthMix.buffer]
+                    );
+                }
+            });
         }
     }
     /**
@@ -508,7 +617,21 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public override render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         this._postToWorker();
-        return super.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
+
+        // geometry used for shadows, bind the first found in the camera view infos
+        if (!this._geometry && this._cameraViewInfos.size) {
+            this._geometry = this._cameraViewInfos.values().next().value.mesh.geometry;
+        }
+
+        const cameraId = this._scene.activeCamera!.uniqueId;
+        const cameraViewInfos = this._cameraViewInfos.get(cameraId);
+        if (!cameraViewInfos || !cameraViewInfos.splatIndexBufferSet) {
+            return this;
+        }
+
+        const mesh = cameraViewInfos.mesh;
+        mesh.getWorldMatrix().copyFrom(this.getWorldMatrix());
+        return mesh.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
     }
 
     private static _TypeNameToEnum(name: string): PLYType {
@@ -517,7 +640,6 @@ export class GaussianSplattingMesh extends Mesh {
                 return PLYType.FLOAT;
             case "int":
                 return PLYType.INT;
-                break;
             case "uint":
                 return PLYType.UINT;
             case "double":
@@ -1233,6 +1355,11 @@ export class GaussianSplattingMesh extends Mesh {
         this._worker?.terminate();
         this._worker = null;
 
+        // delete meshes created for each camera
+        this._cameraViewInfos.forEach((cameraViewInfo) => {
+            cameraViewInfo.mesh.dispose();
+        });
+
         super.dispose(doNotRecurse, true);
     }
 
@@ -1268,13 +1395,13 @@ export class GaussianSplattingMesh extends Mesh {
         const binfo = this.getBoundingInfo();
         newGS.getBoundingInfo().reConstruct(binfo.minimum, binfo.maximum, this.getWorldMatrix());
 
-        newGS.forcedInstanceCount = newGS._vertexCount;
+        newGS.forcedInstanceCount = this.forcedInstanceCount;
         newGS.setEnabled(true);
         return newGS;
     }
 
     private static _CreateWorker = function (self: Worker) {
-        let vertexCount = 0;
+        let vertexCountPadded = 0;
         let positions: Float32Array;
         let depthMix: BigInt64Array;
         let indices: Uint32Array;
@@ -1284,10 +1411,11 @@ export class GaussianSplattingMesh extends Mesh {
             // updated on init
             if (e.data.positions) {
                 positions = e.data.positions;
-                vertexCount = e.data.vertexCount;
+                vertexCountPadded = e.data.vertexCountPadded;
             }
             // udpate on view changed
             else {
+                const cameraId = e.data.cameraId;
                 const viewProj = e.data.view;
                 if (!positions || !viewProj) {
                     // Sanity check, it shouldn't happen!
@@ -1299,7 +1427,7 @@ export class GaussianSplattingMesh extends Mesh {
                 floatMix = new Float32Array(depthMix.buffer);
 
                 // Sort
-                for (let j = 0; j < vertexCount; j++) {
+                for (let j = 0; j < vertexCountPadded; j++) {
                     indices[2 * j] = j;
                 }
 
@@ -1308,16 +1436,31 @@ export class GaussianSplattingMesh extends Mesh {
                     depthFactor = 1;
                 }
 
-                for (let j = 0; j < vertexCount; j++) {
+                for (let j = 0; j < vertexCountPadded; j++) {
                     floatMix[2 * j + 1] = 10000 + (viewProj[2] * positions[4 * j + 0] + viewProj[6] * positions[4 * j + 1] + viewProj[10] * positions[4 * j + 2]) * depthFactor;
                 }
 
                 depthMix.sort();
 
-                self.postMessage({ depthMix }, [depthMix.buffer]);
+                self.postMessage({ depthMix, cameraId }, [depthMix.buffer]);
             }
         };
     };
+
+    private _makeEmptySplat(index: number, covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array): void {
+        const covBSItemSize = this._useRGBACovariants ? 4 : 2;
+        this._splatPositions![4 * index + 0] = 0;
+        this._splatPositions![4 * index + 1] = 0;
+        this._splatPositions![4 * index + 2] = 0;
+
+        covA[index * 4 + 0] = ToHalfFloat(0);
+        covA[index * 4 + 1] = ToHalfFloat(0);
+        covA[index * 4 + 2] = ToHalfFloat(0);
+        covA[index * 4 + 3] = ToHalfFloat(0);
+        covB[index * covBSItemSize + 0] = ToHalfFloat(0);
+        covB[index * covBSItemSize + 1] = ToHalfFloat(0);
+        colorArray[index * 4 + 3] = 0;
+    }
 
     private _makeSplat(
         index: number,
@@ -1503,11 +1646,16 @@ export class GaussianSplattingMesh extends Mesh {
             this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
             this._sortIsDirty = true;
         } else {
+            const paddedVertexCount = (vertexCount + 15) & ~0xf;
             for (let i = 0; i < vertexCount; i++) {
                 this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
                 if (isAsync && i % GaussianSplattingMesh._SplatBatchSize === 0) {
                     yield;
                 }
+            }
+            // pad the rest
+            for (let i = vertexCount; i < paddedVertexCount; i++) {
+                this._makeEmptySplat(i, covA, covB, colorArray);
             }
             // textures
             this._updateTextures(covA, covB, colorArray, sh);
@@ -1549,12 +1697,16 @@ export class GaussianSplattingMesh extends Mesh {
 
     // in case size is different
     private _updateSplatIndexBuffer(vertexCount: number): void {
+        const paddedVertexCount = (vertexCount + 15) & ~0xf;
         if (!this._splatIndex || vertexCount > this._splatIndex.length) {
-            this._splatIndex = new Float32Array(vertexCount);
+            this._splatIndex = new Float32Array(paddedVertexCount);
 
-            this.thinInstanceSetBuffer("splatIndex", this._splatIndex, 1, false);
+            // update meshes for knowns cameras
+            this._cameraViewInfos.forEach((cameraViewInfos) => {
+                cameraViewInfos.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
+            });
         }
-        this.forcedInstanceCount = vertexCount;
+        this.forcedInstanceCount = paddedVertexCount >> 4;
     }
 
     private _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number, sh?: Uint8Array[]): void {
@@ -1598,22 +1750,24 @@ export class GaussianSplattingMesh extends Mesh {
             )
         );
 
-        this._depthMix = new BigInt64Array(this._vertexCount);
+        const vertexCountPadded = (this._vertexCount + 15) & ~0xf;
+        this._depthMix = new BigInt64Array(vertexCountPadded);
         const positions = Float32Array.from(this._splatPositions!);
-        const vertexCount = this._vertexCount;
 
-        this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+        this._worker.postMessage({ positions, vertexCountPadded }, [positions.buffer]);
 
         this._worker.onmessage = (e) => {
             this._depthMix = e.data.depthMix;
+            const cameraId = e.data.cameraId;
+
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
             if (this._splatIndex) {
-                for (let j = 0; j < this._vertexCount; j++) {
+                for (let j = 0; j < vertexCountPadded; j++) {
                     this._splatIndex[j] = indexMix[2 * j];
                 }
             }
             if (this._delayedTextureUpdate) {
-                const textureSize = this._getTextureSize(vertexCount);
+                const textureSize = this._getTextureSize(vertexCountPadded);
                 this._updateSubTextures(
                     this._delayedTextureUpdate.centers,
                     this._delayedTextureUpdate.covA,
@@ -1625,7 +1779,17 @@ export class GaussianSplattingMesh extends Mesh {
                 );
                 this._delayedTextureUpdate = null;
             }
-            this.thinInstanceBufferUpdated("splatIndex");
+
+            // get mesh for camera and update its instance buffer
+            const cameraViewInfos = this._cameraViewInfos.get(cameraId);
+            if (cameraViewInfos) {
+                if (cameraViewInfos.splatIndexBufferSet) {
+                    cameraViewInfos.mesh.thinInstanceBufferUpdated("splatIndex");
+                } else {
+                    cameraViewInfos.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
+                    cameraViewInfos.splatIndexBufferSet = true;
+                }
+            }
             this._canPostToWorker = true;
             this._readyToDisplay = true;
             // sort is dirty when GS is visible for progressive update with a this message arriving but positions were partially filled

@@ -10,6 +10,9 @@
     var slab_coat: vec3f = vec3f(0.f, 0.f, 0.f);
     var coatFresnel: f32 = 0.0f;
     var slab_fuzz: vec3f = vec3f(0.f, 0.f, 0.f);
+    var fuzzFresnel: f32 = 0.0f;
+
+    // _____________________________ Geometry Information _____________________________
 
     // Diffuse Lobe
     #ifdef HEMILIGHT{X}
@@ -25,6 +28,15 @@
     #endif
 
     numLights += 1.0f;
+
+    #ifdef FUZZ
+        let fuzzNdotH: f32 = max(dot(fuzzNormalW, preInfo{X}.H), 0.0f);
+        let fuzzBrdf: vec3f = getFuzzBRDFLookup(fuzzNdotH, sqrt(fuzz_roughness));
+    #endif
+
+    #ifdef THIN_FILM
+        let thin_film_desaturation_scale: f32 = (thin_film_ior - 1.0f) * sqrt(thin_film_thickness * 0.001f);
+    #endif
 
     // Specular Lobe
     #if AREALIGHT{X}
@@ -46,7 +58,10 @@
             specularColoredFresnel = specularFresnel * specular_color;
             #ifdef THIN_FILM
                 let thinFilmIorScale: f32 = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
-                let thinFilmDielectricFresnel: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseDielectricReflectance.coloredF0);
+                var thinFilmDielectricFresnel: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseDielectricReflectance.coloredF0);
+                // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
+                // closer to path-tracing reference.
+                thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3f(dot(thinFilmDielectricFresnel, vec3f(0.3333f))), thin_film_desaturation_scale);
                 specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thinFilmIorScale);
             #endif
         }
@@ -68,7 +83,10 @@
             #ifdef THIN_FILM
                 // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
                 let thinFilmIorScale: f32 = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
-                let thinFilmConductorFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseConductorReflectance.coloredF0);
+                var thinFilmConductorFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseConductorReflectance.coloredF0);
+                // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
+                // closer to path-tracing reference.
+                thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3f(dot(thinFilmConductorFresnel, vec3f(0.3333f))), thin_film_desaturation_scale);
                 coloredFresnel = mix(coloredFresnel, specular_weight * thinFilmIorScale * thinFilmConductorFresnel, thin_film_weight);
             #endif
 
@@ -132,12 +150,22 @@
         coatAbsorption = mix(vec3f(1.0f), colored_transmission * vec3f(darkened_transmission), coat_weight);
     }
 
+    #ifdef FUZZ
+        fuzzFresnel = fuzzBrdf.z;
+        let fuzzNormalW = mix(normalW, coatNormalW, coat_weight);
+        let fuzzNdotV: f32 = max(dot(fuzzNormalW, viewDirectionW.xyz), 0.0f);
+        let fuzzNdotL: f32 = max(dot(fuzzNormalW, preInfo{X}.L), 0.0);
+        slab_fuzz = lightColor{X}.rgb * preInfo{X}.attenuation * evalFuzz(preInfo{X}.L, fuzzNdotL, fuzzNdotV, fuzzTangent, fuzzBitangent, fuzzBrdf);
+    #else
+        let fuzz_color = vec3f(0.0);
+    #endif
+
     slab_diffuse *= base_color.rgb;
     let material_opaque_base: vec3f = mix(slab_diffuse, slab_subsurface, subsurface_weight);
     let material_dielectric_base: vec3f = mix(material_opaque_base, slab_translucent, transmission_weight);
     let material_dielectric_gloss: vec3f = material_dielectric_base * (1.0f - specularFresnel) + slab_glossy * specularColoredFresnel;
     let material_base_substrate: vec3f = mix(material_dielectric_gloss, slab_metal, base_metalness);
-    let material_coated_base: vec3f = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3f(1.0));
-    material_surface_direct += mix(material_coated_base, slab_fuzz, fuzz_weight);
+    let material_coated_base: vec3f = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3f(1.0f));
+    material_surface_direct += layer(material_coated_base, slab_fuzz, fuzzFresnel * fuzz_weight, vec3f(1.0f), fuzz_color);
 }
 #endif

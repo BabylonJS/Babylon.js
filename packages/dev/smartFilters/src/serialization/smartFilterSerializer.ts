@@ -7,6 +7,7 @@ import { OutputBlock } from "../blockFoundation/outputBlock.js";
 import type { IBlockSerializerV1, ISerializedBlockV1, ISerializedConnectionV1, SerializeBlockV1, SerializedSmartFilterV1 } from "./v1/smartFilterSerialization.types.js";
 import { CustomShaderBlock } from "../blockFoundation/customShaderBlock.js";
 import { CustomAggregateBlock } from "../blockFoundation/customAggregateBlock.js";
+import { CustomShaderBlockSerializer } from "../blockFoundation/customShaderBlock.serializer.js";
 
 /**
  * Determines if two serialized connection points are equivalent to each other
@@ -54,9 +55,11 @@ export class SmartFilterSerializer {
             // Serialize the block itself
             const blockClassName = block.getClassName();
             const serializeFn =
-                blockClassName === CustomShaderBlock.ClassName || blockClassName === CustomAggregateBlock.ClassName
-                    ? DefaultBlockSerializer
-                    : this._blockSerializers.get(block.blockType);
+                blockClassName === CustomShaderBlock.ClassName
+                    ? CustomShaderBlockSerializer
+                    : blockClassName === CustomAggregateBlock.ClassName
+                      ? DefaultBlockSerializer
+                      : this._blockSerializers.get(block.blockType);
             if (!serializeFn) {
                 throw new Error(`No serializer was provided for a block of type ${block.blockType}`);
             }

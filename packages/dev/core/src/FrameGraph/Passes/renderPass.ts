@@ -21,17 +21,24 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     }
 
     /**
-     * Gets the render target(s) used by the render pass.
+     * Gets the handle(s) of the render target(s) used by the render pass.
      */
     public get renderTarget(): FrameGraphTextureHandle | FrameGraphTextureHandle[] | undefined {
         return this._renderTarget;
     }
 
     /**
-     * Gets the render target depth used by the render pass.
+     * Gets the handle of the render target depth used by the render pass.
      */
     public get renderTargetDepth(): FrameGraphTextureHandle | undefined {
         return this._renderTargetDepth;
+    }
+
+    /**
+     * Gets the frame graph render target used by the render pass.
+     */
+    public get frameGraphRenderTarget(): FrameGraphRenderTarget | undefined {
+        return this._frameGraphRenderTarget;
     }
 
     /**
@@ -116,11 +123,22 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
         this._frameGraphRenderTarget =
             this._frameGraphRenderTarget || this._context.createRenderTarget(this.name, this._renderTarget, this._renderTargetDepth, this.depthReadOnly, this.stencilReadOnly);
 
-        this._context.bindRenderTarget(this._frameGraphRenderTarget, `frame graph render pass - ${this.name}`);
+        this._context.bindRenderTarget(this._frameGraphRenderTarget);
 
         super._execute();
 
         this._context._flushDebugMessages();
+
+        const renderTargetWrapper = this._frameGraphRenderTarget.renderTargetWrapper;
+        if (
+            renderTargetWrapper &&
+            renderTargetWrapper.samples > 1 &&
+            (renderTargetWrapper.resolveMSAAColors || renderTargetWrapper.resolveMSAADepth || renderTargetWrapper.resolveMSAAStencil)
+        ) {
+            // Unbinding the render target will trigger resolving MSAA textures.
+            this._context.bindRenderTarget(undefined, `Resolve MSAA${this.name ? " (" + this.name + ")" : ""}`, true);
+            this._context._flushDebugMessages();
+        }
     }
 
     /** @internal */
@@ -131,5 +149,10 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
             : this._renderTarget !== undefined || this.renderTargetDepth !== undefined
               ? null
               : "Render target and render target depth cannot both be undefined.";
+    }
+
+    /** @internal */
+    public override _dispose() {
+        this._frameGraphRenderTarget?.dispose();
     }
 }

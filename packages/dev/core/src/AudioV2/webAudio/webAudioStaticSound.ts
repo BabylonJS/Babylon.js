@@ -6,8 +6,7 @@ import type { IStaticSoundBufferCloneOptions, IStaticSoundBufferOptions } from "
 import { StaticSoundBuffer } from "../abstractAudio/staticSoundBuffer";
 import type { IStaticSoundInstanceOptions } from "../abstractAudio/staticSoundInstance";
 import { _StaticSoundInstance } from "../abstractAudio/staticSoundInstance";
-import { _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
-import type { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
+import { _HasSpatialAudioOptions, type AbstractSpatialAudio } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _CleanUrl, _FileExtensionRegex } from "../audioUtils";
 import { SoundState } from "../soundState";
@@ -22,9 +21,6 @@ type StaticSoundSourceType = ArrayBuffer | AudioBuffer | StaticSoundBuffer | str
 /** @internal */
 export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperNode {
     private _buffer: _WebAudioStaticSoundBuffer;
-    private _spatial: Nullable<_SpatialWebAudio> = null;
-    private readonly _spatialAutoUpdate: boolean = true;
-    private readonly _spatialMinUpdateTime: number = 0;
     private _stereo: Nullable<_StereoAudio> = null;
 
     protected override readonly _options: IStaticSoundStoredOptions;
@@ -38,15 +34,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 
     /** @internal */
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStaticSoundOptions>) {
-        super(name, engine);
-
-        if (typeof options.spatialAutoUpdate === "boolean") {
-            this._spatialAutoUpdate = options.spatialAutoUpdate;
-        }
-
-        if (typeof options.spatialMinUpdateTime === "number") {
-            this._spatialMinUpdateTime = options.spatialMinUpdateTime;
-        }
+        super(name, engine, options);
 
         this._options = {
             autoplay: options.autoplay ?? false,
@@ -90,7 +78,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
             this.play();
         }
 
-        this.engine._addNode(this);
+        this.engine._addSound(this);
     }
 
     /** @internal */
@@ -106,14 +94,6 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
     /** @internal */
     public get _outNode() {
         return this._subGraph._outNode;
-    }
-
-    /** @internal */
-    public override get spatial(): _SpatialAudio {
-        if (this._spatial) {
-            return this._spatial;
-        }
-        return this._initSpatialProperty();
     }
 
     /** @internal */
@@ -134,14 +114,11 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
     public override dispose(): void {
         super.dispose();
 
-        this._spatial?.dispose();
-        this._spatial = null;
-
         this._stereo = null;
 
         this._subGraph.dispose();
 
-        this.engine._removeNode(this);
+        this.engine._removeSound(this);
     }
 
     /** @internal */
@@ -182,12 +159,12 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
         return true;
     }
 
-    private _initSpatialProperty(): _SpatialAudio {
-        if (!this._spatial) {
-            this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate, this._spatialMinUpdateTime);
-        }
+    protected override _createSpatialProperty(autoUpdate: boolean, minUpdateTime: number): AbstractSpatialAudio {
+        return new _SpatialWebAudio(this._subGraph, autoUpdate, minUpdateTime);
+    }
 
-        return this._spatial;
+    public _getOptions(): IStaticSoundStoredOptions {
+        return this._options;
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
@@ -358,8 +335,15 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         const restart = this._state === SoundState.Starting || this._state === SoundState.Started;
 
         if (restart) {
-            this.stop();
+            // Stop source node without sending `onEndedObservable` so instance's `dispose` function is not called.
+            const sourceNode = this._sourceNode;
             this._deinitSourceNode();
+            sourceNode?.stop();
+            this._state = SoundState.Stopped;
+        }
+
+        if (this.state === SoundState.Paused) {
+            this._enginePauseTime = 0;
         }
 
         this._options.startOffset = value;
@@ -422,7 +406,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         let startOffset = this._options.startOffset;
 
         if (this._state === SoundState.Paused) {
-            startOffset += this.currentTime;
+            startOffset += this._enginePauseTime;
             startOffset %= this._sound.buffer.duration;
         }
 
@@ -467,12 +451,13 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
             return;
         }
 
-        this._setState(SoundState.Stopped);
-
         const engineStopTime = this.engine.currentTime + (options.waitTime ?? 0);
         this._sourceNode?.stop(engineStopTime);
 
-        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+        if (options.waitTime === undefined || options.waitTime <= 0) {
+            this._setState(SoundState.Stopped);
+            this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+        }
     }
 
     protected override _connect(node: AbstractAudioNode): boolean {
@@ -509,7 +494,10 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     protected _onEnded = () => {
         this._enginePlayTime = 0;
 
-        this.onEndedObservable.notifyObservers(this);
+        if (this._state !== SoundState.Paused) {
+            this.onEndedObservable.notifyObservers(this);
+        }
+
         this._deinitSourceNode();
     };
 

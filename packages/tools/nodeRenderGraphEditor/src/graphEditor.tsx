@@ -222,22 +222,22 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
         });
 
-        this.props.globalState.stateManager.onRebuildRequiredObservable.add(() => {
+        this.props.globalState.stateManager.onRebuildRequiredObservable.add(async () => {
             if (this.props.globalState.nodeRenderGraph) {
-                this.buildRenderGraph();
+                await this.buildRenderGraphAsync();
             }
         });
 
-        this.props.globalState.onResetRequiredObservable.add((isDefault) => {
+        this.props.globalState.onResetRequiredObservable.add(async (isDefault) => {
             if (isDefault) {
                 if (this.props.globalState.nodeRenderGraph) {
-                    this.buildRenderGraph();
+                    await this.buildRenderGraphAsync();
                 }
                 this.build(true);
             } else {
                 this.build();
                 if (this.props.globalState.nodeRenderGraph) {
-                    this.buildRenderGraph();
+                    await this.buildRenderGraphAsync();
                 }
             }
         });
@@ -333,14 +333,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             } else if (input.isCamera()) {
                 input.value = this.props.globalState.scene.activeCamera;
             } else if (input.isObjectList()) {
-                input.value = { meshes: [], particleSystems: [] };
+                input.value = { meshes: this.props.globalState.scene.meshes.slice(), particleSystems: this.props.globalState.scene.particleSystems.slice() };
             } else if (input.isShadowLight()) {
                 input.value = this.props.globalState.scene.lights[1] as IShadowLight;
             }
         }
     }
 
-    buildRenderGraph() {
+    async buildRenderGraphAsync() {
         if (!this.props.globalState.nodeRenderGraph) {
             return;
         }
@@ -361,12 +361,21 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const nodeRenderGraph = this.props.globalState.nodeRenderGraph;
 
         try {
-            nodeRenderGraph.build();
-        } catch (err) {
-            if (LogErrorTrace) {
-                (console as any).log(err);
+            if (this.props.globalState.hostScene) {
+                // We wait for the graph to be ready only if the editor is linked to a host scene (most probabaly a playground).
+                // Else, the node render graph is a dummy one for editing purpose only.
+                await nodeRenderGraph.buildAsync();
+            } else {
+                await nodeRenderGraph.buildAsync(false, false);
             }
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
+        } catch (err) {
+            // We care about errors only if there is a host scene (the editor isprobably linked to a playground).
+            if (this.props.globalState.hostScene) {
+                if (LogErrorTrace) {
+                    (console as any).log(err);
+                }
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
+            }
         }
     }
 
@@ -455,6 +464,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         let customBlockData: any;
 
+        blockType = blockType.replace(/ /g, "_");
+
         // Dropped something that is not a node
         if (blockType === "") {
             return;
@@ -498,7 +509,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (blockType.indexOf("Block") === -1) {
             newNode = this.addValueNode(blockType);
         } else {
-            const block = BlockTools.GetBlockFromString(blockType, this.props.globalState.nodeRenderGraph.frameGraph, this.props.globalState.scene)!;
+            let block: NodeRenderGraphBlock = BlockTools.GetBlockFromString(blockType, this.props.globalState.nodeRenderGraph.frameGraph, this.props.globalState.scene)!;
+            if (block === null) {
+                const customBlock = this.props.globalState.customBlockDescriptions?.find((d) => {
+                    const name = d.name.endsWith("Block") ? d.name : d.name + "Block";
+                    return name === blockType;
+                });
+                if (customBlock) {
+                    block = customBlock.factory(this.props.globalState.nodeRenderGraph.frameGraph, this.props.globalState.scene);
+                }
+            }
 
             if (block.isUnique) {
                 const className = block.getClassName();

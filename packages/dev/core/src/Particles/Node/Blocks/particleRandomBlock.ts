@@ -1,12 +1,13 @@
-import { RegisterClass } from "../../../Misc/typeStore";
-import { Vector2, Vector3 } from "../../../Maths/math.vector";
-import type { Nullable } from "../../../types";
+import type { Nullable } from "core/types";
+import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
+
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
-import { NodeParticleBlock } from "../nodeParticleBlock";
-import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../nodeParticleBuildState";
+import { RegisterClass } from "core/Misc/typeStore";
 import { Color4 } from "core/Maths/math.color";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 
 /**
  * Locks supported by the random block
@@ -18,6 +19,8 @@ export enum ParticleRandomBlockLocks {
     PerParticle = 1,
     /** PerSystem */
     PerSystem = 2,
+    /** OncePerParticle */
+    OncePerParticle = 3,
 }
 
 /**
@@ -25,6 +28,8 @@ export enum ParticleRandomBlockLocks {
  */
 export class ParticleRandomBlock extends NodeParticleBlock {
     private _currentLockId = -2;
+    private _oncePerParticleMap: Map<number, any> = new Map();
+
     /**
      * Gets or sets a value indicating if that block will lock its value for a specific event
      */
@@ -35,6 +40,7 @@ export class ParticleRandomBlock extends NodeParticleBlock {
             { label: "None", value: ParticleRandomBlockLocks.None },
             { label: "Per particle", value: ParticleRandomBlockLocks.PerParticle },
             { label: "Per system", value: ParticleRandomBlockLocks.PerSystem },
+            { label: "Once per particle", value: ParticleRandomBlockLocks.OncePerParticle },
         ],
     })
     public lockMode = ParticleRandomBlockLocks.PerParticle;
@@ -103,38 +109,39 @@ export class ParticleRandomBlock extends NodeParticleBlock {
     public override _build() {
         let func: Nullable<(state: NodeParticleBuildState) => any> = null;
         this._currentLockId = -2;
+        this._oncePerParticleMap.clear();
 
         switch (this.min.type) {
             case NodeParticleBlockConnectionPointTypes.AutoDetect:
             case NodeParticleBlockConnectionPointTypes.Int:
             case NodeParticleBlockConnectionPointTypes.Float: {
                 func = (state) => {
-                    const min = this.min.getConnectedValue(state) || 0;
-                    const max = this.max.getConnectedValue(state) || 1;
+                    const min = this.min.getConnectedValue(state) ?? 0;
+                    const max = this.max.getConnectedValue(state) ?? 1;
                     return min + Math.random() * (max - min);
                 };
                 break;
             }
             case NodeParticleBlockConnectionPointTypes.Vector2: {
                 func = (state) => {
-                    const min = this.min.getConnectedValue(state) || Vector2.Zero();
-                    const max = this.max.getConnectedValue(state) || Vector2.One();
+                    const min = this.min.getConnectedValue(state) ?? Vector2.Zero();
+                    const max = this.max.getConnectedValue(state) ?? Vector2.One();
                     return new Vector2(min.x + Math.random() * (max.x - min.x), min.y + Math.random() * (max.y - min.y));
                 };
                 break;
             }
             case NodeParticleBlockConnectionPointTypes.Vector3: {
                 func = (state) => {
-                    const min = this.min.getConnectedValue(state) || Vector3.Zero();
-                    const max = this.max.getConnectedValue(state) || Vector3.One();
+                    const min = this.min.getConnectedValue(state) ?? Vector3.Zero();
+                    const max = this.max.getConnectedValue(state) ?? Vector3.One();
                     return new Vector3(min.x + Math.random() * (max.x - min.x), min.y + Math.random() * (max.y - min.y), min.z + Math.random() * (max.z - min.z));
                 };
                 break;
             }
             case NodeParticleBlockConnectionPointTypes.Color4: {
                 func = (state) => {
-                    const min = this.min.getConnectedValue(state) || new Color4(0, 0, 0, 0);
-                    const max = this.max.getConnectedValue(state) || new Color4(1, 1, 1, 1);
+                    const min = this.min.getConnectedValue(state) ?? new Color4(0, 0, 0, 0);
+                    const max = this.max.getConnectedValue(state) ?? new Color4(1, 1, 1, 1);
                     return new Color4(
                         min.r + Math.random() * (max.r - min.r),
                         min.g + Math.random() * (max.g - min.g),
@@ -147,23 +154,39 @@ export class ParticleRandomBlock extends NodeParticleBlock {
         }
 
         this.output._storedFunction = (state) => {
-            let lockId = 0;
+            if (this.lockMode === ParticleRandomBlockLocks.OncePerParticle) {
+                const particleId = state.particleContext?.id ?? -1;
+                let cachedValue = this._oncePerParticleMap.get(particleId);
 
-            switch (this.lockMode) {
-                case ParticleRandomBlockLocks.PerParticle:
-                    lockId = state.particleContext?.id || -1;
-                    break;
-                case ParticleRandomBlockLocks.PerSystem:
-                    lockId = state.buildId || 0;
-                    break;
-            }
-
-            if (this._currentLockId !== lockId) {
-                if (this.lockMode !== ParticleRandomBlockLocks.None) {
-                    this._currentLockId = lockId;
+                if (!cachedValue) {
+                    cachedValue = func!(state);
+                    this._oncePerParticleMap.set(particleId, cachedValue);
                 }
-                this.output._storedValue = func!(state);
+
+                this.output._storedValue = cachedValue;
+            } else {
+                let lockId = -2;
+
+                switch (this.lockMode) {
+                    case ParticleRandomBlockLocks.PerParticle:
+                        lockId = state.particleContext?.id ?? -1;
+                        break;
+                    case ParticleRandomBlockLocks.PerSystem:
+                        lockId = state.buildId ?? 0;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (this.lockMode === ParticleRandomBlockLocks.None || this._currentLockId !== lockId) {
+                    if (this.lockMode !== ParticleRandomBlockLocks.None) {
+                        this._currentLockId = lockId;
+                    }
+
+                    this.output._storedValue = func!(state);
+                }
             }
+
             return this.output._storedValue;
         };
     }

@@ -37,6 +37,10 @@ export class FrameGraphCullObjectsTask extends FrameGraphTask {
         };
     }
 
+    public override getClassName(): string {
+        return "FrameGraphCullObjectsTask";
+    }
+
     public record() {
         if (this.objectList === undefined || this.camera === undefined) {
             throw new Error(`FrameGraphCullObjectsTask ${this.name}: objectList and camera are required`);
@@ -46,7 +50,7 @@ export class FrameGraphCullObjectsTask extends FrameGraphTask {
         this.outputObjectList.meshes = this.objectList.meshes;
         this.outputObjectList.particleSystems = this.objectList.particleSystems;
 
-        const pass = this._frameGraph.addCullPass(this.name);
+        const pass = this._frameGraph.addObjectListPass(this.name);
 
         pass.setObjectList(this.outputObjectList);
         pass.setExecuteFunc((_context) => {
@@ -82,7 +86,7 @@ export class FrameGraphCullObjectsTask extends FrameGraphTask {
             }
         });
 
-        const passDisabled = this._frameGraph.addCullPass(this.name + "_disabled", true);
+        const passDisabled = this._frameGraph.addObjectListPass(this.name + "_disabled", true);
 
         passDisabled.setObjectList(this.outputObjectList);
         passDisabled.setExecuteFunc((_context) => {

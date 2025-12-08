@@ -1,26 +1,24 @@
-import { Body1, InfoLabel, Link, Checkbox, makeStyles, Body1Strong, tokens } from "@fluentui/react-components";
-import { ChevronCircleDown20Regular, ChevronCircleRight20Regular, CopyRegular } from "@fluentui/react-icons";
+import { Body1, InfoLabel, Checkbox, makeStyles, Body1Strong, tokens, mergeClasses } from "@fluentui/react-components";
+import {
+    ChevronCircleDown20Regular,
+    ChevronCircleDown16Regular,
+    ChevronCircleRight16Regular,
+    ChevronCircleRight20Regular,
+    Copy16Regular,
+    Copy20Regular,
+} from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
 import { Collapse } from "../../primitives/collapse";
 import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
 import { ToolContext } from "../fluentToolWrapper";
 import type { PrimitiveProps } from "../../primitives/primitive";
+import { Link } from "../../primitives/link";
 import { ToggleButton } from "../../primitives/toggleButton";
 import { Button } from "../../primitives/button";
 import { CustomTokens } from "../../primitives/utils";
 
 const usePropertyLineStyles = makeStyles({
-    container: {
-        width: "100%",
-        display: "flex",
-        flexDirection: "column", // Stack line + expanded content
-        minHeight: CustomTokens.lineHeight,
-        boxSizing: "border-box",
-        justifyContent: "center",
-        paddingTop: tokens.spacingVerticalXXS,
-        paddingBottom: tokens.spacingVerticalXXS,
-    },
     baseLine: {
         display: "flex",
         alignItems: "center",
@@ -132,15 +130,14 @@ export type PropertyLineProps<ValueT> = BasePropertyLineProps &
  */
 export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<PropertyLineProps<any>>>((props, ref) => {
     PropertyLine.displayName = "PropertyLine";
+    const { disableCopy, size } = useContext(ToolContext);
     const classes = usePropertyLineStyles();
     const { label, onCopy, expandedContent, children, nullable, ignoreNullable } = props;
 
     const [expanded, setExpanded] = useState("expandByDefault" in props ? props.expandByDefault : false);
     const cachedVal = useRef(nullable ? props.value : null);
 
-    const { disableCopy } = useContext(ToolContext);
-
-    const description = props.docLink ? <Link href={props.docLink}>{props.description ?? "Docs"}</Link> : props.description;
+    const description = props.docLink ? <Link url={props.docLink} value={props.description ?? "Docs"} /> : props.description;
 
     // Process children to handle nullable state -- creating component in disabled state with default value in lieu of null value
     const processedChildren =
@@ -157,6 +154,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
         <LineContainer ref={ref}>
             <div className={classes.baseLine}>
                 <InfoLabel
+                    size={size}
                     className={classes.infoLabel}
                     label={{ className: classes.labelSlot }}
                     info={description ? <div className={classes.infoPopup}>{description}</div> : undefined}
@@ -169,8 +167,8 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                         <ToggleButton
                             title="Expand/Collapse property"
                             appearance="transparent"
-                            checkedIcon={ChevronCircleDown20Regular}
-                            uncheckedIcon={ChevronCircleRight20Regular}
+                            checkedIcon={size === "small" ? ChevronCircleDown16Regular : ChevronCircleDown20Regular}
+                            uncheckedIcon={size === "small" ? ChevronCircleRight16Regular : ChevronCircleRight20Regular}
                             value={expanded === true}
                             onChange={setExpanded}
                         />
@@ -195,7 +193,13 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                     )}
                     {processedChildren}
                     {onCopy && !disableCopy && (
-                        <Button className={classes.copy} title="Copy to clipboard" appearance="transparent" icon={CopyRegular} onClick={() => copyCommandToClipboard(onCopy())} />
+                        <Button
+                            className={classes.copy}
+                            title="Copy to clipboard"
+                            appearance="transparent"
+                            icon={size === "small" ? Copy16Regular : Copy20Regular}
+                            onClick={() => copyCommandToClipboard(onCopy())}
+                        />
                     )}
                 </div>
             </div>
@@ -208,10 +212,28 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     );
 });
 
+const useLineStyles = makeStyles({
+    container: {
+        width: "100%",
+        display: "flex",
+        flexDirection: "column", // Stack line + expanded content
+        minHeight: CustomTokens.lineHeight,
+        boxSizing: "border-box",
+        justifyContent: "center",
+        paddingTop: tokens.spacingVerticalXXS,
+        paddingBottom: tokens.spacingVerticalXXS,
+    },
+    containerSmall: {
+        minHeight: CustomTokens.lineHeightSmall,
+    },
+});
+
 export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren<HTMLProps<HTMLDivElement>>>((props, ref) => {
-    const classes = usePropertyLineStyles();
+    const { size } = useContext(ToolContext);
+    const classes = useLineStyles();
+
     return (
-        <div ref={ref} className={classes.container} {...props}>
+        <div ref={ref} className={mergeClasses(classes.container, size == "small" ? classes.containerSmall : undefined)} {...props}>
             {props.children}
         </div>
     );

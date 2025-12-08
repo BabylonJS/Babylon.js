@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 import type { Atmosphere } from "./atmosphere";
 import type { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
@@ -13,6 +13,7 @@ import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
+import { Vector3Dot } from "core/Maths/math.vector.functions";
 import "./Shaders/fullscreenTriangle.vertex";
 import "./Shaders/transmittance.fragment";
 
@@ -131,15 +132,16 @@ export class TransmittanceLut {
         renderTarget.anisotropicFilteringLevel = 1;
         renderTarget.skipInitialClear = true;
 
-        const useUbo = this._atmosphere.uniformBuffer.useUbo;
+        const atmosphereUbo = atmosphere.uniformBuffer;
+        const useUbo = atmosphereUbo.useUbo;
         this._effectWrapper = new EffectWrapper({
             engine,
             name,
             vertexShader: "fullscreenTriangle",
             fragmentShader: "transmittance",
             attributeNames: ["position"],
-            uniformNames: ["depth", ...(useUbo ? [] : this._atmosphere.uniformBuffer.getUniformNames())],
-            uniformBuffers: useUbo ? [this._atmosphere.uniformBuffer.name] : [],
+            uniformNames: ["depth", ...(useUbo ? [] : atmosphereUbo.getUniformNames())],
+            uniformBuffers: useUbo ? [atmosphereUbo.name] : [],
             defines: ["#define POSITION_VEC2"],
             useShaderStore: true,
         });
@@ -162,8 +164,7 @@ export class TransmittanceLut {
      */
     public getTransmittedColorToRef<T extends IColor3Like>(directionToLight: IVector3Like, pointRadius: number, pointGeocentricNormal: IVector3Like, result: T): T {
         if (this._lutData[0] !== undefined) {
-            const cosAngleLightToZenith =
-                directionToLight.x * pointGeocentricNormal.x + directionToLight.y * pointGeocentricNormal.y + directionToLight.z * pointGeocentricNormal.z;
+            const cosAngleLightToZenith = Vector3Dot(directionToLight, pointGeocentricNormal);
             SampleLutToRef(this._atmosphere.physicalProperties, this._lutData, pointRadius, cosAngleLightToZenith, Color4Temp);
             result.r = Color4Temp.r;
             result.g = Color4Temp.g;

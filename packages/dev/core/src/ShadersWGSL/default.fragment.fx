@@ -113,7 +113,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #ifdef NORMAL
 	var normalW: vec3f = normalize(fragmentInputs.vNormalW);
 #else
-	var normalW: vec3f = normalize(-cross(dpdx(fragmentInputs.vPositionW), dpdy(fragmentInputs.vPositionW)));
+	var normalW: vec3f = normalize(cross(dpdx(fragmentInputs.vPositionW), dpdy(fragmentInputs.vPositionW))) *  scene.vEyePosition.w;
 #endif
 
 #include<bumpFragment>

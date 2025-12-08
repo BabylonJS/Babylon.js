@@ -16,7 +16,7 @@ uniform mat4 viewProjection;
 
 // Output
 #if defined(INSTANCES)
-varying float vMeshID;
+flat varying float vMeshID;
 #endif
 
 void main(void) {

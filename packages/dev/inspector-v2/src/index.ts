@@ -40,6 +40,8 @@ export * from "./services/settingsContext";
 export type { IShellService, ToolbarItemDefinition, SidePaneDefinition, CentralContentDefinition } from "./services/shellService";
 export { ShellServiceIdentity } from "./services/shellService";
 export * from "./inspector";
+export { ConvertOptions, Inspector } from "./legacy/inspector";
+export { AttachDebugLayer, DetachDebugLayer } from "./legacy/debugLayer";
 
 // Export the shared primitive UI controls that can be used for extending the inspector.
 export * from "shared-ui-components/fluent/primitives/accordion";
@@ -75,7 +77,7 @@ export * from "shared-ui-components/fluent/hoc/pane";
 export * from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
-export * from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+export { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
@@ -87,3 +89,8 @@ export * from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropert
 export * from "shared-ui-components/fluent/hoc/propertyLines/textAreaPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
+
+import { AttachDebugLayer } from "./legacy/debugLayer";
+
+// Attach Inspector v2 to Scene.debugLayer as a side effect for back compat.
+AttachDebugLayer();

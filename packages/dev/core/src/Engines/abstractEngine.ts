@@ -27,7 +27,7 @@ import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import type { IMaterialContext } from "./IMaterialContext";
-import type { IStencilState } from "../States/IStencilState";
+import type { IStencilStateProperties, IStencilState } from "../States/IStencilState";
 import type { DrawWrapper } from "../Materials/drawWrapper";
 import type { IDrawContext } from "./IDrawContext";
 import type { VertexBuffer } from "../Meshes/buffer";
@@ -132,9 +132,21 @@ export interface AbstractEngineOptions {
     doNotHandleTouchAction?: boolean;
 
     /**
-     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default.
+     * Note that setting useLargeWorldRendering will also set high precision matrices
      */
     useHighPrecisionMatrix?: boolean;
+
+    /**
+     * @experimental
+     * LargeWorldRendering helps avoid floating point imprecision of rendering large worlds by
+     * 1. Forcing highPrecisionMatrices (matrix computations in 64 bits instead of 32)
+     * 2. Enabling floatingOriginMode in all scenes -- offsetting position-related uniform and attribute values before passing to shader so that active camera is centered at origin and world is offset by active camera position
+     *
+     * NOTE that if this mode is set during engineCreation, all scenes will have floatingOrigin offset and you do not need to send floatingOriginMode option to each scene creation.
+     * If you'd like to have only specific scenes using the offset logic, you can set the flag on those scenes directly -- however, to achieve proper large world rendering, you must also set the useHighPrecisionMatrix option on engine.
+     */
+    readonly useLargeWorldRendering?: boolean;
 
     /**
      * Defines whether to adapt to the device's viewport characteristics (default: false)
@@ -1351,7 +1363,7 @@ export abstract class AbstractEngine {
         force?: boolean,
         reverseSide?: boolean,
         cullBackFaces?: boolean,
-        stencil?: IStencilState,
+        stencil?: IStencilState | IStencilStateProperties,
         zOffsetUnits?: number
     ): void;
 
@@ -1907,14 +1919,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.32.0";
+        return "babylonjs@8.40.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.32.0";
+        return "8.40.1";
     }
 
     /**
@@ -2019,6 +2031,7 @@ export abstract class AbstractEngine {
 
     /**
      * Gets the options used for engine creation
+     * NOTE that modifying the object after engine creation will have no effect
      * @returns EngineOptions object
      */
     public getCreationOptions() {
@@ -2037,7 +2050,9 @@ export abstract class AbstractEngine {
 
         this._stencilStateComposer.stencilGlobal = this._stencilState;
 
-        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
+        // LargeWorldRendering set to true will set high precision matrix, regardless of useHighPrecisionMatrix value
+        // It will also set all scenes to use floatingOriginMode upon their creation
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useLargeWorldRendering || !!options.useHighPrecisionMatrix);
 
         if (IsNavigatorAvailable() && navigator.userAgent) {
             // Detect if we are running on a faulty buggy OS.

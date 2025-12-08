@@ -23,6 +23,10 @@ export class FrameGraphAnaglyphTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinAnaglyphPostProcess(name, frameGraph.engine));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphAnaglyphTask";
+    }
+
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.leftTexture === undefined) {
             throw new Error(`FrameGraphAnaglyphTask "${this.name}": sourceTexture and leftTexture are required`);

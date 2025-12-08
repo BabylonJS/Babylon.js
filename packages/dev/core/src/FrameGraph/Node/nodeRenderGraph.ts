@@ -10,6 +10,8 @@ import type {
     Scene,
     WritableObject,
     IShadowLight,
+    INodeRenderGraphCustomBlockDescription,
+    Immutable,
 } from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
@@ -49,6 +51,9 @@ export class NodeRenderGraph {
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
 
+    /** Description of custom blocks to use in the node render graph editor */
+    public static CustomBlockDescriptions: INodeRenderGraphCustomBlockDescription[] = [];
+
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private BJSNODERENDERGRAPHEDITOR = this._getGlobalNodeRenderGraphEditor();
 
@@ -79,7 +84,12 @@ export class NodeRenderGraph {
     public attachedBlocks: NodeRenderGraphBlock[] = [];
 
     /**
-     * Observable raised when the node render graph is built
+     * Observable raised before the node render graph is built
+     */
+    public onBeforeBuildObservable = new Observable<FrameGraph>();
+
+    /**
+     * Observable raised after the node render graph is built
      * Note that this is the same observable as the one in the underlying FrameGraph!
      */
     public get onBuildObservable() {
@@ -133,6 +143,13 @@ export class NodeRenderGraph {
     }
 
     /**
+     * Gets the options used to create this node render graph
+     */
+    public get options(): Immutable<INodeRenderGraphCreateOptions> {
+        return this._options;
+    }
+
+    /**
      * Creates a new node render graph
      * @param name defines the name of the node render graph
      * @param scene defines the scene to use to execute the graph
@@ -158,8 +175,8 @@ export class NodeRenderGraph {
         this._frameGraph.name = name;
 
         if (options.rebuildGraphOnEngineResize) {
-            this._resizeObserver = this._engine.onResizeObservable.add(() => {
-                this.build();
+            this._resizeObserver = this._engine.onResizeObservable.add(async () => {
+                await this.buildAsync(false, true, false);
             });
         }
     }
@@ -272,18 +289,34 @@ export class NodeRenderGraph {
     private _createNodeEditor(additionalConfig?: any) {
         const nodeEditorConfig: any = {
             nodeRenderGraph: this,
+            customBlockDescriptions: NodeRenderGraph.CustomBlockDescriptions,
             ...additionalConfig,
         };
         this.BJSNODERENDERGRAPHEDITOR.NodeRenderGraphEditor.Show(nodeEditorConfig);
     }
 
     /**
-     * Build the final list of blocks that will be executed by the "execute" method
+     * @deprecated Use buildAsync instead
      * @param dontBuildFrameGraph If the underlying frame graph should not be built (default: false)
      */
-    public build(dontBuildFrameGraph = false) {
+    public build(dontBuildFrameGraph = false): void {
+        void this.buildAsync(dontBuildFrameGraph, false, false);
+    }
+
+    /**
+     * Build the final list of blocks that will be executed by the "execute" method.
+     * It also builds the underlying frame graph unless specified otherwise.
+     * @param dontBuildFrameGraph If the underlying frame graph should not be built (default: false)
+     * @param waitForReadiness If the method should wait for the frame graph to be ready before resolving (default: true). Note that this parameter has no effect if "dontBuildFrameGraph" is true.
+     * @param setAsSceneFrameGraph If the built frame graph must be set as the scene's frame graph (default: true)
+     */
+    public async buildAsync(dontBuildFrameGraph = false, waitForReadiness = true, setAsSceneFrameGraph = true): Promise<void> {
         if (!this.outputBlock) {
             throw new Error("You must define the outputBlock property before building the node render graph");
+        }
+
+        if (setAsSceneFrameGraph) {
+            this._scene.frameGraph = this._frameGraph;
         }
 
         this._initializeBlock(this.outputBlock);
@@ -299,6 +332,8 @@ export class NodeRenderGraph {
             this._autoFillExternalInputs();
         }
 
+        this.onBeforeBuildObservable.notifyObservers(this._frameGraph);
+
         // Make sure that one of the object renderer is flagged as the main object renderer
         const objectRendererBlocks = this.getBlocksByPredicate<NodeRenderGraphBaseObjectRendererBlock>((block) => block instanceof NodeRenderGraphBaseObjectRendererBlock);
         if (objectRendererBlocks.length > 0 && !objectRendererBlocks.find((block) => block.isMainObjectRenderer)) {
@@ -309,7 +344,7 @@ export class NodeRenderGraph {
             this.outputBlock.build(state);
 
             if (!dontBuildFrameGraph) {
-                this._frameGraph.build();
+                await this._frameGraph.buildAsync(waitForReadiness);
             }
         } finally {
             this._buildId = NodeRenderGraph._BuildIdGenerator++;
@@ -361,12 +396,14 @@ export class NodeRenderGraph {
      * Returns a promise that resolves when the node render graph is ready to be executed
      * This method must be called after the graph has been built (NodeRenderGraph.build called)!
      * @param timeStep Time step in ms between retries (default is 16)
-     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 10000)
      * @returns The promise that resolves when the graph is ready
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
-        return this._frameGraph.whenReadyAsync(timeStep, maxTimeout);
+    public async whenReadyAsync(timeStep = 16, maxTimeout = 10000): Promise<void> {
+        this._frameGraph.pausedExecution = true;
+        await this._frameGraph.whenReadyAsync(timeStep, maxTimeout);
+        this._frameGraph.pausedExecution = false;
     }
 
     /**
@@ -509,7 +546,7 @@ export class NodeRenderGraph {
                 this.editorData.locations = locations;
             }
 
-            const blockMap: number[] = [];
+            const blockMap: { [key: number]: number } = {};
 
             for (const key in map) {
                 blockMap[key] = map[key].uniqueId;
@@ -656,6 +693,7 @@ export class NodeRenderGraph {
 
     /**
      * Makes a duplicate of the current node render graph.
+     * Note that you should call buildAsync() on the returned graph to make it usable.
      * @param name defines the name to use for the new node render graph
      * @returns the new node render graph
      */
@@ -667,7 +705,6 @@ export class NodeRenderGraph {
 
         clone.parseSerializedObject(serializationObject);
         clone._buildId = this._buildId;
-        clone.build();
 
         return clone;
     }
@@ -736,11 +773,11 @@ export class NodeRenderGraph {
      * @param nodeRenderGraphOptions defines options to use when creating the node render graph
      * @returns a new NodeRenderGraph
      */
-    public static CreateDefault(name: string, scene: Scene, nodeRenderGraphOptions?: INodeRenderGraphCreateOptions): NodeRenderGraph {
+    public static async CreateDefaultAsync(name: string, scene: Scene, nodeRenderGraphOptions?: INodeRenderGraphCreateOptions): Promise<NodeRenderGraph> {
         const renderGraph = new NodeRenderGraph(name, scene, nodeRenderGraphOptions);
 
         renderGraph.setToDefault();
-        renderGraph.build();
+        await renderGraph.buildAsync(false, true, false);
 
         return renderGraph;
     }
@@ -758,7 +795,7 @@ export class NodeRenderGraph {
 
         renderGraph.parseSerializedObject(source);
         if (!skipBuild) {
-            renderGraph.build();
+            void renderGraph.buildAsync();
         }
 
         return renderGraph;
@@ -782,12 +819,12 @@ export class NodeRenderGraph {
         skipBuild: boolean = true
     ): Promise<NodeRenderGraph> {
         if (snippetId === "_BLANK") {
-            return Promise.resolve(NodeRenderGraph.CreateDefault("blank", scene, nodeRenderGraphOptions));
+            return NodeRenderGraph.CreateDefaultAsync("blank", scene, nodeRenderGraphOptions);
         }
 
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
-            request.addEventListener("readystatechange", () => {
+            request.addEventListener("readystatechange", async () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
                         const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
@@ -802,7 +839,7 @@ export class NodeRenderGraph {
 
                         try {
                             if (!skipBuild) {
-                                nodeRenderGraph.build();
+                                await nodeRenderGraph.buildAsync();
                             }
                             resolve(nodeRenderGraph);
                         } catch (err) {

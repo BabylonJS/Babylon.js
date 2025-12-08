@@ -33,6 +33,7 @@ export class CreateParticleBlock extends NodeParticleBlock {
         this.registerInput("colorDead", NodeParticleBlockConnectionPointTypes.Color4, true, new Color4(0, 0, 0, 0));
         this.registerInput("scale", NodeParticleBlockConnectionPointTypes.Vector2, true, new Vector2(1, 1));
         this.registerInput("angle", NodeParticleBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("size", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerOutput("particle", NodeParticleBlockConnectionPointTypes.Particle);
 
         this.scale.acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Float);
@@ -89,6 +90,13 @@ export class CreateParticleBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the size component
+     */
+    public get size(): NodeParticleConnectionPoint {
+        return this._inputs[6];
+    }
+
+    /**
      * Gets the particle output component
      */
     public get particle(): NodeParticleConnectionPoint {
@@ -111,11 +119,16 @@ export class CreateParticleBlock extends NodeParticleBlock {
 
         system._colorCreation.process = (particle: Particle) => {
             state.particleContext = particle;
-            particle.color.copyFrom(this.color.getConnectedValue(state));
+
+            const color = this.color.getConnectedValue(state);
+            if (color !== undefined) {
+                particle.color.copyFrom(color);
+            }
         };
 
         system._colorDeadCreation.process = (particle: Particle) => {
             state.particleContext = particle;
+
             particle.colorDead.copyFrom(this.colorDead.getConnectedValue(state));
             particle.initialColor.copyFrom(particle.color);
             particle.colorDead.subtractToRef(particle.initialColor, ColorDiff);
@@ -124,10 +137,15 @@ export class CreateParticleBlock extends NodeParticleBlock {
 
         system._sizeCreation.process = (particle: Particle) => {
             state.particleContext = particle;
-            particle.size = 1;
+
+            const size = this.size.getConnectedValue(state);
+            if (size !== undefined) {
+                particle.size = size;
+            } else {
+                particle.size = 1.0;
+            }
 
             const scale = this.scale.getConnectedValue(state);
-
             if (scale.x !== undefined) {
                 particle.scale.x = scale.x;
                 particle.scale.y = scale.y;
@@ -139,6 +157,7 @@ export class CreateParticleBlock extends NodeParticleBlock {
 
         system._angleCreation.process = (particle: Particle) => {
             state.particleContext = particle;
+
             particle.angle = this.angle.getConnectedValue(state);
         };
 

@@ -4,7 +4,7 @@ import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import type { Nullable } from "core/types";
 
 const NAME = "KHR_materials_diffuse_roughness";

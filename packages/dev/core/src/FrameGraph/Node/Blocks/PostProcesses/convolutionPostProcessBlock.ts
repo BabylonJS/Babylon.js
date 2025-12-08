@@ -2,14 +2,16 @@ import type { Scene, FrameGraph } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphConvolutionTask } from "../../../Tasks/PostProcesses/convolutionTask";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 import { ThinConvolutionPostProcess } from "../../../../PostProcesses/thinConvolutionPostProcess";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the convolution post process
  */
-export class NodeRenderGraphConvolutionPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphConvolutionPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphConvolutionTask;
+
+    public override _additionalConstructionParameters: [number[]];
 
     /**
      * Gets the frame graph task associated with this block

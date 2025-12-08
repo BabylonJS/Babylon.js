@@ -3114,7 +3114,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     //                              Render Pass
     //------------------------------------------------------------------------------
 
-    private _startRenderTargetRenderPass(
+    /** @internal */
+    public _startRenderTargetRenderPass(
         renderTargetWrapper: RenderTargetWrapper,
         setClearStates: boolean,
         clearColor: Nullable<IColor4Like>,
@@ -3130,9 +3131,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource as Nullable<GPUTexture>;
         const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.getMSAATexture(0);
 
-        const depthTextureView = gpuDepthStencilTexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
         const depthMSAATextureView = gpuDepthStencilMSAATexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
-        const depthTextureHasStencil = gpuDepthStencilWrapper ? WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilWrapper.format) : false;
+        const depthTextureView = depthMSAATextureView ? undefined : gpuDepthStencilTexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
+        // We use the MSAA texture format (if available) to determine if it has a stencil aspect or not because, for MSAA depth textures,
+        // the format of the "resolve" texture (gpuDepthStencilWrapper.format) is a single red channel format, not a depth-stencil format.
+        const depthTextureHasStencil = gpuDepthStencilWrapper ? WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilMSAATexture?.format ?? gpuDepthStencilWrapper.format) : false;
+        const depthTextureHasDepth = gpuDepthStencilWrapper ? WebGPUTextureHelper.HasDepthAspect(gpuDepthStencilMSAATexture?.format ?? gpuDepthStencilWrapper.format) : false;
 
         const colorAttachments: (GPURenderPassColorAttachment | null)[] = [];
 
@@ -3185,7 +3189,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
-                        resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
+                        resolveTarget: gpuMSAATexture && !rtWrapper.disableAutomaticMSAAResolve && rtWrapper.resolveMSAAColors ? colorTextureView : undefined,
                         depthSlice: mrtTexture.is3D ? (rtWrapper.layerIndices?.[i] ?? 0) : undefined,
                         clearValue: index !== 0 && mustClearColor ? (isRtInteger ? clearColorForIntegerRt : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
@@ -3216,7 +3220,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
                 colorAttachments.push({
                     view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
-                    resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
+                    resolveTarget: gpuMSAATexture && !rtWrapper.disableAutomaticMSAAResolve && rtWrapper.resolveMSAAColors ? colorTextureView : undefined,
                     depthSlice,
                     clearValue: mustClearColor ? (isRtInteger ? clearColorForIntegerRt : clearColor) : undefined,
                     loadOp: mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
@@ -3237,18 +3241,17 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     ? {
                           view: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
                           depthClearValue: mustClearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : undefined,
-                          depthLoadOp: rtWrapper.depthReadOnly ? undefined : mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
-                          depthStoreOp: rtWrapper.depthReadOnly ? undefined : WebGPUConstants.StoreOp.Store,
+                          depthLoadOp: rtWrapper.depthReadOnly || !depthTextureHasDepth ? undefined : mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
+                          depthStoreOp: rtWrapper.depthReadOnly || !depthTextureHasDepth ? undefined : WebGPUConstants.StoreOp.Store,
                           depthReadOnly: rtWrapper.depthReadOnly,
                           stencilClearValue: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? this._clearStencilValue : undefined,
-                          stencilLoadOp: rtWrapper.stencilReadOnly
-                              ? undefined
-                              : !depthTextureHasStencil
-                                ? undefined
-                                : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
-                                  ? WebGPUConstants.LoadOp.Clear
-                                  : WebGPUConstants.LoadOp.Load,
-                          stencilStoreOp: rtWrapper.stencilReadOnly ? undefined : !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
+                          stencilLoadOp:
+                              rtWrapper.stencilReadOnly || !depthTextureHasStencil
+                                  ? undefined
+                                  : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
+                                    ? WebGPUConstants.LoadOp.Clear
+                                    : WebGPUConstants.LoadOp.Load,
+                          stencilStoreOp: rtWrapper.stencilReadOnly || !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
                           stencilReadOnly: rtWrapper.stencilReadOnly,
                       }
                     : undefined,
@@ -3398,6 +3401,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._setColorFormat(this._rttRenderPassWrapper);
 
         this._rttRenderPassWrapper.colorAttachmentViewDescriptor = {
+            label: texture.label ? texture.label + " - Color Attachment View" : "RTT - Color Attachment View",
             format: this._colorFormat as GPUTextureFormat,
             dimension: texture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
@@ -3408,6 +3412,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         };
 
         this._rttRenderPassWrapper.depthAttachmentViewDescriptor = {
+            label: texture.label ? texture.label + " - Depth Attachment View" : "RTT - Depth Attachment View",
             format: this._depthTextureFormat!,
             dimension: depthStencilTexture && depthStencilTexture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
@@ -3491,13 +3496,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this._endCurrentRenderPass();
 
-        if (!disableGenerateMipMaps) {
-            if (texture.isMulti) {
-                this.generateMipMapsMultiFramebuffer(texture);
-            } else {
-                this.generateMipMapsFramebuffer(texture);
-            }
-        }
+        this._resolveAndGenerateMipMapsFramebuffer(texture, disableGenerateMipMaps);
 
         this._currentRenderTarget = null;
 
@@ -3515,6 +3514,23 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments);
     }
 
+    private _resolveAndGenerateMipMapsFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false): void {
+        const webglRtWrapper = texture;
+
+        if (!webglRtWrapper.disableAutomaticMSAAResolve) {
+            // we pass false as the second parameter because the color resolve has already been done automatically when the render pass ended
+            this.resolveFramebuffer(texture, false);
+        }
+
+        if (!disableGenerateMipMaps) {
+            if (texture.isMulti) {
+                this.generateMipMapsMultiFramebuffer(texture);
+            } else {
+                this.generateMipMapsFramebuffer(texture);
+            }
+        }
+    }
+
     /**
      * Generates mipmaps for the texture of the (single) render target
      * @param texture The render target containing the texture to generate the mipmaps for
@@ -3526,12 +3542,34 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /**
-     * Resolves the MSAA texture of the (single) render target into its non-MSAA version.
+     * Resolves the MSAA texture of the render target into its non-MSAA version.
      * Note that if "texture" is not a MSAA render target, no resolve is performed.
-     * @param _texture The render target texture containing the MSAA texture to resolve
+     * @param texture The render target texture containing the MSAA texture to resolve
+     * @param resolveColors If true, resolve the color textures (default: true) - still subject to texture.resolveMSAAColors
      */
-    public resolveFramebuffer(_texture: RenderTargetWrapper): void {
-        throw new Error("resolveFramebuffer is not yet implemented in WebGPU!");
+    public resolveFramebuffer(texture: RenderTargetWrapper, resolveColors = true): void {
+        if (texture.samples <= 1) {
+            return;
+        }
+
+        if (texture.resolveMSAAColors && resolveColors) {
+            const disableAutomaticMSAAResolve = texture.disableAutomaticMSAAResolve;
+
+            texture.disableAutomaticMSAAResolve = false;
+
+            // Simply bind and unbind the framebuffer to trigger the resolve
+            this.bindFramebuffer(texture);
+            this._startRenderTargetRenderPass(this._currentRenderTarget!, false, null, false, false);
+            this.unBindFramebuffer(texture);
+
+            texture.disableAutomaticMSAAResolve = disableAutomaticMSAAResolve;
+        }
+
+        if (texture.resolveMSAADepth && texture._depthStencilTexture) {
+            const gpuTextureWrapper = texture._depthStencilTexture._hardwareTexture as WebGPUHardwareTexture;
+
+            this._textureHelper.resolveMSAADepthTexture(gpuTextureWrapper.getMSAATexture(0)!, gpuTextureWrapper.underlyingResource!, this._renderEncoder);
+        }
     }
 
     /**

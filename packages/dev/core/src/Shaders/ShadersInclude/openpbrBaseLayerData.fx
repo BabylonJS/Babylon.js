@@ -49,7 +49,7 @@ vec2 geometry_tangent = vec2(1.0, 0.0);
 #endif
 
 #ifdef GEOMETRY_OPACITY
-    vec4 opacityFromTexture = texture2D(opacitySampler, vOpacityUV + uvOffset);
+    vec4 opacityFromTexture = texture2D(geometryOpacitySampler, vGeometryOpacityUV + uvOffset);
 #endif
 
 #ifdef DECAL
@@ -71,7 +71,7 @@ vec2 geometry_tangent = vec2(1.0, 0.0);
     #endif
 #endif
 
-#ifdef ANISOTROPIC
+#if defined(ANISOTROPIC) || defined(FUZZ)
     vec3 noise = texture2D(blueNoiseSampler, gl_FragCoord.xy / 256.0).xyz;
 #endif
 

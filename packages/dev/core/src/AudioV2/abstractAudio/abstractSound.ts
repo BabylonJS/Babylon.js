@@ -63,8 +63,15 @@ export abstract class AbstractSound extends AbstractSoundSource {
      */
     public readonly onEndedObservable = new Observable<AbstractSound>();
 
-    protected constructor(name: string, engine: AudioEngineV2) {
-        super(name, engine, AudioNodeType.HAS_INPUTS_AND_OUTPUTS); // Inputs are for instances.
+    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IAbstractSoundOptions>) {
+        super(name, engine, options, AudioNodeType.HAS_INPUTS_AND_OUTPUTS); // Inputs are for instances.
+    }
+
+    /**
+     * The number of active instances of the sound that are currently playing.
+     */
+    public get activeInstancesCount(): number {
+        return this._instances.size;
     }
 
     /**
@@ -245,5 +252,7 @@ export abstract class AbstractSound extends AbstractSoundSource {
             this._state = SoundState.Stopped;
             this.onEndedObservable.notifyObservers(this);
         }
+
+        instance.dispose();
     };
 }

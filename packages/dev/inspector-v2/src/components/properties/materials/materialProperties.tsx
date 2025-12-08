@@ -1,18 +1,19 @@
-import { Material } from "core/Materials/material";
-import { Engine } from "core/Engines/engine";
-import { Constants } from "core/Engines/constants";
 import type { FunctionComponent } from "react";
 
-import { BoundProperty } from "../boundProperty";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+
+import { Constants } from "core/Engines/constants";
+import { Engine } from "core/Engines/engine";
+import { Material } from "core/Materials/material";
+import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
-import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { BoundProperty } from "../boundProperty";
 
 const OrientationOptions = [
     { label: "Clockwise", value: Material.ClockWiseSideOrientation },
@@ -64,16 +65,27 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
     const { material } = props;
 
     const pointsCloud = useProperty(material, "pointsCloud");
+    const faceCulling = useProperty(material, "backFaceCulling");
+    const isWebGPU = material.getScene().getEngine().isWebGPU;
 
     return (
         <>
             <BoundProperty
                 component={SwitchPropertyLine}
-                label="Backface Culling"
+                label="Face Culling"
                 docLink="https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#back-face-culling"
                 target={material}
                 propertyKey="backFaceCulling"
             />
+            <Collapse visible={faceCulling}>
+                <BoundProperty
+                    component={SwitchPropertyLine}
+                    label="Cull Back Faces"
+                    description="Culls back faces. If false, front faces are culled."
+                    target={material}
+                    propertyKey="cullBackFaces"
+                />
+            </Collapse>
             <BoundProperty
                 component={NumberDropdownPropertyLine}
                 label="Orientation"
@@ -88,6 +100,7 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
             <BoundProperty component={SwitchPropertyLine} label="Disable Lighting" target={material} propertyKey="disableLighting" /> */}
             <BoundProperty component={SwitchPropertyLine} label="Disable Color Write" target={material} propertyKey="disableColorWrite" />
             <BoundProperty component={SwitchPropertyLine} label="Disable Depth Write" target={material} propertyKey="disableDepthWrite" />
+            <BoundProperty component={SwitchPropertyLine} label="Force Depth Write" target={material} propertyKey="forceDepthWrite" />
             <BoundProperty component={NumberDropdownPropertyLine} label="Depth Function" options={DepthFunctionOptions} target={material} propertyKey="depthFunction" />
             <BoundProperty
                 component={SwitchPropertyLine}
@@ -101,6 +114,28 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
             <BoundProperty component={SwitchPropertyLine} label="Wireframe" target={material} propertyKey="wireframe" />
             <BoundProperty component={SwitchPropertyLine} label="Point Cloud" target={material} propertyKey="pointsCloud" />
             {pointsCloud && <BoundProperty component={SyncedSliderPropertyLine} label="Point Size" target={material} propertyKey="pointSize" min={0} max={100} step={0.1} />}
+            {isWebGPU && <BoundProperty component={SwitchPropertyLine} label="Use Vertex Pulling" target={material} propertyKey="useVertexPulling" />}
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Support Fog"
+                target={material}
+                propertyKey="fogEnabled"
+                description="Indicates whether the material supports fog (however, fog must be enabled at the scene level to be effective)."
+            />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Use Logarithmic Depth"
+                target={material}
+                propertyKey="useLogarithmicDepth"
+                docLink="https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/logarithmicDepthBuffer"
+            />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Set Vertex Output Invariant"
+                target={material}
+                propertyKey="isVertexOutputInvariant"
+                description="Setting this property to true will force the shader compiler to disable some optimization to make sure the vertex output is always calculated the same way across different compilation units."
+            />
         </>
     );
 };

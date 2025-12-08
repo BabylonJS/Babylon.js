@@ -5,7 +5,6 @@ import type { ISelectionService } from "../../../services/selectionService";
 
 import { RenderingManager } from "core/Rendering/renderingManager";
 import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
-import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
@@ -24,7 +23,6 @@ export const SpriteManagerGeneralProperties: FunctionComponent<{ spriteManager: 
         <>
             <TextPropertyLine label="Capacity" value={spriteManager.capacity.toString()} />
             <LinkToEntityPropertyLine label="Texture" entity={texture} selectionService={selectionService} />
-            <ButtonLine label="Dispose" onClick={() => spriteManager.dispose()} />
         </>
     );
 };

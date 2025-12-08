@@ -81,10 +81,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     #include<openpbrThinFilmLayerData>
 
+    // _____________________________ Read Fuzz Layer properties ______________________
+    #include<openpbrFuzzLayerData>
+
     // TEMP
     var subsurface_weight: f32 = 0.0f;
     var transmission_weight: f32 = 0.0f;
-    var fuzz_weight: f32 = 0.0f;
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
@@ -130,6 +132,18 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #else
         let baseGeoInfo: geometryInfoOutParams = geometryInfo(
             normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
+        );
+    #endif
+
+    #ifdef FUZZ
+        // _____________________________ Compute Geometry info for fuzz layer _________________________
+        let fuzzNormalW = normalize(mix(normalW, coatNormalW, coat_weight));
+        var fuzzTangent = normalize(TBN[0]);
+        fuzzTangent = normalize(fuzzTangent - dot(fuzzTangent, fuzzNormalW) * fuzzNormalW);
+        let fuzzBitangent = cross(fuzzNormalW, fuzzTangent);
+
+        let fuzzGeoInfo: geometryInfoOutParams = geometryInfo(
+            fuzzNormalW, viewDirectionW.xyz, fuzz_roughness, geometricNormalW
         );
     #endif
 

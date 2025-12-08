@@ -1,5 +1,10 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
+
+#define SAMPLE_SKY_VIEW_LUT
+#if USE_SKY_VIEW_LUT
+    #define EXCLUDE_RAY_MARCHING_FUNCTIONS
+#endif
 
 precision highp float;
 precision highp sampler2D;
@@ -7,13 +12,6 @@ precision highp sampler2D;
 // In global views, renders the atmosphere.
 
 #include<__decl__atmosphereFragment>
-
-#include<core/helperFunctions>
-#include<depthFunctions>
-#include<atmosphereFunctions>
-
-varying vec2 uv;
-varying vec3 positionOnNearPlane;
 
 #if HAS_DEPTH_TEXTURE
 uniform sampler2D depthTexture;
@@ -24,6 +22,13 @@ uniform sampler2D skyViewLut;
 uniform sampler2D transmittanceLut;
 uniform sampler2D multiScatteringLut;
 #endif
+
+#include<core/helperFunctions>
+#include<depthFunctions>
+#include<atmosphereFunctions>
+
+varying vec2 uv;
+varying vec3 positionOnNearPlane;
 
 void main() {
 

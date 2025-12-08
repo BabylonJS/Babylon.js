@@ -65,6 +65,28 @@ export abstract class DisableableShaderBlock extends ShaderBlock implements IDis
     }
 
     /**
+     * Gets the shader program to use to render the block.
+     * @returns The shader program to use to render the block
+     */
+    public override getShaderProgram() {
+        const shaderProgram = super.getShaderProgram();
+
+        // If we haven't already modified the shader code for this block type, do so now
+        if (!this._hasModifiedShaderCode) {
+            this._hasModifiedShaderCode = true;
+
+            // Apply the disable strategy
+            switch (this.blockDisableStrategy) {
+                case BlockDisableStrategy.AutoSample:
+                    InjectAutoSampleDisableCode(shaderProgram);
+                    break;
+            }
+        }
+
+        return shaderProgram;
+    }
+
+    /**
      * Instantiates a new block.
      * @param smartFilter - Defines the smart filter the block belongs to
      * @param name - Defines the name of the block
@@ -74,18 +96,5 @@ export abstract class DisableableShaderBlock extends ShaderBlock implements IDis
     constructor(smartFilter: SmartFilter, name: string, disableOptimization = false, disableStrategy = BlockDisableStrategy.AutoSample) {
         super(smartFilter, name, disableOptimization);
         this.blockDisableStrategy = disableStrategy;
-
-        // If we haven't already modified the shader code for this block type, do so now
-        if (!this._hasModifiedShaderCode) {
-            this._hasModifiedShaderCode = true;
-
-            // Apply the disable strategy
-            const shaderProgram = this.getShaderProgram();
-            switch (this.blockDisableStrategy) {
-                case BlockDisableStrategy.AutoSample:
-                    InjectAutoSampleDisableCode(shaderProgram);
-                    break;
-            }
-        }
     }
 }

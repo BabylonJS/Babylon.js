@@ -243,8 +243,8 @@ export class SmartFilterOptimizer {
         return newVarName;
     }
 
-    private _processDefines(block: ShaderBlock, renameWork: RenameWork) {
-        const defines = block.getShaderProgram().fragment.defines;
+    private _processDefines(block: ShaderBlock, shaderProgram: ShaderProgram, renameWork: RenameWork) {
+        const defines = shaderProgram.fragment.defines;
         if (!defines) {
             return;
         }
@@ -292,11 +292,12 @@ export class SmartFilterOptimizer {
      * folded into the final optimized block.
      * NOTE: so this function can know about the uniforms to test for them, it must be called after _processVariables.
      * @param block - The block we are processing
+     * @param shaderProgram - The shader program associated with the block
      * @param renameWork - The list of rename work to add to as needed
      * @param samplerList - The list of sampler names
      */
-    private _processHelperFunctions(block: ShaderBlock, renameWork: RenameWork, samplerList: string[]): void {
-        const functions = block.getShaderProgram().fragment.functions;
+    private _processHelperFunctions(block: ShaderBlock, shaderProgram: ShaderProgram, renameWork: RenameWork, samplerList: string[]): void {
+        const functions = shaderProgram.fragment.functions;
 
         if (functions.length === 1) {
             // There's only the main function, so we don't need to do anything
@@ -306,7 +307,7 @@ export class SmartFilterOptimizer {
         for (const func of functions) {
             let funcName = func.name;
 
-            if (funcName === block.getShaderProgram().fragment.mainFunctionName) {
+            if (funcName === shaderProgram.fragment.mainFunctionName) {
                 continue;
             }
 
@@ -315,7 +316,9 @@ export class SmartFilterOptimizer {
             // Test to see if this function accesses any uniforms
             let uniformsAccessed: string[] = [];
             for (const sampler of samplerList) {
-                if (func.code.includes(sampler)) {
+                // Use word boundary check to ensure the sampler name is not part of another variable name
+                const regex = new RegExp(`(?<!\\w)${sampler}(?!\\w)`);
+                if (regex.test(func.code)) {
                     uniformsAccessed.push(sampler);
                 }
             }
@@ -379,19 +382,29 @@ export class SmartFilterOptimizer {
         }
     }
 
+    /**
+     * Processes either consts or uniforms. Handles capturing the rename work needed, updating the sampler list, and
+     * accounting for single instance situations (where a const or uniform is shared across all instances of this block).
+     * @param block - The block to work on
+     * @param renameWork - The RenameWork list to update
+     * @param varDecl - Which type of variable we're working with
+     * @param declarations - The declarations of those variables from the shader
+     * @param sharedByAllInstances - If this should be treated as a shared value across all instances of this shader block
+     * @returns The list of samplers
+     */
     private _processVariables(
         block: ShaderBlock,
         renameWork: RenameWork,
         varDecl: "const" | "uniform",
-        declarations?: string,
-        hasValue = false,
-        forceSingleInstance = false
+        declarations: string | undefined,
+        sharedByAllInstances: boolean
     ): Array<string> {
         if (!declarations) {
             return [];
         }
 
         let rex = `${varDecl}\\s+(\\S+)\\s+${DecorateChar}(\\w+)${DecorateChar}\\s*`;
+        const hasValue = varDecl !== "uniform";
         if (hasValue) {
             rex += "=\\s*(.+);";
         } else {
@@ -403,7 +416,6 @@ export class SmartFilterOptimizer {
 
         let match = rx.exec(declarations);
         while (match !== null) {
-            const singleInstance = forceSingleInstance || varDecl === "const";
             const varType = match[1]!;
             const varName = match[2]!;
             const varValue = hasValue ? match[3]! : null;
@@ -414,7 +426,7 @@ export class SmartFilterOptimizer {
                 samplerList.push(DecorateSymbol(varName));
             } else {
                 const existingRemapped = this._remappedSymbols.find((s) => s.type === varDecl && s.name === varName && s.owners[0] && s.owners[0].blockType === block.blockType);
-                if (existingRemapped && singleInstance) {
+                if (existingRemapped && sharedByAllInstances) {
                     newVarName = existingRemapped.remappedName;
                     if (varDecl === "uniform") {
                         existingRemapped.owners.push(block);
@@ -484,13 +496,13 @@ export class SmartFilterOptimizer {
         return UndecorateSymbol(newSamplerName);
     }
 
-    private _canBeOptimized(block: BaseBlock): boolean {
+    private _canBeOptimized(block: BaseBlock, shaderProgram: ShaderProgram): boolean {
         if (block.disableOptimization) {
             return false;
         }
 
         if (block instanceof ShaderBlock) {
-            if (block.getShaderProgram().vertex !== this._vertexShaderCode) {
+            if (shaderProgram.vertex !== this._vertexShaderCode) {
                 return false;
             }
 
@@ -515,6 +527,7 @@ export class SmartFilterOptimizer {
             this._currentOutputTextureOptions = block.outputTextureOptions;
         }
 
+        // Sometimes getShaderProgram() does work, so only grab it once for efficiency
         const shaderProgram = block.getShaderProgram();
         if (!shaderProgram) {
             throw new Error(`Shader program not found for block "${block.name}"!`);
@@ -544,22 +557,25 @@ export class SmartFilterOptimizer {
         }
 
         // Processes the defines to make them unique
-        this._processDefines(block, renameWork);
+        this._processDefines(block, shaderProgram, renameWork);
 
         // Processes the constants to make them unique
         this._processVariables(block, renameWork, "const", shaderProgram.fragment.const, true);
+
+        // Processes the per-instance constants
+        this._processVariables(block, renameWork, "const", shaderProgram.fragment.constPerInstance, false);
 
         // Processes the uniform inputs to make them unique. Also extract the list of samplers
         let samplerList: string[] = [];
         samplerList = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniform, false);
 
         let additionalSamplers = [];
-        additionalSamplers = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniformSingle, false, true);
+        additionalSamplers = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniformSingle, true);
 
         samplerList.push(...additionalSamplers);
 
         // Processes the functions other than the main function - must be done after _processVariables()
-        this._processHelperFunctions(block, renameWork, samplerList);
+        this._processHelperFunctions(block, shaderProgram, renameWork, samplerList);
 
         // Processes the texture inputs
         for (const sampler of samplerList) {
@@ -587,7 +603,7 @@ export class SmartFilterOptimizer {
             if (IsTextureInputBlock(parentBlock)) {
                 // input is connected to an InputBlock of type "Texture": we must directly sample a texture
                 this._processSampleTexture(block, renameWork, samplerName, samplers, parentBlock);
-            } else if (this._forceUnoptimized || !this._canBeOptimized(parentBlock)) {
+            } else if (this._forceUnoptimized || !this._canBeOptimized(parentBlock, shaderProgram)) {
                 // the block connected to this input cannot be optimized: we must directly sample its output texture
                 const uniqueSamplerName = this._processSampleTexture(block, renameWork, samplerName, samplers);
                 let stackItem = this._blockToStackItem.get(parentBlock);

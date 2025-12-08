@@ -57,6 +57,11 @@ export class WebXRCamera extends FreeCamera {
     public _lastXRViewerPose?: XRViewerPose;
 
     /**
+     * webXRCamera relies on rotationQuaternion and doesn't use camera rotation property
+     */
+    public override rotationQuaternion: Quaternion;
+
+    /**
      * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
      * @param name the name of the camera
      * @param scene the scene to add the camera to
@@ -305,8 +310,8 @@ export class WebXRCamera extends FreeCamera {
             currentRig.parent = this.parent;
 
             currentRig.position.set(pos.x, pos.y, pos.z).scaleInPlace(this._xrSessionManager.worldScalingFactor);
-            currentRig.rotationQuaternion.set(orientation.x, orientation.y, orientation.z, orientation.w);
-            if (!this._scene.useRightHandedSystem) {
+            currentRig.rotationQuaternion?.set(orientation.x, orientation.y, orientation.z, orientation.w);
+            if (!this._scene.useRightHandedSystem && currentRig.rotationQuaternion) {
                 currentRig.position.z *= -1;
                 currentRig.rotationQuaternion.z *= -1;
                 currentRig.rotationQuaternion.w *= -1;

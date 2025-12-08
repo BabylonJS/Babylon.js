@@ -25,4 +25,8 @@ export class FrameGraphCustomPostProcessTask extends FrameGraphPostProcessTask {
 
         this.onApplyObservable = this.postProcess.onBindObservable;
     }
+
+    public override getClassName(): string {
+        return "FrameGraphCustomPostProcessTask";
+    }
 }
