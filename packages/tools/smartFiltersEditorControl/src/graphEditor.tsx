@@ -568,7 +568,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
 
         if (this.props.globalState.previewSizeManager.mode.value === FixedMode) {
             width = Math.max(width, this.props.globalState.previewSizeManager.fixedWidth.value);
-            height = this.props.globalState.previewSizeManager.fixedHeight.value + 40;
+            height = this.props.globalState.previewSizeManager.fixedHeight.value + 40; // For the control bar
         }
 
         CreatePopup("PREVIEW AREA", {
