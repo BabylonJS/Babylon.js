@@ -38,6 +38,7 @@ import { OnlyShowCustomBlocksDefaultValue } from "./constants.js";
 import { ThinEngine } from "core/Engines/thinEngine.js";
 import { HistoryStack } from "shared-ui-components/historyStack.js";
 import { WebCamInputBlockName } from "./configuration/editorBlocks/blockNames.js";
+import { FixedMode } from "./previewSizeManager.js";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -561,9 +562,18 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
             ...userOptions,
         };
         let popUpWindow: Nullable<Window> = null;
+
+        let width = 500;
+        let height = 500;
+
+        if (this.props.globalState.previewSizeManager.mode.value === FixedMode) {
+            width = Math.max(width, this.props.globalState.previewSizeManager.fixedWidth.value);
+            height = this.props.globalState.previewSizeManager.fixedHeight.value + 40;
+        }
+
         CreatePopup("PREVIEW AREA", {
-            width: 500,
-            height: 500,
+            width,
+            height,
             onParentControlCreateCallback: (parentControl) => {
                 if (parentControl) {
                     parentControl.style.display = "grid";
