@@ -369,10 +369,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 await nodeRenderGraph.buildAsync(false, false);
             }
         } catch (err) {
-            if (LogErrorTrace) {
-                (console as any).log(err);
+            // We care about errors only if there is a host scene (the editor isprobably linked to a playground).
+            if (this.props.globalState.hostScene) {
+                if (LogErrorTrace) {
+                    (console as any).log(err);
+                }
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
             }
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
     }
 

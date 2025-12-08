@@ -362,7 +362,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         ) {
             this._flushDebugMessages();
             if (debugMessage !== undefined) {
-                this._engine._debugPushGroup?.(debugMessage, 2);
+                this.pushDebugGroup(debugMessage);
                 this._debugMessageWhenTargetBound = undefined;
                 this._debugMessageHasBeenPushed = true;
             }
@@ -382,7 +382,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     /** @internal */
     public _flushDebugMessages() {
         if (this._debugMessageHasBeenPushed) {
-            this._engine._debugPopGroup?.(2);
+            this.popDebugGroup();
             this._debugMessageHasBeenPushed = false;
         }
     }
@@ -407,7 +407,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         }
 
         if (this._debugMessageWhenTargetBound !== undefined) {
-            this._engine._debugPushGroup?.(this._debugMessageWhenTargetBound, 2);
+            this.pushDebugGroup(this._debugMessageWhenTargetBound);
             this._debugMessageWhenTargetBound = undefined;
             this._debugMessageHasBeenPushed = true;
         }
