@@ -782,37 +782,52 @@ function _UpdateParticleSpriteCellBlockGroup(
 ): NodeParticleConnectionPoint {
     let offsetAge: NodeParticleConnectionPoint;
 
-    // // Calculate the offset age
-    // if (randomStartCell) {
-    //     // Create the random offset based on lifetime
-    //     const randomOffsetInput = new ParticleRandomBlock("Random Cell Offset");
-    //     randomOffsetInput.lockMode = ParticleRandomBlockLocks.OncePerParticle;
-    //     _CreateAndConnectInput("Min Offset", 0, randomOffsetInput.min);
-    //     _CreateAndConnectInput("Max Offset", 1, randomOffsetInput.max);
-    //     const multiplyOffsetBlock = new ParticleMathBlock("Multiply Random Cell Offset by LifeTime");
-    //     multiplyOffsetBlock.operation = ParticleMathBlockOperations.Multiply;
-    //     randomOffsetInput.output.connectTo(multiplyOffsetBlock.left);
-    //     _CreateAndConnectContextualSource("LifeTime", NodeParticleContextualSources.Lifetime, multiplyOffsetBlock.right);
+    //         let offsetAge = this.age;\
+    //         if (this.particleSystem.spriteRandomStartCell) {
+    //             if (this._randomCellOffset === undefined) {
+    //                 this._randomCellOffset = Math.random() * this.lifeTime;
+    //             }
 
-    //     // Apply the random offset based on the changeSpeedif
-    //     if (changeSpeed === 0) {
-    //         // Special case when speed = 0 meaning we want to stay on initial cell
-    //         changeSpeed = 1;
-    //         offsetAge = multiplyOffsetBlock.output;
-    //     } else {
-    //         const input = new ParticleInputBlock("Age");
-    //         input.contextualValue = NodeParticleContextualSources.Age;
-    //         const addOffsetBlock = new ParticleMathBlock("Add Random Cell Offset to Age");
-    //         addOffsetBlock.operation = ParticleMathBlockOperations.Add;
-    //         input.output.connectTo(addOffsetBlock.left);
-    //         multiplyOffsetBlock.output.connectTo(addOffsetBlock.right);
-    //         offsetAge = addOffsetBlock.output;
-    //     }
-    // } else {
-    const input = new ParticleInputBlock("Age");
-    input.contextualValue = NodeParticleContextualSources.Age;
-    offsetAge = input.output;
-    // }
+    //             if (changeSpeed === 0) {
+    //                 // Special case when speed = 0 meaning we want to stay on initial cell
+    //                 changeSpeed = 1;
+    //                 offsetAge = this._randomCellOffset;
+    //             } else {
+    //                 offsetAge += this._randomCellOffset;
+    //             }
+
+    // Calculate the offset age
+
+    const ageContextualValue = new ParticleInputBlock("Age");
+    ageContextualValue.contextualValue = NodeParticleContextualSources.Age;
+
+    if (randomStartCell) {
+        // Create the random offset based on lifetime
+        const randomOffsetInput = new ParticleRandomBlock("Random Cell Offset");
+        randomOffsetInput.lockMode = ParticleRandomBlockLocks.OncePerParticle;
+        _CreateAndConnectInput("Min Offset", 0, randomOffsetInput.min);
+        _CreateAndConnectInput("Max Offset", 1, randomOffsetInput.max);
+
+        const multiplyOffsetBlock = new ParticleMathBlock("Multiply Random Cell Offset by LifeTime");
+        multiplyOffsetBlock.operation = ParticleMathBlockOperations.Multiply;
+        randomOffsetInput.output.connectTo(multiplyOffsetBlock.left);
+        _CreateAndConnectContextualSource("LifeTime", NodeParticleContextualSources.Lifetime, multiplyOffsetBlock.right);
+
+        // Apply the random offset based on the changeSpeedif
+        if (changeSpeed === 0) {
+            // Special case when speed = 0 meaning we want to stay on initial cell
+            changeSpeed = 1;
+            offsetAge = multiplyOffsetBlock.output;
+        } else {
+            const addOffsetBlock = new ParticleMathBlock("Add Random Cell Offset to Age");
+            addOffsetBlock.operation = ParticleMathBlockOperations.Add;
+            ageContextualValue.output.connectTo(addOffsetBlock.left);
+            multiplyOffsetBlock.output.connectTo(addOffsetBlock.right);
+            offsetAge = addOffsetBlock.output;
+        }
+    } else {
+        offsetAge = ageContextualValue.output;
+    }
 
     // Calculate the distribution
     const subtractEndStartBlock = new ParticleMathBlock("End - Start Sprite Cell ID");
@@ -826,8 +841,6 @@ function _UpdateParticleSpriteCellBlockGroup(
     _CreateAndConnectInput("One", 1, distResultBlock.right);
 
     // Calculate the ratio
-    let ratioOutput: NodeParticleConnectionPoint;
-
     const multiplyAgeBySpeedBlock = new ParticleMathBlock("Multiply Offset Age by Change Speed");
     multiplyAgeBySpeedBlock.operation = ParticleMathBlockOperations.Multiply;
     offsetAge.connectTo(multiplyAgeBySpeedBlock.left);
@@ -860,12 +873,10 @@ function _UpdateParticleSpriteCellBlockGroup(
     clampMinRatioBlock.output.connectTo(clampMaxRatioBlock.left);
     _CreateAndConnectInput("Max", 1, clampMaxRatioBlock.right);
 
-    ratioOutput = clampMaxRatioBlock.output;
-
     // Calculate the cell index
     const multiplyRatioByDistBlock = new ParticleMathBlock("Multiply Ratio by Dist");
     multiplyRatioByDistBlock.operation = ParticleMathBlockOperations.Multiply;
-    ratioOutput.connectTo(multiplyRatioByDistBlock.left);
+    clampMaxRatioBlock.output.connectTo(multiplyRatioByDistBlock.left);
     distResultBlock.output.connectTo(multiplyRatioByDistBlock.right);
 
     const finalCellValueBlock = new ParticleMathBlock("Add Start Sprite Cell ID");
@@ -880,34 +891,6 @@ function _UpdateParticleSpriteCellBlockGroup(
 
     return updateSpriteCell.output;
 }
-
-// public updateCellIndex(): void {
-//         let offsetAge = this.age;
-//         let changeSpeed = this.particleSystem.spriteCellChangeSpeed;
-
-//         if (this.particleSystem.spriteRandomStartCell) {
-//             if (this._randomCellOffset === undefined) {
-//                 this._randomCellOffset = Math.random() * this.lifeTime;
-//             }
-
-//             if (changeSpeed === 0) {
-//                 // Special case when speed = 0 meaning we want to stay on initial cell
-//                 changeSpeed = 1;
-//                 offsetAge = this._randomCellOffset;
-//             } else {
-//                 offsetAge += this._randomCellOffset;
-//             }
-//         }
-
-//         const dist = this._initialEndSpriteCellId - this._initialStartSpriteCellId + 1;
-//         let ratio: number;
-//         if (this._initialSpriteCellLoop) {
-//             ratio = Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
-//         } else {
-//             ratio = Clamp((offsetAge * changeSpeed) / this.lifeTime);
-//         }
-//         this.cellIndex = (this._initialStartSpriteCellId + ratio * dist) | 0;
-//     }
 
 function _UpdateParticleAngularSpeedGradientBlockGroup(angularSpeedGradients: Array<FactorGradient>, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
