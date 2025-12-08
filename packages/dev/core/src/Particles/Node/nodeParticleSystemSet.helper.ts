@@ -782,22 +782,7 @@ function _UpdateParticleSpriteCellBlockGroup(
 ): NodeParticleConnectionPoint {
     let offsetAge: NodeParticleConnectionPoint;
 
-    //         let offsetAge = this.age;\
-    //         if (this.particleSystem.spriteRandomStartCell) {
-    //             if (this._randomCellOffset === undefined) {
-    //                 this._randomCellOffset = Math.random() * this.lifeTime;
-    //             }
-
-    //             if (changeSpeed === 0) {
-    //                 // Special case when speed = 0 meaning we want to stay on initial cell
-    //                 changeSpeed = 1;
-    //                 offsetAge = this._randomCellOffset;
-    //             } else {
-    //                 offsetAge += this._randomCellOffset;
-    //             }
-
-    // Calculate the offset age
-
+    // Calculate the age offset
     const ageContextualValue = new ParticleInputBlock("Age");
     ageContextualValue.contextualValue = NodeParticleContextualSources.Age;
 
@@ -813,7 +798,7 @@ function _UpdateParticleSpriteCellBlockGroup(
         randomOffsetInput.output.connectTo(multiplyOffsetBlock.left);
         _CreateAndConnectContextualSource("LifeTime", NodeParticleContextualSources.Lifetime, multiplyOffsetBlock.right);
 
-        // Apply the random offset based on the changeSpeedif
+        // Apply the random offset based on the changeSpeed
         if (changeSpeed === 0) {
             // Special case when speed = 0 meaning we want to stay on initial cell
             changeSpeed = 1;
