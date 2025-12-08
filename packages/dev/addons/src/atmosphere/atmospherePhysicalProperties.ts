@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 import type { IAtmospherePhysicalPropertiesOptions } from "./atmospherePhysicalPropertiesOptions";
 import { Observable } from "core/Misc/observable";

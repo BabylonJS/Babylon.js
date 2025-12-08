@@ -36,6 +36,7 @@ export class GlobalState {
     public mobileDefaultMode = EditionMode.RenderingOnly;
     public runtimeMode = RuntimeMode.Editor;
     public version: string = "";
+    public bundles: string[] = [];
 
     public currentSnippetTitle = "";
     public currentSnippetDescription = "";

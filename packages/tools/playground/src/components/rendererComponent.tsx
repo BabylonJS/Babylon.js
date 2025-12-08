@@ -13,21 +13,7 @@ import type { IDisposable, Nullable, Scene, ThinEngine } from "@dev/core";
 
 import "../scss/rendering.scss";
 
-let InspectorV2ModulePromise: Promise<typeof import("inspector-v2/inspector") & typeof import("inspector-v2/legacy/inspector")> | null = null;
-// eslint-disable-next-line @typescript-eslint/promise-function-async
-function ImportInspectorV2() {
-    if (!InspectorV2ModulePromise) {
-        const inspectorModulePromise = import("inspector-v2/inspector");
-        const backCompatModulePromise = import("inspector-v2/legacy/inspector");
-        InspectorV2ModulePromise = Promise.all([inspectorModulePromise, backCompatModulePromise]).then(([inspectorModule, backCompatModule]) => {
-            return {
-                ...inspectorModule,
-                ...backCompatModule,
-            };
-        });
-    }
-    return InspectorV2ModulePromise;
-}
+type InspectorV2Module = typeof import("inspector-v2/legacy/legacy") & typeof import("inspector-v2/index");
 
 interface IRenderingComponentProps {
     globalState: GlobalState;
@@ -48,7 +34,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _downloadManager: DownloadManager;
     private _inspectorFallback: boolean = false;
-    private inspectorV2Token: Nullable<IDisposable> = null;
+    private readonly _inspectorV2ModulePromise: Promise<InspectorV2Module | undefined>;
+    private _inspectorV2Token: Nullable<IDisposable> = null;
 
     /**
      * Create the rendering component.
@@ -60,6 +47,25 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this.state = {
             preferInspector: false,
         };
+
+        const isInspectorV2Supported = this.props.globalState.bundles.some((bundle) => bundle.includes("inspector-v2"));
+        this._inspectorV2ModulePromise = new Promise((resolve) => {
+            if (!isInspectorV2Supported) {
+                resolve(undefined);
+                return;
+            }
+
+            const checkGlobals = () => {
+                const inspectorV2Module: InspectorV2Module | undefined = (globalThis as any).INSPECTOR;
+                if (inspectorV2Module?.DetachInspectorGlobals) {
+                    inspectorV2Module.DetachInspectorGlobals();
+                    resolve(inspectorV2Module);
+                } else {
+                    setTimeout(checkGlobals, 50);
+                }
+            };
+            checkGlobals();
+        });
 
         // Create the global handleException
         (window as any).handleException = (e: Error) => {
@@ -99,7 +105,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             const isInspectorV1Enabled = this._scene.debugLayer.openedPanes !== 0;
-            const isInspectorV2Enabled = !!this.inspectorV2Token;
+            const isInspectorV2Enabled = !!this._inspectorV2Token;
             const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
 
             const searchParams = new URLSearchParams(window.location.search);
@@ -111,11 +117,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 action = isInspectorEnabled ? "disable" : "enable";
             }
 
-            // Disallow Inspector v2 on specific/older versions. For now, only support the latest as both core and inspector are evolving in tandem.
-            // Once we have an Inspector v2 UMD package, we can make this work the same as Inspector v1.)
-            if (action === "enable" && isInspectorV2ModeEnabled && props.globalState.version) {
+            if (action === "enable" && isInspectorV2ModeEnabled && !isInspectorV2Supported) {
                 isInspectorV2ModeEnabled = false;
-                alert("Inspector v2 is only supported with the latest version of Babylon.js at this time. Falling back to Inspector V1.");
+                alert("Inspector v2 is not supported in this version of Babylon.js. Falling back to Inspector V1.");
             }
 
             this.setState({
@@ -130,8 +134,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (isInspectorV2Enabled && (!isInspectorV2ModeEnabled || action === "disable")) {
-                this.inspectorV2Token?.dispose();
-                this.inspectorV2Token = null;
+                this._inspectorV2Token?.dispose();
+                this._inspectorV2Token = null;
             }
 
             if (!isInspectorV1Enabled && !isInspectorV2ModeEnabled && action === "enable") {
@@ -140,26 +144,23 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 // the asynchrony for itself internally.
                 await new Promise((resolve) => setTimeout(resolve));
                 await new Promise((resolve) => setTimeout(resolve));
-                this._scene.debugLayer.show({
-                    embedMode: true,
-                });
+                this._showInspectorV1Async();
             }
 
             if (!isInspectorV2Enabled && isInspectorV2ModeEnabled && action === "enable") {
-                const inspectorV2Module = await ImportInspectorV2();
-                const options = {
-                    ...inspectorV2Module.ConvertOptions({
-                        embedMode: true,
-                    }),
-                    showThemeSelector: false,
-                    themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
-                } as const;
-                this.inspectorV2Token = inspectorV2Module.ShowInspector(this._scene, options);
+                this._showInspectorV2Async();
             }
         });
 
         this.props.globalState.onFullcreenRequiredObservable.add(() => {
             this._engine?.switchFullscreen(false);
+        });
+
+        this.props.globalState.onThemeChangedObservable.add(() => {
+            if (this._inspectorV2Token) {
+                this._inspectorV2Token.dispose();
+                this._showInspectorV2Async();
+            }
         });
 
         window.addEventListener("resize", () => {
@@ -171,6 +172,33 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         });
 
         window.addEventListener("error", this._saveError);
+    }
+
+    private async _showInspectorV1Async() {
+        if (this._scene) {
+            const inspectorV2Module = await this._inspectorV2ModulePromise;
+            inspectorV2Module?.DetachInspectorGlobals();
+            await this._scene.debugLayer.show({
+                embedMode: true,
+            });
+        }
+    }
+
+    private async _showInspectorV2Async() {
+        if (this._scene) {
+            const inspectorV2Module = await this._inspectorV2ModulePromise;
+            if (inspectorV2Module) {
+                inspectorV2Module.AttachInspectorGlobals();
+                const options = {
+                    ...inspectorV2Module.ConvertOptions({
+                        embedMode: true,
+                    }),
+                    showThemeSelector: false,
+                    themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
+                } as const;
+                this._inspectorV2Token = inspectorV2Module.ShowInspector(this._scene, options);
+            }
+        }
     }
 
     private _saveError = (_err: ErrorEvent) => {
@@ -209,13 +237,13 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this.props.globalState.onErrorObservable.notifyObservers(null);
 
-        const displayInspector = this.inspectorV2Token || this._scene?.debugLayer.isVisible();
+        const displayInspector = this._inspectorV2Token || this._scene?.debugLayer.isVisible();
 
         const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
         const webGPUSupported = await webgpuPromise;
 
-        this.inspectorV2Token?.dispose();
-        this.inspectorV2Token = null;
+        this._inspectorV2Token?.dispose();
+        this._inspectorV2Token = null;
 
         let useWebGPU = location.search.indexOf("webgpu") !== -1 && webGPUSupported;
         let forceWebGL1 = false;

@@ -40,7 +40,7 @@ export * from "./services/settingsContext";
 export type { IShellService, ToolbarItemDefinition, SidePaneDefinition, CentralContentDefinition } from "./services/shellService";
 export { ShellServiceIdentity } from "./services/shellService";
 export * from "./inspector";
-export { Inspector } from "./legacy/inspector";
+export { ConvertOptions, Inspector } from "./legacy/inspector";
 export { AttachDebugLayer, DetachDebugLayer } from "./legacy/debugLayer";
 
 // Export the shared primitive UI controls that can be used for extending the inspector.

@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
-#define RENDER_TRANSMITTANCE 1
+#define RENDER_TRANSMITTANCE
+#define EXCLUDE_RAY_MARCHING_FUNCTIONS
 
 precision highp float;
 
