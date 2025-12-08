@@ -16,7 +16,6 @@ uniform vec2 dataTextureSize;
 uniform vec2 focal;
 uniform float kernelSize;
 uniform vec3 eyePosition;
-uniform vec3 viewDirectionFactor;
 uniform float alpha;
 
 uniform sampler2D covariancesATexture;
@@ -56,7 +55,6 @@ void main () {
     mat3 normWorldRot = inverseMat3(worldRot);
 
     vec3 dir = normalize(normWorldRot * (worldPos.xyz - eyePosition));
-    dir *= viewDirectionFactor;
     vColor.xyz = splat.color.xyz + computeSH(splat, dir);
 #endif
     vColor.w *= alpha;

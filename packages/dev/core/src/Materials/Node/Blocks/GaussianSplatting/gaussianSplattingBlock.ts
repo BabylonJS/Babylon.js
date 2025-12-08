@@ -133,7 +133,6 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         state._emitUniformFromString("invViewport", NodeMaterialBlockConnectionPointTypes.Vector2);
         state._emitUniformFromString("kernelSize", NodeMaterialBlockConnectionPointTypes.Float);
         state._emitUniformFromString("eyePosition", NodeMaterialBlockConnectionPointTypes.Vector3);
-        state._emitUniformFromString("viewDirectionFactor", NodeMaterialBlockConnectionPointTypes.Vector3);
         state.attributes.push(VertexBuffer.PositionKind);
         state.attributes.push("splatIndex0");
         state.attributes.push("splatIndex1");
@@ -168,12 +167,10 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
                 state.compilationString += `let worldRot: mat3x3f =  mat3x3f(${world.associatedVariableName}[0].xyz, ${world.associatedVariableName}[1].xyz, ${world.associatedVariableName}[2].xyz);`;
                 state.compilationString += `let normWorldRot: mat3x3f = inverseMat3(worldRot);`;
                 state.compilationString += `var dir: vec3f = normalize(normWorldRot * (${splatPosition.associatedVariableName}.xyz - uniforms.eyePosition));\n`;
-                state.compilationString += `dir *= uniforms.viewDirectionFactor;\n`;
             } else {
                 state.compilationString += `mat3 worldRot = mat3(${world.associatedVariableName});`;
                 state.compilationString += `mat3 normWorldRot = inverseMat3(worldRot);`;
                 state.compilationString += `vec3 dir = normalize(normWorldRot * (${splatPosition.associatedVariableName}.xyz - eyePosition));\n`;
-                state.compilationString += `dir *= viewDirectionFactor;\n`;
             }
 
             state.compilationString += `${state._declareOutput(sh)} = computeSH(splat, dir);\n`;

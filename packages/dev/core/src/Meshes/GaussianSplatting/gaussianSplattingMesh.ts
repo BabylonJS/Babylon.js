@@ -325,15 +325,15 @@ export class GaussianSplattingMesh extends Mesh {
     // batch size between 2 yield calls during the PLY to splat conversion.
     private static _PlyConversionBatchSize = 32768;
     private _shDegree = 0;
-    private _viewDirectionFactor = new Vector3(1, 1, -1);
 
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
     /**
      * View direction factor used to compute the SH view direction in the shader.
+     * @deprecated
      */
     public get viewDirectionFactor() {
-        return this._viewDirectionFactor;
+        return Vector3.OneReadOnly;
     }
 
     /**

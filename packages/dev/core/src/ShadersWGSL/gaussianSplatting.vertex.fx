@@ -19,7 +19,6 @@ uniform dataTextureSize: vec2f;
 uniform focal: vec2f;
 uniform kernelSize: f32;
 uniform eyePosition: vec3f;
-uniform viewDirectionFactor: vec3f;
 uniform alpha: f32;
 
 // textures
@@ -60,7 +59,6 @@ fn main(input : VertexInputs) -> FragmentInputs {
     let normWorldRot: mat3x3f = inverseMat3(worldRot);
 
     var dir: vec3f = normalize(normWorldRot * (worldPos.xyz - uniforms.eyePosition.xyz));
-    dir *= uniforms.viewDirectionFactor;
     vertexOutputs.vColor = vec4f(splat.color.xyz + computeSH(splat, dir), splat.color.w * uniforms.alpha);
 #else
     vertexOutputs.vColor = vec4f(splat.color.xyz, splat.color.w * uniforms.alpha);

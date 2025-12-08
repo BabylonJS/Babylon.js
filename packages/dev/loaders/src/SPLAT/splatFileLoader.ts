@@ -206,7 +206,6 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             scene._blockEntityCollection = !!this._assetContainer;
             const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
             gaussianSplatting._parentContainer = this._assetContainer;
-            gaussianSplatting.viewDirectionFactor.set(1, -1, 1);
             babylonMeshesArray.push(gaussianSplatting);
             gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh);
             scene._blockEntityCollection = false;
@@ -278,6 +277,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         gaussianSplatting._parentContainer = this._assetContainer;
                         babylonMeshesArray.push(gaussianSplatting);
                         gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh);
+                        gaussianSplatting.scaling.z *= -1.0;
                         scene._blockEntityCollection = false;
                         this.applyAutoCameraLimits(parsedSPZ, scene);
                         resolve(babylonMeshesArray);
@@ -297,7 +297,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                     babylonMeshesArray.push(gaussianSplatting);
                                     gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh);
                                     if (parsedPLY.compressed || !parsedPLY.rawSplat) {
-                                        gaussianSplatting.viewDirectionFactor.set(-1, -1, 1);
+                                        gaussianSplatting.scaling.x *= -1.0;
+                                        gaussianSplatting.scaling.y *= -1.0;
                                     }
 
                                     if (parsedPLY.chirality === "RightHanded") {
