@@ -2613,7 +2613,7 @@
         },
         {
             "title": "FrameGraph nrge csm shadows with autoCalcDepthBounds",
-            "playgroundId": "#JWKDME#187",
+            "playgroundId": "#JWKDME#192",
             "renderCount": 10
         },
         {
@@ -2623,7 +2623,7 @@
         },
         {
             "title": "FrameGraph nrge depth of field",
-            "playgroundId": "#GAGVQO#18",
+            "playgroundId": "#GAGVQO#19",
             "errorRatio": 3
         },
         {
@@ -2638,22 +2638,22 @@
         },
         {
             "title": "FrameGraph nrge SSR cube",
-            "playgroundId": "#PIZ1GK#2380",
+            "playgroundId": "#PIZ1GK#2386",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "FrameGraph nrge SSR HillValley",
-            "playgroundId": "#PIZ1GK#2381",
+            "playgroundId": "#PIZ1GK#2387",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "FrameGraph nrge SSR neon",
-            "playgroundId": "#Z6C5EF#4",
+            "playgroundId": "#Z6C5EF#5",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "FrameGraph nrge motion blur",
-            "playgroundId": "#YB006J#786",
+            "playgroundId": "#YB006J#793",
             "excludedEngines": ["webgl1"],
             "renderCount": 40
         },
