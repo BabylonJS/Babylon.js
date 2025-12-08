@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
-import { Sample2DRgbaToRef } from "../../sampling";
+import { Sample2DRgbaToRef } from "../../../src/atmosphere/sampling";
 import type { IColor4Like } from "core/Maths/math.like";
 
 const Black = { r: 0, g: 0, b: 0, a: 1.0 };
@@ -50,10 +50,10 @@ describe("textureSampler", () => {
         (expect(result) as any).toBeApproxColor4Like(White);
     });
     test("testVertical3x3", () => {
-        const testData2x2 = new Float32Array([Black, Black, White, White, White, White, White, White, White].flatMap((x) => [x.r, x.g, x.b, x.a]));
+        const testData3x3 = new Float32Array([Black, Black, White, White, White, White, White, White, White].flatMap((x) => [x.r, x.g, x.b, x.a]));
 
         const result = { r: 0, g: 0, b: 0, a: 0 };
-        Sample2DRgbaToRef(0.33333333333, 0.33333333333, 3, 3, testData2x2, result, (value) => value);
+        Sample2DRgbaToRef(0.33333333333, 0.33333333333, 3, 3, testData3x3, result, (value) => value);
         (expect(result) as any).toBeApproxColor4Like(Grey);
     });
     test("testHorizontal2x2", () => {

@@ -35,7 +35,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _downloadManager: DownloadManager;
     private _inspectorFallback: boolean = false;
     private readonly _inspectorV2ModulePromise: Promise<InspectorV2Module | undefined>;
-    private inspectorV2Token: Nullable<IDisposable> = null;
+    private _inspectorV2Token: Nullable<IDisposable> = null;
 
     /**
      * Create the rendering component.
@@ -105,7 +105,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             const isInspectorV1Enabled = this._scene.debugLayer.openedPanes !== 0;
-            const isInspectorV2Enabled = !!this.inspectorV2Token;
+            const isInspectorV2Enabled = !!this._inspectorV2Token;
             const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
 
             const searchParams = new URLSearchParams(window.location.search);
@@ -134,8 +134,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (isInspectorV2Enabled && (!isInspectorV2ModeEnabled || action === "disable")) {
-                this.inspectorV2Token?.dispose();
-                this.inspectorV2Token = null;
+                this._inspectorV2Token?.dispose();
+                this._inspectorV2Token = null;
             }
 
             if (!isInspectorV1Enabled && !isInspectorV2ModeEnabled && action === "enable") {
@@ -154,6 +154,13 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this.props.globalState.onFullcreenRequiredObservable.add(() => {
             this._engine?.switchFullscreen(false);
+        });
+
+        this.props.globalState.onThemeChangedObservable.add(() => {
+            if (this._inspectorV2Token) {
+                this._inspectorV2Token.dispose();
+                this._showInspectorV2Async();
+            }
         });
 
         window.addEventListener("resize", () => {
@@ -189,7 +196,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     showThemeSelector: false,
                     themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
                 } as const;
-                this.inspectorV2Token = inspectorV2Module.ShowInspector(this._scene, options);
+                this._inspectorV2Token = inspectorV2Module.ShowInspector(this._scene, options);
             }
         }
     }
@@ -230,13 +237,13 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this.props.globalState.onErrorObservable.notifyObservers(null);
 
-        const displayInspector = this.inspectorV2Token || this._scene?.debugLayer.isVisible();
+        const displayInspector = this._inspectorV2Token || this._scene?.debugLayer.isVisible();
 
         const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
         const webGPUSupported = await webgpuPromise;
 
-        this.inspectorV2Token?.dispose();
-        this.inspectorV2Token = null;
+        this._inspectorV2Token?.dispose();
+        this._inspectorV2Token = null;
 
         let useWebGPU = location.search.indexOf("webgpu") !== -1 && webGPUSupported;
         let forceWebGL1 = false;
@@ -244,7 +251,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         switch (configuredEngine) {
             case "WebGPU":
-                useWebGPU = true && webGPUSupported;
+                useWebGPU = webGPUSupported;
                 break;
             case "WebGL":
                 forceWebGL1 = true;

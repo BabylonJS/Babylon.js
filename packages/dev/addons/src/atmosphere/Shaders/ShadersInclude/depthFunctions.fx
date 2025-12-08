@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 // Assumes infinite far plane (camera.maxZ = 0), forward depth (non-reversed).
 float reconstructDistanceFromCameraPlane(float depth, float cameraNearPlane) {

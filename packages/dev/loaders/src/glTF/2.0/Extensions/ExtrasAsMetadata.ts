@@ -1,9 +1,10 @@
 import type { Nullable } from "core/types";
 import type { TransformNode } from "core/Meshes/transformNode";
 import type { Camera } from "core/Cameras/camera";
+import type { AnimationGroup } from "core/Animations/animationGroup";
 
 import type { IProperty } from "babylonjs-gltf2interface";
-import type { INode, ICamera, IMaterial } from "../glTFLoaderInterfaces";
+import type { INode, ICamera, IMaterial, IAnimation } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import type { GLTFLoader } from "../glTFLoader";
 import type { Material } from "core/Materials/material";
@@ -91,6 +92,18 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
         const babylonMaterial = this._loader.createMaterial(context, material, babylonDrawMode);
         this._assignExtras(babylonMaterial, material);
         return babylonMaterial;
+    }
+
+    /**
+     * @internal
+     */
+    // eslint-disable-next-line no-restricted-syntax
+    public loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
+        // eslint-disable-next-line github/no-then
+        return this._loader.loadAnimationAsync(context, animation).then((babylonAnimation: AnimationGroup) => {
+            this._assignExtras(babylonAnimation, animation);
+            return babylonAnimation;
+        });
     }
 }
 

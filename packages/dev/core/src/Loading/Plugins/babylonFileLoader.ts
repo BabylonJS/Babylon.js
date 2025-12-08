@@ -18,7 +18,7 @@ import { Light } from "../../Lights/light";
 import { SceneComponentConstants } from "../../sceneComponent";
 import { RegisterSceneLoaderPlugin } from "../../Loading/sceneLoader";
 import { SceneLoaderFlags } from "../sceneLoaderFlags";
-import { Constants } from "../../Engines";
+import { Constants } from "../../Engines/constants";
 import { AssetContainer } from "../../assetContainer";
 import { ActionManager } from "../../Actions/actionManager";
 import type { IParticleSystem } from "../../Particles/IParticleSystem";
