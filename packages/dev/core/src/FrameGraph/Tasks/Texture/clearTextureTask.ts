@@ -115,6 +115,11 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
                 color.toLinearSpaceToRef(color);
             }
 
+            const renderTargetWrapper = pass.frameGraphRenderTarget!.renderTargetWrapper;
+            if (renderTargetWrapper) {
+                renderTargetWrapper.disableAutomaticMSAAResolve = true;
+            }
+
             context.clearAttachments(color, attachments, !!this.clearColor, !!this.clearDepth, !!this.clearStencil, this.stencilValue);
         });
 
