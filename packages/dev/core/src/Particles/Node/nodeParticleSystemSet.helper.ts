@@ -29,6 +29,7 @@ import { ParticleGradientBlock } from "./Blocks/particleGradientBlock";
 import { ParticleGradientValueBlock } from "./Blocks/particleGradientValueBlock";
 import { ParticleInputBlock } from "./Blocks/particleInputBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
+import { ParticleModuloBlock } from "./Blocks/particleModuloBlock";
 import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "./Blocks/particleTrigonometryBlock";
@@ -836,28 +837,11 @@ function _UpdateParticleSpriteCellBlockGroup(
 
     if (loop) {
         // Modulo by lifetime to loop
-        // ratio = Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
-        // remainder = dividend - divisor * floor(dividend / divisor)
-        const divideAgeSpeedByLifeBlock = new ParticleMathBlock("Divide Age*Speed by LifeTime");
-        divideAgeSpeedByLifeBlock.operation = ParticleMathBlockOperations.Divide;
-        multiplyAgeBySpeedBlock.output.connectTo(divideAgeSpeedByLifeBlock.left);
-        _CreateAndConnectContextualSource("LifeTime", NodeParticleContextualSources.Lifetime, divideAgeSpeedByLifeBlock.right);
+        const moduloByLifetime = new ParticleModuloBlock("Modulo by LifeTime");
+        multiplyAgeBySpeedBlock.output.connectTo(moduloByLifetime.left);
+        _CreateAndConnectContextualSource("LifeTime", NodeParticleContextualSources.Lifetime, moduloByLifetime.right);
 
-        const floorDivideBlock = new ParticleTrigonometryBlock("Floor Division Result");
-        floorDivideBlock.operation = ParticleTrigonometryBlockOperations.Floor;
-        divideAgeSpeedByLifeBlock.output.connectTo(floorDivideBlock.input);
-
-        const multiplyFloorByLifeBlock = new ParticleMathBlock("Multiply Floor by LifeTime");
-        multiplyFloorByLifeBlock.operation = ParticleMathBlockOperations.Multiply;
-        floorDivideBlock.output.connectTo(multiplyFloorByLifeBlock.left);
-        _CreateAndConnectContextualSource("LifeTime", NodeParticleContextualSources.Lifetime, multiplyFloorByLifeBlock.right);
-
-        const subtractRemainderBlock = new ParticleMathBlock("Subtract Remainder from Age*Speed");
-        subtractRemainderBlock.operation = ParticleMathBlockOperations.Subtract;
-        multiplyAgeBySpeedBlock.output.connectTo(subtractRemainderBlock.left);
-        multiplyFloorByLifeBlock.output.connectTo(subtractRemainderBlock.right);
-
-        dividendOutput = subtractRemainderBlock.output;
+        dividendOutput = moduloByLifetime.output;
     }
 
     const divideAgeLifeTimeBlock = new ParticleMathBlock("Divide by LifeTime");
