@@ -123,16 +123,20 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
         this._frameGraphRenderTarget =
             this._frameGraphRenderTarget || this._context.createRenderTarget(this.name, this._renderTarget, this._renderTargetDepth, this.depthReadOnly, this.stencilReadOnly);
 
-        this._context.bindRenderTarget(this._frameGraphRenderTarget, `frame graph render pass - ${this.name}`);
+        this._context.bindRenderTarget(this._frameGraphRenderTarget);
 
         super._execute();
 
         this._context._flushDebugMessages();
 
         const renderTargetWrapper = this._frameGraphRenderTarget.renderTargetWrapper;
-        if (renderTargetWrapper && (renderTargetWrapper.resolveMSAAColors || renderTargetWrapper.resolveMSAADepth || renderTargetWrapper.resolveMSAAStencil)) {
+        if (
+            renderTargetWrapper &&
+            renderTargetWrapper.samples > 1 &&
+            (renderTargetWrapper.resolveMSAAColors || renderTargetWrapper.resolveMSAADepth || renderTargetWrapper.resolveMSAAStencil)
+        ) {
             // Unbinding the render target will trigger resolving MSAA textures.
-            this._context.bindRenderTarget(undefined, `frame graph render pass - ${this.name} - resolve MSAA`, true);
+            this._context.bindRenderTarget(undefined, `Resolve MSAA${this.name ? " (" + this.name + ")" : ""}`, true);
             this._context._flushDebugMessages();
         }
     }

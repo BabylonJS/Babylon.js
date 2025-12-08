@@ -84,7 +84,9 @@ export const createScene = function (engine, canvas) {
         const rightRange = skeleton.getAnimationRange("YBot_RightStrafeWalk");
 
         // IDLE
-        if (idleRange) scene.beginAnimation(skeleton, idleRange.from, idleRange.to, true);
+        if (idleRange) {
+            scene.beginAnimation(skeleton, idleRange.from, idleRange.to, true);
+        }
 
         // UI
         const advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
@@ -102,7 +104,9 @@ export const createScene = function (engine, canvas) {
         button.color = "white";
         button.background = "green";
         button.onPointerDownObservable.add(() => {
-            if (idleRange) scene.beginAnimation(skeleton, idleRange.from, idleRange.to, true);
+            if (idleRange) {
+                scene.beginAnimation(skeleton, idleRange.from, idleRange.to, true);
+            }
         });
         uiPanel.addControl(button);
         // ..
@@ -113,7 +117,9 @@ export const createScene = function (engine, canvas) {
         button1.color = "white";
         button1.background = "green";
         button1.onPointerDownObservable.add(() => {
-            if (walkRange) scene.beginAnimation(skeleton, walkRange.from, walkRange.to, true);
+            if (walkRange) {
+                scene.beginAnimation(skeleton, walkRange.from, walkRange.to, true);
+            }
         });
         uiPanel.addControl(button1);
         // ..
@@ -124,7 +130,9 @@ export const createScene = function (engine, canvas) {
         button1.color = "white";
         button1.background = "green";
         button1.onPointerDownObservable.add(() => {
-            if (runRange) scene.beginAnimation(skeleton, runRange.from, runRange.to, true);
+            if (runRange) {
+                scene.beginAnimation(skeleton, runRange.from, runRange.to, true);
+            }
         });
         uiPanel.addControl(button1);
         // ..
@@ -135,7 +143,9 @@ export const createScene = function (engine, canvas) {
         button1.color = "white";
         button1.background = "green";
         button1.onPointerDownObservable.add(() => {
-            if (leftRange) scene.beginAnimation(skeleton, leftRange.from, leftRange.to, true);
+            if (leftRange) {
+                scene.beginAnimation(skeleton, leftRange.from, leftRange.to, true);
+            }
         });
         uiPanel.addControl(button1);
         // ..
@@ -146,7 +156,9 @@ export const createScene = function (engine, canvas) {
         button1.color = "white";
         button1.background = "green";
         button1.onPointerDownObservable.add(() => {
-            if (rightRange) scene.beginAnimation(skeleton, rightRange.from, rightRange.to, true);
+            if (rightRange) {
+                scene.beginAnimation(skeleton, rightRange.from, rightRange.to, true);
+            }
         });
         uiPanel.addControl(button1);
         // ..

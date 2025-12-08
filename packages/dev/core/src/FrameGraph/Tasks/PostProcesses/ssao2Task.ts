@@ -21,6 +21,10 @@ export class FrameGraphSSAO2Task extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinSSAO2PostProcess(name, frameGraph.scene));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphSSAO2Task";
+    }
+
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.depthTexture === undefined || this.normalTexture === undefined || this.camera === undefined) {
             throw new Error(`FrameGraphSSAO2Task "${this.name}": sourceTexture, depthTexture, normalTexture and camera are required`);

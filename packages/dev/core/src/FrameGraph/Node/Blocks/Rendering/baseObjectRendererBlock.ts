@@ -93,6 +93,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         state.depthWrite = this.depthWrite;
         state.disableShadows = this.disableShadows;
         state.renderInLinearSpace = this.renderInLinearSpace;
+        state.renderMeshes = this.renderMeshes;
         state.renderParticles = this.renderParticles;
         state.renderSprites = this.renderSprites;
         state.forceLayerMaskCheck = this.forceLayerMaskCheck;
@@ -107,6 +108,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.depthWrite = state.depthWrite;
         this.disableShadows = state.disableShadows;
         this.renderInLinearSpace = state.renderInLinearSpace;
+        this.renderMeshes = state.renderMeshes;
         this.renderParticles = state.renderParticles;
         this.renderSprites = state.renderSprites;
         this.forceLayerMaskCheck = state.forceLayerMaskCheck;
@@ -127,7 +129,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** Indicates that this object renderer is the main object renderer of the frame graph. */
-    @editableInPropertyPage("Is main object renderer", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Is main object renderer", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get isMainObjectRenderer() {
         return this._frameGraphTask.isMainObjectRenderer;
     }
@@ -137,7 +139,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** Indicates if depth testing must be enabled or disabled */
-    @editableInPropertyPage("Depth test", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Depth test", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get depthTest() {
         return this._frameGraphTask.depthTest;
     }
@@ -147,7 +149,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** Indicates if depth writing must be enabled or disabled */
-    @editableInPropertyPage("Depth write", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Depth write", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get depthWrite() {
         return this._frameGraphTask.depthWrite;
     }
@@ -156,8 +158,18 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this._frameGraphTask.depthWrite = value;
     }
 
+    /** Indicates if meshes should be rendered */
+    @editableInPropertyPage("Render meshes", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
+    public get renderMeshes() {
+        return this._frameGraphTask.renderMeshes;
+    }
+
+    public set renderMeshes(value: boolean) {
+        this._frameGraphTask.renderMeshes = value;
+    }
+
     /** Indicates if particles should be rendered */
-    @editableInPropertyPage("Render particles", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Render particles", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get renderParticles() {
         return this._frameGraphTask.renderParticles;
     }
@@ -167,7 +179,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** Indicates if sprites should be rendered */
-    @editableInPropertyPage("Render sprites", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Render sprites", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get renderSprites() {
         return this._frameGraphTask.renderSprites;
     }
@@ -177,7 +189,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** Indicates if layer mask check must be forced */
-    @editableInPropertyPage("Force layer mask check", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Force layer mask check", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get forceLayerMaskCheck() {
         return this._frameGraphTask.forceLayerMaskCheck;
     }
@@ -187,7 +199,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** Indicates if bounding boxes should be rendered */
-    @editableInPropertyPage("Enable bounding box rendering", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Enable bounding box rendering", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get enableBoundingBoxRendering() {
         return this._frameGraphTask.enableBoundingBoxRendering;
     }
@@ -197,7 +209,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** Indicates if outlines/overlays should be rendered */
-    @editableInPropertyPage("Enable outline/overlay rendering", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Enable outline/overlay rendering", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get enableOutlineRendering() {
         return this._frameGraphTask.enableOutlineRendering;
     }
@@ -207,7 +219,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** Indicates if shadows must be enabled or disabled */
-    @editableInPropertyPage("Disable shadows", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Disable shadows", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get disableShadows() {
         return this._frameGraphTask.disableShadows;
     }
@@ -217,7 +229,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** If image processing should be disabled */
-    @editableInPropertyPage("Disable image processing", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Disable image processing", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get renderInLinearSpace() {
         return this._frameGraphTask.disableImageProcessing;
     }
@@ -227,7 +239,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** True (default) to not change the aspect ratio of the scene in the RTT */
-    @editableInPropertyPage("Do not change aspect ratio", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Do not change aspect ratio", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get doNotChangeAspectRatio() {
         return this._frameGraphTask.objectRenderer.options.doNotChangeAspectRatio;
     }
@@ -237,7 +249,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** True (default) to enable clustered lights */
-    @editableInPropertyPage("Enable clustered lights", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Enable clustered lights", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get enableClusteredLights() {
         return this._frameGraphTask.objectRenderer.options.enableClusteredLights;
     }
@@ -247,7 +259,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** If true, MSAA color textures will be resolved at the end of the render pass (default: true) */
-    @editableInPropertyPage("Resolve MSAA colors", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Resolve MSAA colors", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get resolveMSAAColors() {
         return this._frameGraphTask.resolveMSAAColors;
     }
@@ -257,7 +269,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
     }
 
     /** If true, MSAA depth texture will be resolved at the end of the render pass (default: false) */
-    @editableInPropertyPage("Resolve MSAA depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Resolve MSAA depth", PropertyTypeForEdition.Boolean, "RENDERING - OBJECTS")
     public get resolveMSAADepth() {
         return this._frameGraphTask.resolveMSAADepth;
     }
@@ -371,6 +383,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         codes.push(`${this._codeVariableName}.isMainObjectRenderer = ${this.isMainObjectRenderer};`);
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
+        codes.push(`${this._codeVariableName}.renderMeshes = ${this.renderMeshes};`);
         codes.push(`${this._codeVariableName}.renderParticles = ${this.renderParticles};`);
         codes.push(`${this._codeVariableName}.renderSprites = ${this.renderSprites};`);
         codes.push(`${this._codeVariableName}.forceLayerMaskCheck = ${this.forceLayerMaskCheck};`);
@@ -388,6 +401,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         serializationObject.isMainObjectRenderer = this.isMainObjectRenderer;
         serializationObject.depthTest = this.depthTest;
         serializationObject.depthWrite = this.depthWrite;
+        serializationObject.renderMeshes = this.renderMeshes;
         serializationObject.renderParticles = this.renderParticles;
         serializationObject.renderSprites = this.renderSprites;
         serializationObject.forceLayerMaskCheck = this.forceLayerMaskCheck;
@@ -405,6 +419,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.isMainObjectRenderer = !!serializationObject.isMainObjectRenderer;
         this.depthTest = serializationObject.depthTest;
         this.depthWrite = serializationObject.depthWrite;
+        this.renderMeshes = serializationObject.renderMeshes ?? true;
         this.renderParticles = serializationObject.renderParticles ?? true;
         this.renderSprites = serializationObject.renderSprites ?? true;
         this.forceLayerMaskCheck = serializationObject.forceLayerMaskCheck ?? true;

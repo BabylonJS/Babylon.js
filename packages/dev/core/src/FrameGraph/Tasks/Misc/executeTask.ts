@@ -33,6 +33,10 @@ export class FrameGraphExecuteTask extends FrameGraphTask {
         super(name, frameGraph);
     }
 
+    public override getClassName(): string {
+        return "FrameGraphExecuteTask";
+    }
+
     public record(): FrameGraphPass<FrameGraphContext> {
         if (!this.func) {
             throw new Error("FrameGraphExecuteTask: Execute task must have a function.");

@@ -116,6 +116,10 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         return this.bloom.isReady();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphBloomTask";
+    }
+
     public record(): void {
         if (this.sourceTexture === undefined) {
             throw new Error("FrameGraphBloomTask: sourceTexture is required");

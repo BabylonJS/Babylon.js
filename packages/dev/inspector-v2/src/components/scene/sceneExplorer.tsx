@@ -852,7 +852,7 @@ export const SceneExplorer: FunctionComponent<{
 
     const selectEntity = useCallback(
         (selectedEntity: unknown) => {
-            const entity = selectedEntity as EntityBase;
+            const entity = selectedEntity as Nullable<EntityBase>;
             if (entity && entity.uniqueId != undefined) {
                 const parentStack = getParentStack(entity);
                 if (parentStack.length > 0) {
@@ -879,11 +879,9 @@ export const SceneExplorer: FunctionComponent<{
     }, [selectedEntity, selectEntity]);
 
     useEffect(() => {
-        // If there are no open items, then it should mean scene explorer has only just mounted, so we should select the already selected entity.
-        if (openItems.size === 0) {
-            selectEntity(selectedEntity);
-        }
-    }, [openItems, selectEntity, selectedEntity]);
+        // When the component first mounts, select the currently selected entity to ensure it is visible.
+        selectEntity(selectedEntity);
+    }, []);
 
     // We need to wait for a render to complete before we can scroll to the item, hence the isScrollToPending.
     useEffect(() => {

@@ -100,6 +100,23 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
      */
     public isMainObjectRenderer = false;
 
+    private _renderMeshes = true;
+    /**
+     * Defines if meshes should be rendered (default is true).
+     */
+    public get renderMeshes() {
+        return this._renderMeshes;
+    }
+
+    public set renderMeshes(value: boolean) {
+        if (value === this._renderMeshes) {
+            return;
+        }
+
+        this._renderMeshes = value;
+        this._renderer.renderMeshes = value;
+    }
+
     private _renderParticles = true;
     /**
      * Defines if particles should be rendered (default is true).
@@ -275,51 +292,22 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         return this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
     }
 
+    public override getClassName(): string {
+        return "FrameGraphObjectRendererTask";
+    }
+
     public record(skipCreationOfDisabledPasses = false, additionalExecute?: (context: FrameGraphRenderContext) => void): FrameGraphRenderPass {
-        if (this.targetTexture === undefined || this.objectList === undefined) {
-            throw new Error(`FrameGraphObjectRendererTask ${this.name}: targetTexture and objectList are required`);
-        }
+        this._checkParameters();
 
         // Make sure the renderList / particleSystemList are set when FrameGraphObjectRendererTask.isReady() is called!
         this._renderer.renderList = this.objectList.meshes;
         this._renderer.particleSystemList = this.objectList.particleSystems;
 
-        const targetTextures = Array.isArray(this.targetTexture) ? this.targetTexture : [this.targetTexture];
+        const targetTextures = this._getTargetHandles();
 
-        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(targetTextures[0]);
+        const depthEnabled = this._checkTextureCompatibility(targetTextures);
 
-        let depthEnabled = false;
-
-        if (this.depthTexture !== undefined) {
-            if (this.depthTexture === backbufferDepthStencilTextureHandle && (targetTextures[0] !== backbufferColorTextureHandle || targetTextures.length > 1)) {
-                throw new Error(
-                    `FrameGraphObjectRendererTask ${this.name}: the back buffer color texture is the only color texture allowed when the depth is the back buffer depth/stencil`
-                );
-            }
-            if (this.depthTexture !== backbufferDepthStencilTextureHandle && targetTextures[0] === backbufferColorTextureHandle) {
-                throw new Error(
-                    `FrameGraphObjectRendererTask ${this.name}: the back buffer depth/stencil texture is the only depth texture allowed when the target is the back buffer color`
-                );
-            }
-
-            const depthTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.depthTexture);
-            if (depthTextureDescription.options.samples !== outputTextureDescription.options.samples) {
-                throw new Error(
-                    `FrameGraphObjectRendererTask ${this.name}: the depth texture "${depthTextureDescription.options.labels?.[0] ?? "noname"}" (${depthTextureDescription.options.samples} samples) and the output texture "${outputTextureDescription.options.labels?.[0] ?? "noname"}" (${outputTextureDescription.options.samples} samples) must have the same number of samples`
-                );
-            }
-
-            depthEnabled = true;
-        }
-
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, targetTextures[0]);
-        if (this.depthTexture !== undefined) {
-            this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
-        }
-
-        this._textureWidth = outputTextureDescription.size.width;
-        this._textureHeight = outputTextureDescription.size.height;
-
+        this._resolveDanglingHandles(targetTextures);
         this._setLightsForShadow();
 
         const pass = this._frameGraph.addRenderPass(this.name);
@@ -344,7 +332,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
                 currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
             }
 
-            context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
+            this._prepareRendering(context, depthEnabled);
 
             const camera = this._renderer.activeCamera;
             if (camera && camera.cameraRigMode !== Constants.RIG_MODE_NONE && !camera._renderingMultiview) {
@@ -390,6 +378,66 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             this._renderer.dispose();
         }
         super.dispose();
+    }
+
+    protected _resolveDanglingHandles(targetTextures: FrameGraphTextureHandle[]) {
+        if (targetTextures.length > 0) {
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, targetTextures[0]);
+        }
+
+        if (this.depthTexture !== undefined) {
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
+        }
+    }
+
+    protected _checkParameters() {
+        if (this.targetTexture === undefined || this.objectList === undefined || this.camera === undefined) {
+            throw new Error(`FrameGraphObjectRendererTask ${this.name}: targetTexture, objectList, and camera are required`);
+        }
+    }
+
+    protected _checkTextureCompatibility(targetTextures: FrameGraphTextureHandle[]): boolean {
+        const className = this.getClassName();
+
+        let outputTextureDescription = targetTextures.length > 0 ? this._frameGraph.textureManager.getTextureDescription(targetTextures[0]) : null;
+        let depthEnabled = false;
+
+        if (this.depthTexture !== undefined) {
+            if (outputTextureDescription && this.depthTexture !== backbufferDepthStencilTextureHandle && targetTextures[0] === backbufferColorTextureHandle) {
+                throw new Error(`${className} ${this.name}: the back buffer depth/stencil texture is the only depth texture allowed when the target is the back buffer color`);
+            }
+
+            const depthTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.depthTexture);
+            if (!outputTextureDescription) {
+                outputTextureDescription = depthTextureDescription;
+            }
+            if (depthTextureDescription.options.samples !== outputTextureDescription.options.samples) {
+                throw new Error(
+                    `${className} ${this.name}: the depth texture "${depthTextureDescription.options.labels?.[0] ?? "noname"}" (${depthTextureDescription.options.samples} samples) and the output texture "${outputTextureDescription.options.labels?.[0] ?? "noname"}" (${outputTextureDescription.options.samples} samples) must have the same number of samples`
+                );
+            }
+
+            if (depthTextureDescription.size.width !== outputTextureDescription.size.width || depthTextureDescription.size.height !== outputTextureDescription.size.height) {
+                throw new Error(
+                    `${className} ${this.name}: the depth texture (size: ${depthTextureDescription.size.width}x${depthTextureDescription.size.height}) and the target texture (size: ${outputTextureDescription.size.width}x${outputTextureDescription.size.height}) must have the same dimensions.`
+                );
+            }
+
+            depthEnabled = true;
+        }
+
+        this._textureWidth = outputTextureDescription?.size.width ?? 1;
+        this._textureHeight = outputTextureDescription?.size.height ?? 1;
+
+        return depthEnabled;
+    }
+
+    protected _getTargetHandles(): FrameGraphTextureHandle[] {
+        return Array.isArray(this.targetTexture) ? this.targetTexture : [this.targetTexture];
+    }
+
+    protected _prepareRendering(context: FrameGraphRenderContext, depthEnabled: boolean) {
+        context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
     }
 
     protected _setLightsForShadow() {

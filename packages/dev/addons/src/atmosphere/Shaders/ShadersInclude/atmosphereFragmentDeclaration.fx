@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 uniform vec3 peakRayleighScattering;
 uniform float planetRadius;

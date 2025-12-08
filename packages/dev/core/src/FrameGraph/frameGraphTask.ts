@@ -67,6 +67,14 @@ export abstract class FrameGraphTask {
     public abstract record(skipCreationOfDisabledPasses?: boolean): void;
 
     /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName(): string {
+        return "FrameGraphTask";
+    }
+
+    /**
      * This function is called once after the task has been added to the frame graph and before the frame graph is built for the first time.
      * This allows you to initialize asynchronous resources, which is not possible in the constructor.
      * @returns A promise that resolves when the initialization is complete.
@@ -219,9 +227,13 @@ export abstract class FrameGraphTask {
 
         this.onBeforeTaskExecute.notifyObservers(this);
 
+        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`, 2);
+
         for (const pass of passes) {
             pass._execute();
         }
+
+        this._frameGraph.engine._debugPopGroup?.(2);
 
         this.onAfterTaskExecute.notifyObservers(this);
     }

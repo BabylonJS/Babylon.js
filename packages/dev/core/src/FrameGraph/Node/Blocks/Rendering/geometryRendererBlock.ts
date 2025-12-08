@@ -1,5 +1,5 @@
-import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraph, FrameGraphTextureHandle, FrameGraphObjectList, Camera } from "core/index";
-import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
+import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraph } from "core/index";
+import { NodeRenderGraphBaseObjectRendererBlock } from "./baseObjectRendererBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
@@ -9,10 +9,8 @@ import { Constants } from "core/Engines/constants";
 /**
  * Block that render geometry of objects to a multi render target
  */
-export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
+export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObjectRendererBlock {
     protected override _frameGraphTask: FrameGraphGeometryRendererTask;
-
-    public override _additionalConstructionParameters: [boolean, boolean];
 
     /**
      * Gets the frame graph task associated with this block
@@ -32,14 +30,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene, doNotChangeAspectRatio = true, enableClusteredLights = true) {
         super(name, frameGraph, scene);
 
-        this._additionalConstructionParameters = [doNotChangeAspectRatio, enableClusteredLights];
+        this.getInputByName("target")!.isOptional = true;
 
-        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
-        this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
-        this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
-        this._addDependenciesInput();
-
-        this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("geomViewDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth);
         this.registerOutput("geomNormViewDepth", NodeRenderGraphBlockConnectionPointTypes.TextureNormalizedViewDepth);
         this.registerOutput("geomScreenDepth", NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth);
@@ -52,98 +44,65 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.registerOutput("geomVelocity", NodeRenderGraphBlockConnectionPointTypes.TextureVelocity);
         this.registerOutput("geomLinearVelocity", NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity);
 
-        this.depth.addExcludedConnectionPointFromAllowedTypes(
-            NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment | NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment
-        );
-
-        this.outputDepth._typeConnectionSource = this.depth;
-
         this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, frameGraph, scene, { doNotChangeAspectRatio, enableClusteredLights });
     }
 
-    /** Indicates if depth testing must be enabled or disabled */
-    @editableInPropertyPage("Depth test", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public get depthTest() {
-        return this._frameGraphTask.depthTest;
-    }
-
-    public set depthTest(value: boolean) {
-        this._frameGraphTask.depthTest = value;
-    }
-
-    /** Indicates if depth writing must be enabled or disabled */
-    @editableInPropertyPage("Depth write", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public get depthWrite() {
-        return this._frameGraphTask.depthWrite;
-    }
-
-    public set depthWrite(value: boolean) {
-        this._frameGraphTask.depthWrite = value;
-    }
-
-    /** Indicates if layer mask check must be forced */
-    @editableInPropertyPage("Force layer mask check", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public get forceLayerMaskCheck() {
-        return this._frameGraphTask.forceLayerMaskCheck;
-    }
-
-    public set forceLayerMaskCheck(value: boolean) {
-        this._frameGraphTask.forceLayerMaskCheck = value;
-    }
-
-    protected _recreateFrameGraphObject(doNotChangeAspectRatio: boolean, enableClusteredLights: boolean): void {
-        const disabled = this._frameGraphTask.disabled;
-        const depthTest = this.depthTest;
-        const depthWrite = this.depthWrite;
-        const width = this.width;
-        const height = this.height;
-        const forceLayerMaskCheck = this.forceLayerMaskCheck;
-        const sizeInPercentage = this.sizeInPercentage;
-        const samples = this.samples;
-        const reverseCulling = this.reverseCulling;
-        const dontRenderWhenMaterialDepthWriteIsDisabled = this.dontRenderWhenMaterialDepthWriteIsDisabled;
-
-        this._frameGraphTask.dispose();
+    protected override _createFrameGraphObject(): void {
+        this._frameGraphTask?.dispose();
         this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, this._frameGraph, this._scene, {
-            doNotChangeAspectRatio: doNotChangeAspectRatio,
-            enableClusteredLights: enableClusteredLights,
+            doNotChangeAspectRatio: this._additionalConstructionParameters![0] as boolean,
+            enableClusteredLights: this._additionalConstructionParameters![1] as boolean,
         });
-        this._additionalConstructionParameters = [doNotChangeAspectRatio, enableClusteredLights];
-
-        this.depthTest = depthTest;
-        this.depthWrite = depthWrite;
-        this.width = width;
-        this.height = height;
-        this.forceLayerMaskCheck = forceLayerMaskCheck;
-        this.sizeInPercentage = sizeInPercentage;
-        this.samples = samples;
-        this.reverseCulling = reverseCulling;
-        this.dontRenderWhenMaterialDepthWriteIsDisabled = dontRenderWhenMaterialDepthWriteIsDisabled;
-        this._frameGraphTask.disabled = disabled;
     }
 
-    /** True (default) to not change the aspect ratio of the scene in the RTT */
-    @editableInPropertyPage("Do not change aspect ratio", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public get doNotChangeAspectRatio() {
-        return this._frameGraphTask.objectRenderer.options.doNotChangeAspectRatio;
+    protected override _saveState(state: { [key: string]: any }) {
+        super._saveState(state);
+        state.disabled = this._frameGraphTask.disabled;
+        state.isMainObjectRenderer = this.isMainObjectRenderer;
+        state.depthTest = this.depthTest;
+        state.depthWrite = this.depthWrite;
+        state.disableShadows = this.disableShadows;
+        state.renderInLinearSpace = this.renderInLinearSpace;
+        state.renderParticles = this.renderParticles;
+        state.renderSprites = this.renderSprites;
+        state.forceLayerMaskCheck = this.forceLayerMaskCheck;
+        state.enableBoundingBoxRendering = this.enableBoundingBoxRendering;
+        state.enableOutlineRendering = this.enableOutlineRendering;
+
+        state.width = this.width;
+        state.height = this.height;
+        state.sizeInPercentage = this.sizeInPercentage;
+        state.samples = this.samples;
+        state.reverseCulling = this.reverseCulling;
+        state.dontRenderWhenMaterialDepthWriteIsDisabled = this.dontRenderWhenMaterialDepthWriteIsDisabled;
+        state.disableDepthPrePass = this.disableDepthPrePass;
     }
 
-    public set doNotChangeAspectRatio(value: boolean) {
-        this._recreateFrameGraphObject(value, this.enableClusteredLights);
-    }
+    protected override _restoreState(state: { [key: string]: any }) {
+        super._restoreState(state);
+        this._frameGraphTask.disabled = state.disabled;
+        this.isMainObjectRenderer = state.isMainObjectRenderer;
+        this.depthTest = state.depthTest;
+        this.depthWrite = state.depthWrite;
+        this.disableShadows = state.disableShadows;
+        this.renderInLinearSpace = state.renderInLinearSpace;
+        this.renderParticles = state.renderParticles;
+        this.renderSprites = state.renderSprites;
+        this.forceLayerMaskCheck = state.forceLayerMaskCheck;
+        this.enableBoundingBoxRendering = state.enableBoundingBoxRendering;
+        this.enableOutlineRendering = state.enableOutlineRendering;
 
-    /** True (default) to enable clustered lights */
-    @editableInPropertyPage("Enable clustered lights", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public get enableClusteredLights() {
-        return this._frameGraphTask.objectRenderer.options.enableClusteredLights;
-    }
-
-    public set enableClusteredLights(value: boolean) {
-        this._recreateFrameGraphObject(this.doNotChangeAspectRatio, value);
+        this.width = state.width;
+        this.height = state.height;
+        this.sizeInPercentage = state.sizeInPercentage;
+        this.samples = state.samples;
+        this.reverseCulling = state.reverseCulling;
+        this.dontRenderWhenMaterialDepthWriteIsDisabled = state.dontRenderWhenMaterialDepthWriteIsDisabled;
+        this.disableDepthPrePass = state.disableDepthPrePass;
     }
 
     /** Width of the geometry texture */
-    @editableInPropertyPage("Texture width", PropertyTypeForEdition.Int, "PROPERTIES")
+    @editableInPropertyPage("Texture width", PropertyTypeForEdition.Int, "RENDERING - GEOMETRY")
     public get width() {
         return this._frameGraphTask.size.width;
     }
@@ -153,7 +112,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     }
 
     /** Height of the geometry texture */
-    @editableInPropertyPage("Texture height", PropertyTypeForEdition.Int, "PROPERTIES")
+    @editableInPropertyPage("Texture height", PropertyTypeForEdition.Int, "RENDERING - GEOMETRY")
     public get height() {
         return this._frameGraphTask.size.height;
     }
@@ -163,7 +122,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     }
 
     /** Indicates if the geometry texture width and height are percentages or absolute values */
-    @editableInPropertyPage("Size is in percentage", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Size is in percentage", PropertyTypeForEdition.Boolean, "RENDERING - GEOMETRY")
     public get sizeInPercentage() {
         return this._frameGraphTask.sizeIsPercentage;
     }
@@ -173,7 +132,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     }
 
     /** Number of samples of the geometry texture */
-    @editableInPropertyPage("Samples", PropertyTypeForEdition.Int, "PROPERTIES", { min: 1, max: 8 })
+    @editableInPropertyPage("Samples", PropertyTypeForEdition.Int, "RENDERING - GEOMETRY", { min: 1, max: 8 })
     public get samples() {
         return this._frameGraphTask.samples;
     }
@@ -183,7 +142,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     }
 
     /** Indicates if culling must be reversed */
-    @editableInPropertyPage("Reverse culling", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Reverse culling", PropertyTypeForEdition.Boolean, "RENDERING - GEOMETRY")
     public get reverseCulling() {
         return this._frameGraphTask.reverseCulling;
     }
@@ -193,7 +152,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     }
 
     /** Indicates if a mesh shouldn't be rendered when its material has depth write disabled */
-    @editableInPropertyPage("Don't render if material depth write is disabled", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    @editableInPropertyPage("Don't render if material depth write is disabled", PropertyTypeForEdition.Boolean, "RENDERING - GEOMETRY")
     public get dontRenderWhenMaterialDepthWriteIsDisabled() {
         return this._frameGraphTask.dontRenderWhenMaterialDepthWriteIsDisabled;
     }
@@ -202,101 +161,91 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.dontRenderWhenMaterialDepthWriteIsDisabled = value;
     }
 
-    /** If true, MSAA color textures will be resolved at the end of the render pass (default: true) */
-    @editableInPropertyPage("Resolve MSAA colors", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public get resolveMSAAColors() {
-        return this._frameGraphTask.resolveMSAAColors;
+    /** Indicates if depth pre-pass must be disabled */
+    @editableInPropertyPage("Disable depth pre-pass", PropertyTypeForEdition.Boolean, "RENDERING - GEOMETRY")
+    public get disableDepthPrePass() {
+        return this._frameGraphTask.disableDepthPrePass;
     }
 
-    public set resolveMSAAColors(value: boolean) {
-        this._frameGraphTask.resolveMSAAColors = value;
-    }
-
-    /** If true, MSAA depth texture will be resolved at the end of the render pass (default: false) */
-    @editableInPropertyPage("Resolve MSAA depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public get resolveMSAADepth() {
-        return this._frameGraphTask.resolveMSAADepth;
-    }
-
-    public set resolveMSAADepth(value: boolean) {
-        this._frameGraphTask.resolveMSAADepth = value;
+    public set disableDepthPrePass(value: boolean) {
+        this._frameGraphTask.disableDepthPrePass = value;
     }
 
     // View depth
-    @editableInPropertyPage("View depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - VIEW DEPTH")
     public viewDepthFormat = Constants.TEXTUREFORMAT_RED;
 
-    @editableInPropertyPage("View depth type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - VIEW DEPTH")
     public viewDepthType = Constants.TEXTURETYPE_FLOAT;
 
     // Normalized view depth
-    @editableInPropertyPage("Normalized view depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - NORMALIZED VIEW DEPTH")
     public normalizedViewDepthFormat = Constants.TEXTUREFORMAT_RED;
 
-    @editableInPropertyPage("Normalized view depth type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - NORMALIZED VIEW DEPTH")
     public normalizedViewDepthType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // Screen depth
-    @editableInPropertyPage("Screen depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - SCREEN DEPTH")
     public screenDepthFormat = Constants.TEXTUREFORMAT_RED;
 
-    @editableInPropertyPage("Screen depth type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - SCREEN DEPTH")
     public screenDepthType = Constants.TEXTURETYPE_FLOAT;
 
     // View normal
-    @editableInPropertyPage("View normal format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - VIEW NORMAL")
     public viewNormalFormat = Constants.TEXTUREFORMAT_RGBA;
 
-    @editableInPropertyPage("View normal type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - VIEW NORMAL")
     public viewNormalType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // World normal
-    @editableInPropertyPage("World normal format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - WORLD NORMAL")
     public worldNormalFormat = Constants.TEXTUREFORMAT_RGBA;
 
-    @editableInPropertyPage("World normal type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - WORLD NORMAL")
     public worldNormalType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // Local position
-    @editableInPropertyPage("Local position format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - LOCAL POSITION")
     public localPositionFormat = Constants.TEXTUREFORMAT_RGBA;
 
-    @editableInPropertyPage("Local position type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - LOCAL POSITION")
     public localPositionType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // World Position
-    @editableInPropertyPage("World position format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - WORLD POSITION")
     public worldPositionFormat = Constants.TEXTUREFORMAT_RGBA;
 
-    @editableInPropertyPage("World position type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - WORLD POSITION")
     public worldPositionType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     // Albedo
-    @editableInPropertyPage("Albedo format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - ALBEDO")
     public albedoFormat = Constants.TEXTUREFORMAT_RGBA;
 
-    @editableInPropertyPage("Albedo type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - ALBEDO")
     public albedoType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // Reflectivity
-    @editableInPropertyPage("Reflectivity format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - REFLECTIVITY")
     public reflectivityFormat = Constants.TEXTUREFORMAT_RGBA;
 
-    @editableInPropertyPage("Reflectivity type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - REFLECTIVITY")
     public reflectivityType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // Velocity
-    @editableInPropertyPage("Velocity format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - VELOCITY")
     public velocityFormat = Constants.TEXTUREFORMAT_RGBA;
 
-    @editableInPropertyPage("Velocity type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - VELOCITY")
     public velocityType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     // Linear velocity
-    @editableInPropertyPage("Linear velocity format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Format", PropertyTypeForEdition.TextureFormat, "OUTPUT - LINEAR VELOCITY")
     public linearVelocityFormat = Constants.TEXTUREFORMAT_RGBA;
 
-    @editableInPropertyPage("Linear velocity type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
+    @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - LINEAR VELOCITY")
     public linearVelocityType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     /**
@@ -308,108 +257,80 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     }
 
     /**
-     * Gets the depth texture input component
-     */
-    public get depth(): NodeRenderGraphConnectionPoint {
-        return this._inputs[0];
-    }
-
-    /**
-     * Gets the camera input component
-     */
-    public get camera(): NodeRenderGraphConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the objects input component
-     */
-    public get objects(): NodeRenderGraphConnectionPoint {
-        return this._inputs[2];
-    }
-
-    /**
-     * Gets the output depth component
-     */
-    public get outputDepth(): NodeRenderGraphConnectionPoint {
-        return this._outputs[0];
-    }
-
-    /**
      * Gets the geometry view depth component
      */
     public get geomViewDepth(): NodeRenderGraphConnectionPoint {
-        return this._outputs[1];
+        return this._outputs[3];
     }
 
     /**
      * Gets the geometry normalized view depth component
      */
     public get geomNormViewDepth(): NodeRenderGraphConnectionPoint {
-        return this._outputs[2];
+        return this._outputs[4];
     }
 
     /**
      * Gets the geometry screen depth component
      */
     public get geomScreenDepth(): NodeRenderGraphConnectionPoint {
-        return this._outputs[3];
+        return this._outputs[5];
     }
 
     /**
      * Gets the geometry view normal component
      */
     public get geomViewNormal(): NodeRenderGraphConnectionPoint {
-        return this._outputs[4];
+        return this._outputs[6];
     }
 
     /**
      * Gets the world geometry normal component
      */
     public get geomWorldNormal(): NodeRenderGraphConnectionPoint {
-        return this._outputs[5];
+        return this._outputs[7];
     }
 
     /**
      * Gets the geometry local position component
      */
     public get geomLocalPosition(): NodeRenderGraphConnectionPoint {
-        return this._outputs[6];
+        return this._outputs[8];
     }
 
     /**
      * Gets the geometry world position component
      */
     public get geomWorldPosition(): NodeRenderGraphConnectionPoint {
-        return this._outputs[7];
+        return this._outputs[9];
     }
 
     /**
      * Gets the geometry albedo component
      */
     public get geomAlbedo(): NodeRenderGraphConnectionPoint {
-        return this._outputs[8];
+        return this._outputs[10];
     }
 
     /**
      * Gets the geometry reflectivity component
      */
     public get geomReflectivity(): NodeRenderGraphConnectionPoint {
-        return this._outputs[9];
+        return this._outputs[11];
     }
 
     /**
      * Gets the geometry velocity component
      */
     public get geomVelocity(): NodeRenderGraphConnectionPoint {
-        return this._outputs[10];
+        return this._outputs[12];
     }
 
     /**
      * Gets the geometry linear velocity component
      */
     public get geomLinearVelocity(): NodeRenderGraphConnectionPoint {
-        return this._outputs[11];
+        return this._outputs[13];
     }
 
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
@@ -429,7 +350,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
             this.geomLinearVelocity.isConnected,
         ];
 
-        this.outputDepth.value = this._frameGraphTask.outputDepthTexture;
         this.geomViewDepth.value = this._frameGraphTask.geometryViewDepthTexture;
         this.geomNormViewDepth.value = this._frameGraphTask.geometryNormViewDepthTexture;
         this.geomScreenDepth.value = this._frameGraphTask.geometryScreenDepthTexture;
@@ -441,10 +361,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.geomReflectivity.value = this._frameGraphTask.geometryReflectivityTexture;
         this.geomVelocity.value = this._frameGraphTask.geometryVelocityTexture;
         this.geomLinearVelocity.value = this._frameGraphTask.geometryLinearVelocityTexture;
-
-        this._frameGraphTask.depthTexture = this.depth.connectedPoint?.value as FrameGraphTextureHandle;
-        this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
-        this._frameGraphTask.objectList = this.objects.connectedPoint?.value as FrameGraphObjectList;
 
         this._frameGraphTask.textureDescriptions = [];
 
@@ -501,12 +417,12 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
-        codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
-        codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
-        codes.push(`${this._codeVariableName}.forceLayerMaskCheck = ${this.forceLayerMaskCheck};`);
+        codes.push(`${this._codeVariableName}.size = { width: ${this.width}, height: ${this.height} };`);
+        codes.push(`${this._codeVariableName}.sizeInPercentage = ${this.sizeInPercentage};`);
         codes.push(`${this._codeVariableName}.samples = ${this.samples};`);
         codes.push(`${this._codeVariableName}.reverseCulling = ${this.reverseCulling};`);
         codes.push(`${this._codeVariableName}.dontRenderWhenMaterialDepthWriteIsDisabled = ${this.dontRenderWhenMaterialDepthWriteIsDisabled};`);
+        codes.push(`${this._codeVariableName}.disableDepthPrePass = ${this.disableDepthPrePass};`);
         codes.push(`${this._codeVariableName}.viewDepthFormat = ${this.viewDepthFormat};`);
         codes.push(`${this._codeVariableName}.viewDepthType = ${this.viewDepthType};`);
         codes.push(`${this._codeVariableName}.normalizedViewDepthFormat = ${this.normalizedViewDepthFormat};`);
@@ -529,19 +445,18 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         codes.push(`${this._codeVariableName}.velocityType = ${this.velocityType};`);
         codes.push(`${this._codeVariableName}.linearVelocityFormat = ${this.linearVelocityFormat};`);
         codes.push(`${this._codeVariableName}.linearVelocityType = ${this.linearVelocityType};`);
-        codes.push(`${this._codeVariableName}.resolveMSAAColors = ${this.resolveMSAAColors};`);
-        codes.push(`${this._codeVariableName}.resolveMSAADepth = ${this.resolveMSAADepth};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
     public override serialize(): any {
         const serializationObject = super.serialize();
-        serializationObject.depthTest = this.depthTest;
-        serializationObject.depthWrite = this.depthWrite;
-        serializationObject.forceLayerMaskCheck = this.forceLayerMaskCheck;
+        serializationObject.sizeInPercentage = this.sizeInPercentage;
+        serializationObject.width = this.width;
+        serializationObject.height = this.height;
         serializationObject.samples = this.samples;
         serializationObject.reverseCulling = this.reverseCulling;
         serializationObject.dontRenderWhenMaterialDepthWriteIsDisabled = this.dontRenderWhenMaterialDepthWriteIsDisabled;
+        serializationObject.disableDepthPrePass = this.disableDepthPrePass;
         serializationObject.viewDepthFormat = this.viewDepthFormat;
         serializationObject.viewDepthType = this.viewDepthType;
         serializationObject.normalizedViewDepthFormat = this.normalizedViewDepthFormat;
@@ -564,19 +479,18 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         serializationObject.velocityType = this.velocityType;
         serializationObject.linearVelocityFormat = this.linearVelocityFormat;
         serializationObject.linearVelocityType = this.linearVelocityType;
-        serializationObject.resolveMSAAColors = this.resolveMSAAColors;
-        serializationObject.resolveMSAADepth = this.resolveMSAADepth;
         return serializationObject;
     }
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
-        this.depthTest = serializationObject.depthTest;
-        this.depthWrite = serializationObject.depthWrite;
-        this.forceLayerMaskCheck = !!serializationObject.forceLayerMaskCheck;
+        this.sizeInPercentage = !!serializationObject.sizeInPercentage;
+        this.width = serializationObject.width ?? 100;
+        this.height = serializationObject.height ?? 100;
         this.samples = serializationObject.samples;
         this.reverseCulling = serializationObject.reverseCulling;
         this.dontRenderWhenMaterialDepthWriteIsDisabled = serializationObject.dontRenderWhenMaterialDepthWriteIsDisabled;
+        this.disableDepthPrePass = serializationObject.disableDepthPrePass ?? true;
         this.viewDepthFormat = serializationObject.viewDepthFormat;
         this.viewDepthType = serializationObject.viewDepthType;
         this.normalizedViewDepthFormat = serializationObject.normalizedViewDepthFormat ?? Constants.TEXTUREFORMAT_RED;
@@ -599,8 +513,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.velocityType = serializationObject.velocityType;
         this.linearVelocityFormat = serializationObject.linearVelocityFormat;
         this.linearVelocityType = serializationObject.linearVelocityType;
-        this.resolveMSAAColors = serializationObject.resolveMSAAColors ?? true;
-        this.resolveMSAADepth = serializationObject.resolveMSAADepth ?? false;
     }
 }
 

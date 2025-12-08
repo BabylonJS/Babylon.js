@@ -2,7 +2,6 @@
 // eslint-disable-next-line import/no-internal-modules
 import type { Camera, FrameGraph, Nullable } from "core/index";
 import { FrameGraphObjectRendererTask } from "core/FrameGraph/Tasks/Rendering/objectRendererTask";
-import { FrameGraphGeometryRendererTask } from "core/FrameGraph/Tasks/Rendering/geometryRendererTask";
 import { FrameGraphUtilityLayerRendererTask } from "core/FrameGraph/Tasks/Rendering/utilityLayerRendererTask";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 
@@ -19,12 +18,12 @@ export function FindMainCamera(frameGraph: FrameGraph): Nullable<Camera> {
         return mainObjectRenderer.camera;
     }
 
-    // Try to find a camera in either the geometry renderer or the utility layer renderer tasks
+    // Try to find a camera in the utility layer renderer tasks
     const tasks = frameGraph.tasks;
 
     for (let i = tasks.length - 1; i >= 0; i--) {
         const task = tasks[i];
-        if (task instanceof FrameGraphGeometryRendererTask || task instanceof FrameGraphUtilityLayerRendererTask) {
+        if (task instanceof FrameGraphUtilityLayerRendererTask) {
             return task.camera;
         }
     }
@@ -34,8 +33,8 @@ export function FindMainCamera(frameGraph: FrameGraph): Nullable<Camera> {
 
 /**
  * Looks for the main object renderer task in the frame graph.
- * By default, this is the object renderer task with isMainObjectRenderer set to true.
- * If no such task, we return the last object renderer task that has an object list with meshes (or null if none found).
+ * By default, this is the object/geometry renderer task with isMainObjectRenderer set to true.
+ * If no such task, we return the last object/geometry renderer task that has an object list with meshes (or null if none found).
  * @param frameGraph The frame graph to search in
  * @returns The main object renderer of the frame graph, or null if not found
  */
@@ -44,10 +43,11 @@ export function FindMainObjectRenderer(frameGraph: FrameGraph): Nullable<FrameGr
 
     let fallbackRenderer: Nullable<FrameGraphObjectRendererTask> = null;
     for (let i = objectRenderers.length - 1; i >= 0; --i) {
+        const meshes = objectRenderers[i].objectList.meshes;
         if (objectRenderers[i].isMainObjectRenderer) {
             return objectRenderers[i];
         }
-        if (objectRenderers[i].objectList.meshes && !fallbackRenderer) {
+        if ((!meshes || meshes.length > 0) && !fallbackRenderer) {
             fallbackRenderer = objectRenderers[i];
         }
     }
