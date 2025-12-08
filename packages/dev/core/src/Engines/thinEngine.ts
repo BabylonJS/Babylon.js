@@ -4621,7 +4621,7 @@ export class ThinEngine extends AbstractEngine {
                 const tempcanvas = AbstractEngine._CreateCanvas(1, 1);
                 const gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
-                this._IsSupported = gl != null && !!window.WebGLRenderingContext;
+                this._IsSupported = gl != null && !!globalThis.WebGLRenderingContext;
             } catch (e) {
                 this._IsSupported = false;
             }

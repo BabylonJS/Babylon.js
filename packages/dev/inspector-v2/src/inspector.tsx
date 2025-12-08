@@ -5,7 +5,6 @@ import type { ModularToolOptions } from "./modularTool";
 import type { ISceneContext } from "./services/sceneContext";
 import type { IShellService } from "./services/shellService";
 
-import { makeStyles } from "@fluentui/react-components";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
@@ -169,24 +168,15 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             friendlyName: "Canvas Injector",
             consumes: [ShellServiceIdentity],
             factory: (shellService) => {
-                const useStyles = makeStyles({
-                    canvasContainer: {
-                        display: canvasContainerDisplay,
-                        width: "100%",
-                        height: "100%",
-                    },
-                });
-
                 const registration = shellService.addCentralContent({
                     key: "Canvas Injector",
                     component: () => {
-                        const classes = useStyles();
                         const canvasContainerRef = useRef<HTMLDivElement>(null);
                         useEffect(() => {
                             canvasContainerRef.current?.replaceChildren(...canvasContainerChildren);
                         }, []);
 
-                        return <div ref={canvasContainerRef} className={classes.canvasContainer} />;
+                        return <div ref={canvasContainerRef} style={{ display: canvasContainerDisplay, width: "100%", height: "100%" }} />;
                     },
                 });
 

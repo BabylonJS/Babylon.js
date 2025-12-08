@@ -14,6 +14,10 @@ export class FrameGraphBloomMergeTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinBloomMergePostProcess(name, frameGraph.engine));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphBloomMergeTask";
+    }
+
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.blurTexture === undefined) {
             throw new Error(`FrameGraphBloomMergeTask "${this.name}": sourceTexture and blurTexture are required`);

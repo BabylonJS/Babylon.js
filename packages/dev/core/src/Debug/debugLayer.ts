@@ -174,7 +174,7 @@ declare module "../scene" {
          * @internal
          * Backing field
          */
-        _debugLayer: DebugLayer;
+        _debugLayer?: DebugLayer;
 
         /**
          * Gets the debug layer (aka Inspector) associated with the scene

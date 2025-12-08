@@ -19,7 +19,7 @@ import {
 } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
-import { ClusteredLightContainer } from "core/Lights/Clustered";
+import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { TransformNode } from "core/Meshes/transformNode";

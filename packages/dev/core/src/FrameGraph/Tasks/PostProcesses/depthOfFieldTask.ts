@@ -133,6 +133,10 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
         return this.depthOfField.isReady();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphDepthOfFieldTask";
+    }
+
     public record(): void {
         if (this.sourceTexture === undefined || this.depthTexture === undefined || this.camera === undefined) {
             throw new Error("FrameGraphDepthOfFieldTask: sourceTexture, depthTexture and camera are required");

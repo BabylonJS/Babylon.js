@@ -6,6 +6,7 @@ uniform lightDir: vec3f; // must be normalized
 uniform outputTextureSize: vec2f;
 uniform extinctionPhaseG: vec4f;
 uniform lightPower: vec3f;
+uniform textureRatio: vec2f;
 
 var depthTexture: texture_2d<f32>;
 
@@ -28,7 +29,7 @@ fn integrateDirectional(eyeDist: f32, viewDir: vec3f, lightDir: vec3f) -> vec3f 
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    var depth = textureLoad(depthTexture, vec2u(fragmentInputs.position.xy), 0).r;
+    let depth = textureLoad(depthTexture, vec2u(fragmentInputs.position.xy * uniforms.textureRatio), 0).r;
 
     var worldPos = fragmentInputs.vWorldPos;
 

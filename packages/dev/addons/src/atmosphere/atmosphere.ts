@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { AtmospherePBRMaterialPlugin } from "./atmospherePBRMaterialPlugin";
@@ -916,7 +916,7 @@ export class Atmosphere implements IDisposable {
         const ubo = this.uniformBuffer;
         const useUbo = ubo.useUbo;
 
-        const defines: string[] = ["#define POSITION_VEC2"];
+        const defines = ["#define POSITION_VEC2"];
         if (!this._groundAlbedo.equals(Color3.BlackReadOnly)) {
             defines.push("#define USE_GROUND_ALBEDO");
         }
@@ -927,8 +927,8 @@ export class Atmosphere implements IDisposable {
             vertexShader: "fullscreenTriangle",
             fragmentShader: "multiScattering",
             attributeNames: ["position"],
-            uniformNames: ["depth", ...(useUbo ? [] : this.uniformBuffer.getUniformNames())],
-            uniformBuffers: useUbo ? [this.uniformBuffer.name] : [],
+            uniformNames: ["depth", ...(useUbo ? [] : ubo.getUniformNames())],
+            uniformBuffers: useUbo ? [ubo.name] : [],
             samplerNames: ["transmittanceLut"],
             defines,
             useShaderStore: true,

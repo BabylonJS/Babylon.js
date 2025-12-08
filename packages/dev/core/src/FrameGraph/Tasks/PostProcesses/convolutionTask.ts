@@ -18,6 +18,10 @@ export class FrameGraphConvolutionTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinConvolutionPostProcess(name, frameGraph.engine, ThinConvolutionPostProcess.EmbossKernel));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphConvolutionTask";
+    }
+
     public override record(
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,

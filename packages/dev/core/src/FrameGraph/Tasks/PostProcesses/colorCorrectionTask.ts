@@ -18,4 +18,8 @@ export class FrameGraphColorCorrectionTask extends FrameGraphPostProcessTask {
     constructor(name: string, frameGraph: FrameGraph, colorTableUrl: string, thinPostProcess?: ThinColorCorrectionPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinColorCorrectionPostProcess(name, frameGraph.scene, colorTableUrl));
     }
+
+    public override getClassName(): string {
+        return "FrameGraphColorCorrectionTask";
+    }
 }

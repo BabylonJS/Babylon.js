@@ -5,6 +5,7 @@ uniform vec3 lightDir; // must be normalized
 uniform vec2 outputTextureSize;
 uniform vec4 extinctionPhaseG;
 uniform vec3 lightPower;
+uniform vec2 textureRatio;
 
 uniform sampler2D depthTexture;
 
@@ -26,7 +27,7 @@ vec3 integrateDirectional(float eyeDist, vec3 viewDir, vec3 lightDir) {
 }
 
 void main(void) {
-    float depth = texelFetch(depthTexture, ivec2(gl_FragCoord.xy), 0).r;
+    float depth = texelFetch(depthTexture, ivec2(gl_FragCoord.xy * textureRatio), 0).r;
     vec4 worldPos = vWorldPos;
 
     if (gl_FragCoord.z > depth) {
