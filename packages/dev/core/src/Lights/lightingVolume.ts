@@ -11,6 +11,8 @@ import { StorageBuffer } from "core/Buffers/storageBuffer";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { VertexBuffer } from "core/Buffers/buffer";
 
+import "core/ShadersWGSL/lightingVolume.compute";
+
 const TmpVec3 = new Vector3();
 
 /**
@@ -38,7 +40,6 @@ export class LightingVolume {
     private _positions: Float32Array;
     private _indices: number[];
     private _needFullUpdateUBO = true;
-    private _webGPUReady = false;
 
     private _shadowGenerator?: ShadowGenerator;
     /**
@@ -163,15 +164,6 @@ export class LightingVolume {
         scene.meshes.splice(scene.meshes.indexOf(this._mesh), 1);
 
         if (this._engine.isWebGPU) {
-            // eslint-disable-next-line github/no-then
-            void import("../ShadersWGSL/lightingVolume.compute").then(() => {
-                this._webGPUReady = true;
-                this._createComputeShader();
-                if (this._indices.length === 0) {
-                    this._createGeometry();
-                }
-            });
-
             this._uBuffer = new UniformBuffer(this._engine);
 
             this._uBuffer.addUniform("invViewProjMatrix", 16);
@@ -182,6 +174,8 @@ export class LightingVolume {
             this._uBuffer.addUniform("orthoMin", 3);
             this._uBuffer.addUniform("orthoMax", 3);
             this._uBuffer.update();
+
+            this._createComputeShader();
         } else {
             this._copyTexture = new CopyTextureToTexture(this._engine, false, true);
             this._createFallbackTextures();
@@ -203,9 +197,6 @@ export class LightingVolume {
         if (this._cs2) {
             isReady = this._cs2.isReady() && isReady;
         }
-        if (this._engine.isWebGPU && !this._webGPUReady) {
-            isReady = false;
-        }
         return isReady;
     }
 
@@ -214,7 +205,7 @@ export class LightingVolume {
      * @param forceUpdate If true, forces the update even if the frequency condition is not met.
      */
     public update(forceUpdate = false) {
-        if (this._tesselation === 0 || !this._shadowGenerator || (this._engine.isWebGPU && !this._webGPUReady)) {
+        if (this._tesselation === 0 || !this._shadowGenerator) {
             return;
         }
 
@@ -479,7 +470,7 @@ export class LightingVolume {
     private _createGeometry() {
         const light = this._light;
 
-        if (!light || (this._engine.isWebGPU && !this._webGPUReady)) {
+        if (!light) {
             return;
         }
 
@@ -517,7 +508,7 @@ export class LightingVolume {
     private _updateGeometry() {
         const light = this._light;
 
-        if (!light || !this._shadowGenerator || (this._engine.isWebGPU && !this._webGPUReady)) {
+        if (!light || !this._shadowGenerator) {
             return;
         }
 
