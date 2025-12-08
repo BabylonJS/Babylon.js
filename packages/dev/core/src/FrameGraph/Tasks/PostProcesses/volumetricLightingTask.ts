@@ -183,7 +183,7 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
     }
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public override initAsync(): Promise<any> {
+    public override initAsync(): Promise<unknown> {
         if (this._frameGraph.engine.isWebGPU) {
             return Promise.all([import("../../../ShadersWGSL/volumetricLightingRenderVolume.vertex"), import("../../../ShadersWGSL/volumetricLightingRenderVolume.fragment")]);
         }

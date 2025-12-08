@@ -31,7 +31,7 @@ export class FrameGraph implements IDisposable {
     private readonly _tasks: FrameGraphTask[] = [];
     private readonly _passContext: FrameGraphContext;
     private readonly _renderContext: FrameGraphRenderContext;
-    private readonly _initAsyncPromises: Promise<void>[] = [];
+    private readonly _initAsyncPromises: Promise<unknown>[] = [];
     private _currentProcessedTask: FrameGraphTask | null = null;
     private _whenReadyAsyncCancel: Nullable<() => void> = null;
     private _importPromise: Promise<any>;
