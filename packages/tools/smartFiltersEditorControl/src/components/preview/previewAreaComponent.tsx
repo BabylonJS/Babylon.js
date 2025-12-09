@@ -9,11 +9,22 @@ interface IPreviewAreaComponentProps {
     allowPreviewFillMode: boolean;
 }
 
+interface IPreviewAreaComponentState {
+    isLoading: boolean;
+    isDragging: boolean;
+    dragPointerStartX: number;
+    dragPointerStartY: number;
+    dragTranslateStartX: number;
+    dragTranslateStartY: number;
+    deltaX: number;
+    deltaY: number;
+}
+
 /**
  * Creates the canvas for preview, sets the size based on the PreviewSizeManager's state, and tells the engine to resize
  * when the canvas changes natural size.
  */
-export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentProps, { isLoading: boolean }> {
+export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentProps, IPreviewAreaComponentState> {
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
     private _onPreviewResetRequiredObserver: Nullable<Observer<void>>;
     private _onModeChangedObserver: Nullable<Observer<PreviewSizeMode>>;
@@ -30,7 +41,7 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
     constructor(props: IPreviewAreaComponentProps) {
         super(props);
 
-        this.state = { isLoading: false };
+        this.state = { isLoading: false, isDragging: false, dragPointerStartX: 0, dragPointerStartY: 0, dragTranslateStartX: 0, dragTranslateStartY: 0, deltaX: 0, deltaY: 0 };
 
         this._canvasResizeObserver = new ResizeObserver(() => {
             if (this.props.globalState.engine) {
@@ -103,9 +114,14 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
                 canvasStyle = { width: "100%", height: "100%" };
                 break;
             case FixedMode:
+                divStyle = {
+                    height: "100%",
+                };
                 canvasStyle = {
                     width: this.props.globalState.previewSizeManager.fixedWidth.value + "px",
                     height: this.props.globalState.previewSizeManager.fixedHeight.value + "px",
+                    position: "relative",
+                    transform: `translate(${this.state.deltaX}px, ${this.state.deltaY}px)`,
                 };
                 break;
             case "aspectRatio":
@@ -115,7 +131,15 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
 
         return (
             <>
-                <div id="preview" style={divStyle}>
+                <div
+                    id="preview"
+                    style={divStyle}
+                    onPointerDown={this.onPointerDown}
+                    onDoubleClick={this.onDoubleClick}
+                    onPointerMove={this.onPointerMove}
+                    onPointerUp={this.onPointerUp}
+                    onPointerCancel={this.onPointerCancel}
+                >
                     <canvas id="sfe-preview-canvas" style={canvasStyle} className={"preview-background-" + this.props.globalState.previewBackground} ref={this._canvasRef} />
                     {!this.props.globalState.smartFilter ? <div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div> : <></>}
                 </div>
@@ -129,5 +153,57 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
         if (canvas) {
             this._canvasResizeObserver.observe(canvas);
         }
+    }
+
+    private onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+        if (!this._isDragSupported()) {
+            return;
+        }
+        this.setState({
+            isDragging: true,
+            dragPointerStartX: event.clientX,
+            dragPointerStartY: event.clientY,
+            dragTranslateStartX: this.state.deltaX,
+            dragTranslateStartY: this.state.deltaY,
+        });
+        event.preventDefault();
+        this._canvasRef.current?.setPointerCapture(event.pointerId);
+    };
+
+    private onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+        if (!this._isDragSupported()) {
+            return;
+        }
+        if (this.state.isDragging) {
+            const deltaX = this.state.dragTranslateStartX + (event.clientX - this.state.dragPointerStartX);
+            const deltaY = this.state.dragTranslateStartY + (event.clientY - this.state.dragPointerStartY);
+            this.setState({ deltaX, deltaY });
+        }
+    };
+
+    private onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+        if (!this._isDragSupported()) {
+            return;
+        }
+        this.setState({ isDragging: false });
+        this._canvasRef.current?.releasePointerCapture(event.pointerId);
+    };
+
+    private onPointerCancel = () => {
+        if (!this._isDragSupported()) {
+            return;
+        }
+        this.setState({ isDragging: false });
+    };
+
+    private onDoubleClick = () => {
+        if (!this._isDragSupported()) {
+            return;
+        }
+        this.setState({ isDragging: false, deltaX: 0, deltaY: 0 });
+    };
+
+    private _isDragSupported() {
+        return this.props.globalState.previewSizeManager.mode.value === FixedMode;
     }
 }
