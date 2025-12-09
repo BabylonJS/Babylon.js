@@ -58,8 +58,8 @@ fn main(input : VertexInputs) -> FragmentInputs {
     let worldRot: mat3x3f =  mat3x3f(mesh.world[0].xyz, mesh.world[1].xyz, mesh.world[2].xyz);
     let normWorldRot: mat3x3f = inverseMat3(worldRot);
 
-    var dir: vec3f = normalize(normWorldRot * (worldPos.xyz - uniforms.eyePosition.xyz));
-    vertexOutputs.vColor = vec4f(splat.color.xyz + computeSH(splat, dir), splat.color.w * uniforms.alpha);
+    var eyeToSplatLocalSpace: vec3f = normalize(normWorldRot * (worldPos.xyz - uniforms.eyePosition.xyz));
+    vertexOutputs.vColor = vec4f(splat.color.xyz + computeSH(splat, eyeToSplatLocalSpace), splat.color.w * uniforms.alpha);
 #else
     vertexOutputs.vColor = vec4f(splat.color.xyz, splat.color.w * uniforms.alpha);
 #endif

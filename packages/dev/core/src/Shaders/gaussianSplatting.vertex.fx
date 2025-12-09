@@ -54,8 +54,8 @@ void main () {
     mat3 worldRot = mat3(world);
     mat3 normWorldRot = inverseMat3(worldRot);
 
-    vec3 dir = normalize(normWorldRot * (worldPos.xyz - eyePosition));
-    vColor.xyz = splat.color.xyz + computeSH(splat, dir);
+    vec3 eyeToSplatLocalSpace = normalize(normWorldRot * (worldPos.xyz - eyePosition));
+    vColor.xyz = splat.color.xyz + computeSH(splat, eyeToSplatLocalSpace);
 #endif
     vColor.w *= alpha;
 
