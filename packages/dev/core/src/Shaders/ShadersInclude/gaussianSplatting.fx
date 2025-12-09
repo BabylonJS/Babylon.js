@@ -244,9 +244,7 @@ vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 
         );
     }
 
-    mat3 invy = mat3(1, 0, 0, 0, -1, 0, 0, 0, 1);
-
-    mat3 T = invy * transpose(mat3(modelView)) * J;
+    mat3 T = transpose(mat3(modelView)) * J;
     mat3 cov2d = transpose(T) * Vrk * T;
 
 #if COMPENSATION

@@ -55,16 +55,14 @@ export function ParseSpz(data: ArrayBuffer, scene: Scene, loadingOptions: SPLATL
     const rot = new Uint8ClampedArray(buffer);
 
     let coordinateSign = 1;
-    let quaternionOffset = 0;
     if (!loadingOptions.flipY) {
         coordinateSign = -1;
-        quaternionOffset = 255;
     }
     // positions
     for (let i = 0; i < splatCount; i++) {
         position[i * 8 + 0] = read24bComponent(ubuf, byteOffset + 0);
         position[i * 8 + 1] = coordinateSign * read24bComponent(ubuf, byteOffset + 3);
-        position[i * 8 + 2] = -coordinateSign * read24bComponent(ubuf, byteOffset + 6);
+        position[i * 8 + 2] = read24bComponent(ubuf, byteOffset + 6);
         byteOffset += 9;
     }
 
@@ -149,8 +147,8 @@ export function ParseSpz(data: ArrayBuffer, scene: Scene, loadingOptions: SPLATL
         */
         for (let i = 0; i < splatCount; i++) {
             const x = ubuf[byteOffset + 0];
-            const y = ubuf[byteOffset + 1]; // * coordinateSign + quaternionOffset;
-            const z = ubuf[byteOffset + 2] * coordinateSign + quaternionOffset;
+            const y = ubuf[byteOffset + 1];
+            const z = ubuf[byteOffset + 2];
             const nx = x / 127.5 - 1;
             const ny = y / 127.5 - 1;
             const nz = z / 127.5 - 1;
