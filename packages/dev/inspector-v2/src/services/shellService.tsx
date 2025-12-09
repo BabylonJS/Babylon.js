@@ -1,4 +1,4 @@
-import type { GriffelRenderer, MenuTriggerProps } from "@fluentui/react-components";
+import type { MenuTriggerProps } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 
 import type { IDisposable, Nullable } from "core/index";
@@ -6,7 +6,6 @@ import type { IService, ServiceDefinition } from "../modularity/serviceDefinitio
 
 import {
     Button,
-    createDOMRenderer,
     Divider,
     Toolbar as FluentToolbar,
     makeStyles,
@@ -18,8 +17,6 @@ import {
     MenuPopover,
     MenuTrigger,
     mergeClasses,
-    Portal,
-    RendererProvider,
     SplitButton,
     Subtitle2Stronger,
     tokens,
@@ -45,6 +42,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 
 import { Observable } from "core/Misc/observable";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { useChildWindow } from "../components/childWindow";
 import { TeachingMoment } from "../components/teachingMoment";
 import { Theme } from "../components/theme";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
@@ -692,7 +690,9 @@ function usePane(
     const [topSelectedTab, setTopSelectedTab] = useState<SidePaneDefinition>();
     const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePaneDefinition>();
     const [collapsed, setCollapsed] = useState(false);
-    const [undocked, setUndocked] = useState(false);
+    // const [undocked, setUndocked] = useState(false);
+    const childWindow = useChildWindow();
+    const paneContainerRef = useRef<HTMLDivElement>(null);
 
     const onExpandCollapseClick = useCallback(() => {
         setCollapsed((collapsed) => !collapsed);
@@ -764,6 +764,38 @@ function usePane(
 
         return () => observer.remove();
     }, [topPanes, bottomPanes, onSelectSidePane]);
+
+    const setUndocked = useCallback(
+        (undocked: boolean) => {
+            if (!undocked) {
+                childWindow.close();
+            } else {
+                const paneContainer = paneContainerRef.current;
+                if (!paneContainer) {
+                    // It shouldn't be possible to get here and have this ref be null, but just in case,
+                    // bail out of the undock operation.
+                    childWindow.close();
+                } else {
+                    // This is the extra buffer needed on top of minWidth to account for window chrome to avoid a horizontal scrollbar.
+                    const widthBuffer = 4;
+                    // This offsets the window's top position to account for window chrome/title bar.
+                    const topOffset = 100;
+
+                    // Create the child window with approximately the same location and size as the side pane.
+                    const bounds = paneContainer.getBoundingClientRect();
+
+                    childWindow.open({
+                        width: Math.max(bounds.width, minWidth + widthBuffer),
+                        height: bounds.height - topOffset,
+                        top: bounds.top + window.screenY + topOffset,
+                        left: bounds.left + window.screenX,
+                        title: location === "left" ? "Left" : "Right",
+                    });
+                }
+            }
+        },
+        [childWindow, location]
+    );
 
     const expandCollapseButton = useMemo(() => {
         const expandCollapseIcon =
@@ -847,7 +879,7 @@ function usePane(
                                             <Divider vertical inset style={{ minHeight: 0 }} />{" "}
                                         </>
                                     )}
-                                    <Collapse visible={!undocked} orientation="horizontal">
+                                    <Collapse visible={!childWindow.isOpen} orientation="horizontal">
                                         {expandCollapseButton}
                                     </Collapse>
                                 </>
@@ -857,7 +889,7 @@ function usePane(
                 </>
             );
         },
-        [location, collapsed, undocked, expandCollapseButton]
+        [location, collapsed, childWindow.isOpen, expandCollapseButton]
     );
 
     // This memos the TabList to make it easy for the JSX to be inserted at the top of the pane (in "compact" mode) or returned to the caller to be used in the toolbar (in "full" mode).
@@ -914,92 +946,12 @@ function usePane(
         }
     }, []);
 
-    const paneContainerRef = useRef<HTMLDivElement>(null);
-
-    const [windowState, setWindowState] = useState<{ window: Window; mountNode: HTMLElement; renderer: GriffelRenderer }>();
-
-    useEffect(() => {
-        const disposeActions: (() => void)[] = [];
-
-        if (undocked) {
-            const paneContainer = paneContainerRef.current;
-            if (!paneContainer) {
-                // It shouldn't be possible to get here and have this ref be null, but just in case,
-                // bail out of the undock operation.
-                setUndocked(false);
-            } else {
-                // This is the extra buffer needed on top of minWidth to account for window chrome to avoid a horizontal scrollbar.
-                const widthBuffer = 4;
-                // This offsets the window's top position to account for window chrome/title bar.
-                const topOffset = 100;
-
-                // Create the child window with approximately the same location and size as the side pane.
-                const bounds = paneContainer.getBoundingClientRect();
-                const top = bounds.top + window.screenY + topOffset;
-                const left = bounds.left + window.screenX;
-                const width = Math.max(bounds.width, minWidth + widthBuffer);
-                const height = bounds.height - topOffset;
-
-                const childWindow = window.open("", "", `width=${width},height=${height},left=${left},top=${top},location=no`);
-                if (childWindow) {
-                    const body = childWindow.document.body;
-                    body.style.width = "100%";
-                    body.style.height = "100%";
-                    body.style.margin = "0";
-                    body.style.padding = "0";
-                    body.style.display = "flex";
-                    body.style.overflowY = "hidden";
-                    body.style.overflowX = "auto";
-
-                    childWindow.document.title = location === "left" ? "Left" : "Right";
-
-                    const applyWindowState = () => {
-                        // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
-                        setWindowState({ window: childWindow, mountNode: body, renderer: createDOMRenderer(childWindow.document) });
-                    };
-
-                    // Once the child window document is ready, setup the window state which will trigger another effect that renders into the child window.
-                    if (childWindow.document.readyState === "complete") {
-                        applyWindowState();
-                    } else {
-                        const onChildWindowLoad = () => {
-                            applyWindowState();
-                        };
-                        childWindow.addEventListener("load", onChildWindowLoad, { once: true });
-                        disposeActions.push(() => childWindow.removeEventListener("load", onChildWindowLoad));
-                    }
-
-                    // When the child window is closed for any reason, transition back to a docked state.
-                    childWindow.addEventListener(
-                        "unload",
-                        () => {
-                            setWindowState(undefined);
-                            setUndocked(false);
-                        },
-                        { once: true }
-                    );
-
-                    // If the main window closes, close any undocked child windows as well (don't leave them orphaned).
-                    const onParentWindowUnload = () => childWindow.close();
-                    window.addEventListener("unload", onParentWindowUnload);
-                    disposeActions.push(() => window.removeEventListener("unload", onParentWindowUnload));
-                } else {
-                    // If creating a child window failed (e.g. popup blocked), then just revert to docked mode.
-                    setUndocked(false);
-                }
-                disposeActions.push(() => childWindow?.close());
-            }
-        }
-
-        return () => disposeActions.reverse().forEach((dispose) => dispose());
-    }, [undocked]);
-
     // This effect closes the window if all panes have been removed.
     useEffect(() => {
-        if (windowState && topPanes.length === 0 && bottomPanes.length === 0) {
-            windowState.window.close();
+        if (childWindow.isOpen && topPanes.length === 0 && bottomPanes.length === 0) {
+            childWindow.close();
         }
-    }, [windowState, topPanes, bottomPanes]);
+    }, [childWindow, topPanes, bottomPanes]);
 
     // This memoizes the pane itself, which may or may not include the tab list, depending on the toolbar mode.
     const corePane = useMemo(() => {
@@ -1010,10 +962,10 @@ function usePane(
                     <>
                         <div className={classes.barDiv}>
                             {/* The tablist gets merged in with the toolbar. */}
-                            {!undocked && location === "left" && expandCollapseButton}
+                            {!childWindow.isOpen && location === "left" && expandCollapseButton}
                             {topPaneTabList}
                             <Toolbar location="top" components={topBarItems} />
-                            {!undocked && location === "right" && expandCollapseButton}
+                            {!childWindow.isOpen && location === "right" && expandCollapseButton}
                         </div>
                     </>
                 )}
@@ -1087,12 +1039,12 @@ function usePane(
         bottomBarItems,
         topPaneTabList,
         bottomPaneTabList,
-        undocked,
+        childWindow.isOpen,
     ]);
 
     // This deals with docked vs undocked state, where undocked is rendered into a separate window via a portal.
     const pane = useMemo(() => {
-        if (!windowState) {
+        if (!childWindow.isOpen) {
             // If there is no window state, then we are docked, so render the resizable div and the collapse container.
             return (
                 <div
@@ -1127,23 +1079,11 @@ function usePane(
             );
         } else {
             // Otherwise we are undocked, so render into the portal that targets the body of the child window.
-            const { mountNode, renderer } = windowState;
-            return (
-                // Portal targets the body of the child window.
-                <Portal mountNode={mountNode}>
-                    {/* RenderProvider manages Fluent style/class state. */}
-                    <RendererProvider renderer={renderer} targetDocument={mountNode.ownerDocument}>
-                        {/* Theme gives us the Fluent Provider, needed for managing other Fluent state and applying the current theme mode. */}
-                        <Theme className={classes.paneContent} style={{ minWidth }} targetDocument={mountNode.ownerDocument}>
-                            {corePane}
-                        </Theme>
-                    </RendererProvider>
-                </Portal>
-            );
+            return <childWindow.component>{corePane}</childWindow.component>;
         }
-    }, [collapsed, corePane, windowState]);
+    }, [collapsed, corePane, childWindow.component]);
 
-    return [topPaneTabList, pane, collapsed, setCollapsed, undocked, setUndocked] as const;
+    return [topPaneTabList, pane, collapsed, setCollapsed, childWindow.isOpen, setUndocked] as const;
 }
 
 export function MakeShellServiceDefinition({
