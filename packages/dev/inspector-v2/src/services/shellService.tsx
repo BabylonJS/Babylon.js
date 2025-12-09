@@ -690,7 +690,6 @@ function usePane(
     const [topSelectedTab, setTopSelectedTab] = useState<SidePaneDefinition>();
     const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePaneDefinition>();
     const [collapsed, setCollapsed] = useState(false);
-    // const [undocked, setUndocked] = useState(false);
     const childWindow = useChildWindow();
     const paneContainerRef = useRef<HTMLDivElement>(null);
 
