@@ -134,11 +134,11 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
                 <div
                     id="preview"
                     style={divStyle}
-                    onPointerDown={this.onPointerDown}
-                    onDoubleClick={this.onDoubleClick}
-                    onPointerMove={this.onPointerMove}
-                    onPointerUp={this.onPointerUp}
-                    onPointerCancel={this.onPointerCancel}
+                    onPointerDown={this._onPointerDown}
+                    onDoubleClick={this._onDoubleClick}
+                    onPointerMove={this._onPointerMove}
+                    onPointerUp={this._onPointerUp}
+                    onPointerCancel={this._onPointerCancel}
                 >
                     <canvas id="sfe-preview-canvas" style={canvasStyle} className={"preview-background-" + this.props.globalState.previewBackground} ref={this._canvasRef} />
                     {!this.props.globalState.smartFilter ? <div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div> : <></>}
@@ -155,7 +155,7 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
         }
     }
 
-    private onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    private _onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
         if (!this._isDragSupported()) {
             return;
         }
@@ -170,7 +170,7 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
         this._canvasRef.current?.setPointerCapture(event.pointerId);
     };
 
-    private onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    private _onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
         if (!this._isDragSupported()) {
             return;
         }
@@ -181,7 +181,7 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
         }
     };
 
-    private onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    private _onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
         if (!this._isDragSupported()) {
             return;
         }
@@ -189,14 +189,14 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
         this._canvasRef.current?.releasePointerCapture(event.pointerId);
     };
 
-    private onPointerCancel = () => {
+    private _onPointerCancel = () => {
         if (!this._isDragSupported()) {
             return;
         }
         this.setState({ isDragging: false });
     };
 
-    private onDoubleClick = () => {
+    private _onDoubleClick = () => {
         if (!this._isDragSupported()) {
             return;
         }
