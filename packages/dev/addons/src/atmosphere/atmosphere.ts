@@ -19,6 +19,7 @@ import type { IColor3Like, IVector3Like } from "core/Maths/math.like";
 import type { IDisposable, Scene } from "core/scene";
 import { Observable, type Observer } from "core/Misc/observable";
 import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import type { RenderingGroupInfo } from "core/Rendering/renderingManager";
 import { RenderTargetTexture, type RenderTargetTextureOptions } from "core/Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
@@ -116,7 +117,7 @@ export class Atmosphere implements IDisposable {
      * @returns True if the atmosphere is supported, false otherwise.
      */
     public static IsSupported(engine: AbstractEngine): boolean {
-        return !engine._badOS && !engine.isWebGPU && engine.version >= 2;
+        return !engine._badOS && engine.version >= 2;
     }
 
     /**
@@ -662,10 +663,7 @@ export class Atmosphere implements IDisposable {
     ) {
         const engine = (this._engine = scene.getEngine());
 
-        if (engine.isWebGPU) {
-            throw new Error("Atmosphere is not supported on WebGPU.");
-        }
-        if (engine.version < 2) {
+        if (!engine.isWebGPU && engine.version < 2) {
             throw new Error(`Atmosphere is not supported on WebGL ${engine.version}.`);
         }
 
@@ -1288,8 +1286,9 @@ export class Atmosphere implements IDisposable {
      */
     public bindUniformBufferToEffect(effect: Effect): void {
         const uniformBuffer = this.uniformBuffer;
-        const name = uniformBuffer.name;
-        uniformBuffer.bindToEffect(effect, name);
+        const isWGSL = effect.shaderLanguage === ShaderLanguage.WGSL;
+        const blockName = isWGSL ? "atmosphere" : uniformBuffer.name;
+        uniformBuffer.bindToEffect(effect, blockName);
         if (uniformBuffer.useUbo) {
             uniformBuffer.bindUniformBuffer();
         } else {
@@ -1523,6 +1522,9 @@ const DrawEffect = (
     effectRenderer.setViewport();
     effectRenderer.applyEffectWrapper(effectWrapper, depthTest); // Note, stencil is false by default.
 
+    const currentCull = engine.depthCullingState.cull;
+    engine.depthCullingState.cull = false;
+
     const effect = effectWrapper.effect;
 
     effect.setFloat("depth", depth);
@@ -1531,6 +1533,7 @@ const DrawEffect = (
     drawCallback(effectRenderer, renderTarget?.renderTarget!, effect, engine);
 
     // Restore state (order matters!)
+    engine.depthCullingState.cull = currentCull;
     engine.setAlphaMode(currentAlphaMode);
     if (currentDepthWrite !== undefined) {
         engine.setDepthWrite(currentDepthWrite);

@@ -9,6 +9,10 @@ import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import type { Nullable } from "core/types";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3FromFloatsToRef, Vector3ScaleToRef } from "core/Maths/math.vector.functions";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import "./ShadersWGSL/ShadersInclude/atmosphereFunctions";
+import "./ShadersWGSL/ShadersInclude/atmosphereUboDeclaration";
+import "./ShadersWGSL/ShadersInclude/atmosphereFragmentDeclaration";
 
 class AtmospherePBRMaterialDefines extends MaterialDefines {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -99,10 +103,18 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
     /**
      * @override
      */
+    public override isCompatible(): boolean {
+        return true;
+    }
+
+    /**
+     * @override
+     */
     public override getUniformBuffersNames(_ubos: string[]): void {
         const uniformBuffer = this._atmosphere.uniformBuffer;
         if (uniformBuffer.useUbo) {
-            _ubos.push(uniformBuffer.name);
+            const uboName = this._material.shaderLanguage === ShaderLanguage.WGSL ? "atmosphere" : uniformBuffer.name;
+            _ubos.push(uboName);
         }
     }
 
@@ -214,7 +226,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
     /**
      * @override
      */
-    public override getCustomCode(shaderType: string): Nullable<Record<string, string>> {
+    public override getCustomCode(shaderType: string, shaderLanguage: ShaderLanguage): Nullable<Record<string, string>> {
         // Assumed inputs are light0, vPositionW, normalW.
         // Only works for directional lights.
         if (shaderType !== "fragment") {
@@ -227,12 +239,13 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
         const useAtmosphereUbo = this._atmosphere.uniformBuffer.useUbo;
         const atmosphereImportSnippet = useAtmosphereUbo ? "#include<atmosphereUboDeclaration>" : "#include<atmosphereFragmentDeclaration>";
 
-        return {
-            CUSTOM_FRAGMENT_DEFINITIONS:
-                this._isAerialPerspectiveEnabled && this._atmosphere.isAerialPerspectiveLutEnabled
-                    ? `uniform sampler2D transmittanceLut;\r\nprecision highp sampler2DArray;\r\nuniform sampler2DArray aerialPerspectiveLut;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`
-                    : `uniform sampler2D transmittanceLut;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`,
-            CUSTOM_LIGHT0_COLOR: `
+        if (shaderLanguage === ShaderLanguage.GLSL) {
+            return {
+                CUSTOM_FRAGMENT_DEFINITIONS:
+                    this._isAerialPerspectiveEnabled && this._atmosphere.isAerialPerspectiveLutEnabled
+                        ? `uniform sampler2D transmittanceLut;\r\nprecision highp sampler2DArray;\r\nuniform sampler2DArray aerialPerspectiveLut;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`
+                        : `uniform sampler2D transmittanceLut;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`,
+                CUSTOM_LIGHT0_COLOR: `
             {
                 vec3 positionGlobal = 0.001 * vPositionW + ${OriginOffsetUniformName};
                 float positionRadius = length(positionGlobal);
@@ -242,7 +255,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 diffuse0 = lightIntensity * sampleTransmittanceLut(transmittanceLut, positionRadius, cosAngleLightToZenith);
             }
 `,
-            CUSTOM_REFLECTION: `
+                CUSTOM_REFLECTION: `
             {
                 vec3 positionGlobal =  0.001 * vPositionW + ${OriginOffsetUniformName};
                 float positionRadius = length(positionGlobal);
@@ -271,8 +284,8 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 reflectionOut.environmentRadiance.rgb = reflectionOut.environmentIrradiance;
             }
 `,
-            // TODO: Support full ray marching if USE_AERIAL_PERSPECTIVE_LUT is disabled.
-            CUSTOM_FRAGMENT_BEFORE_FOG: `
+                // TODO: Support full ray marching if USE_AERIAL_PERSPECTIVE_LUT is disabled.
+                CUSTOM_FRAGMENT_BEFORE_FOG: `
             #if USE_AERIAL_PERSPECTIVE_LUT
             {
                 float distanceFromCameraKm = 0.001 * distance(vEyePosition.xyz, vPositionW);
@@ -290,6 +303,73 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
             }
             #endif
 `,
-        };
+            };
+        } else {
+            // WGSL
+            return {
+                CUSTOM_FRAGMENT_DEFINITIONS:
+                    this._isAerialPerspectiveEnabled && this._atmosphere.isAerialPerspectiveLutEnabled
+                        ? `var transmittanceLutSampler: sampler;\r\nvar transmittanceLut: texture_2d<f32>;\r\nvar aerialPerspectiveLutSampler: sampler;\r\nvar aerialPerspectiveLut: texture_2d_array<f32>;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`
+                        : `var transmittanceLutSampler: sampler;\r\nvar transmittanceLut: texture_2d<f32>;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`,
+                CUSTOM_LIGHT0_COLOR: `
+            {
+                var positionGlobal = 0.001 * fragmentInputs.vPositionW + uniforms.${OriginOffsetUniformName};
+                var positionRadius = length(positionGlobal);
+                var geocentricNormal = positionGlobal / positionRadius;
+                var directionToLight = ${directionToLightSnippet};
+                var cosAngleLightToZenith = dot(directionToLight, geocentricNormal);
+                diffuse0 = atmosphere.lightIntensity * sampleTransmittanceLut(transmittanceLut, positionRadius, cosAngleLightToZenith);
+            }
+`,
+                CUSTOM_REFLECTION: `
+            {
+                var positionGlobal =  0.001 * fragmentInputs.vPositionW + uniforms.${OriginOffsetUniformName};
+                var positionRadius = length(positionGlobal);
+                var geocentricNormal = positionGlobal / positionRadius;
+
+                var directionToLight = ${directionToLightSnippet};
+                var cosAngleLightToZenith = dot(directionToLight, geocentricNormal);
+
+                var uv = vec2f(0.5 + 0.5 * cosAngleLightToZenith, (positionRadius - atmosphere.planetRadius) / atmosphere.atmosphereThickness);
+                var irradianceScaleT = 0.5 * dot(normalW, geocentricNormal) + 0.5;
+                var irradianceScale = ((-0.6652 * irradianceScaleT) + 1.5927) * irradianceScaleT + 0.1023;
+                var environmentIrradiance = atmosphere.lightIntensity * textureSample(irradianceSampler, irradianceSamplerSampler, uv).rgb;
+
+                // Add a contribution here to estimate indirect lighting.
+                const r = 0.2;
+                var indirect = getLuminance(environmentIrradiance) / max(0.00001, 1.0 - r);
+                environmentIrradiance *= irradianceScale;
+                environmentIrradiance += indirect;
+
+                environmentIrradiance += atmosphere.additionalDiffuseSkyIrradiance;
+
+                const diffuseBrdf = 1.0 / PI;
+                environmentIrradiance *= diffuseBrdf * atmosphere.diffuseSkyIrradianceIntensity;
+
+                reflectionOut.environmentIrradiance = environmentIrradiance;
+                reflectionOut.environmentRadiance = vec4f(reflectionOut.environmentIrradiance, reflectionOut.environmentRadiance.a);
+            }
+`,
+                // TODO: Support full ray marching if USE_AERIAL_PERSPECTIVE_LUT is disabled.
+                CUSTOM_FRAGMENT_BEFORE_FOG: `
+            #if USE_AERIAL_PERSPECTIVE_LUT
+            {
+                var distanceFromCameraKm = 0.001 * distance(scene.vEyePosition.xyz, fragmentInputs.vPositionW);
+                var aerialPerspective = vec4f(0.);
+                if (sampleAerialPerspectiveLut(
+                        fragmentInputs.position.xy * uniforms.${InverseViewportSizeUniformName},
+                        true,
+                        distanceFromCameraKm,
+                        NumAerialPerspectiveLutLayers,
+                        AerialPerspectiveLutKMPerSlice,
+                        AerialPerspectiveLutRangeKM,
+                        &aerialPerspective)) {
+                    finalColor = aerialPerspective + (1. - aerialPerspective.a) * finalColor;
+                }
+            }
+            #endif
+`,
+            };
+        }
     }
 }
