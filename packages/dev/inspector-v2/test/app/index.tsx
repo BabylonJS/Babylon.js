@@ -43,9 +43,9 @@ const scene = new Scene(engine);
 
 let camera: Nullable<ArcRotateCamera> = null;
 
-// const newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene);
-// newSystem.name = "CPU particle system";
-// newSystem.start();
+const newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene);
+newSystem.name = "CPU particle system";
+newSystem.start();
 
 function createCamera() {
     camera?.dispose();
@@ -54,11 +54,11 @@ function createCamera() {
     camera.alpha = 1.8;
     camera.beta = 1.3;
 
-    // const camera2 = camera.clone("camera2") as ArcRotateCamera;
-    // camera2.alpha += Math.PI;
+    const camera2 = camera.clone("camera2") as ArcRotateCamera;
+    camera2.alpha += Math.PI;
 
-    // const camera3 = camera.clone("camera3") as ArcRotateCamera;
-    // camera3.alpha += Math.PI * 0.5;
+    const camera3 = camera.clone("camera3") as ArcRotateCamera;
+    camera3.alpha += Math.PI * 0.5;
 }
 
 function createPostProcess() {
@@ -162,21 +162,21 @@ function createGaussianSplatting() {
 }
 
 (async () => {
-    // let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
-    // assetContainer.addAllToScene();
+    let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
+    assetContainer.addAllToScene();
     createCamera();
-    // createPostProcess();
+    createPostProcess();
 
-    // await createPhysics();
+    await createPhysics();
 
-    // createGaussianSplatting();
+    createGaussianSplatting();
 
-    // createTestBoxes();
-    // createTestPBRSphere();
+    createTestBoxes();
+    createTestPBRSphere();
 
-    // createMaterials();
+    createMaterials();
 
-    // createTestMetadata();
+    createTestMetadata();
 
     engine.runRenderLoop(() => {
         scene.render();
@@ -194,9 +194,9 @@ function createGaussianSplatting() {
                 event.preventDefault();
                 isDropping = true;
                 try {
-                    // assetContainer.dispose();
-                    // assetContainer = await LoadAssetContainerAsync(file, scene);
-                    // assetContainer.addAllToScene();
+                    assetContainer.dispose();
+                    assetContainer = await LoadAssetContainerAsync(file, scene);
+                    assetContainer.addAllToScene();
                     createCamera();
                 } finally {
                     isDropping = false;

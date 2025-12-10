@@ -1,4 +1,4 @@
-import { MeshBuilder } from "core/Meshes";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
 import type { Scene } from "core/scene";
 import { useState, useRef, type ChangeEvent } from "react";
 import type { FunctionComponent } from "react";

@@ -17,7 +17,6 @@ import { LightsContent } from "./lights";
 import { CamerasContent } from "./cameras";
 import { ParticlesContent } from "./particles";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     container: {
         display: "flex",
