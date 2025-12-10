@@ -1,7 +1,16 @@
 import { Observable } from "core/Misc/observable";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import type { Nullable } from "core/types";
-import { RenderTargetGenerator, ConnectionPointType, SmartFilterOptimizer, type InputBlock, type SmartFilter, type SmartFilterRuntime, Logger } from "smart-filters";
+import {
+    RenderTargetGenerator,
+    ConnectionPointType,
+    SmartFilterOptimizer,
+    type InputBlock,
+    type SmartFilter,
+    type SmartFilterRuntime,
+    Logger,
+    OptimizerDebugMode,
+} from "smart-filters";
 import { RegisterAnimations, TextureAssetCache } from "smart-filters-editor-control";
 import { RegisterOptimizedShaderBlockCodeForUnitTests } from "./optimizerUnitTestHelper";
 
@@ -23,6 +32,11 @@ export type RenderResult = {
      * The time it took to compile the Smart Filter (null if not applicable)
      */
     runtimeCreationTimeMs: Nullable<number>;
+
+    /**
+     * The debug mode used for optimization (null if not applicable)
+     */
+    optimizerDebugMode: Nullable<OptimizerDebugMode>;
 };
 
 /**
@@ -60,11 +74,18 @@ export class SmartFilterRenderer {
     public optimize: boolean = false;
 
     /**
+     * The debug mode to use for the optimizer.
+     *
+     */
+    public optimizerDebugMode: Nullable<OptimizerDebugMode> = null;
+
+    /**
      * Creates a new Smart Filter renderer.
      * @param engine - the engine to use to render the filter
      * @param optimize - if true, Smart Filters rendered with this renderer will be optimized
+     * @param optimizerDebugMode - the debug mode to use for the optimizer
      */
-    public constructor(engine: ThinEngine, optimize: boolean) {
+    public constructor(engine: ThinEngine, optimize: boolean, optimizerDebugMode: Nullable<OptimizerDebugMode>) {
         this.engine = engine;
         this.beforeRenderObservable = new Observable<void>();
         this.afterRenderObservable = new Observable<void>();
@@ -75,6 +96,7 @@ export class SmartFilterRenderer {
         this._textureAssetCache = new TextureAssetCache(engine, this.beforeRenderObservable);
 
         this.optimize = optimize;
+        this.optimizerDebugMode = optimizerDebugMode;
     }
 
     /**
@@ -85,6 +107,7 @@ export class SmartFilterRenderer {
     public async startRenderingAsync(filter: SmartFilter): Promise<RenderResult> {
         let optimizationTimeMs: Nullable<number> = null;
         let runtimeCreationTimeMs: Nullable<number> = null;
+        const optimizerDebugMode = this.optimize ? this.optimizerDebugMode : null;
 
         try {
             this._lastRenderedSmartFilter = filter;
@@ -114,6 +137,7 @@ export class SmartFilterRenderer {
                 succeeded: true,
                 optimizationTimeMs,
                 runtimeCreationTimeMs,
+                optimizerDebugMode,
             };
         } catch (err: any) {
             const message = err["message"] || err["_compilationError"] || err;
@@ -122,6 +146,7 @@ export class SmartFilterRenderer {
                 succeeded: false,
                 optimizationTimeMs: null,
                 runtimeCreationTimeMs: null,
+                optimizerDebugMode: null,
             };
         }
     }
@@ -215,6 +240,7 @@ export class SmartFilterRenderer {
         const optimizer = new SmartFilterOptimizer(smartFilter, {
             maxSamplersInFragmentShader: forceMaxSamplersInFragmentShader || this.engine.getCaps().maxTexturesImageUnits,
             removeDisabledBlocks: false, // False so that we don't have to rerender the graph if uniforms change in the editor
+            debugMode: this.optimizerDebugMode || undefined,
         });
 
         const optimizedSmartFilter = optimizer.optimize();

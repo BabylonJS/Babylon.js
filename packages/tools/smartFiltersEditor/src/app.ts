@@ -2,7 +2,7 @@ import "core/Engines/Extensions/engine.rawTexture";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import { Observable, type Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
-import { SmartFilterDeserializer, type ISerializedBlockV1, type SmartFilter, Logger } from "smart-filters";
+import { SmartFilterDeserializer, type ISerializedBlockV1, type SmartFilter, Logger, OptimizerDebugMode } from "smart-filters";
 import { builtInBlockRegistrations, type IBlockRegistration } from "smart-filters-blocks";
 import {
     EditorBlockRegistrations,
@@ -31,6 +31,7 @@ import { TexturePresets } from "./texturePresets";
 import { SerializeSmartFilter } from "./smartFilterLoadSave/serializeSmartFilter";
 
 const LocalStorageOptimizeName = "OptimizeSmartFilter";
+const LocalStorageOptimizeDebugModeName = "OptimizeSmartFilterDebugMode";
 
 /**
  * The main entry point for the Smart Filter editor.
@@ -46,6 +47,8 @@ async function Main(): Promise<void> {
     let renderer: Nullable<SmartFilterRenderer> = null;
     const onSmartFilterLoadedObservable = new Observable<SmartFilter>();
     const optimizerEnabled = new ObservableProperty<boolean>(localStorage.getItem(LocalStorageOptimizeName) === "true" || false);
+    const savedOptimizerDebugMode = localStorage.getItem(LocalStorageOptimizeDebugModeName) || null;
+    const optimizerDebugMode = new ObservableProperty<OptimizerDebugMode | null>(savedOptimizerDebugMode ? (Number(savedOptimizerDebugMode) as OptimizerDebugMode) : null);
     const onSaveEditorDataRequiredObservable = new Observable<void>();
     let afterEngineResizerObserver: Nullable<Observer<ThinEngine>> = null;
     const onLogRequiredObservable = new Observable<LogEntry>();
@@ -67,6 +70,13 @@ async function Main(): Promise<void> {
         localStorage.setItem(LocalStorageOptimizeName, value ? "true" : "false");
         if (renderer && renderer.optimize !== value) {
             renderer.optimize = value;
+            await startRenderingAsync();
+        }
+    });
+    optimizerDebugMode.onChangedObservable.add(async (value: OptimizerDebugMode | null) => {
+        localStorage.setItem(LocalStorageOptimizeDebugModeName, value?.toString() || "");
+        if (renderer) {
+            renderer.optimizerDebugMode = value || null;
             await startRenderingAsync();
         }
     });
@@ -119,7 +129,7 @@ async function Main(): Promise<void> {
             }
         }
 
-        renderer = new SmartFilterRenderer(newEngine, optimizerEnabled.value);
+        renderer = new SmartFilterRenderer(newEngine, optimizerEnabled.value, optimizerDebugMode.value);
         await startRenderingAsync();
 
         if (justLoadedSmartFilter) {
@@ -138,6 +148,9 @@ async function Main(): Promise<void> {
                 }
                 if (renderResult.runtimeCreationTimeMs !== null) {
                     stats.push(`Runtime Creation: ${Math.floor(renderResult.runtimeCreationTimeMs).toLocaleString()}ms`);
+                }
+                if (renderResult.optimizerDebugMode !== null) {
+                    stats.push(`Optimizer Debug Mode: ${OptimizerDebugMode[renderResult.optimizerDebugMode]}`);
                 }
                 if (stats.length > 0) {
                     statsString = ` [${stats.join(", ")}]`;
@@ -238,6 +251,7 @@ async function Main(): Promise<void> {
         },
         onSmartFilterLoadedObservable,
         optimizerEnabled,
+        optimizerDebugMode,
         blockEditorRegistration: blockEditorRegistration,
         hostElement,
         downloadSmartFilter: () => {
