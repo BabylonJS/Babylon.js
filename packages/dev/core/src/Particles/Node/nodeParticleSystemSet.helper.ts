@@ -1,7 +1,6 @@
 import type { Nullable } from "core/types";
 import type { Color4 } from "core/Maths/math.color";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Texture } from "core/Materials/Textures/texture";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Mesh } from "core/Meshes/mesh";
 import type { ColorGradient, FactorGradient } from "core/Misc";
@@ -29,10 +28,8 @@ import { ParticleGradientBlock } from "./Blocks/particleGradientBlock";
 import { ParticleGradientValueBlock } from "./Blocks/particleGradientValueBlock";
 import { ParticleInputBlock } from "./Blocks/particleInputBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
-import { ParticleModuloBlock } from "./Blocks/particleModuloBlock";
 import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
-import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "./Blocks/particleTrigonometryBlock";
 import { ParticleVectorLengthBlock } from "./Blocks/particleVectorLengthBlock";
 import { SystemBlock } from "./Blocks/systemBlock";
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "./Blocks/Conditions/particleConditionBlock";
@@ -46,12 +43,12 @@ import { PointShapeBlock } from "./Blocks/Emitters/pointShapeBlock";
 import { SetupSpriteSheetBlock } from "./Blocks/Emitters/setupSpriteSheetBlock";
 import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
 import { UpdateAngleBlock } from "./Blocks/Update/updateAngleBlock";
+import { BasicSpriteUpdateBlock } from "./Blocks/Update/basicSpriteUpdateBlock";
 import { UpdateColorBlock } from "./Blocks/Update/updateColorBlock";
 import { UpdateDirectionBlock } from "./Blocks/Update/updateDirectionBlock";
 import { UpdateNoiseBlock } from "./Blocks/Update/updateNoiseBlock";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { UpdateSizeBlock } from "./Blocks/Update/updateSizeBlock";
-import { UpdateSpriteCellIndexBlock } from "./Blocks/Update/updateSpriteCellIndexBlock";
 
 /** Represents blocks or groups of blocks that can be used in multiple places in the graph, so they are stored in this context to be reused */
 type ConversionContext = {
@@ -426,6 +423,8 @@ function _SpriteSheetBlock(particle: NodeParticleConnectionPoint, oldSystem: Par
     spriteSheetBlock.end = oldSystem.endSpriteCellID;
     spriteSheetBlock.width = oldSystem.spriteCellWidth;
     spriteSheetBlock.height = oldSystem.spriteCellHeight;
+    spriteSheetBlock.loop = oldSystem.spriteCellLoop;
+    spriteSheetBlock.randomStartCell = oldSystem.spriteRandomStartCell;
 
     return spriteSheetBlock.output;
 }
@@ -474,7 +473,7 @@ function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, o
     }
 
     if (oldSystem.isAnimationSheetEnabled) {
-        updatedParticle = _UpdateParticleSpriteCellBlockGroup(updatedParticle, oldSystem.spriteRandomStartCell, oldSystem.spriteCellChangeSpeed, oldSystem.spriteCellLoop);
+        updatedParticle = _UpdateParticleSpriteCellBlockGroup(updatedParticle);
     }
 
     return updatedParticle;
@@ -769,111 +768,11 @@ function _UpdateParticleGravityBlockGroup(inputParticle: NodeParticleConnectionP
 /**
  * Creates the group of blocks that represent the particle sprite cell update
  * @param inputParticle The input particle to update
- * @param randomStartCell Whether the start cell is random or not
- * @param changeSpeed The speed at which to change the sprite cell
- * @param loop Whether the sprite cell animation should loop
  * @returns The output of the group of blocks that represent the particle sprite cell update #2MI0A1#3
  */
-function _UpdateParticleSpriteCellBlockGroup(
-    inputParticle: NodeParticleConnectionPoint,
-    randomStartCell: boolean,
-    changeSpeed: number,
-    loop: boolean
-): NodeParticleConnectionPoint {
-    let offsetAge: NodeParticleConnectionPoint;
-
-    // Calculate the age offset
-    const ageContextualValue = new ParticleInputBlock("Age");
-    ageContextualValue.contextualValue = NodeParticleContextualSources.Age;
-
-    if (randomStartCell) {
-        // Create the random offset based on lifetime
-        const randomOffsetInput = new ParticleRandomBlock("Random Cell Offset");
-        randomOffsetInput.lockMode = ParticleRandomBlockLocks.OncePerParticle;
-        _CreateAndConnectInput("Min Offset", 0, randomOffsetInput.min);
-        _CreateAndConnectInput("Max Offset", 1, randomOffsetInput.max);
-
-        const multiplyOffsetBlock = new ParticleMathBlock("Multiply Random Cell Offset by LifeTime");
-        multiplyOffsetBlock.operation = ParticleMathBlockOperations.Multiply;
-        randomOffsetInput.output.connectTo(multiplyOffsetBlock.left);
-        _CreateAndConnectContextualSource("LifeTime", NodeParticleContextualSources.Lifetime, multiplyOffsetBlock.right);
-
-        // Apply the random offset based on the changeSpeed
-        if (changeSpeed === 0) {
-            // Special case when speed = 0 meaning we want to stay on initial cell
-            changeSpeed = 1;
-            offsetAge = multiplyOffsetBlock.output;
-        } else {
-            const addOffsetBlock = new ParticleMathBlock("Add Random Cell Offset to Age");
-            addOffsetBlock.operation = ParticleMathBlockOperations.Add;
-            ageContextualValue.output.connectTo(addOffsetBlock.left);
-            multiplyOffsetBlock.output.connectTo(addOffsetBlock.right);
-            offsetAge = addOffsetBlock.output;
-        }
-    } else {
-        offsetAge = ageContextualValue.output;
-    }
-
-    // Calculate the distribution
-    const subtractEndStartBlock = new ParticleMathBlock("End - Start Sprite Cell ID");
-    subtractEndStartBlock.operation = ParticleMathBlockOperations.Subtract;
-    _CreateAndConnectContextualSource("End cell", NodeParticleContextualSources.SpriteCellEnd, subtractEndStartBlock.left);
-    _CreateAndConnectContextualSource("Start cell", NodeParticleContextualSources.SpriteCellStart, subtractEndStartBlock.right);
-
-    const distResultBlock = new ParticleMathBlock("Add 1 to End - Start Sprite Cell ID");
-    distResultBlock.operation = ParticleMathBlockOperations.Add;
-    subtractEndStartBlock.output.connectTo(distResultBlock.left);
-    _CreateAndConnectInput("One", 1, distResultBlock.right);
-
-    // Calculate the ratio
-    const multiplyAgeBySpeedBlock = new ParticleMathBlock("Multiply Offset Age by Change Speed");
-    multiplyAgeBySpeedBlock.operation = ParticleMathBlockOperations.Multiply;
-    offsetAge.connectTo(multiplyAgeBySpeedBlock.left);
-    _CreateAndConnectInput("Change Speed", changeSpeed, multiplyAgeBySpeedBlock.right);
-
-    let dividendOutput: NodeParticleConnectionPoint = multiplyAgeBySpeedBlock.output;
-
-    if (loop) {
-        // Modulo by lifetime to loop
-        const moduloByLifetime = new ParticleModuloBlock("Modulo by LifeTime");
-        multiplyAgeBySpeedBlock.output.connectTo(moduloByLifetime.left);
-        _CreateAndConnectContextualSource("LifeTime", NodeParticleContextualSources.Lifetime, moduloByLifetime.right);
-
-        dividendOutput = moduloByLifetime.output;
-    }
-
-    const divideAgeLifeTimeBlock = new ParticleMathBlock("Divide by LifeTime");
-    divideAgeLifeTimeBlock.operation = ParticleMathBlockOperations.Divide;
-    dividendOutput.connectTo(divideAgeLifeTimeBlock.left);
-    _CreateAndConnectContextualSource("LifeTime", NodeParticleContextualSources.Lifetime, divideAgeLifeTimeBlock.right);
-
-    // Clamp ratio to [0, 1]
-    const clampMinRatioBlock = new ParticleMathBlock("Clamp Ratio to [0");
-    clampMinRatioBlock.operation = ParticleMathBlockOperations.Max;
-    divideAgeLifeTimeBlock.output.connectTo(clampMinRatioBlock.left);
-    _CreateAndConnectInput("Min", 0, clampMinRatioBlock.right);
-
-    const clampMaxRatioBlock = new ParticleMathBlock("Clamp Ratio to 1]");
-    clampMaxRatioBlock.operation = ParticleMathBlockOperations.Min;
-    clampMinRatioBlock.output.connectTo(clampMaxRatioBlock.left);
-    _CreateAndConnectInput("Max", 1, clampMaxRatioBlock.right);
-
-    // Calculate the cell index
-    const multiplyRatioByDistBlock = new ParticleMathBlock("Multiply Ratio by Dist");
-    multiplyRatioByDistBlock.operation = ParticleMathBlockOperations.Multiply;
-    clampMaxRatioBlock.output.connectTo(multiplyRatioByDistBlock.left);
-    distResultBlock.output.connectTo(multiplyRatioByDistBlock.right);
-
-    const finalCellValueBlock = new ParticleMathBlock("Add Start Sprite Cell ID");
-    finalCellValueBlock.operation = ParticleMathBlockOperations.Add;
-    _CreateAndConnectContextualSource("Start cell", NodeParticleContextualSources.SpriteCellStart, finalCellValueBlock.left);
-    multiplyRatioByDistBlock.output.connectTo(finalCellValueBlock.right);
-
-    // Create the update block
-    const updateSpriteCell = new UpdateSpriteCellIndexBlock("Sprite Cell Update");
+function _UpdateParticleSpriteCellBlockGroup(inputParticle: NodeParticleConnectionPoint): NodeParticleConnectionPoint {
+    const updateSpriteCell = new BasicSpriteUpdateBlock("Sprite Cell Update");
     inputParticle.connectTo(updateSpriteCell.particle);
-    finalCellValueBlock.output.connectTo(updateSpriteCell.cellIndex);
-
     return updateSpriteCell.output;
 }
 
@@ -945,7 +844,10 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
 
     _SystemEmitRateValue(oldSystem, newSystem, context);
-    _CreateTextureBlock(oldSystem.particleTexture).connectTo(newSystem.texture);
+    const clonedTexture = oldSystem.particleTexture?.clone();
+    if (clonedTexture) {
+        _CreateTextureBlock(clonedTexture).connectTo(newSystem.texture);
+    }
     _SystemTargetStopDuration(oldSystem, newSystem, context);
 
     updateParticleOutput.connectTo(newSystem.particle);
@@ -1172,19 +1074,8 @@ function _CreateGradientValueBlockGroup(
     return gradientValueBlock.output;
 }
 
-function _CreateTextureBlock(texture: Nullable<BaseTexture>): NodeParticleConnectionPoint {
-    // Texture
+function _CreateTextureBlock(texture: BaseTexture): NodeParticleConnectionPoint {
     const textureBlock = new ParticleTextureSourceBlock("Texture");
-    const url = (texture as Texture).url || "";
-    if (url) {
-        textureBlock.url = url;
-    } else {
-        textureBlock.sourceTexture = texture;
-    }
-
-    if (texture && (texture as Texture).invertY !== undefined) {
-        textureBlock.invertY = (texture as Texture).invertY;
-    }
-
+    textureBlock.sourceTexture = texture;
     return textureBlock.texture;
 }
