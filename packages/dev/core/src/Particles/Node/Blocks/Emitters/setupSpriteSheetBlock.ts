@@ -34,6 +34,18 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
     public height = 64;
 
     /**
+     * Gets or sets a boolean indicating if the sprite sheet should loop
+     */
+    @editableInPropertyPage("Loop", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public loop = false;
+
+    /**
+     * Gets or sets a boolean indicating if the sprite sheet should start at a random cell
+     */
+    @editableInPropertyPage("Random start cell", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public randomStartCell = false;
+
+    /**
      * Creates a new SetupSpriteSheetBlock
      * @param name defines the block name
      */
@@ -78,6 +90,8 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
         system.spriteCellHeight = this.height;
         system.startSpriteCellID = this.start;
         system.endSpriteCellID = this.end;
+        system.spriteCellLoop = this.loop;
+        system.spriteRandomStartCell = this.randomStartCell;
 
         this.output._storedValue = system;
     }
@@ -89,6 +103,8 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
         serializationObject.height = this.height;
         serializationObject.start = this.start;
         serializationObject.end = this.end;
+        serializationObject.loop = this.loop;
+        serializationObject.randomStartCell = this.randomStartCell;
 
         return serializationObject;
     }
@@ -100,6 +116,8 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
         this.height = serializationObject.height;
         this.start = serializationObject.start;
         this.end = serializationObject.end;
+        this.loop = serializationObject.loop;
+        this.randomStartCell = serializationObject.randomStartCell;
     }
 }
 
