@@ -33,7 +33,7 @@ uniform invWorldScale: mat4x4f;
 varying vNormalizedPosition : vec3f;
 flat varying f_swizzle: i32;
 
-uniform vp_position_info: vec3f; // (bufferIndex, offset, stride, type)
+uniform vp_position_info: vec3f; // (offset, stride, type)
 
 fn convertToFloat(word: u32, byteInWord: u32, dataType: u32) -> f32 {
     switch (dataType) {

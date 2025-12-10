@@ -23,7 +23,6 @@ import { Texture } from "./Textures/texture";
 import type { CubeTexture } from "./Textures/cubeTexture";
 import type { Color3 } from "core/Maths/math.color";
 import type { Geometry } from "../Meshes/geometry";
-import { Vector3 } from "core/Maths/math.vector";
 
 // For backwards compatibility, we export everything from the pure version of this file.
 export * from "./materialHelper.functions.pure";
@@ -681,14 +680,14 @@ export function PrepareVertexPullingUniforms(geometry: Geometry): Nullable<Map<s
  * @param metadata The vertex pulling metadata
  */
 export function BindVertexPullingUniforms(effect: Effect, metadata: Map<string, IVertexPullingMetadata>): void {
-    if (!metadata || !effect) {
+    if (!effect) {
         return;
     }
 
     for (const [attribute, data] of metadata.entries()) {
         const uniformName = `vp_${attribute}_info`;
         // Pack into vec3: (offset, stride, type)
-        effect.setVector3(uniformName, new Vector3(data.offset, data.stride, data.type));
+        effect.setFloat3(uniformName, data.offset, data.stride, data.type);
     }
 }
 

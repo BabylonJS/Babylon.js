@@ -901,6 +901,20 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
+        const renderingMesh = subMesh ? subMesh.getRenderingMesh() : mesh;
+        if (renderingMesh && this.useVertexPulling) {
+            // Add vertex buffer metadata defines for proper stride/offset handling
+            const geometry = renderingMesh.geometry;
+            if (geometry) {
+                this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
+                if (this._vertexPullingMetadata) {
+                    for (const [attribute] of this._vertexPullingMetadata.entries()) {
+                        uniforms.push(`vp_${attribute}_info`);
+                    }
+                }
+            }
+        }
+
         if (this.customShaderNameResolve) {
             uniforms = uniforms.slice();
             uniformBuffers = uniformBuffers.slice();
@@ -908,7 +922,6 @@ export class ShaderMaterial extends PushMaterial {
             shaderName = this.customShaderNameResolve(this.name, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
-        const renderingMesh = subMesh ? subMesh.getRenderingMesh() : mesh;
         if (renderingMesh && this.useVertexPulling) {
             defines.push("#define USE_VERTEX_PULLING");
 
@@ -918,12 +931,6 @@ export class ShaderMaterial extends PushMaterial {
                 if (indexBuffer.is32Bits) {
                     defines.push("#define VERTEX_PULLING_INDEX_BUFFER_32BITS");
                 }
-            }
-
-            // Add vertex buffer metadata defines for proper stride/offset handling
-            const geometry = renderingMesh.geometry;
-            if (geometry) {
-                this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
             }
         }
 
