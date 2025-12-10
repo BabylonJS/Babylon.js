@@ -28,10 +28,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
             horizontalLocation: "left",
             verticalLocation: "top",
             content: () => {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
-                // eslint-disable-next-line no-console
-                console.log(scene);
 
                 return (
                     scene && (

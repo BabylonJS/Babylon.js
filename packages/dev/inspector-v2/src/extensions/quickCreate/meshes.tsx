@@ -79,6 +79,9 @@ type GroundParams = {
     subdivisionsY: number;
 };
 
+/**
+ * @internal
+ */
 export const MeshesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
     const classes = useStyles();
     const [sphereParams, setSphereParams] = useState<SphereParams>({
