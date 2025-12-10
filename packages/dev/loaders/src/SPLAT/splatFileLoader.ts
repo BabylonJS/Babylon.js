@@ -208,6 +208,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             gaussianSplatting._parentContainer = this._assetContainer;
             babylonMeshesArray.push(gaussianSplatting);
             gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh);
+            gaussianSplatting.scaling.y *= -1;
             scene._blockEntityCollection = false;
         };
 
@@ -277,7 +278,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         gaussianSplatting._parentContainer = this._assetContainer;
                         babylonMeshesArray.push(gaussianSplatting);
                         gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh);
-                        gaussianSplatting.scaling.z *= -1.0;
+                        if (!this._loadingOptions.flipY) {
+                            gaussianSplatting.scaling.y *= -1.0;
+                        }
                         scene._blockEntityCollection = false;
                         this.applyAutoCameraLimits(parsedSPZ, scene);
                         resolve(babylonMeshesArray);
