@@ -207,7 +207,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
             gaussianSplatting._parentContainer = this._assetContainer;
             babylonMeshesArray.push(gaussianSplatting);
-            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh);
+            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false });
             gaussianSplatting.scaling.y *= -1;
             gaussianSplatting.computeWorldMatrix(true);
             scene._blockEntityCollection = false;
@@ -278,7 +278,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         }
                         gaussianSplatting._parentContainer = this._assetContainer;
                         babylonMeshesArray.push(gaussianSplatting);
-                        gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh);
+                        gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false });
                         if (!this._loadingOptions.flipY) {
                             gaussianSplatting.scaling.y *= -1.0;
                             gaussianSplatting.computeWorldMatrix(true);
@@ -300,7 +300,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                     const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                                     gaussianSplatting._parentContainer = this._assetContainer;
                                     babylonMeshesArray.push(gaussianSplatting);
-                                    gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh);
+                                    gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh, { flipY: false });
                                     gaussianSplatting.scaling.y *= -1.0;
 
                                     if (parsedPLY.chirality === "RightHanded") {

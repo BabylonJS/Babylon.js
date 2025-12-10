@@ -28,6 +28,9 @@ interface IDelayedTextureUpdate {
     centers: Float32Array;
     sh?: Uint8Array[];
 }
+interface IUpdateOptions {
+    flipY?: boolean;
+}
 
 // @internal
 const UnpackUnorm = (value: number, bits: number) => {
@@ -420,7 +423,7 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public override set material(value: Material) {
         this._material = value;
-        this._material.backFaceCulling = true;
+        this._material.backFaceCulling = false;
         this._material.cullBackFaces = false;
         value.resetDrawCache();
     }
@@ -1470,7 +1473,8 @@ export class GaussianSplattingMesh extends Mesh {
         covB: Uint16Array,
         colorArray: Uint8Array,
         minimum: Vector3,
-        maximum: Vector3
+        maximum: Vector3,
+        options: IUpdateOptions
     ): void {
         const matrixRotation = TmpVectors.Matrix[0];
         const matrixScale = TmpVectors.Matrix[1];
@@ -1478,7 +1482,7 @@ export class GaussianSplattingMesh extends Mesh {
         const covBSItemSize = this._useRGBACovariants ? 4 : 2;
 
         const x = fBuffer[8 * index + 0];
-        const y = fBuffer[8 * index + 1];
+        const y = fBuffer[8 * index + 1] * (options.flipY ? -1 : 1);
         const z = fBuffer[8 * index + 2];
 
         this._splatPositions![4 * index + 0] = x;
@@ -1582,7 +1586,7 @@ export class GaussianSplattingMesh extends Mesh {
         }
     }
 
-    private *_updateData(data: ArrayBuffer, isAsync: boolean, sh?: Uint8Array[]): Coroutine<void> {
+    private *_updateData(data: ArrayBuffer, isAsync: boolean, sh?: Uint8Array[], options: IUpdateOptions = { flipY: false }): Coroutine<void> {
         // if a covariance texture is present, then it's not a creation but an update
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
@@ -1630,7 +1634,7 @@ export class GaussianSplattingMesh extends Mesh {
                 const updateLine = partIndex * lineCountUpdate;
                 const splatIndexBase = updateLine * textureSize.x;
                 for (let i = 0; i < textureLengthPerUpdate; i++) {
-                    this._makeSplat(splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+                    this._makeSplat(splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, options);
                 }
                 this._updateSubTextures(this._splatPositions, covA, covB, colorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
                 // Update the binfo
@@ -1648,7 +1652,7 @@ export class GaussianSplattingMesh extends Mesh {
         } else {
             const paddedVertexCount = (vertexCount + 15) & ~0xf;
             for (let i = 0; i < vertexCount; i++) {
-                this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+                this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, options);
                 if (isAsync && i % GaussianSplattingMesh._SplatBatchSize === 0) {
                     yield;
                 }
@@ -1681,9 +1685,10 @@ export class GaussianSplattingMesh extends Mesh {
      * Update data from GS (position, orientation, color, scaling)
      * @param data array that contain all the datas
      * @param sh optional array of uint8 array for SH data
+     * @param options optional informations on how to treat data
      */
-    public updateData(data: ArrayBuffer, sh?: Uint8Array[]): void {
-        runCoroutineSync(this._updateData(data, false, sh));
+    public updateData(data: ArrayBuffer, sh?: Uint8Array[], options: IUpdateOptions = { flipY: true }): void {
+        runCoroutineSync(this._updateData(data, false, sh, options));
     }
 
     /**
