@@ -77,7 +77,9 @@ async function Main(): Promise<void> {
         localStorage.setItem(LocalStorageOptimizeDebugModeName, value?.toString() || "");
         if (renderer) {
             renderer.optimizerDebugMode = value || null;
-            await startRenderingAsync();
+            if (renderer.optimize) {
+                await startRenderingAsync();
+            }
         }
     });
 
