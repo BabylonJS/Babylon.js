@@ -12,7 +12,6 @@ import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLin
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 import { SettingsPopover } from "./settingsPopover";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     section: {
         display: "flex",

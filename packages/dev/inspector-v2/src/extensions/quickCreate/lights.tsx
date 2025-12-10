@@ -12,7 +12,6 @@ import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/property
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { SettingsPopover } from "./settingsPopover";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     section: {
         display: "flex",

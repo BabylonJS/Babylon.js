@@ -9,7 +9,6 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SettingsPopover } from "./settingsPopover";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     section: {
         display: "flex",

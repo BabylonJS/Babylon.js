@@ -11,7 +11,6 @@ import { SettingsPopover } from "./settingsPopover";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     section: {
         display: "flex",

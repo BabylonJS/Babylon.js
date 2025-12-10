@@ -14,7 +14,6 @@ import { SettingsPopover } from "./settingsPopover";
 // Side-effect import needed for GPUParticleSystem
 import "core/Particles/webgl2ParticleSystem";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     section: {
         display: "flex",
