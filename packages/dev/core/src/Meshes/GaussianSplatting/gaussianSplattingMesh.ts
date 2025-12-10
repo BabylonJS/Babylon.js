@@ -1478,7 +1478,7 @@ export class GaussianSplattingMesh extends Mesh {
         const covBSItemSize = this._useRGBACovariants ? 4 : 2;
 
         const x = fBuffer[8 * index + 0];
-        const y = -fBuffer[8 * index + 1];
+        const y = fBuffer[8 * index + 1];
         const z = fBuffer[8 * index + 2];
 
         this._splatPositions![4 * index + 0] = x;
