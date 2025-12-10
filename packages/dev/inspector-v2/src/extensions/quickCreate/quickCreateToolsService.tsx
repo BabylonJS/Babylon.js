@@ -2,7 +2,6 @@ import type { ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../services/sceneContext";
 import type { IShellService } from "../../services/shellService";
 import { Accordion as BabylonAccordion, AccordionSection as BabylonAccordionSection } from "shared-ui-components/fluent/primitives/accordion";
-import { makeStyles, tokens } from "@fluentui/react-components";
 import { ShellServiceIdentity } from "../../services/shellService";
 
 import { CollectionsAdd20Regular } from "@fluentui/react-icons";
@@ -17,25 +16,6 @@ import { LightsContent } from "./lights";
 import { CamerasContent } from "./cameras";
 import { ParticlesContent } from "./particles";
 
-const useStyles = makeStyles({
-    container: {
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-    },
-    scrollArea: {
-        flex: 1,
-        overflowY: "auto",
-        paddingRight: tokens.spacingHorizontalS,
-        paddingBottom: tokens.spacingVerticalS,
-    },
-    section: {
-        display: "flex",
-        flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
-    },
-});
-
 // TODO: This is just a placeholder for a dynamically installed extension that brings in asset creation tools (node materials, etc.).
 export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext]> = {
     friendlyName: "Creation Tools",
@@ -48,26 +28,30 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
             horizontalLocation: "left",
             verticalLocation: "top",
             content: () => {
-                const classes = useStyles();
-
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
-                // eslint-disable-next-line no-console
-                console.log(scene);
 
                 return (
-                    <div className={classes.container}>
-                        <div className={classes.scrollArea}>
-                            {/* <BabylonAccordion multiple> */}
+                    scene && (
+                        <>
                             <BabylonAccordion>
-                                <BabylonAccordionSection title="Meshes">{scene && <MeshesContent scene={scene} />}</BabylonAccordionSection>
-                                <BabylonAccordionSection title="Materials">{scene && <MaterialsContent scene={scene} />}</BabylonAccordionSection>
-                                <BabylonAccordionSection title="Lights">{scene && <LightsContent scene={scene} />}</BabylonAccordionSection>
-                                <BabylonAccordionSection title="Particles">{scene && <ParticlesContent scene={scene} />}</BabylonAccordionSection>
-                                <BabylonAccordionSection title="Cameras">{scene && <CamerasContent scene={scene} />}</BabylonAccordionSection>
+                                <BabylonAccordionSection title="Meshes">
+                                    <MeshesContent scene={scene} />
+                                </BabylonAccordionSection>
+                                <BabylonAccordionSection title="Materials">
+                                    <MaterialsContent scene={scene} />
+                                </BabylonAccordionSection>
+                                <BabylonAccordionSection title="Lights">
+                                    <LightsContent scene={scene} />
+                                </BabylonAccordionSection>
+                                <BabylonAccordionSection title="Particles">
+                                    <ParticlesContent scene={scene} />
+                                </BabylonAccordionSection>
+                                <BabylonAccordionSection title="Cameras">
+                                    <CamerasContent scene={scene} />
+                                </BabylonAccordionSection>
                             </BabylonAccordion>
-                        </div>
-                    </div>
+                        </>
+                    )
                 );
             },
         });
