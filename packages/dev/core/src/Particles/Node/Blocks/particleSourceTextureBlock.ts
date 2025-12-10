@@ -8,7 +8,6 @@ import type { Nullable } from "core/types";
 import { TextureTools } from "core/Misc/textureTools";
 import type { BaseTexture } from "../../../Materials/Textures/baseTexture";
 import type { ProceduralTexture } from "../../../Materials";
-import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
  * Interface used to define texture data
