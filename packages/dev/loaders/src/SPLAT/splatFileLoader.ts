@@ -209,6 +209,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             babylonMeshesArray.push(gaussianSplatting);
             gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh);
             gaussianSplatting.scaling.y *= -1;
+            gaussianSplatting.computeWorldMatrix(true);
             scene._blockEntityCollection = false;
         };
 
@@ -280,6 +281,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh);
                         if (!this._loadingOptions.flipY) {
                             gaussianSplatting.scaling.y *= -1.0;
+                            gaussianSplatting.computeWorldMatrix(true);
                         }
                         scene._blockEntityCollection = false;
                         this.applyAutoCameraLimits(parsedSPZ, scene);
@@ -316,6 +318,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                             gaussianSplatting.rotation = new Vector3(-Math.PI / 2, Math.PI, 0);
                                             break;
                                     }
+                                    gaussianSplatting.computeWorldMatrix(true);
                                 }
                                 break;
                             case Mode.PointCloud:
