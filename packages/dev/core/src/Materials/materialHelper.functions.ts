@@ -628,9 +628,6 @@ const _VertexPullingMetadataCache = new WeakMap<Geometry, Map<string, IVertexPul
  * @returns A map of attribute names to their metadata, or null if unavailable
  */
 export function PrepareVertexPullingUniforms(geometry: Geometry): Nullable<Map<string, IVertexPullingMetadata>> {
-    if (!geometry) {
-        return null;
-    }
     const vertexBuffers = geometry.getVertexBuffers();
     if (!vertexBuffers) {
         return null;
@@ -680,10 +677,6 @@ export function PrepareVertexPullingUniforms(geometry: Geometry): Nullable<Map<s
  * @param metadata The vertex pulling metadata
  */
 export function BindVertexPullingUniforms(effect: Effect, metadata: Map<string, IVertexPullingMetadata>): void {
-    if (!effect) {
-        return;
-    }
-
     metadata.forEach((data, attribute) => {
         const uniformName = `vp_${attribute}_info`;
         // Pack into vec3: (offset, stride, type)

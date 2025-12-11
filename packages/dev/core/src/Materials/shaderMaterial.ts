@@ -908,9 +908,9 @@ export class ShaderMaterial extends PushMaterial {
             if (geometry) {
                 this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
                 if (this._vertexPullingMetadata) {
-                    for (const [attribute] of this._vertexPullingMetadata.entries()) {
+                    this._vertexPullingMetadata.forEach((_, attribute) => {
                         uniforms.push(`vp_${attribute}_info`);
-                    }
+                    });
                 }
             }
         }
