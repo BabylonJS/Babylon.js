@@ -8,7 +8,7 @@ import { ToolContext } from "../hoc/fluentToolWrapper";
 export type ButtonProps = BasePrimitiveProps & {
     onClick: () => void;
     icon?: FluentIcon;
-    appearance?: "subtle" | "transparent";
+    appearance?: "subtle" | "transparent" | "primary";
     label?: string;
 };
 
