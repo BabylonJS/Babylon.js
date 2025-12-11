@@ -88,12 +88,12 @@ export type StackItem = {
 export enum OptimizerDebugMode {
     /**
      * Clamps the values returned by fragment shaders to the 0-1 range.
-     * Fragment shader output is often clamped by the target texture, but in an optimized Smart Filter, the
-     * output of a fragment shader can be immediately returned to another fragment shader whose block was connected
-     * to the block of the first fragment shader. In this case, the clamping would not happen, and so you may get
-     * different results when the optimizer is enabled. If you see different results when using this debug mode,
-     * you may need to clamp the output of one of your blocks before returning it to prevent the results from
-     * changing when the block is used in an optimized Smart Filter.
+     * Fragment shader output is often clamped by the target texture, but in an optimized Smart Filter, multiple
+     * fragment shaders can get combined into one, and the output of one simply returned to the next as-is. In this case,
+     * the clamping would not happen, and so you could get different results when the optimizer is enabled if your blocks
+     * can return values outside of the 0-1 range.
+     * If you see different results when using this debug mode, you may need to clamp the output of one of your blocks
+     * to prevent the results from changing when the block is used in an optimized Smart Filter.
      */
     ClampReturnValues = 1,
 }
