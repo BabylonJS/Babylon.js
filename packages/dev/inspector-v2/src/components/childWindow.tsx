@@ -4,6 +4,7 @@ import type { FunctionComponent, PropsWithChildren } from "react";
 import { createDOMRenderer, makeStyles, Portal, RendererProvider } from "@fluentui/react-components";
 import { useEffect, useMemo, useState } from "react";
 
+import { Logger } from "core/Misc/logger";
 import { Theme } from "./theme";
 
 const useStyles = makeStyles({
@@ -16,29 +17,30 @@ const useStyles = makeStyles({
 });
 
 export type ChildWindowOptions = {
-    width?: number;
-    height?: number;
-    left?: number;
-    top?: number;
+    defaultWidth?: number;
+    defaultHeight?: number;
+    defaultLeft?: number;
+    defaultTop?: number;
     title?: string;
+    key?: string;
 };
 
 function ToFeaturesString(options: ChildWindowOptions) {
-    const { width, height, left, top } = options;
+    const { defaultWidth, defaultHeight, defaultLeft, defaultTop } = options;
 
     const features: { key: string; value: string }[] = [];
 
-    if (width !== undefined) {
-        features.push({ key: "width", value: width.toString() });
+    if (defaultWidth !== undefined) {
+        features.push({ key: "width", value: defaultWidth.toString() });
     }
-    if (height !== undefined) {
-        features.push({ key: "height", value: height.toString() });
+    if (defaultHeight !== undefined) {
+        features.push({ key: "height", value: defaultHeight.toString() });
     }
-    if (left !== undefined) {
-        features.push({ key: "left", value: left.toString() });
+    if (defaultLeft !== undefined) {
+        features.push({ key: "left", value: defaultLeft.toString() });
     }
-    if (top !== undefined) {
-        features.push({ key: "top", value: top.toString() });
+    if (defaultTop !== undefined) {
+        features.push({ key: "top", value: defaultTop.toString() });
     }
     features.push({ key: "location", value: "no" });
 
@@ -59,6 +61,39 @@ export function useChildWindow() {
         const disposeActions: (() => void)[] = [];
 
         if (options) {
+            const key = options.key ? `"Babylon/Settings/ChildWindow/${options.key}/Bounds"` : null;
+            if (key) {
+                const savedBounds = localStorage.getItem(key);
+                if (savedBounds) {
+                    try {
+                        const bounds = JSON.parse(savedBounds);
+                        options.defaultLeft = bounds.left;
+                        options.defaultTop = bounds.top;
+                        options.defaultWidth = bounds.width;
+                        options.defaultHeight = bounds.height;
+                    } catch {
+                        Logger.Warn(`Could not parse saved bounds for child window with key ${key}`);
+                    }
+                }
+            }
+
+            // Half width by default.
+            if (!options.defaultWidth) {
+                options.defaultWidth = window.innerWidth / 2;
+            }
+            // Half height by default.
+            if (!options.defaultHeight) {
+                options.defaultHeight = window.innerHeight / 2;
+            }
+            // Horizontally centered by default.
+            if (!options.defaultLeft) {
+                options.defaultLeft = window.screenX + (window.innerWidth - options.defaultWidth) / 2;
+            }
+            // Vertically centered by default.
+            if (!options.defaultTop) {
+                options.defaultTop = window.screenY + (window.innerHeight - options.defaultHeight) / 2;
+            }
+
             const childWindow = window.open("", "", ToFeaturesString(options));
             if (childWindow) {
                 const body = childWindow.document.body;
@@ -93,6 +128,18 @@ export function useChildWindow() {
                     () => {
                         setWindowState(undefined);
                         setOptions(undefined);
+
+                        if (key) {
+                            localStorage.setItem(
+                                key,
+                                JSON.stringify({
+                                    left: childWindow.screenX,
+                                    top: childWindow.screenY,
+                                    width: childWindow.outerWidth,
+                                    height: childWindow.outerHeight,
+                                })
+                            );
+                        }
                     },
                     { once: true }
                 );

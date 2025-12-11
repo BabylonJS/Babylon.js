@@ -784,10 +784,10 @@ function usePane(
                     const bounds = paneContainer.getBoundingClientRect();
 
                     childWindow.open({
-                        width: Math.max(bounds.width, minWidth + widthBuffer),
-                        height: bounds.height - topOffset,
-                        top: bounds.top + window.screenY + topOffset,
-                        left: bounds.left + window.screenX,
+                        defaultWidth: Math.max(bounds.width, minWidth + widthBuffer),
+                        defaultHeight: bounds.height - topOffset,
+                        defaultTop: bounds.top + window.screenY + topOffset,
+                        defaultLeft: bounds.left + window.screenX,
                         title: location === "left" ? "Left" : "Right",
                     });
                 }
