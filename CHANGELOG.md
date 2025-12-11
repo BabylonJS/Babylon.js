@@ -1,5 +1,19 @@
 # Changelog
 
+## 8.41.1
+
+### Core
+
+- Node Material: Add support for offset, scale and rotation to the TriPlanar block - by [Popov72](https://github.com/Popov72) ([#17547](https://github.com/BabylonJS/Babylon.js/pull/17547))
+
+### GUI
+
+- GUI: Add a correctly named highlighterOpacity accessor to the InputText control - by [Popov72](https://github.com/Popov72) ([#17548](https://github.com/BabylonJS/Babylon.js/pull/17548))
+
+### Node Editor
+
+- Node Material: Add support for offset, scale and rotation to the TriPlanar block - by [Popov72](https://github.com/Popov72) ([#17547](https://github.com/BabylonJS/Babylon.js/pull/17547))
+
 ## 8.41.0
 
 ### Core
