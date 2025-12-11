@@ -135,8 +135,8 @@ export function useChildWindow() {
                                 JSON.stringify({
                                     left: childWindow.screenX,
                                     top: childWindow.screenY,
-                                    width: childWindow.outerWidth,
-                                    height: childWindow.outerHeight,
+                                    width: childWindow.innerWidth,
+                                    height: childWindow.innerHeight,
                                 })
                             );
                         }

@@ -19,6 +19,8 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
+import { useChildWindow } from "../../childWindow";
+import { TextureEditor } from "../../textureEditor/textureEditor";
 import { BoundProperty } from "../boundProperty";
 import { FindTextureFormat, FindTextureType } from "./textureFormatUtils";
 import { TexturePreview } from "./texturePreview";
@@ -61,6 +63,8 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
         [texture]
     );
 
+    const childWindow = useChildWindow();
+
     return (
         <>
             <TexturePreview texture={texture} width={256} height={256} />
@@ -76,7 +80,10 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
                     }}
                 />
             )}
-            <ButtonLine label="Edit Texture (coming soon!)" onClick={() => {}} />
+            <ButtonLine label="Edit Texture" onClick={() => childWindow.open({ title: "Texture Editor", key: "Texture Editor" })} />
+            <childWindow.component>
+                <TextureEditor texture={texture} window={window} onUpdate={() => {}} />
+            </childWindow.component>
         </>
     );
 };
