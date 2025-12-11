@@ -48,12 +48,12 @@ fn convertToFloat(word: u32, byteInWord: u32, dataType: u32) -> f32 {
             return f32(value) / 255.0;
         }
         case 5122u: { // SHORT
-            let shift = (byteInWord & 0xFFFFFFFEu) * 4u; // Align to 2-byte boundary
+            let shift = (byteInWord & 0xFFFFFFFEu) * 8u; // Align to 2-byte boundary
             let value = (word >> shift) & 0xFFFFu;
             return f32(i32(value << 16u) >> 16u);
         }
         case 5123u: { // UNSIGNED_SHORT
-            let shift = (byteInWord & 0xFFFFFFFEu) * 4u; // Align to 2-byte boundary
+            let shift = (byteInWord & 0xFFFFFFFEu) * 8u; // Align to 2-byte boundary
             let value = (word >> shift) & 0xFFFFu;
             return f32(value);
         }
