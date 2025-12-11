@@ -117,7 +117,7 @@ export class Atmosphere implements IDisposable {
      * @returns True if the atmosphere is supported, false otherwise.
      */
     public static IsSupported(engine: AbstractEngine): boolean {
-        return !engine._badOS && engine.version >= 2;
+        return !engine._badOS && (engine.isWebGPU || engine.version >= 2);
     }
 
     /**
