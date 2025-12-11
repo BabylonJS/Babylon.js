@@ -299,6 +299,10 @@ export class NodeRenderGraphBlock {
             NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer |
                 NodeRenderGraphBlockConnectionPointTypes.ResourceContainer |
                 NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator |
+                NodeRenderGraphBlockConnectionPointTypes.ObjectList |
+                NodeRenderGraphBlockConnectionPointTypes.ShadowLight |
+                NodeRenderGraphBlockConnectionPointTypes.Camera |
+                NodeRenderGraphBlockConnectionPointTypes.Object |
                 additionalAllowedTypes
         );
 

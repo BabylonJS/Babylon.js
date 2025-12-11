@@ -80,7 +80,7 @@ export abstract class FrameGraphTask {
      * @returns A promise that resolves when the initialization is complete.
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public initAsync(): Promise<void> {
+    public initAsync(): Promise<unknown> {
         return Promise.resolve();
     }
 

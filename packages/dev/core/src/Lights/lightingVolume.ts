@@ -65,11 +65,7 @@ export class LightingVolume {
             this._createFallbackTextures();
         }
 
-        const depthTexture = this._shadowGenerator.getShadowMap()?.depthStencilTexture;
-        if (this._engine.isWebGPU && depthTexture) {
-            this._cs!.setInternalTexture("shadowMap", depthTexture);
-            this._cs2!.setInternalTexture("shadowMap", depthTexture);
-        }
+        this._setComputeShaderInputs();
     }
 
     private _tesselation = 0;
@@ -300,21 +296,29 @@ export class LightingVolume {
             entryPoint: "updatePlaneVertices",
         });
 
+        this._setComputeShaderInputs();
+    }
+
+    private _setComputeShaderInputs() {
+        if (!this._engine.isWebGPU) {
+            return;
+        }
+
         if (this._shadowGenerator) {
             const depthTexture = this._shadowGenerator.getShadowMap()?.depthStencilTexture;
             if (depthTexture) {
-                this._cs.setInternalTexture("shadowMap", depthTexture);
-                this._cs2.setInternalTexture("shadowMap", depthTexture);
+                this._cs?.setInternalTexture("shadowMap", depthTexture);
+                this._cs2?.setInternalTexture("shadowMap", depthTexture);
             }
         }
 
         if (this._uBuffer) {
-            this._cs.setUniformBuffer("params", this._uBuffer);
-            this._cs2.setUniformBuffer("params", this._uBuffer);
+            this._cs?.setUniformBuffer("params", this._uBuffer);
+            this._cs2?.setUniformBuffer("params", this._uBuffer);
         }
         if (this._storageBuffer) {
-            this._cs.setStorageBuffer("positions", this._storageBuffer);
-            this._cs2.setStorageBuffer("positions", this._storageBuffer);
+            this._cs?.setStorageBuffer("positions", this._storageBuffer);
+            this._cs2?.setStorageBuffer("positions", this._storageBuffer);
         }
     }
 
@@ -490,8 +494,7 @@ export class LightingVolume {
 
             this._mesh.setVerticesBuffer(new VertexBuffer(webGPUEngine, this._storageBuffer.getBuffer(), "position", { takeBufferOwnership: false }), true, vertexNumber);
 
-            this._cs!.setStorageBuffer("positions", this._storageBuffer);
-            this._cs2!.setStorageBuffer("positions", this._storageBuffer);
+            this._setComputeShaderInputs();
 
             this._cs!.triggerContextRebuild = true;
             this._cs2!.triggerContextRebuild = true;
