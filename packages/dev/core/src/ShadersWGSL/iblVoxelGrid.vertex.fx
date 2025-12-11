@@ -235,37 +235,47 @@ fn calculateTriangleNormal(v0
 
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
-  var vertIdx = readVertexIndex(input.vertexIndex);
-  var positionUpdated = readVertexPosition(uniforms.vp_position_info, vertIdx);
 
-#include <morphTargetsVertexGlobal>
-let inputPosition: vec3f = positionUpdated;
-#include <morphTargetsVertex>(vertexInputs.position\\),inputPosition),vertexInputs.vertexIndex,vertIdx)[0..maxSimultaneousMorphTargets]
+  #include <morphTargetsVertexGlobal>
+  
+  var triPositions: array<vec3f, 3>;
 
-#include <instancesVertex>
+  // We're going to calculate the updated position for each vertex of the triangle
+  // so that we can compute the triangle normal.
+  var thisTriIndex : u32 = input.vertexIndex; // index in the triangle (0,1,2) of this invocation
+  for (var i: u32 = 0u; i < 3u; i = i + 1u) {
+    var provokingVertNum : u32 = input.vertexIndex / 3 * 3;
+    let vertIdx = readVertexIndex(provokingVertNum + i);
 
+    // We need to know which vertex of the triangle corresponds to this invocation
+    // so that we can output the correct position at the end.
+    if (provokingVertNum + i == input.vertexIndex) {
+      thisTriIndex = i;
+    }
+    var positionUpdated = readVertexPosition(uniforms.vp_position_info, vertIdx);
+    #include <instancesVertex>
+    let inputPosition: vec3f = positionUpdated;
+    #include <morphTargetsVertex>(vertexInputs.position\\),inputPosition),vertexInputs.vertexIndex,vertIdx)[0..maxSimultaneousMorphTargets]
 
-#if NUM_BONE_INFLUENCERS > 0
-  let matrixIndex = readMatrixIndices(uniforms.vp_matricesIndices_info, vertIdx);
-  let matrixWeight = readMatrixWeights(uniforms.vp_matricesWeights_info, vertIdx);
-  #if NUM_BONE_INFLUENCERS > 4
-    let matrixIndexExtra = readMatrixIndicesExtra(uniforms.vp_matricesIndicesExtra_info, vertIdx);
-    let matrixWeightExtra = readMatrixWeightsExtra(uniforms.vp_matricesWeightsExtra_info, vertIdx);
-  #endif
-#endif
-#include<bonesVertex>(vertexInputs.matricesIndices,matrixIndex,vertexInputs.matricesWeights,matrixWeight,vertexInputs.matricesIndicesExtra,matrixIndexExtra,vertexInputs.matricesWeightsExtra,matrixWeightExtra)
-#include<bakedVertexAnimation>(vertexInputs.matricesIndices,matrixIndex,vertexInputs.matricesWeights,matrixWeight,vertexInputs.matricesIndicesExtra,matrixIndexExtra,vertexInputs.matricesWeightsExtra,matrixWeightExtra)
+    #if NUM_BONE_INFLUENCERS > 0
+      let matrixIndex = readMatrixIndices(uniforms.vp_matricesIndices_info, vertIdx);
+      let matrixWeight = readMatrixWeights(uniforms.vp_matricesWeights_info, vertIdx);
+      #if NUM_BONE_INFLUENCERS > 4
+        let matrixIndexExtra = readMatrixIndicesExtra(uniforms.vp_matricesIndicesExtra_info, vertIdx);
+        let matrixWeightExtra = readMatrixWeightsExtra(uniforms.vp_matricesWeightsExtra_info, vertIdx);
+      #endif
+    #endif
+    #include<bonesVertex>(vertexInputs.matricesIndices,matrixIndex,vertexInputs.matricesWeights,matrixWeight,vertexInputs.matricesIndicesExtra,matrixIndexExtra,vertexInputs.matricesWeightsExtra,matrixWeightExtra)
+    #include<bakedVertexAnimation>(vertexInputs.matricesIndices,matrixIndex,vertexInputs.matricesWeights,matrixWeight,vertexInputs.matricesIndicesExtra,matrixIndexExtra,vertexInputs.matricesWeightsExtra,matrixWeightExtra)
+    triPositions[i] = (finalWorld * vec4(positionUpdated, 1.0)).xyz;
+  }
 
-  let worldPos = finalWorld * vec4f(positionUpdated, 1.0);
+  var N : vec3<f32> = calculateTriangleNormal(triPositions[0], triPositions[1], triPositions[2]);
+
+  let worldPos = triPositions[thisTriIndex];
 
   // inverse scale this by world scale to put in 0-1 space.
-  vertexOutputs.position = uniforms.invWorldScale * worldPos;
-
-  var provokingVertNum : u32 = input.vertexIndex / 3 * 3;
-  var pos0 = readVertexPosition(uniforms.vp_position_info, readVertexIndex(provokingVertNum));
-  var pos1 = readVertexPosition(uniforms.vp_position_info, readVertexIndex(provokingVertNum + 1));
-  var pos2 = readVertexPosition(uniforms.vp_position_info, readVertexIndex(provokingVertNum + 2));
-  var N : vec3<f32> = calculateTriangleNormal(pos0, pos1, pos2);
+  vertexOutputs.position = uniforms.invWorldScale * vec4(worldPos, 1.0);
 
   // Check the direction that maximizes the rasterized area and swizzle as
   // appropriate.
