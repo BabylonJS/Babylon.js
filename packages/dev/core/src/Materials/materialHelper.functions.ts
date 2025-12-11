@@ -684,11 +684,11 @@ export function BindVertexPullingUniforms(effect: Effect, metadata: Map<string, 
         return;
     }
 
-    for (const [attribute, data] of metadata.entries()) {
+    metadata.forEach((data, attribute) => {
         const uniformName = `vp_${attribute}_info`;
         // Pack into vec3: (offset, stride, type)
         effect.setFloat3(uniformName, data.offset, data.stride, data.type);
-    }
+    });
 }
 
 /**

@@ -48,14 +48,14 @@ fn convertToFloat(word: u32, byteInWord: u32, dataType: u32) -> f32 {
             return f32(value) / 255.0;
         }
         case 5122u: { // SHORT
-            let shift = (byteInWord / 2u) * 16u;
+            let shift = (byteInWord & 0xFFFFFFFEu) * 4u; // Align to 2-byte boundary
             let value = (word >> shift) & 0xFFFFu;
-            return f32(i32(value << 16u) >> 16u) / 32767.0;
+            return f32(i32(value << 16u) >> 16u);
         }
         case 5123u: { // UNSIGNED_SHORT
-            let shift = (byteInWord / 2u) * 16u;
+            let shift = (byteInWord & 0xFFFFFFFEu) * 4u; // Align to 2-byte boundary
             let value = (word >> shift) & 0xFFFFu;
-            return f32(value) / 65535.0;
+            return f32(value);
         }
         case 5126u: { // FLOAT
             return bitcast<f32>(word);
@@ -97,7 +97,7 @@ fn readVertexPosition(info: vec3f, vertexIndex: u32) -> vec3f {
 fn readMatrixIndexValue(byteOffset: u32, dataType: u32) -> f32 {
     let wordOffset = byteOffset / 4u;
     let byteInWord = byteOffset % 4u;
-    let word: u32 = bitcast<u32>(matricesIndices[wordOffset]);
+    let word: u32 = matricesIndices[wordOffset];
     
     return convertToFloat(word, byteInWord, dataType);
 }
@@ -244,7 +244,6 @@ let inputPosition: vec3f = positionUpdated;
 
 #include <instancesVertex>
 
-#include <bakedVertexAnimation>
 
 #if NUM_BONE_INFLUENCERS > 0
   let matrixIndex = readMatrixIndices(uniforms.vp_matricesIndices_info, vertIdx);
@@ -254,7 +253,8 @@ let inputPosition: vec3f = positionUpdated;
     let matrixWeightExtra = readMatrixWeightsExtra(uniforms.vp_matricesWeightsExtra_info, vertIdx);
   #endif
 #endif
-#include<bonesVertex>(vertexInputs.matricesIndices,matrixIndex,vertexInputs.matricesWeights,matrixWeight)
+#include<bonesVertex>(vertexInputs.matricesIndices,matrixIndex,vertexInputs.matricesWeights,matrixWeight,vertexInputs.matricesIndicesExtra,matrixIndexExtra,vertexInputs.matricesWeightsExtra,matrixWeightExtra)
+#include<bakedVertexAnimation>(vertexInputs.matricesIndices,matrixIndex,vertexInputs.matricesWeights,matrixWeight,vertexInputs.matricesIndicesExtra,matrixIndexExtra,vertexInputs.matricesWeightsExtra,matrixWeightExtra)
 
   let worldPos = finalWorld * vec4f(positionUpdated, 1.0);
 
