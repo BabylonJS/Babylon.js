@@ -25,7 +25,7 @@ import { OptimizerDebugMode, SmartFilterCoreVersion } from "smart-filters";
 import type { Observer } from "core/Misc/observable.js";
 import { OnlyShowCustomBlocksDefaultValue } from "../../constants.js";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
-import { IInspectableOptions } from "core/index.js";
+import type { IInspectableOptions } from "core/Misc/iInspectable.js";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;

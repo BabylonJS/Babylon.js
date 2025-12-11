@@ -9,7 +9,7 @@ import {
     type SmartFilter,
     type SmartFilterRuntime,
     Logger,
-    OptimizerDebugMode,
+    type OptimizerDebugMode,
 } from "smart-filters";
 import { RegisterAnimations, TextureAssetCache } from "smart-filters-editor-control";
 import { RegisterOptimizedShaderBlockCodeForUnitTests } from "./optimizerUnitTestHelper";

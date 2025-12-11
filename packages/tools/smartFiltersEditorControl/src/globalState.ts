@@ -5,7 +5,7 @@ import type { ThinEngine } from "core/Engines/thinEngine";
 import type { Nullable } from "core/types";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager.js";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject.js";
-import { type BaseBlock, type ConnectionPoint, OptimizerDebugMode, SmartFilter } from "smart-filters";
+import { type BaseBlock, type ConnectionPoint, type OptimizerDebugMode, SmartFilter } from "smart-filters";
 import type { IBlockRegistration } from "smart-filters-blocks";
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport.js";
