@@ -968,6 +968,7 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     newSystem.preWarmCycles = oldSystem.preWarmCycles;
     newSystem.preWarmStepOffset = oldSystem.preWarmStepOffset;
     newSystem.isBillboardBased = oldSystem.isBillboardBased;
+    newSystem.billBoardMode = oldSystem.billboardMode;
     newSystem.isLocal = oldSystem.isLocal;
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
 

@@ -12,6 +12,7 @@ import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { _TriggerSubEmitter } from "core/Particles/Node/Blocks/Triggers/triggerTools";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import { Constants } from "../../../Engines/constants";
 
 export const RampValue0Index = 8;
 
@@ -79,6 +80,21 @@ export class SystemBlock extends NodeParticleBlock {
      */
     @editableInPropertyPage("Is billboard based", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public isBillboardBased = true;
+
+    /**
+     * Gets or sets the billboard mode for the particle system
+     */
+    @editableInPropertyPage("Billboard mode", PropertyTypeForEdition.List, "ADVANCED", {
+        notifiers: { rebuild: true },
+        embedded: true,
+        options: [
+            { label: "All", value: Constants.PARTICLES_BILLBOARDMODE_ALL },
+            { label: "Y", value: Constants.PARTICLES_BILLBOARDMODE_Y },
+            { label: "Stretched", value: Constants.PARTICLES_BILLBOARDMODE_STRETCHED },
+            { label: "Stretched Local", value: Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL },
+        ],
+    })
+    public billBoardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
 
     /**
      * Gets or sets a boolean indicating if the system coordinate space is local or global
@@ -236,6 +252,7 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem._targetStopDuration = (this.targetStopDuration.getConnectedValue(state) as number) ?? 0;
         particleSystem.startDelay = this.startDelay;
         particleSystem.isBillboardBased = this.isBillboardBased;
+        particleSystem.billboardMode = this.billBoardMode;
         particleSystem.translationPivot = (this.translationPivot.getConnectedValue(state) as Vector2) || Vector2.Zero();
         particleSystem.textureMask = this.textureMask.getConnectedValue(state) ?? new Color4(1, 1, 1, 1);
         particleSystem.isLocal = this.isLocal;
@@ -325,6 +342,7 @@ export class SystemBlock extends NodeParticleBlock {
         serializationObject.preWarmCycles = this.preWarmCycles;
         serializationObject.preWarmStepOffset = this.preWarmStepOffset;
         serializationObject.isBillboardBased = this.isBillboardBased;
+        serializationObject.billBoardMode = this.billBoardMode;
         serializationObject.isLocal = this.isLocal;
         serializationObject.disposeOnStop = this.disposeOnStop;
         serializationObject.doNoStart = this.doNoStart;
@@ -346,6 +364,7 @@ export class SystemBlock extends NodeParticleBlock {
         this.preWarmCycles = serializationObject.preWarmCycles ?? 0;
         this.preWarmStepOffset = serializationObject.preWarmStepOffset ?? 0;
         this.isBillboardBased = serializationObject.isBillboardBased ?? true;
+        this.billBoardMode = serializationObject.billBoardMode ?? Constants.PARTICLES_BILLBOARDMODE_ALL;
         this.isLocal = serializationObject.isLocal ?? false;
         this.disposeOnStop = serializationObject.disposeOnStop ?? false;
         this.doNoStart = !!serializationObject.doNoStart;
