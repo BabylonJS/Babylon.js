@@ -22,7 +22,6 @@ export type ChildWindowOptions = {
     defaultLeft?: number;
     defaultTop?: number;
     title?: string;
-    key?: string;
 };
 
 function ToFeaturesString(options: ChildWindowOptions) {
@@ -49,9 +48,10 @@ function ToFeaturesString(options: ChildWindowOptions) {
 
 /**
  * Allows displaying a child window that can contain child components.
+ * @param key An optional key to uniquely identify this child window (used for persisting window bounds).
  * @returns An object that enables opening, closing, and rendering the child window.
  */
-export function useChildWindow() {
+export function useChildWindow(key?: string) {
     const [windowState, setWindowState] = useState<{ window: Window; mountNode: HTMLElement; renderer: GriffelRenderer }>();
     const [options, setOptions] = useState<ChildWindowOptions>();
 
@@ -61,9 +61,9 @@ export function useChildWindow() {
         const disposeActions: (() => void)[] = [];
 
         if (options) {
-            const key = options.key ? `"Babylon/Settings/ChildWindow/${options.key}/Bounds"` : null;
-            if (key) {
-                const savedBounds = localStorage.getItem(key);
+            const storageKey = key ? `Babylon/Settings/ChildWindow/${key}/Bounds` : null;
+            if (storageKey) {
+                const savedBounds = localStorage.getItem(storageKey);
                 if (savedBounds) {
                     try {
                         const bounds = JSON.parse(savedBounds);
@@ -72,26 +72,26 @@ export function useChildWindow() {
                         options.defaultWidth = bounds.width;
                         options.defaultHeight = bounds.height;
                     } catch {
-                        Logger.Warn(`Could not parse saved bounds for child window with key ${key}`);
+                        Logger.Warn(`Could not parse saved bounds for child window with key ${storageKey}`);
                     }
                 }
             }
 
             // Half width by default.
             if (!options.defaultWidth) {
-                options.defaultWidth = window.innerWidth / 2;
+                options.defaultWidth = window.innerWidth * (2 / 3);
             }
             // Half height by default.
             if (!options.defaultHeight) {
-                options.defaultHeight = window.innerHeight / 2;
+                options.defaultHeight = window.innerHeight * (2 / 3);
             }
             // Horizontally centered by default.
             if (!options.defaultLeft) {
-                options.defaultLeft = window.screenX + (window.innerWidth - options.defaultWidth) / 2;
+                options.defaultLeft = window.screenX + (window.innerWidth - options.defaultWidth) * (2 / 3);
             }
             // Vertically centered by default.
             if (!options.defaultTop) {
-                options.defaultTop = window.screenY + (window.innerHeight - options.defaultHeight) / 2;
+                options.defaultTop = window.screenY + (window.innerHeight - options.defaultHeight) * (2 / 3);
             }
 
             const childWindow = window.open("", "", ToFeaturesString(options));
@@ -129,9 +129,9 @@ export function useChildWindow() {
                         setWindowState(undefined);
                         setOptions(undefined);
 
-                        if (key) {
+                        if (storageKey) {
                             localStorage.setItem(
-                                key,
+                                storageKey,
                                 JSON.stringify({
                                     left: childWindow.screenX,
                                     top: childWindow.screenY,

@@ -162,8 +162,8 @@ const useStyles = makeStyles({
 
 interface ITextureEditorProps {
     texture: BaseTexture;
-    window: Window;
-    onUpdate: () => void;
+    window?: Window;
+    onUpdate?: () => void;
 }
 
 const PREVIEW_UPDATE_DELAY_MS = 160;
@@ -220,13 +220,13 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
     // Callbacks
     const textureDidUpdate = useCallback(() => {
         if (timerRef.current != null) {
-            editorWindow.clearTimeout(timerRef.current);
+            window.clearTimeout(timerRef.current);
         }
-        timerRef.current = editorWindow.setTimeout(() => {
-            onUpdate();
+        timerRef.current = window.setTimeout(() => {
+            onUpdate?.();
             timerRef.current = null;
         }, PREVIEW_UPDATE_DELAY_MS);
-    }, [onUpdate, editorWindow]);
+    }, [onUpdate]);
 
     const setMetadata = useCallback((newMetadata: any) => {
         setMetadataState((prev) => {
@@ -317,7 +317,7 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
 
         const manager = new TextureCanvasManager(
             texture,
-            editorWindow,
+            editorWindow ?? uiCanvasRef.current.ownerDocument.defaultView ?? window,
             uiCanvasRef.current,
             canvas2DRef.current,
             canvas3DRef.current,

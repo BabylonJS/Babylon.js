@@ -1,7 +1,7 @@
-import type { FunctionComponent, RefObject } from "react";
+import type { FunctionComponent } from "react";
 import { useCallback } from "react";
 
-import { makeStyles, tokens, Tooltip, ToggleButton, Popover, PopoverTrigger, PopoverSurface } from "@fluentui/react-components";
+import { makeStyles, tokens, Tooltip, ToggleButton } from "@fluentui/react-components";
 import { Color3, Color4 } from "core/Maths/math.color";
 
 import { ColorPickerPopup } from "shared-ui-components/fluent/primitives/colorPicker";
@@ -40,7 +40,7 @@ const useStyles = makeStyles({
     colorSection: {
         display: "flex",
         justifyContent: "center",
-        marginTop: tokens.spacingVerticalS,
+        margin: tokens.spacingVerticalS,
     },
 });
 
@@ -97,6 +97,9 @@ export const ToolBar: FunctionComponent<IToolBarProps> = (props) => {
 
     return (
         <div className={classes.toolbar}>
+            <div className={classes.colorSection}>
+                <ColorPickerPopup value={hasAlpha ? computeRGBAColor() : Color3.FromHexString(metadata.color)} onChange={handleColorChange} />
+            </div>
             <div className={classes.toolsSection}>
                 {tools.map((tool, index) => {
                     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -113,10 +116,6 @@ export const ToolBar: FunctionComponent<IToolBarProps> = (props) => {
                         </Tooltip>
                     );
                 })}
-            </div>
-
-            <div className={classes.colorSection}>
-                <ColorPickerPopup value={hasAlpha ? computeRGBAColor() : Color3.FromHexString(metadata.color)} onChange={handleColorChange} />
             </div>
         </div>
     );
