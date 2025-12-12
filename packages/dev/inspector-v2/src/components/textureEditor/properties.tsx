@@ -42,7 +42,7 @@ const useStyles = makeStyles({
     },
     pixelDataValue: {
         color: tokens.colorNeutralForeground1,
-        minWidth: "24px",
+        minWidth: "32px",
     },
     faceButton: {
         minWidth: "auto",
@@ -86,8 +86,8 @@ const PixelDataDisplay: FunctionComponent<{ label: string; value: number | undef
     const classes = useStyles();
     return (
         <span className={classes.pixelData}>
-            <span className={classes.pixelDataLabel}>{label}:</span>
-            <span className={classes.pixelDataValue}>{value !== undefined ? value : "-"}</span>
+            <Label className={classes.pixelDataLabel}>{label}:</Label>
+            <Label className={classes.pixelDataValue}>{value !== undefined ? value : "-"}</Label>
         </span>
     );
 };
@@ -150,7 +150,7 @@ export const PropertiesBar: FunctionComponent<IPropertiesBarProps> = (props) => 
         <div className={classes.propertiesBar}>
             {/* Dimensions Section */}
             <div className={classes.section}>
-                <Label size="small">Size:</Label>
+                <Label>Size:</Label>
                 <span>
                     {size.width} × {size.height}
                 </span>
