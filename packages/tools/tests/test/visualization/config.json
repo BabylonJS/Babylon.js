@@ -8,20 +8,20 @@
             "referenceImage": "gsplat-depth.png"
         },
         {
-            "title": "Gaussian Splatting Compressed ply + SH",
-            "playgroundId": "#U8O4EP#0",
+            "title": "Gaussian Splatting Compressed ply SH",
+            "playgroundId": "#U8O4EP#1",
             "renderCount": 5,
             "referenceImage": "gsplat-compressedply-sh.png"
         },
         {
-            "title": "Gaussian Splatting SPZ + SH",
+            "title": "Gaussian Splatting SPZ SH",
             "playgroundId": "#XSNFXP#1",
             "renderCount": 5,
             "referenceImage": "gsplat-spz-sh.png"
         },
         {
             "title": "Gaussian Splatting Update Data",
-            "playgroundId": "#Q0LBM8#0",
+            "playgroundId": "#Q0LBM8#1",
             "renderCount": 5,
             "referenceImage": "gsplat-update-data.png"
         },
