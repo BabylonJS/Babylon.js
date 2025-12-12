@@ -490,8 +490,9 @@ export class GeospatialCamera extends Camera {
 
     protected _getCollisionOffset(newPosition: Vector3): Vector3 {
         const coordinator = this.getScene().collisionCoordinator;
+        const collisionOffset = TmpVectors.Vector3[6].setAll(0);
         if (!coordinator || !this.checkCollisions || !this._scene.collisionsEnabled) {
-            return Vector3.Zero();
+            return collisionOffset;
         }
 
         if (!this._collider) {
@@ -506,7 +507,6 @@ export class GeospatialCamera extends Camera {
         const adjustedPosition = coordinator.getNewPosition(this._position, this._collisionVelocity, this._collider, 3, null, () => {}, this.uniqueId);
 
         // Calculate the collision offset (how much the position was pushed)
-        const collisionOffset = TmpVectors.Vector3[6];
         adjustedPosition.subtractToRef(newPosition, collisionOffset);
 
         return collisionOffset;
