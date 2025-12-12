@@ -3,7 +3,7 @@ import { useCallback, useState, useRef, useEffect } from "react";
 
 import type { BaseTexture, ISize } from "core/index";
 
-import { makeStyles, tokens, Toolbar, ToolbarButton, ToolbarDivider, Tooltip, Input, Label, Popover, PopoverTrigger, PopoverSurface } from "@fluentui/react-components";
+import { makeStyles, tokens, Toolbar, ToolbarButton, ToolbarDivider, Tooltip, Input, Label } from "@fluentui/react-components";
 import { ArrowResetRegular, ArrowUploadRegular, SaveRegular, ResizeRegular, ChevronUpRegular, ChevronDownRegular } from "@fluentui/react-icons";
 
 import type { IPixelData } from "./canvasManager";
@@ -55,17 +55,6 @@ const useStyles = makeStyles({
     uploadInput: {
         display: "none",
     },
-    popoverContent: {
-        display: "flex",
-        flexDirection: "column",
-        gap: tokens.spacingVerticalS,
-        padding: tokens.spacingVerticalS,
-    },
-    popoverRow: {
-        display: "flex",
-        alignItems: "center",
-        gap: tokens.spacingHorizontalS,
-    },
 });
 
 interface IPropertiesBarProps {
@@ -104,7 +93,6 @@ export const PropertiesBar: FunctionComponent<IPropertiesBarProps> = (props) => 
 
     const classes = useStyles();
     const uploadInputRef = useRef<HTMLInputElement>(null);
-    const [resizePopoverOpen, setResizePopoverOpen] = useState(false);
     const [width, setWidth] = useState(size.width);
     const [height, setHeight] = useState(size.height);
 
@@ -135,7 +123,6 @@ export const PropertiesBar: FunctionComponent<IPropertiesBarProps> = (props) => 
 
     const handleResize = useCallback(() => {
         resizeTexture(width, height);
-        setResizePopoverOpen(false);
     }, [width, height, resizeTexture]);
 
     const getNewDimension = (oldDim: number, newDim: string): number => {
@@ -150,45 +137,28 @@ export const PropertiesBar: FunctionComponent<IPropertiesBarProps> = (props) => 
         <div className={classes.propertiesBar}>
             {/* Dimensions Section */}
             <div className={classes.section}>
-                <Label>Size:</Label>
-                <span>
-                    {size.width} × {size.height}
-                </span>
+                <Label>W:</Label>
+                <Input
+                    className={classes.dimensionInput}
+                    size="small"
+                    type="text"
+                    value={width.toString()}
+                    readOnly={texture.isCube}
+                    onChange={(_, data) => setWidth(getNewDimension(width, data.value))}
+                />
+                <Label>H:</Label>
+                <Input
+                    className={classes.dimensionInput}
+                    size="small"
+                    type="text"
+                    value={height.toString()}
+                    readOnly={texture.isCube}
+                    onChange={(_, data) => setHeight(getNewDimension(height, data.value))}
+                />
                 {!texture.isCube && (
-                    <Popover open={resizePopoverOpen} onOpenChange={(_, data) => setResizePopoverOpen(data.open)}>
-                        <PopoverTrigger disableButtonEnhancement>
-                            <Tooltip content="Resize" relationship="label">
-                                <ToolbarButton icon={<ResizeRegular />} />
-                            </Tooltip>
-                        </PopoverTrigger>
-                        <PopoverSurface>
-                            <div className={classes.popoverContent}>
-                                <div className={classes.popoverRow}>
-                                    <Label size="small">Width:</Label>
-                                    <Input
-                                        className={classes.dimensionInput}
-                                        size="small"
-                                        type="number"
-                                        value={width.toString()}
-                                        onChange={(_, data) => setWidth(getNewDimension(width, data.value))}
-                                    />
-                                </div>
-                                <div className={classes.popoverRow}>
-                                    <Label size="small">Height:</Label>
-                                    <Input
-                                        className={classes.dimensionInput}
-                                        size="small"
-                                        type="number"
-                                        value={height.toString()}
-                                        onChange={(_, data) => setHeight(getNewDimension(height, data.value))}
-                                    />
-                                </div>
-                                <ToolbarButton appearance="primary" onClick={handleResize}>
-                                    Apply
-                                </ToolbarButton>
-                            </div>
-                        </PopoverSurface>
-                    </Popover>
+                    <Tooltip content="Resize" relationship="label">
+                        <ToolbarButton icon={<ResizeRegular />} onClick={handleResize} />
+                    </Tooltip>
                 )}
             </div>
 
