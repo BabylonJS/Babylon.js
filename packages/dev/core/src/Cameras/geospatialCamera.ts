@@ -191,12 +191,10 @@ export class GeospatialCamera extends Camera {
         this._tempVect.copyFrom(this._lookAtVector).scaleInPlace(-this._radius);
         this._tempPosition.copyFrom(this._center).addInPlace(this._tempVect);
 
-        const collisionOffset = this._getCollisionOffset(this._tempPosition);
+        // Recalculate collisionOffset to be applied later when viewMatrix is calculated (allowing camera users to modify the value in afterCheckInputsObservable)
+        this.collisionOffset = this._getCollisionOffset(this._tempPosition);
 
-        // Apply the same offset to both position and center to preserve orbital relationship
-        // This keeps yaw/pitch/radius intact - just lifts the whole "rig"
-        this._position.copyFrom(this._tempPosition).addInPlace(collisionOffset);
-        this._center.addInPlace(collisionOffset);
+        this._position.copyFrom(this._tempPosition);
 
         this._isViewMatrixDirty = true;
     }
@@ -327,6 +325,8 @@ export class GeospatialCamera extends Camera {
         this._setOrientation(this._yaw, this._pitch, this._radius, this._center);
     }
 
+    public collisionOffset: Vector3 = new Vector3();
+
     /** @internal */
     override _getViewMatrix() {
         if (!this._isViewMatrixDirty) {
@@ -337,6 +337,11 @@ export class GeospatialCamera extends Camera {
         // Ensure vectors are normalized
         this.upVector.normalize();
         this._lookAtVector.normalize();
+
+        // Apply the same offset to both position and center to preserve orbital relationship
+        // This keeps yaw/pitch/radius intact - just lifts the whole "rig"
+        this._position.addInPlace(this.collisionOffset);
+        this._center.addInPlace(this.collisionOffset);
 
         // Calculate view matrix with camera position and center
         if (this.getScene().useRightHandedSystem) {
@@ -445,8 +450,7 @@ export class GeospatialCamera extends Camera {
 
     override _checkInputs(): void {
         this.inputs.checkInputs();
-
-        // Check if position is dirty and rebuild angles if needed ? or just limit to using a position setter
+        this.collisionOffset.setAll(0);
 
         // Let movement class handle all per-frame logic
         this.movement.computeCurrentFrameDeltas();
