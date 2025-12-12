@@ -59,7 +59,10 @@ export abstract class AbstractSoundSource extends AbstractAudioOutNode {
         }
 
         if (this._outBus) {
-            this._outBus.onDisposeObservable.removeCallback(this._onOutBusDisposed);
+            if( this._onOutBusDisposed ) {
+                this._outBus.onDisposeObservable.removeCallback(this._onOutBusDisposed);
+                this._onOutBusDisposed = null;
+            }
             if (!this._disconnect(this._outBus)) {
                 throw new Error("Disconnect failed");
             }
@@ -68,6 +71,9 @@ export abstract class AbstractSoundSource extends AbstractAudioOutNode {
         this._outBus = outBus;
 
         if (this._outBus) {
+            this._onOutBusDisposed = () => {
+                this._outBus = null;
+            };
             this._outBus.onDisposeObservable.add(this._onOutBusDisposed);
             if (!this._connect(this._outBus)) {
                 throw new Error("Connect failed");
@@ -99,6 +105,10 @@ export abstract class AbstractSoundSource extends AbstractAudioOutNode {
         this._spatial?.dispose();
         this._spatial = null;
 
+        if( this._outBus && this._onOutBusDisposed ) {
+            this._outBus.onDisposeObservable.removeCallback(this._onOutBusDisposed);
+            this._onOutBusDisposed = null;
+        }
         this._outBus = null;
     }
 
@@ -108,9 +118,7 @@ export abstract class AbstractSoundSource extends AbstractAudioOutNode {
         return (this._spatial = this._createSpatialProperty(this._spatialAutoUpdate, this._spatialMinUpdateTime));
     }
 
-    private _onOutBusDisposed = () => {
-        this._outBus = null;
-    };
+    private _onOutBusDisposed : Nullable<()=>void> = null;
 
     /** @internal */
     public get _isSpatial(): boolean {
