@@ -122,6 +122,31 @@ export class ObjectRenderer {
     public renderMeshes = true;
 
     /**
+     * Define if depth only meshes should be rendered (default is true). No effect if renderMeshes is false.
+     */
+    public renderDepthOnlyMeshes = true;
+
+    /**
+     * Define if opaque meshes should be rendered (default is true). No effect if renderMeshes is false.
+     */
+    public renderOpaqueMeshes = true;
+
+    /**
+     * Define if alpha test meshes should be rendered (default is true). No effect if renderMeshes is false.
+     */
+    public renderAlphaTestMeshes = true;
+
+    /**
+     * Define if transparent meshes should be rendered (default is true). No effect if renderMeshes is false.
+     */
+    public renderTransparentMeshes = true;
+
+    /**
+     * Custom render function for transparent submeshes.
+     */
+    public customRenderTransparentSubMeshes?: (transparentSubMeshes: SmartArray<SubMesh>) => void;
+
+    /**
      * Define if particles should be rendered (default is true).
      */
     public renderParticles = true;
@@ -678,8 +703,17 @@ export class ObjectRenderer {
 
             this.onBeforeRenderingManagerRenderObservable.notifyObservers(passIndex);
 
-            this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
-
+            this._renderingManager.render(
+                this.customRenderFunction,
+                currentRenderList,
+                this.renderParticles,
+                this.renderSprites,
+                this.renderDepthOnlyMeshes,
+                this.renderOpaqueMeshes,
+                this.renderAlphaTestMeshes,
+                this.renderTransparentMeshes,
+                this.customRenderTransparentSubMeshes
+            );
             this.onAfterRenderingManagerRenderObservable.notifyObservers(passIndex);
 
             if (outlineRenderer) {

@@ -117,6 +117,71 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._renderer.renderMeshes = value;
     }
 
+    private _renderDepthOnlyMeshes = true;
+    /**
+     * Defines if depth only meshes should be rendered (default is true).
+     */
+    public get renderDepthOnlyMeshes() {
+        return this._renderDepthOnlyMeshes;
+    }
+
+    public set renderDepthOnlyMeshes(value: boolean) {
+        if (value === this._renderDepthOnlyMeshes) {
+            return;
+        }
+        this._renderDepthOnlyMeshes = value;
+        this._renderer.renderDepthOnlyMeshes = value;
+    }
+
+    private _renderOpaqueMeshes = true;
+    /**
+     * Defines if opaque meshes should be rendered (default is true).
+     */
+    public get renderOpaqueMeshes() {
+        return this._renderOpaqueMeshes;
+    }
+
+    public set renderOpaqueMeshes(value: boolean) {
+        if (value === this._renderOpaqueMeshes) {
+            return;
+        }
+        this._renderOpaqueMeshes = value;
+        this._renderer.renderOpaqueMeshes = value;
+    }
+
+    private _renderAlphaTestMeshes = true;
+    /**
+     * Defines if alpha test meshes should be rendered (default is true).
+     */
+    public get renderAlphaTestMeshes() {
+        return this._renderAlphaTestMeshes;
+    }
+
+    public set renderAlphaTestMeshes(value: boolean) {
+        if (value === this._renderAlphaTestMeshes) {
+            return;
+        }
+        this._renderAlphaTestMeshes = value;
+        this._renderer.renderAlphaTestMeshes = value;
+    }
+
+    private _renderTransparentMeshes = true;
+    /**
+     * Defines if transparent meshes should be rendered (default is true).
+     */
+    public get renderTransparentMeshes() {
+        return this._renderTransparentMeshes;
+    }
+
+    public set renderTransparentMeshes(value: boolean) {
+        if (value === this._renderTransparentMeshes) {
+            return;
+        }
+        this._renderTransparentMeshes = value;
+        this._renderer.renderTransparentMeshes = value;
+    }
+
+
     private _renderParticles = true;
     /**
      * Defines if particles should be rendered (default is true).
