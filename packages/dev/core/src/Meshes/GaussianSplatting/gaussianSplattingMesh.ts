@@ -20,6 +20,7 @@ import { Scalar } from "core/Maths/math.scalar";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
 import { EngineStore } from "core/Engines/engineStore";
 import type { Camera } from "core/Cameras/camera";
+import { ImportMeshAsync } from "core/Loading/sceneLoader";
 
 interface IDelayedTextureUpdate {
     covA: Uint16Array;
@@ -333,7 +334,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
     /**
      * View direction factor used to compute the SH view direction in the shader.
-     * @deprecated
+     * @deprecated Not used anymore for SH rendering
      */
     public get viewDirectionFactor() {
         return Vector3.OneReadOnly;
@@ -1323,15 +1324,14 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
-     * Loads a .splat Gaussian or .ply Splatting file asynchronously
+     * Loads a Gaussian or Splatting file asynchronously
      * @param url path to the splat file to load
+     * @param scene optional scene it belongs to
      * @returns a promise that resolves when the operation is complete
      * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
-    public async loadFileAsync(url: string): Promise<void> {
-        const plyBuffer = await Tools.LoadFileAsync(url, true);
-        const splatsData: IPLYConversionBuffers = await (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(plyBuffer) as any);
-        await this.updateDataAsync(splatsData.buffer, splatsData.sh);
+    public async loadFileAsync(url: string, scene?: Scene): Promise<void> {
+        await ImportMeshAsync(url, (scene || EngineStore.LastCreatedScene)!, { pluginOptions: { splat: { gaussianSplattingMesh: this } } });
     }
 
     /**

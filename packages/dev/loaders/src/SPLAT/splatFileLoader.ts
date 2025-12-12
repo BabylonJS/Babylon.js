@@ -204,7 +204,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         const makeGSFromParsedSOG = (parsedSOG: IParsedSplat) => {
             scene._blockEntityCollection = !!this._assetContainer;
-            const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+            const gaussianSplatting = this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
             gaussianSplatting._parentContainer = this._assetContainer;
             babylonMeshesArray.push(gaussianSplatting);
             gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false });
@@ -270,7 +270,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                     ParseSpz(buffer, scene, this._loadingOptions).then((parsedSPZ) => {
                         scene._blockEntityCollection = !!this._assetContainer;
-                        const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                        const gaussianSplatting =
+                            this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                         if (parsedSPZ.trainedWithAntialiasing) {
                             const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
                             gsMaterial.kernelSize = 0.1;
@@ -297,7 +298,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         switch (parsedPLY.mode) {
                             case Mode.Splat:
                                 {
-                                    const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                                    const gaussianSplatting =
+                                        this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                                     gaussianSplatting._parentContainer = this._assetContainer;
                                     babylonMeshesArray.push(gaussianSplatting);
                                     gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh, { flipY: false });
