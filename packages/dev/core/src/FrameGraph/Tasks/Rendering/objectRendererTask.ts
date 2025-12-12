@@ -124,7 +124,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     private _renderDepthOnlyMeshes = true;
     /**
-     * Defines if depth only meshes should be rendered (default is true).
+     * Defines if depth only meshes should be rendered (default is true). Always subject to the renderMeshes property, though.
      */
     public get renderDepthOnlyMeshes() {
         return this._renderDepthOnlyMeshes;
@@ -140,7 +140,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     private _renderOpaqueMeshes = true;
     /**
-     * Defines if opaque meshes should be rendered (default is true).
+     * Defines if opaque meshes should be rendered (default is true). Always subject to the renderMeshes property, though.
      */
     public get renderOpaqueMeshes() {
         return this._renderOpaqueMeshes;
@@ -156,7 +156,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     private _renderAlphaTestMeshes = true;
     /**
-     * Defines if alpha test meshes should be rendered (default is true).
+     * Defines if alpha test meshes should be rendered (default is true). Always subject to the renderMeshes property, though.
      */
     public get renderAlphaTestMeshes() {
         return this._renderAlphaTestMeshes;
@@ -172,7 +172,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     private _renderTransparentMeshes = true;
     /**
-     * Defines if transparent meshes should be rendered (default is true).
+     * Defines if transparent meshes should be rendered (default is true). Always subject to the renderMeshes property, though.
      */
     public get renderTransparentMeshes() {
         return this._renderTransparentMeshes;

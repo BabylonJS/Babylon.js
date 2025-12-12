@@ -13,6 +13,7 @@ import { SmartArray } from "../Misc/smartArray";
 import type { Scene } from "../scene";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
+import type { PrePassRenderer } from "./prePassRenderer";
 import type { IMaterialContext } from "../Engines/IMaterialContext";
 import type { DrawWrapper } from "../Materials/drawWrapper";
 import { Material } from "../Materials/material";
@@ -322,6 +323,12 @@ export class ThinDepthPeelingRenderer {
 
         this._effectRenderer = new EffectRenderer(this._engine);
     }
+
+    /**
+     * Links to the prepass renderer
+     * @param _prePassRenderer The scene PrePassRenderer
+     */
+    public setPrePassRenderer(_prePassRenderer: PrePassRenderer) {}
 
     /**
      * Binds depth peeling textures on an effect

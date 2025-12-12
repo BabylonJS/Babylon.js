@@ -134,7 +134,7 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
      * Links to the prepass renderer
      * @param prePassRenderer The scene PrePassRenderer
      */
-    public setPrePassRenderer(prePassRenderer: PrePassRenderer) {
+    public override setPrePassRenderer(prePassRenderer: PrePassRenderer) {
         prePassRenderer.addEffectConfiguration(this._prePassEffectConfiguration);
     }
 
