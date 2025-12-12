@@ -2438,9 +2438,6 @@ export class NodeMaterial extends NodeMaterialBase {
             this.editorData.map = blockMap;
         }
 
-        if (source.forceAlphaBlending) {
-            this.forceAlphaBlending = true;
-        }
         Material.ParseAlphaMode(source, this);
 
         if (!merge) {
