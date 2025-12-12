@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting Depth",
+            "playgroundId": "#V80DRL#11",
+            "renderCount": 5,
+            "referenceImage": "gsplat-depth.png"
+        },
+        {
             "title": "Gaussian Splatting Compressed ply + SH",
             "playgroundId": "#U8O4EP#0",
             "renderCount": 5,
