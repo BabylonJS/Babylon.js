@@ -1,21 +1,26 @@
 import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
+import type { ParticleGradientValueBlock } from "./particleGradientValueBlock";
+import type { ParticleInputBlock } from "./particleInputBlock";
 
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Vector2 } from "core/Maths/math.vector";
-import { Color4 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { _TriggerSubEmitter } from "core/Particles/Node/Blocks/Triggers/triggerTools";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+
+export const RampValue0Index = 8;
 
 /**
  * Block used to get a system of particles
  */
 export class SystemBlock extends NodeParticleBlock {
     private static _IdCounter = 0;
+    private _entryCount = RampValue0Index;
 
     /**
      * Gets or sets the blend mode for the particle system
@@ -113,7 +118,28 @@ export class SystemBlock extends NodeParticleBlock {
         this.registerInput("targetStopDuration", NodeParticleBlockConnectionPointTypes.Float, true, 0, 0);
         this.registerInput("onStart", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("onEnd", NodeParticleBlockConnectionPointTypes.System, true);
+        this.registerInput("rampValue0", NodeParticleBlockConnectionPointTypes.Color4Gradient, true);
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
+
+        this._manageExtendedInputs(RampValue0Index);
+    }
+
+    private _manageExtendedInputs(index: number) {
+        this._inputs[index].onConnectionObservable.add(() => {
+            if (this._entryCount > index) {
+                return;
+            }
+
+            this._extend();
+        });
+    }
+
+    private _extend() {
+        this._entryCount++;
+        this.registerInput("rampValue" + (this._entryCount - RampValue0Index), NodeParticleBlockConnectionPointTypes.Color4Gradient, true);
+        this._linkConnectionTypes(1, this._entryCount);
+
+        this._manageExtendedInputs(this._entryCount);
     }
 
     /**
@@ -220,6 +246,27 @@ export class SystemBlock extends NodeParticleBlock {
             state.systemContext = particleSystem;
             return this.emitRate.getConnectedValue(state) as number;
         };
+
+        // Get the ramp gradients
+        const entries: ParticleGradientValueBlock[] = [];
+        for (let i = RampValue0Index; i < this._inputs.length; i++) {
+            if (this._inputs[i].isConnected) {
+                entries.push(this._inputs[i].connectedPoint?.ownerBlock as ParticleGradientValueBlock);
+            }
+        }
+
+        if (entries.length > 0) {
+            // Create ramp gradient entries
+            for (let i = 0; i < entries.length; i++) {
+                const entry = entries[i];
+                const colorBlock = entry._inputs[0].connectedPoint?.ownerBlock as ParticleInputBlock;
+                const color = colorBlock.value as Color4;
+                particleSystem.addRampGradient(entry.reference, new Color3(color.r, color.g, color.b));
+            }
+
+            // Mark the system as using ramp gradients
+            particleSystem.useRampGradients = true;
+        }
 
         this.system._storedValue = this;
 

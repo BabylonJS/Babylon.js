@@ -1,9 +1,8 @@
 import type { Nullable } from "core/types";
-import type { Color4 } from "core/Maths/math.color";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Mesh } from "core/Meshes/mesh";
-import type { ColorGradient, FactorGradient } from "core/Misc";
+import type { Color3Gradient, ColorGradient, FactorGradient } from "core/Misc";
 import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
@@ -16,9 +15,10 @@ import type { PointParticleEmitter } from "core/Particles/EmitterTypes/pointPart
 import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBlock";
-import type { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 
+import { Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
@@ -31,7 +31,7 @@ import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particl
 import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 import { ParticleVectorLengthBlock } from "./Blocks/particleVectorLengthBlock";
-import { SystemBlock } from "./Blocks/systemBlock";
+import { RampValue0Index, SystemBlock } from "./Blocks/systemBlock";
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "./Blocks/Conditions/particleConditionBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
@@ -518,7 +518,7 @@ function _UpdateParticleColorBlockGroup(
  * @param inputParticle The input particle to update
  * @param angularSpeedGradients The angular speed gradients (if any)
  * @param minAngularSpeed The minimum angular speed
- * @paramparamAngularSpeed The maximum angular speed
+ * @param maxAngularSpeed The maximum angular speed
  * @param context The context of the current conversion
  * @returns The output of the group of blocks that represent the particle color update
  */
@@ -858,6 +858,11 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     }
     _SystemTargetStopDuration(oldSystem.targetStopDuration, newSystem, context);
 
+    const rampGradients = oldSystem.getRampGradients();
+    if (rampGradients && rampGradients.length > 0) {
+        _SystemRampGradientsBlockGroup(rampGradients, newSystem);
+    }
+
     updateParticleOutput.connectTo(newSystem.particle);
 
     return newSystem;
@@ -893,6 +898,23 @@ function _SystemTargetStopDuration(targetStopDuration: number, newSystem: System
     } else {
         // If no one used it, do not create a block just set the value
         newSystem.targetStopDuration.value = targetStopDuration;
+    }
+}
+
+function _SystemRampGradientsBlockGroup(rampGradients: Color3Gradient[], newSystem: SystemBlock): void {
+    for (let i = 0; i < rampGradients.length; i++) {
+        const rampGradient = rampGradients[i];
+
+        const gradientBlock = new ParticleGradientValueBlock(`Ramp Gradient ${i}`);
+        gradientBlock.reference = rampGradient.gradient;
+        _CreateAndConnectInput(
+            `Color ${i}`,
+            new Color4(rampGradient.color.r, rampGradient.color.g, rampGradient.color.b),
+            gradientBlock.value,
+            NodeParticleBlockConnectionPointTypes.Color4
+        );
+
+        gradientBlock.output.connectTo(newSystem.inputs[RampValue0Index + i]);
     }
 }
 
