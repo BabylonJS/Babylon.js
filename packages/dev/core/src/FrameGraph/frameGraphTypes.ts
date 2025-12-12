@@ -87,10 +87,20 @@ export interface IFrameGraphPass {
     disabled: boolean;
 
     /**
+     * Initializes the pass.
+     * This function is called once before the first execution of the pass.
+     * @param func The function to initialize the pass.
+     */
+    setInitializeFunc(func: (context: FrameGraphContext) => void): void;
+
+    /**
      * Sets the function to execute when the pass is executed
      * @param func The function to execute when the pass is executed
      */
     setExecuteFunc(func: (context: FrameGraphContext) => void): void;
+
+    /** @internal */
+    _initialize(): void;
 
     /** @internal */
     _execute(): void;

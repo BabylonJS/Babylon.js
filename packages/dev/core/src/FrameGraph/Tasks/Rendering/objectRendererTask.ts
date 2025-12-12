@@ -14,12 +14,17 @@ import type {
     AbstractEngine,
     BoundingBoxRenderer,
     ShadowLight,
+    SmartArray,
+    SubMesh,
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
 import { FrameGraphCascadedShadowGeneratorTask } from "./csmShadowGeneratorTask";
 import { Constants } from "../../../Engines/constants";
+import { ThinDepthPeelingRenderer } from "../../../Rendering/thinDepthPeelingRenderer";
+import { RenderingManager } from "../../../Rendering/renderingManager";
+import { FrameGraphRenderTarget } from "../../frameGraphRenderTarget";
 
 /**
  * Task used to render objects to a texture.
@@ -115,6 +120,104 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
         this._renderMeshes = value;
         this._renderer.renderMeshes = value;
+    }
+
+    private _renderDepthOnlyMeshes = true;
+    /**
+     * Defines if depth only meshes should be rendered (default is true). Always subject to the renderMeshes property, though.
+     */
+    public get renderDepthOnlyMeshes() {
+        return this._renderDepthOnlyMeshes;
+    }
+
+    public set renderDepthOnlyMeshes(value: boolean) {
+        if (value === this._renderDepthOnlyMeshes) {
+            return;
+        }
+        this._renderDepthOnlyMeshes = value;
+        this._renderer.renderDepthOnlyMeshes = value;
+    }
+
+    private _renderOpaqueMeshes = true;
+    /**
+     * Defines if opaque meshes should be rendered (default is true). Always subject to the renderMeshes property, though.
+     */
+    public get renderOpaqueMeshes() {
+        return this._renderOpaqueMeshes;
+    }
+
+    public set renderOpaqueMeshes(value: boolean) {
+        if (value === this._renderOpaqueMeshes) {
+            return;
+        }
+        this._renderOpaqueMeshes = value;
+        this._renderer.renderOpaqueMeshes = value;
+    }
+
+    private _renderAlphaTestMeshes = true;
+    /**
+     * Defines if alpha test meshes should be rendered (default is true). Always subject to the renderMeshes property, though.
+     */
+    public get renderAlphaTestMeshes() {
+        return this._renderAlphaTestMeshes;
+    }
+
+    public set renderAlphaTestMeshes(value: boolean) {
+        if (value === this._renderAlphaTestMeshes) {
+            return;
+        }
+        this._renderAlphaTestMeshes = value;
+        this._renderer.renderAlphaTestMeshes = value;
+    }
+
+    private _renderTransparentMeshes = true;
+    /**
+     * Defines if transparent meshes should be rendered (default is true). Always subject to the renderMeshes property, though.
+     */
+    public get renderTransparentMeshes() {
+        return this._renderTransparentMeshes;
+    }
+
+    public set renderTransparentMeshes(value: boolean) {
+        if (value === this._renderTransparentMeshes) {
+            return;
+        }
+        this._renderTransparentMeshes = value;
+        this._renderer.renderTransparentMeshes = value;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private _useOITForTransparentMeshes = false;
+    /**
+     * Defines if Order Independent Transparency should be used for transparent meshes (default is false).
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public get useOITForTransparentMeshes() {
+        return this._useOITForTransparentMeshes;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public set useOITForTransparentMeshes(value: boolean) {
+        if (value === this._useOITForTransparentMeshes) {
+            return;
+        }
+        this._useOITForTransparentMeshes = value;
+        this._renderer.customRenderTransparentSubMeshes = this._useOITForTransparentMeshes ? this._renderTransparentMeshesWithOIT.bind(this) : undefined;
+        this._oitRenderer.blendOutput = value && this._rtForOrderIndependentTransparency ? this._rtForOrderIndependentTransparency.renderTargetWrapper! : null;
+    }
+
+    /**
+     * Defines the number of passes to use for Order Independent Transparency (default is 5).
+     */
+    public get oitPassCount() {
+        return this._oitRenderer.passCount;
+    }
+
+    public set oitPassCount(value: number) {
+        if (value === this._oitRenderer.passCount) {
+            return;
+        }
+        this._oitRenderer.passCount = value;
     }
 
     private _renderParticles = true;
@@ -247,11 +350,13 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     protected readonly _engine: AbstractEngine;
     protected readonly _scene: Scene;
     protected readonly _renderer: ObjectRenderer;
+    protected readonly _oitRenderer: ThinDepthPeelingRenderer;
     protected _textureWidth: number;
     protected _textureHeight: number;
     protected _onBeforeRenderObservable: Nullable<Observer<number>> = null;
     protected _onAfterRenderObservable: Nullable<Observer<number>> = null;
     protected _externalObjectRenderer = false;
+    protected _rtForOrderIndependentTransparency: FrameGraphRenderTarget;
 
     /**
      * Constructs a new object renderer task.
@@ -284,6 +389,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             });
         }
 
+        this._oitRenderer = new ThinDepthPeelingRenderer(scene);
+        this._oitRenderer.useRenderPasses = true;
+
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
@@ -310,10 +418,16 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._resolveDanglingHandles(targetTextures);
         this._setLightsForShadow();
 
+        this._rtForOrderIndependentTransparency?.dispose();
+
         const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(targetTextures);
         pass.setRenderTargetDepth(this.depthTexture);
+        pass.setInitializeFunc(() => {
+            // Note: we don't use pass.frameGraphRenderTarget.renderTargetWrapper for OIT but recreate our own render target wrapper because this.targetTexture may not be the first one of the wrapper in the geometry renderer task case
+            this._rtForOrderIndependentTransparency = new FrameGraphRenderTarget(this.name + "_oitRT", this._frameGraph.textureManager, this.targetTexture, this.depthTexture);
+        });
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
@@ -322,6 +436,10 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             if (renderTargetWrapper) {
                 renderTargetWrapper.resolveMSAAColors = this.resolveMSAAColors;
                 renderTargetWrapper.resolveMSAADepth = this.resolveMSAADepth;
+            }
+
+            if (this._useOITForTransparentMeshes && this._oitRenderer.blendOutput !== this._rtForOrderIndependentTransparency.renderTargetWrapper) {
+                this._oitRenderer.blendOutput = this._rtForOrderIndependentTransparency.renderTargetWrapper!;
             }
 
             // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
@@ -333,6 +451,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             }
 
             this._prepareRendering(context, depthEnabled);
+
+            const currentOITRenderer = this._scene.depthPeelingRenderer;
+            this._scene._depthPeelingRenderer = this._oitRenderer;
 
             const camera = this._renderer.activeCamera;
             if (camera && camera.cameraRigMode !== Constants.RIG_MODE_NONE && !camera._renderingMultiview) {
@@ -353,6 +474,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             }
 
             additionalExecute?.(context);
+
+            this._scene._depthPeelingRenderer = currentOITRenderer;
 
             if (boundingBoxRenderer) {
                 boundingBoxRenderer.renderList.data = currentBoundingBoxMeshList;
@@ -377,6 +500,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         if (!this._externalObjectRenderer) {
             this._renderer.dispose();
         }
+        this._oitRenderer.dispose();
+        this._rtForOrderIndependentTransparency?.dispose();
         super.dispose();
     }
 
@@ -481,5 +606,27 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
                 light.shadowEnabled = shadowEnabled.get(light)!;
             }
         });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    protected _renderTransparentMeshesWithOIT(transparentSubMeshes: SmartArray<SubMesh>): void {
+        const renderingGroups = this._renderer.renderingManager.renderingGroups;
+        const saveOIT = this._scene._useOrderIndependentTransparency;
+
+        this._scene._useOrderIndependentTransparency = true;
+
+        for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
+            const renderingGroup = renderingGroups[index];
+            if (!renderingGroup || renderingGroup._empty) {
+                continue;
+            }
+            const excludedMeshes = this._oitRenderer.render(transparentSubMeshes);
+            if (excludedMeshes.length) {
+                // Render leftover meshes that could not be processed by depth peeling
+                renderingGroup._renderTransparent(excludedMeshes);
+            }
+        }
+
+        this._scene._useOrderIndependentTransparency = saveOIT;
     }
 }
