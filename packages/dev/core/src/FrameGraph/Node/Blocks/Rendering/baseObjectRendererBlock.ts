@@ -98,6 +98,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         state.renderOpaqueMeshes = this.renderOpaqueMeshes;
         state.renderAlphaTestMeshes = this.renderAlphaTestMeshes;
         state.renderTransparentMeshes = this.renderTransparentMeshes;
+        state.useOITForTransparentMeshes = this.useOITForTransparentMeshes;
         state.renderParticles = this.renderParticles;
         state.renderSprites = this.renderSprites;
         state.forceLayerMaskCheck = this.forceLayerMaskCheck;
@@ -117,6 +118,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.renderOpaqueMeshes = state.renderOpaqueMeshes;
         this.renderAlphaTestMeshes = state.renderAlphaTestMeshes;
         this.renderTransparentMeshes = state.renderTransparentMeshes;
+        this.useOITForTransparentMeshes = state.useOITForTransparentMeshes;
         this.renderParticles = state.renderParticles;
         this.renderSprites = state.renderSprites;
         this.forceLayerMaskCheck = state.forceLayerMaskCheck;
@@ -216,6 +218,27 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this._frameGraphTask.renderTransparentMeshes = value;
     }
 
+    /** Indicates if use of Order Independent Transparency (OIT) for transparent meshes should be enabled */
+    @editableInPropertyPage("        Use OIT for transparent meshes", PropertyTypeForEdition.Boolean, "RENDERING")
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public get useOITForTransparentMeshes() {
+        return this._frameGraphTask.useOITForTransparentMeshes;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public set useOITForTransparentMeshes(value: boolean) {
+        this._frameGraphTask.useOITForTransparentMeshes = value;
+    }
+
+    /** Defines the number of passes to use for Order Independent Transparency */
+    @editableInPropertyPage("            Pass count", PropertyTypeForEdition.Int, "RENDERING", { min: 1, max: 20 })
+    public get oitPassCount(): number {
+        return this._frameGraphTask.oitPassCount;
+    }
+
+    public set oitPassCount(value: number) {
+        this._frameGraphTask.oitPassCount = value;
+    }
 
     /** Indicates if particles should be rendered */
     @editableInPropertyPage("Render particles", PropertyTypeForEdition.Boolean, "RENDERING")
@@ -437,6 +460,8 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         codes.push(`${this._codeVariableName}.renderOpaqueMeshes = ${this.renderOpaqueMeshes};`);
         codes.push(`${this._codeVariableName}.renderAlphaTestMeshes = ${this.renderAlphaTestMeshes};`);
         codes.push(`${this._codeVariableName}.renderTransparentMeshes = ${this.renderTransparentMeshes};`);
+        codes.push(`${this._codeVariableName}.useOITForTransparentMeshes = ${this.useOITForTransparentMeshes};`);
+        codes.push(`${this._codeVariableName}.oitPassCount = ${this.oitPassCount};`);
         codes.push(`${this._codeVariableName}.renderParticles = ${this.renderParticles};`);
         codes.push(`${this._codeVariableName}.renderSprites = ${this.renderSprites};`);
         codes.push(`${this._codeVariableName}.forceLayerMaskCheck = ${this.forceLayerMaskCheck};`);
@@ -459,6 +484,8 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         serializationObject.renderOpaqueMeshes = this.renderOpaqueMeshes;
         serializationObject.renderAlphaTestMeshes = this.renderAlphaTestMeshes;
         serializationObject.renderTransparentMeshes = this.renderTransparentMeshes;
+        serializationObject.useOITForTransparentMeshes = this.useOITForTransparentMeshes;
+        serializationObject.oitPassCount = this.oitPassCount;
         serializationObject.renderParticles = this.renderParticles;
         serializationObject.renderSprites = this.renderSprites;
         serializationObject.forceLayerMaskCheck = this.forceLayerMaskCheck;
@@ -481,6 +508,8 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.renderOpaqueMeshes = serializationObject.renderOpaqueMeshes ?? true;
         this.renderAlphaTestMeshes = serializationObject.renderAlphaTestMeshes ?? true;
         this.renderTransparentMeshes = serializationObject.renderTransparentMeshes ?? true;
+        this.useOITForTransparentMeshes = serializationObject.useOITForTransparentMeshes ?? false;
+        this.oitPassCount = serializationObject.oitPassCount ?? 5;
         this.renderParticles = serializationObject.renderParticles ?? true;
         this.renderSprites = serializationObject.renderSprites ?? true;
         this.forceLayerMaskCheck = serializationObject.forceLayerMaskCheck ?? true;

@@ -2698,6 +2698,16 @@
             "playgroundId": "#3VH0AC#2"
         },
         {
+            "title": "FrameGraph nrge OIT",
+            "playgroundId": "#MIACY4#13",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "FrameGraph nrge OIT (Geometry renderer)",
+            "playgroundId": "#MIACY4#14",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#3",
             "errorRatio": 2
@@ -2766,6 +2776,11 @@
         {
             "title": "FrameGraph volumetric lighting",
             "playgroundId": "#3VH0AC"
+        },
+        {
+            "title": "FrameGraph OIT",
+            "playgroundId": "#MIACY4#11",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Render target texture with clustered lights",
