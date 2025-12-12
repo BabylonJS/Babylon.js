@@ -1660,6 +1660,7 @@ export class GaussianSplattingMesh extends Mesh {
             // Update the binfo
             this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
             this.setEnabled(true);
+            this._sortIsDirty = true;
         }
         this._postToWorker(true);
     }
