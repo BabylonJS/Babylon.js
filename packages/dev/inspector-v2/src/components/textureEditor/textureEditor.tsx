@@ -182,7 +182,6 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
     const uiCanvasRef = useRef<HTMLCanvasElement>(null);
     const canvas2DRef = useRef<HTMLCanvasElement>(null);
     const canvas3DRef = useRef<HTMLCanvasElement>(null);
-    const pickerRef = useRef<HTMLDivElement>(null);
     const timerRef = useRef<number | null>(null);
     const canvasManagerRef = useRef<TextureCanvasManager | null>(null);
 
@@ -216,7 +215,6 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
     const [pixelData, setPixelData] = useState<IPixelData>({});
     const [face, setFace] = useState(0);
     const [mipLevel, setMipLevel] = useState(0);
-    const [pickerOpen, setPickerOpen] = useState(false);
     const [size, setSize] = useState<ISize>(texture.getSize());
 
     // Callbacks
@@ -311,15 +309,6 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
         canvasManagerRef.current?.upload(file);
     }, []);
 
-    const onPointerDown = useCallback(
-        (evt: React.PointerEvent) => {
-            if (!pickerRef.current?.contains(evt.target as Node)) {
-                setPickerOpen(false);
-            }
-        },
-        [pickerRef]
-    );
-
     // Initialize canvas manager
     useEffect(() => {
         if (!uiCanvasRef.current || !canvas2DRef.current || !canvas3DRef.current) {
@@ -383,7 +372,7 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
     const hasAlpha = texture.textureFormat === -1 || texture.textureFormat === Constants.TEXTUREFORMAT_RGBA;
 
     return (
-        <div className={classes.textureEditor} onPointerDown={onPointerDown} style={{ cursor }}>
+        <div className={classes.textureEditor}>
             <PropertiesBar
                 texture={texture}
                 saveTexture={saveTexture}
@@ -407,14 +396,11 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
                             changeTool={changeTool}
                             metadata={metadata}
                             setMetadata={setMetadata}
-                            pickerOpen={pickerOpen}
-                            setPickerOpen={setPickerOpen}
-                            pickerRef={pickerRef}
                             hasAlpha={hasAlpha}
                         />
                     </div>
                 )}
-                <div className={classes.canvasContainer}>
+                <div className={classes.canvasContainer} style={{ cursor }}>
                     <canvas ref={uiCanvasRef} className={classes.canvasUI} tabIndex={1} />
                     <canvas ref={canvas2DRef} className={classes.canvas2D} />
                     <canvas ref={canvas3DRef} className={classes.canvas3D} />

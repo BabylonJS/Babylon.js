@@ -12,7 +12,6 @@ const useStyles = makeStyles({
     propertiesBar: {
         display: "flex",
         alignItems: "center",
-        backgroundColor: tokens.colorNeutralBackground3,
         padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
         gap: tokens.spacingHorizontalS,
         borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,

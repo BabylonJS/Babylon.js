@@ -1,7 +1,7 @@
 import type { FunctionComponent } from "react";
 import { useCallback } from "react";
 
-import { makeStyles, tokens, ToggleButton, Tooltip } from "@fluentui/react-components";
+import { makeStyles, tokens, ToggleButton, Tooltip, Body1, mergeClasses } from "@fluentui/react-components";
 import { EyeOffRegular, EyeRegular, LockClosedRegular, LockOpenRegular } from "@fluentui/react-icons";
 
 /**
@@ -22,7 +22,6 @@ const useStyles = makeStyles({
     channelsBar: {
         display: "flex",
         flexDirection: "column",
-        backgroundColor: tokens.colorNeutralBackground3,
         padding: tokens.spacingVerticalXS,
         gap: tokens.spacingVerticalXS,
     },
@@ -35,17 +34,17 @@ const useStyles = makeStyles({
     },
     channelLabel: {
         fontWeight: tokens.fontWeightSemibold,
-        minWidth: "20px",
+        margin: `0 ${tokens.spacingHorizontalXS}`,
         textAlign: "center",
     },
     channelR: {
-        color: tokens.colorPaletteRedForeground1,
+        color: tokens.colorPaletteRedBorderActive,
     },
     channelG: {
-        color: tokens.colorPaletteGreenForeground1,
+        color: tokens.colorPaletteGreenBorderActive,
     },
     channelB: {
-        color: tokens.colorPaletteBlueForeground2,
+        color: tokens.colorPaletteBlueBorderActive,
     },
     channelA: {
         color: tokens.colorNeutralForeground1,
@@ -110,7 +109,7 @@ export const ChannelsBar: FunctionComponent<IChannelsBarProps> = (props) => {
                     <div key={channel.id} className={`${classes.channel} ${!channel.editable ? classes.uneditable : ""}`}>
                         <Tooltip content={`${visTip} ${channel.name}`} relationship="label">
                             <ToggleButton
-                                appearance="subtle"
+                                appearance="transparent"
                                 size="small"
                                 checked={channel.visible}
                                 icon={channel.visible ? <EyeRegular /> : <EyeOffRegular />}
@@ -119,14 +118,14 @@ export const ChannelsBar: FunctionComponent<IChannelsBarProps> = (props) => {
                         </Tooltip>
                         <Tooltip content={`${editTip} ${channel.name}`} relationship="label">
                             <ToggleButton
-                                appearance="subtle"
+                                appearance="transparent"
                                 size="small"
                                 checked={channel.editable}
                                 icon={channel.editable ? <LockOpenRegular /> : <LockClosedRegular />}
                                 onClick={() => toggleEditable(index)}
                             />
                         </Tooltip>
-                        <span className={`${classes.channelLabel} ${getChannelColorClass(channel.id)}`}>{channel.id}</span>
+                        <Body1 className={mergeClasses(classes.channelLabel, getChannelColorClass(channel.id))}>{channel.id}</Body1>
                     </div>
                 );
             })}

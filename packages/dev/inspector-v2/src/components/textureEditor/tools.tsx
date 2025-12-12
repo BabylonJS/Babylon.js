@@ -20,7 +20,6 @@ const useStyles = makeStyles({
     toolbar: {
         display: "flex",
         flexDirection: "column",
-        backgroundColor: tokens.colorNeutralBackground3,
         padding: tokens.spacingVerticalXS,
         gap: tokens.spacingVerticalXS,
     },
@@ -39,39 +38,9 @@ const useStyles = makeStyles({
         height: "24px",
     },
     colorSection: {
-        marginTop: tokens.spacingVerticalS,
-    },
-    colorButton: {
-        minWidth: "36px",
-        minHeight: "36px",
-        padding: tokens.spacingVerticalXXS,
         display: "flex",
-        alignItems: "center",
         justifyContent: "center",
-    },
-    colorPreviewBg: {
-        width: "24px",
-        height: "24px",
-        borderRadius: "50%",
-        position: "relative",
-        backgroundImage: `linear-gradient(45deg, ${tokens.colorNeutralBackground5} 25%, transparent 25%), 
-                          linear-gradient(-45deg, ${tokens.colorNeutralBackground5} 25%, transparent 25%),
-                          linear-gradient(45deg, transparent 75%, ${tokens.colorNeutralBackground5} 75%), 
-                          linear-gradient(-45deg, transparent 75%, ${tokens.colorNeutralBackground5} 75%)`,
-        backgroundSize: "8px 8px",
-        backgroundPosition: "0 0, 0 4px, 4px -4px, -4px 0px",
-    },
-    colorPreview: {
-        width: "24px",
-        height: "24px",
-        borderRadius: "50%",
-        position: "absolute",
-        top: 0,
-        left: 0,
-        border: `1px solid ${tokens.colorNeutralStroke1}`,
-    },
-    colorPickerPopover: {
-        padding: tokens.spacingVerticalS,
+        marginTop: tokens.spacingVerticalS,
     },
 });
 
@@ -82,9 +51,6 @@ interface IToolBarProps {
     activeToolIndex: number;
     metadata: IMetadata;
     setMetadata: (data: any) => void;
-    pickerOpen: boolean;
-    setPickerOpen: (open: boolean) => void;
-    pickerRef: RefObject<HTMLDivElement>;
     hasAlpha: boolean;
 }
 
@@ -94,7 +60,7 @@ interface IToolBarProps {
  * @returns The toolbar component
  */
 export const ToolBar: FunctionComponent<IToolBarProps> = (props) => {
-    const { tools, changeTool, activeToolIndex, metadata, setMetadata, pickerOpen, setPickerOpen, pickerRef, hasAlpha } = props;
+    const { tools, changeTool, activeToolIndex, metadata, setMetadata, hasAlpha } = props;
 
     const classes = useStyles();
 
@@ -105,10 +71,10 @@ export const ToolBar: FunctionComponent<IToolBarProps> = (props) => {
     }, [metadata.color, metadata.alpha]);
 
     const handleColorChange = useCallback(
-        (color: Color4) => {
+        (color: Color3 | Color4) => {
             const newMetadata = {
                 color: color.toHexString(true),
-                alpha: color.a,
+                alpha: (color as Partial<Color4>).a ?? 1,
             };
             if (newMetadata.color !== metadata.color || newMetadata.alpha !== metadata.alpha) {
                 setMetadata(newMetadata);
@@ -150,28 +116,7 @@ export const ToolBar: FunctionComponent<IToolBarProps> = (props) => {
             </div>
 
             <div className={classes.colorSection}>
-                <Popover open={pickerOpen} onOpenChange={(_, data) => setPickerOpen(data.open)}>
-                    <PopoverTrigger disableButtonEnhancement>
-                        <Tooltip content="Color" relationship="label" positioning="after">
-                            <ToggleButton className={classes.colorButton} appearance="subtle" checked={pickerOpen}>
-                                <div className={classes.colorPreviewBg}>
-                                    <div
-                                        className={classes.colorPreview}
-                                        style={{
-                                            backgroundColor: metadata.color,
-                                            opacity: metadata.alpha,
-                                        }}
-                                    />
-                                </div>
-                            </ToggleButton>
-                        </Tooltip>
-                    </PopoverTrigger>
-                    <PopoverSurface className={classes.colorPickerPopover}>
-                        <div ref={pickerRef}>
-                            <ColorPickerPopup value={hasAlpha ? computeRGBAColor() : Color3.FromHexString(metadata.color)} onChange={handleColorChange as any} />
-                        </div>
-                    </PopoverSurface>
-                </Popover>
+                <ColorPickerPopup value={hasAlpha ? computeRGBAColor() : Color3.FromHexString(metadata.color)} onChange={handleColorChange} />
             </div>
         </div>
     );

@@ -9,7 +9,6 @@ const useStyles = makeStyles({
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: tokens.colorNeutralBackground3,
         padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalM}`,
         fontSize: tokens.fontSizeBase200,
         color: tokens.colorNeutralForeground2,
