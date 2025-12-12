@@ -1,20 +1,18 @@
-import type { FunctionComponent } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import type { ComponentType, FunctionComponent } from "react";
 
 import type { BaseTexture, ISize, PointerInfo, Scene, Vector2 } from "core/index";
-import { Constants } from "core/Engines/constants";
+import type { IPixelData } from "./canvasManager";
+import type { IChannel } from "./channels";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { IPixelData } from "./canvasManager";
+import { Constants } from "core/Engines/constants";
 import { TextureCanvasManager } from "./canvasManager";
-import type { IChannel } from "./channels";
 import { ChannelsBar } from "./channels";
 import { PropertiesBar } from "./properties";
 import { StatusBar } from "./status";
-import type { ITool } from "./tools";
-import { ToolBar, ToolSettings } from "./tools";
-import { DefaultTools } from "./defaultTools/defaultTools";
+import { ToolBar } from "./tools";
 
 /**
  * Parameters passed to tools for interaction with the texture editor
@@ -46,46 +44,66 @@ export interface IToolParameters {
     interactionEnabled: () => boolean;
 }
 
-/**
- * Props for tool GUI components
- */
-export interface IToolGUIProps {
-    /** The tool instance */
-    instance: IToolType;
-}
+export type TextureEditorTool = {
+    /**
+     * Called when the tool is activated from the toolbar.
+     */
+    activate: () => void;
 
-/** An interface representing the definition of a tool */
-export interface IToolData {
-    /** Name to display on the toolbar */
+    /**
+     * Called when the tool is deactivated from the toolbar.
+     */
+    deactivate: () => void;
+
+    /**
+     * Optional: Called when the user resets the texture or uploads a new texture. Tools may want to reset their state when this happens.
+     */
+    reset?: () => void;
+
+    /**
+     * Optional: React component for tool-specific settings UI.
+     */
+    settingsComponent?: ComponentType;
+};
+
+export type TextureEditorToolContext = {
+    getParameters(): IToolParameters;
+};
+
+export type TextureEditorToolProvider = {
+    /**
+     * An optional order for the section, relative to other commands.
+     * Defaults to 0.
+     */
+    order?: number;
+
+    /**
+     * The name of the tool.
+     */
     name: string;
-    /** A class definition for the tool including setup and cleanup methods */
-    type: IToolConstructable;
-    /** Icon component to display in the toolbar */
-    icon: React.ComponentType;
-    /** Whether the tool uses postprocesses */
+
+    /**
+     * The icon component for the tool.
+     */
+    icon: ComponentType;
+
+    /**
+     * Whether the tool uses postprocesses.
+     */
     is3D?: boolean;
-    /** Optional system cursor name to use when tool is active (e.g. 'crosshair', 'pointer') */
+
+    /**
+     * Optional system cursor name to use when tool is active (e.g. 'crosshair', 'pointer')
+     */
     cursor?: string;
-    /** Optional React component for tool-specific settings UI */
-    settingsComponent?: React.ComponentType<IToolGUIProps>;
-}
 
-/**
- * Interface for tool implementations
- */
-export interface IToolType {
-    /** Called when the tool is selected. */
-    setup: () => void;
-    /** Called when the tool is deselected. */
-    cleanup: () => void;
-    /** Optional. Called when the user resets the texture or uploads a new texture. Tools may want to reset their state when this happens. */
-    onReset?: () => void;
-}
-
-/** For constructable types, TS requires that you define a separate interface which constructs your actual interface */
-interface IToolConstructable {
-    new (getParameters: () => IToolParameters): IToolType;
-}
+    /**
+     * Instantiates the tool.
+     * @param context The context for the tool.
+     * @returns The instantiated tool.
+     */
+    getTool: (context: TextureEditorToolContext) => TextureEditorTool;
+};
 
 /**
  * Metadata shared between tools in the texture editor
@@ -160,11 +178,12 @@ const useStyles = makeStyles({
     },
 });
 
-interface ITextureEditorProps {
+export type TextureEditorProps = {
     texture: BaseTexture;
+    toolProviders?: readonly TextureEditorToolProvider[];
     window?: Window;
     onUpdate?: () => void;
-}
+};
 
 const PREVIEW_UPDATE_DELAY_MS = 160;
 
@@ -173,8 +192,8 @@ const PREVIEW_UPDATE_DELAY_MS = 160;
  * @param props - The texture editor properties
  * @returns The texture editor component
  */
-export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => {
-    const { texture, window: editorWindow, onUpdate } = props;
+export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
+    const { texture, toolProviders = [], window: editorWindow, onUpdate } = props;
 
     const classes = useStyles();
 
@@ -186,7 +205,6 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
     const canvasManagerRef = useRef<TextureCanvasManager | null>(null);
 
     // State
-    const [tools, setTools] = useState<ITool[]>([]);
     const [activeToolIndex, setActiveToolIndex] = useState(-1);
     const [metadata, setMetadataState] = useState<IMetadata>({
         color: "#ffffff",
@@ -257,40 +275,25 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
         };
     }, [metadata, setMetadata]);
 
-    const addTools = useCallback(
-        (toolDataList: IToolData[]) => {
-            setTools((prevTools) => {
-                const newTools: ITool[] = toolDataList.map((toolData) => ({
-                    ...toolData,
-                    instance: new toolData.type(() => getToolParameters()),
-                }));
-                return [...prevTools, ...newTools];
-            });
-        },
-        [getToolParameters]
-    );
+    const tools = useMemo(() => toolProviders?.map((provider) => provider.getTool({ getParameters: getToolParameters })), [toolProviders, getToolParameters]);
 
     const changeTool = useCallback(
         (index: number) => {
             if (canvasManagerRef.current) {
                 if (index !== -1 && tools[index]) {
-                    canvasManagerRef.current.tool = tools[index];
+                    canvasManagerRef.current.tool = {
+                        is3D: toolProviders[index].is3D ?? false,
+                        activate: () => tools[index].activate(),
+                        deactivate: () => tools[index].deactivate(),
+                        reset: () => tools[index].reset?.(),
+                    };
                 } else {
                     canvasManagerRef.current.tool = null;
                 }
             }
             setActiveToolIndex(index);
         },
-        [tools]
-    );
-
-    const loadToolFromURL = useCallback(
-        (_url: string) => {
-            // This functionality can be implemented similar to the old inspector
-            // For now, it's a placeholder
-            // TODO: Implement dynamic tool loading
-        },
-        [addTools]
+        [toolProviders, tools]
     );
 
     const saveTexture = useCallback(() => {
@@ -331,8 +334,6 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
         canvasManagerRef.current = manager;
         setSize(manager.size);
 
-        addTools(DefaultTools);
-
         return () => {
             manager.dispose();
             canvasManagerRef.current = null;
@@ -358,18 +359,18 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
         }
     }, [mipLevel]);
 
-    // Get current tool
-    const currentTool: ITool | undefined = tools[activeToolIndex];
-
     // Compute cursor style
     let cursor = "default";
     if (canvasManagerRef.current && !canvasManagerRef.current.toolInteractionEnabled()) {
         cursor = "grab";
-    } else if (currentTool?.cursor) {
-        cursor = currentTool.cursor;
+    } else if (toolProviders[activeToolIndex]?.cursor) {
+        cursor = toolProviders[activeToolIndex].cursor;
     }
 
     const hasAlpha = texture.textureFormat === -1 || texture.textureFormat === Constants.TEXTUREFORMAT_RGBA;
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const CurrentToolSettings = tools[activeToolIndex]?.settingsComponent;
 
     return (
         <div className={classes.textureEditor}>
@@ -390,9 +391,8 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
                 {!texture.isCube && (
                     <div className={classes.sidebarLeft}>
                         <ToolBar
-                            tools={tools}
+                            tools={toolProviders}
                             activeToolIndex={activeToolIndex}
-                            addTool={loadToolFromURL}
                             changeTool={changeTool}
                             metadata={metadata}
                             setMetadata={setMetadata}
@@ -404,9 +404,9 @@ export const TextureEditor: FunctionComponent<ITextureEditorProps> = (props) => 
                     <canvas ref={uiCanvasRef} className={classes.canvasUI} tabIndex={1} />
                     <canvas ref={canvas2DRef} className={classes.canvas2D} />
                     <canvas ref={canvas3DRef} className={classes.canvas3D} />
-                    {currentTool?.settingsComponent && (
+                    {CurrentToolSettings && (
                         <div className={classes.toolSettingsContainer}>
-                            <ToolSettings tool={currentTool} />
+                            <CurrentToolSettings />
                         </div>
                     )}
                 </div>

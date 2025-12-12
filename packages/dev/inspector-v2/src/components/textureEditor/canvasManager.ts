@@ -28,13 +28,19 @@ import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 
 import { ApplyChannelsToTextureDataAsync } from "../../misc/textureTools";
 
-import type { ITool } from "./tools";
 import type { IChannel } from "./channels";
 import type { IMetadata } from "./textureEditor";
 
 import { canvasShader } from "./canvasShader";
 
 import type { IWheelEvent } from "core/Events/deviceInputEvents";
+
+export type CanvasManagerTool = {
+    readonly is3D: boolean;
+    activate(): void;
+    deactivate(): void;
+    reset(): void;
+};
 
 export interface IPixelData {
     x?: number;
@@ -116,7 +122,7 @@ export class TextureCanvasManager {
     /** The number of milliseconds between texture updates */
     private readonly PUSH_FREQUENCY = 32;
 
-    private _tool: Nullable<ITool> = null;
+    private _tool: Nullable<CanvasManagerTool> = null;
 
     private _setPixelData: (pixelData: IPixelData) => void;
     private _setMipLevel: (mipLevel: number) => void;
@@ -559,13 +565,13 @@ export class TextureCanvasManager {
         return this._size;
     }
 
-    public set tool(tool: Nullable<ITool>) {
+    public set tool(tool: Nullable<CanvasManagerTool>) {
         if (this._tool) {
-            this._tool.instance.cleanup();
+            this._tool.deactivate();
         }
         this._tool = tool;
         if (this._tool) {
-            this._tool.instance.setup();
+            this._tool.activate();
             if (this._editing3D && !this._tool.is3D) {
                 this._editing3D = false;
                 this._2DCanvas.getContext("2d")?.drawImage(this._3DCanvas, 0, 0);
@@ -623,8 +629,8 @@ export class TextureCanvasManager {
     }
 
     public reset(): void {
-        if (this._tool && this._tool.instance.onReset) {
-            this._tool.instance.onReset();
+        if (this._tool && this._tool.reset) {
+            this._tool.reset();
         }
         this._originalTexture._texture = this._originalTextureProperties._texture;
         (this._originalTexture as Texture).url = this._originalTextureProperties.url;
@@ -686,8 +692,8 @@ export class TextureCanvasManager {
                             // eslint-disable-next-line github/no-then
                             ApplyChannelsToTextureDataAsync(texture, texture.getSize().width, texture.getSize().height, 0, { R: true, G: true, B: true, A: true }).then(
                                 async (pixels) => {
-                                    if (this._tool && this._tool.instance.onReset) {
-                                        this._tool.instance.onReset();
+                                    if (this._tool && this._tool.reset) {
+                                        this._tool.reset();
                                     }
                                     texture.dispose();
                                     this.setSize(texture.getSize());
@@ -721,7 +727,7 @@ export class TextureCanvasManager {
             this._originalTextureProperties._texture?.dispose();
         }
         if (this._tool) {
-            this._tool.instance.cleanup();
+            this._tool.deactivate();
         }
         this._paintCanvas.parentNode?.removeChild(this._paintCanvas);
         this._3DPlane.dispose();

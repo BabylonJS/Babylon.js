@@ -2,6 +2,7 @@ import type { FunctionComponent } from "react";
 
 import type { BaseTexture } from "core/index";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import type { ITextureEditorService } from "../../../services/textureEditor/textureEditorService";
 
 import { useCallback } from "react";
 
@@ -20,13 +21,15 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useChildWindow } from "../../childWindow";
-import { TextureEditor } from "../../textureEditor/textureEditor";
 import { BoundProperty } from "../boundProperty";
 import { FindTextureFormat, FindTextureType } from "./textureFormatUtils";
 import { TexturePreview } from "./texturePreview";
 
-export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseTexture }> = (props) => {
-    const { texture } = props;
+export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseTexture; textureEditorService: ITextureEditorService }> = (props) => {
+    const {
+        texture,
+        textureEditorService: { useTextureEditor },
+    } = props;
 
     const isUpdatable = texture instanceof Texture || texture instanceof CubeTexture;
 
@@ -63,7 +66,9 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
         [texture]
     );
 
-    const childWindow = useChildWindow();
+    const childWindow = useChildWindow("Texture Editor");
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const TextureEditor = useTextureEditor();
 
     return (
         <>
@@ -80,9 +85,9 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
                     }}
                 />
             )}
-            <ButtonLine label="Edit Texture" onClick={() => childWindow.open({ title: "Texture Editor", key: "Texture Editor" })} />
+            <ButtonLine label="Edit Texture" onClick={() => childWindow.open({ title: "Texture Editor" })} />
             <childWindow.component>
-                <TextureEditor texture={texture} window={window} onUpdate={() => {}} />
+                <TextureEditor texture={texture} />
             </childWindow.component>
         </>
     );

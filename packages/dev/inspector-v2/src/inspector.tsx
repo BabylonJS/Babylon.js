@@ -59,6 +59,7 @@ import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
+import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 
 export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & { autoResizeEngine?: boolean };
 
@@ -255,6 +256,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
                 AnimationGroupPropertiesServiceDefinition,
                 MetadataPropertiesServiceDefinition,
                 AtmospherePropertiesServiceDefinition,
+
+                // Texture editor and related services.
+                TextureEditorServiceDefinition,
 
                 // Debug pane tab and related services.
                 DebugServiceDefinition,

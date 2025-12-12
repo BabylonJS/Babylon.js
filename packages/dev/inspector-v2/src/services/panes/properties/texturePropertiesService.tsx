@@ -1,6 +1,7 @@
 import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISettingsContext } from "../../settingsContext";
+import type { ITextureEditorService } from "../../textureEditor/textureEditorService";
 import type { IPropertiesService } from "./propertiesService";
 
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -22,6 +23,7 @@ import { RenderTargetTextureGeneralProperties } from "../../../components/proper
 import { TextureGeneralProperties, TexturePreviewProperties, TextureTransformProperties } from "../../../components/properties/textures/textureProperties";
 import { ThinTextureGeneralProperties, ThinTextureSamplingProperties } from "../../../components/properties/textures/thinTextureProperties";
 import { SettingsContextIdentity } from "../../settingsContext";
+import { TextureEditorServiceIdentity } from "../../textureEditor/textureEditorService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
 // Don't use instanceof in this case as we don't want to bring in the gui package just to check if the entity is an AdvancedDynamicTexture.
@@ -29,17 +31,17 @@ function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTex
     return (entity as AdvancedDynamicTexture)?.getClassName?.() === "AdvancedDynamicTexture";
 }
 
-export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext]> = {
+export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext, ITextureEditorService]> = {
     friendlyName: "Texture Properties",
-    consumes: [PropertiesServiceIdentity, SettingsContextIdentity],
-    factory: (propertiesService, settingsContext) => {
+    consumes: [PropertiesServiceIdentity, SettingsContextIdentity, TextureEditorServiceIdentity],
+    factory: (propertiesService, settingsContext, textureEditorService) => {
         const baseTextureContentRegistration = propertiesService.addSectionContent({
             key: "Base Texture Properties",
             predicate: (entity: unknown) => entity instanceof BaseTexture,
             content: [
                 {
                     section: "Preview",
-                    component: ({ context }) => <BaseTexturePreviewProperties texture={context} />,
+                    component: ({ context }) => <BaseTexturePreviewProperties texture={context} textureEditorService={textureEditorService} />,
                 },
                 {
                     section: "General",

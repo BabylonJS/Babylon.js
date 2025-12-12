@@ -1,4 +1,4 @@
-import type { FunctionComponent } from "react";
+import type { ComponentType, FunctionComponent } from "react";
 import { useCallback } from "react";
 
 import { makeStyles, tokens, Tooltip, ToggleButton } from "@fluentui/react-components";
@@ -6,15 +6,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 
 import { ColorPickerPopup } from "shared-ui-components/fluent/primitives/colorPicker";
 
-import type { IMetadata, IToolData, IToolType } from "./textureEditor";
-
-/**
- * A tool instance with its data and state
- */
-export interface ITool extends IToolData {
-    /** The tool instance */
-    instance: IToolType;
-}
+import type { IMetadata } from "./textureEditor";
 
 const useStyles = makeStyles({
     toolbar: {
@@ -45,8 +37,7 @@ const useStyles = makeStyles({
 });
 
 interface IToolBarProps {
-    tools: ITool[];
-    addTool: (url: string) => void;
+    tools: readonly { name: string; icon: ComponentType }[];
     changeTool: (toolIndex: number) => void;
     activeToolIndex: number;
     metadata: IMetadata;
@@ -117,31 +108,6 @@ export const ToolBar: FunctionComponent<IToolBarProps> = (props) => {
                     );
                 })}
             </div>
-        </div>
-    );
-};
-
-interface IToolSettingsProps {
-    tool: ITool | undefined;
-}
-
-/**
- * Displays settings UI for the currently selected tool
- * @param props - The tool settings properties
- * @returns The tool settings component or null
- */
-export const ToolSettings: FunctionComponent<IToolSettingsProps> = (props) => {
-    const { tool } = props;
-
-    if (!tool || !tool.settingsComponent) {
-        return null;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const ToolSettingsComponent = tool.settingsComponent;
-    return (
-        <div>
-            <ToolSettingsComponent instance={tool.instance} />
         </div>
     );
 };
