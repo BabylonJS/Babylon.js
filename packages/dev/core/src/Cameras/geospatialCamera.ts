@@ -12,6 +12,7 @@ import { Vector3CopyToRef, Vector3Distance } from "../Maths/math.vector.function
 import { Clamp, NormalizeRadians } from "../Maths/math.scalar.functions";
 import type { AllowedAnimValue } from "../Behaviors/Cameras/interpolatingBehavior";
 import { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
+import type { Collider } from "../Collisions/collider";
 import type { EasingFunction } from "../Animations/easing";
 import type { Animation } from "../Animations/animation";
 
@@ -45,6 +46,12 @@ export class GeospatialCamera extends Camera {
     /** Behavior used for smooth flying animations */
     private _flyingBehavior: InterpolatingBehavior<GeospatialCamera>;
     private _flyToTargets: Map<keyof GeospatialCamera, AllowedAnimValue> = new Map();
+
+    // Collision properties
+    public checkCollisions = true;
+    public collisionRadius = new Vector3(0.1, 0.1, 0.1);
+    private _collider?: Collider;
+    private _collisionVelocity: Vector3 = new Vector3();
 
     constructor(name: string, scene: Scene, options: CameraOptions, pickPredicate?: MeshPredicate) {
         super(name, new Vector3(), scene);
@@ -184,7 +191,12 @@ export class GeospatialCamera extends Camera {
         this._tempVect.copyFrom(this._lookAtVector).scaleInPlace(-this._radius);
         this._tempPosition.copyFrom(this._center).addInPlace(this._tempVect);
 
-        this._position.copyFrom(this._tempPosition);
+        const collisionOffset = this._getCollisionOffset(this._tempPosition);
+
+        // Apply the same offset to both position and center to preserve orbital relationship
+        // This keeps yaw/pitch/radius intact - just lifts the whole "rig"
+        this._position.copyFrom(this._tempPosition).addInPlace(collisionOffset);
+        this._center.addInPlace(collisionOffset);
 
         this._isViewMatrixDirty = true;
     }
@@ -375,7 +387,9 @@ export class GeospatialCamera extends Camera {
         const requestedRadius = this._radius - distance;
         const newRadius = Clamp(requestedRadius, this.limits.radiusMin, this.limits.radiusMax);
         const actualDistance = this._radius - newRadius;
-        const actualRatio = actualDistance / this._radius;
+        // When at min radius and zooming in, still allow center movement (slide along surface)
+        // This enables "zoom to cursor" to continue sliding toward the target even at min zoom
+        const actualRatio = actualDistance === 0 && distance > 0 && this._radius <= this.limits.radiusMin + Epsilon ? distance / this._radius : actualDistance / this._radius;
 
         // Direction from current center to target point
         const directionToTarget = TmpVectors.Vector3[0];
@@ -432,13 +446,15 @@ export class GeospatialCamera extends Camera {
     override _checkInputs(): void {
         this.inputs.checkInputs();
 
+        // Check if position is dirty and rebuild angles if needed ? or just limit to using a position setter
+
         // Let movement class handle all per-frame logic
         this.movement.computeCurrentFrameDeltas();
 
-        let recalculateCenter = false;
         if (this.movement.panDeltaCurrentFrame.lengthSquared() > 0) {
             this._applyGeocentricTranslation();
-            recalculateCenter = true;
+            // After a drag, recalculate the center point to ensure it's still on the surface.
+            this._recalculateCenter();
         }
         if (this.movement.rotationDeltaCurrentFrame.lengthSquared() > 0) {
             this._applyGeocentricRotation();
@@ -446,11 +462,7 @@ export class GeospatialCamera extends Camera {
 
         if (Math.abs(this.movement.zoomDeltaCurrentFrame) > Epsilon) {
             this._applyZoom();
-            recalculateCenter = true;
         }
-
-        // After a movement impacting center or radius, recalculate the center point to ensure it's still on the surface.
-        recalculateCenter && this._recalculateCenter();
 
         super._checkInputs();
     }
@@ -475,6 +487,31 @@ export class GeospatialCamera extends Camera {
             }
         }
     }
+
+    protected _getCollisionOffset(newPosition: Vector3): Vector3 {
+        const coordinator = this.getScene().collisionCoordinator;
+        if (!coordinator || !this.checkCollisions || !this._scene.collisionsEnabled) {
+            return Vector3.Zero();
+        }
+
+        if (!this._collider) {
+            this._collider = coordinator.createCollider();
+        }
+        this._collider._radius = this.collisionRadius;
+
+        // Calculate velocity from old position to new position
+        newPosition.subtractToRef(this._position, this._collisionVelocity);
+
+        // Get the collision-adjusted position
+        const adjustedPosition = coordinator.getNewPosition(this._position, this._collisionVelocity, this._collider, 3, null, () => {}, this.uniqueId);
+
+        // Calculate the collision offset (how much the position was pushed)
+        const collisionOffset = TmpVectors.Vector3[6];
+        adjustedPosition.subtractToRef(newPosition, collisionOffset);
+
+        return collisionOffset;
+    }
+
     override attachControl(noPreventDefault?: boolean): void {
         this.inputs.attachElement(noPreventDefault);
     }
