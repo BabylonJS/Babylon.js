@@ -137,7 +137,7 @@ export const Accordion = forwardRef<HTMLDivElement, PropsWithChildren<AccordionP
             {validChildren.map((child, index) => {
                 const isHighlighted = highlightSections?.includes(child.title);
                 return (
-                    <AccordionItem key={child.content.key} value={child.title}>
+                    <AccordionItem key={child.content.key ?? child.title} value={child.title}>
                         <div className={isHighlighted ? classes.highlightDiv : undefined}>
                             <AccordionHeader size={size}>
                                 <Subtitle2Stronger>{child.title}</Subtitle2Stronger>

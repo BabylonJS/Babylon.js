@@ -56,14 +56,14 @@ export class FrameGraphContext {
      * @param name The name of the debug group
      */
     public pushDebugGroup(name: string) {
-        this._engine._debugPushGroup?.(name, 1);
+        this._engine._debugPushGroup?.(name, 2);
     }
 
     /**
      * Pops a debug group from the engine's debug stack.
      */
     public popDebugGroup() {
-        this._engine._debugPopGroup?.(1);
+        this._engine._debugPopGroup?.(2);
     }
 
     /**

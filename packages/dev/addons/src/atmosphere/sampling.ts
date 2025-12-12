@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 import { Clamp } from "core/Maths/math.scalar.functions";
 import type { IColor4Like } from "core/Maths/math.like";

@@ -242,7 +242,7 @@ const plugin: IPlugin = {
                 },
             },
             create: (context: eslint.Rule.RuleContext) => {
-                const sourceFilePath: string = context.getFilename();
+                const sourceFilePath: string = context.filename;
 
                 const tsdocConfiguration: TSDocConfiguration = new TSDocConfiguration();
 
@@ -283,7 +283,7 @@ const plugin: IPlugin = {
 
                 const tsdocParser: TSDocParser = new TSDocParser(tsdocConfiguration);
 
-                const sourceCode: eslint.SourceCode = context.getSourceCode();
+                const sourceCode: eslint.SourceCode = context.sourceCode;
                 const checkCommentBlocks: (node: ESTree.Node) => void = function (_node: ESTree.Node) {
                     for (const comment of sourceCode.getAllComments()) {
                         if (comment.type !== "Block") {
@@ -351,9 +351,21 @@ const plugin: IPlugin = {
                     recommended: false,
                     url: "https://tsdoc.org/pages/packages/eslint-plugin-tsdoc",
                 },
+                schema: [
+                    {
+                        type: "object",
+                        properties: {
+                            contexts: {
+                                type: "array",
+                                items: { type: "string" },
+                            },
+                        },
+                        additionalProperties: false,
+                    },
+                ],
             },
             create: (context: eslint.Rule.RuleContext) => {
-                const sourceCode: eslint.SourceCode = context.getSourceCode();
+                const sourceCode: eslint.SourceCode = context.sourceCode;
                 const checkCommentBlocks: (node: (ESTree.PropertyDefinition | ESTree.MethodDefinition) & eslint.Rule.NodeParentExtension) => void = function (
                     node: (ESTree.PropertyDefinition | ESTree.MethodDefinition) & eslint.Rule.NodeParentExtension
                 ) {
@@ -418,7 +430,7 @@ const plugin: IPlugin = {
                 },
             },
             create: (context: eslint.Rule.RuleContext) => {
-                const sourceFilePath: string = context.getFilename();
+                const sourceFilePath: string = context.filename;
                 const program: ts.Program = ts.createProgram([sourceFilePath], {
                     checkJs: false,
                     resolveJsonModule: false,
@@ -435,7 +447,7 @@ const plugin: IPlugin = {
                     inlineSourceMap: false,
                 });
 
-                const sourceCode: eslint.SourceCode = context.getSourceCode();
+                const sourceCode: eslint.SourceCode = context.sourceCode;
                 const sourceFile: ts.SourceFile | undefined = program.getSourceFile(sourceFilePath);
                 if (!sourceFile) {
                     throw new Error("Error retrieving source file");
@@ -506,6 +518,96 @@ const plugin: IPlugin = {
                                     return fixer.replaceText(node.source, `"${suggestion}"`);
                                 },
                             });
+                        }
+                    },
+                };
+            },
+        },
+        "no-directory-barrel-imports": {
+            meta: {
+                type: "problem",
+                docs: {
+                    description:
+                        "Prevent imports from directories with index files (barrel imports) when using path mappings, as these cause issues with .js extension appending during build",
+                },
+                messages: {
+                    noDirectoryBarrelImport:
+                        'Import "{{importPath}}" resolves to a directory with an index file. Import directly from the specific file instead to avoid build issues with .js extension appending.',
+                },
+            },
+            create(context) {
+                const filename = context.filename;
+                const projectRoot = filename.split("packages")[0];
+
+                // Check if path is a directory with index.ts but no same-name .ts file
+                function reportIfBarrel(targetPath: string, node: ESTree.Node, importPath: string): boolean {
+                    try {
+                        if (!fs.statSync(targetPath).isDirectory()) {
+                            return false;
+                        }
+                        if (!fs.existsSync(path.join(targetPath, "index.ts"))) {
+                            return false;
+                        }
+                        // Before flagging, check if a file with the same name exists.
+                        // Module resolution prefers files over directories, so if i.e.
+                        // abstractEngine.ts exists alongside AbstractEngine/, the import
+                        // will correctly resolve to the file.
+                        if (fs.existsSync(targetPath + ".ts") && fs.statSync(targetPath + ".ts").isFile()) {
+                            return false;
+                        }
+                        context.report({ node, messageId: "noDirectoryBarrelImport", data: { importPath } });
+                        return true;
+                    } catch {
+                        // Path doesn't exist, that's fine
+                    }
+                    return false;
+                }
+
+                return {
+                    Program() {
+                        // Load tsconfig (it will only be loaded upon first request).
+                        tsConfig = loadTsConfig(projectRoot);
+                    },
+
+                    ImportDeclaration(node) {
+                        // Skip type-only imports as they are erased during compilation
+                        // The importKind property is added by TypeScript-ESLint parser
+                        if ((node as any).importKind === "type") {
+                            return;
+                        }
+
+                        const importPath = node.source.value as string;
+
+                        // Relative imports
+                        if (importPath.startsWith(".")) {
+                            reportIfBarrel(path.resolve(path.dirname(filename), importPath), node, importPath);
+                            return;
+                        }
+
+                        // Path-mapped imports - if no mappings defined, remaining imports are bare node_modules
+                        if (!tsConfig?.compilerOptions?.paths) {
+                            return;
+                        }
+                        const { baseUrl = ".", paths } = tsConfig.compilerOptions;
+
+                        for (const [pathKey, pathValues] of Object.entries(paths)) {
+                            // Handle patterns like "core/*"
+                            const pathPrefix = pathKey.replace("/*", "");
+                            if (!importPath.startsWith(pathPrefix + "/")) {
+                                continue;
+                            }
+
+                            // Get the rest of the path after the mapping prefix
+                            const restOfPath = importPath.slice(pathPrefix.length + 1);
+
+                            // Resolve the actual directory path(s)
+                            // pathValues is an array, though generally of length 1 in BabylonJS
+                            for (const pathValue of pathValues) {
+                                const resolvedBase = path.resolve(projectRoot, baseUrl, pathValue.replace("/*", ""));
+                                if (reportIfBarrel(path.join(resolvedBase, restOfPath), node, importPath)) {
+                                    return;
+                                }
+                            }
                         }
                     },
                 };

@@ -3189,7 +3189,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
-                        resolveTarget: gpuMSAATexture && !rtWrapper.disableAutomaticMSAAResolve ? colorTextureView : undefined,
+                        resolveTarget: gpuMSAATexture && !rtWrapper.disableAutomaticMSAAResolve && rtWrapper.resolveMSAAColors ? colorTextureView : undefined,
                         depthSlice: mrtTexture.is3D ? (rtWrapper.layerIndices?.[i] ?? 0) : undefined,
                         clearValue: index !== 0 && mustClearColor ? (isRtInteger ? clearColorForIntegerRt : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
@@ -3220,7 +3220,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
                 colorAttachments.push({
                     view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
-                    resolveTarget: gpuMSAATexture && !rtWrapper.disableAutomaticMSAAResolve ? colorTextureView : undefined,
+                    resolveTarget: gpuMSAATexture && !rtWrapper.disableAutomaticMSAAResolve && rtWrapper.resolveMSAAColors ? colorTextureView : undefined,
                     depthSlice,
                     clearValue: mustClearColor ? (isRtInteger ? clearColorForIntegerRt : clearColor) : undefined,
                     loadOp: mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,

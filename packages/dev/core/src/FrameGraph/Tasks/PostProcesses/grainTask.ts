@@ -17,4 +17,8 @@ export class FrameGraphGrainTask extends FrameGraphPostProcessTask {
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinGrainPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinGrainPostProcess(name, frameGraph.engine));
     }
+
+    public override getClassName(): string {
+        return "FrameGraphGrainTask";
+    }
 }

@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 export * from "./atmosphere";
 export * from "./atmosphereOptions";

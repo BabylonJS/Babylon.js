@@ -37,6 +37,10 @@ export class FrameGraphCullObjectsTask extends FrameGraphTask {
         };
     }
 
+    public override getClassName(): string {
+        return "FrameGraphCullObjectsTask";
+    }
+
     public record() {
         if (this.objectList === undefined || this.camera === undefined) {
             throw new Error(`FrameGraphCullObjectsTask ${this.name}: objectList and camera are required`);

@@ -14,6 +14,7 @@ export class FrameGraphLightingVolumeTask extends FrameGraphTask {
 
     /**
      * The output object list containing the lighting volume mesh.
+     * You can get the mesh by doing  outputMeshLightingVolume.meshes[0]
      */
     public readonly outputMeshLightingVolume: FrameGraphObjectList;
 
@@ -50,7 +51,15 @@ export class FrameGraphLightingVolumeTask extends FrameGraphTask {
     }
 
     public override isReady() {
-        return this.lightingVolume.isReady();
+        const isReady = this.lightingVolume.isReady();
+        if (isReady) {
+            this.lightingVolume._setComputeShaderFastMode(true);
+        }
+        return isReady;
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphLightingVolumeTask";
     }
 
     public record() {

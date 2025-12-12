@@ -4,9 +4,6 @@ import { Constants } from "core/Engines/constants";
 import { ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 
-import "core/Shaders/volumetricLightingBlendVolume.fragment";
-import "core/ShadersWGSL/volumetricLightingBlendVolume.fragment";
-
 /**
  * @internal
  */
@@ -22,6 +19,17 @@ class VolumetricLightingBlendVolumeThinPostProcess extends ThinPassPostProcess {
     public enableExtinction = false;
 
     private _invProjection: Matrix;
+
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(Promise.all([import("../../../ShadersWGSL/pass.fragment"), import("../../../ShadersWGSL/volumetricLightingBlendVolume.fragment")]));
+        } else {
+            list.push(Promise.all([import("../../../Shaders/pass.fragment"), import("../../../Shaders/volumetricLightingBlendVolume.fragment")]));
+        }
+
+        super._gatherImports(useWebGPU, list);
+    }
 
     constructor(name: string, engine: Nullable<AbstractEngine> = null, enableExtinction = false, options?: EffectWrapperCreationOptions) {
         super(name, engine, {
@@ -62,6 +70,10 @@ export class FrameGraphVolumetricLightingBlendVolumeTask extends FrameGraphPostP
 
     constructor(name: string, frameGraph: FrameGraph, enableExtinction = false) {
         super(name, frameGraph, new VolumetricLightingBlendVolumeThinPostProcess(name, frameGraph.engine, enableExtinction));
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphVolumetricLightingBlendVolumeTask";
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {

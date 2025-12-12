@@ -289,6 +289,10 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
         shadowGenerator.shadowMaxZ = this._shadowMaxZ;
     }
 
+    public override getClassName(): string {
+        return "FrameGraphCascadedShadowGeneratorTask";
+    }
+
     public override record() {
         if (this.light === undefined || this.objectList === undefined || this.camera === undefined) {
             throw new Error(`FrameGraphCascadedShadowGeneratorTask ${this.name}: light, objectList and camera are required`);

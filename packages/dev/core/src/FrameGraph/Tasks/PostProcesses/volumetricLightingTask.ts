@@ -9,11 +9,6 @@ import { FrameGraphObjectRendererTask } from "../Rendering/objectRendererTask";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-import "core/Shaders/volumetricLightingRenderVolume.vertex";
-import "core/Shaders/volumetricLightingRenderVolume.fragment";
-import "core/ShadersWGSL/volumetricLightingRenderVolume.vertex";
-import "core/ShadersWGSL/volumetricLightingRenderVolume.fragment";
-
 const InvViewProjectionMatrix = new Matrix();
 
 /**
@@ -84,6 +79,7 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
     /**
      * The extinction coefficient for the volumetric lighting effect (default: (0, 0, 0) - no extinction).
      * This parameter controls how much light is absorbed and scattered as it travels through the medium.
+     * Will only have an effect if enableExtinction is set to true in the constructor!
      */
     public get extinction() {
         return this._blendLightingVolumeTask.postProcess.extinction;
@@ -133,7 +129,7 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
     }
 
     /**
-     * The output texture of the task.
+     * The output texture of the task. It will be the same as targetTexture.
      */
     public readonly outputTexture: FrameGraphTextureHandle;
 
@@ -158,7 +154,7 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
         this._renderLightingVolumeMaterial = new ShaderMaterial(`${name} - render lighting volume`, this._frameGraph.scene, "volumetricLightingRenderVolume", {
             attributes: ["position"],
             uniformBuffers: ["Scene", "Mesh"],
-            uniforms: ["world", "viewProjection", "vEyePosition", "lightDir", "invViewProjection", "outputTextureSize", "extinctionPhaseG", "lightPower"],
+            uniforms: ["world", "viewProjection", "vEyePosition", "lightDir", "invViewProjection", "outputTextureSize", "extinctionPhaseG", "lightPower", "textureRatio"],
             samplers: ["depthTexture"],
             defines: enableExtinction ? ["USE_EXTINCTION"] : [],
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
@@ -170,9 +166,9 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
             this._renderLightingVolumeMaterial.bindEyePosition(this._renderLightingVolumeMaterial.getEffect());
         });
 
-        this._clearLightingVolumeTextureTask = new FrameGraphClearTextureTask(`${name} - clear lighting volume texture`, frameGraph);
-        this._renderLightingVolumeTask = new FrameGraphObjectRendererTask(`${name} - render lighting volume`, frameGraph, frameGraph.scene);
-        this._blendLightingVolumeTask = new FrameGraphVolumetricLightingBlendVolumeTask(`${name} - blend lighting volume`, frameGraph, enableExtinction);
+        this._clearLightingVolumeTextureTask = new FrameGraphClearTextureTask(`clear lighting volume texture`, frameGraph);
+        this._renderLightingVolumeTask = new FrameGraphObjectRendererTask(`render lighting volume`, frameGraph, frameGraph.scene);
+        this._blendLightingVolumeTask = new FrameGraphVolumetricLightingBlendVolumeTask(`blend lighting volume texture`, frameGraph, enableExtinction);
 
         this.onTexturesAllocatedObservable.add(() => {
             this._renderLightingVolumeMaterial.setInternalTexture("depthTexture", frameGraph.textureManager.getTextureFromHandle(this.depthTexture)!);
@@ -186,6 +182,15 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
         this.lightPower = this._lightPower;
     }
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    public override initAsync(): Promise<unknown> {
+        if (this._frameGraph.engine.isWebGPU) {
+            return Promise.all([import("../../../ShadersWGSL/volumetricLightingRenderVolume.vertex"), import("../../../ShadersWGSL/volumetricLightingRenderVolume.fragment")]);
+        }
+
+        return Promise.all([import("../../../Shaders/volumetricLightingRenderVolume.vertex"), import("../../../Shaders/volumetricLightingRenderVolume.fragment")]);
+    }
+
     public override isReady() {
         return (
             this._renderLightingVolumeMaterial.isReady() &&
@@ -193,6 +198,10 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
             this._renderLightingVolumeMaterial.isReady() &&
             this._blendLightingVolumeTask.isReady()
         );
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphVolumetricLightingTask";
     }
 
     public override record(skipCreationOfDisabledPasses = false) {
@@ -219,13 +228,18 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
 
         this.lightingVolumeMesh.meshes[0].material = this._renderLightingVolumeMaterial;
 
+        const targetTextureSize = textureManager.getTextureAbsoluteDimensions(this.targetTexture);
         const volumeTextureSize = textureManager.getTextureAbsoluteDimensions(lightingVolumeTexture);
 
+        this._renderLightingVolumeMaterial.setVector2(
+            "textureRatio",
+            new Vector2(targetTextureSize.width / volumeTextureSize.width, targetTextureSize.height / volumeTextureSize.height)
+        );
         this._renderLightingVolumeMaterial.setVector2("outputTextureSize", new Vector2(volumeTextureSize.width, volumeTextureSize.height));
 
-        const pass = this._frameGraph.addPass(this.name);
+        const passUpdateMaterial = this._frameGraph.addPass(this.name);
 
-        pass.setExecuteFunc(() => {
+        passUpdateMaterial.setExecuteFunc(() => {
             this.camera.getTransformationMatrix().invertToRef(InvViewProjectionMatrix);
 
             this._renderLightingVolumeMaterial.setMatrix("invViewProjection", InvViewProjectionMatrix);

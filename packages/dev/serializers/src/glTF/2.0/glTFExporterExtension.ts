@@ -55,7 +55,8 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
 
     /**
      * Define this method to modify the default behavior when exporting a material
-     * @param material glTF material
+     * @param context The context when exporting the material
+     * @param node glTF material
      * @param babylonMaterial BabylonJS material
      * @returns nullable IMaterial promise
      */
@@ -63,7 +64,8 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
 
     /**
      * Define this method to return additional textures to export from a material
-     * @param material glTF material
+     * @param context The context when exporting the material
+     * @param node glTF material
      * @param babylonMaterial BabylonJS material
      * @returns List of textures
      */
