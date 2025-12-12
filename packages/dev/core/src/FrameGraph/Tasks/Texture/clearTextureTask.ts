@@ -118,7 +118,7 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
 
         pass.setRenderTarget(targetTextures);
         pass.setRenderTargetDepth(this.depthTexture);
-        pass.initialize(() => {
+        pass.setInitializeFunc(() => {
             const renderTargetWrapper = pass.frameGraphRenderTarget.renderTargetWrapper;
             if (renderTargetWrapper) {
                 renderTargetWrapper.disableAutomaticMSAAResolve = true;

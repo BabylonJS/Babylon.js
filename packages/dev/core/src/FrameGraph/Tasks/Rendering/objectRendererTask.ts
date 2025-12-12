@@ -424,7 +424,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
         pass.setRenderTarget(targetTextures);
         pass.setRenderTargetDepth(this.depthTexture);
-        pass.initialize(() => {
+        pass.setInitializeFunc(() => {
             // Note: we don't use pass.frameGraphRenderTarget.renderTargetWrapper for OIT but recreate our own render target wrapper because this.targetTexture may not be the first one of the wrapper in the geometry renderer task case
             this._rtForOrderIndependentTransparency = new FrameGraphRenderTarget(this.name + "_oitRT", this._frameGraph.textureManager, this.targetTexture, this.depthTexture);
         });

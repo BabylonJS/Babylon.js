@@ -362,7 +362,7 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         if (this._setRenderTargetDepth) {
             pass.setRenderTargetDepth(this.objectRendererTask.depthTexture);
         }
-        pass.initialize((context) => {
+        pass.setInitializeFunc((context) => {
             this.layer.bindTexturesForCompose = (effect: Effect) => {
                 for (let i = 0; i < this._blurY.length; i++) {
                     context.bindTextureHandle(effect, `textureSampler${i > 0 ? i + 1 : ""}`, this._blurY[i].outputTexture);

@@ -21,10 +21,10 @@ export class FrameGraphPass<T extends FrameGraphContext> implements IFrameGraphP
 
     /**
      * Initializes the pass.
-     * This function is called once before the first execution of the pass.
+     * This function is called once after the frame graph has been built
      * @param func The function to initialize the pass.
      */
-    public initialize(func: (context: T) => void) {
+    public setInitializeFunc(func: (context: T) => void) {
         this._initFunc = func;
     }
 

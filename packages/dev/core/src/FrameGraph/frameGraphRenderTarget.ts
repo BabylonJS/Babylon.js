@@ -63,6 +63,8 @@ export class FrameGraphRenderTarget {
                     );
                 }
 
+                texture.incrementReferences();
+
                 this._renderTargetWrapper.setTexture(texture, i, false);
             }
 
