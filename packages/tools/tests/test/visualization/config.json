@@ -3,7 +3,7 @@
     "tests": [
         {
             "title": "Gaussian Splatting Depth",
-            "playgroundId": "#V80DRL#11",
+            "playgroundId": "#V80DRL#12",
             "renderCount": 5,
             "referenceImage": "gsplat-depth.png"
         },

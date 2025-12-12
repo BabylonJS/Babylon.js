@@ -74,13 +74,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         this.backFaceCulling = false;
         this.shadowDepthWrapper = GaussianSplattingMaterial._MakeGaussianSplattingShadowDepthWrapper(scene!, this.shaderLanguage);
-        this.depthRenderMaterial = GaussianSplattingMaterial._MakeDepthRenderMaterial(scene!, this.shaderLanguage);
     }
 
-    /**
-     * TODO: make protected
-     */
-    public depthRenderMaterial: ShaderMaterial;
     /**
      * Point spread function (default 0.3). Can be overriden per GS material
      */
@@ -450,7 +445,13 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
     }
 
-    protected static _MakeDepthRenderMaterial(scene: Scene, shaderLanguage: ShaderLanguage): ShaderMaterial {
+    /**
+     * Create a depth rendering material for a Gaussian Splatting mesh
+     * @param scene scene it belongs to
+     * @param shaderLanguage GLSL or WGSL
+     * @returns depth rendering shader material
+     */
+    public makeDepthRenderingMaterial(scene: Scene, shaderLanguage: ShaderLanguage): ShaderMaterial {
         const shaderMaterial = new ShaderMaterial(
             "gaussianSplattingDepthRender",
             scene,
