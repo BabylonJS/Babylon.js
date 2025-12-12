@@ -1,4 +1,4 @@
-import type { GaussianSplattingMesh } from "core/Meshes";
+import type { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 
 /**
  * Options for loading Gaussian Splatting and PLY files
