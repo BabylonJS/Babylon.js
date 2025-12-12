@@ -11,7 +11,6 @@ import { Logger } from "core/Misc/logger";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
-import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import { ToHalfFloat } from "core/Misc/textureTools";
@@ -86,11 +85,6 @@ interface ICompressedPLYChunk {
     maxScale: Vector3;
     minColor: Vector3;
     maxColor: Vector3;
-}
-
-interface IPLYConversionBuffers {
-    buffer: ArrayBuffer;
-    sh?: [];
 }
 
 /**
