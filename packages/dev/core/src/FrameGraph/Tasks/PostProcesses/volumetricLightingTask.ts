@@ -9,11 +9,6 @@ import { FrameGraphObjectRendererTask } from "../Rendering/objectRendererTask";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-import "core/Shaders/volumetricLightingRenderVolume.vertex";
-import "core/Shaders/volumetricLightingRenderVolume.fragment";
-import "core/ShadersWGSL/volumetricLightingRenderVolume.vertex";
-import "core/ShadersWGSL/volumetricLightingRenderVolume.fragment";
-
 const InvViewProjectionMatrix = new Matrix();
 
 /**
@@ -185,6 +180,15 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
         this.phaseG = this._extinctionPhaseG.w;
         this.extinction = new Vector3(this.extinction.x, this.extinction.y, this.extinction.z);
         this.lightPower = this._lightPower;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    public override initAsync(): Promise<unknown> {
+        if (this._frameGraph.engine.isWebGPU) {
+            return Promise.all([import("../../../ShadersWGSL/volumetricLightingRenderVolume.vertex"), import("../../../ShadersWGSL/volumetricLightingRenderVolume.fragment")]);
+        }
+
+        return Promise.all([import("../../../Shaders/volumetricLightingRenderVolume.vertex"), import("../../../Shaders/volumetricLightingRenderVolume.fragment")]);
     }
 
     public override isReady() {
