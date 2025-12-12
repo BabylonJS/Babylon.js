@@ -250,9 +250,10 @@ export class DepthRenderer {
                 if (renderingMaterial === undefined && effectiveMesh.getClassName() === "GaussianSplattingMesh") {
                     const gsMaterial = effectiveMesh.material! as GaussianSplattingMaterial;
                     renderingMaterial = gsMaterial.makeDepthRenderingMaterial(this._scene, this._shaderLanguage);
-                    // one frame latency: effect will be ready not this frame but next one.
-                    // So, a test is added for a valid effect a few lines below this
                     this.setMaterialForRendering(effectiveMesh, renderingMaterial);
+                    if (!renderingMaterial.isReady()) {
+                        return;
+                    }
                 }
 
                 let drawWrapper = subMesh._getDrawWrapper();
@@ -265,10 +266,7 @@ export class DepthRenderer {
                     return;
                 }
 
-                const effect = drawWrapper.effect;
-                if (!effect) {
-                    return;
-                }
+                const effect = drawWrapper.effect!;
 
                 engine.enableEffect(drawWrapper);
 
