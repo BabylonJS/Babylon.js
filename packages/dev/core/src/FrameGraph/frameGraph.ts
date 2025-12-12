@@ -258,6 +258,10 @@ export class FrameGraph implements IDisposable {
                 task.onTexturesAllocatedObservable.notifyObservers(this._renderContext);
             }
 
+            for (const task of this._tasks) {
+                task._initializePasses();
+            }
+
             this._built = true;
 
             this.onBuildObservable.notifyObservers(this);

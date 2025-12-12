@@ -238,6 +238,21 @@ export abstract class FrameGraphTask {
         this.onAfterTaskExecute.notifyObservers(this);
     }
 
+    /** @internal */
+    public _initializePasses() {
+        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`, 2);
+
+        for (const pass of this._passes) {
+            pass._initialize();
+        }
+
+        for (const pass of this._passesDisabled) {
+            pass._initialize();
+        }
+
+        this._frameGraph.engine._debugPopGroup?.(2);
+    }
+
     private _checkSameRenderTarget(src: Nullable<Nullable<InternalTexture>[]>, dst: Nullable<Nullable<InternalTexture>[]>) {
         if (src === null || dst === null) {
             return src === dst;

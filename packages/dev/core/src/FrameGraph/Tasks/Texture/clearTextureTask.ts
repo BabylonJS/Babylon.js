@@ -118,15 +118,16 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
 
         pass.setRenderTarget(targetTextures);
         pass.setRenderTargetDepth(this.depthTexture);
+        pass.initialize(() => {
+            const renderTargetWrapper = pass.frameGraphRenderTarget.renderTargetWrapper;
+            if (renderTargetWrapper) {
+                renderTargetWrapper.disableAutomaticMSAAResolve = true;
+            }
+        });
         pass.setExecuteFunc((context) => {
             color.copyFrom(this.color);
             if (this.convertColorToLinearSpace) {
                 color.toLinearSpaceToRef(color);
-            }
-
-            const renderTargetWrapper = pass.frameGraphRenderTarget!.renderTargetWrapper;
-            if (renderTargetWrapper) {
-                renderTargetWrapper.disableAutomaticMSAAResolve = true;
             }
 
             context.clearAttachments(color, attachments, !!this.clearColor, !!this.clearDepth, !!this.clearStencil, this.stencilValue);
