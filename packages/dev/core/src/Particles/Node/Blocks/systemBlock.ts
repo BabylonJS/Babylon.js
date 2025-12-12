@@ -30,11 +30,11 @@ export class SystemBlock extends NodeParticleBlock {
         notifiers: { rebuild: true },
         embedded: true,
         options: [
-            { label: "OneOne", value: BaseParticleSystem.BLENDMODE_ONEONE },
-            { label: "Standard", value: BaseParticleSystem.BLENDMODE_STANDARD },
-            { label: "Add", value: BaseParticleSystem.BLENDMODE_ADD },
-            { label: "Multiply", value: BaseParticleSystem.BLENDMODE_MULTIPLY },
-            { label: "MultiplyAdd", value: BaseParticleSystem.BLENDMODE_MULTIPLYADD },
+            { label: "Blend Mode OneOne", value: BaseParticleSystem.BLENDMODE_ONEONE },
+            { label: "Blend Mode Standard", value: BaseParticleSystem.BLENDMODE_STANDARD },
+            { label: "Blend Mode Add", value: BaseParticleSystem.BLENDMODE_ADD },
+            { label: "Blend Mode Multiply", value: BaseParticleSystem.BLENDMODE_MULTIPLY },
+            { label: "Blend Mode MultiplyAdd", value: BaseParticleSystem.BLENDMODE_MULTIPLYADD },
         ],
     })
     public blendMode = BaseParticleSystem.BLENDMODE_ONEONE;
@@ -88,10 +88,10 @@ export class SystemBlock extends NodeParticleBlock {
         notifiers: { rebuild: true },
         embedded: true,
         options: [
-            { label: "All", value: Constants.PARTICLES_BILLBOARDMODE_ALL },
-            { label: "Y", value: Constants.PARTICLES_BILLBOARDMODE_Y },
-            { label: "Stretched", value: Constants.PARTICLES_BILLBOARDMODE_STRETCHED },
-            { label: "Stretched Local", value: Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL },
+            { label: "Billboard Mode All", value: Constants.PARTICLES_BILLBOARDMODE_ALL },
+            { label: "Billboard Mode Y", value: Constants.PARTICLES_BILLBOARDMODE_Y },
+            { label: "Billboard Mode Stretched", value: Constants.PARTICLES_BILLBOARDMODE_STRETCHED },
+            { label: "Billboard Mode Stretched Local", value: Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL },
         ],
     })
     public billBoardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
