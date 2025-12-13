@@ -200,7 +200,7 @@ export const PropertiesBar: FunctionComponent<PropertiesBarProps> = (props) => {
                 <>
                     <ToolbarDivider />
                     <div className={classes.section}>
-                        <Label size="small">MIP:</Label>
+                        <Label>MIP:</Label>
                         <Tooltip content="Mip Preview Up" relationship="label">
                             <ToolbarButton icon={<ChevronUpRegular />} disabled={mipLevel <= 0} onClick={() => setMipLevel(mipLevel - 1)} />
                         </Tooltip>

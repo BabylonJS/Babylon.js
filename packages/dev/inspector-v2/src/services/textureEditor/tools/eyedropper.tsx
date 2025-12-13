@@ -12,6 +12,7 @@ import { Color3 } from "core/Maths/math.color";
  */
 export const Eyedropper: TextureEditorToolProvider = {
     name: "Eyedropper",
+    order: 300,
     icon: () => <EyedropperRegular />,
     cursor: "crosshair",
     getTool: (context) => {

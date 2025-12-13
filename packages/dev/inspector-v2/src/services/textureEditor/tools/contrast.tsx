@@ -19,11 +19,18 @@ const useStyles = makeStyles({
         flexDirection: "column",
         gap: tokens.spacingVerticalXS,
     },
+    icon: {
+        rotate: "-90deg",
+    },
 });
 
 export const Contrast: TextureEditorToolProvider = {
     name: "Contrast/Exposure",
-    icon: () => <CircleHalfFillRegular />,
+    order: 500,
+    icon: () => {
+        const classes = useStyles();
+        return <CircleHalfFillRegular className={classes.icon} />;
+    },
     cursor: "crosshair",
     is3D: true,
     getTool: (context) => {

@@ -11,6 +11,7 @@ import { PointerEventTypes } from "core/Events/pointerEvents";
  */
 export const Floodfill: TextureEditorToolProvider = {
     name: "Floodfill",
+    order: 400,
     icon: () => <PaintBucketRegular />,
     cursor: "crosshair",
     getTool: (context) => {

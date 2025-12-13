@@ -5,7 +5,7 @@ import type { TextureEditorToolProvider } from "../../components/textureEditor/t
 import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
 
 import { TextureEditor } from "../../components/textureEditor/textureEditor";
-import { useObservableCollection } from "../../hooks/observableHooks";
+import { useOrderedObservableCollection } from "../../hooks/observableHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
 import { Contrast } from "./tools/contrast";
 import { Eyedropper } from "./tools/eyedropper";
@@ -39,7 +39,7 @@ export const TextureEditorServiceDefinition: ServiceDefinition<[ITextureEditorSe
                 const [, setTextureVersion] = useState(0);
                 return useMemo(
                     () => (props: { texture: BaseTexture }) => {
-                        const tools = useObservableCollection(toolsCollection);
+                        const tools = useOrderedObservableCollection(toolsCollection);
                         return <TextureEditor {...props} toolProviders={tools} onUpdate={() => setTextureVersion((version) => version + 1)} />;
                     },
                     []

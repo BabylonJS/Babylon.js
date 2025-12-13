@@ -12,6 +12,7 @@ import { PointerEventTypes } from "core/Events/pointerEvents";
  */
 export const RectangleSelect: TextureEditorToolProvider = {
     name: "Rectangle Select",
+    order: 100,
     icon: () => <SelectObjectRegular />,
     cursor: "crosshair",
     getTool: (context) => {

@@ -28,6 +28,7 @@ const useStyles = makeStyles({
 
 export const Paintbrush: TextureEditorToolProvider = {
     name: "Paintbrush",
+    order: 200,
     icon: () => <InkStrokeRegular />,
     cursor: "crosshair",
     getTool: (context) => {
