@@ -10,8 +10,8 @@ const numberOfWorkers = process.env.CIWORKERS ? +process.env.CIWORKERS : process
 
 export default defineConfig({
     // testDir: "./test/playwright",
-    /* Run tests in files in parallel */
-    fullyParallel: true,
+    /* Run tests in files not in parallel or half are skipped */
+    fullyParallel: false,
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,
     /* Retry on CI only */
