@@ -275,7 +275,10 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
         };
     }, [metadata, setMetadata]);
 
-    const tools = useMemo(() => toolProviders?.map((provider) => provider.getTool({ getParameters: getToolParameters })), [toolProviders, getToolParameters]);
+    const getToolParametersRef = useRef(getToolParameters);
+    getToolParametersRef.current = getToolParameters;
+
+    const tools = useMemo(() => toolProviders?.map((provider) => provider.getTool({ getParameters: () => getToolParametersRef.current() })), [toolProviders]);
 
     const changeTool = useCallback(
         (index: number) => {
