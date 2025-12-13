@@ -25,6 +25,7 @@ export const Contrast: TextureEditorToolProvider = {
     name: "Contrast/Exposure",
     icon: () => <CircleHalfFillRegular />,
     cursor: "crosshair",
+    is3D: true,
     getTool: (context) => {
         let _contrast = 0;
         let _exposure = 0;

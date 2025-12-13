@@ -1,4 +1,4 @@
-import { useState, type ComponentType } from "react";
+import { useMemo, useState, type ComponentType } from "react";
 
 import type { BaseTexture, IDisposable } from "core/index";
 import type { TextureEditorToolProvider } from "../../components/textureEditor/textureEditor";
@@ -7,8 +7,8 @@ import type { IService, ServiceDefinition } from "../../modularity/serviceDefini
 import { TextureEditor } from "../../components/textureEditor/textureEditor";
 import { useObservableCollection } from "../../hooks/observableHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
-import { RectangleSelect } from "./tools/rectangularSelect";
 import { Contrast } from "./tools/contrast";
+import { RectangleSelect } from "./tools/rectangularSelect";
 
 export const TextureEditorServiceIdentity = Symbol("TextureEditorService");
 
@@ -29,9 +29,14 @@ export const TextureEditorServiceDefinition: ServiceDefinition<[ITextureEditorSe
         return {
             addTool: (toolProvider: TextureEditorToolProvider) => toolsCollection.add(toolProvider),
             useTextureEditor: () => {
-                const tools = useObservableCollection(toolsCollection);
                 const [, setTextureVersion] = useState(0);
-                return (props: { texture: BaseTexture }) => <TextureEditor {...props} toolProviders={tools} onUpdate={() => setTextureVersion((version) => version + 1)} />;
+                return useMemo(
+                    () => (props: { texture: BaseTexture }) => {
+                        const tools = useObservableCollection(toolsCollection);
+                        return <TextureEditor {...props} toolProviders={tools} onUpdate={() => setTextureVersion((version) => version + 1)} />;
+                    },
+                    []
+                );
             },
         };
     },

@@ -370,7 +370,7 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
     const hasAlpha = texture.textureFormat === -1 || texture.textureFormat === Constants.TEXTUREFORMAT_RGBA;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const CurrentToolSettings = tools[activeToolIndex]?.settingsComponent;
+    const CurrentToolSettings = useMemo(() => tools[activeToolIndex]?.settingsComponent, [tools, activeToolIndex]);
 
     return (
         <div className={classes.textureEditor}>

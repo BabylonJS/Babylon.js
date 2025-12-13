@@ -58,8 +58,8 @@ import { PickingServiceDefinition } from "./services/pickingService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
-import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
+import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 
 export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & { autoResizeEngine?: boolean };
 
