@@ -7,6 +7,7 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 const useStyles = makeStyles({
     statusBar: {
         display: "flex",
+        backgroundColor: tokens.colorNeutralBackground1,
         alignItems: "center",
         justifyContent: "space-between",
         padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalM}`,
@@ -25,17 +26,17 @@ const useStyles = makeStyles({
     },
 });
 
-interface IStatusBarProps {
+type StatusBarProps = {
     texture: BaseTexture;
     mipLevel: number;
-}
+};
 
 /**
  * Displays status information about the texture
  * @param props - The status bar properties
  * @returns The status bar component
  */
-export const StatusBar: FunctionComponent<IStatusBarProps> = (props) => {
+export const StatusBar: FunctionComponent<StatusBarProps> = (props) => {
     const { texture, mipLevel } = props;
     const classes = useStyles();
 

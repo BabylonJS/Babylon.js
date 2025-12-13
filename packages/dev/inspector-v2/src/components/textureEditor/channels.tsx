@@ -7,7 +7,7 @@ import { EyeOffRegular, EyeRegular, LockClosedRegular, LockOpenRegular } from "@
 /**
  * Represents a color channel in the texture editor
  */
-export interface IChannel {
+export type Channel = {
     /** Whether the channel is visible */
     visible: boolean;
     /** Whether the channel is editable */
@@ -16,14 +16,17 @@ export interface IChannel {
     name: string;
     /** Channel identifier */
     id: "R" | "G" | "B" | "A";
-}
+};
 
 const useStyles = makeStyles({
     channelsBar: {
         display: "flex",
         flexDirection: "column",
+        backgroundColor: tokens.colorNeutralBackground1,
         padding: tokens.spacingVerticalXS,
         gap: tokens.spacingVerticalXS,
+        borderRadius: tokens.borderRadiusMedium,
+        boxShadow: tokens.shadow8,
     },
     channel: {
         display: "flex",
@@ -55,8 +58,8 @@ const useStyles = makeStyles({
 });
 
 interface IChannelsBarProps {
-    channels: IChannel[];
-    setChannels: (channels: IChannel[]) => void;
+    channels: Channel[];
+    setChannels: (channels: Channel[]) => void;
 }
 
 /**

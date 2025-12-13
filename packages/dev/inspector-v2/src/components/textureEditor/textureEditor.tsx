@@ -2,7 +2,7 @@ import type { ComponentType, FunctionComponent } from "react";
 
 import type { BaseTexture, ISize, PointerInfo, Scene, Vector2 } from "core/index";
 import type { IPixelData } from "./canvasManager";
-import type { IChannel } from "./channels";
+import type { Channel } from "./channels";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -134,7 +134,7 @@ const useStyles = makeStyles({
         flexDirection: "column",
         height: "100%",
         width: "100%",
-        backgroundColor: tokens.colorNeutralBackground1,
+        backgroundColor: tokens.colorNeutralBackground3,
         color: tokens.colorNeutralForeground1,
         overflow: "hidden",
     },
@@ -142,6 +142,7 @@ const useStyles = makeStyles({
         display: "flex",
         flex: 1,
         overflow: "hidden",
+        position: "relative",
     },
     canvasContainer: {
         flex: 1,
@@ -162,16 +163,22 @@ const useStyles = makeStyles({
     sidebarLeft: {
         display: "flex",
         flexDirection: "column",
+        position: "absolute",
+        left: tokens.spacingHorizontalM,
+        top: tokens.spacingVerticalM,
     },
     sidebarRight: {
         display: "flex",
         flexDirection: "column",
+        position: "absolute",
+        right: tokens.spacingHorizontalM,
+        top: tokens.spacingVerticalM,
     },
     toolSettingsContainer: {
         position: "absolute",
-        right: tokens.spacingHorizontalM,
+        left: tokens.spacingHorizontalM,
         bottom: tokens.spacingVerticalM,
-        backgroundColor: tokens.colorNeutralBackground3,
+        backgroundColor: tokens.colorNeutralBackground1,
         borderRadius: tokens.borderRadiusMedium,
         padding: tokens.spacingVerticalS,
         boxShadow: tokens.shadow8,
@@ -216,8 +223,8 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
             y2: -1,
         },
     });
-    const [channels, setChannels] = useState<IChannel[]>(() => {
-        const baseChannels: IChannel[] = [
+    const [channels, setChannels] = useState<Channel[]>(() => {
+        const baseChannels: Channel[] = [
             { name: "Red", visible: true, editable: true, id: "R" },
             { name: "Green", visible: true, editable: true, id: "G" },
             { name: "Blue", visible: true, editable: true, id: "B" },
@@ -391,6 +398,16 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
                 size={canvasManagerRef.current?.size || size}
             />
             <div className={classes.mainContent}>
+                <div className={classes.canvasContainer} style={{ cursor }}>
+                    <canvas ref={uiCanvasRef} className={classes.canvasUI} tabIndex={1} />
+                    <canvas ref={canvas2DRef} className={classes.canvas2D} />
+                    <canvas ref={canvas3DRef} className={classes.canvas3D} />
+                </div>
+                {CurrentToolSettings && (
+                    <div className={classes.toolSettingsContainer}>
+                        <CurrentToolSettings />
+                    </div>
+                )}
                 {!texture.isCube && (
                     <div className={classes.sidebarLeft}>
                         <ToolBar
@@ -403,16 +420,6 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
                         />
                     </div>
                 )}
-                <div className={classes.canvasContainer} style={{ cursor }}>
-                    <canvas ref={uiCanvasRef} className={classes.canvasUI} tabIndex={1} />
-                    <canvas ref={canvas2DRef} className={classes.canvas2D} />
-                    <canvas ref={canvas3DRef} className={classes.canvas3D} />
-                    {CurrentToolSettings && (
-                        <div className={classes.toolSettingsContainer}>
-                            <CurrentToolSettings />
-                        </div>
-                    )}
-                </div>
                 <div className={classes.sidebarRight}>
                     <ChannelsBar channels={channels} setChannels={setChannels} />
                 </div>

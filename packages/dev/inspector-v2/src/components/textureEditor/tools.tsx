@@ -12,8 +12,11 @@ const useStyles = makeStyles({
     toolbar: {
         display: "flex",
         flexDirection: "column",
+        backgroundColor: tokens.colorNeutralBackground1,
         padding: tokens.spacingVerticalXS,
         gap: tokens.spacingVerticalXS,
+        borderRadius: tokens.borderRadiusMedium,
+        boxShadow: tokens.shadow8,
     },
     toolsSection: {
         display: "flex",
@@ -36,21 +39,21 @@ const useStyles = makeStyles({
     },
 });
 
-interface IToolBarProps {
+type ToolBarProps = {
     tools: readonly { name: string; icon: ComponentType }[];
     changeTool: (toolIndex: number) => void;
     activeToolIndex: number;
     metadata: IMetadata;
     setMetadata: (data: any) => void;
     hasAlpha: boolean;
-}
+};
 
 /**
  * Toolbar component for texture editing tools
  * @param props - The toolbar properties
  * @returns The toolbar component
  */
-export const ToolBar: FunctionComponent<IToolBarProps> = (props) => {
+export const ToolBar: FunctionComponent<ToolBarProps> = (props) => {
     const { tools, changeTool, activeToolIndex, metadata, setMetadata, hasAlpha } = props;
 
     const classes = useStyles();

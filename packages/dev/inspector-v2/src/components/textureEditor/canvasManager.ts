@@ -28,7 +28,7 @@ import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 
 import { ApplyChannelsToTextureDataAsync } from "../../misc/textureTools";
 
-import type { IChannel } from "./channels";
+import type { Channel } from "./channels";
 import type { IMetadata } from "./textureEditor";
 
 import { canvasShader } from "./canvasShader";
@@ -78,7 +78,7 @@ export class TextureCanvasManager {
     private _3DCanvasTexture: HtmlElementTexture;
     private _3DScene: Scene;
 
-    private _channels: IChannel[] = [];
+    private _channels: Channel[] = [];
     private _face: number = 0;
     private _mipLevel: number = 0;
 
@@ -173,7 +173,7 @@ export class TextureCanvasManager {
         };
         this._engine = new Engine(this._uiCanvas, true);
         this._scene = new Scene(this._engine, { virtual: true });
-        this._scene.clearColor = new Color4(0.11, 0.11, 0.11, 1.0);
+        this._scene.clearColor = new Color4(0, 0, 0, 0);
 
         this._camera = new FreeCamera("camera", new Vector3(0, 0, -1), this._scene);
         this._camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
@@ -498,7 +498,7 @@ export class TextureCanvasManager {
         this._channelsTexture.update(true);
     }
 
-    public set channels(channels: IChannel[]) {
+    public set channels(channels: Channel[]) {
         // Determine if we need to re-render the texture. This is an expensive operation, so we should only do it if channel visibility has changed.
         let needsRender = false;
         if (channels.length !== this._channels.length) {

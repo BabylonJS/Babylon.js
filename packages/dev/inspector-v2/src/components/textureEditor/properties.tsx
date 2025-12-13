@@ -11,6 +11,7 @@ import type { IPixelData } from "./canvasManager";
 const useStyles = makeStyles({
     propertiesBar: {
         display: "flex",
+        backgroundColor: tokens.colorNeutralBackground1,
         alignItems: "center",
         padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
         gap: tokens.spacingHorizontalS,
@@ -57,7 +58,7 @@ const useStyles = makeStyles({
     },
 });
 
-interface IPropertiesBarProps {
+type PropertiesBarProps = {
     texture: BaseTexture;
     size: ISize;
     saveTexture: () => void;
@@ -69,7 +70,7 @@ interface IPropertiesBarProps {
     uploadTexture: (file: File) => void;
     mipLevel: number;
     setMipLevel: (mipLevel: number) => void;
-}
+};
 
 const PixelDataDisplay: FunctionComponent<{ label: string; value: number | undefined }> = ({ label, value }) => {
     const classes = useStyles();
@@ -88,7 +89,7 @@ const CubeFaces = ["+X", "-X", "+Y", "-Y", "+Z", "-Z"];
  * @param props - The properties bar properties
  * @returns The properties bar component
  */
-export const PropertiesBar: FunctionComponent<IPropertiesBarProps> = (props) => {
+export const PropertiesBar: FunctionComponent<PropertiesBarProps> = (props) => {
     const { texture, size, saveTexture, pixelData, face, setFace, resetTexture, resizeTexture, uploadTexture, mipLevel, setMipLevel } = props;
 
     const classes = useStyles();
