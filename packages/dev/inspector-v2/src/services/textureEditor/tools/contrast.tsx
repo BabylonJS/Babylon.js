@@ -76,16 +76,16 @@ export const Contrast: TextureEditorToolProvider = {
         }
 
         return {
-            activate() {
+            activate: () => {
                 _contrast = 0;
                 _exposure = 0;
                 setExposure(_exposure);
                 setContrast(_contrast);
             },
-            deactivate() {
+            deactivate: () => {
                 // No cleanup needed
             },
-            reset() {
+            reset: () => {
                 setExposure(0);
                 setContrast(0);
             },

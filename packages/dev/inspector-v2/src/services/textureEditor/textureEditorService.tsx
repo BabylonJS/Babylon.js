@@ -8,6 +8,9 @@ import { TextureEditor } from "../../components/textureEditor/textureEditor";
 import { useObservableCollection } from "../../hooks/observableHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
 import { Contrast } from "./tools/contrast";
+import { Eyedropper } from "./tools/eyedropper";
+import { Floodfill } from "./tools/floodfill";
+import { Paintbrush } from "./tools/paintbrush";
 import { RectangleSelect } from "./tools/rectangularSelect";
 
 export const TextureEditorServiceIdentity = Symbol("TextureEditorService");
@@ -23,7 +26,11 @@ export const TextureEditorServiceDefinition: ServiceDefinition<[ITextureEditorSe
     factory: () => {
         const toolsCollection = new ObservableCollection<TextureEditorToolProvider>();
 
+        // Add the default tools.
         toolsCollection.add(RectangleSelect);
+        toolsCollection.add(Paintbrush);
+        toolsCollection.add(Eyedropper);
+        toolsCollection.add(Floodfill);
         toolsCollection.add(Contrast);
 
         return {
