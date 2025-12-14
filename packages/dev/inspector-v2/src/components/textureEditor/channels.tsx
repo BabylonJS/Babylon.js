@@ -1,6 +1,6 @@
 import type { FunctionComponent } from "react";
-import { useCallback } from "react";
 
+import { useCallback } from "react";
 import { makeStyles, tokens, ToggleButton, Tooltip, Body1, mergeClasses } from "@fluentui/react-components";
 import { EyeOffRegular, EyeRegular, LockClosedRegular, LockOpenRegular } from "@fluentui/react-icons";
 
@@ -57,17 +57,17 @@ const useStyles = makeStyles({
     },
 });
 
-interface IChannelsBarProps {
+type ChannelsBarProps = {
     channels: Channel[];
     setChannels: (channels: Channel[]) => void;
-}
+};
 
 /**
  * Displays channel visibility and editability controls
  * @param props - The channels bar properties
  * @returns The channels bar component
  */
-export const ChannelsBar: FunctionComponent<IChannelsBarProps> = (props) => {
+export const ChannelsBar: FunctionComponent<ChannelsBarProps> = (props) => {
     const { channels, setChannels } = props;
     const classes = useStyles();
 

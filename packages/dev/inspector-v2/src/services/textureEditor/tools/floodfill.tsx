@@ -43,9 +43,7 @@ export const Floodfill: TextureEditorToolProvider = {
                 });
             },
             deactivate: () => {
-                if (pointerObserver) {
-                    context.getParameters().scene.onPointerObservable.remove(pointerObserver);
-                }
+                pointerObserver?.remove();
             },
         };
     },

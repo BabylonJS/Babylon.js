@@ -1,12 +1,11 @@
 import type { FunctionComponent } from "react";
-import { useCallback, useState, useRef, useEffect } from "react";
 
 import type { BaseTexture, ISize } from "core/index";
-
-import { makeStyles, tokens, Toolbar, ToolbarButton, ToolbarDivider, Tooltip, Input, Label } from "@fluentui/react-components";
-import { ArrowResetRegular, ArrowUploadRegular, SaveRegular, ResizeRegular, ChevronUpRegular, ChevronDownRegular } from "@fluentui/react-icons";
-
 import type { IPixelData } from "./canvasManager";
+
+import { Input, Label, makeStyles, tokens, Toolbar, ToolbarButton, ToolbarDivider, Tooltip } from "@fluentui/react-components";
+import { ArrowResetRegular, ArrowUploadRegular, ChevronDownRegular, ChevronUpRegular, ResizeRegular, SaveRegular } from "@fluentui/react-icons";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const useStyles = makeStyles({
     propertiesBar: {
@@ -82,7 +81,7 @@ const PixelDataDisplay: FunctionComponent<{ label: string; value: number | undef
     );
 };
 
-const CubeFaces = ["+X", "-X", "+Y", "-Y", "+Z", "-Z"];
+const CubeFaces = ["+X", "-X", "+Y", "-Y", "+Z", "-Z"] as const;
 
 /**
  * Properties bar component showing texture info and actions
@@ -204,7 +203,7 @@ export const PropertiesBar: FunctionComponent<PropertiesBarProps> = (props) => {
                         <Tooltip content="Mip Preview Up" relationship="label">
                             <ToolbarButton icon={<ChevronUpRegular />} disabled={mipLevel <= 0} onClick={() => setMipLevel(mipLevel - 1)} />
                         </Tooltip>
-                        <span>{mipLevel}</span>
+                        <Label>{mipLevel}</Label>
                         <Tooltip content="Mip Preview Down" relationship="label">
                             <ToolbarButton icon={<ChevronDownRegular />} disabled={mipLevel >= maxLevels} onClick={() => setMipLevel(mipLevel + 1)} />
                         </Tooltip>

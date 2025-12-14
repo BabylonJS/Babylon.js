@@ -1,12 +1,11 @@
 import type { ComponentType, FunctionComponent } from "react";
+import type { IMetadata } from "./textureEditor";
+
+import { makeStyles, ToggleButton, tokens, Tooltip } from "@fluentui/react-components";
 import { useCallback } from "react";
 
-import { makeStyles, tokens, Tooltip, ToggleButton } from "@fluentui/react-components";
 import { Color3, Color4 } from "core/Maths/math.color";
-
 import { ColorPickerPopup } from "shared-ui-components/fluent/primitives/colorPicker";
-
-import type { IMetadata } from "./textureEditor";
 
 const useStyles = makeStyles({
     toolbar: {

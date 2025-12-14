@@ -50,9 +50,7 @@ export const Eyedropper: TextureEditorToolProvider = {
                 isPicking = false;
             },
             deactivate: () => {
-                if (pointerObserver) {
-                    context.getParameters().scene.onPointerObservable.remove(pointerObserver);
-                }
+                pointerObserver?.remove();
             },
         };
     },

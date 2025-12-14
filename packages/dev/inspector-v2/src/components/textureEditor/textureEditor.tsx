@@ -124,8 +124,6 @@ export interface IMetadata {
         /** Bottom edge of selection */
         y2: number;
     };
-    /** Allow additional tool-specific metadata */
-    [key: string]: any;
 }
 
 const useStyles = makeStyles({
@@ -263,7 +261,7 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
         });
     }, []);
 
-    const getToolParameters = useCallback((): IToolParameters => {
+    const getToolParameters = (): IToolParameters => {
         const manager = canvasManagerRef.current!;
         return {
             scene: manager.scene,
@@ -280,8 +278,7 @@ export const TextureEditor: FunctionComponent<TextureEditorProps> = (props) => {
             getMouseCoordinates: (pointerInfo: PointerInfo) => manager.getMouseCoordinates(pointerInfo),
             interactionEnabled: () => manager.toolInteractionEnabled(),
         };
-    }, [metadata, setMetadata]);
-
+    };
     const getToolParametersRef = useRef(getToolParameters);
     getToolParametersRef.current = getToolParameters;
 

@@ -15,8 +15,20 @@ import { RectangleSelect } from "./tools/rectangularSelect";
 
 export const TextureEditorServiceIdentity = Symbol("TextureEditorService");
 
+/**
+ * Allows tools to be added to the texture editor, and also exposes a React component that is the texture editor with all the tools configured.
+ */
 export interface ITextureEditorService extends IService<typeof TextureEditorServiceIdentity> {
+    /**
+     * Adds a new tool to the texture editor.
+     * @param toolProvider A provider that can create instances of the tool.
+     * @returns A disposable that removes the tool from the texture editor when disposed.
+     */
     addTool(toolProvider: TextureEditorToolProvider): IDisposable;
+
+    /**
+     * The texture editor component with all the registered tools.
+     */
     readonly component: ComponentType<TextureEditorProps>;
 }
 

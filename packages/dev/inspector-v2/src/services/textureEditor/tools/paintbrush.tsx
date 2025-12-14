@@ -139,9 +139,7 @@ export const Paintbrush: TextureEditorToolProvider = {
             },
             deactivate: () => {
                 isPainting = false;
-                if (pointerObserver) {
-                    context.getParameters().scene.onPointerObservable.remove(pointerObserver);
-                }
+                pointerObserver?.remove();
             },
             settingsComponent: () => {
                 const classes = useStyles();

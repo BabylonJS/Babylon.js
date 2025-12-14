@@ -78,9 +78,7 @@ export const RectangleSelect: TextureEditorToolProvider = {
             },
             deactivate() {
                 isSelecting = false;
-                if (pointerObserver) {
-                    context.getParameters().scene.onPointerObservable.remove(pointerObserver);
-                }
+                pointerObserver?.remove();
             },
         };
     },

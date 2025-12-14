@@ -1,39 +1,25 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Engine } from "core/Engines/engine";
-import { Scene } from "core/scene";
-import { Vector3, Vector2 } from "core/Maths/math.vector";
-import { Color4, Color3 } from "core/Maths/math.color";
-import { FreeCamera } from "core/Cameras/freeCamera";
-import type { Nullable } from "core/types";
-import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
-import type { Mesh } from "core/Meshes/mesh";
-import { Camera } from "core/Cameras/camera";
-
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { HtmlElementTexture } from "core/Materials/Textures/htmlElementTexture";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
-import { Texture } from "core/Materials/Textures/texture";
-import type { RawCubeTexture } from "core/Materials/Textures/rawCubeTexture";
-import type { CubeTexture } from "core/Materials/Textures/cubeTexture";
-import { ShaderMaterial } from "core/Materials/shaderMaterial";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-
-import type { ISize } from "core/Maths/math.size";
-import { Tools } from "core/Misc/tools";
-
-import type { PointerInfo } from "core/Events/pointerEvents";
-import { PointerEventTypes } from "core/Events/pointerEvents";
-import { KeyboardEventTypes } from "core/Events/keyboardEvents";
-
-import { ApplyChannelsToTextureDataAsync } from "../../misc/textureTools";
-
+import type { BaseTexture, CubeTexture, InternalTexture, ISize, IWheelEvent, Mesh, Nullable, PointerInfo, RawCubeTexture } from "core/index";
 import type { Channel } from "./channels";
 import type { IMetadata } from "./textureEditor";
 
+import { Camera } from "core/Cameras/camera";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { Engine } from "core/Engines/engine";
+import { KeyboardEventTypes } from "core/Events/keyboardEvents";
+import { PointerEventTypes } from "core/Events/pointerEvents";
+import { HtmlElementTexture } from "core/Materials/Textures/htmlElementTexture";
+import { Texture } from "core/Materials/Textures/texture";
+import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Color3, Color4 } from "core/Maths/math.color";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
+import { Tools } from "core/Misc/tools";
+import { Scene } from "core/scene";
+import { ApplyChannelsToTextureDataAsync } from "../../misc/textureTools";
 import { canvasShader } from "./canvasShader";
-
-import type { IWheelEvent } from "core/Events/deviceInputEvents";
 
 export type CanvasManagerTool = {
     readonly is3D: boolean;
@@ -52,67 +38,67 @@ export interface IPixelData {
 }
 
 export class TextureCanvasManager {
-    private _engine: Engine;
-    private _scene: Scene;
-    private _camera: FreeCamera;
-    private _cameraPos: Vector2;
+    private readonly _engine: Engine;
+    private readonly _scene: Scene;
+    private readonly _camera: FreeCamera;
+    private readonly _cameraPos: Vector2;
 
     private _scale: number;
     private _isPanning = false;
     private _mouseX = 0;
     private _mouseY = 0;
 
-    private _uiCanvas: HTMLCanvasElement;
+    private readonly _uiCanvas: HTMLCanvasElement;
 
     private _size: ISize = { width: 0, height: 0 };
 
     /** The canvas we paint onto using the canvas API */
-    private _2DCanvas: HTMLCanvasElement;
+    private readonly _2DCanvas: HTMLCanvasElement;
     /** The canvas we apply post processes to */
-    private _3DCanvas: HTMLCanvasElement;
+    private readonly _3DCanvas: HTMLCanvasElement;
     /** The canvas which handles channel filtering */
-    private _channelsTexture: HtmlElementTexture;
+    private readonly _channelsTexture: HtmlElementTexture;
 
-    private _3DEngine: Engine;
-    private _3DPlane: Mesh;
-    private _3DCanvasTexture: HtmlElementTexture;
-    private _3DScene: Scene;
+    private readonly _3DEngine: Engine;
+    private readonly _3DPlane: Mesh;
+    private readonly _3DCanvasTexture: HtmlElementTexture;
+    private readonly _3DScene: Scene;
 
     private _channels: Channel[] = [];
-    private _face: number = 0;
-    private _mipLevel: number = 0;
+    private _face = 0;
+    private _mipLevel = 0;
 
     /** The texture from the original engine that we invoked the editor on */
-    private _originalTexture: BaseTexture;
+    private readonly _originalTexture: BaseTexture;
     /** This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
     private _target: Nullable<HtmlElementTexture | RawCubeTexture> = null;
-    private _originalTextureProperties: {
+    private readonly _originalTextureProperties: {
         _texture: Nullable<InternalTexture>;
         url: Nullable<string>;
         _forceSerialize: boolean;
     };
     /** Keeps track of whether we have modified the texture */
-    private _didEdit: boolean = false;
+    private _didEdit = false;
 
     private _plane: Nullable<Mesh> = null;
-    private _planeMaterial: ShaderMaterial;
+    private readonly _planeMaterial: ShaderMaterial;
 
     /** Tracks which keys are currently pressed */
-    private _keyMap: any = {};
+    private _keyMap = new Map<string, boolean>();
     /** Tracks which mouse buttons are currently pressed */
     private _buttonsPressed = 0;
 
-    private readonly ZOOM_MOUSE_SPEED: number = 0.001;
-    private readonly ZOOM_KEYBOARD_SPEED: number = 0.4;
-    private readonly ZOOM_IN_KEY: string = "+";
-    private readonly ZOOM_OUT_KEY: string = "-";
+    private readonly ZOOM_MOUSE_SPEED = 0.001;
+    private readonly ZOOM_KEYBOARD_SPEED = 0.4;
+    private readonly ZOOM_IN_KEY = "+";
+    private readonly ZOOM_OUT_KEY = "-";
 
-    private readonly PAN_SPEED: number = 0.003;
+    private readonly PAN_SPEED = 0.003;
     private readonly PAN_KEY = "Space";
 
-    private readonly MIN_SCALE: number = 0.01;
-    private readonly GRID_SCALE: number = 0.047;
-    private readonly MAX_SCALE: number = 10;
+    private readonly MIN_SCALE = 0.01;
+    private readonly GRID_SCALE = 0.047;
+    private readonly MAX_SCALE = 10;
 
     private readonly SELECT_ALL_KEY = "KeyA";
     private readonly SAVE_KEY = "KeyS";
@@ -127,19 +113,19 @@ export class TextureCanvasManager {
     private _setPixelData: (pixelData: IPixelData) => void;
     private _setMipLevel: (mipLevel: number) => void;
 
-    private _window: Window;
+    private readonly _window: Window;
 
     private _metadata: IMetadata;
 
-    private _editing3D: boolean = false;
+    private _editing3D = false;
 
-    private _onUpdate: () => void;
+    private readonly _onUpdate: () => void;
     private _setMetadata: (metadata: any) => void;
 
     private _imageData: Nullable<Uint8Array | Uint8ClampedArray> = null;
-    private _canPush: boolean = true;
-    private _shouldPush: boolean = false;
-    private _paintCanvas: HTMLCanvasElement;
+    private _canPush = true;
+    private _shouldPush = false;
+    private readonly _paintCanvas: HTMLCanvasElement;
 
     public constructor(
         texture: BaseTexture,
@@ -229,7 +215,7 @@ export class TextureCanvasManager {
         }
 
         this._window.addEventListener("keydown", (evt) => {
-            this._keyMap[evt.code] = true;
+            this._keyMap.set(evt.code, true);
             if (evt.code === this.SELECT_ALL_KEY && evt.ctrlKey) {
                 this._setMetadata({
                     select: {
@@ -262,7 +248,7 @@ export class TextureCanvasManager {
         });
 
         this._window.addEventListener("keyup", (evt) => {
-            this._keyMap[evt.code] = false;
+            this._keyMap.set(evt.code, false);
         });
 
         this._engine.runRenderLoop(() => {
@@ -293,7 +279,7 @@ export class TextureCanvasManager {
             const leftButtonPressed = pointerInfo.event.buttons & 1;
             const middleButtonPressed = pointerInfo.event.buttons & 4;
             if (!this._isPanning) {
-                if ((leftButtonPressed && !(this._buttonsPressed & 1) && this._keyMap[this.PAN_KEY]) || middleButtonPressed) {
+                if ((leftButtonPressed && !(this._buttonsPressed & 1) && this._keyMap.get(this.PAN_KEY)) || middleButtonPressed) {
                     this._isPanning = true;
                     this._mouseX = pointerInfo.event.x;
                     this._mouseY = pointerInfo.event.y;
@@ -301,7 +287,7 @@ export class TextureCanvasManager {
                 if (middleButtonPressed) {
                     this._isPanning = true;
                 }
-            } else if ((!leftButtonPressed || !this._keyMap[this.PAN_KEY]) && !middleButtonPressed) {
+            } else if ((!leftButtonPressed || !this._keyMap.get(this.PAN_KEY)) && !middleButtonPressed) {
                 this._isPanning = false;
             }
             switch (pointerInfo.type) {
@@ -341,7 +327,7 @@ export class TextureCanvasManager {
         this._scene.onKeyboardObservable.add((kbInfo) => {
             switch (kbInfo.type) {
                 case KeyboardEventTypes.KEYDOWN:
-                    this._keyMap[kbInfo.event.key] = true;
+                    this._keyMap.set(kbInfo.event.key, true);
                     switch (kbInfo.event.key) {
                         case this.ZOOM_IN_KEY:
                             this._scale += this.ZOOM_KEYBOARD_SPEED * this._scale;
@@ -352,7 +338,7 @@ export class TextureCanvasManager {
                     }
                     break;
                 case KeyboardEventTypes.KEYUP:
-                    this._keyMap[kbInfo.event.key] = false;
+                    this._keyMap.set(kbInfo.event.key, false);
                     break;
             }
         });
@@ -719,7 +705,7 @@ export class TextureCanvasManager {
     }
 
     public toolInteractionEnabled() {
-        return !(this._keyMap[this.PAN_KEY] || this._isPanning);
+        return !(this._keyMap.get(this.PAN_KEY) || this._isPanning);
     }
 
     public dispose() {
