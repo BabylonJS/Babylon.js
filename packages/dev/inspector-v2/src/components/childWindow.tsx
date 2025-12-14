@@ -123,39 +123,46 @@ export function useChildWindow(key?: string) {
                 }
 
                 // When the child window is closed for any reason, transition back to a closed state.
-                childWindow.addEventListener(
-                    "unload",
-                    () => {
-                        setWindowState(undefined);
-                        setOptions(undefined);
-
-                        if (storageKey) {
-                            localStorage.setItem(
-                                storageKey,
-                                JSON.stringify({
-                                    left: childWindow.screenX,
-                                    top: childWindow.screenY,
-                                    width: childWindow.innerWidth,
-                                    height: childWindow.innerHeight,
-                                })
-                            );
-                        }
-                    },
-                    { once: true }
-                );
+                const onChildWindowUnload = () => {
+                    setWindowState(undefined);
+                    setOptions(undefined);
+                };
+                childWindow.addEventListener("unload", onChildWindowUnload, { once: true });
+                disposeActions.push(() => childWindow.removeEventListener("unload", onChildWindowUnload));
 
                 // If the main window closes, close any open child windows as well (don't leave them orphaned).
-                const onParentWindowUnload = () => childWindow.close();
-                window.addEventListener("unload", onParentWindowUnload);
+                const onParentWindowUnload = () => {
+                    childWindow.close();
+                };
+                window.addEventListener("unload", onParentWindowUnload, { once: true });
                 disposeActions.push(() => window.removeEventListener("unload", onParentWindowUnload));
+
+                // On dispose, close the child window.
+                disposeActions.push(() => childWindow.close());
+
+                // On dispose, save the window bounds.
+                disposeActions.push(() => {
+                    if (storageKey) {
+                        localStorage.setItem(
+                            storageKey,
+                            JSON.stringify({
+                                left: childWindow.screenX,
+                                top: childWindow.screenY,
+                                width: childWindow.innerWidth,
+                                height: childWindow.innerHeight,
+                            })
+                        );
+                    }
+                });
             } else {
                 // If creating a child window failed (e.g. popup blocked), then just revert to closed mode.
                 setOptions(undefined);
             }
-            disposeActions.push(() => childWindow?.close());
         }
 
-        return () => disposeActions.reverse().forEach((dispose) => dispose());
+        return () => {
+            disposeActions.reverse().forEach((dispose) => dispose());
+        };
     }, [options]);
 
     const component = useMemo<FunctionComponent<PropsWithChildren>>(() => {
