@@ -41,7 +41,7 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
             content: [
                 {
                     section: "Preview",
-                    component: ({ context }) => <BaseTexturePreviewProperties texture={context} textureEditorService={textureEditorService} />,
+                    component: ({ context }) => <BaseTexturePreviewProperties texture={context} textureEditor={textureEditorService.component} />,
                 },
                 {
                     section: "General",

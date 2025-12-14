@@ -1,10 +1,11 @@
-import type { FunctionComponent } from "react";
+import type { ComponentType, FunctionComponent } from "react";
 
 import type { BaseTexture } from "core/index";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import type { ITextureEditorService } from "../../../services/textureEditor/textureEditorService";
+import type { TextureEditorProps } from "../../textureEditor/textureEditor";
+import type { TexturePreviewImperativeRef } from "./texturePreview";
 
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 
 import { Constants } from "core/Engines/constants";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
@@ -25,11 +26,9 @@ import { BoundProperty } from "../boundProperty";
 import { FindTextureFormat, FindTextureType } from "./textureFormatUtils";
 import { TexturePreview } from "./texturePreview";
 
-export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseTexture; textureEditorService: ITextureEditorService }> = (props) => {
-    const {
-        texture,
-        textureEditorService: { useTextureEditor },
-    } = props;
+export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseTexture; textureEditor: ComponentType<TextureEditorProps> }> = (props) => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { texture, textureEditor: TextureEditor } = props;
 
     const isUpdatable = texture instanceof Texture || texture instanceof CubeTexture;
 
@@ -66,13 +65,13 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
         [texture]
     );
 
+    const texturePreviewImperativeRef = useRef<TexturePreviewImperativeRef>(null);
+
     const childWindow = useChildWindow("Texture Editor");
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const TextureEditor = useTextureEditor();
 
     return (
         <>
-            <TexturePreview texture={texture} width={256} height={256} />
+            <TexturePreview imperativeRef={texturePreviewImperativeRef} texture={texture} width={256} height={256} />
             {/* TODO: This should probably be dynamically fetching a list of supported texture extensions. */}
             {isUpdatable && (
                 <FileUploadLine
@@ -87,7 +86,7 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
             )}
             <ButtonLine label="Edit Texture" onClick={() => childWindow.open({ title: "Texture Editor" })} />
             <childWindow.component>
-                <TextureEditor texture={texture} />
+                <TextureEditor texture={texture} onUpdate={async () => await texturePreviewImperativeRef.current?.refresh()} />
             </childWindow.component>
         </>
     );

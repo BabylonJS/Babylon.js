@@ -1,7 +1,7 @@
-import { useMemo, useState, type ComponentType } from "react";
+import { type ComponentType } from "react";
 
-import type { BaseTexture, IDisposable } from "core/index";
-import type { TextureEditorToolProvider } from "../../components/textureEditor/textureEditor";
+import type { IDisposable } from "core/index";
+import type { TextureEditorProps, TextureEditorToolProvider } from "../../components/textureEditor/textureEditor";
 import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
 
 import { TextureEditor } from "../../components/textureEditor/textureEditor";
@@ -17,7 +17,7 @@ export const TextureEditorServiceIdentity = Symbol("TextureEditorService");
 
 export interface ITextureEditorService extends IService<typeof TextureEditorServiceIdentity> {
     addTool(toolProvider: TextureEditorToolProvider): IDisposable;
-    useTextureEditor(): ComponentType<{ texture: BaseTexture }>;
+    readonly component: ComponentType<TextureEditorProps>;
 }
 
 export const TextureEditorServiceDefinition: ServiceDefinition<[ITextureEditorService], []> = {
@@ -35,15 +35,9 @@ export const TextureEditorServiceDefinition: ServiceDefinition<[ITextureEditorSe
 
         return {
             addTool: (toolProvider: TextureEditorToolProvider) => toolsCollection.add(toolProvider),
-            useTextureEditor: () => {
-                const [, setTextureVersion] = useState(0);
-                return useMemo(
-                    () => (props: { texture: BaseTexture }) => {
-                        const tools = useOrderedObservableCollection(toolsCollection);
-                        return <TextureEditor {...props} toolProviders={tools} onUpdate={() => setTextureVersion((version) => version + 1)} />;
-                    },
-                    []
-                );
+            component: (props: TextureEditorProps) => {
+                const tools = useOrderedObservableCollection(toolsCollection);
+                return <TextureEditor {...props} toolProviders={tools} />;
             },
         };
     },

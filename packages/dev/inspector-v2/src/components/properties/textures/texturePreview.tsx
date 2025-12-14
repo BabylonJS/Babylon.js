@@ -1,9 +1,9 @@
-import type { FunctionComponent } from "react";
+import type { FunctionComponent, Ref } from "react";
 
 import type { BaseTexture } from "core/index";
 
 import { Button, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 
 import { WhenTextureReadyAsync } from "core/Misc/textureTools";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
@@ -47,14 +47,20 @@ const TextureChannelStates = {
     ALL: { R: true, G: true, B: true, A: true },
 } as const;
 
-type TexturePreviewProps = {
+export type TexturePreviewImperativeRef = {
+    refresh: () => Promise<void>;
+};
+
+export type TexturePreviewProps = {
     texture: BaseTexture;
     width: number;
     height: number;
+    imperativeRef?: Ref<TexturePreviewImperativeRef>;
 };
 
 export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) => {
-    const { texture, width, height } = props;
+    let { width, height } = props;
+    const { texture, imperativeRef } = props;
     const classes = useStyles();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [channels, setChannels] = useState<(typeof TextureChannelStates)[keyof typeof TextureChannelStates]>(TextureChannelStates.ALL);
@@ -68,23 +74,24 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
             // This logic was brought over from inspectorv1 and can likely be refactored/simplified
             const size = texture.getSize();
             const ratio = size.width / size.height;
-            let w = width;
-            let h = (w / ratio) | 1;
+            height = (width / ratio) | 1;
             const engine = texture.getScene()?.getEngine();
 
-            if (engine && h > engine.getCaps().maxTextureSize) {
-                w = size.width;
-                h = size.height;
+            if (engine && height > engine.getCaps().maxTextureSize) {
+                width = size.width;
+                height = size.height;
             }
 
-            previewCanvas.width = w;
-            previewCanvas.height = h;
-            previewCanvas.style.width = w + "px";
-            previewCanvas.style.height = h + "px";
+            if (width !== previewCanvas.width || height !== previewCanvas.height) {
+                previewCanvas.width = width;
+                previewCanvas.height = height;
+                previewCanvas.style.width = width + "px";
+                previewCanvas.style.height = height + "px";
+            }
 
             return {
-                w: w,
-                h: h,
+                width,
+                height,
             };
         },
         [canvasRef.current, texture, width, height, internalTexture]
@@ -97,11 +104,11 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
         }
         try {
             await WhenTextureReadyAsync(texture); // Ensure texture is loaded before grabbing size
-            const { w, h } = updatePreviewCanvasSize(previewCanvas); // Grab desired size
-            const data = await ApplyChannelsToTextureDataAsync(texture, w, h, face, channels); // get channel data to load onto canvas context
+            const { width, height } = updatePreviewCanvasSize(previewCanvas); // Grab desired size
+            const data = await ApplyChannelsToTextureDataAsync(texture, width, height, face, channels); // get channel data to load onto canvas context
             const context = previewCanvas.getContext("2d");
             if (context) {
-                const imageData = context.createImageData(w, h);
+                const imageData = context.createImageData(width, height);
                 imageData.data.set(data);
                 context.putImageData(imageData, 0, 0);
             }
@@ -109,6 +116,8 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
             updatePreviewCanvasSize(previewCanvas); // If we fail above, best effort sizing preview canvas
         }
     }, [[texture, width, height, face, channels, internalTexture]]);
+
+    useImperativeHandle(imperativeRef, () => ({ refresh: updatePreviewAsync }), [updatePreviewAsync]);
 
     useEffect(() => {
         void updatePreviewAsync();
