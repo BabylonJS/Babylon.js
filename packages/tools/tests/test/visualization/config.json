@@ -2,6 +2,30 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting Depth",
+            "playgroundId": "#V80DRL#12",
+            "renderCount": 5,
+            "referenceImage": "gsplat-depth.png"
+        },
+        {
+            "title": "Gaussian Splatting Compressed ply SH",
+            "playgroundId": "#U8O4EP#1",
+            "renderCount": 5,
+            "referenceImage": "gsplat-compressedply-sh.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ SH",
+            "playgroundId": "#XSNFXP#2",
+            "renderCount": 5,
+            "referenceImage": "gsplat-spz-sh.png"
+        },
+        {
+            "title": "Gaussian Splatting Update Data",
+            "playgroundId": "#Q0LBM8#2",
+            "renderCount": 5,
+            "referenceImage": "gsplat-update-data.png"
+        },
+        {
             "title": "Gaussian Splatting viewports",
             "playgroundId": "#CG8GO3#1",
             "renderCount": 5,
@@ -20,7 +44,7 @@
         },
         {
             "title": "SPZ v3 - Splat",
-            "playgroundId": "#V7CV8W#3",
+            "playgroundId": "#V7CV8W#4",
             "referenceImage": "gsplat-spz-v3.png"
         },
         {
