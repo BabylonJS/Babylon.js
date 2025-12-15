@@ -68,7 +68,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
 
             <BoundProperty component={NumberDropdownPropertyLine} label="Blend Mode" target={system} propertyKey="blendMode" options={BlendModeOptions} />
             <BoundProperty component={Vector3PropertyLine} label="World Offset" target={system} propertyKey="worldOffset" />
-            <BoundProperty component={Vector3PropertyLine} label="Gravity" target={system} propertyKey="gravity" />
+            {!system.isNodeGenerated && <BoundProperty component={Vector3PropertyLine} label="Gravity" target={system} propertyKey="gravity" />}
             <BoundProperty component={SwitchPropertyLine} label="Is Billboard" target={system} propertyKey="isBillboardBased" />
             {isBillboardBased && (
                 <BoundProperty component={NumberDropdownPropertyLine} label="Billboard Mode" target={system} propertyKey="billboardMode" options={ParticleBillboardModeOptions} />
@@ -78,7 +78,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             <BoundProperty component={NumberInputPropertyLine} label="Update Speed" target={system} propertyKey="updateSpeed" min={0} step={0.01} />
 
             <ButtonLine
-                label="View in Node Particle Editor (coming soon)"
+                label="Edit in Node Particle Editor (coming soon)"
                 disabled={true}
                 onClick={() => {
                     // TODO: waiting for node editors styling
@@ -311,53 +311,55 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                 <LinkToEntityPropertyLine label="Entity" entity={emitter as any} selectionService={selectionService} />
             )}
 
-            <StringDropdownPropertyLine
-                label="Type"
-                value={emitterTypeKey}
-                options={[
-                    { label: "Box", value: "box" },
-                    { label: "Cone", value: "cone" },
-                    { label: "Cylinder", value: "cylinder" },
-                    { label: "Hemispheric", value: "hemispheric" },
-                    { label: "Point", value: "point" },
-                    { label: "Mesh", value: "mesh" },
-                    { label: "Sphere", value: "sphere" },
-                ]}
-                onChange={(value) => {
-                    const next = value as EmitterTypeKey;
-                    setEmitterTypeKey(next);
+            {!system.isNodeGenerated && (
+                <StringDropdownPropertyLine
+                    label="Type"
+                    value={emitterTypeKey}
+                    options={[
+                        { label: "Box", value: "box" },
+                        { label: "Cone", value: "cone" },
+                        { label: "Cylinder", value: "cylinder" },
+                        { label: "Hemispheric", value: "hemispheric" },
+                        { label: "Point", value: "point" },
+                        { label: "Mesh", value: "mesh" },
+                        { label: "Sphere", value: "sphere" },
+                    ]}
+                    onChange={(value) => {
+                        const next = value as EmitterTypeKey;
+                        setEmitterTypeKey(next);
 
-                    // We update the engine by swapping the particleEmitterType instance to match the selected key.
-                    switch (next) {
-                        case "box":
-                            system.createBoxEmitter(new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(-0.5, -0.5, -0.5), new Vector3(0.5, 0.5, 0.5));
-                            break;
-                        case "sphere":
-                            system.createSphereEmitter(1, 1);
-                            break;
-                        case "cone":
-                            system.createConeEmitter(1, Math.PI / 4);
-                            break;
-                        case "cylinder":
-                            system.createCylinderEmitter(1, 1, 1, 0);
-                            break;
-                        case "hemispheric":
-                            system.createHemisphericEmitter(1, 1);
-                            break;
-                        case "point":
-                            system.createPointEmitter(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
-                            break;
-                        case "mesh": {
-                            // We default to the first mesh in the scene when available, and let the user change it via "Source".
-                            const defaultMesh = scene?.meshes?.[0] ?? null;
-                            system.particleEmitterType = new MeshParticleEmitter(defaultMesh);
-                            break;
+                        // We update the engine by swapping the particleEmitterType instance to match the selected key.
+                        switch (next) {
+                            case "box":
+                                system.createBoxEmitter(new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(-0.5, -0.5, -0.5), new Vector3(0.5, 0.5, 0.5));
+                                break;
+                            case "sphere":
+                                system.createSphereEmitter(1, 1);
+                                break;
+                            case "cone":
+                                system.createConeEmitter(1, Math.PI / 4);
+                                break;
+                            case "cylinder":
+                                system.createCylinderEmitter(1, 1, 1, 0);
+                                break;
+                            case "hemispheric":
+                                system.createHemisphericEmitter(1, 1);
+                                break;
+                            case "point":
+                                system.createPointEmitter(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
+                                break;
+                            case "mesh": {
+                                // We default to the first mesh in the scene when available, and let the user change it via "Source".
+                                const defaultMesh = scene?.meshes?.[0] ?? null;
+                                system.particleEmitterType = new MeshParticleEmitter(defaultMesh);
+                                break;
+                            }
                         }
-                    }
-                }}
-            />
+                    }}
+                />
+            )}
 
-            {particleEmitterType instanceof MeshParticleEmitter && (
+            {!system.isNodeGenerated && particleEmitterType instanceof MeshParticleEmitter && (
                 <>
                     {scene && scene.meshes.length > 0 ? (
                         <StringDropdownPropertyLine
@@ -386,7 +388,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                 </>
             )}
 
-            {particleEmitterType instanceof BoxParticleEmitter && (
+            {!system.isNodeGenerated && particleEmitterType instanceof BoxParticleEmitter && (
                 <>
                     <BoundProperty component={Vector3PropertyLine} label="Direction1" target={particleEmitterType} propertyKey="direction1" />
                     <BoundProperty component={Vector3PropertyLine} label="Direction2" target={particleEmitterType} propertyKey="direction2" />
@@ -395,7 +397,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                 </>
             )}
 
-            {particleEmitterType instanceof ConeParticleEmitter && (
+            {!system.isNodeGenerated && particleEmitterType instanceof ConeParticleEmitter && (
                 <>
                     <BoundProperty component={NumberInputPropertyLine} label="Radius range" target={particleEmitterType} propertyKey="radiusRange" min={0} max={1} step={0.01} />
                     <BoundProperty component={NumberInputPropertyLine} label="Height range" target={particleEmitterType} propertyKey="heightRange" min={0} max={1} step={0.01} />
@@ -412,7 +414,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                 </>
             )}
 
-            {particleEmitterType instanceof SphereParticleEmitter && (
+            {!system.isNodeGenerated && particleEmitterType instanceof SphereParticleEmitter && (
                 <>
                     <BoundProperty component={NumberInputPropertyLine} label="Radius" target={particleEmitterType} propertyKey="radius" min={0} step={0.1} />
                     <BoundProperty component={NumberInputPropertyLine} label="Radius range" target={particleEmitterType} propertyKey="radiusRange" min={0} max={1} step={0.01} />
@@ -428,7 +430,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                 </>
             )}
 
-            {particleEmitterType instanceof CylinderParticleEmitter && (
+            {!system.isNodeGenerated && particleEmitterType instanceof CylinderParticleEmitter && (
                 <>
                     <BoundProperty component={NumberInputPropertyLine} label="Radius" target={particleEmitterType} propertyKey="radius" min={0} step={0.1} />
                     <BoundProperty component={NumberInputPropertyLine} label="Height" target={particleEmitterType} propertyKey="height" min={0} step={0.1} />
@@ -445,7 +447,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                 </>
             )}
 
-            {particleEmitterType instanceof HemisphericParticleEmitter && (
+            {!system.isNodeGenerated && particleEmitterType instanceof HemisphericParticleEmitter && (
                 <>
                     <BoundProperty component={NumberInputPropertyLine} label="Radius" target={particleEmitterType} propertyKey="radius" min={0} step={0.1} />
                     <BoundProperty component={NumberInputPropertyLine} label="Radius range" target={particleEmitterType} propertyKey="radiusRange" min={0} max={1} step={0.01} />
@@ -461,14 +463,14 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                 </>
             )}
 
-            {particleEmitterType instanceof PointParticleEmitter && (
+            {!system.isNodeGenerated && particleEmitterType instanceof PointParticleEmitter && (
                 <>
                     <BoundProperty component={Vector3PropertyLine} label="Direction1" target={particleEmitterType} propertyKey="direction1" />
                     <BoundProperty component={Vector3PropertyLine} label="Direction2" target={particleEmitterType} propertyKey="direction2" />
                 </>
             )}
 
-            {!scene && <TextPropertyLine label="Emitter" value="No scene available." />}
+            {!system.isNodeGenerated && !scene && <TextPropertyLine label="Emitter" value="No scene available." />}
         </>
     );
 };
@@ -534,8 +536,12 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
                 />
             )}
 
-            <BoundProperty component={NumberInputPropertyLine} label="Min Emit Power" target={system} propertyKey="minEmitPower" min={0} step={0.1} />
-            <BoundProperty component={NumberInputPropertyLine} label="Max Emit Power" target={system} propertyKey="maxEmitPower" min={0} step={0.1} />
+            {!system.isNodeGenerated && (
+                <>
+                    <BoundProperty component={NumberInputPropertyLine} label="Min Emit Power" target={system} propertyKey="minEmitPower" min={0} step={0.1} />
+                    <BoundProperty component={NumberInputPropertyLine} label="Max Emit Power" target={system} propertyKey="maxEmitPower" min={0} step={0.1} />
+                </>
+            )}
 
             {!system.isNodeGenerated && !useVelocityGradients && (
                 <ButtonLine
