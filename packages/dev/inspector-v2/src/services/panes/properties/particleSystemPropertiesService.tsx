@@ -10,6 +10,7 @@ import {
     ParticleSystemEmitterProperties,
     ParticleSystemEmissionProperties,
     ParticleSystemSizeProperties,
+    ParticleSystemLifetimeProperties,
     ParticleSystemColorProperties,
 } from "../../../components/properties/particles/particleSystemProperties";
 import { ParticleSystem } from "core/Particles/particleSystem";
@@ -26,19 +27,22 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
             content: [
                 {
                     section: "General",
-                    order: 10,
+                    order: 1,
                     component: ({ context }) => <ParticleSystemGeneralProperties particleSystem={context} />,
                 },
                 {
                     section: "Attractors",
+                    order: 2,
                     component: ({ context }) => <ParticleSystemAttractorProperties particleSystem={context} />,
                 },
                 {
                     section: "Emitter",
+                    order: 3,
                     component: ({ context }) => <ParticleSystemEmitterProperties particleSystem={context} selectionService={selectionService} />,
                 },
                 {
                     section: "Emission",
+                    order: 4,
                     component: ({ context }) => <ParticleSystemEmissionProperties particleSystem={context} />,
                 },
             ],
@@ -51,20 +55,33 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
             content: [
                 {
                     section: "Size",
-                    order: 50,
+                    order: 5,
                     component: ({ context }) => <ParticleSystemSizeProperties particleSystem={context} />,
                 },
             ],
         });
 
-        // Register Color after Size so the section order is: ... Emission, Size, Color.
+        // The Lifetime section is only visible for non-node-based systems.
+        const particleSystemLifetimeContent = propertiesService.addSectionContent({
+            key: "Particle System Lifetime Properties",
+            predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem,
+            content: [
+                {
+                    section: "Lifetime",
+                    order: 6,
+                    component: ({ context }) => <ParticleSystemLifetimeProperties particleSystem={context} />,
+                },
+            ],
+        });
+
+        // Register Color after Lifetime.
         const particleSystemColorContent = propertiesService.addSectionContent({
             key: "Particle System Color Properties",
             predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem && !entity.isNodeGenerated,
             content: [
                 {
                     section: "Color",
-                    order: 60,
+                    order: 7,
                     component: ({ context }) => <ParticleSystemColorProperties particleSystem={context} />,
                 },
             ],
@@ -73,6 +90,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
             dispose: () => {
                 particleSystemContent.dispose();
                 particleSystemSizeContent.dispose();
+                particleSystemLifetimeContent.dispose();
                 particleSystemColorContent.dispose();
             },
         };
