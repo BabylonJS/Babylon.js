@@ -297,13 +297,7 @@ fn gaussianSplatting(
         );
     }
 
-    let invy = mat3x3<f32>(
-        1.0, 0.0, 0.0,
-        0.0, -1.0, 0.0,
-        0.0, 0.0, 1.0
-    );
-
-    let T = invy * transpose(mat3x3<f32>(
+    let T = transpose(mat3x3<f32>(
         modelView[0].xyz,
         modelView[1].xyz,
         modelView[2].xyz)) * J;
