@@ -15,13 +15,13 @@
         },
         {
             "title": "Gaussian Splatting SPZ SH",
-            "playgroundId": "#XSNFXP#1",
+            "playgroundId": "#XSNFXP#2",
             "renderCount": 5,
             "referenceImage": "gsplat-spz-sh.png"
         },
         {
             "title": "Gaussian Splatting Update Data",
-            "playgroundId": "#Q0LBM8#1",
+            "playgroundId": "#Q0LBM8#2",
             "renderCount": 5,
             "referenceImage": "gsplat-update-data.png"
         },
