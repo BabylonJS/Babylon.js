@@ -11,7 +11,6 @@ import { Logger } from "core/Misc/logger";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
-import { Tools } from "core/Misc/tools";
 import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import { ToHalfFloat } from "core/Misc/textureTools";
@@ -20,6 +19,7 @@ import { Scalar } from "core/Maths/math.scalar";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
 import { EngineStore } from "core/Engines/engineStore";
 import type { Camera } from "core/Cameras/camera";
+import { ImportMeshAsync } from "core/Loading/sceneLoader";
 
 interface IDelayedTextureUpdate {
     covA: Uint16Array;
@@ -27,6 +27,9 @@ interface IDelayedTextureUpdate {
     colors: Uint8Array;
     centers: Float32Array;
     sh?: Uint8Array[];
+}
+interface IUpdateOptions {
+    flipY?: boolean;
 }
 
 // @internal
@@ -82,11 +85,6 @@ interface ICompressedPLYChunk {
     maxScale: Vector3;
     minColor: Vector3;
     maxColor: Vector3;
-}
-
-interface IPLYConversionBuffers {
-    buffer: ArrayBuffer;
-    sh?: [];
 }
 
 /**
@@ -325,15 +323,15 @@ export class GaussianSplattingMesh extends Mesh {
     // batch size between 2 yield calls during the PLY to splat conversion.
     private static _PlyConversionBatchSize = 32768;
     private _shDegree = 0;
-    private _viewDirectionFactor = new Vector3(1, 1, -1);
 
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
     /**
      * View direction factor used to compute the SH view direction in the shader.
+     * @deprecated Not used anymore for SH rendering
      */
     public get viewDirectionFactor() {
-        return this._viewDirectionFactor;
+        return Vector3.OneReadOnly;
     }
 
     /**
@@ -420,7 +418,7 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public override set material(value: Material) {
         this._material = value;
-        this._material.backFaceCulling = true;
+        this._material.backFaceCulling = false;
         this._material.cullBackFaces = false;
         value.resetDrawCache();
     }
@@ -1320,15 +1318,14 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
-     * Loads a .splat Gaussian or .ply Splatting file asynchronously
+     * Loads a Gaussian or Splatting file asynchronously
      * @param url path to the splat file to load
+     * @param scene optional scene it belongs to
      * @returns a promise that resolves when the operation is complete
      * @deprecated Please use SceneLoader.ImportMeshAsync instead
      */
-    public async loadFileAsync(url: string): Promise<void> {
-        const plyBuffer = await Tools.LoadFileAsync(url, true);
-        const splatsData: IPLYConversionBuffers = await (GaussianSplattingMesh.ConvertPLYWithSHToSplatAsync(plyBuffer) as any);
-        await this.updateDataAsync(splatsData.buffer, splatsData.sh);
+    public async loadFileAsync(url: string, scene?: Scene): Promise<void> {
+        await ImportMeshAsync(url, (scene || EngineStore.LastCreatedScene)!, { pluginOptions: { splat: { gaussianSplattingMesh: this } } });
     }
 
     /**
@@ -1470,7 +1467,8 @@ export class GaussianSplattingMesh extends Mesh {
         covB: Uint16Array,
         colorArray: Uint8Array,
         minimum: Vector3,
-        maximum: Vector3
+        maximum: Vector3,
+        options: IUpdateOptions
     ): void {
         const matrixRotation = TmpVectors.Matrix[0];
         const matrixScale = TmpVectors.Matrix[1];
@@ -1478,7 +1476,7 @@ export class GaussianSplattingMesh extends Mesh {
         const covBSItemSize = this._useRGBACovariants ? 4 : 2;
 
         const x = fBuffer[8 * index + 0];
-        const y = -fBuffer[8 * index + 1];
+        const y = fBuffer[8 * index + 1] * (options.flipY ? -1 : 1);
         const z = fBuffer[8 * index + 2];
 
         this._splatPositions![4 * index + 0] = x;
@@ -1582,7 +1580,7 @@ export class GaussianSplattingMesh extends Mesh {
         }
     }
 
-    private *_updateData(data: ArrayBuffer, isAsync: boolean, sh?: Uint8Array[]): Coroutine<void> {
+    private *_updateData(data: ArrayBuffer, isAsync: boolean, sh?: Uint8Array[], options: IUpdateOptions = { flipY: false }): Coroutine<void> {
         // if a covariance texture is present, then it's not a creation but an update
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
@@ -1630,7 +1628,7 @@ export class GaussianSplattingMesh extends Mesh {
                 const updateLine = partIndex * lineCountUpdate;
                 const splatIndexBase = updateLine * textureSize.x;
                 for (let i = 0; i < textureLengthPerUpdate; i++) {
-                    this._makeSplat(splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+                    this._makeSplat(splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, options);
                 }
                 this._updateSubTextures(this._splatPositions, covA, covB, colorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
                 // Update the binfo
@@ -1648,7 +1646,7 @@ export class GaussianSplattingMesh extends Mesh {
         } else {
             const paddedVertexCount = (vertexCount + 15) & ~0xf;
             for (let i = 0; i < vertexCount; i++) {
-                this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
+                this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, options);
                 if (isAsync && i % GaussianSplattingMesh._SplatBatchSize === 0) {
                     yield;
                 }
@@ -1662,6 +1660,7 @@ export class GaussianSplattingMesh extends Mesh {
             // Update the binfo
             this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
             this.setEnabled(true);
+            this._sortIsDirty = true;
         }
         this._postToWorker(true);
     }
@@ -1681,9 +1680,10 @@ export class GaussianSplattingMesh extends Mesh {
      * Update data from GS (position, orientation, color, scaling)
      * @param data array that contain all the datas
      * @param sh optional array of uint8 array for SH data
+     * @param options optional informations on how to treat data
      */
-    public updateData(data: ArrayBuffer, sh?: Uint8Array[]): void {
-        runCoroutineSync(this._updateData(data, false, sh));
+    public updateData(data: ArrayBuffer, sh?: Uint8Array[], options: IUpdateOptions = { flipY: true }): void {
+        runCoroutineSync(this._updateData(data, false, sh, options));
     }
 
     /**
