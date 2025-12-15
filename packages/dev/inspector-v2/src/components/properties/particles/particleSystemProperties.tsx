@@ -482,19 +482,149 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
     const { particleSystem: system } = props;
 
     const emitRateGradients = useParticleSystemProperty(system, "getEmitRateGradients", "function", "addEmitRateGradient", "removeEmitRateGradient", "forceRefreshGradients");
+    const velocityGradients = useParticleSystemProperty(system, "getVelocityGradients", "function", "addVelocityGradient", "removeVelocityGradient", "forceRefreshGradients");
+    const limitVelocityGradients = useParticleSystemProperty(
+        system,
+        "getLimitVelocityGradients",
+        "function",
+        "addLimitVelocityGradient",
+        "removeLimitVelocityGradient",
+        "forceRefreshGradients"
+    );
+    const dragGradients = useParticleSystemProperty(system, "getDragGradients", "function", "addDragGradient", "removeDragGradient", "forceRefreshGradients");
+
+    const useEmitRateGradients = (emitRateGradients?.length ?? 0) > 0;
+    const useVelocityGradients = (velocityGradients?.length ?? 0) > 0;
+    const useLimitVelocityGradients = (limitVelocityGradients?.length ?? 0) > 0;
+    const useDragGradients = (dragGradients?.length ?? 0) > 0;
 
     return (
         <>
-            {!system.isNodeGenerated && (
+            <BoundProperty component={NumberInputPropertyLine} label="Emit rate" target={system} propertyKey="emitRate" min={0} step={1} />
+
+            {!system.isNodeGenerated && !useEmitRateGradients && (
+                <ButtonLine
+                    label="Use Emit rate gradients"
+                    onClick={() => {
+                        system.addEmitRateGradient(0, system.emitRate, system.emitRate);
+                        system.forceRefreshGradients();
+                    }}
+                />
+            )}
+
+            {!system.isNodeGenerated && useEmitRateGradients && (
                 <FactorGradientList
                     gradients={emitRateGradients}
                     label="Emit Rate Gradient"
-                    removeGradient={(gradient: IValueGradient) => {
+                    removeGradient={(gradient: FactorGradient) => {
                         system.removeEmitRateGradient(gradient.gradient);
                         system.forceRefreshGradients();
                     }}
                     addGradient={(gradient?: FactorGradient) => {
-                        gradient ? system.addEmitRateGradient(gradient.gradient, gradient.factor1, gradient.factor2) : system.addEmitRateGradient(Math.random(), 50, 50);
+                        if (gradient) {
+                            system.addEmitRateGradient(gradient.gradient, gradient.factor1, gradient.factor2);
+                        } else {
+                            system.addEmitRateGradient(0, system.emitRate, system.emitRate);
+                        }
+                        system.forceRefreshGradients();
+                    }}
+                    onChange={(_gradient: FactorGradient) => {
+                        system.forceRefreshGradients();
+                    }}
+                />
+            )}
+
+            <BoundProperty component={NumberInputPropertyLine} label="Min Emit Power" target={system} propertyKey="minEmitPower" min={0} step={0.1} />
+            <BoundProperty component={NumberInputPropertyLine} label="Max Emit Power" target={system} propertyKey="maxEmitPower" min={0} step={0.1} />
+
+            {!system.isNodeGenerated && !useVelocityGradients && (
+                <ButtonLine
+                    label="Use Velocity gradients"
+                    onClick={() => {
+                        system.addVelocityGradient(0, 1, 1);
+                        system.forceRefreshGradients();
+                    }}
+                />
+            )}
+
+            {!system.isNodeGenerated && useVelocityGradients && (
+                <FactorGradientList
+                    gradients={velocityGradients}
+                    label="Velocity Gradient"
+                    removeGradient={(gradient: FactorGradient) => {
+                        system.removeVelocityGradient(gradient.gradient);
+                        system.forceRefreshGradients();
+                    }}
+                    addGradient={(gradient?: FactorGradient) => {
+                        if (gradient) {
+                            system.addVelocityGradient(gradient.gradient, gradient.factor1, gradient.factor2);
+                        } else {
+                            system.addVelocityGradient(0, 1, 1);
+                        }
+                        system.forceRefreshGradients();
+                    }}
+                    onChange={(_gradient: FactorGradient) => {
+                        system.forceRefreshGradients();
+                    }}
+                />
+            )}
+
+            {!system.isNodeGenerated && !useLimitVelocityGradients && (
+                <ButtonLine
+                    label="Use Limit Velocity gradients"
+                    onClick={() => {
+                        system.addLimitVelocityGradient(0, 1, 1);
+                        system.forceRefreshGradients();
+                    }}
+                />
+            )}
+
+            {!system.isNodeGenerated && useLimitVelocityGradients && (
+                <FactorGradientList
+                    gradients={limitVelocityGradients}
+                    label="Limit Velocity Gradient"
+                    removeGradient={(gradient: FactorGradient) => {
+                        system.removeLimitVelocityGradient(gradient.gradient);
+                        system.forceRefreshGradients();
+                    }}
+                    addGradient={(gradient?: FactorGradient) => {
+                        if (gradient) {
+                            system.addLimitVelocityGradient(gradient.gradient, gradient.factor1, gradient.factor2);
+                        } else {
+                            system.addLimitVelocityGradient(0, 1, 1);
+                        }
+                        system.forceRefreshGradients();
+                    }}
+                    onChange={(_gradient: FactorGradient) => {
+                        system.forceRefreshGradients();
+                    }}
+                />
+            )}
+
+            {!system.isNodeGenerated && !useDragGradients && (
+                <ButtonLine
+                    label="Use Drag gradients"
+                    onClick={() => {
+                        system.addDragGradient(0, 1, 1);
+                        system.forceRefreshGradients();
+                    }}
+                />
+            )}
+
+            {!system.isNodeGenerated && useDragGradients && (
+                <FactorGradientList
+                    gradients={dragGradients}
+                    label="Drag Gradient"
+                    removeGradient={(gradient: FactorGradient) => {
+                        system.removeDragGradient(gradient.gradient);
+                        system.forceRefreshGradients();
+                    }}
+                    addGradient={(gradient?: FactorGradient) => {
+                        if (gradient) {
+                            system.addDragGradient(gradient.gradient, gradient.factor1, gradient.factor2);
+                        } else {
+                            system.addDragGradient(0, 1, 1);
+                        }
                         system.forceRefreshGradients();
                     }}
                     onChange={(_gradient: FactorGradient) => {
