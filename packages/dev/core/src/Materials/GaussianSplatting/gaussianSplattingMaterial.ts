@@ -405,13 +405,13 @@ export class GaussianSplattingMaterial extends PushMaterial {
         shaderMaterial.bindView(effect);
         shaderMaterial.bindViewProjection(effect);
 
-        const shadowmapWidth = engine.getRenderWidth();
-        const shadowmapHeight = engine.getRenderHeight();
-        effect.setFloat2("invViewport", 1 / shadowmapWidth, 1 / shadowmapHeight);
+        const renderWidth = engine.getRenderWidth();
+        const renderHeight = engine.getRenderHeight();
+        effect.setFloat2("invViewport", 1 / renderWidth, 1 / renderHeight);
 
         const projection = scene.getProjectionMatrix();
         const t = projection.m[5];
-        const focal = (shadowmapWidth * t) / 2.0;
+        const focal = (renderWidth * t) / 2.0;
 
         effect.setFloat2("focal", focal, focal);
         effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
