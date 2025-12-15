@@ -9,6 +9,7 @@ import {
     ParticleSystemAttractorProperties,
     ParticleSystemEmitterProperties,
     ParticleSystemEmissionProperties,
+    ParticleSystemSizeProperties,
     ParticleSystemColorProperties,
 } from "../../../components/properties/particles/particleSystemProperties";
 import { ParticleSystem } from "core/Particles/particleSystem";
@@ -40,8 +41,30 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                     section: "Emission",
                     component: ({ context }) => <ParticleSystemEmissionProperties particleSystem={context} />,
                 },
+            ],
+        });
+
+        // The Size section must not be visible at all (including the accordion entry) for node-generated systems.
+        const particleSystemSizeContent = propertiesService.addSectionContent({
+            key: "Particle System Size Properties",
+            predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem && !entity.isNodeGenerated,
+            content: [
+                {
+                    section: "Size",
+                    order: 50,
+                    component: ({ context }) => <ParticleSystemSizeProperties particleSystem={context} />,
+                },
+            ],
+        });
+
+        // Register Color after Size so the section order is: ... Emission, Size, Color.
+        const particleSystemColorContent = propertiesService.addSectionContent({
+            key: "Particle System Color Properties",
+            predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem && !entity.isNodeGenerated,
+            content: [
                 {
                     section: "Color",
+                    order: 60,
                     component: ({ context }) => <ParticleSystemColorProperties particleSystem={context} />,
                 },
             ],
@@ -49,6 +72,8 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         return {
             dispose: () => {
                 particleSystemContent.dispose();
+                particleSystemSizeContent.dispose();
+                particleSystemColorContent.dispose();
             },
         };
     },
