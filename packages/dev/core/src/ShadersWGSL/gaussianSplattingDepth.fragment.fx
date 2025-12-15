@@ -15,7 +15,7 @@ fn checkDiscard(inPosition: vec2f, inColor: vec4f) -> vec4f {
         discard;
     }
 #else
-    if (A < inColor.a) {
+    if (A < -inColor.a) {
         discard;
     }
 #endif
