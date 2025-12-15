@@ -14,15 +14,19 @@ type TextureUploadProps = {
      */
     scene: Scene;
     /**
-     * Callback when a texture is uploaded/created
+     * Callback when a texture is uploaded/created or updated
      */
-    onTextureCreated: (texture: BaseTexture) => void;
+    onChange: (texture: Nullable<BaseTexture>) => void;
+    /**
+     * Optional existing texture to update instead of creating a new one
+     */
+    texture?: Nullable<BaseTexture>;
     /**
      * File types to accept for upload
      */
     accept?: string;
     /**
-     * Whether to create cube textures
+     * Whether to create cube textures (only applies when creating new textures)
      */
     cubeOnly?: boolean;
     /**
@@ -32,17 +36,13 @@ type TextureUploadProps = {
 };
 
 /**
- * A button that uploads a file and creates a new Texture or CubeTexture.
+ * A button that uploads a file and either:
+ * - Creates a new Texture or CubeTexture (if no texture prop is provided)
+ * - Updates an existing Texture or CubeTexture via updateURL (if texture prop is provided)
  */
-export const TextureUpload: FunctionComponent<TextureUploadProps> = ({
-    scene,
-    onTextureCreated,
-    accept = ".jpg, .png, .tga, .dds, .env, .exr",
-    cubeOnly,
-    title = "Upload texture",
-}) => {
+export const TextureUpload: FunctionComponent<TextureUploadProps> = (props) => {
     TextureUpload.displayName = "TextureUpload";
-
+    const { scene, onChange, texture, accept = ".jpg, .png, .tga, .dds, .env, .exr", cubeOnly, title = "Upload Texture" } = props;
     const handleUpload = useCallback(
         (files: FileList) => {
             const file = files[0];
@@ -52,100 +52,43 @@ export const TextureUpload: FunctionComponent<TextureUploadProps> = ({
                 file,
                 (data) => {
                     const blob = new Blob([data], { type: "octet/stream" });
-                    const url = URL.createObjectURL(blob);
 
-                    const extension = file.name.split(".").pop()?.toLowerCase();
-                    const texture = cubeOnly
-                        ? new CubeTexture(url, scene, [], false, undefined, undefined, undefined, undefined, false, extension ? "." + extension : undefined)
-                        : new Texture(url, scene, false, false);
+                    // If texture is provided, update it
+                    if (texture && (texture instanceof Texture || texture instanceof CubeTexture)) {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(blob);
+                        reader.onloadend = () => {
+                            const base64data = reader.result as string;
 
-                    onTextureCreated(texture);
+                            if (texture instanceof CubeTexture) {
+                                let extension: string | undefined = undefined;
+                                if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                                    extension = ".dds";
+                                } else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                                    extension = ".env";
+                                }
+                                texture.updateURL(base64data, extension, () => onChange(texture));
+                            } else if (texture instanceof Texture) {
+                                texture.updateURL(base64data, null, () => onChange(texture));
+                            }
+                        };
+                    } else {
+                        // Create new texture
+                        const url = URL.createObjectURL(blob);
+                        const extension = file.name.split(".").pop()?.toLowerCase();
+                        const newTexture = cubeOnly
+                            ? new CubeTexture(url, scene, [], false, undefined, undefined, undefined, undefined, false, extension ? "." + extension : undefined)
+                            : new Texture(url, scene, false, false);
+
+                        onChange(newTexture);
+                    }
                 },
                 undefined,
                 true
             );
         },
-        [scene, cubeOnly, onTextureCreated]
+        [scene, texture, cubeOnly, onChange]
     );
 
     return <UploadButton onUpload={handleUpload} accept={accept} title={title} />;
-};
-
-/**
- * Props for TextureUpdateUpload - updates an existing texture's content
- */
-type TextureUpdateUploadProps = {
-    /**
-     * The texture to update
-     */
-    texture: Nullable<BaseTexture>;
-    /**
-     * Callback when texture is updated
-     */
-    onTextureUpdated?: () => void;
-    /**
-     * File types to accept for upload
-     */
-    accept?: string;
-    /**
-     * Button title
-     */
-    title?: string;
-};
-
-/**
- * A button that uploads a file and updates an existing Texture or CubeTexture's content.
- * Only renders if the texture is updatable (Texture or CubeTexture instance).
- */
-export const TextureUpdateUpload: FunctionComponent<TextureUpdateUploadProps> = ({
-    texture,
-    onTextureUpdated,
-    accept = ".jpg, .png, .tga, .dds, .env, .exr",
-    title = "Load texture from file",
-}) => {
-    TextureUpdateUpload.displayName = "TextureUpdateUpload";
-
-    const isUpdatable = texture instanceof Texture || texture instanceof CubeTexture;
-
-    const handleUpload = useCallback(
-        (files: FileList) => {
-            const file = files[0];
-            if (!file || !texture) return;
-
-            ReadFile(
-                file,
-                (data) => {
-                    const blob = new Blob([data], { type: "octet/stream" });
-
-                    const reader = new FileReader();
-                    reader.readAsDataURL(blob);
-                    reader.onloadend = () => {
-                        const base64data = reader.result as string;
-
-                        if (texture instanceof CubeTexture) {
-                            let extension: string | undefined = undefined;
-                            if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                                extension = ".dds";
-                            } else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                                extension = ".env";
-                            }
-
-                            texture.updateURL(base64data, extension, () => onTextureUpdated?.());
-                        } else if (texture instanceof Texture) {
-                            texture.updateURL(base64data, null, () => onTextureUpdated?.());
-                        }
-                    };
-                },
-                undefined,
-                true
-            );
-        },
-        [texture, onTextureUpdated]
-    );
-
-    if (!isUpdatable) {
-        return null;
-    }
-
-    return <UploadButton onUpload={handleUpload} accept={accept} title={title} label={title} />;
 };
