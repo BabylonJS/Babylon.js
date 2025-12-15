@@ -42,6 +42,7 @@
         "@babylonjs/materials": "^8.41.2",
         "@babylonjs/serializers": "^8.41.2",
         "@lts/gui": "1.0.0",
+        "@dev/inspector": "1.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
     },
