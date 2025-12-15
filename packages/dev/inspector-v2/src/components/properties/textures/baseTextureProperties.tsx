@@ -6,7 +6,7 @@ import type { DropdownOption } from "shared-ui-components/fluent/primitives/drop
 import { Constants } from "core/Engines/constants";
 import { Texture } from "core/Materials/Textures/texture";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { TextureUploadLine } from "shared-ui-components/fluent/hoc/textureUploadLine";
+import { TextureUpdateUpload } from "shared-ui-components/fluent/hoc/textureUpload";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
@@ -25,7 +25,7 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
     return (
         <>
             <TexturePreview texture={texture} width={256} height={256} />
-            <TextureUploadLine texture={texture} />
+            <TextureUpdateUpload texture={texture} />
             <ButtonLine label="Edit Texture (coming soon!)" onClick={() => {}} />
         </>
     );
