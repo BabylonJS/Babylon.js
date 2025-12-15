@@ -80,7 +80,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
             predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem && !entity.isNodeGenerated,
             content: [
                 {
-                    section: "Color",
+                    section: "Colors",
                     order: 7,
                     component: ({ context }) => <ParticleSystemColorProperties particleSystem={context} />,
                 },
