@@ -1,6 +1,6 @@
 import type { FunctionComponent, PropsWithChildren } from "react";
 import { Popover } from "shared-ui-components/fluent/primitives/popover";
-import { Settings20Regular } from "@fluentui/react-icons";
+import { SettingsRegular } from "@fluentui/react-icons";
 
 /**
  * Settings popover component
@@ -8,5 +8,5 @@ import { Settings20Regular } from "@fluentui/react-icons";
  * @returns
  */
 export const SettingsPopover: FunctionComponent<PropsWithChildren<{}>> = (props) => {
-    return <Popover icon={Settings20Regular}> {props.children} </Popover>;
+    return <Popover icon={SettingsRegular}> {props.children} </Popover>;
 };

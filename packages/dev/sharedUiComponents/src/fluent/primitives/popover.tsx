@@ -1,7 +1,6 @@
-import type { FunctionComponent, PropsWithChildren } from "react";
+import type { FunctionComponent, PropsWithChildren, ReactElement } from "react";
 import { useState } from "react";
 import { Popover as FluentPopover, PopoverTrigger, PopoverSurface, makeStyles, tokens } from "@fluentui/react-components";
-import { Settings20Regular } from "@fluentui/react-icons";
 import type { FluentIcon } from "@fluentui/react-icons";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 
@@ -18,16 +17,35 @@ const useStyles = makeStyles({
     },
 });
 
-export const Popover: FunctionComponent<PropsWithChildren<{ icon: FluentIcon }>> = (props) => {
+type PopoverWithIconProps = {
+    icon: FluentIcon;
+    trigger?: never;
+};
+
+type PopoverWithTriggerProps = {
+    icon?: never;
+    trigger: ReactElement;
+};
+
+type PopoverProps = PopoverWithIconProps | PopoverWithTriggerProps;
+
+export const Popover: FunctionComponent<PropsWithChildren<PopoverProps>> = (props) => {
     const { children } = props;
     const [popoverOpen, setPopoverOpen] = useState(false);
     const classes = useStyles();
 
     return (
-        <FluentPopover open={popoverOpen} onOpenChange={(_, data) => setPopoverOpen(data.open)} positioning="below-start" trapFocus>
-            <PopoverTrigger disableButtonEnhancement>
-                <Button icon={Settings20Regular} onClick={() => setPopoverOpen(true)} />
-            </PopoverTrigger>
+        <FluentPopover
+            open={popoverOpen}
+            onOpenChange={(_, data) => setPopoverOpen(data.open)}
+            positioning={{
+                align: "start",
+                overflowBoundary: document.body,
+                autoSize: true,
+            }}
+            trapFocus
+        >
+            <PopoverTrigger disableButtonEnhancement>{props.trigger ?? <Button icon={props.icon} onClick={() => setPopoverOpen(true)} />}</PopoverTrigger>
             <PopoverSurface className={classes.surface}>
                 <div className={classes.content}>{children}</div>
             </PopoverSurface>
