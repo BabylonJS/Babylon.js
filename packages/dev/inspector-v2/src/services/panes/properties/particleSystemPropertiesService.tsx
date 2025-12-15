@@ -12,6 +12,7 @@ import {
     ParticleSystemSizeProperties,
     ParticleSystemLifetimeProperties,
     ParticleSystemColorProperties,
+    ParticleSystemRotationProperties,
 } from "../../../components/properties/particles/particleSystemProperties";
 import { ParticleSystem } from "core/Particles/particleSystem";
 
@@ -86,12 +87,26 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 },
             ],
         });
+
+        // Register Rotation after Colors.
+        const particleSystemRotationContent = propertiesService.addSectionContent({
+            key: "Particle System Rotation Properties",
+            predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem && !entity.isNodeGenerated,
+            content: [
+                {
+                    section: "Rotation",
+                    order: 8,
+                    component: ({ context }) => <ParticleSystemRotationProperties particleSystem={context} />,
+                },
+            ],
+        });
         return {
             dispose: () => {
                 particleSystemContent.dispose();
                 particleSystemSizeContent.dispose();
                 particleSystemLifetimeContent.dispose();
                 particleSystemColorContent.dispose();
+                particleSystemRotationContent.dispose();
             },
         };
     },

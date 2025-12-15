@@ -905,6 +905,66 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
     );
 };
 
+/**
+ * Displays rotation-related properties for a particle system.
+ * @param props component props
+ * @returns the rendered property lines
+ */
+export const ParticleSystemRotationProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
+    const { particleSystem: system } = props;
+
+    const angularSpeedGradients = useParticleSystemProperty(
+        system,
+        "getAngularSpeedGradients",
+        "function",
+        "addAngularSpeedGradient",
+        "removeAngularSpeedGradient",
+        "forceRefreshGradients"
+    );
+    const useAngularSpeedGradients = (angularSpeedGradients?.length ?? 0) > 0;
+
+    return (
+        <>
+            <BoundProperty component={NumberInputPropertyLine} label="Min Angular speed" target={system} propertyKey="minAngularSpeed" step={0.01} />
+            <BoundProperty component={NumberInputPropertyLine} label="Max Angular speed" target={system} propertyKey="maxAngularSpeed" step={0.01} />
+            <BoundProperty component={NumberInputPropertyLine} label="Min initial rotation" target={system} propertyKey="minInitialRotation" step={0.01} />
+            <BoundProperty component={NumberInputPropertyLine} label="Max initial rotation" target={system} propertyKey="maxInitialRotation" step={0.01} />
+
+            {!useAngularSpeedGradients && (
+                <ButtonLine
+                    label="Use Angular speed gradients"
+                    onClick={() => {
+                        system.addAngularSpeedGradient(0, system.minAngularSpeed, system.maxAngularSpeed);
+                        system.forceRefreshGradients();
+                    }}
+                />
+            )}
+
+            {useAngularSpeedGradients && (
+                <FactorGradientList
+                    gradients={angularSpeedGradients}
+                    label="Angular Speed Gradient"
+                    removeGradient={(gradient: FactorGradient) => {
+                        system.removeAngularSpeedGradient(gradient.gradient);
+                        system.forceRefreshGradients();
+                    }}
+                    addGradient={(gradient?: FactorGradient) => {
+                        if (gradient) {
+                            system.addAngularSpeedGradient(gradient.gradient, gradient.factor1 ?? 0, gradient.factor2);
+                        } else {
+                            system.addAngularSpeedGradient(0, system.minAngularSpeed, system.maxAngularSpeed);
+                        }
+                        system.forceRefreshGradients();
+                    }}
+                    onChange={(_gradient: FactorGradient) => {
+                        system.forceRefreshGradients();
+                    }}
+                />
+            )}
+        </>
+    );
+};
+
 // TODO-iv2: This can be more generic to work for not just particleSystems
 const useParticleSystemProperty = (
     system: ParticleSystem,
