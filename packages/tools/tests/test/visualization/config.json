@@ -4,31 +4,37 @@
         {
             "title": "Gaussian Splatting Depth",
             "playgroundId": "#V80DRL#12",
+            "renderCount": 5,
             "referenceImage": "gsplat-depth.png"
         },
         {
             "title": "Gaussian Splatting Compressed ply SH",
             "playgroundId": "#U8O4EP#1",
+            "renderCount": 5,
             "referenceImage": "gsplat-compressedply-sh.png"
         },
         {
             "title": "Gaussian Splatting SPZ SH",
             "playgroundId": "#XSNFXP#2",
+            "renderCount": 5,
             "referenceImage": "gsplat-spz-sh.png"
         },
         {
             "title": "Gaussian Splatting Update Data",
             "playgroundId": "#Q0LBM8#2",
+            "renderCount": 5,
             "referenceImage": "gsplat-update-data.png"
         },
         {
             "title": "Gaussian Splatting viewports",
             "playgroundId": "#CG8GO3#1",
+            "renderCount": 5,
             "referenceImage": "gsplat-viewports.png"
         },
         {
             "title": "Gaussian Splatting Shadows",
             "playgroundId": "#OE54M5#16",
+            "renderCount": 5,
             "referenceImage": "gsplat-shadows.png"
         },
         {
@@ -44,6 +50,7 @@
         {
             "title": "SOGS with SH",
             "playgroundId": "#QA2662#13",
+            "renderCount": 5,
             "errorRatio": 5,
             "referenceImage": "gsplat-sogs-sh.png"
         },
