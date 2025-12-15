@@ -3,6 +3,7 @@ import type { IPropertiesService } from "./propertiesService";
 
 import { PropertiesServiceIdentity } from "./propertiesService";
 import {
+    ParticleSystemGeneralProperties,
     ParticleSystemColorProperties,
     ParticleSystemAttractorProperties,
     ParticleSystemEmissionProperties,
@@ -19,6 +20,11 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
             key: "Particle System Properties",
             predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem,
             content: [
+                {
+                    section: "General",
+                    order: 10,
+                    component: ({ context }) => <ParticleSystemGeneralProperties particleSystem={context} />,
+                },
                 {
                     section: "Emission",
                     component: ({ context }) => <ParticleSystemEmissionProperties particleSystem={context} />,
