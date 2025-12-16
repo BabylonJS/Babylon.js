@@ -12,6 +12,7 @@ import type { Scene } from "core/scene";
 
 /**
  * Helper to bind texture properties without needing defaultValue
+ * @returns ChooseTexturePropertyLine component
  */
 const BoundTextureProperty: FunctionComponent<{
     label: string;

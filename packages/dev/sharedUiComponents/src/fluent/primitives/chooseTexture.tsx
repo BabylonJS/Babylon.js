@@ -38,7 +38,7 @@ export type ChooseTextureProps = PrimitiveProps<Nullable<BaseTexture>> & {
  */
 export const ChooseTexture: FunctionComponent<ChooseTextureProps> = (props) => {
     ChooseTexture.displayName = "ChooseTexture";
-    const { scene, accept, cubeOnly, value, onChange } = props;
+    const { scene, cubeOnly, value, onChange } = props;
     const classes = useStyles();
 
     // Get sorted texture names from scene
@@ -71,7 +71,7 @@ export const ChooseTexture: FunctionComponent<ChooseTextureProps> = (props) => {
     return (
         <div className={classes.container}>
             <ComboBox label="" options={textureOptions} value={currentTextureName} onChange={handleTextureSelect} />
-            <TextureUpload scene={scene} onChange={onChange} accept={accept} cubeOnly={cubeOnly} />
+            <TextureUpload scene={scene} onChange={onChange} cubeOnly={cubeOnly} />
         </div>
     );
 };

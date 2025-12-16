@@ -12,6 +12,7 @@ type FileUploadLineProps = Omit<ButtonProps, "onClick" | "label"> & {
 /**
  * A full-width line with an upload button.
  * For just the button without the line wrapper, use UploadButton directly.
+ * @returns An UploadButton wrapped in a LineContainer
  */
 export const FileUploadLine: FunctionComponent<FileUploadLineProps> = ({ onClick, label, accept, ...buttonProps }) => {
     FileUploadLine.displayName = "FileUploadLine";
