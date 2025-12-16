@@ -19,6 +19,7 @@ import { useObservableState } from "../../../hooks/observableHooks";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
 import { BoundProperty } from "../boundProperty";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
+import { TexturePreview } from "../textures/texturePreview";
 
 function useMaxCellCount(sprite: Sprite) {
     const manager = sprite.manager;
@@ -178,8 +179,20 @@ export const SpriteCellProperties: FunctionComponent<{ sprite: Sprite }> = (prop
 
     const maxCellCount = useMaxCellCount(sprite);
 
+    const manager = sprite.manager;
+    const texture = manager.texture;
+    const size = texture.getSize();
+
+    const cellWidth = useProperty(manager, "cellWidth");
+    const cellHeight = useProperty(manager, "cellHeight");
+    const cellIndex = useProperty(sprite, "cellIndex");
+
+    const offsetX = (cellIndex * cellWidth) % size.width;
+    const offsetY = Math.floor((cellIndex * cellWidth) / size.width) * cellHeight;
+
     return (
         <>
+            <TexturePreview disableToolbar texture={texture} maxHeight="128px" offsetX={offsetX} offsetY={offsetY} width={cellWidth} height={cellHeight} />
             <BoundProperty component={SyncedSliderPropertyLine} key="CellIndex" label="Cell Index" target={sprite} propertyKey="cellIndex" min={0} step={1} max={maxCellCount} />
             <BoundProperty component={SwitchPropertyLine} key="InvertU" label="Invert U" target={sprite} propertyKey="invertU" />
             <BoundProperty component={SwitchPropertyLine} key="InvertV" label="Invert V" target={sprite} propertyKey="invertV" />
