@@ -4,7 +4,7 @@ import { Combobox as FluentComboBox, makeStyles, useComboboxFilter, useId } from
 import type { OptionOnSelectData, SelectionEvents } from "@fluentui/react-components";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { CustomTokens } from "./utils";
-import { PrimitiveProps } from "./primitive";
+import type { PrimitiveProps } from "./primitive";
 
 const useStyles = makeStyles({
     root: {
