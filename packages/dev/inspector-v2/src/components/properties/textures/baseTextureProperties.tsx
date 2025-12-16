@@ -24,7 +24,7 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
 
     return (
         <>
-            <TexturePreview texture={texture} width={256} height={256} />
+            <TexturePreview texture={texture} />
             <TextureUpload texture={texture} />
             <ButtonLine label="Edit Texture (coming soon!)" onClick={() => {}} />
         </>
