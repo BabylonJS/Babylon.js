@@ -5,39 +5,7 @@ import { BoundProperty } from "../boundProperty";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { ChooseTexturePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/chooseTexturePropertyLine";
-import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { usePropertyChangedNotifier } from "../../../contexts/propertyContext";
-import type { Scene } from "core/scene";
-
-/**
- * Helper to bind texture properties without needing defaultValue
- * @returns ChooseTexturePropertyLine component
- */
-const BoundTextureProperty: FunctionComponent<{
-    label: string;
-    target: PBRMaterial;
-    propertyKey: keyof PBRMaterial;
-    scene: Scene;
-    cubeOnly?: boolean;
-}> = ({ label, target, propertyKey, scene, cubeOnly }) => {
-    const value = useProperty(target, propertyKey);
-    const notifyPropertyChanged = usePropertyChangedNotifier();
-
-    return (
-        <ChooseTexturePropertyLine
-            label={label}
-            value={value}
-            onChange={(texture) => {
-                const oldValue = target[propertyKey];
-                (target as any)[propertyKey] = texture;
-                notifyPropertyChanged(target, propertyKey, oldValue, texture);
-            }}
-            scene={scene}
-            cubeOnly={cubeOnly}
-        />
-    );
-};
+import { BoundTextureProperty } from "../textures/boundTextureProperty";
 
 /**
  * Displays the lighting and color properties of a PBR material.

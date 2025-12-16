@@ -53,6 +53,7 @@
         "tsx": "^4.20.3",
         "typedoc": "^0.27.6",
         "typescript": "~5.7.0",
+        "typescript-eslint": "^8.50.0",
         "webpack": "^5.98.0",
         "webpack-cli": "^5.1.0"
     },

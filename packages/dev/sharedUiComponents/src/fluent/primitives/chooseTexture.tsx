@@ -48,23 +48,12 @@ export const ChooseTexture: FunctionComponent<ChooseTextureProps> = (props) => {
     const textureOptions = useMemo(() => {
         return scene.textures
             .filter((t) => t.name && (!cubeOnly || t.isCube))
-            .sort((a, b) => (a.displayName || a.name).localeCompare(b.displayName || b.name))
-            .map((t) => t.displayName || t.name);
+            .map((t) => t.displayName || t.name)
+            .sort((a, b) => a.localeCompare(b));
     }, [scene.textures, cubeOnly]);
 
-    // Map texture names to textures for lookup
-    const textureMap = useMemo(() => {
-        const map = new Map<string, BaseTexture>();
-        scene.textures.forEach((t) => {
-            if (t.name) {
-                map.set(t.displayName || t.name, t);
-            }
-        });
-        return map;
-    }, [scene.textures]);
-
     const handleTextureSelect = (textureName: string) => {
-        const texture = textureMap.get(textureName);
+        const texture = scene.textures.find((t) => (t.displayName || t.name) === textureName);
         onChange(texture ?? null);
     };
 
