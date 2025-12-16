@@ -42,6 +42,8 @@ type TextureUploadProps = TextureUploadUpdateProps | TextureUploadCreateProps;
  * A button that uploads a file and either:
  * - Updates an existing Texture or CubeTexture via updateURL (if texture prop is provided)
  * - Creates a new Texture or CubeTexture (if scene/onChange props are provided)
+ * @param props TextureUploadProps
+ * @returns UploadButton component that handles texture upload
  */
 export const TextureUpload: FunctionComponent<TextureUploadProps> = (props) => {
     TextureUpload.displayName = "TextureUpload";
