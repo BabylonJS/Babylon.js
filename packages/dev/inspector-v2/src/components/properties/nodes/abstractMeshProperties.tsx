@@ -28,13 +28,13 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
+import { ChooseMaterialPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/chooseEntityPropertyLine";
 
 // Ensures that the outlineRenderer and edgesRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/edgesRenderer";
 import "core/Rendering/outlineRenderer";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import { HexPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
-import { BoundChooseMaterialPropertyLine } from "../boundChooseEntity";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
@@ -53,7 +53,9 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
             <StringifiedPropertyLine label="Sub-Meshes" value={subMeshes.length} />
             <LinkToEntityPropertyLine label="Skeleton" description="The skeleton associated with the mesh." entity={skeleton} selectionService={selectionService} />
             <LinkToEntityPropertyLine label="Material" description="The material used by the mesh." entity={material} selectionService={selectionService} />
-            {!mesh.isAnInstance && <BoundChooseMaterialPropertyLine label="Active Material" target={mesh} propertyKey="material" scene={mesh.getScene()} />}
+            {!mesh.isAnInstance && (
+                <BoundProperty defaultValue={null} component={ChooseMaterialPropertyLine} label="Active Material" target={mesh} propertyKey="material" scene={mesh.getScene()} />
+            )}
             <BoundProperty component={SwitchPropertyLine} label="Is Pickable" target={mesh} propertyKey={"isPickable"} />
             {isAnInstance && mesh instanceof InstancedMesh && (
                 <LinkToEntityPropertyLine
