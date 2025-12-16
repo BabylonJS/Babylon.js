@@ -285,6 +285,21 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.SolidParticleIndex;
                 return block;
             }
+            case "SolidParticleVelocityBlock": {
+                const block = new ParticleInputBlock("Solid Particle Velocity");
+                block.contextualValue = NodeParticleContextualSources.SolidParticleVelocity;
+                return block;
+            }
+            case "SolidParticleScalingBlock": {
+                const block = new ParticleInputBlock("Solid Particle Scaling");
+                block.contextualValue = NodeParticleContextualSources.SolidParticleScaling;
+                return block;
+            }
+            case "SolidParticleRotationBlock": {
+                const block = new ParticleInputBlock("Solid Particle Rotation");
+                block.contextualValue = NodeParticleContextualSources.SolidParticleRotation;
+                return block;
+            }
             case "SpriteCellStartBlock": {
                 const block = new ParticleInputBlock("Sprite cell start");
                 block.contextualValue = NodeParticleContextualSources.SpriteCellStart;

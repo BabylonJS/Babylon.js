@@ -202,6 +202,21 @@ export class NodeParticleBuildState {
                     return null;
                 }
                 return (this.particleContext as SolidParticle).idx;
+            case NodeParticleContextualSources.SolidParticleVelocity:
+                if (!this._isSolidParticle) {
+                    return null;
+                }
+                return (this.particleContext as SolidParticle).velocity;
+            case NodeParticleContextualSources.SolidParticleScaling:
+                if (!this._isSolidParticle) {
+                    return null;
+                }
+                return (this.particleContext as SolidParticle).scaling;
+            case NodeParticleContextualSources.SolidParticleRotation:
+                if (!this._isSolidParticle) {
+                    return null;
+                }
+                return (this.particleContext as SolidParticle).rotation;
             case NodeParticleContextualSources.InitialDirection:
                 if (this._isSolidParticle) {
                     return null;
