@@ -529,11 +529,13 @@ export class GaussianSplattingMesh extends Mesh {
     public _getCameraDirection(camera: Camera): Vector3 {
         const cameraMatrix = camera.getViewMatrix();
         this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
-        cameraMatrix.invertToRef(TmpVectors.Matrix[0]);
-        this.getWorldMatrix().multiplyToRef(TmpVectors.Matrix[0], TmpVectors.Matrix[1]);
-        Vector3.TransformNormalToRef(Vector3.Forward(this._scene.useRightHandedSystem), TmpVectors.Matrix[1], TmpVectors.Vector3[2]);
-        TmpVectors.Vector3[2].normalize();
-        return TmpVectors.Vector3[2];
+
+        // return vector used to compute distance to camera
+        const localDirection = TmpVectors.Vector3[1];
+        localDirection.set(this._modelViewMatrix.m[2], this._modelViewMatrix.m[6], this._modelViewMatrix.m[10]);
+        localDirection.normalize();
+
+        return localDirection;
     }
 
     /** @internal */
