@@ -64,7 +64,7 @@ export const evaluatePlaywrightVisTests = async (
         page = await browser.newPage();
         await page.setViewportSize({ width: dimensions?.width || 600, height: dimensions?.height || 400 });
         await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
-            // waitUntil: "load", // for chrome should be "networkidle0"
+            // waitUntil: "load",
             timeout: 0,
         });
         await page.waitForSelector("#babylon-canvas", { timeout: 20000 });

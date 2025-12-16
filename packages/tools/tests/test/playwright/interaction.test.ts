@@ -7,7 +7,7 @@ let page: Page;
 test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
     await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
-        // waitUntil: "load", // for chrome should be "networkidle0"
+        // waitUntil: "load",
         timeout: 0,
     });
     await page.waitForSelector("#babylon-canvas", { timeout: 20000 });

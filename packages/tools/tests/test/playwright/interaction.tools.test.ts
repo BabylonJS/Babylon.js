@@ -15,7 +15,7 @@ test.beforeAll(async () => {
 
 test("NME is loaded correctly", async ({ page }) => {
     await page.goto(nmeUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -29,7 +29,7 @@ test("NME is loaded correctly", async ({ page }) => {
 
 test("NGE is loaded correctly", async ({ page }) => {
     await page.goto(ngeUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -43,7 +43,7 @@ test("NGE is loaded correctly", async ({ page }) => {
 
 test("GUIEditor is loaded", async ({ page }) => {
     await page.goto(guiUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -57,7 +57,7 @@ test("GUIEditor is loaded", async ({ page }) => {
 
 test("NRGE is loaded correctly", async ({ page }) => {
     await page.goto(nrgeUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -73,7 +73,7 @@ test("NRGE is loaded correctly", async ({ page }) => {
 
 test("[NME] User can drag graph nodes", async ({ page }) => {
     await page.goto(nmeUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -101,7 +101,7 @@ test("[NME] User can drag graph nodes", async ({ page }) => {
 
 test("[NME] User can zoom in and out of the graph", async ({ page }) => {
     await page.goto(nmeUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -134,7 +134,7 @@ test("[NME] User can zoom in and out of the graph", async ({ page }) => {
 
 test("[NME] User can add a new node to the graph", async ({ page }) => {
     await page.goto(nmeUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -178,7 +178,7 @@ test("[NME] User can add a new node to the graph", async ({ page }) => {
 
 test("[NGE] User can drag graph nodes", async ({ page }) => {
     await page.goto(ngeUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -206,7 +206,7 @@ test("[NGE] User can drag graph nodes", async ({ page }) => {
 
 test("[NGE] User can zoom in and out of the graph", async ({ page }) => {
     await page.goto(ngeUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -239,7 +239,7 @@ test("[NGE] User can zoom in and out of the graph", async ({ page }) => {
 
 test("[NGE] User can add a new node to the graph", async ({ page }) => {
     await page.goto(ngeUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -283,7 +283,7 @@ test("[NGE] User can add a new node to the graph", async ({ page }) => {
 
 test("[NRGE] User can drag graph nodes", async ({ page }) => {
     await page.goto(nrgeUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -311,7 +311,7 @@ test("[NRGE] User can drag graph nodes", async ({ page }) => {
 
 test("[NRGE] User can zoom in and out of the graph", async ({ page }) => {
     await page.goto(nrgeUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -344,7 +344,7 @@ test("[NRGE] User can zoom in and out of the graph", async ({ page }) => {
 
 test("[NRGE] User can add a new node to the graph", async ({ page }) => {
     await page.goto(nrgeUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -389,7 +389,7 @@ test("[NRGE] User can add a new node to the graph", async ({ page }) => {
 // single test adding, moving an element
 test("[GUIEDITOR] User can add and drag graph nodes", async ({ page }) => {
     await page.goto(guiUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
