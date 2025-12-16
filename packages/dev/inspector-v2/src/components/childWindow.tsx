@@ -3,7 +3,7 @@ import type { FunctionComponent, PropsWithChildren } from "react";
 
 import { createDOMRenderer, makeStyles, Portal, RendererProvider } from "@fluentui/react-components";
 // import { PortalMountNodeProvider } from "@fluentui/react-shared-contexts";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Logger } from "core/Misc/logger";
 import { OverlayContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
@@ -54,16 +54,16 @@ function ToFeaturesString(options: ChildWindowOptions) {
  * @returns An object that enables opening, closing, and rendering the child window.
  */
 export function useChildWindow(key?: string) {
-    const [windowState, setWindowState] = useState<{ window: Window; mountNode: HTMLElement; renderer: GriffelRenderer }>();
-    const [options, setOptions] = useState<ChildWindowOptions>();
+    const [windowState, setWindowState] = useState<{ mountNode: HTMLElement; renderer: GriffelRenderer }>();
+    const [childWindow, setChildWindow] = useState<Window>();
 
-    // This effect runs when the options state has changed. Options are passed into the open function,
-    // so non-null options means we are in an open state. Otherwise we are in a closed state.
-    useEffect(() => {
-        const disposeActions: (() => void)[] = [];
+    const storageKey = key ? `Babylon/Settings/ChildWindow/${key}/Bounds` : null;
 
-        if (options) {
-            const storageKey = key ? `Babylon/Settings/ChildWindow/${key}/Bounds` : null;
+    // This function is just for creating the child window itself. It is a function because
+    // it must be called synchronously in response to a user interaction (e.g. button click),
+    // otherwise the browser will block it as a scripted popup.
+    const createWindow = useCallback(
+        (options: ChildWindowOptions = {}) => {
             if (storageKey) {
                 const savedBounds = localStorage.getItem(storageKey);
                 if (savedBounds) {
@@ -96,77 +96,93 @@ export function useChildWindow(key?: string) {
                 options.defaultTop = window.screenY + (window.innerHeight - options.defaultHeight) * (2 / 3);
             }
 
+            // Try to create the child window (can be null if popups are blocked).
             const childWindow = window.open("", "", ToFeaturesString(options));
             if (childWindow) {
-                const body = childWindow.document.body;
-                body.style.width = "100%";
-                body.style.height = "100%";
-                body.style.margin = "0";
-                body.style.padding = "0";
-                body.style.display = "flex";
-                body.style.overflow = "hidden";
-
+                // Set the title if provided.
                 childWindow.document.title = options.title ?? "";
 
-                const applyWindowState = () => {
-                    // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
-                    setWindowState({ window: childWindow, mountNode: body, renderer: createDOMRenderer(childWindow.document) });
-                };
-
-                // Once the child window document is ready, setup the window state which will trigger another effect that renders into the child window.
-                if (childWindow.document.readyState === "complete") {
-                    applyWindowState();
-                } else {
-                    const onChildWindowLoad = () => {
-                        applyWindowState();
-                    };
-                    childWindow.addEventListener("load", onChildWindowLoad, { once: true });
-                    disposeActions.push(() => childWindow.removeEventListener("load", onChildWindowLoad));
-                }
-
-                // When the child window is closed for any reason, transition back to a closed state.
-                const onChildWindowUnload = () => {
-                    setWindowState(undefined);
-                    setOptions(undefined);
-                };
-                childWindow.addEventListener("unload", onChildWindowUnload, { once: true });
-                disposeActions.push(() => childWindow.removeEventListener("unload", onChildWindowUnload));
-
-                // If the main window closes, close any open child windows as well (don't leave them orphaned).
-                const onParentWindowUnload = () => {
-                    childWindow.close();
-                };
-                window.addEventListener("unload", onParentWindowUnload, { once: true });
-                disposeActions.push(() => window.removeEventListener("unload", onParentWindowUnload));
-
-                // On dispose, close the child window.
-                disposeActions.push(() => childWindow.close());
-
-                // On dispose, save the window bounds.
-                disposeActions.push(() => {
-                    if (storageKey) {
-                        localStorage.setItem(
-                            storageKey,
-                            JSON.stringify({
-                                left: childWindow.screenX,
-                                top: childWindow.screenY,
-                                width: childWindow.innerWidth,
-                                height: childWindow.innerHeight,
-                            })
-                        );
-                    }
+                // Set the child window state.
+                setChildWindow((current) => {
+                    // But first close any existing child window.
+                    current?.close();
+                    return childWindow;
                 });
-            } else {
-                // If creating a child window failed (e.g. popup blocked), then just revert to closed mode.
-                setOptions(undefined);
             }
+        },
+        [storageKey]
+    );
+
+    // This side effect runs any time the child window instance changes. It does the rest of the child window
+    // setup work, including creating resources and state needed to properly render the content of the child window.
+    useEffect(() => {
+        const disposeActions: (() => void)[] = [];
+
+        if (childWindow) {
+            const body = childWindow.document.body;
+            body.style.width = "100%";
+            body.style.height = "100%";
+            body.style.margin = "0";
+            body.style.padding = "0";
+            body.style.display = "flex";
+            body.style.overflow = "hidden";
+
+            const applyWindowState = () => {
+                // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
+                setWindowState({ mountNode: body, renderer: createDOMRenderer(childWindow.document) });
+            };
+
+            // Once the child window document is ready, setup the window state which will trigger another effect that renders into the child window.
+            if (childWindow.document.readyState === "complete") {
+                applyWindowState();
+            } else {
+                const onChildWindowLoad = () => {
+                    applyWindowState();
+                };
+                childWindow.addEventListener("load", onChildWindowLoad, { once: true });
+                disposeActions.push(() => childWindow.removeEventListener("load", onChildWindowLoad));
+            }
+
+            // When the child window is closed for any reason, transition back to a closed state.
+            const onChildWindowUnload = () => {
+                setWindowState(undefined);
+                setChildWindow(undefined);
+            };
+            childWindow.addEventListener("unload", onChildWindowUnload, { once: true });
+            disposeActions.push(() => childWindow.removeEventListener("unload", onChildWindowUnload));
+
+            // If the main window closes, close any open child windows as well (don't leave them orphaned).
+            const onParentWindowUnload = () => {
+                childWindow.close();
+            };
+            window.addEventListener("unload", onParentWindowUnload, { once: true });
+            disposeActions.push(() => window.removeEventListener("unload", onParentWindowUnload));
+
+            // On dispose, close the child window.
+            disposeActions.push(() => childWindow.close());
+
+            // On dispose, save the window bounds.
+            disposeActions.push(() => {
+                if (storageKey) {
+                    localStorage.setItem(
+                        storageKey,
+                        JSON.stringify({
+                            left: childWindow.screenX,
+                            top: childWindow.screenY,
+                            width: childWindow.innerWidth,
+                            height: childWindow.innerHeight,
+                        })
+                    );
+                }
+            });
         }
 
         return () => {
             disposeActions.reverse().forEach((dispose) => dispose());
         };
-    }, [options]);
+    }, [childWindow]);
 
+    // This is the actual component that the caller can use to render React components in the child window.
     const component = useMemo<FunctionComponent<PropsWithChildren>>(() => {
         return (props: PropsWithChildren) => {
             const { children } = props;
@@ -197,9 +213,9 @@ export function useChildWindow(key?: string) {
     }, [windowState]);
 
     return {
-        open: (options?: ChildWindowOptions) => setOptions(options ?? {}),
-        close: () => setOptions(undefined),
-        isOpen: !!options,
+        open: createWindow,
+        close: () => setChildWindow(undefined),
+        isOpen: !!childWindow,
         component,
     };
 }
