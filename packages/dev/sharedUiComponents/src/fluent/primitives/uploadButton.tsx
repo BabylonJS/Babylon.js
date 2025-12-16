@@ -22,6 +22,8 @@ type UploadButtonProps = Omit<ButtonProps, "onClick" | "icon"> & {
 /**
  * A button that triggers a file upload dialog.
  * Combines a Button with a hidden file input.
+ * @param props UploadButtonProps
+ * @returns UploadButton component
  */
 export const UploadButton: FunctionComponent<UploadButtonProps> = (props) => {
     const { onUpload, accept, label, ...buttonProps } = props;
