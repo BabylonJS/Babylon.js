@@ -192,7 +192,7 @@ export const SpriteCellProperties: FunctionComponent<{ sprite: Sprite }> = (prop
 
     return (
         <>
-            <TexturePreview disableToolbar texture={texture} maxHeight="128px" offsetX={offsetX} offsetY={offsetY} width={cellWidth} height={cellHeight} />
+            <TexturePreview disableToolbar texture={texture} maxHeight="160px" offsetX={offsetX} offsetY={offsetY} width={cellWidth} height={cellHeight} />
             <BoundProperty component={SyncedSliderPropertyLine} key="CellIndex" label="Cell Index" target={sprite} propertyKey="cellIndex" min={0} step={1} max={maxCellCount} />
             <BoundProperty component={SwitchPropertyLine} key="InvertU" label="Invert U" target={sprite} propertyKey="invertU" />
             <BoundProperty component={SwitchPropertyLine} key="InvertV" label="Invert V" target={sprite} propertyKey="invertV" />
