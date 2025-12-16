@@ -1,7 +1,7 @@
 import type { Vector3 } from "core/Maths/math.vector";
 import type { FilesInput } from "core/Misc/filesInput";
 import { Observable } from "core/Misc/observable";
-import type { Scene } from "core/scene";
+import type { IDisposable, Scene } from "core/scene";
 
 type InspectorV2Module = typeof import("inspector-v2/legacy/legacy") & typeof import("inspector-v2/index");
 
@@ -35,6 +35,7 @@ export class GlobalState {
     }
 
     private readonly _inspectorV2ModulePromise: Promise<InspectorV2Module | undefined>;
+    private _hotkeyDisposable: IDisposable | null = null;
 
     constructor(private readonly _versionInfo: { version: string; bundles: string[] }) {
         this._inspectorV2ModulePromise = new Promise((resolve) => {
@@ -67,6 +68,13 @@ export class GlobalState {
         const inspectorV2Module = await this._inspectorV2ModulePromise;
         inspectorV2Module?.AttachInspectorGlobals();
         inspectorV2Module?.Inspector.Show(this.currentScene, {});
+
+        // Set up gizmo hotkeys for inspector v2
+        const handle = inspectorV2Module?.Inspector.CurrentHandle;
+        const canvas = this.currentScene.getEngine().getRenderingCanvas();
+        if (handle && canvas) {
+            this._hotkeyDisposable = handle.setupGizmoHotkeys(canvas);
+        }
     }
 
     public showDebugLayer() {
@@ -91,6 +99,11 @@ export class GlobalState {
     public hideDebugLayer() {
         if (this.isDebugLayerEnabled) {
             this.isDebugLayerEnabled = false;
+
+            // Dispose hotkeys
+            this._hotkeyDisposable?.dispose();
+            this._hotkeyDisposable = null;
+
             if (this.currentScene) {
                 if (!this._isInspectorV2ModeEnabled) {
                     this.currentScene.debugLayer.hide();

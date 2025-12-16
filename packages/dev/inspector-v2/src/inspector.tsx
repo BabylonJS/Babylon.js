@@ -3,7 +3,9 @@ import type { Nullable } from "core/types";
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
 import type { ModularToolOptions } from "./modularTool";
 import type { ISceneContext } from "./services/sceneContext";
+import type { ISelectionService } from "./services/selectionService";
 import type { IShellService } from "./services/shellService";
+import type { GizmoMode, CoordinatesMode, IGizmoToolbarService } from "./services/gizmoToolbarService";
 
 import { AsyncLock } from "core/Misc/asyncLock";
 import { Logger } from "core/Misc/logger";
@@ -13,7 +15,7 @@ import { DefaultInspectorExtensionFeed } from "./extensibility/defaultInspectorE
 import { LegacyInspectableObjectPropertiesServiceDefinition } from "./legacy/inspectableCustomPropertiesService";
 import { MakeModularTool } from "./modularTool";
 import { GizmoServiceDefinition } from "./services/gizmoService";
-import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
+import { GizmoToolbarServiceDefinition, GizmoToolbarServiceIdentity } from "./services/gizmoToolbarService";
 import { MiniStatsServiceDefinition } from "./services/miniStatsService";
 import { DebugServiceDefinition } from "./services/panes/debugService";
 import { AnimationGroupPropertiesServiceDefinition } from "./services/panes/properties/animationGroupPropertiesService";
@@ -56,22 +58,77 @@ import { StatsServiceDefinition } from "./services/panes/statsService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { PickingServiceDefinition } from "./services/pickingService";
 import { SceneContextIdentity } from "./services/sceneContext";
-import { SelectionServiceDefinition } from "./services/selectionService";
+import { SelectionServiceDefinition, SelectionServiceIdentity } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 
 export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & { autoResizeEngine?: boolean };
 
+/**
+ * Handle returned by ShowInspector that provides control over the inspector.
+ */
+export interface IInspectorHandle extends IDisposable {
+    /**
+     * Gets the current gizmo mode, or null if no gizmo is active.
+     * Returns null if the inspector is not yet fully initialized.
+     */
+    getGizmoMode(): Nullable<GizmoMode>;
+
+    /**
+     * Sets the active gizmo mode. Pass null to disable all gizmos.
+     * @param mode The gizmo mode to activate, or null to disable.
+     */
+    setGizmoMode(mode: Nullable<GizmoMode>): void;
+
+    /**
+     * Gets the current coordinates mode for gizmos.
+     * Returns "world" if the inspector is not yet fully initialized.
+     */
+    getCoordinatesMode(): CoordinatesMode;
+
+    /**
+     * Sets the coordinates mode for gizmos (local or world space).
+     * @param mode The coordinates mode to use.
+     */
+    setCoordinatesMode(mode: CoordinatesMode): void;
+
+    /**
+     * Gets the currently selected entity in the inspector.
+     * Returns null if nothing is selected or if the inspector is not yet fully initialized.
+     */
+    getSelectedEntity(): Nullable<unknown>;
+
+    /**
+     * Sets the selected entity in the inspector.
+     * @param entity The entity to select, or null to clear selection.
+     */
+    setSelectedEntity(entity: Nullable<unknown>): void;
+
+    /**
+     * Sets up keyboard hotkeys for gizmo control.
+     * Hotkeys are only active when the target element has focus or is hovered.
+     * - W: Translate mode
+     * - E: Rotate mode
+     * - R: Scale mode
+     * - T: Bounding box mode
+     * - Q: Disable gizmo
+     * - X: Toggle local/world coordinates
+     * @param targetElement The element to monitor for focus/hover. Typically the canvas.
+     * @returns A dispose function to remove the hotkey listeners.
+     */
+    setupGizmoHotkeys(targetElement: HTMLElement): IDisposable;
+}
+
 // TODO: The key should probably be the Canvas, because we only want to show one inspector instance per canvas.
 //       If it is called for a different scene that is rendering to the same canvas, then we should probably
 //       switch the inspector instance to that scene (once this is supported).
-const InspectorTokens = new WeakMap<Scene, IDisposable>();
+const InspectorTokens = new WeakMap<Scene, IInspectorHandle>();
 
 // This async lock is used to sequentialize all calls to ShowInspector and dispose of existing inspectors.
 // This is needed because each time Inspector is shown or hidden, it is potentially mutating the same DOM element.
 const InspectorLock = new AsyncLock();
 
-export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> = {}): IDisposable {
+export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> = {}): IInspectorHandle {
     // Dispose of any existing inspector for this scene.
     InspectorTokens.get(scene)?.dispose();
 
@@ -79,19 +136,89 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
     // to show the Inspector and there will be cleanup work to do.
     let disposeAsync = async () => await Promise.resolve();
 
-    // Create an inspector dispose token. The dispose will use the same async lock to
-    // make sure async dispose (hide) does not actually start until async show is finished.
-    const inspectorToken = {
+    // Service references - populated when services are ready
+    const serviceRefs: { gizmoToolbar: IGizmoToolbarService | null; selection: ISelectionService | null } = {
+        gizmoToolbar: null,
+        selection: null,
+    };
+
+    // Create an inspector handle with dispose and control methods.
+    const inspectorHandle: IInspectorHandle = {
         dispose: () => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             InspectorLock.lockAsync(async () => {
                 await disposeAsync();
             });
         },
-    } as const;
+        getGizmoMode: () => serviceRefs.gizmoToolbar?.gizmoMode ?? null,
+        setGizmoMode: (mode: Nullable<GizmoMode>) => {
+            if (serviceRefs.gizmoToolbar) {
+                serviceRefs.gizmoToolbar.gizmoMode = mode;
+            }
+        },
+        getCoordinatesMode: () => serviceRefs.gizmoToolbar?.coordinatesMode ?? "world",
+        setCoordinatesMode: (mode: CoordinatesMode) => {
+            if (serviceRefs.gizmoToolbar) {
+                serviceRefs.gizmoToolbar.coordinatesMode = mode;
+            }
+        },
+        getSelectedEntity: () => serviceRefs.selection?.selectedEntity ?? null,
+        setSelectedEntity: (entity: Nullable<unknown>) => {
+            if (serviceRefs.selection) {
+                serviceRefs.selection.selectedEntity = entity;
+            }
+        },
+        setupGizmoHotkeys: (targetElement: HTMLElement) => {
+            const handler = (e: KeyboardEvent) => {
+                // Only handle hotkeys when target element has focus or is hovered
+                const activeElement = document.activeElement;
+                const isFocused = activeElement === targetElement || targetElement.contains(activeElement);
+                const isHovered = targetElement.matches(":hover");
 
-    // Track the inspector token for the scene.
-    InspectorTokens.set(scene, inspectorToken);
+                if (!isFocused && !isHovered) {
+                    return;
+                }
+
+                // Ignore if modifier keys are pressed
+                if (e.ctrlKey || e.metaKey || e.altKey) {
+                    return;
+                }
+
+                switch (e.key.toLowerCase()) {
+                    case "w":
+                        inspectorHandle.setGizmoMode("translate");
+                        break;
+                    case "e":
+                        inspectorHandle.setGizmoMode("rotate");
+                        break;
+                    case "r":
+                        inspectorHandle.setGizmoMode("scale");
+                        break;
+                    case "t":
+                        inspectorHandle.setGizmoMode("boundingBox");
+                        break;
+                    case "q":
+                        inspectorHandle.setGizmoMode(null);
+                        break;
+                    case "x":
+                        inspectorHandle.setCoordinatesMode(inspectorHandle.getCoordinatesMode() === "local" ? "world" : "local");
+                        break;
+                    default:
+                        return;
+                }
+
+                e.preventDefault();
+            };
+
+            window.addEventListener("keydown", handler);
+            return {
+                dispose: () => window.removeEventListener("keydown", handler),
+            };
+        },
+    };
+
+    // Track the inspector handle for the scene.
+    InspectorTokens.set(scene, inspectorHandle);
 
     // Set default options.
     options = {
@@ -271,8 +398,18 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
                 // Tracks entity selection state (e.g. which Mesh or Material or other entity is currently selected in scene explorer and bound to the properties pane, etc.).
                 SelectionServiceDefinition,
 
-                // Gizmos for manipulating objects in the scene.
+                // Gizmo toolbar for manipulating objects in the scene.
                 GizmoToolbarServiceDefinition,
+
+                // Captures service references for external control via IInspectorHandle.
+                {
+                    friendlyName: "Inspector Handle Wiring",
+                    consumes: [GizmoToolbarServiceIdentity, SelectionServiceIdentity],
+                    factory: (gizmoToolbar: IGizmoToolbarService, selection: ISelectionService) => {
+                        serviceRefs.gizmoToolbar = gizmoToolbar;
+                        serviceRefs.selection = selection;
+                    },
+                } as ServiceDefinition<[], [IGizmoToolbarService, ISelectionService]>,
 
                 // Allows picking objects from the scene to select them.
                 PickingServiceDefinition,
@@ -299,7 +436,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         disposeActions.push(() => modularTool.dispose());
 
         const sceneDisposedObserver = scene.onDisposeObservable.addOnce(() => {
-            inspectorToken.dispose();
+            inspectorHandle.dispose();
         });
 
         disposeActions.push(() => sceneDisposedObserver.remove());
@@ -309,5 +446,5 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         });
     });
 
-    return inspectorToken;
+    return inspectorHandle;
 }
