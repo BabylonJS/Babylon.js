@@ -1,4 +1,4 @@
-import type { FunctionComponent, Ref } from "react";
+import type { CSSProperties, FunctionComponent, Ref } from "react";
 
 import type { BaseTexture } from "core/index";
 
@@ -29,12 +29,15 @@ const useStyles = makeStyles({
     },
     preview: {
         border: `1px solid ${tokens.colorNeutralStroke1}`,
-        marginTop: tokens.spacingVerticalXS,
-        maxWidth: "100%",
-        marginLeft: "auto",
-        marginRight: "auto",
-        marginBottom: tokens.spacingVerticalS,
         display: "block",
+        objectFit: "contain",
+    },
+    previewContainer: {
+        display: "flex",
+        justifyContent: "center",
+        marginTop: tokens.spacingVerticalXS,
+        marginBottom: tokens.spacingVerticalS,
+        width: "100%",
     },
 });
 
@@ -53,79 +56,69 @@ export type TexturePreviewImperativeRef = {
 
 export type TexturePreviewProps = {
     texture: BaseTexture;
-    width: number;
-    height: number;
+    disableToolbar?: boolean;
+    maxWidth?: string;
+    maxHeight?: string;
+    offsetX?: number;
+    offsetY?: number;
+    width?: number;
+    height?: number;
     imperativeRef?: Ref<TexturePreviewImperativeRef>;
 };
 
 export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) => {
-    let { width, height } = props;
-    const { texture, imperativeRef } = props;
+    const { texture, disableToolbar = false, maxWidth = "100%", maxHeight = "384px", offsetX = 0, offsetY = 0, width, height, imperativeRef } = props;
     const classes = useStyles();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [channels, setChannels] = useState<(typeof TextureChannelStates)[keyof typeof TextureChannelStates]>(TextureChannelStates.ALL);
     const [face, setFace] = useState(0);
+    const [canvasStyle, setCanvasStyle] = useState<CSSProperties>();
     const internalTexture = useProperty(texture, "_texture");
 
     const { size } = useContext(ToolContext);
 
-    const updatePreviewCanvasSize = useCallback(
-        (previewCanvas: HTMLCanvasElement) => {
-            // This logic was brought over from inspectorv1 and can likely be refactored/simplified
-            const size = texture.getSize();
-            const ratio = size.width / size.height;
-            height = (width / ratio) | 1;
-            const engine = texture.getScene()?.getEngine();
-
-            if (engine && height > engine.getCaps().maxTextureSize) {
-                width = size.width;
-                height = size.height;
-            }
-
-            if (width !== previewCanvas.width || height !== previewCanvas.height) {
-                previewCanvas.width = width;
-                previewCanvas.height = height;
-                previewCanvas.style.width = width + "px";
-                previewCanvas.style.height = height + "px";
-            }
-
-            return {
-                width,
-                height,
-            };
-        },
-        [canvasRef.current, texture, width, height, internalTexture]
-    );
-
     const updatePreviewAsync = useCallback(async () => {
-        const previewCanvas = canvasRef.current;
-        if (!previewCanvas) {
+        const canvas = canvasRef.current;
+        if (!canvas) {
             return;
         }
         try {
             await WhenTextureReadyAsync(texture); // Ensure texture is loaded before grabbing size
-            const { width, height } = updatePreviewCanvasSize(previewCanvas); // Grab desired size
-            const data = await ApplyChannelsToTextureDataAsync(texture, width, height, face, channels); // get channel data to load onto canvas context
-            const context = previewCanvas.getContext("2d");
+            const { width: textureWidth, height: textureHeight } = texture.getSize();
+
+            // Set canvas dimensions to the sub-region size
+            canvas.width = width ?? textureWidth;
+            canvas.height = height ?? textureHeight;
+
+            // Calculate the width that corresponds to maxHeight while maintaining aspect ratio
+            const aspectRatio = canvas.width / canvas.height;
+            // Use CSS min() to pick the smaller of maxWidth or the width that corresponds to maxHeight
+            const imageWidth = `min(${maxWidth}, calc(${maxHeight} * ${aspectRatio}))`;
+            setCanvasStyle({ width: imageWidth });
+
+            // Get full texture data, then draw only the sub-region
+            const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, face, channels);
+            const context = canvas.getContext("2d");
             if (context) {
-                const imageData = context.createImageData(width, height);
-                imageData.data.set(data);
-                context.putImageData(imageData, 0, 0);
+                const fullImageData = context.createImageData(textureWidth, textureHeight);
+                fullImageData.data.set(data);
+                // Use putImageData with dirty rect to draw only the sub-region
+                context.putImageData(fullImageData, -offsetX, -offsetY, offsetX, offsetY, canvas.width, canvas.height);
             }
         } catch {
-            updatePreviewCanvasSize(previewCanvas); // If we fail above, best effort sizing preview canvas
+            // If we fail, leave the canvas empty
         }
-    }, [[texture, width, height, face, channels, internalTexture]]);
+    }, [texture, face, channels, offsetX, offsetY, width, height, internalTexture]);
 
     useImperativeHandle(imperativeRef, () => ({ refresh: updatePreviewAsync }), [updatePreviewAsync]);
 
     useEffect(() => {
         void updatePreviewAsync();
-    }, [texture, width, height, face, channels, internalTexture]);
+    }, [updatePreviewAsync]);
 
     return (
         <div className={classes.root}>
-            {texture.isCube ? (
+            {disableToolbar ? null : texture.isCube ? (
                 <Toolbar className={classes.controls} size={size} aria-label="Cube Faces">
                     {["+X", "-X", "+Y", "-Y", "+Z", "-Z"].map((label, idx) => (
                         <ToolbarButton className={classes.controlButton} key={label} appearance={face === idx ? "primary" : "subtle"} onClick={() => setFace(idx)}>
@@ -147,7 +140,9 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
                     ))}
                 </Toolbar>
             )}
-            <canvas ref={canvasRef} className={classes.preview} />
+            <div className={classes.previewContainer}>
+                <canvas ref={canvasRef} className={classes.preview} style={canvasStyle} />
+            </div>
             {texture.isRenderTarget && (
                 <Button
                     appearance="outline"
