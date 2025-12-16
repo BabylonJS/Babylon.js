@@ -46,6 +46,7 @@ const TextureChannelStates = {
 
 type TexturePreviewProps = {
     texture: BaseTexture;
+    disableToolbar?: boolean;
     maxWidth?: string;
     maxHeight?: string;
     offsetX?: number;
@@ -55,7 +56,16 @@ type TexturePreviewProps = {
 };
 
 export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) => {
-    const { texture, maxWidth = "100%", maxHeight = "384px", offsetX = 0, offsetY = 0, width = texture.getSize().width, height = texture.getSize().height } = props;
+    const {
+        texture,
+        disableToolbar = false,
+        maxWidth = "100%",
+        maxHeight = "384px",
+        offsetX = 0,
+        offsetY = 0,
+        width = texture.getSize().width,
+        height = texture.getSize().height,
+    } = props;
     const classes = useStyles();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [channels, setChannels] = useState<(typeof TextureChannelStates)[keyof typeof TextureChannelStates]>(TextureChannelStates.ALL);
@@ -108,7 +118,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
 
     return (
         <div className={classes.root}>
-            {texture.isCube ? (
+            {disableToolbar ? null : texture.isCube ? (
                 <Toolbar className={classes.controls} size={size} aria-label="Cube Faces">
                     {["+X", "-X", "+Y", "-Y", "+Z", "-Z"].map((label, idx) => (
                         <ToolbarButton className={classes.controlButton} key={label} appearance={face === idx ? "primary" : "subtle"} onClick={() => setFace(idx)}>
