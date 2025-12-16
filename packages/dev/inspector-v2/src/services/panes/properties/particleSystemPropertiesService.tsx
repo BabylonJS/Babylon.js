@@ -17,31 +17,62 @@ import {
 } from "../../../components/properties/particles/particleSystemProperties";
 import { ParticleSystem } from "core/Particles/particleSystem";
 
+function IsParticleSystem(entity: unknown): entity is ParticleSystem {
+    return entity instanceof ParticleSystem;
+}
+
+function IsNonNodeParticleSystem(entity: unknown): entity is ParticleSystem {
+    return entity instanceof ParticleSystem && !entity.isNodeGenerated;
+}
+
 export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Particle System Properties",
     consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
     factory: (propertiesService, selectionService) => {
-        // TODO-iv2 complete the ParticleSystemPropertiesService registrations and the ParticleSystemProperties component(s) - ensuring the proper predicates (IParticleSystem vs ParticleSystem)
+        // Register each section in its own call to keep ordering predictable across registrations.
+        // Note: section `order` is not globally sorted across different registrations, so call order matters.
 
-        const particleSystemContent = propertiesService.addSectionContent({
-            key: "Particle System Properties",
-            predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem,
+        const particleSystemGeneralContent = propertiesService.addSectionContent({
+            key: "Particle System General Properties",
+            predicate: IsParticleSystem,
             content: [
                 {
                     section: "General",
                     order: 1,
                     component: ({ context }) => <ParticleSystemGeneralProperties particleSystem={context} />,
                 },
+            ],
+        });
+
+        // The Attractors section must not be visible at all (including the accordion entry) for node-generated systems.
+        const particleSystemAttractorsContent = propertiesService.addSectionContent({
+            key: "Particle System Attractors Properties",
+            predicate: IsNonNodeParticleSystem,
+            content: [
                 {
                     section: "Attractors",
                     order: 2,
                     component: ({ context }) => <ParticleSystemAttractorProperties particleSystem={context} />,
                 },
+            ],
+        });
+
+        const particleSystemEmitterContent = propertiesService.addSectionContent({
+            key: "Particle System Emitter Properties",
+            predicate: IsParticleSystem,
+            content: [
                 {
                     section: "Emitter",
                     order: 3,
                     component: ({ context }) => <ParticleSystemEmitterProperties particleSystem={context} selectionService={selectionService} />,
                 },
+            ],
+        });
+
+        const particleSystemEmissionContent = propertiesService.addSectionContent({
+            key: "Particle System Emission Properties",
+            predicate: IsParticleSystem,
+            content: [
                 {
                     section: "Emission",
                     order: 4,
@@ -53,7 +84,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // The Size section must not be visible at all (including the accordion entry) for node-generated systems.
         const particleSystemSizeContent = propertiesService.addSectionContent({
             key: "Particle System Size Properties",
-            predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem && !entity.isNodeGenerated,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Size",
@@ -63,10 +94,10 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
             ],
         });
 
-        // The Lifetime section is only visible for non-node-based systems.
+        // Lifetime is registered for all systems; the component limits the visible fields for node-generated systems.
         const particleSystemLifetimeContent = propertiesService.addSectionContent({
             key: "Particle System Lifetime Properties",
-            predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem,
+            predicate: IsParticleSystem,
             content: [
                 {
                     section: "Lifetime",
@@ -79,7 +110,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // Register Color after Lifetime.
         const particleSystemColorContent = propertiesService.addSectionContent({
             key: "Particle System Color Properties",
-            predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem && !entity.isNodeGenerated,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Colors",
@@ -92,7 +123,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // Register Rotation after Colors.
         const particleSystemRotationContent = propertiesService.addSectionContent({
             key: "Particle System Rotation Properties",
-            predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem && !entity.isNodeGenerated,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Rotation",
@@ -105,7 +136,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // Register Spritesheet after Rotation.
         const particleSystemSpritesheetContent = propertiesService.addSectionContent({
             key: "Particle System Spritesheet Properties",
-            predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem && !entity.isNodeGenerated,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Spritesheet",
@@ -116,7 +147,10 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         });
         return {
             dispose: () => {
-                particleSystemContent.dispose();
+                particleSystemGeneralContent.dispose();
+                particleSystemAttractorsContent.dispose();
+                particleSystemEmitterContent.dispose();
+                particleSystemEmissionContent.dispose();
                 particleSystemSizeContent.dispose();
                 particleSystemLifetimeContent.dispose();
                 particleSystemColorContent.dispose();
