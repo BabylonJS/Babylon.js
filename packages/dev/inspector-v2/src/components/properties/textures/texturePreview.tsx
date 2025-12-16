@@ -26,12 +26,15 @@ const useStyles = makeStyles({
     },
     preview: {
         border: `1px solid ${tokens.colorNeutralStroke1}`,
-        marginTop: tokens.spacingVerticalXS,
-        maxWidth: "100%",
-        marginLeft: "auto",
-        marginRight: "auto",
-        marginBottom: tokens.spacingVerticalS,
         display: "block",
+        objectFit: "contain",
+    },
+    previewContainer: {
+        display: "flex",
+        justifyContent: "center",
+        marginTop: tokens.spacingVerticalXS,
+        marginBottom: tokens.spacingVerticalS,
+        width: "100%",
     },
 });
 
@@ -74,47 +77,41 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
 
     const { size } = useContext(ToolContext);
 
-    const updatePreviewCanvasSize = useCallback(
-        (previewCanvas: HTMLCanvasElement) => {
-            const ratio = width / height;
-
-            previewCanvas.width = width;
-            previewCanvas.height = height;
-            previewCanvas.style.width = "auto";
-            previewCanvas.style.height = "auto";
-            previewCanvas.style.maxWidth = maxWidth;
-            previewCanvas.style.maxHeight = maxHeight;
-            previewCanvas.style.aspectRatio = `${ratio}`;
-        },
-        [canvasRef.current, texture, internalTexture, maxHeight, width, height]
-    );
-
     const updatePreviewAsync = useCallback(async () => {
-        const previewCanvas = canvasRef.current;
-        if (!previewCanvas) {
+        const canvas = canvasRef.current;
+        if (!canvas) {
             return;
         }
         try {
             await WhenTextureReadyAsync(texture); // Ensure texture is loaded before grabbing size
-            updatePreviewCanvasSize(previewCanvas);
             const { width: textureWidth, height: textureHeight } = texture.getSize();
+
+            // Set canvas dimensions to the sub-region size
+            canvas.width = width;
+            canvas.height = height;
+
             // Get full texture data, then draw only the sub-region
             const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, face, channels);
-            const context = previewCanvas.getContext("2d");
+            const context = canvas.getContext("2d");
             if (context) {
-                const imageData = context.createImageData(textureWidth, textureHeight);
-                imageData.data.set(data);
+                const fullImageData = context.createImageData(textureWidth, textureHeight);
+                fullImageData.data.set(data);
                 // Use putImageData with dirty rect to draw only the sub-region
-                context.putImageData(imageData, -offsetX, -offsetY, offsetX, offsetY, width, height);
+                context.putImageData(fullImageData, -offsetX, -offsetY, offsetX, offsetY, width, height);
             }
         } catch {
-            updatePreviewCanvasSize(previewCanvas); // If we fail above, best effort sizing preview canvas
+            // If we fail, leave the canvas empty
         }
-    }, [[texture, face, channels, updatePreviewCanvasSize, offsetX, offsetY, width, height]]);
+    }, [texture, face, channels, offsetX, offsetY, width, height, internalTexture]);
 
     useEffect(() => {
         void updatePreviewAsync();
     }, [updatePreviewAsync]);
+
+    // Calculate the width that corresponds to maxHeight while maintaining aspect ratio
+    const aspectRatio = width / height;
+    // Use CSS min() to pick the smaller of maxWidth or the width that corresponds to maxHeight
+    const imageWidth = `min(${maxWidth}, calc(${maxHeight} * ${aspectRatio}))`;
 
     return (
         <div className={classes.root}>
@@ -140,7 +137,9 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
                     ))}
                 </Toolbar>
             )}
-            <canvas ref={canvasRef} className={classes.preview} />
+            <div className={classes.previewContainer}>
+                <canvas ref={canvasRef} className={classes.preview} style={{ width: imageWidth }} />
+            </div>
             {texture.isRenderTarget && (
                 <Button
                     appearance="outline"
