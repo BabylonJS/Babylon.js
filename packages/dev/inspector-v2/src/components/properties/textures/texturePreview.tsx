@@ -1,7 +1,7 @@
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Button, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
 import { useRef, useState, useEffect, useCallback, useContext } from "react";
-import type { FunctionComponent } from "react";
+import type { CSSProperties, FunctionComponent } from "react";
 import { GetTextureDataAsync, WhenTextureReadyAsync } from "core/Misc/textureTools";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import type { Texture } from "core/Materials";
@@ -59,20 +59,12 @@ type TexturePreviewProps = {
 };
 
 export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) => {
-    const {
-        texture,
-        disableToolbar = false,
-        maxWidth = "100%",
-        maxHeight = "384px",
-        offsetX = 0,
-        offsetY = 0,
-        width = texture.getSize().width,
-        height = texture.getSize().height,
-    } = props;
+    const { texture, disableToolbar = false, maxWidth = "100%", maxHeight = "384px", offsetX = 0, offsetY = 0, width, height } = props;
     const classes = useStyles();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [channels, setChannels] = useState<(typeof TextureChannelStates)[keyof typeof TextureChannelStates]>(TextureChannelStates.ALL);
     const [face, setFace] = useState(0);
+    const [canvasStyle, setCanvasStyle] = useState<CSSProperties>();
     const internalTexture = useProperty(texture, "_texture");
 
     const { size } = useContext(ToolContext);
@@ -87,8 +79,14 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
             const { width: textureWidth, height: textureHeight } = texture.getSize();
 
             // Set canvas dimensions to the sub-region size
-            canvas.width = width;
-            canvas.height = height;
+            canvas.width = width ?? textureWidth;
+            canvas.height = height ?? textureHeight;
+
+            // Calculate the width that corresponds to maxHeight while maintaining aspect ratio
+            const aspectRatio = canvas.width / canvas.height;
+            // Use CSS min() to pick the smaller of maxWidth or the width that corresponds to maxHeight
+            const imageWidth = `min(${maxWidth}, calc(${maxHeight} * ${aspectRatio}))`;
+            setCanvasStyle({ width: imageWidth });
 
             // Get full texture data, then draw only the sub-region
             const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, face, channels);
@@ -97,7 +95,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
                 const fullImageData = context.createImageData(textureWidth, textureHeight);
                 fullImageData.data.set(data);
                 // Use putImageData with dirty rect to draw only the sub-region
-                context.putImageData(fullImageData, -offsetX, -offsetY, offsetX, offsetY, width, height);
+                context.putImageData(fullImageData, -offsetX, -offsetY, offsetX, offsetY, canvas.width, canvas.height);
             }
         } catch {
             // If we fail, leave the canvas empty
@@ -107,11 +105,6 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
     useEffect(() => {
         void updatePreviewAsync();
     }, [updatePreviewAsync]);
-
-    // Calculate the width that corresponds to maxHeight while maintaining aspect ratio
-    const aspectRatio = width / height;
-    // Use CSS min() to pick the smaller of maxWidth or the width that corresponds to maxHeight
-    const imageWidth = `min(${maxWidth}, calc(${maxHeight} * ${aspectRatio}))`;
 
     return (
         <div className={classes.root}>
@@ -138,7 +131,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
                 </Toolbar>
             )}
             <div className={classes.previewContainer}>
-                <canvas ref={canvasRef} className={classes.preview} style={{ width: imageWidth }} />
+                <canvas ref={canvasRef} className={classes.preview} style={canvasStyle} />
             </div>
             {texture.isRenderTarget && (
                 <Button
