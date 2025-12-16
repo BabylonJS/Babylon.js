@@ -34,6 +34,7 @@ import "core/Rendering/edgesRenderer";
 import "core/Rendering/outlineRenderer";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import { HexPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
+import { BoundChooseMaterialPropertyLine } from "../boundChooseEntity";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
@@ -52,6 +53,7 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
             <StringifiedPropertyLine label="Sub-Meshes" value={subMeshes.length} />
             <LinkToEntityPropertyLine label="Skeleton" description="The skeleton associated with the mesh." entity={skeleton} selectionService={selectionService} />
             <LinkToEntityPropertyLine label="Material" description="The material used by the mesh." entity={material} selectionService={selectionService} />
+            {!mesh.isAnInstance && <BoundChooseMaterialPropertyLine label="Active Material" target={mesh} propertyKey="material" scene={mesh.getScene()} />}
             <BoundProperty component={SwitchPropertyLine} label="Is Pickable" target={mesh} propertyKey={"isPickable"} />
             {isAnInstance && mesh instanceof InstancedMesh && (
                 <LinkToEntityPropertyLine

@@ -5,9 +5,9 @@ import type { FunctionComponent } from "react";
 import type { PrimitiveProps } from "./primitive";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useMemo } from "react";
+import { useCallback } from "react";
 import { TextureUpload } from "../hoc/textureUpload";
-import { ComboBox } from "./comboBox";
+import { ChooseEntity } from "./chooseEntity";
 
 const useStyles = makeStyles({
     container: {
@@ -44,25 +44,13 @@ export const ChooseTexture: FunctionComponent<ChooseTextureProps> = (props) => {
     const { scene, cubeOnly, value, onChange } = props;
     const classes = useStyles();
 
-    // Get sorted texture names from scene
-    const textureOptions = useMemo(() => {
-        return scene.textures
-            .filter((t) => t.name && (!cubeOnly || t.isCube))
-            .map((t) => t.displayName || t.name)
-            .sort((a, b) => a.localeCompare(b));
-    }, [scene.textures, cubeOnly]);
-
-    const handleTextureSelect = (textureName: string) => {
-        const texture = scene.textures.find((t) => (t.displayName || t.name) === textureName);
-        onChange(texture ?? null);
-    };
-
-    // Get current texture name for initial display
-    const currentTextureName = value ? value.displayName || value.name : "";
+    const getTextures = useCallback(() => scene.textures, [scene.textures]);
+    const getName = useCallback((texture: BaseTexture) => texture.displayName || texture.name, []);
+    const filter = useCallback((texture: BaseTexture) => !cubeOnly || texture.isCube, [cubeOnly]);
 
     return (
         <div className={classes.container}>
-            <ComboBox label="" options={textureOptions} value={currentTextureName} onChange={handleTextureSelect} />
+            <ChooseEntity value={value} onChange={onChange} getEntities={getTextures} getName={getName} filter={filter} />
             <TextureUpload scene={scene} onChange={onChange} cubeOnly={cubeOnly} />
         </div>
     );
