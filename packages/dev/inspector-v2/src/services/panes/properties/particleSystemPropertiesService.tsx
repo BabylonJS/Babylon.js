@@ -13,6 +13,7 @@ import {
     ParticleSystemLifetimeProperties,
     ParticleSystemColorProperties,
     ParticleSystemRotationProperties,
+    ParticleSystemSpritesheetProperties,
 } from "../../../components/properties/particles/particleSystemProperties";
 import { ParticleSystem } from "core/Particles/particleSystem";
 
@@ -100,6 +101,19 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 },
             ],
         });
+
+        // Register Spritesheet after Rotation.
+        const particleSystemSpritesheetContent = propertiesService.addSectionContent({
+            key: "Particle System Spritesheet Properties",
+            predicate: (entity: unknown): entity is ParticleSystem => entity instanceof ParticleSystem && !entity.isNodeGenerated,
+            content: [
+                {
+                    section: "Spritesheet",
+                    order: 9,
+                    component: ({ context }) => <ParticleSystemSpritesheetProperties particleSystem={context} />,
+                },
+            ],
+        });
         return {
             dispose: () => {
                 particleSystemContent.dispose();
@@ -107,6 +121,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 particleSystemLifetimeContent.dispose();
                 particleSystemColorContent.dispose();
                 particleSystemRotationContent.dispose();
+                particleSystemSpritesheetContent.dispose();
             },
         };
     },

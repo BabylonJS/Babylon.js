@@ -17,6 +17,7 @@ import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { Color3GradientList, Color4GradientList, FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
+import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { AttractorList } from "./attractorList";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
@@ -30,6 +31,9 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
+import { Tools } from "core/Misc/tools";
+import { ParticleSystem as ParticleSystemClass } from "core/Particles/particleSystem";
+import { ParticleHelper } from "core/Particles/particleHelper";
 
 /**
  * Displays general (high-level) information about a particle system.
@@ -49,6 +53,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
     const isAlive = useObservableState(() => system.isAlive(), scene?.onBeforeRenderObservable);
     const isStopping = useObservableState(() => system.isStopping(), scene?.onBeforeRenderObservable);
 
+    const snippetId = useProperty(system, "snippetId");
+
     const [stopRequested, setStopRequested] = useState(false);
 
     useEffect(() => {
@@ -61,6 +67,158 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             setStopRequested(false);
         }
     }, [stopRequested, isAlive, isStopping]);
+
+    const applyParticleSystemJsonToSystem = useCallback(
+        (jsonObject: any) => {
+            if (!scene) {
+                alert("No scene available.");
+                return;
+            }
+
+            // Normalize common wrapper formats:
+            // - Snippet server GET: { jsonPayload: "{\"particleSystem\":\"...\"}" }
+            // - Snippet server POST body: { payload: "{\"particleSystem\":\"...\"}" }
+            // - Direct snippet object: { particleSystem: "{...serialized particle system...}" }
+            // - Direct ParticleSystem.serialize(): { ... }
+            let candidate: any = jsonObject;
+
+            if (candidate?.jsonPayload && typeof candidate.jsonPayload === "string") {
+                try {
+                    candidate = JSON.parse(candidate.jsonPayload);
+                } catch {
+                    // ignore
+                }
+            }
+
+            if (candidate?.payload && typeof candidate.payload === "string") {
+                try {
+                    candidate = JSON.parse(candidate.payload);
+                } catch {
+                    // ignore
+                }
+            }
+
+            if (candidate?.particleSystem && typeof candidate.particleSystem === "string") {
+                try {
+                    candidate = JSON.parse(candidate.particleSystem);
+                } catch {
+                    // ignore
+                }
+            }
+
+            try {
+                // Mutate the current system in-place to keep the current selection stable.
+                ParticleSystemClass._Parse(candidate, system, scene, "");
+            } catch (e) {
+                alert("Failed to load particle system: " + e);
+            }
+        },
+        [scene, system]
+    );
+
+    const loadFromSnippetServer = useCallback(() => {
+        if (!scene) {
+            alert("No scene available.");
+            return;
+        }
+
+        const requestedSnippetId = window.prompt("Please enter the snippet ID to use");
+        const trimmed = requestedSnippetId?.trim();
+        if (!trimmed) {
+            return;
+        }
+
+        const request = new XMLHttpRequest();
+        request.onreadystatechange = () => {
+            if (request.readyState !== 4) {
+                return;
+            }
+
+            if (request.status !== 200) {
+                alert("Unable to load your particle system");
+                return;
+            }
+
+            try {
+                const responseObject = JSON.parse(request.responseText);
+                applyParticleSystemJsonToSystem(responseObject);
+                system.snippetId = trimmed;
+            } catch (e) {
+                alert("Unable to load your particle system: " + e);
+            }
+        };
+
+        request.open("GET", ParticleHelper.SnippetUrl + "/" + trimmed.replace(/#/g, "/"), true);
+        request.send();
+    }, [applyParticleSystemJsonToSystem, scene, system]);
+
+    const saveToSnippetServer = useCallback(() => {
+        const content = JSON.stringify(system.serialize(true));
+
+        const xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = () => {
+            if (xmlHttp.readyState !== 4) {
+                return;
+            }
+
+            if (xmlHttp.status !== 200) {
+                alert("Unable to save your particle system");
+                return;
+            }
+
+            try {
+                const snippet = JSON.parse(xmlHttp.responseText);
+                const oldId = system.snippetId || "_BLANK";
+                system.snippetId = snippet.id;
+                if (snippet.version && snippet.version !== "0") {
+                    system.snippetId += "#" + snippet.version;
+                }
+
+                if (navigator.clipboard) {
+                    void navigator.clipboard.writeText(system.snippetId);
+                }
+
+                const windowAsAny = window as any;
+                if (windowAsAny.Playground && oldId) {
+                    windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                        regex: new RegExp(`ParticleHelper.ParseFromSnippetAsync\\("${oldId}`, "g"),
+                        replace: `ParticleHelper.ParseFromSnippetAsync("${system.snippetId}`,
+                    });
+                }
+
+                // Smallest "dashboard" support: persist snippet IDs locally for future use.
+                try {
+                    const storageKey = "Babylon/InspectorV2/SnippetDashboard/ParticleSystems";
+                    const existing = JSON.parse(localStorage.getItem(storageKey) || "[]");
+                    const list = Array.isArray(existing) ? existing : [];
+                    if (!list.includes(system.snippetId)) {
+                        list.unshift(system.snippetId);
+                    }
+                    localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 50)));
+                } catch {
+                    // Ignore storage failures.
+                }
+
+                alert("Particle system saved with ID: " + system.snippetId + " (the id was also saved to your clipboard)");
+            } catch (e) {
+                alert("Unable to save your particle system: " + e);
+            }
+        };
+
+        xmlHttp.open("POST", ParticleHelper.SnippetUrl + (system.snippetId ? "/" + system.snippetId : ""), true);
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+
+        const dataToSend = {
+            payload: JSON.stringify({
+                particleSystem: content,
+            }),
+            name: "",
+            description: "",
+            tags: "",
+        };
+
+        xmlHttp.send(JSON.stringify(dataToSend));
+    }, [system]);
 
     return (
         <>
@@ -79,7 +237,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             <BoundProperty component={NumberInputPropertyLine} label="Update Speed" target={system} propertyKey="updateSpeed" min={0} step={0.01} />
 
             <ButtonLine
-                label="Edit in Node Particle Editor (coming soon)"
+                label={system.isNodeGenerated ? "Edit in Node Particle Editor (coming soon)" : "View in Node Particle Editor (coming soon)"}
                 disabled={true}
                 onClick={() => {
                     // TODO: waiting for node editors styling
@@ -104,6 +262,55 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                         system.start();
                     }}
                 />
+            )}
+
+            {!system.isNodeGenerated && (
+                <>
+                    <FileUploadLine
+                        label="Load from file"
+                        accept=".json"
+                        onClick={(files) => {
+                            if (!scene) {
+                                alert("No scene available.");
+                                return;
+                            }
+
+                            if (files.length === 0) {
+                                return;
+                            }
+
+                            const file = files[0];
+                            Tools.ReadFile(
+                                file,
+                                (data) => {
+                                    try {
+                                        const decoder = new TextDecoder("utf-8");
+                                        const jsonObject = JSON.parse(decoder.decode(data as ArrayBuffer));
+                                        applyParticleSystemJsonToSystem(jsonObject);
+                                    } catch (e) {
+                                        alert("Unable to load particle system from file: " + e);
+                                    }
+                                },
+                                undefined,
+                                true
+                            );
+                        }}
+                    />
+
+                    <ButtonLine
+                        label="Save to file"
+                        onClick={() => {
+                            const data = JSON.stringify(system.serialize(true), null, 2);
+                            const blob = new Blob([data], { type: "application/json" });
+                            const name = (system.name && system.name.trim().length > 0 ? system.name.trim() : "particleSystem") + ".json";
+                            Tools.Download(blob, name);
+                        }}
+                    />
+
+                    {snippetId && <TextPropertyLine label="Snippet ID" value={snippetId} />}
+                    <ButtonLine label="Load from snippet server" onClick={loadFromSnippetServer} />
+                    <ButtonLine label="Save to snippet server" onClick={saveToSnippetServer} />
+                </>
             )}
         </>
     );
@@ -961,6 +1168,28 @@ export const ParticleSystemRotationProperties: FunctionComponent<{ particleSyste
                     }}
                 />
             )}
+        </>
+    );
+};
+
+/**
+ * Displays spritesheet-related properties for a particle system.
+ * @param props component props
+ * @returns the rendered property lines
+ */
+export const ParticleSystemSpritesheetProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
+    const { particleSystem: system } = props;
+
+    return (
+        <>
+            <BoundProperty component={SwitchPropertyLine} label="Animation sheet enabled" target={system} propertyKey="isAnimationSheetEnabled" />
+            <BoundProperty component={NumberInputPropertyLine} label="First sprite index" target={system} propertyKey="startSpriteCellID" min={0} step={1} />
+            <BoundProperty component={NumberInputPropertyLine} label="Last sprite index" target={system} propertyKey="endSpriteCellID" min={0} step={1} />
+            <BoundProperty component={SwitchPropertyLine} label="Animation loop" target={system} propertyKey="spriteCellLoop" />
+            <BoundProperty component={SwitchPropertyLine} label="Random cell start index" target={system} propertyKey="spriteRandomStartCell" />
+            <BoundProperty component={NumberInputPropertyLine} label="Cell width" target={system} propertyKey="spriteCellWidth" min={0} step={1} />
+            <BoundProperty component={NumberInputPropertyLine} label="Cell height" target={system} propertyKey="spriteCellHeight" min={0} step={1} />
+            <BoundProperty component={NumberInputPropertyLine} label="Cell change speed" target={system} propertyKey="spriteCellChangeSpeed" min={0} step={0.01} />
         </>
     );
 };
