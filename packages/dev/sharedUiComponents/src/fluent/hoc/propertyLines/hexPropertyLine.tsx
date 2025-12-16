@@ -4,12 +4,8 @@ import type { FunctionComponent } from "react";
 import type { NumberInputPropertyLineProps } from "./inputPropertyLine";
 import { TextInput } from "../../primitives/textInput";
 
-// The below conversion functions are taken from old HexLineComponent and can likely be simplified
-const ConvertToHexString = (valueString: string): string => {
-    while (valueString.length < 10) {
-        valueString += "0";
-    }
-    return valueString;
+export type HexPropertyLineProps = NumberInputPropertyLineProps & {
+    numBits?: number;
 };
 
 const MaskValidatorFn = (valueString: string) => {
@@ -17,11 +13,11 @@ const MaskValidatorFn = (valueString: string) => {
         if (valueString.substring(0, 1) != "0") {
             valueString = "0x" + valueString;
         } else {
-            valueString = "0x" + valueString.substr(1);
+            valueString = "0x" + valueString.substring(1);
         }
     }
 
-    const valueSubstr = valueString.substr(2);
+    const valueSubstr = valueString.substring(2);
     if (valueSubstr != "" && /^[0-9A-Fa-f]+$/g.test(valueSubstr) == false) {
         return false;
     }
@@ -33,14 +29,16 @@ const MaskValidatorFn = (valueString: string) => {
     return true;
 };
 
-const GetHexValFromNumber = (val: number): string => {
+const GetHexValFromNumber = (val: number, numBits?: number): string => {
+    const numDigits = (numBits ?? 32) >> 2;
     let valueAsHex = val.toString(16);
     let hex0String = "";
-    for (let i = 0; i < 8 - valueAsHex.length; i++) {
+    for (let i = 0; i < numDigits - valueAsHex.length; i++) {
         // padding the '0's
-        hex0String += "0";
+        hex0String = "0" + hex0String;
     }
-    valueAsHex = "0x" + hex0String + valueAsHex.toUpperCase();
+    const finalHexValue = hex0String + valueAsHex;
+    valueAsHex = "0x" + finalHexValue.substring(finalHexValue.length - numDigits);
     return valueAsHex;
 };
 
@@ -49,23 +47,23 @@ const GetHexValFromNumber = (val: number): string => {
  * @param props - PropertyLineProps
  * @returns property-line wrapped textbox that converts to/from hex number representation
  */
-export const HexPropertyLine: FunctionComponent<NumberInputPropertyLineProps> = (props) => {
+export const HexPropertyLine: FunctionComponent<HexPropertyLineProps> = (props) => {
     HexPropertyLine.displayName = "HexPropertyLine";
-    const [hexVal, setHexVal] = useState(GetHexValFromNumber(props.value));
+    const [hexVal, setHexVal] = useState(GetHexValFromNumber(props.value, props.numBits));
 
     const onStrValChange = (val: string) => {
+        const numBits = props.numBits ?? 32;
         setHexVal(val);
-        const valueStringAsHex = ConvertToHexString(val);
-        props.onChange(parseInt(valueStringAsHex));
+        props.onChange(parseInt(val) & (2 ** numBits - 1));
     };
 
     useEffect(() => {
-        setHexVal(GetHexValFromNumber(props.value));
-    }, [props.value]);
+        setHexVal(GetHexValFromNumber(props.value, props.numBits));
+    }); // we don't set [props.value] as dependency because several string representations can map to the same number (e.g., 0x0, 0x00, 0x0000, etc.)
 
     return (
         <PropertyLine {...props}>
-            <TextInput {...props} validator={MaskValidatorFn} value={hexVal} onChange={onStrValChange} />
+            <TextInput {...props} validator={MaskValidatorFn} value={hexVal} onChange={onStrValChange} validateOnBlur={true} />
         </PropertyLine>
     );
 };

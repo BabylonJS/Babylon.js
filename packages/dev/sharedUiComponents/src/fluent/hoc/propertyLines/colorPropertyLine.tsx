@@ -50,10 +50,12 @@ const ColorPropertyLine = forwardRef<HTMLDivElement, ColorPropertyLineProps>((pr
             {...props}
             expandedContent={
                 <>
-                    <SyncedSliderPropertyLine label="R" value={color.r * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "r")} />
-                    <SyncedSliderPropertyLine label="G" value={color.g * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "g")} />
-                    <SyncedSliderPropertyLine label="B" value={color.b * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "b")} />
-                    {color instanceof Color4 && <SyncedSliderPropertyLine label="A" value={color.a} min={0} max={1} step={0.01} onChange={(value) => onSliderChange(value, "a")} />}
+                    <SyncedSliderPropertyLine label="R" value={(color?.r ?? 0) * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "r")} />
+                    <SyncedSliderPropertyLine label="G" value={(color?.g ?? 0) * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "g")} />
+                    <SyncedSliderPropertyLine label="B" value={(color?.b ?? 0) * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "b")} />
+                    {color instanceof Color4 && (
+                        <SyncedSliderPropertyLine label="A" value={color?.a ?? 1} min={0} max={1} step={0.01} onChange={(value) => onSliderChange(value, "a")} />
+                    )}
                 </>
             }
         >
