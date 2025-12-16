@@ -1,12 +1,13 @@
-import type { FunctionComponent } from "react";
-import { useMemo } from "react";
-import { makeStyles, tokens } from "@fluentui/react-components";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import { ComboBox } from "./comboBox";
+import type { FunctionComponent } from "react";
+import type { PrimitiveProps } from "./primitive";
+
+import { makeStyles, tokens } from "@fluentui/react-components";
+import { useMemo } from "react";
 import { TextureUpload } from "../hoc/textureUpload";
-import { PrimitiveProps } from "./primitive";
+import { ComboBox } from "./comboBox";
 
 const useStyles = makeStyles({
     container: {
@@ -35,6 +36,8 @@ export type ChooseTextureProps = PrimitiveProps<Nullable<BaseTexture>> & {
 /**
  * A primitive component with a ComboBox for selecting from existing scene textures
  * and a button for uploading new texture files.
+ * @param props ChooseTextureProps
+ * @returns ChooseTexture component
  */
 export const ChooseTexture: FunctionComponent<ChooseTextureProps> = (props) => {
     ChooseTexture.displayName = "ChooseTexture";

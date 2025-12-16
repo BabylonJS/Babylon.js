@@ -53,7 +53,9 @@ export const TextureUpload: FunctionComponent<TextureUploadProps> = (props) => {
     const handleUpload = useCallback(
         (files: FileList) => {
             const file = files[0];
-            if (!file) return;
+            if (!file) {
+                return;
+            }
 
             ReadFile(
                 file,
