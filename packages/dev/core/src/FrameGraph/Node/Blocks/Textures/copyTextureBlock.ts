@@ -76,7 +76,7 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
     }
 
     /** The viewport to use. */
-    @editableInPropertyPage("Viewport", PropertyTypeForEdition.Viewport, "PROPERTIES")
+    @editableInPropertyPage("    Viewport", PropertyTypeForEdition.Viewport, "PROPERTIES")
     public get viewport(): IViewportLike {
         return this._viewport;
     }

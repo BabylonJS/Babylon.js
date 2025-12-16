@@ -3,6 +3,7 @@ export * from "./boundingBoxRenderer";
 export * from "./depthRenderer";
 export * from "./depthRendererSceneComponent";
 export * from "./depthPeelingRenderer";
+export * from "./thinDepthPeelingRenderer";
 export * from "./depthPeelingSceneComponent";
 export * from "./edgesRenderer";
 export * from "./geometryBufferRenderer";

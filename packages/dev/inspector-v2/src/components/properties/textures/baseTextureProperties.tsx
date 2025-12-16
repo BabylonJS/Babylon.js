@@ -8,11 +8,9 @@ import type { TexturePreviewImperativeRef } from "./texturePreview";
 import { useCallback, useRef } from "react";
 
 import { Constants } from "core/Engines/constants";
-import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
-import { ReadFile } from "core/Misc/fileTools";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
+import { TextureUpload } from "shared-ui-components/fluent/hoc/textureUpload";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
@@ -30,41 +28,6 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { texture, textureEditor: TextureEditor } = props;
 
-    const isUpdatable = texture instanceof Texture || texture instanceof CubeTexture;
-
-    const updateTexture = useCallback(
-        (file: File) => {
-            ReadFile(
-                file,
-                (data) => {
-                    const blob = new Blob([data], { type: "octet/stream" });
-
-                    const reader = new FileReader();
-                    reader.readAsDataURL(blob);
-                    reader.onloadend = () => {
-                        const base64data = reader.result as string;
-
-                        if (texture instanceof CubeTexture) {
-                            let extension: string | undefined = undefined;
-                            if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                                extension = ".dds";
-                            } else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                                extension = ".env";
-                            }
-
-                            texture.updateURL(base64data, extension);
-                        } else if (texture instanceof Texture) {
-                            texture.updateURL(base64data);
-                        }
-                    };
-                },
-                undefined,
-                true
-            );
-        },
-        [texture]
-    );
-
     const texturePreviewImperativeRef = useRef<TexturePreviewImperativeRef>(null);
 
     const childWindow = useChildWindow("Texture Editor");
@@ -72,18 +35,7 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
     return (
         <>
             <TexturePreview imperativeRef={texturePreviewImperativeRef} texture={texture} width={256} height={256} />
-            {/* TODO: This should probably be dynamically fetching a list of supported texture extensions. */}
-            {isUpdatable && (
-                <FileUploadLine
-                    label="Load Texture From File"
-                    accept=".jpg, .png, .tga, .dds, .env, .exr"
-                    onClick={(files) => {
-                        if (files.length > 0) {
-                            updateTexture(files[0]);
-                        }
-                    }}
-                />
-            )}
+            <TextureUpload texture={texture} />
             <ButtonLine label="Edit Texture" onClick={() => childWindow.open({ title: "Texture Editor" })} />
             <childWindow.component>
                 <TextureEditor texture={texture} onUpdate={async () => await texturePreviewImperativeRef.current?.refresh()} />

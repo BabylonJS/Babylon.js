@@ -102,7 +102,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
     }
 
     /** Width of the geometry texture */
-    @editableInPropertyPage("Texture width", PropertyTypeForEdition.Int, "RENDERING - GEOMETRY")
+    @editableInPropertyPage("Texture width", PropertyTypeForEdition.Int, "GEOMETRY")
     public get width() {
         return this._frameGraphTask.size.width;
     }
@@ -112,7 +112,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
     }
 
     /** Height of the geometry texture */
-    @editableInPropertyPage("Texture height", PropertyTypeForEdition.Int, "RENDERING - GEOMETRY")
+    @editableInPropertyPage("Texture height", PropertyTypeForEdition.Int, "GEOMETRY")
     public get height() {
         return this._frameGraphTask.size.height;
     }
@@ -122,7 +122,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
     }
 
     /** Indicates if the geometry texture width and height are percentages or absolute values */
-    @editableInPropertyPage("Size is in percentage", PropertyTypeForEdition.Boolean, "RENDERING - GEOMETRY")
+    @editableInPropertyPage("Size is in percentage", PropertyTypeForEdition.Boolean, "GEOMETRY")
     public get sizeInPercentage() {
         return this._frameGraphTask.sizeIsPercentage;
     }
@@ -132,7 +132,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
     }
 
     /** Number of samples of the geometry texture */
-    @editableInPropertyPage("Samples", PropertyTypeForEdition.Int, "RENDERING - GEOMETRY", { min: 1, max: 8 })
+    @editableInPropertyPage("Samples", PropertyTypeForEdition.Int, "GEOMETRY", { min: 1, max: 8 })
     public get samples() {
         return this._frameGraphTask.samples;
     }
@@ -142,7 +142,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
     }
 
     /** Indicates if culling must be reversed */
-    @editableInPropertyPage("Reverse culling", PropertyTypeForEdition.Boolean, "RENDERING - GEOMETRY")
+    @editableInPropertyPage("Reverse culling", PropertyTypeForEdition.Boolean, "GEOMETRY")
     public get reverseCulling() {
         return this._frameGraphTask.reverseCulling;
     }
@@ -152,7 +152,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
     }
 
     /** Indicates if a mesh shouldn't be rendered when its material has depth write disabled */
-    @editableInPropertyPage("Don't render if material depth write is disabled", PropertyTypeForEdition.Boolean, "RENDERING - GEOMETRY")
+    @editableInPropertyPage("Don't render if material depth write is disabled", PropertyTypeForEdition.Boolean, "GEOMETRY")
     public get dontRenderWhenMaterialDepthWriteIsDisabled() {
         return this._frameGraphTask.dontRenderWhenMaterialDepthWriteIsDisabled;
     }
@@ -162,7 +162,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
     }
 
     /** Indicates if depth pre-pass must be disabled */
-    @editableInPropertyPage("Disable depth pre-pass", PropertyTypeForEdition.Boolean, "RENDERING - GEOMETRY")
+    @editableInPropertyPage("Disable depth pre-pass", PropertyTypeForEdition.Boolean, "GEOMETRY")
     public get disableDepthPrePass() {
         return this._frameGraphTask.disableDepthPrePass;
     }
