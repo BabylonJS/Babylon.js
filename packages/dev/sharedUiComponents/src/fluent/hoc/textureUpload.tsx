@@ -7,18 +7,7 @@ import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { ReadFile } from "core/Misc/fileTools";
 import { UploadButton } from "../primitives/uploadButton";
 
-type TextureUploadBaseProps = {
-    /**
-     * File types to accept for upload
-     */
-    accept?: string;
-    /**
-     * Button title
-     */
-    title?: string;
-};
-
-type TextureUploadUpdateProps = TextureUploadBaseProps & {
+type TextureUploadUpdateProps = {
     /**
      * Existing texture to update via updateURL
      */
@@ -31,7 +20,7 @@ type TextureUploadUpdateProps = TextureUploadBaseProps & {
     cubeOnly?: never;
 };
 
-type TextureUploadCreateProps = TextureUploadBaseProps & {
+type TextureUploadCreateProps = {
     /**
      * The scene to create the texture in
      */
@@ -56,8 +45,8 @@ type TextureUploadProps = TextureUploadUpdateProps | TextureUploadCreateProps;
  */
 export const TextureUpload: FunctionComponent<TextureUploadProps> = (props) => {
     TextureUpload.displayName = "TextureUpload";
-    const { accept = ".jpg, .png, .tga, .dds, .env, .exr", title = "Upload Texture" } = props;
-
+    // TODO: This should probably be dynamically fetching a list of supported texture extensions
+    const accept = ".jpg, .png, .tga, .dds, .env, .exr";
     const handleUpload = useCallback(
         (files: FileList) => {
             const file = files[0];
@@ -107,5 +96,5 @@ export const TextureUpload: FunctionComponent<TextureUploadProps> = (props) => {
         [props]
     );
 
-    return <UploadButton onUpload={handleUpload} accept={accept} title={title} />;
+    return <UploadButton onUpload={handleUpload} accept={accept} title={"Upload Texture"} />;
 };
