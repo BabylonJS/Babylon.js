@@ -90,6 +90,15 @@ export class SnapshotRenderingHelper {
             if (this._fastSnapshotRenderingEnabled) {
                 this.disableSnapshotRendering();
                 this.enableSnapshotRendering();
+            } else if (this._isEnabling) {
+                // We are in the process of enabling snapshot rendering, but the engine got resized before we could actually enable it:
+                // * cancel all "enable" pending callbacks
+                // * increase the ref count to balance the decrease that enableSnapshotRendering() will do
+                // * call enableSnapshotRendering() again to restart the enabling process
+                this._enableCancelFunctions.forEach((cancel) => cancel());
+                this._enableCancelFunctions.clear();
+                this._disableRenderingRefCount++;
+                this.enableSnapshotRendering();
             }
 
             this._log("onResize", "end");
