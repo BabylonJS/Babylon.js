@@ -2,20 +2,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { useState, useEffect, useCallback, useContext } from "react";
 import type { FunctionComponent } from "react";
-import {
-    ColorPicker as FluentColorPicker,
-    ColorSlider,
-    ColorArea,
-    AlphaSlider,
-    makeStyles,
-    Popover,
-    PopoverSurface,
-    PopoverTrigger,
-    tokens,
-    Body1Strong,
-    ColorSwatch,
-    Body1,
-} from "@fluentui/react-components";
+import { ColorPicker as FluentColorPicker, ColorSlider, ColorArea, AlphaSlider, makeStyles, tokens, Body1Strong, ColorSwatch, Body1 } from "@fluentui/react-components";
 import type { ColorPickerProps as FluentColorPickerProps } from "@fluentui/react-components";
 import { Color3, Color4 } from "core/Maths/math.color";
 import type { PrimitiveProps } from "./primitive";
@@ -25,6 +12,7 @@ import { NumberDropdown } from "./dropdown";
 import { ValidateColorHex } from "./utils";
 import { Link } from "./link";
 import { ToolContext } from "../hoc/fluentToolWrapper";
+import { Popover } from "./popover";
 
 const useColorPickerStyles = makeStyles({
     container: {
@@ -82,7 +70,6 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
     ColorPickerPopup.displayName = "ColorPickerPopup";
     const classes = useColorPickerStyles();
     const [color, setColor] = useState(props.value);
-    const [popoverOpen, setPopoverOpen] = useState(false);
     const [isLinear, setIsLinear] = useState(props.isLinearMode ?? false);
     const [isFloat, setFloat] = useState(false);
     const { size } = useContext(ToolContext);
@@ -105,16 +92,7 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
 
     return (
         <Popover
-            positioning={{
-                align: "start",
-                overflowBoundary: document.body,
-                autoSize: true,
-            }}
-            open={popoverOpen}
-            trapFocus
-            onOpenChange={(_, data) => setPopoverOpen(data.open)}
-        >
-            <PopoverTrigger disableButtonEnhancement>
+            trigger={
                 <ColorSwatch
                     borderColor={tokens.colorNeutralShadowKeyDarker}
                     size={size === "small" ? "extra-small" : "small"}
@@ -122,68 +100,66 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
                     color={color.toHexString()}
                     value={color.toHexString().slice(1)}
                 />
-            </PopoverTrigger>
-
-            <PopoverSurface>
-                <div className={classes.container}>
-                    <FluentColorPicker className={classes.colorPicker} color={rgbaToHsv(color)} onColorChange={handleColorPickerChange}>
-                        <ColorArea inputX={{ "aria-label": "Saturation" }} inputY={{ "aria-label": "Brightness" }} />
-                        <ColorSlider aria-label="Hue" />
-                        {color instanceof Color4 && <AlphaSlider aria-label="Alpha" />}
-                    </FluentColorPicker>
-                    {/* Top Row: Preview, Gamma Hex, Linear Hex */}
-                    <div className={classes.row}>
-                        <div className={classes.previewColor} style={{ backgroundColor: color.toHexString() }} />
-                        <NumberDropdown
-                            className={classes.inputField}
-                            infoLabel={{
-                                label: "Color Space",
-                                info: <Body1>Today this is not mutable as the color space is determined by the entity. Soon we will allow swapping</Body1>,
-                            }}
-                            options={[
-                                { label: "Gamma", value: 0 },
-                                { label: "Linear", value: 1 },
-                            ]}
-                            disabled={true}
-                            value={isLinear ? 1 : 0}
-                            onChange={(val: number) => setIsLinear(val === 1)}
-                        />
-                        <NumberDropdown
-                            className={classes.inputField}
-                            infoLabel={{
-                                label: "Data Type",
-                                info: <Body1>We will introduce this functionality soon!</Body1>,
-                            }}
-                            options={[
-                                { label: "Int", value: 0 },
-                                { label: "Float", value: 1 },
-                            ]}
-                            disabled={true}
-                            value={isFloat ? 1 : 0}
-                            onChange={(val: number) => setFloat(val === 1)}
-                        />
-                    </div>
-
-                    {/* Middle Row: Red, Green, Blue, Alpha */}
-                    <div className={classes.inputRow}>
-                        <InputRgbField title="Red" value={color} rgbKey="r" onChange={handleChange} />
-                        <InputRgbField title="Green" value={color} rgbKey="g" onChange={handleChange} />
-                        <InputRgbField title="Blue" value={color} rgbKey="b" onChange={handleChange} />
-                        <InputAlphaField color={color} onChange={handleChange} />
-                    </div>
-
-                    {/* Bottom Row: Hue, Saturation, Value */}
-                    <div className={classes.inputRow}>
-                        <InputHsvField title="Hue" value={color} hsvKey="h" max={360} onChange={handleChange} />
-                        <InputHsvField title="Saturation" value={color} hsvKey="s" max={100} scale={100} onChange={handleChange} />
-                        <InputHsvField title="Value" value={color} hsvKey="v" max={100} scale={100} onChange={handleChange} />
-                    </div>
-
-                    <div className={classes.inputRow}>
-                        <InputHexField title="Hexadecimal" linearHex={isLinear} isLinearMode={isLinear} value={color} onChange={handleChange} />
-                    </div>
+            }
+        >
+            <div className={classes.container}>
+                <FluentColorPicker className={classes.colorPicker} color={rgbaToHsv(color)} onColorChange={handleColorPickerChange}>
+                    <ColorArea inputX={{ "aria-label": "Saturation" }} inputY={{ "aria-label": "Brightness" }} />
+                    <ColorSlider aria-label="Hue" />
+                    {color instanceof Color4 && <AlphaSlider aria-label="Alpha" />}
+                </FluentColorPicker>
+                {/* Top Row: Preview, Gamma Hex, Linear Hex */}
+                <div className={classes.row}>
+                    <div className={classes.previewColor} style={{ backgroundColor: color.toHexString() }} />
+                    <NumberDropdown
+                        className={classes.inputField}
+                        infoLabel={{
+                            label: "Color Space",
+                            info: <Body1>Today this is not mutable as the color space is determined by the entity. Soon we will allow swapping</Body1>,
+                        }}
+                        options={[
+                            { label: "Gamma", value: 0 },
+                            { label: "Linear", value: 1 },
+                        ]}
+                        disabled={true}
+                        value={isLinear ? 1 : 0}
+                        onChange={(val: number) => setIsLinear(val === 1)}
+                    />
+                    <NumberDropdown
+                        className={classes.inputField}
+                        infoLabel={{
+                            label: "Data Type",
+                            info: <Body1>We will introduce this functionality soon!</Body1>,
+                        }}
+                        options={[
+                            { label: "Int", value: 0 },
+                            { label: "Float", value: 1 },
+                        ]}
+                        disabled={true}
+                        value={isFloat ? 1 : 0}
+                        onChange={(val: number) => setFloat(val === 1)}
+                    />
                 </div>
-            </PopoverSurface>
+
+                {/* Middle Row: Red, Green, Blue, Alpha */}
+                <div className={classes.inputRow}>
+                    <InputRgbField title="Red" value={color} rgbKey="r" onChange={handleChange} />
+                    <InputRgbField title="Green" value={color} rgbKey="g" onChange={handleChange} />
+                    <InputRgbField title="Blue" value={color} rgbKey="b" onChange={handleChange} />
+                    <InputAlphaField color={color} onChange={handleChange} />
+                </div>
+
+                {/* Bottom Row: Hue, Saturation, Value */}
+                <div className={classes.inputRow}>
+                    <InputHsvField title="Hue" value={color} hsvKey="h" max={360} onChange={handleChange} />
+                    <InputHsvField title="Saturation" value={color} hsvKey="s" max={100} scale={100} onChange={handleChange} />
+                    <InputHsvField title="Value" value={color} hsvKey="v" max={100} scale={100} onChange={handleChange} />
+                </div>
+
+                <div className={classes.inputRow}>
+                    <InputHexField title="Hexadecimal" linearHex={isLinear} isLinearMode={isLinear} value={color} onChange={handleChange} />
+                </div>
+            </div>
         </Popover>
     );
 };
