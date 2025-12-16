@@ -1,6 +1,8 @@
 import type { FunctionComponent } from "react";
 import type { FactorGradient, ColorGradient as Color4Gradient, ParticleSystem } from "core/index";
 import type { ISelectionService } from "../../../services/selectionService";
+import type { Attractor } from "core/Particles/attractor";
+import type { Color3Gradient } from "core/Misc/gradients";
 
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
@@ -35,10 +37,78 @@ import { Tools } from "core/Misc/tools";
 import { ParticleSystem as ParticleSystemClass } from "core/Particles/particleSystem";
 import { ParticleHelper } from "core/Particles/particleHelper";
 
+const SnippetDashboardStorageKey = "Babylon/InspectorV2/SnippetDashboard/ParticleSystems";
+
+function TryParseJsonString(value: unknown): unknown {
+    if (typeof value !== "string") {
+        return undefined;
+    }
+
+    try {
+        return JSON.parse(value);
+    } catch {
+        return undefined;
+    }
+}
+
+function ParseJsonFileContents(contents: unknown): unknown {
+    if (contents instanceof ArrayBuffer) {
+        const decoder = new TextDecoder("utf-8");
+        return TryParseJsonString(decoder.decode(contents)) ?? undefined;
+    }
+
+    if (typeof contents === "string") {
+        return TryParseJsonString(contents) ?? undefined;
+    }
+
+    return undefined;
+}
+
+function NormalizeParticleSystemSerialization(raw: any): any {
+    // Normalize snippet-server wrappers to a ParticleSystem serialization object.
+    // Support:
+    // - GET response: { jsonPayload: "{\"particleSystem\":\"...\"}" }
+    // - POST payload: { payload: "{\"particleSystem\":\"...\"}" }
+    // - Snippet object: { particleSystem: "{...}" }
+    // - Direct serialization: { ... }
+    let candidate: any = raw;
+
+    const jsonPayload = TryParseJsonString(candidate?.jsonPayload);
+    if (jsonPayload) {
+        candidate = jsonPayload;
+    }
+
+    const payload = TryParseJsonString(candidate?.payload);
+    if (payload) {
+        candidate = payload;
+    }
+
+    const particleSystem = TryParseJsonString(candidate?.particleSystem);
+    if (particleSystem) {
+        candidate = particleSystem;
+    }
+
+    return candidate;
+}
+
+function PersistSnippetId(snippetId: string) {
+    // Persist snippet IDs locally for quick reuse.
+    try {
+        const existing = JSON.parse(localStorage.getItem(SnippetDashboardStorageKey) || "[]");
+        const list = Array.isArray(existing) ? existing : [];
+        if (!list.includes(snippetId)) {
+            list.unshift(snippetId);
+        }
+        localStorage.setItem(SnippetDashboardStorageKey, JSON.stringify(list.slice(0, 50)));
+    } catch {
+        // Ignore storage failures.
+    }
+}
+
 /**
- * Displays general (high-level) information about a particle system.
- * @param props component props
- * @returns the rendered property lines
+ * Display general (high-level) information about a particle system.
+ * @param props Component props.
+ * @returns Render property lines.
  */
 export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
@@ -62,7 +132,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             return;
         }
 
-        // Clear the local stop flag once the system is no longer alive (fully stopped).
+        // Clear stop flag once the system fully stops.
         if (!isAlive && !isStopping) {
             setStopRequested(false);
         }
@@ -75,39 +145,10 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                 return;
             }
 
-            // Normalize common wrapper formats:
-            // - Snippet server GET: { jsonPayload: "{\"particleSystem\":\"...\"}" }
-            // - Snippet server POST body: { payload: "{\"particleSystem\":\"...\"}" }
-            // - Direct snippet object: { particleSystem: "{...serialized particle system...}" }
-            // - Direct ParticleSystem.serialize(): { ... }
-            let candidate: any = jsonObject;
-
-            if (candidate?.jsonPayload && typeof candidate.jsonPayload === "string") {
-                try {
-                    candidate = JSON.parse(candidate.jsonPayload);
-                } catch {
-                    // ignore
-                }
-            }
-
-            if (candidate?.payload && typeof candidate.payload === "string") {
-                try {
-                    candidate = JSON.parse(candidate.payload);
-                } catch {
-                    // ignore
-                }
-            }
-
-            if (candidate?.particleSystem && typeof candidate.particleSystem === "string") {
-                try {
-                    candidate = JSON.parse(candidate.particleSystem);
-                } catch {
-                    // ignore
-                }
-            }
+            const candidate = NormalizeParticleSystemSerialization(jsonObject);
 
             try {
-                // Mutate the current system in-place to keep the current selection stable.
+                // Apply in-place to keep selection stable.
                 ParticleSystemClass._Parse(candidate, system, scene, "");
             } catch (e) {
                 alert("Failed to load particle system: " + e);
@@ -121,6 +162,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             alert("No scene available.");
             return;
         }
+
+        // Prompt for a snippet id (minimal UX).
 
         const requestedSnippetId = window.prompt("Please enter the snippet ID to use");
         const trimmed = requestedSnippetId?.trim();
@@ -140,7 +183,12 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             }
 
             try {
-                const responseObject = JSON.parse(request.responseText);
+                const responseObject = ParseJsonFileContents(request.responseText);
+                if (!responseObject) {
+                    alert("Unable to load your particle system");
+                    return;
+                }
+
                 applyParticleSystemJsonToSystem(responseObject);
                 system.snippetId = trimmed;
             } catch (e) {
@@ -153,6 +201,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
     }, [applyParticleSystemJsonToSystem, scene, system]);
 
     const saveToSnippetServer = useCallback(() => {
+        // Serialize once and post as snippet payload.
         const content = JSON.stringify(system.serialize(true));
 
         const xmlHttp = new XMLHttpRequest();
@@ -174,30 +223,21 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                     system.snippetId += "#" + snippet.version;
                 }
 
+                // Copy to clipboard when available.
                 if (navigator.clipboard) {
                     void navigator.clipboard.writeText(system.snippetId);
                 }
 
                 const windowAsAny = window as any;
                 if (windowAsAny.Playground && oldId) {
+                    // Update Playground code when snippet id is hard-coded.
                     windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
                         regex: new RegExp(`ParticleHelper.ParseFromSnippetAsync\\("${oldId}`, "g"),
                         replace: `ParticleHelper.ParseFromSnippetAsync("${system.snippetId}`,
                     });
                 }
 
-                // Smallest "dashboard" support: persist snippet IDs locally for future use.
-                try {
-                    const storageKey = "Babylon/InspectorV2/SnippetDashboard/ParticleSystems";
-                    const existing = JSON.parse(localStorage.getItem(storageKey) || "[]");
-                    const list = Array.isArray(existing) ? existing : [];
-                    if (!list.includes(system.snippetId)) {
-                        list.unshift(system.snippetId);
-                    }
-                    localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 50)));
-                } catch {
-                    // Ignore storage failures.
-                }
+                PersistSnippetId(system.snippetId);
 
                 alert("Particle system saved with ID: " + system.snippetId + " (the id was also saved to your clipboard)");
             } catch (e) {
@@ -240,7 +280,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                 label={system.isNodeGenerated ? "Edit in Node Particle Editor (coming soon)" : "View in Node Particle Editor (coming soon)"}
                 disabled={true}
                 onClick={() => {
-                    // TODO: waiting for node editors styling
+                    // Hook up once Node Particle Editor UX is wired.
                 }}
             />
 
@@ -270,11 +310,6 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                         label="Load from file"
                         accept=".json"
                         onClick={(files) => {
-                            if (!scene) {
-                                alert("No scene available.");
-                                return;
-                            }
-
                             if (files.length === 0) {
                                 return;
                             }
@@ -283,13 +318,13 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                             Tools.ReadFile(
                                 file,
                                 (data) => {
-                                    try {
-                                        const decoder = new TextDecoder("utf-8");
-                                        const jsonObject = JSON.parse(decoder.decode(data as ArrayBuffer));
-                                        applyParticleSystemJsonToSystem(jsonObject);
-                                    } catch (e) {
-                                        alert("Unable to load particle system from file: " + e);
+                                    const jsonObject = ParseJsonFileContents(data);
+                                    if (!jsonObject) {
+                                        alert("Unable to load particle system from file.");
+                                        return;
                                     }
+
+                                    applyParticleSystemJsonToSystem(jsonObject);
                                 },
                                 undefined,
                                 true
@@ -300,6 +335,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                     <ButtonLine
                         label="Save to file"
                         onClick={() => {
+                            // Download serialization as a JSON file.
                             const data = JSON.stringify(system.serialize(true), null, 2);
                             const blob = new Blob([data], { type: "application/json" });
                             const name = (system.name && system.name.trim().length > 0 ? system.name.trim() : "particleSystem") + ".json";
@@ -317,14 +353,15 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
 };
 
 /**
- * Displays attractor-related properties for a particle system.
- * @param props component props
- * @returns the rendered property lines
+ * Display attractor-related properties for a particle system.
+ * @param props Component props.
+ * @returns Render property lines.
  */
 export const ParticleSystemAttractorProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
-    const attractors = useParticleSystemProperty(system, "attractors", "property", "addAttractor", "removeAttractor");
+    const attractorsGetter = useCallback(() => system.attractors ?? [], [system]);
+    const attractors = useObservableArray<ParticleSystem, Attractor>(system, attractorsGetter, "addAttractor", "removeAttractor");
     const scene = system.getScene();
 
     return (
@@ -332,7 +369,7 @@ export const ParticleSystemAttractorProperties: FunctionComponent<{ particleSyst
             {scene ? (
                 <AttractorList attractors={attractors} scene={scene} system={system} />
             ) : (
-                // Should never get here since sceneExplorer only displays if there is a scene, but adding UX in case that assumption changes in future
+                // Handle missing scene defensively.
                 <MessageBar intent="info" title="No Scene Available" message="Cannot display attractors without a scene" />
             )}
         </>
@@ -340,9 +377,9 @@ export const ParticleSystemAttractorProperties: FunctionComponent<{ particleSyst
 };
 
 /**
- * Displays emitter-related properties for a particle system.
- * @param props component props
- * @returns the rendered property lines
+ * Display emitter-related properties for a particle system.
+ * @param props Component props.
+ * @returns Render property lines.
  */
 export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem: ParticleSystem; selectionService: ISelectionService }> = (props) => {
     const { particleSystem: system, selectionService } = props;
@@ -360,7 +397,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
             return;
         }
 
-        // Bump a local version counter whenever nodes are added/removed so our emitter dropdown stays up-to-date.
+        // Bump a local version counter whenever nodes change to keep emitter options up-to-date.
         const bump = () => setSceneNodesVersion((value) => value + 1);
 
         const newMeshToken = scene.onNewMeshAddedObservable.add(bump);
@@ -416,18 +453,17 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
 
     const emitterVector = emitter instanceof Vector3 ? emitter : undefined;
 
-    // Subscribe to Vector3 internal components so we re-render when the Vector3 is mutated in-place.
+    // Subscribe to Vector3 internal components to re-render on in-place mutations.
     useProperty(emitterVector as Vector3 | null | undefined, "_x");
     useProperty(emitterVector as Vector3 | null | undefined, "_y");
     useProperty(emitterVector as Vector3 | null | undefined, "_z");
 
     const particleEmitterType = useProperty(system, "particleEmitterType");
 
-    // Use a simple string key for the dropdown, but the engine stores an actual emitter-type instance
+    // Use a simple string key for the dropdown, but store an emitter-type instance in the engine.
     type EmitterTypeKey = "box" | "sphere" | "cone" | "cylinder" | "hemispheric" | "point" | "mesh";
 
-    // Derive the current dropdown value from the current instance so it stays in sync even if something
-    // else (script/other UI/loading) changes the particleEmitterType
+    // Derive the current dropdown value from the current instance to stay in sync with external changes.
     const derivedEmitterTypeKey: EmitterTypeKey = (() => {
         if (particleEmitterType instanceof SphereParticleEmitter) {
             return "sphere";
@@ -447,14 +483,14 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
         if (particleEmitterType instanceof MeshParticleEmitter) {
             return "mesh";
         }
-        // Fall back to "box" for unknown/unhandled emitter types so the dropdown always has a valid value.
+        // Fall back to "box" for unknown emitter types to keep the dropdown valid.
         return "box";
     })();
 
     const [emitterTypeKey, setEmitterTypeKey] = useState<EmitterTypeKey>(derivedEmitterTypeKey);
 
     useEffect(() => {
-        // Keep our local dropdown state aligned with the derived key when the engine changes underneath us.
+        // Keep local dropdown state aligned with the derived key when the engine changes underneath.
         setEmitterTypeKey(derivedEmitterTypeKey);
     }, [derivedEmitterTypeKey]);
 
@@ -536,7 +572,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                         const next = value as EmitterTypeKey;
                         setEmitterTypeKey(next);
 
-                        // We update the engine by swapping the particleEmitterType instance to match the selected key.
+                        // Update the engine by swapping the particleEmitterType instance to match the selected key.
                         switch (next) {
                             case "box":
                                 system.createBoxEmitter(new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(-0.5, -0.5, -0.5), new Vector3(0.5, 0.5, 0.5));
@@ -557,7 +593,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                                 system.createPointEmitter(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
                                 break;
                             case "mesh": {
-                                // We default to the first mesh in the scene when available, and let the user change it via "Source".
+                                // Default to the first mesh in the scene when available, then allow changes via "Source".
                                 const defaultMesh = scene?.meshes?.[0] ?? null;
                                 system.particleEmitterType = new MeshParticleEmitter(defaultMesh);
                                 break;
@@ -684,24 +720,42 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
 };
 
 /**
- * Displays emission-related properties for a particle system.
- * @param props component props
- * @returns the rendered property lines
+ * Display emission-related properties for a particle system.
+ * @param props Component props.
+ * @returns Render property lines.
  */
 export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
-    const emitRateGradients = useParticleSystemProperty(system, "getEmitRateGradients", "function", "addEmitRateGradient", "removeEmitRateGradient", "forceRefreshGradients");
-    const velocityGradients = useParticleSystemProperty(system, "getVelocityGradients", "function", "addVelocityGradient", "removeVelocityGradient", "forceRefreshGradients");
-    const limitVelocityGradients = useParticleSystemProperty(
+    const emitRateGradientsGetter = useCallback(() => system.getEmitRateGradients(), [system]);
+    const emitRateGradients = useObservableArray<ParticleSystem, FactorGradient>(
         system,
-        "getLimitVelocityGradients",
-        "function",
+        emitRateGradientsGetter,
+        "addEmitRateGradient",
+        "removeEmitRateGradient",
+        "forceRefreshGradients"
+    );
+
+    const velocityGradientsGetter = useCallback(() => system.getVelocityGradients(), [system]);
+    const velocityGradients = useObservableArray<ParticleSystem, FactorGradient>(
+        system,
+        velocityGradientsGetter,
+        "addVelocityGradient",
+        "removeVelocityGradient",
+        "forceRefreshGradients"
+    );
+
+    const limitVelocityGradientsGetter = useCallback(() => system.getLimitVelocityGradients(), [system]);
+    const limitVelocityGradients = useObservableArray<ParticleSystem, FactorGradient>(
+        system,
+        limitVelocityGradientsGetter,
         "addLimitVelocityGradient",
         "removeLimitVelocityGradient",
         "forceRefreshGradients"
     );
-    const dragGradients = useParticleSystemProperty(system, "getDragGradients", "function", "addDragGradient", "removeDragGradient", "forceRefreshGradients");
+
+    const dragGradientsGetter = useCallback(() => system.getDragGradients(), [system]);
+    const dragGradients = useObservableArray<ParticleSystem, FactorGradient>(system, dragGradientsGetter, "addDragGradient", "removeDragGradient", "forceRefreshGradients");
 
     const useEmitRateGradients = (emitRateGradients?.length ?? 0) > 0;
     const useVelocityGradients = (velocityGradients?.length ?? 0) > 0;
@@ -851,9 +905,9 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
 };
 
 /**
- * Displays size-related properties for a particle system.
- * @param props component props
- * @returns the rendered property lines
+ * Display size-related properties for a particle system.
+ * @param props Component props.
+ * @returns Render property lines.
  */
 export const ParticleSystemSizeProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
@@ -871,9 +925,9 @@ export const ParticleSystemSizeProperties: FunctionComponent<{ particleSystem: P
 };
 
 /**
- * Displays lifetime-related properties for a particle system.
- * @param props component props
- * @returns the rendered property lines
+ * Display lifetime-related properties for a particle system.
+ * @param props Component props.
+ * @returns Render property lines.
  */
 export const ParticleSystemLifetimeProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
@@ -882,7 +936,14 @@ export const ParticleSystemLifetimeProperties: FunctionComponent<{ particleSyste
         return <BoundProperty component={NumberInputPropertyLine} label="Target stop duration" target={system} propertyKey="targetStopDuration" min={0} step={0.1} />;
     }
 
-    const lifeTimeGradients = useParticleSystemProperty(system, "getLifeTimeGradients", "function", "addLifeTimeGradient", "removeLifeTimeGradient", "forceRefreshGradients");
+    const lifeTimeGradientsGetter = useCallback(() => system.getLifeTimeGradients(), [system]);
+    const lifeTimeGradients = useObservableArray<ParticleSystem, FactorGradient>(
+        system,
+        lifeTimeGradientsGetter,
+        "addLifeTimeGradient",
+        "removeLifeTimeGradient",
+        "forceRefreshGradients"
+    );
     const useLifeTimeGradients = (lifeTimeGradients?.length ?? 0) > 0;
 
     return (
@@ -928,29 +989,34 @@ export const ParticleSystemLifetimeProperties: FunctionComponent<{ particleSyste
 };
 
 /**
- * Displays color-related properties for a particle system.
- * @param props component props
- * @returns the rendered property lines
+ * Display color-related properties for a particle system.
+ * @param props Component props.
+ * @returns Render property lines.
  */
 export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
-    const colorGradients = useParticleSystemProperty(system, "getColorGradients", "function", "addColorGradient", "removeColorGradient", "forceRefreshGradients");
+    const colorGradientsGetter = useCallback(() => system.getColorGradients(), [system]);
+    const colorGradients = useObservableArray<ParticleSystem, Color4Gradient>(system, colorGradientsGetter, "addColorGradient", "removeColorGradient", "forceRefreshGradients");
 
     const useRampGradients = useProperty(system, "useRampGradients");
-    const rampGradients = useParticleSystemProperty(system, "getRampGradients", "function", "addRampGradient", "removeRampGradient", "forceRefreshGradients");
-    const colorRemapGradients = useParticleSystemProperty(
+
+    const rampGradientsGetter = useCallback(() => system.getRampGradients(), [system]);
+    const rampGradients = useObservableArray<ParticleSystem, Color3Gradient>(system, rampGradientsGetter, "addRampGradient", "removeRampGradient", "forceRefreshGradients");
+
+    const colorRemapGradientsGetter = useCallback(() => system.getColorRemapGradients(), [system]);
+    const colorRemapGradients = useObservableArray<ParticleSystem, FactorGradient>(
         system,
-        "getColorRemapGradients",
-        "function",
+        colorRemapGradientsGetter,
         "addColorRemapGradient",
         "removeColorRemapGradient",
         "forceRefreshGradients"
     );
-    const alphaRemapGradients = useParticleSystemProperty(
+
+    const alphaRemapGradientsGetter = useCallback(() => system.getAlphaRemapGradients(), [system]);
+    const alphaRemapGradients = useObservableArray<ParticleSystem, FactorGradient>(
         system,
-        "getAlphaRemapGradients",
-        "function",
+        alphaRemapGradientsGetter,
         "addAlphaRemapGradient",
         "removeAlphaRemapGradient",
         "forceRefreshGradients"
@@ -1113,17 +1179,17 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
 };
 
 /**
- * Displays rotation-related properties for a particle system.
- * @param props component props
- * @returns the rendered property lines
+ * Display rotation-related properties for a particle system.
+ * @param props Component props.
+ * @returns Render property lines.
  */
 export const ParticleSystemRotationProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
-    const angularSpeedGradients = useParticleSystemProperty(
+    const angularSpeedGradientsGetter = useCallback(() => system.getAngularSpeedGradients(), [system]);
+    const angularSpeedGradients = useObservableArray<ParticleSystem, FactorGradient>(
         system,
-        "getAngularSpeedGradients",
-        "function",
+        angularSpeedGradientsGetter,
         "addAngularSpeedGradient",
         "removeAngularSpeedGradient",
         "forceRefreshGradients"
@@ -1173,9 +1239,9 @@ export const ParticleSystemRotationProperties: FunctionComponent<{ particleSyste
 };
 
 /**
- * Displays spritesheet-related properties for a particle system.
- * @param props component props
- * @returns the rendered property lines
+ * Display spritesheet-related properties for a particle system.
+ * @param props Component props.
+ * @returns Render property lines.
  */
 export const ParticleSystemSpritesheetProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
@@ -1194,22 +1260,22 @@ export const ParticleSystemSpritesheetProperties: FunctionComponent<{ particleSy
     );
 };
 
-// TODO-iv2: This can be more generic to work for not just particleSystems
-const useParticleSystemProperty = (
-    system: ParticleSystem,
-    propertyKey: keyof ParticleSystem,
-    observableType: "function" | "property",
-    addFn: keyof ParticleSystem,
-    removeFn: keyof ParticleSystem,
-    changeFn?: keyof ParticleSystem
-) => {
+// Return a copied array and re-render when array mutators run.
+// Intercept add/remove/change functions because the underlying APIs update internal arrays in-place.
+const useObservableArray = <TargetT extends object, ItemT>(
+    target: TargetT,
+    getItems: () => ReadonlyArray<ItemT> | null | undefined,
+    addFn: keyof TargetT,
+    removeFn: keyof TargetT,
+    changeFn?: keyof TargetT
+): ItemT[] => {
     return useObservableState(
         useCallback(() => {
-            const value = observableType === "function" ? system[propertyKey]() : system[propertyKey];
-            return [...(value ?? [])];
-        }, [system, propertyKey]),
-        useInterceptObservable("function", system, addFn),
-        useInterceptObservable("function", system, removeFn),
-        changeFn ? useInterceptObservable("function", system, changeFn) : undefined
+            const value = getItems();
+            return [...(value ?? [])] as ItemT[];
+        }, [getItems]),
+        useInterceptObservable("function", target as any, addFn as any),
+        useInterceptObservable("function", target as any, removeFn as any),
+        changeFn ? useInterceptObservable("function", target as any, changeFn as any) : undefined
     );
 };
