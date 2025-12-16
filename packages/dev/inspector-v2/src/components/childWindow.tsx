@@ -2,9 +2,11 @@ import type { GriffelRenderer } from "@fluentui/react-components";
 import type { FunctionComponent, PropsWithChildren } from "react";
 
 import { createDOMRenderer, makeStyles, Portal, RendererProvider } from "@fluentui/react-components";
+// import { PortalMountNodeProvider } from "@fluentui/react-shared-contexts";
 import { useEffect, useMemo, useState } from "react";
 
 import { Logger } from "core/Misc/logger";
+import { OverlayContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { Theme } from "./theme";
 
 const useStyles = makeStyles({
@@ -169,6 +171,7 @@ export function useChildWindow(key?: string) {
         return (props: PropsWithChildren) => {
             const { children } = props;
             const classes = useStyles();
+            const [portalRef, setPortalRef] = useState<HTMLDivElement | null>(null);
 
             if (!windowState) {
                 return null;
@@ -183,7 +186,9 @@ export function useChildWindow(key?: string) {
                     <RendererProvider renderer={renderer} targetDocument={mountNode.ownerDocument}>
                         {/* Theme gives us the Fluent Provider, needed for managing other Fluent state and applying the current theme mode. */}
                         <Theme className={classes.container} targetDocument={mountNode.ownerDocument}>
-                            {children}
+                            <OverlayContext.Provider value={{ mountNode: portalRef ?? undefined }}>{children}</OverlayContext.Provider>
+                            {/* <PortalMountNodeProvider value={portalRef ?? undefined}>{children}</PortalMountNodeProvider> */}
+                            <div ref={setPortalRef} style={{ zIndex: Number.MAX_SAFE_INTEGER }} />
                         </Theme>
                     </RendererProvider>
                 </Portal>
