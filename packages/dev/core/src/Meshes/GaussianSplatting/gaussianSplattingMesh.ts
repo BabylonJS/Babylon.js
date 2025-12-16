@@ -880,9 +880,9 @@ export class GaussianSplattingMesh extends Mesh {
                     if (value >= PLYValue.SH_44) {
                         shDegree = 3;
                     } else if (value >= PLYValue.SH_24) {
-                        shDegree = 2;
+                        shDegree = Math.max(shDegree, 2);
                     } else if (value >= PLYValue.SH_8) {
-                        shDegree = 1;
+                        shDegree = Math.max(shDegree, 1);
                     }
                 }
                 const type = GaussianSplattingMesh._TypeNameToEnum(typeName);
