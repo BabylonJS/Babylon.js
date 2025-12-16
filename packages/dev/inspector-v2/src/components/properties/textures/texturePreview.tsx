@@ -48,10 +48,14 @@ type TexturePreviewProps = {
     texture: BaseTexture;
     maxWidth?: string;
     maxHeight?: string;
+    offsetX?: number;
+    offsetY?: number;
+    width?: number;
+    height?: number;
 };
 
 export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) => {
-    const { texture, maxWidth = "100%", maxHeight = "384px" } = props;
+    const { texture, maxWidth = "100%", maxHeight = "384px", offsetX = 0, offsetY = 0, width = texture.getSize().width, height = texture.getSize().height } = props;
     const classes = useStyles();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [channels, setChannels] = useState<(typeof TextureChannelStates)[keyof typeof TextureChannelStates]>(TextureChannelStates.ALL);
@@ -62,23 +66,17 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
 
     const updatePreviewCanvasSize = useCallback(
         (previewCanvas: HTMLCanvasElement) => {
-            const size = texture.getSize();
-            const ratio = size.width / size.height;
+            const ratio = width / height;
 
-            previewCanvas.width = size.width;
-            previewCanvas.height = size.height;
+            previewCanvas.width = width;
+            previewCanvas.height = height;
             previewCanvas.style.width = "auto";
             previewCanvas.style.height = "auto";
             previewCanvas.style.maxWidth = maxWidth;
             previewCanvas.style.maxHeight = maxHeight;
             previewCanvas.style.aspectRatio = `${ratio}`;
-
-            return {
-                width: size.width,
-                height: size.height,
-            };
         },
-        [canvasRef.current, texture, internalTexture, maxHeight]
+        [canvasRef.current, texture, internalTexture, maxHeight, width, height]
     );
 
     const updatePreviewAsync = useCallback(async () => {
@@ -88,18 +86,21 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
         }
         try {
             await WhenTextureReadyAsync(texture); // Ensure texture is loaded before grabbing size
-            const { width, height } = updatePreviewCanvasSize(previewCanvas); // Grab desired size
-            const data = await ApplyChannelsToTextureDataAsync(texture, width, height, face, channels); // get channel data to load onto canvas context
+            updatePreviewCanvasSize(previewCanvas);
+            const { width: textureWidth, height: textureHeight } = texture.getSize();
+            // Get full texture data, then draw only the sub-region
+            const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, face, channels);
             const context = previewCanvas.getContext("2d");
             if (context) {
-                const imageData = context.createImageData(width, height);
+                const imageData = context.createImageData(textureWidth, textureHeight);
                 imageData.data.set(data);
-                context.putImageData(imageData, 0, 0);
+                // Use putImageData with dirty rect to draw only the sub-region
+                context.putImageData(imageData, -offsetX, -offsetY, offsetX, offsetY, width, height);
             }
         } catch {
             updatePreviewCanvasSize(previewCanvas); // If we fail above, best effort sizing preview canvas
         }
-    }, [[texture, face, channels, updatePreviewCanvasSize]]);
+    }, [[texture, face, channels, updatePreviewCanvasSize, offsetX, offsetY, width, height]]);
 
     useEffect(() => {
         void updatePreviewAsync();

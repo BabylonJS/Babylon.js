@@ -63,7 +63,7 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
 
     return (
         <>
-            <TexturePreview texture={texture} width={256} height={256} />
+            <TexturePreview texture={texture} />
             {/* TODO: This should probably be dynamically fetching a list of supported texture extensions. */}
             {isUpdatable && (
                 <FileUploadLine
