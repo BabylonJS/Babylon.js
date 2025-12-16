@@ -45,6 +45,7 @@ type TextureUploadProps = TextureUploadUpdateProps | TextureUploadCreateProps;
  */
 export const TextureUpload: FunctionComponent<TextureUploadProps> = (props) => {
     TextureUpload.displayName = "TextureUpload";
+    const label = props.texture ? "Upload Texture" : undefined;
     // TODO: This should probably be dynamically fetching a list of supported texture extensions
     const accept = ".jpg, .png, .tga, .dds, .env, .exr";
     const handleUpload = useCallback(
@@ -96,5 +97,5 @@ export const TextureUpload: FunctionComponent<TextureUploadProps> = (props) => {
         [props]
     );
 
-    return <UploadButton onUpload={handleUpload} accept={accept} title={"Upload Texture"} />;
+    return <UploadButton onUpload={handleUpload} accept={accept} title={"Upload Texture"} label={label} />;
 };
