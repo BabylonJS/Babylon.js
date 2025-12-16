@@ -391,6 +391,9 @@ export class HighlightLayer extends EffectLayer {
         this._postProcesses.map((pp) => {
             pp.autoClear = false;
         });
+
+        this._mainTextureCreatedSize.width = this._mainTextureDesiredSize.width;
+        this._mainTextureCreatedSize.height = this._mainTextureDesiredSize.height;
     }
 
     /**

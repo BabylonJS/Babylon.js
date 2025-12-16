@@ -13,7 +13,7 @@ const url = (process.env.SANDBOX_BASE_URL || getGlobalConfig().baseUrl.replace("
 
 test("Sandbox is loaded (Desktop)", async ({ page }) => {
     await page.goto(url, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -27,7 +27,7 @@ test("Sandbox is loaded (Desktop)", async ({ page }) => {
 
 test("dropping an image to the sandbox", async ({ page }) => {
     await page.goto(url, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -56,7 +56,7 @@ test("dropping an image to the sandbox", async ({ page }) => {
 
 test("loading a model using query parameters", async ({ page }) => {
     await page.goto(url + (snapshot ? "&" : "?") + "assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb", {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -71,7 +71,7 @@ test("loading a model using query parameters", async ({ page }) => {
 
 test("inspector is opened when clicking on the button", async ({ page }) => {
     await page.goto(url + (snapshot ? "&" : "?") + "assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb", {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
