@@ -36,8 +36,9 @@ export type ChooseTextureProps = PrimitiveProps<Nullable<BaseTexture>> & {
  * A primitive component with a ComboBox for selecting from existing scene textures
  * and a button for uploading new texture files.
  */
-export const ChooseTexture: FunctionComponent<ChooseTextureProps> = ({ scene, value, onChange, accept = ".jpg, .png, .tga, .dds, .env, .exr", cubeOnly }) => {
+export const ChooseTexture: FunctionComponent<ChooseTextureProps> = (props) => {
     ChooseTexture.displayName = "ChooseTexture";
+    const { scene, accept, cubeOnly, value, onChange } = props;
     const classes = useStyles();
 
     // Get sorted texture names from scene
