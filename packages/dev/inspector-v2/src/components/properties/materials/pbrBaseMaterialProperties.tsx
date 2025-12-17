@@ -20,6 +20,7 @@ import type { DropdownOption } from "shared-ui-components/fluent/primitives/drop
 import { Color3 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
 import { Material } from "core/Materials/material";
+import { BoundTextureProperty } from "../textures/boundTextureProperty";
 
 declare module "core/Materials/PBR/pbrSheenConfiguration" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -168,143 +169,24 @@ export const PBRBaseMaterialTransparencyProperties: FunctionComponent<{ material
 
 export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PBRBaseMaterial }> = (props) => {
     const { material } = props;
+    const scene = material.getScene();
 
     return (
         <>
-            <FileUploadLine
-                label="Albedo"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material._albedoTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Base Weight"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material._baseWeightTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Base Diffuse Roughness"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material._baseDiffuseRoughnessTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Metallic Roughness"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material._metallicTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Reflection"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material._reflectionTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Refraction"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => {
-                            material.subSurface.refractionTexture = texture;
-                            if (texture) {
-                                material.subSurface.isRefractionEnabled = true;
-                            } else if (!material.subSurface.linkRefractionWithTransparency) {
-                                material.subSurface.isRefractionEnabled = false;
-                            }
-                        });
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Reflectivity"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material._reflectivityTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Micro-surface"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material._microSurfaceTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Bump"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material._bumpTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Emissive"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material._emissiveTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Opacity"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material._opacityTexture = texture));
-                    }
-                }}
-            />
-            {/* todo for Ambient: handles customDebugAction={(state) => this.switchAmbientMode(state)} */}
-            <FileUploadLine
-                label="Ambient"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material._ambientTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Lightmap"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material._lightmapTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Detailmap"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.detailMap.texture = texture));
-                    }
-                }}
-            />
+            <BoundTextureProperty label="Albedo" target={material} propertyKey="_albedoTexture" scene={scene} />
+            <BoundTextureProperty label="Base Weight" target={material} propertyKey="_baseWeightTexture" scene={scene} />
+            <BoundTextureProperty label="Base Diffuse Roughness" target={material} propertyKey="_baseDiffuseRoughnessTexture" scene={scene} />
+            <BoundTextureProperty label="Metallic Roughness" target={material} propertyKey="_metallicTexture" scene={scene} />
+            <BoundTextureProperty label="Reflection" target={material} propertyKey="_reflectionTexture" scene={scene} cubeOnly />
+            <BoundTextureProperty label="Refraction" target={material.subSurface} propertyKey="refractionTexture" scene={scene} />
+            <BoundTextureProperty label="Reflectivity" target={material} propertyKey="_reflectivityTexture" scene={scene} />
+            <BoundTextureProperty label="Micro-surface" target={material} propertyKey="_microSurfaceTexture" scene={scene} />
+            <BoundTextureProperty label="Bump" target={material} propertyKey="_bumpTexture" scene={scene} />
+            <BoundTextureProperty label="Emissive" target={material} propertyKey="_emissiveTexture" scene={scene} />
+            <BoundTextureProperty label="Opacity" target={material} propertyKey="_opacityTexture" scene={scene} />
+            <BoundTextureProperty label="Ambient" target={material} propertyKey="_ambientTexture" scene={scene} />
+            <BoundTextureProperty label="Lightmap" target={material} propertyKey="_lightmapTexture" scene={scene} />
+            <BoundTextureProperty label="Detailmap" target={material.detailMap} propertyKey="texture" scene={scene} />
             <BoundProperty component={SwitchPropertyLine} label="Use lightmap as shadowmap" target={material} propertyKey="_useLightmapAsShadowmap" />
             <BoundProperty component={SwitchPropertyLine} label="Use detailmap" target={material.detailMap} propertyKey="isEnabled" />
             <BoundProperty component={SwitchPropertyLine} label="Use decalmap" target={material.decalMap} propertyKey="isEnabled" />

@@ -13,6 +13,7 @@ import { ReadFile } from "core/Misc/fileTools";
 import { Texture } from "core/Materials/Textures/texture";
 import { Material } from "core/Materials/material";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
+import { BoundTextureProperty } from "../textures/boundTextureProperty";
 
 // TODO: ryamtrem / gehalper This function is temporal until there is a line control to handle texture links (similar to the old TextureLinkLineComponent)
 const UpdateTexture = (file: File, material: StandardMaterial, textureSetter: (texture: BaseTexture) => void) => {
@@ -56,99 +57,20 @@ export const StandardMaterialTransparencyProperties: FunctionComponent<{ materia
 
 export const StandardMaterialTexturesProperties: FunctionComponent<{ material: StandardMaterial }> = (props) => {
     const { material } = props;
+    const scene = material.getScene();
 
     return (
         <>
-            <FileUploadLine
-                label="Diffuse"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.diffuseTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Specular"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.specularTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Reflection"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.reflectionTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Refraction"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.refractionTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Emissive"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.emissiveTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Bump"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.bumpTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Opacity"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.opacityTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Ambient"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.ambientTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Lightmap"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.lightmapTexture = texture));
-                    }
-                }}
-            />
-            <FileUploadLine
-                label="Detailmap"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.detailMap.texture = texture));
-                    }
-                }}
-            />
+            <BoundTextureProperty label="Diffuse" target={material} propertyKey="diffuseTexture" scene={scene} />
+            <BoundTextureProperty label="Specular" target={material} propertyKey="specularTexture" scene={scene} />
+            <BoundTextureProperty label="Reflection" target={material} propertyKey="reflectionTexture" scene={scene} />
+            <BoundTextureProperty label="Refraction" target={material} propertyKey="refractionTexture" scene={scene} />
+            <BoundTextureProperty label="Emissive" target={material} propertyKey="emissiveTexture" scene={scene} />
+            <BoundTextureProperty label="Bump" target={material} propertyKey="bumpTexture" scene={scene} />
+            <BoundTextureProperty label="Opacity" target={material} propertyKey="opacityTexture" scene={scene} />
+            <BoundTextureProperty label="Ambient" target={material} propertyKey="ambientTexture" scene={scene} />
+            <BoundTextureProperty label="Lightmap" target={material} propertyKey="lightmapTexture" scene={scene} />
+            <BoundTextureProperty label="Detailmap" target={material.detailMap} propertyKey="texture" scene={scene} />
             <BoundProperty component={SwitchPropertyLine} label="Use lightmap as shadowmap" target={material} propertyKey="useLightmapAsShadowmap" />
             <BoundProperty component={SwitchPropertyLine} label="Use detailmap" target={material.detailMap} propertyKey="isEnabled" />
             <BoundProperty component={SwitchPropertyLine} label="Use decalmap" target={material.decalMap} propertyKey="isEnabled" />
