@@ -1,30 +1,13 @@
 import type { GriffelRenderer } from "@fluentui/react-components";
-import type { FunctionComponent, PropsWithChildren } from "react";
+import type { FunctionComponent, PropsWithChildren, Ref } from "react";
 
 import { createDOMRenderer, makeStyles, Portal, RendererProvider } from "@fluentui/react-components";
 // import { PortalMountNodeProvider } from "@fluentui/react-shared-contexts";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useImperativeHandle, useState } from "react";
 
 import { Logger } from "core/Misc/logger";
 import { OverlayContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { Theme } from "./theme";
-
-const useStyles = makeStyles({
-    container: {
-        display: "flex",
-        flexGrow: 1,
-        flexDirection: "column",
-        overflow: "hidden",
-    },
-});
-
-export type ChildWindowOptions = {
-    defaultWidth?: number;
-    defaultHeight?: number;
-    defaultLeft?: number;
-    defaultTop?: number;
-    title?: string;
-};
 
 function ToFeaturesString(options: ChildWindowOptions) {
     const { defaultWidth, defaultHeight, defaultLeft, defaultTop } = options;
@@ -48,16 +31,93 @@ function ToFeaturesString(options: ChildWindowOptions) {
     return features.map((feature) => `${feature.key}=${feature.value}`).join(",");
 }
 
+const useStyles = makeStyles({
+    container: {
+        display: "flex",
+        flexGrow: 1,
+        flexDirection: "column",
+        overflow: "hidden",
+    },
+});
+
+export type ChildWindowOptions = {
+    /**
+     * The default width of the child window in pixels.
+     * @remarks Ignored if the ChildWindow was passed an identity and previous bounds were saved.
+     */
+    defaultWidth?: number;
+
+    /**
+     * The default height of the child window in pixels.
+     * @remarks Ignored if the ChildWindow was passed an identity and previous bounds were saved.
+     */
+    defaultHeight?: number;
+
+    /**
+     * The default left position of the child window in pixels.
+     * @remarks Ignored if the ChildWindow was passed an identity and previous bounds were saved.
+     */
+    defaultLeft?: number;
+
+    /**
+     * The default top position of the child window in pixels.
+     * @remarks Ignored if the ChildWindow was passed an identity and previous bounds were saved.
+     */
+    defaultTop?: number;
+
+    /**
+     * The title of the child window.
+     * @remarks If not provided, the identity will be used instead (if any).
+     */
+    title?: string;
+};
+
+export type ChildWindow = {
+    /**
+     * Opens the child window.
+     * @param options Options for opening the child window.
+     */
+    open: (options?: ChildWindowOptions) => void;
+
+    /**
+     * Closes the child window.
+     */
+    close: () => void;
+};
+
+export type ChildWindowProps = {
+    /**
+     * An optional unique identity for the child window.
+     * @remarks If provided, the child window's bounds will be saved/restored using this identity.
+     */
+    identity?: string;
+
+    /**
+     * Called when the open state of the child window changes.
+     * @param isOpen Whether the child window is open.
+     */
+    onOpenChange?: (isOpen: boolean) => void;
+
+    /**
+     * A ref that exposes the ChildWindow imperative API.
+     */
+    ref?: Ref<ChildWindow>;
+};
+
 /**
  * Allows displaying a child window that can contain child components.
- * @param key An optional key to uniquely identify this child window (used for persisting window bounds).
- * @returns An object that enables opening, closing, and rendering the child window.
+ * @param props Props for the child window.
+ * @returns The child window component.
  */
-export function useChildWindow(key?: string) {
+export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>> = (props) => {
+    const { identity, children, onOpenChange, ref: imperativeRef } = props;
+    const classes = useStyles();
+
     const [windowState, setWindowState] = useState<{ mountNode: HTMLElement; renderer: GriffelRenderer }>();
     const [childWindow, setChildWindow] = useState<Window>();
+    const [portalRef, setPortalRef] = useState<HTMLDivElement | null>(null);
 
-    const storageKey = key ? `Babylon/Settings/ChildWindow/${key}/Bounds` : null;
+    const storageKey = identity ? `Babylon/Settings/ChildWindow/${identity}/Bounds` : null;
 
     // This function is just for creating the child window itself. It is a function because
     // it must be called synchronously in response to a user interaction (e.g. button click),
@@ -100,7 +160,7 @@ export function useChildWindow(key?: string) {
             const childWindow = window.open("", "", ToFeaturesString(options));
             if (childWindow) {
                 // Set the title if provided.
-                childWindow.document.title = options.title ?? "";
+                childWindow.document.title = options.title ?? identity ?? "";
 
                 // Set the child window state.
                 setChildWindow((current) => {
@@ -112,6 +172,13 @@ export function useChildWindow(key?: string) {
         },
         [storageKey]
     );
+
+    useImperativeHandle(imperativeRef, () => {
+        return {
+            open: createWindow,
+            close: () => setChildWindow(undefined),
+        };
+    }, [createWindow]);
 
     // This side effect runs any time the child window instance changes. It does the rest of the child window
     // setup work, including creating resources and state needed to properly render the content of the child window.
@@ -130,6 +197,7 @@ export function useChildWindow(key?: string) {
             const applyWindowState = () => {
                 // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
                 setWindowState({ mountNode: body, renderer: createDOMRenderer(childWindow.document) });
+                onOpenChange?.(true);
             };
 
             // Once the child window document is ready, setup the window state which will trigger another effect that renders into the child window.
@@ -147,6 +215,7 @@ export function useChildWindow(key?: string) {
             const onChildWindowUnload = () => {
                 setWindowState(undefined);
                 setChildWindow(undefined);
+                onOpenChange?.(false);
             };
             childWindow.addEventListener("unload", onChildWindowUnload, { once: true });
             disposeActions.push(() => childWindow.removeEventListener("unload", onChildWindowUnload));
@@ -182,40 +251,24 @@ export function useChildWindow(key?: string) {
         };
     }, [childWindow]);
 
-    // This is the actual component that the caller can use to render React components in the child window.
-    const component = useMemo<FunctionComponent<PropsWithChildren>>(() => {
-        return (props: PropsWithChildren) => {
-            const { children } = props;
-            const classes = useStyles();
-            const [portalRef, setPortalRef] = useState<HTMLDivElement | null>(null);
+    if (!windowState) {
+        return null;
+    }
 
-            if (!windowState) {
-                return null;
-            }
+    const { mountNode, renderer } = windowState;
 
-            const { mountNode, renderer } = windowState;
-
-            return (
-                // Portal targets the body of the child window.
-                <Portal mountNode={mountNode}>
-                    {/* RenderProvider manages Fluent style/class state. */}
-                    <RendererProvider renderer={renderer} targetDocument={mountNode.ownerDocument}>
-                        {/* Theme gives us the Fluent Provider, needed for managing other Fluent state and applying the current theme mode. */}
-                        <Theme className={classes.container} targetDocument={mountNode.ownerDocument}>
-                            <OverlayContext.Provider value={{ mountNode: portalRef ?? undefined }}>{children}</OverlayContext.Provider>
-                            {/* <PortalMountNodeProvider value={portalRef ?? undefined}>{children}</PortalMountNodeProvider> */}
-                            <div ref={setPortalRef} style={{ zIndex: Number.MAX_SAFE_INTEGER }} />
-                        </Theme>
-                    </RendererProvider>
-                </Portal>
-            );
-        };
-    }, [windowState]);
-
-    return {
-        open: createWindow,
-        close: () => setChildWindow(undefined),
-        isOpen: !!childWindow,
-        component,
-    };
-}
+    return (
+        // Portal targets the body of the child window.
+        <Portal mountNode={mountNode}>
+            {/* RenderProvider manages Fluent style/class state. */}
+            <RendererProvider renderer={renderer} targetDocument={mountNode.ownerDocument}>
+                {/* Theme gives us the Fluent Provider, needed for managing other Fluent state and applying the current theme mode. */}
+                <Theme className={classes.container} targetDocument={mountNode.ownerDocument}>
+                    <OverlayContext.Provider value={{ mountNode: portalRef ?? undefined }}>{children}</OverlayContext.Provider>
+                    {/* <PortalMountNodeProvider value={portalRef ?? undefined}>{children}</PortalMountNodeProvider> */}
+                    <div ref={setPortalRef} style={{ zIndex: Number.MAX_SAFE_INTEGER }} />
+                </Theme>
+            </RendererProvider>
+        </Portal>
+    );
+};

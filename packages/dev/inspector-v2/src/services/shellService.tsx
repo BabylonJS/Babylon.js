@@ -42,7 +42,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 
 import { Observable } from "core/Misc/observable";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
-import { useChildWindow } from "../components/childWindow";
+import { ChildWindow } from "../components/childWindow";
 import { TeachingMoment } from "../components/teachingMoment";
 import { Theme } from "../components/theme";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
@@ -690,7 +690,8 @@ function usePane(
     const [topSelectedTab, setTopSelectedTab] = useState<SidePaneDefinition>();
     const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePaneDefinition>();
     const [collapsed, setCollapsed] = useState(false);
-    const childWindow = useChildWindow();
+    const childWindow = useRef<ChildWindow>(null);
+    const [isChildWindowOpen, setIsChildWindowOpen] = useState(false);
     const paneContainerRef = useRef<HTMLDivElement>(null);
 
     const onExpandCollapseClick = useCallback(() => {
@@ -767,13 +768,13 @@ function usePane(
     const setUndocked = useCallback(
         (undocked: boolean) => {
             if (!undocked) {
-                childWindow.close();
+                childWindow.current?.close();
             } else {
                 const paneContainer = paneContainerRef.current;
                 if (!paneContainer) {
                     // It shouldn't be possible to get here and have this ref be null, but just in case,
                     // bail out of the undock operation.
-                    childWindow.close();
+                    childWindow.current?.close();
                 } else {
                     // This is the extra buffer needed on top of minWidth to account for window chrome to avoid a horizontal scrollbar.
                     const widthBuffer = 4;
@@ -783,7 +784,7 @@ function usePane(
                     // Create the child window with approximately the same location and size as the side pane.
                     const bounds = paneContainer.getBoundingClientRect();
 
-                    childWindow.open({
+                    childWindow.current?.open({
                         defaultWidth: Math.max(bounds.width, minWidth + widthBuffer),
                         defaultHeight: bounds.height - topOffset,
                         defaultTop: bounds.top + window.screenY + topOffset,
@@ -878,7 +879,7 @@ function usePane(
                                             <Divider vertical inset style={{ minHeight: 0 }} />{" "}
                                         </>
                                     )}
-                                    <Collapse visible={!childWindow.isOpen} orientation="horizontal">
+                                    <Collapse visible={!isChildWindowOpen} orientation="horizontal">
                                         {expandCollapseButton}
                                     </Collapse>
                                 </>
@@ -888,7 +889,7 @@ function usePane(
                 </>
             );
         },
-        [location, collapsed, childWindow.isOpen, expandCollapseButton]
+        [location, collapsed, isChildWindowOpen, expandCollapseButton]
     );
 
     // This memos the TabList to make it easy for the JSX to be inserted at the top of the pane (in "compact" mode) or returned to the caller to be used in the toolbar (in "full" mode).
@@ -947,10 +948,10 @@ function usePane(
 
     // This effect closes the window if all panes have been removed.
     useEffect(() => {
-        if (childWindow.isOpen && topPanes.length === 0 && bottomPanes.length === 0) {
-            childWindow.close();
+        if (isChildWindowOpen && topPanes.length === 0 && bottomPanes.length === 0) {
+            childWindow.current?.close();
         }
-    }, [childWindow, topPanes, bottomPanes]);
+    }, [childWindow, isChildWindowOpen, topPanes, bottomPanes]);
 
     // This memoizes the pane itself, which may or may not include the tab list, depending on the toolbar mode.
     const corePane = useMemo(() => {
@@ -961,10 +962,10 @@ function usePane(
                     <>
                         <div className={classes.barDiv}>
                             {/* The tablist gets merged in with the toolbar. */}
-                            {!childWindow.isOpen && location === "left" && expandCollapseButton}
+                            {!isChildWindowOpen && location === "left" && expandCollapseButton}
                             {topPaneTabList}
                             <Toolbar location="top" components={topBarItems} />
-                            {!childWindow.isOpen && location === "right" && expandCollapseButton}
+                            {!isChildWindowOpen && location === "right" && expandCollapseButton}
                         </div>
                     </>
                 )}
@@ -1038,51 +1039,53 @@ function usePane(
         bottomBarItems,
         topPaneTabList,
         bottomPaneTabList,
-        childWindow.isOpen,
+        isChildWindowOpen,
     ]);
 
     // This deals with docked vs undocked state, where undocked is rendered into a separate window via a portal.
     const pane = useMemo(() => {
-        if (!childWindow.isOpen) {
-            // If there is no window state, then we are docked, so render the resizable div and the collapse container.
-            return (
-                <div
-                    ref={paneContainerRef}
-                    className={mergeClasses(
-                        classes.paneContainer,
-                        layoutMode === "inline"
-                            ? undefined
-                            : mergeClasses(classes.paneContainerOverlay, location === "left" ? classes.paneContainerOverlayLeft : classes.paneContainerOverlayRight)
-                    )}
-                >
-                    {(topPanes.length > 0 || bottomPanes.length > 0) && (
-                        <div className={`${classes.pane} ${location === "left" ? classes.paneLeft : classes.paneRight}`}>
-                            <Collapse orientation="horizontal" visible={!collapsed}>
+        return (
+            <>
+                {/* If there is no window state, then we are docked, so render the resizable div and the collapse container. */}
+                {!isChildWindowOpen && (
+                    <div
+                        ref={paneContainerRef}
+                        className={mergeClasses(
+                            classes.paneContainer,
+                            layoutMode === "inline"
+                                ? undefined
+                                : mergeClasses(classes.paneContainerOverlay, location === "left" ? classes.paneContainerOverlayLeft : classes.paneContainerOverlayRight)
+                        )}
+                    >
+                        {(topPanes.length > 0 || bottomPanes.length > 0) && (
+                            <div className={`${classes.pane} ${location === "left" ? classes.paneLeft : classes.paneRight}`}>
+                                <Collapse orientation="horizontal" visible={!collapsed}>
+                                    <div
+                                        ref={paneHorizontalResizeElementRef}
+                                        className={classes.paneContainer}
+                                        style={{ width: `clamp(${minWidth}px, calc(${defaultWidth}px + var(${paneWidthAdjustCSSVar}, 0px)), 1000px)` }}
+                                    >
+                                        {corePane}
+                                    </div>
+                                </Collapse>
+                                {/* This is the resizer (width) for the pane container. */}
                                 <div
-                                    ref={paneHorizontalResizeElementRef}
-                                    className={classes.paneContainer}
-                                    style={{ width: `clamp(${minWidth}px, calc(${defaultWidth}px + var(${paneWidthAdjustCSSVar}, 0px)), 1000px)` }}
-                                >
-                                    {corePane}
-                                </div>
-                            </Collapse>
-                            {/* This is the resizer (width) for the pane container. */}
-                            <div
-                                ref={paneHorizontalResizeHandleRef}
-                                className={`${classes.resizer} ${location === "left" ? classes.resizerLeft : classes.resizerRight}`}
-                                style={{ pointerEvents: `${collapsed ? "none" : "auto"}` }}
-                            />
-                        </div>
-                    )}
-                </div>
-            );
-        } else {
-            // Otherwise we are undocked, so render into the portal that targets the body of the child window.
-            return <childWindow.component>{corePane}</childWindow.component>;
-        }
-    }, [collapsed, corePane, childWindow.component]);
+                                    ref={paneHorizontalResizeHandleRef}
+                                    className={`${classes.resizer} ${location === "left" ? classes.resizerLeft : classes.resizerRight}`}
+                                    style={{ pointerEvents: `${collapsed ? "none" : "auto"}` }}
+                                />
+                            </div>
+                        )}
+                    </div>
+                )}
+                <ChildWindow ref={childWindow} onOpenChange={(isOpen) => setIsChildWindowOpen(isOpen)}>
+                    {corePane}
+                </ChildWindow>
+            </>
+        );
+    }, [collapsed, corePane]);
 
-    return [topPaneTabList, pane, collapsed, setCollapsed, childWindow.isOpen, setUndocked] as const;
+    return [topPaneTabList, pane, collapsed, setCollapsed, isChildWindowOpen, setUndocked] as const;
 }
 
 export function MakeShellServiceDefinition({

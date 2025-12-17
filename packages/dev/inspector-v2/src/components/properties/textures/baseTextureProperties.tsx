@@ -5,7 +5,7 @@ import type { DropdownOption } from "shared-ui-components/fluent/primitives/drop
 import type { TextureEditorProps } from "../../textureEditor/textureEditor";
 import type { TexturePreviewImperativeRef } from "./texturePreview";
 
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 
 import { Constants } from "core/Engines/constants";
 import { Texture } from "core/Materials/Textures/texture";
@@ -19,7 +19,7 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { useChildWindow } from "../../childWindow";
+import { ChildWindow } from "../../childWindow";
 import { BoundProperty } from "../boundProperty";
 import { FindTextureFormat, FindTextureType } from "./textureFormatUtils";
 import { TexturePreview } from "./texturePreview";
@@ -30,16 +30,16 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
 
     const texturePreviewImperativeRef = useRef<TexturePreviewImperativeRef>(null);
 
-    const childWindow = useChildWindow("Texture Editor");
+    const childWindow = useRef<ChildWindow>(null);
 
     return (
         <>
             <TexturePreview imperativeRef={texturePreviewImperativeRef} texture={texture} />
             <TextureUpload texture={texture} />
-            <ButtonLine label="Edit Texture" onClick={() => childWindow.open({ title: "Texture Editor" })} />
-            <childWindow.component>
+            <ButtonLine label="Edit Texture" onClick={() => childWindow.current?.open()} />
+            <ChildWindow identity="Texture Editor" ref={childWindow}>
                 <TextureEditor texture={texture} onUpdate={async () => await texturePreviewImperativeRef.current?.refresh()} />
-            </childWindow.component>
+            </ChildWindow>
         </>
     );
 };
