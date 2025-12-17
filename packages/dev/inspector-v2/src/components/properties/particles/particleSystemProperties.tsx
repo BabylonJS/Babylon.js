@@ -1,5 +1,5 @@
 import type { FunctionComponent } from "react";
-import type { FactorGradient, ColorGradient, AbstractMesh } from "core/index";
+import type { FactorGradient, ColorGradient as Color4Gradient } from "core/index";
 import type { ISelectionService } from "../../../services/selectionService";
 import type { Attractor } from "core/Particles/attractor";
 import type { Color3Gradient } from "core/Misc/gradients";
@@ -14,6 +14,7 @@ import { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmi
 import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 import { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
 import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
@@ -388,7 +389,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
     type EmitterSelectionValue = "none" | "position" | `node:${number}`;
 
     const emitter = useProperty(system, "emitter");
-    const emitterObject = emitter && !(emitter instanceof Vector3) ? (emitter as AbstractMesh) : undefined;
+    const emitterObject = emitter && !(emitter instanceof Vector3) ? (emitter as any) : undefined;
 
     const [sceneNodesVersion, setSceneNodesVersion] = useState(0);
     useEffect(() => {
@@ -414,22 +415,26 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
 
     const sceneNodes = useMemo(() => {
         if (!scene) {
-            return [] as AbstractMesh[];
+            return [] as any[];
         }
 
+        // Combine meshes + transform nodes into a single list for the emitter dropdown.
+        const combined = [...scene.meshes, ...scene.transformNodes];
         const seenUniqueIds = new Set<number>();
-        const unique: AbstractMesh[] = [];
+        const unique: any[] = [];
 
-        for (const mesh of scene.meshes) {
-            const uniqueId = mesh.uniqueId;
-            if (seenUniqueIds.has(uniqueId)) {
-                continue;
+        for (const node of combined) {
+            const uniqueId = (node as any)?.uniqueId;
+            if (typeof uniqueId === "number") {
+                if (seenUniqueIds.has(uniqueId)) {
+                    continue;
+                }
+                seenUniqueIds.add(uniqueId);
             }
-            seenUniqueIds.add(uniqueId);
-            unique.push(mesh);
+            unique.push(node);
         }
 
-        const emitterUniqueId = emitterObject?.uniqueId;
+        const emitterUniqueId = (emitterObject as any)?.uniqueId;
         if (emitterObject && typeof emitterUniqueId === "number" && !seenUniqueIds.has(emitterUniqueId)) {
             // Keep the current emitter visible even if it isn't present in the scene arrays for any reason.
             unique.unshift(emitterObject);
@@ -438,7 +443,14 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
         return unique;
     }, [scene, sceneNodesVersion, emitterObject]);
 
-    const emitterSelectionValue: EmitterSelectionValue = !emitter ? "none" : emitter instanceof Vector3 ? "position" : (`node:${emitter.uniqueId}` as const);
+    const emitterSelectionValue: EmitterSelectionValue = !emitter
+        ? "none"
+        : emitter instanceof Vector3
+          ? "position"
+          : typeof (emitter as any)?.uniqueId === "number"
+            ? (`node:${(emitter as any).uniqueId}` as const)
+            : "none";
+
     const emitterVector = emitter instanceof Vector3 ? emitter : undefined;
 
     // Subscribe to Vector3 internal components to re-render on in-place mutations.
@@ -490,16 +502,16 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                 options={[
                     { label: "None", value: "none" },
                     { label: "Position", value: "position" },
-                    ...sceneNodes.map((node) => {
-                        const uniqueId = node.uniqueId;
-                        const name = node.name ?? "(unnamed)";
+                    ...(sceneNodes.map((node) => {
+                        const uniqueId = (node as any)?.uniqueId;
+                        const name = (node as any)?.name ?? "(unnamed)";
                         const label = typeof uniqueId === "number" ? `${name} (#${uniqueId})` : `${name}`;
 
                         return {
                             label,
                             value: `node:${uniqueId}`,
                         };
-                    }),
+                    }) as any),
                 ]}
                 onChange={(value) => {
                     const next = value as EmitterSelectionValue;
@@ -518,7 +530,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
 
                     const uniqueIdText = next.replace("node:", "");
                     const uniqueId = Number(uniqueIdText);
-                    const node = sceneNodes.find((candidate) => candidate.uniqueId === uniqueId);
+                    const node = sceneNodes.find((candidate) => (candidate as any)?.uniqueId === uniqueId);
                     if (node) {
                         system.emitter = node;
                     }
@@ -540,7 +552,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
             )}
 
             {emitterSelectionValue !== "none" && emitter && !(emitter instanceof Vector3) && (
-                <LinkToEntityPropertyLine label="Entity" entity={emitter} selectionService={selectionService} />
+                <LinkToEntityPropertyLine label="Entity" entity={emitter as any} selectionService={selectionService} />
             )}
 
             {!system.isNodeGenerated && (
@@ -598,9 +610,9 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                             label="Source"
                             value={particleEmitterType.mesh ? `mesh:${particleEmitterType.mesh.uniqueId}` : `mesh:${scene.meshes[0].uniqueId}`}
                             options={scene.meshes.map((mesh) => {
-                                const uniqueId = mesh.uniqueId;
-                                const name = mesh.name ?? "(unnamed)";
-                                const label = `${name} (#${uniqueId})`;
+                                const uniqueId = (mesh as any)?.uniqueId;
+                                const name = (mesh as any)?.name ?? "(unnamed)";
+                                const label = typeof uniqueId === "number" ? `${name} (#${uniqueId})` : `${name}`;
                                 return {
                                     label,
                                     value: `mesh:${uniqueId}`,
@@ -610,7 +622,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                                 const next = String(value);
                                 const uniqueIdText = next.replace("mesh:", "");
                                 const uniqueId = Number(uniqueIdText);
-                                const mesh = scene.meshes.find((candidate) => candidate.uniqueId === uniqueId) ?? null;
+                                const mesh = scene.meshes.find((candidate) => (candidate as any)?.uniqueId === uniqueId) ?? null;
                                 particleEmitterType.mesh = mesh;
                             }}
                         />
@@ -985,7 +997,7 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
     const { particleSystem: system } = props;
 
     const colorGradientsGetter = useCallback(() => system.getColorGradients(), [system]);
-    const colorGradients = useObservableArray<ParticleSystem, ColorGradient>(system, colorGradientsGetter, "addColorGradient", "removeColorGradient", "forceRefreshGradients");
+    const colorGradients = useObservableArray<ParticleSystem, Color4Gradient>(system, colorGradientsGetter, "addColorGradient", "removeColorGradient", "forceRefreshGradients");
 
     const useRampGradients = useProperty(system, "useRampGradients");
 
@@ -1036,11 +1048,11 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                 <Color4GradientList
                     gradients={colorGradients}
                     label="Color Gradient"
-                    removeGradient={(gradient: ColorGradient) => {
+                    removeGradient={(gradient: Color4Gradient) => {
                         system.removeColorGradient(gradient.gradient);
                         system.forceRefreshGradients();
                     }}
-                    addGradient={(gradient?: ColorGradient) => {
+                    addGradient={(gradient?: Color4Gradient) => {
                         if (gradient) {
                             system.addColorGradient(gradient.gradient, gradient.color1, gradient.color2);
                         } else {
@@ -1049,7 +1061,7 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                         }
                         system.forceRefreshGradients();
                     }}
-                    onChange={(_gradient: ColorGradient) => {
+                    onChange={(_gradient: Color4Gradient) => {
                         system.forceRefreshGradients();
                     }}
                 />
@@ -1262,8 +1274,8 @@ const useObservableArray = <TargetT extends object, ItemT>(
             const value = getItems();
             return [...(value ?? [])] as ItemT[];
         }, [getItems]),
-        useInterceptObservable("function", target, addFn),
-        useInterceptObservable("function", target, removeFn),
-        changeFn ? useInterceptObservable("function", target, changeFn) : undefined
+        useInterceptObservable("function", target as any, addFn as any),
+        useInterceptObservable("function", target as any, removeFn as any),
+        changeFn ? useInterceptObservable("function", target as any, changeFn as any) : undefined
     );
 };
