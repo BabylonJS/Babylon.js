@@ -51,7 +51,7 @@ function TryParseJsonString(value: string | undefined): any {
     }
 }
 
-function ParseJsonFileContents(contents: ArrayBuffer | string): unknown {
+function ParseJsonLoadContents(contents: ArrayBuffer | string): unknown {
     if (contents instanceof ArrayBuffer) {
         const decoder = new TextDecoder("utf-8");
         return TryParseJsonString(decoder.decode(contents)) ?? undefined;
@@ -65,19 +65,7 @@ function ParseJsonFileContents(contents: ArrayBuffer | string): unknown {
 }
 
 function NormalizeParticleSystemSerialization(rawData: any): any {
-    // Normalize snippet-server wrappers to a ParticleSystem serialization object.
-    // Support:
-    // - GET response: { jsonPayload: "{\"particleSystem\":\"...\"}" }
-    // - POST payload: { payload: "{\"particleSystem\":\"...\"}" }
-    // - Snippet object: { particleSystem: "{...}" }
-    // - Direct serialization: { ... }
-    const jsonObject: { jsonPayload: string | undefined; payload: string | undefined } = rawData;
-
-    let jsonPayload = TryParseJsonString(jsonObject?.jsonPayload);
-    if (!jsonPayload) {
-        jsonPayload = TryParseJsonString(jsonObject?.payload);
-    }
-
+    const jsonPayload = TryParseJsonString(rawData?.jsonPayload);
     const particleSystem = TryParseJsonString(jsonPayload?.particleSystem);
     return particleSystem ?? rawData;
 }
@@ -174,7 +162,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             }
 
             try {
-                const responseObject = ParseJsonFileContents(request.responseText);
+                const responseObject = ParseJsonLoadContents(request.responseText);
                 if (!responseObject) {
                     alert("Unable to load your particle system");
                     return;
@@ -309,7 +297,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                             Tools.ReadFile(
                                 file,
                                 (data) => {
-                                    const jsonObject = ParseJsonFileContents(data);
+                                    const jsonObject = ParseJsonLoadContents(data);
                                     if (!jsonObject) {
                                         alert("Unable to load particle system from file.");
                                         return;
