@@ -305,7 +305,6 @@ export class GaussianSplattingMesh extends Mesh {
     private _splatIndex: Nullable<Float32Array> = null;
     private _shTextures: Nullable<BaseTexture[]> = null;
     private _splatsData: Nullable<ArrayBuffer> = null;
-    private _sh: Nullable<Uint8Array[]> = null;
     private readonly _keepInRam: boolean = false;
 
     private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
@@ -413,6 +412,8 @@ export class GaussianSplattingMesh extends Mesh {
         return this._material instanceof GaussianSplattingMaterial ? this._material.compensation : false;
     }
 
+    private _loadingPromise: Promise<void> | null = null;
+
     /**
      * set rendering material
      */
@@ -472,8 +473,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         this._keepInRam = keepInRam;
         if (url) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.loadFileAsync(url);
+            this._loadingPromise = this.loadFileAsync(url);
         }
         const gaussianSplattingMaterial = new GaussianSplattingMaterial(this.name + "_material", this._scene);
         gaussianSplattingMaterial.setSourceMesh(this);
@@ -489,6 +489,14 @@ export class GaussianSplattingMesh extends Mesh {
                 this._cameraViewInfos.delete(cameraId);
             }
         });
+    }
+
+    /**
+     * Get the loading promise when loading the mesh from a URL in the constructor
+     * @returns constructor loading promise or null if no URL was provided
+     */
+    public getLoadingPromise(): Promise<void> | null {
+        return this._loadingPromise;
     }
 
     /**
@@ -1400,7 +1408,6 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     private static _CreateWorker = function (self: Worker) {
-        let vertexCountPadded = 0;
         let positions: Float32Array;
         let depthMix: BigInt64Array;
         let indices: Uint32Array;
@@ -1410,12 +1417,13 @@ export class GaussianSplattingMesh extends Mesh {
             // updated on init
             if (e.data.positions) {
                 positions = e.data.positions;
-                vertexCountPadded = e.data.vertexCountPadded;
             }
             // udpate on view changed
             else {
                 const cameraId = e.data.cameraId;
                 const viewProj = e.data.view;
+
+                const vertexCountPadded = (positions.length + 15) & ~0xf;
                 if (!positions || !viewProj) {
                     // Sanity check, it shouldn't happen!
                     throw new Error("positions or view is not defined!");
@@ -1594,9 +1602,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         if (this._keepInRam) {
             this._splatsData = data;
-            if (sh) {
-                this._sh = sh;
-            }
+            // keep sh in ram too ?
         }
 
         const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
@@ -1731,7 +1737,7 @@ export class GaussianSplattingMesh extends Mesh {
         if (sh) {
             for (let i = 0; i < sh.length; i++) {
                 const componentCount = 4;
-                const shView = new Uint8Array(this._sh![i].buffer, texelStart * componentCount, texelCount * componentCount);
+                const shView = new Uint32Array(sh[i].buffer, texelStart * componentCount * 4, texelCount * componentCount);
                 updateTextureFromData(this._shTextures![i], shView, textureSize.x, lineStart, lineCount);
             }
         }
@@ -1756,7 +1762,7 @@ export class GaussianSplattingMesh extends Mesh {
         this._depthMix = new BigInt64Array(vertexCountPadded);
         const positions = Float32Array.from(this._splatPositions!);
 
-        this._worker.postMessage({ positions, vertexCountPadded }, [positions.buffer]);
+        this._worker.postMessage({ positions }, [positions.buffer]);
 
         this._worker.onmessage = (e) => {
             this._depthMix = e.data.depthMix;
