@@ -1,7 +1,6 @@
 import type { FunctionComponent } from "react";
 
 import type { StandardMaterial } from "core/Materials/standardMaterial";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
@@ -9,26 +8,7 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
-import { ReadFile } from "core/Misc/fileTools";
-import { Texture } from "core/Materials/Textures/texture";
-import { Material } from "core/Materials/material";
-import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { BoundTextureProperty } from "../textures/boundTextureProperty";
-
-// TODO: ryamtrem / gehalper This function is temporal until there is a line control to handle texture links (similar to the old TextureLinkLineComponent)
-const UpdateTexture = (file: File, material: StandardMaterial, textureSetter: (texture: BaseTexture) => void) => {
-    ReadFile(
-        file,
-        (data) => {
-            const blob = new Blob([data], { type: "octet/stream" });
-            const url = URL.createObjectURL(blob);
-            textureSetter(new Texture(url, material.getScene(), false, false));
-            material.markAsDirty(Material.AllDirtyFlag);
-        },
-        undefined,
-        true
-    );
-};
 
 export const StandardMaterialGeneralProperties: FunctionComponent<{ material: StandardMaterial }> = (props) => {
     const { material } = props;
