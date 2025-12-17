@@ -268,7 +268,6 @@ export class Sound {
             loop: options.loop || false,
             loopEnd: 0,
             loopStart: 0,
-            maxInstances: 1,
             outBus: null,
             outBusAutoDefault: false,
             playbackRate: options.playbackRate || 1,
