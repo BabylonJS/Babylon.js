@@ -1,8 +1,8 @@
-import type { FunctionComponent } from "react";
-import type { FactorGradient, ColorGradient, AbstractMesh } from "core/index";
-import type { ISelectionService } from "../../../services/selectionService";
-import type { Attractor } from "core/Particles/attractor";
+import type { AbstractMesh, ColorGradient, FactorGradient } from "core/index";
 import type { Color3Gradient } from "core/Misc/gradients";
+import type { Attractor } from "core/Particles/attractor";
+import type { FunctionComponent } from "react";
+import type { ISelectionService } from "../../../services/selectionService";
 
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
@@ -15,27 +15,27 @@ import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleE
 import { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
-import { Color3GradientList, Color4GradientList, FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
-import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
-import { AttractorList } from "./attractorList";
-import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
-import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
-import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { BoundProperty } from "../boundProperty";
+import { Tools } from "core/Misc/tools";
+import { ParticleHelper } from "core/Particles/particleHelper";
+import { ParticleSystem } from "core/Particles/particleSystem";
 import { BlendModeOptions, ParticleBillboardModeOptions } from "shared-ui-components/constToOptionsMaps";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
+import { Color3GradientList, Color4GradientList, FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
+import { Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
-import { Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
+import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
+import { useProperty } from "../../../hooks/compoundPropertyHooks";
+import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
+import { useObservableState } from "../../../hooks/observableHooks";
+import { BoundProperty } from "../boundProperty";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
-import { Tools } from "core/Misc/tools";
-import { ParticleSystem } from "core/Particles/particleSystem";
-import { ParticleHelper } from "core/Particles/particleHelper";
+import { AttractorList } from "./attractorList";
 
 const SnippetDashboardStorageKey = "Babylon/InspectorV2/SnippetDashboard/ParticleSystems";
 
@@ -196,7 +196,6 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
 
             try {
                 const snippet = JSON.parse(xmlHttp.responseText);
-                const oldId = system.snippetId || "_BLANK";
                 system.snippetId = snippet.id;
                 if (snippet.version && snippet.version !== "0") {
                     system.snippetId += "#" + snippet.version;
@@ -205,15 +204,6 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                 // Copy to clipboard when available.
                 if (navigator.clipboard) {
                     void navigator.clipboard.writeText(system.snippetId);
-                }
-
-                const windowAsAny = window as any;
-                if (windowAsAny.Playground && oldId) {
-                    // Update Playground code when snippet id is hard-coded.
-                    windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                        regex: new RegExp(`ParticleHelper.ParseFromSnippetAsync\\("${oldId}`, "g"),
-                        replace: `ParticleHelper.ParseFromSnippetAsync("${system.snippetId}`,
-                    });
                 }
 
                 PersistSnippetId(system.snippetId);

@@ -25,7 +25,7 @@ function IsNonNodeParticleSystem(entity: unknown): entity is ParticleSystem {
     return entity instanceof ParticleSystem && !entity.isNodeGenerated;
 }
 
-// TODO: This file and partileSystemProperties.tsx still need to handle CPU vs GPU systems differently where applicable.
+// TODO: This file and particleSystemProperties.tsx still need to handle CPU vs GPU systems differently where applicable.
 export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Particle System Properties",
     consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
