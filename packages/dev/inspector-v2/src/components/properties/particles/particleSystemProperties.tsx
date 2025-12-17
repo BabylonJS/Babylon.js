@@ -1,5 +1,5 @@
 import type { FunctionComponent } from "react";
-import type { FactorGradient, ColorGradient as Color4Gradient, AbstractMesh } from "core/index";
+import type { FactorGradient, ColorGradient, AbstractMesh } from "core/index";
 import type { ISelectionService } from "../../../services/selectionService";
 import type { Attractor } from "core/Particles/attractor";
 import type { Color3Gradient } from "core/Misc/gradients";
@@ -968,7 +968,7 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
     const { particleSystem: system } = props;
 
     const colorGradientsGetter = useCallback(() => system.getColorGradients(), [system]);
-    const colorGradients = useObservableArray<ParticleSystem, Color4Gradient>(system, colorGradientsGetter, "addColorGradient", "removeColorGradient", "forceRefreshGradients");
+    const colorGradients = useObservableArray<ParticleSystem, ColorGradient>(system, colorGradientsGetter, "addColorGradient", "removeColorGradient", "forceRefreshGradients");
 
     const useRampGradients = useProperty(system, "useRampGradients");
 
@@ -1019,11 +1019,11 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                 <Color4GradientList
                     gradients={colorGradients}
                     label="Color Gradient"
-                    removeGradient={(gradient: Color4Gradient) => {
+                    removeGradient={(gradient: ColorGradient) => {
                         system.removeColorGradient(gradient.gradient);
                         system.forceRefreshGradients();
                     }}
-                    addGradient={(gradient?: Color4Gradient) => {
+                    addGradient={(gradient?: ColorGradient) => {
                         if (gradient) {
                             system.addColorGradient(gradient.gradient, gradient.color1, gradient.color2);
                         } else {
@@ -1032,7 +1032,7 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                         }
                         system.forceRefreshGradients();
                     }}
-                    onChange={(_gradient: Color4Gradient) => {
+                    onChange={(_gradient: ColorGradient) => {
                         system.forceRefreshGradients();
                     }}
                 />
