@@ -39,8 +39,8 @@ import { ParticleHelper } from "core/Particles/particleHelper";
 
 const SnippetDashboardStorageKey = "Babylon/InspectorV2/SnippetDashboard/ParticleSystems";
 
-function TryParseJsonString(value: unknown): unknown {
-    if (typeof value !== "string") {
+function TryParseJsonString(value: string | undefined): any {
+    if (!value) {
         return undefined;
     }
 
@@ -51,7 +51,7 @@ function TryParseJsonString(value: unknown): unknown {
     }
 }
 
-function ParseJsonFileContents(contents: unknown): unknown {
+function ParseJsonFileContents(contents: ArrayBuffer | string): unknown {
     if (contents instanceof ArrayBuffer) {
         const decoder = new TextDecoder("utf-8");
         return TryParseJsonString(decoder.decode(contents)) ?? undefined;
@@ -64,31 +64,22 @@ function ParseJsonFileContents(contents: unknown): unknown {
     return undefined;
 }
 
-function NormalizeParticleSystemSerialization(raw: any): any {
+function NormalizeParticleSystemSerialization(rawData: any): any {
     // Normalize snippet-server wrappers to a ParticleSystem serialization object.
     // Support:
     // - GET response: { jsonPayload: "{\"particleSystem\":\"...\"}" }
     // - POST payload: { payload: "{\"particleSystem\":\"...\"}" }
     // - Snippet object: { particleSystem: "{...}" }
     // - Direct serialization: { ... }
-    let candidate: any = raw;
+    const jsonObject: { jsonPayload: string | undefined; payload: string | undefined } = rawData;
 
-    const jsonPayload = TryParseJsonString(candidate?.jsonPayload);
-    if (jsonPayload) {
-        candidate = jsonPayload;
+    let jsonPayload = TryParseJsonString(jsonObject?.jsonPayload);
+    if (!jsonPayload) {
+        jsonPayload = TryParseJsonString(jsonObject?.payload);
     }
 
-    const payload = TryParseJsonString(candidate?.payload);
-    if (payload) {
-        candidate = payload;
-    }
-
-    const particleSystem = TryParseJsonString(candidate?.particleSystem);
-    if (particleSystem) {
-        candidate = particleSystem;
-    }
-
-    return candidate;
+    const particleSystem = TryParseJsonString(jsonPayload?.particleSystem);
+    return particleSystem ?? rawData;
 }
 
 function PersistSnippetId(snippetId: string) {
