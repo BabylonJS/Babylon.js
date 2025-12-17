@@ -204,11 +204,12 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         const makeGSFromParsedSOG = (parsedSOG: IParsedSplat) => {
             scene._blockEntityCollection = !!this._assetContainer;
-            const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+            const gaussianSplatting = this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
             gaussianSplatting._parentContainer = this._assetContainer;
-            gaussianSplatting.viewDirectionFactor.set(1, -1, 1);
             babylonMeshesArray.push(gaussianSplatting);
-            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh);
+            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh, { flipY: false });
+            gaussianSplatting.scaling.y *= -1;
+            gaussianSplatting.computeWorldMatrix(true);
             scene._blockEntityCollection = false;
         };
 
@@ -269,7 +270,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                     ParseSpz(buffer, scene, this._loadingOptions).then((parsedSPZ) => {
                         scene._blockEntityCollection = !!this._assetContainer;
-                        const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                        const gaussianSplatting =
+                            this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                         if (parsedSPZ.trainedWithAntialiasing) {
                             const gsMaterial = gaussianSplatting.material as GaussianSplattingMaterial;
                             gsMaterial.kernelSize = 0.1;
@@ -277,7 +279,11 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         }
                         gaussianSplatting._parentContainer = this._assetContainer;
                         babylonMeshesArray.push(gaussianSplatting);
-                        gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh);
+                        gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh, { flipY: false });
+                        if (!this._loadingOptions.flipY) {
+                            gaussianSplatting.scaling.y *= -1.0;
+                            gaussianSplatting.computeWorldMatrix(true);
+                        }
                         scene._blockEntityCollection = false;
                         this.applyAutoCameraLimits(parsedSPZ, scene);
                         resolve(babylonMeshesArray);
@@ -292,13 +298,12 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         switch (parsedPLY.mode) {
                             case Mode.Splat:
                                 {
-                                    const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                                    const gaussianSplatting =
+                                        this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                                     gaussianSplatting._parentContainer = this._assetContainer;
                                     babylonMeshesArray.push(gaussianSplatting);
-                                    gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh);
-                                    if (parsedPLY.compressed || !parsedPLY.rawSplat) {
-                                        gaussianSplatting.viewDirectionFactor.set(-1, -1, 1);
-                                    }
+                                    gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh, { flipY: false });
+                                    gaussianSplatting.scaling.y *= -1.0;
 
                                     if (parsedPLY.chirality === "RightHanded") {
                                         gaussianSplatting.scaling.y *= -1.0;
@@ -315,6 +320,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                             gaussianSplatting.rotation = new Vector3(-Math.PI / 2, Math.PI, 0);
                                             break;
                                     }
+                                    gaussianSplatting.computeWorldMatrix(true);
                                 }
                                 break;
                             case Mode.PointCloud:

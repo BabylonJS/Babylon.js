@@ -251,7 +251,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         switch (configuredEngine) {
             case "WebGPU":
-                useWebGPU = true && webGPUSupported;
+                useWebGPU = webGPUSupported;
                 break;
             case "WebGL":
                 forceWebGL1 = true;

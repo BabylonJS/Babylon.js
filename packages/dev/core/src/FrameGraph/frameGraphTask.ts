@@ -80,7 +80,7 @@ export abstract class FrameGraphTask {
      * @returns A promise that resolves when the initialization is complete.
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public initAsync(): Promise<void> {
+    public initAsync(): Promise<unknown> {
         return Promise.resolve();
     }
 
@@ -227,15 +227,30 @@ export abstract class FrameGraphTask {
 
         this.onBeforeTaskExecute.notifyObservers(this);
 
-        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`, 1);
+        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`, 2);
 
         for (const pass of passes) {
             pass._execute();
         }
 
-        this._frameGraph.engine._debugPopGroup?.(1);
+        this._frameGraph.engine._debugPopGroup?.(2);
 
         this.onAfterTaskExecute.notifyObservers(this);
+    }
+
+    /** @internal */
+    public _initializePasses() {
+        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`, 2);
+
+        for (const pass of this._passes) {
+            pass._initialize();
+        }
+
+        for (const pass of this._passesDisabled) {
+            pass._initialize();
+        }
+
+        this._frameGraph.engine._debugPopGroup?.(2);
     }
 
     private _checkSameRenderTarget(src: Nullable<Nullable<InternalTexture>[]>, dst: Nullable<Nullable<InternalTexture>[]>) {

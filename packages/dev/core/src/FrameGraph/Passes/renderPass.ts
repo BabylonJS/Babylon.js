@@ -8,7 +8,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     protected readonly _engine: AbstractEngine;
     protected _renderTarget: FrameGraphTextureHandle | FrameGraphTextureHandle[] | undefined;
     protected _renderTargetDepth: FrameGraphTextureHandle | undefined;
-    protected _frameGraphRenderTarget: FrameGraphRenderTarget | undefined;
+    protected _frameGraphRenderTarget: FrameGraphRenderTarget;
     protected _dependencies: Set<FrameGraphTextureHandle> = new Set();
 
     /**
@@ -37,7 +37,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     /**
      * Gets the frame graph render target used by the render pass.
      */
-    public get frameGraphRenderTarget(): FrameGraphRenderTarget | undefined {
+    public get frameGraphRenderTarget(): FrameGraphRenderTarget {
         return this._frameGraphRenderTarget;
     }
 
@@ -119,10 +119,13 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     }
 
     /** @internal */
-    public override _execute() {
-        this._frameGraphRenderTarget =
-            this._frameGraphRenderTarget || this._context.createRenderTarget(this.name, this._renderTarget, this._renderTargetDepth, this.depthReadOnly, this.stencilReadOnly);
+    public override _initialize() {
+        this._frameGraphRenderTarget = this._context.createRenderTarget(this.name, this._renderTarget, this._renderTargetDepth, this.depthReadOnly, this.stencilReadOnly);
+        super._initialize();
+    }
 
+    /** @internal */
+    public override _execute() {
         this._context.bindRenderTarget(this._frameGraphRenderTarget);
 
         super._execute();
@@ -130,7 +133,11 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
         this._context._flushDebugMessages();
 
         const renderTargetWrapper = this._frameGraphRenderTarget.renderTargetWrapper;
-        if (renderTargetWrapper && (renderTargetWrapper.resolveMSAAColors || renderTargetWrapper.resolveMSAADepth || renderTargetWrapper.resolveMSAAStencil)) {
+        if (
+            renderTargetWrapper &&
+            renderTargetWrapper.samples > 1 &&
+            (renderTargetWrapper.resolveMSAAColors || renderTargetWrapper.resolveMSAADepth || renderTargetWrapper.resolveMSAAStencil)
+        ) {
             // Unbinding the render target will trigger resolving MSAA textures.
             this._context.bindRenderTarget(undefined, `Resolve MSAA${this.name ? " (" + this.name + ")" : ""}`, true);
             this._context._flushDebugMessages();

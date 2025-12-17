@@ -122,7 +122,7 @@ export const performanceTests = async (engineType = "webgl2", testFileName = "co
     async function preparePage(browser: Browser, baseUrl: string, title: string) {
         page = await browser.newPage();
         await page.goto(baseUrl + `/empty.html`, {
-            // waitUntil: "load", // for chrome should be "networkidle0"
+            // waitUntil: "load",
             timeout: 0,
         });
         await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
