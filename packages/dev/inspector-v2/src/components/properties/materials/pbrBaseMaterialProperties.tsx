@@ -369,7 +369,8 @@ export const PBRBaseMaterialMetallicWorkflowProperties: FunctionComponent<{ mate
             <BoundProperty component={Color3PropertyLine} label="Reflectance Color" target={material} propertyKey="_metallicReflectanceColor" isLinearMode />
             <BoundProperty
                 component={SwitchPropertyLine}
-                label="Use only metallic from MetallicReflectance texture"
+                label="Metallic only"
+                description="Use only metallic from MetallicReflectance texture"
                 target={material}
                 propertyKey="_useOnlyMetallicFromMetallicReflectanceTexture"
             />

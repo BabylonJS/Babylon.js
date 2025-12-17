@@ -5,7 +5,7 @@ import type { NumberInputPropertyLineProps } from "./inputPropertyLine";
 import { TextInput } from "../../primitives/textInput";
 
 export type HexPropertyLineProps = NumberInputPropertyLineProps & {
-    numBits?: number;
+    numBits?: 32 | 24 | 16 | 8;
 };
 
 const MaskValidatorFn = (valueString: string) => {

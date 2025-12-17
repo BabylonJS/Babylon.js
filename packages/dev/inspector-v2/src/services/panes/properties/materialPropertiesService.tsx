@@ -103,7 +103,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
-        propertiesService.onPropertyChanged.add((changeInfo) => {
+        const pbrMaterialPropertyChangedObserver = propertiesService.onPropertyChanged.add((changeInfo) => {
             /**
              * In Inspector V2, all PBR materials (PBRMaterial, PBRMetallicRoughnessMaterial, PBRSpecularGlossinessMaterial) are edited using the PBRBaseMaterial properties.
              * Therefore, when a property of PBRBaseMaterial is changed, we need to mark the material as dirty to ensure the changes are reflected correctly because none of the properties
@@ -240,6 +240,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
 
         return {
             dispose: () => {
+                pbrMaterialPropertyChangedObserver.remove();
                 materialContentRegistration.dispose();
                 standardMaterialContentRegistration.dispose();
                 pbrBaseMaterialPropertiesRegistration.dispose();

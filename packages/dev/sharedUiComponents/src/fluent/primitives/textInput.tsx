@@ -1,10 +1,10 @@
-import type { FunctionComponent, KeyboardEvent, ChangeEvent } from "react";
+import type { FunctionComponent, KeyboardEvent, ChangeEvent, FocusEvent } from "react";
 import { useContext, useEffect, useRef, useState } from "react";
 import type { InputOnChangeData } from "@fluentui/react-components";
 import { Input as FluentInput, mergeClasses, useId } from "@fluentui/react-components";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
-import { HandleKeyDown, useInputStyles } from "./utils";
+import { HandleKeyDown, HandleOnBlur, useInputStyles } from "./utils";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 
 export type TextInputProps = PrimitiveProps<string> & {
@@ -52,9 +52,8 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
             tryCommitValue(event.currentTarget.value);
         }
     };
-    const handleBlur = (event: ChangeEvent<HTMLInputElement>) => {
-        event.stopPropagation();
-        event.preventDefault();
+    const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
+        HandleOnBlur(event);
         if (props.validateOnBlur) {
             tryCommitValue(event.currentTarget.value);
         }
