@@ -1078,7 +1078,7 @@ function usePane(
                         )}
                     </div>
                 )}
-                <ChildWindow ref={childWindow} onOpenChange={(isOpen) => setIsChildWindowOpen(isOpen)}>
+                <ChildWindow imperativeRef={childWindow} onOpenChange={(isOpen) => setIsChildWindowOpen(isOpen)}>
                     {corePane}
                 </ChildWindow>
             </>

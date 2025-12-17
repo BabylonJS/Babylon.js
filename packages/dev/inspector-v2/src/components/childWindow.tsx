@@ -101,7 +101,7 @@ export type ChildWindowProps = {
     /**
      * A ref that exposes the ChildWindow imperative API.
      */
-    ref?: Ref<ChildWindow>;
+    imperativeRef?: Ref<ChildWindow>;
 };
 
 /**
@@ -110,7 +110,7 @@ export type ChildWindowProps = {
  * @returns The child window component.
  */
 export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>> = (props) => {
-    const { identity, children, onOpenChange, ref: imperativeRef } = props;
+    const { identity, children, onOpenChange, imperativeRef: imperativeRef } = props;
     const classes = useStyles();
 
     const [windowState, setWindowState] = useState<{ mountNode: HTMLElement; renderer: GriffelRenderer }>();
