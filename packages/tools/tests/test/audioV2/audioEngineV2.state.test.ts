@@ -20,7 +20,8 @@ async function evaluateStateTestScript(browser: Browser, onLoadScript: string, c
 
     const page = await context.newPage();
 
-    await page.route("http://run.test/script.html", async (route) => {
+    const baseUrl = getGlobalConfig().baseUrl;
+    await page.route(`${baseUrl}/testing`, async (route) => {
         route.fulfill({
             status: 200,
             contentType: "text/html",
@@ -38,7 +39,7 @@ async function evaluateStateTestScript(browser: Browser, onLoadScript: string, c
         });
     });
 
-    await page.goto("http://run.test/script.html");
+    await page.goto(`${baseUrl}/testing`);
 
     if (typeof click === "boolean") {
         if (click) {
