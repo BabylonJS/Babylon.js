@@ -51,7 +51,7 @@ function TryParseJsonString(value: string | undefined): any {
     }
 }
 
-function ParseJsonLoadContents(contents: ArrayBuffer | string): unknown {
+function ParseJsonLoadContents(contents: ArrayBuffer | string): any | undefined {
     if (contents instanceof ArrayBuffer) {
         const decoder = new TextDecoder("utf-8");
         return TryParseJsonString(decoder.decode(contents)) ?? undefined;
