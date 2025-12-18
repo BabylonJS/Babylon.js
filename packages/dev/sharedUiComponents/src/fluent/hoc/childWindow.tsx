@@ -40,31 +40,31 @@ const useStyles = makeStyles({
 export type ChildWindowOptions = {
     /**
      * The default width of the child window in pixels.
-     * @remarks Ignored if the ChildWindow was passed an identity and previous bounds were saved.
+     * @remarks Ignored if the ChildWindow was passed an id and previous bounds were saved.
      */
     defaultWidth?: number;
 
     /**
      * The default height of the child window in pixels.
-     * @remarks Ignored if the ChildWindow was passed an identity and previous bounds were saved.
+     * @remarks Ignored if the ChildWindow was passed an id and previous bounds were saved.
      */
     defaultHeight?: number;
 
     /**
      * The default left position of the child window in pixels.
-     * @remarks Ignored if the ChildWindow was passed an identity and previous bounds were saved.
+     * @remarks Ignored if the ChildWindow was passed an id and previous bounds were saved.
      */
     defaultLeft?: number;
 
     /**
      * The default top position of the child window in pixels.
-     * @remarks Ignored if the ChildWindow was passed an identity and previous bounds were saved.
+     * @remarks Ignored if the ChildWindow was passed an id and previous bounds were saved.
      */
     defaultTop?: number;
 
     /**
      * The title of the child window.
-     * @remarks If not provided, the identity will be used instead (if any).
+     * @remarks If not provided, the id will be used instead (if any).
      */
     title?: string;
 };
@@ -87,7 +87,7 @@ export type ChildWindowProps = {
      * An optional unique identity for the child window.
      * @remarks If provided, the child window's bounds will be saved/restored using this identity.
      */
-    identity?: string;
+    id?: string;
 
     /**
      * Called when the open state of the child window changes.
@@ -107,13 +107,13 @@ export type ChildWindowProps = {
  * @returns The child window component.
  */
 export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>> = (props) => {
-    const { identity, children, onOpenChange, imperativeRef: imperativeRef } = props;
+    const { id, children, onOpenChange, imperativeRef: imperativeRef } = props;
     const classes = useStyles();
 
     const [windowState, setWindowState] = useState<{ mountNode: HTMLElement; renderer: GriffelRenderer }>();
     const [childWindow, setChildWindow] = useState<Window>();
 
-    const storageKey = identity ? `Babylon/Settings/ChildWindow/${identity}/Bounds` : null;
+    const storageKey = id ? `Babylon/Settings/ChildWindow/${id}/Bounds` : null;
 
     // This function is just for creating the child window itself. It is a function because
     // it must be called synchronously in response to a user interaction (e.g. button click),
@@ -156,7 +156,7 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
             const childWindow = window.open("", "", ToFeaturesString(options));
             if (childWindow) {
                 // Set the title if provided.
-                childWindow.document.title = options.title ?? identity ?? "";
+                childWindow.document.title = options.title ?? id ?? "";
 
                 // Set the child window state.
                 setChildWindow((current) => {

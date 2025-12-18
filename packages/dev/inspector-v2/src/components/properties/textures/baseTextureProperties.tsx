@@ -37,7 +37,7 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
             <TexturePreview imperativeRef={texturePreviewImperativeRef} texture={texture} />
             <TextureUpload texture={texture} />
             <ButtonLine label="Edit Texture" onClick={() => childWindow.current?.open()} />
-            <ChildWindow identity="Texture Editor" imperativeRef={childWindow}>
+            <ChildWindow id="Texture Editor" imperativeRef={childWindow}>
                 <TextureEditor texture={texture} onUpdate={async () => await texturePreviewImperativeRef.current?.refresh()} />
             </ChildWindow>
         </>
