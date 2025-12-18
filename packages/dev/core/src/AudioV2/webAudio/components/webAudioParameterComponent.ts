@@ -63,12 +63,12 @@ export class _WebAudioParameterComponent {
             return;
         }
 
-        const shape = typeof options?.shape === "string" ? options.shape : AudioParameterRampShape.Linear;
+        this._param.cancelScheduledValues(0);
 
+        const shape = typeof options?.shape === "string" ? options.shape : AudioParameterRampShape.Linear;
         const startTime = this._engine.currentTime;
 
         if (shape === AudioParameterRampShape.None) {
-            this._param.cancelScheduledValues(0);
             this._param.value = this._targetValue = value;
             this._rampEndTime = startTime;
             return;
@@ -83,9 +83,13 @@ export class _WebAudioParameterComponent {
             return;
         }
 
-        this._param.cancelScheduledValues(0);
-        this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, Number.isFinite(this._param.value) ? this._param.value : 0, value), startTime, duration);
-
-        this._rampEndTime = startTime + duration;
+        try {
+            this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, Number.isFinite(this._param.value) ? this._param.value : 0, value), startTime, duration);
+            this._rampEndTime = startTime + duration;
+        } catch (e) {
+            Logger.Warn(`Audio parameter ramping failed. Setting value without ramping: ${(e as Error).message}`);
+            this._param.value = value;
+            this._rampEndTime = startTime;
+        }
     }
 }
