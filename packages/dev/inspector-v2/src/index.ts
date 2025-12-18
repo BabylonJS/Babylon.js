@@ -1,6 +1,5 @@
 // Export the parts of inspector that are intended to be part of the public API.
 export * from "./components/properties/boundProperty";
-export * from "./components/childWindow";
 export * from "./components/properties/linkToEntityPropertyLine";
 export type { EntityBase, EntityDisplayInfo, SceneExplorerCommand, SceneExplorerCommandProvider, SceneExplorerSection } from "./components/scene/sceneExplorer";
 export * from "./components/extensibleAccordion";
@@ -73,6 +72,7 @@ export * from "shared-ui-components/fluent/primitives/toggleButton";
 
 // Export the shared hoc UI controls that can be used for extending the inspector.
 export * from "shared-ui-components/fluent/hoc/buttonLine";
+export * from "shared-ui-components/fluent/hoc/childWindow";
 export * from "shared-ui-components/fluent/hoc/fileUploadLine";
 export * from "shared-ui-components/fluent/hoc/gradientList";
 export * from "shared-ui-components/fluent/hoc/pane";
