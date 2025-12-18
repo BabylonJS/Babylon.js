@@ -1,5 +1,62 @@
 # Changelog
 
+## 8.41.2
+
+### Core
+
+- GS Cleanup + depth renderer + more tests - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17544](https://github.com/BabylonJS/Babylon.js/pull/17544))
+- FrameGraph: add support for OIT - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17553](https://github.com/BabylonJS/Babylon.js/pull/17553))
+- handle _onOutBusDisposed dynamically to prevent memory leak - by [LudaThomas](https://github.com/LudaThomas) ([#17552](https://github.com/BabylonJS/Babylon.js/pull/17552))
+
+### Loaders
+
+- GS Cleanup + depth renderer + more tests - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17544](https://github.com/BabylonJS/Babylon.js/pull/17544))
+
+## 8.41.1
+
+### Core
+
+- Node Material: Add support for offset, scale and rotation to the TriPlanar block - by [Popov72](https://github.com/Popov72) ([#17547](https://github.com/BabylonJS/Babylon.js/pull/17547))
+
+### GUI
+
+- GUI: Add a correctly named highlighterOpacity accessor to the InputText control - by [Popov72](https://github.com/Popov72) ([#17548](https://github.com/BabylonJS/Babylon.js/pull/17548))
+
+### Node Editor
+
+- Node Material: Add support for offset, scale and rotation to the TriPlanar block - by [Popov72](https://github.com/Popov72) ([#17547](https://github.com/BabylonJS/Babylon.js/pull/17547))
+
+## 8.41.0
+
+### Core
+
+- FrameGraph: optimization of the geometry renderer task - by [Popov72](https://github.com/Popov72) ([#17543](https://github.com/BabylonJS/Babylon.js/pull/17543))
+- Update eslint to 9.39.1 from 8.57.1 - by [docEdub](https://github.com/docEdub) ([#17529](https://github.com/BabylonJS/Babylon.js/pull/17529))
+- no-directory-barrel-imports: also enforce rule for relative paths - by [marns](https://github.com/marns) ([#17535](https://github.com/BabylonJS/Babylon.js/pull/17535))
+- Add alpha support for splats - by [spsDrop](https://github.com/spsDrop) ([#17533](https://github.com/BabylonJS/Babylon.js/pull/17533))
+
+### Inspector
+
+- Update eslint to 9.39.1 from 8.57.1 - by [docEdub](https://github.com/docEdub) ([#17529](https://github.com/BabylonJS/Babylon.js/pull/17529))
+
+### Loaders
+
+- new feature: importing metadata for animations from gltf extras - by [qwiglydee](https://github.com/qwiglydee) ([#17257](https://github.com/BabylonJS/Babylon.js/pull/17257))
+
+### Playground
+
+- Update eslint to 9.39.1 from 8.57.1 - by [docEdub](https://github.com/docEdub) ([#17529](https://github.com/BabylonJS/Babylon.js/pull/17529))
+- Make sure Inspector v2 theme matches Playground theme - by [ryantrem](https://github.com/ryantrem) ([#17539](https://github.com/BabylonJS/Babylon.js/pull/17539))
+- Inspector v2: Consume Inspector v2 umd bundle in Sandbox/Playground - by [ryantrem](https://github.com/ryantrem) ([#17538](https://github.com/BabylonJS/Babylon.js/pull/17538))
+
+### Serializers
+
+- Update eslint to 9.39.1 from 8.57.1 - by [docEdub](https://github.com/docEdub) ([#17529](https://github.com/BabylonJS/Babylon.js/pull/17529))
+
+### Viewer
+
+- Fix sandbox pan behavior when zoomed close to a large model - by [AmoebaChant](https://github.com/AmoebaChant) ([#17541](https://github.com/BabylonJS/Babylon.js/pull/17541))
+
 ## 8.40.1
 
 ### Core

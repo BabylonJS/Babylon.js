@@ -7,7 +7,7 @@ const url = (process.env.PLAYGROUND_BASE_URL || getGlobalConfig().baseUrl.replac
 
 test("Playground is loaded (Desktop)", async ({ page }) => {
     await page.goto(url, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -21,7 +21,7 @@ test("Playground is loaded (Desktop)", async ({ page }) => {
 
 test("Playground is loaded (Mobile)", async ({ page }) => {
     await page.goto(url, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 800,
@@ -40,7 +40,7 @@ test("Playground is loaded (Mobile)", async ({ page }) => {
 
 test("Examples can be loaded", async ({ page }) => {
     await page.goto(url, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,
@@ -59,7 +59,7 @@ test("Examples can be loaded", async ({ page }) => {
 
 test("User can interact with the playground", async ({ page }) => {
     await page.goto(url, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
     await page.setViewportSize({
         width: 1920,

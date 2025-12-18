@@ -1,35 +1,25 @@
-import { useRef } from "react";
 import type { FunctionComponent } from "react";
-import { ButtonLine } from "./buttonLine";
+import { LineContainer } from "./propertyLines/propertyLine";
+import { UploadButton } from "../primitives/uploadButton";
 import type { ButtonProps } from "../primitives/button";
-import { ArrowUploadRegular } from "@fluentui/react-icons";
 
 type FileUploadLineProps = Omit<ButtonProps, "onClick" | "label"> & {
     onClick: (files: FileList) => void;
-    label: string; // Require a label when button is the entire line (by default, label is optional on a button)
+    label: string; // Require a label when button is the entire line (by default, label is optional on an UploadButton
     accept: string;
 };
 
-export const FileUploadLine: FunctionComponent<FileUploadLineProps> = (props) => {
+/**
+ * A full-width line with an upload button.
+ * For just the button without the line wrapper, use UploadButton directly.
+ * @returns An UploadButton wrapped in a LineContainer
+ */
+export const FileUploadLine: FunctionComponent<FileUploadLineProps> = ({ onClick, label, accept, ...buttonProps }) => {
     FileUploadLine.displayName = "FileUploadLine";
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    const handleButtonClick = () => {
-        inputRef.current?.click();
-    };
-
-    const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-        const files = evt.target.files;
-        if (files && files.length) {
-            props.onClick(files);
-        }
-        evt.target.value = "";
-    };
 
     return (
-        <>
-            <ButtonLine onClick={handleButtonClick} icon={ArrowUploadRegular} label={props.label}></ButtonLine>
-            <input ref={inputRef} type="file" accept={props.accept} style={{ display: "none" }} onChange={handleChange} />
-        </>
+        <LineContainer>
+            <UploadButton onUpload={onClick} accept={accept} label={label} {...buttonProps} />
+        </LineContainer>
     );
 };

@@ -2,6 +2,35 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting PLY SH Reload",
+            "playgroundId": "#YMXPPW#1",
+            "referenceImage": "gsplat-ply-sh-reload.png"
+        },
+        {
+            "title": "Gaussian Splatting Depth",
+            "playgroundId": "#V80DRL#12",
+            "renderCount": 5,
+            "referenceImage": "gsplat-depth.png"
+        },
+        {
+            "title": "Gaussian Splatting Compressed ply SH",
+            "playgroundId": "#U8O4EP#1",
+            "renderCount": 5,
+            "referenceImage": "gsplat-compressedply-sh.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ SH",
+            "playgroundId": "#XSNFXP#2",
+            "renderCount": 5,
+            "referenceImage": "gsplat-spz-sh.png"
+        },
+        {
+            "title": "Gaussian Splatting Update Data",
+            "playgroundId": "#Q0LBM8#2",
+            "renderCount": 5,
+            "referenceImage": "gsplat-update-data.png"
+        },
+        {
             "title": "Gaussian Splatting viewports",
             "playgroundId": "#CG8GO3#1",
             "renderCount": 5,
@@ -20,7 +49,7 @@
         },
         {
             "title": "SPZ v3 - Splat",
-            "playgroundId": "#V7CV8W#3",
+            "playgroundId": "#V7CV8W#4",
             "referenceImage": "gsplat-spz-v3.png"
         },
         {
@@ -2698,6 +2727,16 @@
             "playgroundId": "#3VH0AC#2"
         },
         {
+            "title": "FrameGraph nrge OIT",
+            "playgroundId": "#MIACY4#13",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "FrameGraph nrge OIT (Geometry renderer)",
+            "playgroundId": "#MIACY4#14",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#3",
             "errorRatio": 2
@@ -2766,6 +2805,11 @@
         {
             "title": "FrameGraph volumetric lighting",
             "playgroundId": "#3VH0AC"
+        },
+        {
+            "title": "FrameGraph OIT",
+            "playgroundId": "#MIACY4#11",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Render target texture with clustered lights",
