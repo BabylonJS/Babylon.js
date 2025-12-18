@@ -966,20 +966,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
         validation(gltfBlock) {
-            if (gltfBlock.configuration && gltfBlock.configuration.cases) {
-                const cases = gltfBlock.configuration.cases.value;
-                const onlyIntegers = cases?.every((caseValue) => {
+            const cases = gltfBlock.configuration?.cases;
+            if (cases && cases.value) {
+                const onlyIntegers = cases.value.every((caseValue) => {
                     // case value should be an integer. Since Number.isInteger(1.0) is true, we need to check if toString has only digits.
                     return typeof caseValue === "number" && /^-?\d+$/.test(caseValue.toString());
                 });
                 if (!onlyIntegers) {
                     Logger.Warn("Switch cases should be integers. Using empty array instead.");
-                    gltfBlock.configuration.cases.value = [] as number[];
+                    cases.value = [] as number[];
                     return { valid: true };
                 }
                 // check for duplicates
-                const uniqueCases = new Set(cases);
-                gltfBlock.configuration.cases.value = Array.from(uniqueCases) as number[];
+                const uniqueCases = new Set(cases.value);
+                cases.value = Array.from(uniqueCases) as number[];
             }
             return { valid: true };
         },
@@ -1553,7 +1553,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/switch": {
         blocks: [FlowGraphBlockNames.DataSwitch],
         configuration: {
-            cases: { name: "cases", inOptions: true, defaultValue: [] },
+            cases: { name: "cases", isArray: true, inOptions: true, defaultValue: [] },
         },
         inputs: {
             values: {
@@ -1561,20 +1561,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
         validation(gltfBlock) {
-            if (gltfBlock.configuration && gltfBlock.configuration.cases) {
-                const cases = gltfBlock.configuration.cases.value;
-                const onlyIntegers = cases?.every((caseValue) => {
+            const cases = gltfBlock.configuration?.cases;
+            if (cases && cases.value) {
+                const onlyIntegers = cases.value.every((caseValue) => {
                     // case value should be an integer. Since Number.isInteger(1.0) is true, we need to check if toString has only digits.
                     return typeof caseValue === "number" && /^-?\d+$/.test(caseValue.toString());
                 });
                 if (!onlyIntegers) {
                     Logger.Warn("Switch cases should be integers. Using empty array instead.");
-                    gltfBlock.configuration.cases.value = [] as number[];
+                    cases.value = [] as number[];
                     return { valid: true };
                 }
                 // check for duplicates
-                const uniqueCases = new Set(cases);
-                gltfBlock.configuration.cases.value = Array.from(uniqueCases) as number[];
+                const uniqueCases = new Set(cases.value);
+                cases.value = Array.from(uniqueCases) as number[];
             }
             return { valid: true };
         },

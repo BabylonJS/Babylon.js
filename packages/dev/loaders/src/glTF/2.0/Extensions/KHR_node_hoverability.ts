@@ -30,7 +30,7 @@ addNewInteractivityFlowGraphMapping("event/onHoverIn", NAME, {
             name: "variable",
             toBlock: FlowGraphBlockNames.GetVariable,
             dataTransformer(data) {
-                return MeshPointerOverPrefix + data[0];
+                return MeshPointerOverPrefix + data;
             },
         },
     },
@@ -98,7 +98,7 @@ addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
             name: "variable",
             toBlock: FlowGraphBlockNames.GetVariable,
             dataTransformer(data) {
-                return MeshPointerOutPrefix + data[0];
+                return MeshPointerOutPrefix + data;
             },
         },
     },
