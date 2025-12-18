@@ -41,8 +41,8 @@ import { Fade as FluentFade } from "@fluentui/react-motion-components-preview";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Observable } from "core/Misc/observable";
+import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
-import { ChildWindow } from "../components/childWindow";
 import { TeachingMoment } from "../components/teachingMoment";
 import { Theme } from "../components/theme";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";

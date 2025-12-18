@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { forwardRef, useState, useEffect, useCallback, useContext } from "react";
 import type { FunctionComponent } from "react";
-import { ColorPicker as FluentColorPicker, ColorSlider, ColorArea, AlphaSlider, makeStyles, tokens, Body1Strong, ColorSwatch, Body1, Tooltip } from "@fluentui/react-components";
+import { ColorPicker as FluentColorPicker, ColorSlider, ColorArea, AlphaSlider, makeStyles, tokens, Body1Strong, ColorSwatch, Body1 } from "@fluentui/react-components";
 import type { ColorPickerProps as FluentColorPickerProps } from "@fluentui/react-components";
 import { Color3, Color4 } from "core/Maths/math.color";
 import type { PrimitiveProps } from "./primitive";
