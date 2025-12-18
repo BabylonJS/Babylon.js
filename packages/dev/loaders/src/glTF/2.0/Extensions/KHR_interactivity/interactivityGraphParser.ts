@@ -5,7 +5,6 @@ import { getMappingForDeclaration, getMappingForFullOperationName } from "./decl
 import { Logger } from "core/Misc/logger";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc/guid";
-import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
@@ -228,57 +227,53 @@ export class InteractivityGraphToFlowGraphParser {
     }
 
     private _getEmptyBlock(className: string, type: string): ISerializedFlowGraphBlock {
-        const uniqueId = RandomGUID();
-        const dataInputs: ISerializedFlowGraphConnection[] = [];
-        const dataOutputs: ISerializedFlowGraphConnection[] = [];
-        const signalInputs: ISerializedFlowGraphConnection[] = [];
-        const signalOutputs: ISerializedFlowGraphConnection[] = [];
-        const config: IFlowGraphBlockConfiguration = {};
-        const metadata = {};
         return {
-            uniqueId,
+            uniqueId: RandomGUID(),
             className,
-            dataInputs,
-            dataOutputs,
-            signalInputs,
-            signalOutputs,
-            config,
+            dataInputs: [],
+            dataOutputs: [],
+            signalInputs: [],
+            signalOutputs: [],
+            config: {},
             type,
-            metadata,
+            metadata: {},
         };
     }
 
     private _parseNodeConfiguration(node: IKHRInteractivity_Node, block: ISerializedFlowGraphBlock, nodeMapping: IGLTFToFlowGraphMapping, blockType: FlowGraphBlockNames | string) {
-        const configuration = block.config;
-        if (node.configuration) {
-            const keys = Object.keys(node.configuration);
-            for (const key of keys) {
-                const value = node.configuration?.[key];
-                // value is always an array, never a number or string
-                if (!value) {
-                    Logger.Error(["No value found for node configuration", key]);
+        const gltfConfiguration = node.configuration;
+        if (gltfConfiguration) {
+            for (const key in gltfConfiguration) {
+                const gltfProperty = gltfConfiguration[key];
+                if (!gltfProperty) {
                     throw new Error("Error parsing node configuration");
                 }
-                const configMapping = nodeMapping.configuration?.[key];
-                const belongsToBlock = configMapping && configMapping.toBlock ? configMapping.toBlock === blockType : nodeMapping.blocks.indexOf(blockType) === 0;
+
+                const propertyMapping = nodeMapping.configuration?.[key];
+                const belongsToBlock = propertyMapping && propertyMapping.toBlock ? propertyMapping.toBlock === blockType : nodeMapping.blocks.indexOf(blockType) === 0;
                 if (belongsToBlock) {
-                    // get the right name for the configuration key
-                    const configKey = configMapping?.name || key;
-                    if ((!value || typeof value.value === "undefined") && typeof configMapping?.defaultValue !== "undefined") {
-                        configuration[configKey] = {
-                            value: configMapping.defaultValue,
-                        };
-                    } else if (value.value.length >= 0) {
-                        // supporting int[] and int/boolean/string
-                        configuration[configKey] = {
-                            value: value.value.length === 1 ? value.value[0] : value.value,
-                        };
-                    } else {
-                        Logger.Warn(["Invalid value for node configuration", value]);
+                    let value = propertyMapping?.defaultValue;
+                    if (gltfProperty?.value) {
+                        value = gltfProperty.value;
                     }
-                    // make sure we transform the data if needed
-                    if (configMapping && configMapping.dataTransformer) {
-                        configuration[configKey].value = configMapping.dataTransformer([configuration[configKey].value], this)[0];
+
+                    if (!propertyMapping?.isArray) {
+                        if (value.length !== 1) {
+                            Logger.Warn(`Invalid primitive value length ${value.length}`);
+                        }
+
+                        value = value[0];
+                    }
+
+                    if (propertyMapping?.dataTransformer) {
+                        value = propertyMapping.dataTransformer(value, this);
+                    }
+
+                    if (value !== undefined) {
+                        // Update the flow graph block config.
+                        block.config[propertyMapping?.name || key] = {
+                            value: value,
+                        };
                     }
                 }
             }

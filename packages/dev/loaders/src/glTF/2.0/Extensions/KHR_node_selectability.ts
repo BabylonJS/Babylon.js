@@ -29,7 +29,7 @@ addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
             name: "variable",
             toBlock: FlowGraphBlockNames.GetVariable,
             dataTransformer(data) {
-                return ["pickedMesh_" + data[0]];
+                return "pickedMesh_" + data[0];
             },
         },
     },
@@ -73,7 +73,7 @@ addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
         serializedObject.config = serializedObject.config || {};
         serializedObject.config.glTF = globalGLTF;
         // find the listener nodeIndex value
-        const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value[0];
+        const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value?.[0];
         if (nodeIndex === undefined || typeof nodeIndex !== "number") {
             throw new Error("nodeIndex not found in configuration");
         }

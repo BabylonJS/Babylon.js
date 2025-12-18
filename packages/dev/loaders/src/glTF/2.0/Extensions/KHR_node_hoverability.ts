@@ -30,7 +30,7 @@ addNewInteractivityFlowGraphMapping("event/onHoverIn", NAME, {
             name: "variable",
             toBlock: FlowGraphBlockNames.GetVariable,
             dataTransformer(data) {
-                return [MeshPointerOverPrefix + data[0]];
+                return MeshPointerOverPrefix + data[0];
             },
         },
     },
@@ -72,7 +72,7 @@ addNewInteractivityFlowGraphMapping("event/onHoverIn", NAME, {
         serializedObject.config = serializedObject.config || {};
         serializedObject.config.glTF = globalGLTF;
         // find the listener nodeIndex value
-        const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value[0];
+        const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value?.[0];
         if (nodeIndex === undefined || typeof nodeIndex !== "number") {
             throw new Error("nodeIndex not found in configuration");
         }
@@ -98,7 +98,7 @@ addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
             name: "variable",
             toBlock: FlowGraphBlockNames.GetVariable,
             dataTransformer(data) {
-                return [MeshPointerOutPrefix + data[0]];
+                return MeshPointerOutPrefix + data[0];
             },
         },
     },
@@ -140,7 +140,7 @@ addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
         serializedObject.config = serializedObject.config || {};
         serializedObject.config.glTF = globalGLTF;
 
-        const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value[0];
+        const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value?.[0];
         if (nodeIndex === undefined || typeof nodeIndex !== "number") {
             throw new Error("nodeIndex not found in configuration");
         }
