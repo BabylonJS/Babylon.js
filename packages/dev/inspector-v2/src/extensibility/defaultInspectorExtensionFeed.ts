@@ -39,7 +39,7 @@ export const DefaultInspectorExtensionFeed = new BuiltInsExtensionFeed("Inspecto
         description: "Adds new features related to importing Babylon assets.",
         keywords: ["import", "tools"],
         ...BabylonWebResources,
-        author: { name: "Alex Chuber", forumUserName: "alexchuber" },
+        author: { name: "Alex Huber", forumUserName: "alexchuber" }, // Q: Any reason to not put Babylon.js here?
         getExtensionModuleAsync: async () => await import("../services/panes/tools/importService"),
     },
     {
