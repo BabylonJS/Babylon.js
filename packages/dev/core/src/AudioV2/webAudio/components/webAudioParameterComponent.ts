@@ -1,3 +1,4 @@
+import { Logger } from "../../../Misc/logger";
 import type { Nullable } from "../../../types";
 import type { IAudioParameterRampOptions } from "../../audioParameter";
 import { AudioParameterRampShape } from "../../audioParameter";
@@ -57,6 +58,11 @@ export class _WebAudioParameterComponent {
      * @internal
      */
     public setTargetValue(value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
+        if (!Number.isFinite(value)) {
+            Logger.Warn(`Attempted to set audio parameter to non-finite value: ${value}`);
+            return;
+        }
+
         const shape = typeof options?.shape === "string" ? options.shape : AudioParameterRampShape.Linear;
 
         const startTime = this._engine.currentTime;
@@ -70,13 +76,15 @@ export class _WebAudioParameterComponent {
 
         let duration = typeof options?.duration === "number" ? Math.max(options.duration, this._engine.parameterRampDuration) : this._engine.parameterRampDuration;
 
+        this._targetValue = value;
+
         if ((duration = Math.max(this._engine.parameterRampDuration, duration)) < MinRampDuration) {
-            this._param.setValueAtTime((this._targetValue = value), startTime);
+            this._param.setValueAtTime(value, startTime);
             return;
         }
 
         this._param.cancelScheduledValues(0);
-        this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, this._param.value, (this._targetValue = value)), startTime, duration);
+        this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, Number.isFinite(this._param.value) ? this._param.value : 0, value), startTime, duration);
 
         this._rampEndTime = startTime + duration;
     }
