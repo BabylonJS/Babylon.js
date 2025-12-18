@@ -219,13 +219,17 @@ export class ClusteredLightContainer extends Light {
         this._batchSize = ClusteredLightContainer._GetEngineBatchSize(engine);
 
         const proxyShader = { vertex: "lightProxy", fragment: "lightProxy" };
+        const defines = [`CLUSTLIGHT_BATCH ${this._batchSize}`];
+        if (this._scene.useRightHandedSystem) {
+            defines.push("#define RIGHT_HANDED");
+        }
         this._proxyMaterial = new ShaderMaterial("ProxyMaterial", this._scene, proxyShader, {
             attributes: ["position"],
             uniforms: ["view", "projection", "tileMaskResolution"],
             samplers: ["lightDataTexture"],
             uniformBuffers: ["Scene"],
             storageBuffers: ["tileMaskBuffer"],
-            defines: [`CLUSTLIGHT_BATCH ${this._batchSize}`],
+            defines,
             shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializationsAsync: async () => {
                 if (engine.isWebGPU) {
@@ -239,6 +243,7 @@ export class ClusteredLightContainer extends Light {
         // Additive blending is for merging masks on WebGL
         this._proxyMaterial.transparencyMode = ShaderMaterial.MATERIAL_ALPHABLEND;
         this._proxyMaterial.alphaMode = Constants.ALPHA_ADD;
+        this._proxyMaterial.sideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
 
         this._proxyMesh = CreatePlane("ProxyMesh", { size: 2 });
         // Make sure it doesn't render for the default scene
@@ -380,7 +385,7 @@ export class ClusteredLightContainer extends Light {
         for (const light of this._sortedLights) {
             const position = light.computeTransformedInformation() ? light.transformedPosition : light.position;
             const viewPosition = Vector3.TransformCoordinatesToRef(position, view, TmpVectors.Vector3[0]);
-            light._currentViewDepth = viewPosition.z;
+            light._currentViewDepth = this._scene.useRightHandedSystem ? -viewPosition.z : viewPosition.z;
         }
         this._sortedLights.sort((a, b) => a._currentViewDepth - b._currentViewDepth);
 

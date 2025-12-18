@@ -1,5 +1,38 @@
 # Changelog
 
+## 8.42.0
+
+### Core
+
+- Fix static sound `stop()` throwing error in some cases - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#17572](https://github.com/BabylonJS/Babylon.js/pull/17572))
+- GS fixes for data reloading - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17571](https://github.com/BabylonJS/Babylon.js/pull/17571))
+- Fix legacy sound regression causing only 1 instance to play at a time - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#17570](https://github.com/BabylonJS/Babylon.js/pull/17570))
+- Fix SH bands - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17565](https://github.com/BabylonJS/Babylon.js/pull/17565))
+- WebGPU: Fix the snapshot rendering helper when window is resized - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17564](https://github.com/BabylonJS/Babylon.js/pull/17564))
+- Fix IBL Manual setup - by [sebavan](https://github.com/sebavan) ([#17563](https://github.com/BabylonJS/Babylon.js/pull/17563))
+- GS fix camera direction - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17561](https://github.com/BabylonJS/Babylon.js/pull/17561))
+
+### GUI
+
+- GUI: Fix Line layout bug when a connectedControl has a higher zIndex - by [AmoebaChant](https://github.com/AmoebaChant) ([#17558](https://github.com/BabylonJS/Babylon.js/pull/17558))
+
+### GUI Editor
+
+- Npm Update - by [sebavan](https://github.com/sebavan) ([#17554](https://github.com/BabylonJS/Babylon.js/pull/17554))
+
+### Node Editor
+
+- Fix contrast in drop downs in preview area for node based tools - by [AmoebaChant](https://github.com/AmoebaChant) ([#17567](https://github.com/BabylonJS/Babylon.js/pull/17567))
+- Npm Update - by [sebavan](https://github.com/sebavan) ([#17554](https://github.com/BabylonJS/Babylon.js/pull/17554))
+
+### Playground
+
+- Npm Update - by [sebavan](https://github.com/sebavan) ([#17554](https://github.com/BabylonJS/Babylon.js/pull/17554))
+
+### Viewer
+
+- Npm Update - by [sebavan](https://github.com/sebavan) ([#17554](https://github.com/BabylonJS/Babylon.js/pull/17554))
+
 ## 8.41.2
 
 ### Core
