@@ -91,7 +91,9 @@ export const ToolBar: FunctionComponent<ToolBarProps> = (props) => {
     return (
         <div className={classes.toolbar}>
             <div className={classes.colorSection}>
-                <ColorPickerPopup value={hasAlpha ? computeRGBAColor() : Color3.FromHexString(metadata.color)} onChange={handleColorChange} />
+                <Tooltip relationship="label" content="Pick Tool Color" positioning="after">
+                    <ColorPickerPopup value={hasAlpha ? computeRGBAColor() : Color3.FromHexString(metadata.color)} onChange={handleColorChange} />
+                </Tooltip>
             </div>
             <div className={classes.toolsSection}>
                 {tools.map((tool, index) => {

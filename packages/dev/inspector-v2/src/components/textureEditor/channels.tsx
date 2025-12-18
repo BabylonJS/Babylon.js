@@ -110,7 +110,7 @@ export const ChannelsBar: FunctionComponent<ChannelsBarProps> = (props) => {
 
                 return (
                     <div key={channel.id} className={`${classes.channel} ${!channel.editable ? classes.uneditable : ""}`}>
-                        <Tooltip content={`${visTip} ${channel.name}`} relationship="label">
+                        <Tooltip content={`${visTip} ${channel.name}`} relationship="label" positioning="before">
                             <ToggleButton
                                 appearance="transparent"
                                 size="small"
@@ -119,7 +119,7 @@ export const ChannelsBar: FunctionComponent<ChannelsBarProps> = (props) => {
                                 onClick={() => toggleVisibility(index)}
                             />
                         </Tooltip>
-                        <Tooltip content={`${editTip} ${channel.name}`} relationship="label">
+                        <Tooltip content={`${editTip} ${channel.name}`} relationship="label" positioning="before">
                             <ToggleButton
                                 appearance="transparent"
                                 size="small"
