@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting modify",
+            "playgroundId": "#RKKCHG#15",
+            "renderCount": 5,
+            "referenceImage": "gsplat-splat-modify.png"
+        },
+        {
             "title": "Gaussian Splatting PLY SH Reload",
             "playgroundId": "#YMXPPW#1",
             "referenceImage": "gsplat-ply-sh-reload.png"
