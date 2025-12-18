@@ -259,7 +259,7 @@ export class InteractivityGraphToFlowGraphParser {
 
                     if (!propertyMapping?.isArray) {
                         if (value.length !== 1) {
-                            Logger.Warn(`Invalid primitive value length ${value.length}`);
+                            Logger.Warn(`Invalid non-array value length: ${value.length}`);
                         }
 
                         value = value[0];
