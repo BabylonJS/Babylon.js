@@ -1,7 +1,7 @@
 import type { ComponentType, FunctionComponent } from "react";
 import type { IMetadata } from "./textureEditor";
 
-import { makeStyles, ToggleButton, tokens, Tooltip } from "@fluentui/react-components";
+import { Divider, makeStyles, ToggleButton, tokens, Tooltip } from "@fluentui/react-components";
 import { useCallback } from "react";
 
 import { Color3, Color4 } from "core/Maths/math.color";
@@ -95,6 +95,7 @@ export const ToolBar: FunctionComponent<ToolBarProps> = (props) => {
                     <ColorPickerPopup value={hasAlpha ? computeRGBAColor() : Color3.FromHexString(metadata.color)} onChange={handleColorChange} />
                 </Tooltip>
             </div>
+            <Divider />
             <div className={classes.toolsSection}>
                 {tools.map((tool, index) => {
                     // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -31,7 +31,6 @@ export const Contrast: TextureEditorToolProvider = {
         const classes = useStyles();
         return <CircleHalfFillRegular className={classes.icon} />;
     },
-    cursor: "crosshair",
     is3D: true,
     getTool: (context) => {
         let _contrast = 0;
