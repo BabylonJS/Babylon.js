@@ -26,8 +26,6 @@ export type ToolHostProps = {
     toolName: string;
 };
 
-export const OverlayContext = createContext({ mountNode: undefined as HTMLElement | undefined } as const);
-
 export const ToolContext = createContext({ useFluent: false as boolean, disableCopy: false as boolean, toolName: "" as string, size: undefined as UiSize | undefined } as const);
 
 /**

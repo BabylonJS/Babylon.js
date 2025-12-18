@@ -1,9 +1,8 @@
 import type { FunctionComponent, PropsWithChildren, ReactElement } from "react";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { Popover as FluentPopover, PopoverTrigger, PopoverSurface, makeStyles, tokens } from "@fluentui/react-components";
 import type { FluentIcon } from "@fluentui/react-icons";
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import { OverlayContext } from "../hoc/fluentToolWrapper";
 
 const useStyles = makeStyles({
     surface: {
@@ -34,11 +33,9 @@ export const Popover: FunctionComponent<PropsWithChildren<PopoverProps>> = (prop
     const { children } = props;
     const [popoverOpen, setPopoverOpen] = useState(false);
     const classes = useStyles();
-    const { mountNode } = useContext(OverlayContext);
 
     return (
         <FluentPopover
-            mountNode={mountNode}
             open={popoverOpen}
             onOpenChange={(_, data) => setPopoverOpen(data.open)}
             positioning={{

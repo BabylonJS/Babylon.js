@@ -1,13 +1,10 @@
 import type { GriffelRenderer } from "@fluentui/react-components";
 import type { FunctionComponent, PropsWithChildren, Ref } from "react";
 
-import { createDOMRenderer, makeStyles, Portal, RendererProvider } from "@fluentui/react-components";
-// import { PortalMountNodeProvider } from "@fluentui/react-shared-contexts";
+import { createDOMRenderer, FluentProvider, makeStyles, Portal, RendererProvider } from "@fluentui/react-components";
 import { useCallback, useEffect, useImperativeHandle, useState } from "react";
 
 import { Logger } from "core/Misc/logger";
-import { OverlayContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
-import { Theme } from "./theme";
 
 function ToFeaturesString(options: ChildWindowOptions) {
     const { defaultWidth, defaultHeight, defaultLeft, defaultTop } = options;
@@ -115,7 +112,6 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
 
     const [windowState, setWindowState] = useState<{ mountNode: HTMLElement; renderer: GriffelRenderer }>();
     const [childWindow, setChildWindow] = useState<Window>();
-    const [portalRef, setPortalRef] = useState<HTMLDivElement | null>(null);
 
     const storageKey = identity ? `Babylon/Settings/ChildWindow/${identity}/Bounds` : null;
 
@@ -262,12 +258,10 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
         <Portal mountNode={mountNode}>
             {/* RenderProvider manages Fluent style/class state. */}
             <RendererProvider renderer={renderer} targetDocument={mountNode.ownerDocument}>
-                {/* Theme gives us the Fluent Provider, needed for managing other Fluent state and applying the current theme mode. */}
-                <Theme className={classes.container} targetDocument={mountNode.ownerDocument}>
-                    <OverlayContext.Provider value={{ mountNode: portalRef ?? undefined }}>{children}</OverlayContext.Provider>
-                    {/* <PortalMountNodeProvider value={portalRef ?? undefined}>{children}</PortalMountNodeProvider> */}
-                    <div ref={setPortalRef} style={{ zIndex: Number.MAX_SAFE_INTEGER }} />
-                </Theme>
+                {/* Fluent Provider is needed for managing other Fluent state and applying the current theme mode. */}
+                <FluentProvider className={classes.container} applyStylesToPortals={false} targetDocument={mountNode.ownerDocument}>
+                    {children}
+                </FluentProvider>
             </RendererProvider>
         </Portal>
     );
