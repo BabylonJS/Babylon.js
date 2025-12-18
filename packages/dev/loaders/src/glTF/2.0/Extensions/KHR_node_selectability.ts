@@ -29,7 +29,7 @@ addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
             name: "variable",
             toBlock: FlowGraphBlockNames.GetVariable,
             dataTransformer(data) {
-                return "pickedMesh_" + data[0];
+                return "pickedMesh_" + data;
             },
         },
     },
