@@ -2913,6 +2913,38 @@
             "playgroundId": "#QY98Z3#17"
         },
         {
+            "title": "Clustered Lighting (lhs std material)",
+            "playgroundId": "#CSCJO2#59"
+        },
+        {
+            "title": "Clustered Lighting (lhs pbr material)",
+            "playgroundId": "#CSCJO2#60"
+        },
+        {
+            "title": "Clustered Lighting (lhs std nodematerial)",
+            "playgroundId": "#CSCJO2#64"
+        },
+        {
+            "title": "Clustered Lighting (lhs pbr nodematerial)",
+            "playgroundId": "#CSCJO2#62"
+        },
+        {
+            "title": "Clustered Lighting (rhs std material)",
+            "playgroundId": "#CSCJO2#69"
+        },
+        {
+            "title": "Clustered Lighting (rhs pbr material)",
+            "playgroundId": "#CSCJO2#70"
+        },
+        {
+            "title": "Clustered Lighting (rhs std nodematerial)",
+            "playgroundId": "#CSCJO2#71"
+        },
+        {
+            "title": "Clustered Lighting (rhs pbr nodematerial)",
+            "playgroundId": "#CSCJO2#72"
+        },
+        {
             "title": "Atmosphere Day",
             "playgroundId": "#VO1Z0C#14",
             "referenceImage": "atmosphere-day.png",

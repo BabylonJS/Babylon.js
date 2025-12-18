@@ -29,8 +29,13 @@ fn main(input: VertexInputs) -> FragmentInputs {
     let sinCos = vertexInputs.position.xy * sqrt(sinSq * cosSq);
 
     // Apply rotation
+#ifdef RIGHT_HANDED
+    let rotatedX = mat2x2f(cosSq.x, sinCos.x, -sinCos.x, cosSq.x) * viewPosition.xz;
+    let rotatedY = mat2x2f(cosSq.y, sinCos.y, -sinCos.y, cosSq.y) * viewPosition.yz;
+#else
     let rotatedX = mat2x2f(cosSq.x, -sinCos.x, sinCos.x, cosSq.x) * viewPosition.xz;
     let rotatedY = mat2x2f(cosSq.y, -sinCos.y, sinCos.y, cosSq.y) * viewPosition.yz;
+#endif
     // Apply projection
     let projX = scene.projection * vec4f(rotatedX.x, 0, rotatedX.y, 1);
     let projY = scene.projection * vec4f(0, rotatedY.x, rotatedY.y, 1);
