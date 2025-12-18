@@ -121,16 +121,25 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
     const createWindow = useCallback(
         (options: ChildWindowOptions = {}) => {
             if (storageKey) {
-                const savedBounds = localStorage.getItem(storageKey);
-                if (savedBounds) {
-                    try {
-                        const bounds = JSON.parse(savedBounds);
-                        options.defaultLeft = bounds.left;
-                        options.defaultTop = bounds.top;
-                        options.defaultWidth = bounds.width;
-                        options.defaultHeight = bounds.height;
-                    } catch {
-                        Logger.Warn(`Could not parse saved bounds for child window with key ${storageKey}`);
+                // If we are persisting window bounds, but the window is already open, just use the existing bounds.
+                // Otherwise, try to load bounds from storage.
+                if (childWindow) {
+                    options.defaultLeft = childWindow.screenX;
+                    options.defaultTop = childWindow.screenY;
+                    options.defaultWidth = childWindow.innerWidth;
+                    options.defaultHeight = childWindow.innerHeight;
+                } else {
+                    const savedBounds = localStorage.getItem(storageKey);
+                    if (savedBounds) {
+                        try {
+                            const bounds = JSON.parse(savedBounds);
+                            options.defaultLeft = bounds.left;
+                            options.defaultTop = bounds.top;
+                            options.defaultWidth = bounds.width;
+                            options.defaultHeight = bounds.height;
+                        } catch {
+                            Logger.Warn(`Could not parse saved bounds for child window with key ${storageKey}`);
+                        }
                     }
                 }
             }
@@ -153,20 +162,20 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
             }
 
             // Try to create the child window (can be null if popups are blocked).
-            const childWindow = window.open("", "", ToFeaturesString(options));
-            if (childWindow) {
+            const newChildWindow = window.open("", "", ToFeaturesString(options));
+            if (newChildWindow) {
                 // Set the title if provided.
-                childWindow.document.title = options.title ?? id ?? "";
+                newChildWindow.document.title = options.title ?? id ?? "";
 
                 // Set the child window state.
                 setChildWindow((current) => {
                     // But first close any existing child window.
                     current?.close();
-                    return childWindow;
+                    return newChildWindow;
                 });
             }
         },
-        [storageKey]
+        [childWindow, storageKey]
     );
 
     useImperativeHandle(imperativeRef, () => {
