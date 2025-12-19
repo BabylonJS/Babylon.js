@@ -28,7 +28,7 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
-import { ChooseMaterialPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/chooseEntityPropertyLine";
+import { MaterialSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 
 // Ensures that the outlineRenderer and edgesRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/edgesRenderer";
@@ -54,7 +54,7 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
             <LinkToEntityPropertyLine label="Skeleton" description="The skeleton associated with the mesh." entity={skeleton} selectionService={selectionService} />
             <LinkToEntityPropertyLine label="Material" description="The material used by the mesh." entity={material} selectionService={selectionService} />
             {!mesh.isAnInstance && (
-                <BoundProperty defaultValue={null} component={ChooseMaterialPropertyLine} label="Active Material" target={mesh} propertyKey="material" scene={mesh.getScene()} />
+                <BoundProperty defaultValue={null} component={MaterialSelectorPropertyLine} label="Active Material" target={mesh} propertyKey="material" scene={mesh.getScene()} />
             )}
             <BoundProperty component={SwitchPropertyLine} label="Is Pickable" target={mesh} propertyKey={"isPickable"} />
             {isAnInstance && mesh instanceof InstancedMesh && (

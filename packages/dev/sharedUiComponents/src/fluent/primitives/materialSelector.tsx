@@ -5,9 +5,9 @@ import type { Material } from "core/Materials/material";
 import type { PrimitiveProps } from "./primitive";
 
 import { useCallback } from "react";
-import { ChooseEntity } from "./chooseEntity";
+import { EntitySelector } from "./entitySelector";
 
-export type ChooseMaterialProps = PrimitiveProps<Nullable<Material>> & {
+export type MaterialSelectorProps = PrimitiveProps<Nullable<Material>> & {
     /**
      * The scene to get materials from
      */
@@ -20,15 +20,15 @@ export type ChooseMaterialProps = PrimitiveProps<Nullable<Material>> & {
 
 /**
  * A primitive component with a ComboBox for selecting from existing scene materials.
- * @param props ChooseMaterialProps
- * @returns ChooseMaterial component
+ * @param props MaterialSelectorProps
+ * @returns MaterialSelector component
  */
-export const ChooseMaterial: FunctionComponent<ChooseMaterialProps> = (props) => {
-    ChooseMaterial.displayName = "ChooseMaterial";
+export const MaterialSelector: FunctionComponent<MaterialSelectorProps> = (props) => {
+    MaterialSelector.displayName = "MaterialSelector";
     const { scene, ...rest } = props;
 
     const getMaterials = useCallback(() => scene.materials, [scene.materials]);
     const getName = useCallback((material: Material) => material.name, []);
 
-    return <ChooseEntity {...rest} getEntities={getMaterials} getName={getName} />;
+    return <EntitySelector {...rest} getEntities={getMaterials} getName={getName} />;
 };

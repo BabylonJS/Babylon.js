@@ -5,9 +5,9 @@ import type { Node } from "core/node";
 import type { PrimitiveProps } from "./primitive";
 
 import { useCallback } from "react";
-import { ChooseEntity } from "./chooseEntity";
+import { EntitySelector } from "./entitySelector";
 
-export type ChooseNodeProps = PrimitiveProps<Nullable<Node>> & {
+export type NodeSelectorProps = PrimitiveProps<Nullable<Node>> & {
     /**
      * The scene to get nodes from
      */
@@ -20,15 +20,15 @@ export type ChooseNodeProps = PrimitiveProps<Nullable<Node>> & {
 
 /**
  * A primitive component with a ComboBox for selecting from existing scene nodes.
- * @param props ChooseNodeProps
- * @returns ChooseNode component
+ * @param props NodeSelectorProps
+ * @returns NodeSelector component
  */
-export const ChooseNode: FunctionComponent<ChooseNodeProps> = (props) => {
-    ChooseNode.displayName = "ChooseNode";
+export const NodeSelector: FunctionComponent<NodeSelectorProps> = (props) => {
+    NodeSelector.displayName = "NodeSelector";
     const { scene, ...rest } = props;
 
     const getNodes = useCallback(() => scene.getNodes(), [scene]);
     const getName = useCallback((node: Node) => node.name, []);
 
-    return <ChooseEntity {...rest} getEntities={getNodes} getName={getName} />;
+    return <EntitySelector {...rest} getEntities={getNodes} getName={getName} />;
 };

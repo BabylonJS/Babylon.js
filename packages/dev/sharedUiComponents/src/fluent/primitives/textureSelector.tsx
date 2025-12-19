@@ -7,7 +7,7 @@ import type { PrimitiveProps } from "./primitive";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback } from "react";
 import { TextureUpload } from "../hoc/textureUpload";
-import { ChooseEntity } from "./chooseEntity";
+import { EntitySelector } from "./entitySelector";
 
 const useStyles = makeStyles({
     container: {
@@ -18,7 +18,7 @@ const useStyles = makeStyles({
     },
 });
 
-export type ChooseTextureProps = PrimitiveProps<Nullable<BaseTexture>> & {
+export type TextureSelectorProps = PrimitiveProps<Nullable<BaseTexture>> & {
     /**
      * The scene to get textures from
      */
@@ -36,11 +36,11 @@ export type ChooseTextureProps = PrimitiveProps<Nullable<BaseTexture>> & {
 /**
  * A primitive component with a ComboBox for selecting from existing scene textures
  * and a button for uploading new texture files.
- * @param props ChooseTextureProps
- * @returns ChooseTexture component
+ * @param props TextureSelectorProps
+ * @returns TextureSelector component
  */
-export const ChooseTexture: FunctionComponent<ChooseTextureProps> = (props) => {
-    ChooseTexture.displayName = "ChooseTexture";
+export const TextureSelector: FunctionComponent<TextureSelectorProps> = (props) => {
+    TextureSelector.displayName = "TextureSelector";
     const { scene, cubeOnly, value, onChange } = props;
     const classes = useStyles();
 
@@ -50,7 +50,7 @@ export const ChooseTexture: FunctionComponent<ChooseTextureProps> = (props) => {
 
     return (
         <div className={classes.container}>
-            <ChooseEntity value={value} onChange={onChange} getEntities={getTextures} getName={getName} filter={filter} />
+            <EntitySelector value={value} onChange={onChange} getEntities={getTextures} getName={getName} filter={filter} />
             <TextureUpload scene={scene} onChange={onChange} cubeOnly={cubeOnly} />
         </div>
     );
