@@ -489,7 +489,7 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
                     target={material.subSurface}
                     propertyKey="useAlbedoToTintTranslucency"
                 />
-                <BoundProperty
+                {/* <BoundProperty
                     component={Color3PropertyLine}
                     label="Translucency Tint"
                     target={material.subSurface}
@@ -497,7 +497,7 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
                     isLinearMode={true}
                     nullable
                     defaultValue={Color3.White()}
-                />
+                /> */}
                 <BoundTextureProperty label="Translucency Tint" target={material.subSurface} propertyKey="translucencyColorTexture" scene={scene} />
             </Collapse>
         </>

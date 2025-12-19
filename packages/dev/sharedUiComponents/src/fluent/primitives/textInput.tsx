@@ -9,7 +9,7 @@ import { ToolContext } from "../hoc/fluentToolWrapper";
 
 export type TextInputProps = PrimitiveProps<string> & {
     validator?: (value: string) => boolean;
-    validateOnBlur?: boolean;
+    validateOnlyOnBlur?: boolean;
 };
 
 export const TextInput: FunctionComponent<TextInputProps> = (props) => {
@@ -41,20 +41,20 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
     const handleChange = (event: ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
         event.stopPropagation();
         setValue(data.value);
-        if (!props.validateOnBlur) {
+        if (!props.validateOnlyOnBlur) {
             tryCommitValue(data.value);
         }
     };
 
     const handleKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
         event.stopPropagation();
-        if (!props.validateOnBlur) {
+        if (!props.validateOnlyOnBlur) {
             tryCommitValue(event.currentTarget.value);
         }
     };
     const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
         HandleOnBlur(event);
-        if (props.validateOnBlur) {
+        if (props.validateOnlyOnBlur) {
             tryCommitValue(event.currentTarget.value);
         }
     };

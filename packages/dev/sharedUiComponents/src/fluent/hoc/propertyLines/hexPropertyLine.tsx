@@ -63,7 +63,7 @@ export const HexPropertyLine: FunctionComponent<HexPropertyLineProps> = (props) 
 
     return (
         <PropertyLine {...props}>
-            <TextInput {...props} validator={MaskValidatorFn} value={hexVal} onChange={onStrValChange} validateOnBlur={true} />
+            <TextInput {...props} validator={MaskValidatorFn} value={hexVal} onChange={onStrValChange} validateOnlyOnBlur={true} />
         </PropertyLine>
     );
 };
