@@ -8,6 +8,7 @@ import type { Nullable } from "core/types";
 import { TextureTools } from "core/Misc/textureTools";
 import type { BaseTexture } from "../../../Materials/Textures/baseTexture";
 import type { ProceduralTexture } from "../../../Materials";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
  * Interface used to define texture data
@@ -26,6 +27,12 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     private _textureDataUrl: string = "";
     private _sourceTexture: Nullable<BaseTexture> = null;
     private _cachedData: Nullable<INodeParticleTextureData> = null;
+
+    /**
+     * Gets or sets if the texture should be inverted on the Y axis
+     */
+    @editableInPropertyPage("InvertY", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public invertY = true;
 
     /**
      * Indicates if the texture data should be serialized as a base64 string.
@@ -166,7 +173,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                             height: size.height,
                             data: new Uint8ClampedArray(data),
                         };
-                        //texture.dispose();
+                        texture.dispose();
                         resolve(this._cachedData);
                     })
                     // eslint-disable-next-line github/no-then
@@ -181,8 +188,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
      */
     public override _build(state: NodeParticleBuildState) {
         if (this._sourceTexture) {
-            this.texture._storedValue?.dispose();
-            this.texture._storedValue = this._sourceTexture.clone();
+            this.texture._storedValue = this._sourceTexture;
             return;
         }
 
@@ -192,11 +198,11 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
         }
 
         if (this._textureDataUrl) {
-            this.texture._storedValue = new Texture(this._textureDataUrl, state.scene);
+            this.texture._storedValue = new Texture(this._textureDataUrl, state.scene, undefined, this.invertY);
             return;
         }
 
-        this.texture._storedValue = new Texture(this._url, state.scene);
+        this.texture._storedValue = new Texture(this._url, state.scene, undefined, this.invertY);
     }
 
     public override serialize(): any {
@@ -224,11 +230,12 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     }
 
     public override dispose(): void {
-        this._sourceTexture?.dispose();
-        this._sourceTexture = null;
-        this.texture._storedValue?.dispose();
-        this.texture._storedValue = null;
-
+        if (!this._sourceTexture) {
+            if (this.texture._storedValue) {
+                this.texture._storedValue.dispose();
+                this.texture._storedValue = null;
+            }
+        }
         super.dispose();
     }
 }

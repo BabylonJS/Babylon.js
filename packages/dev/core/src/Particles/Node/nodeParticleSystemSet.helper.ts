@@ -1,6 +1,7 @@
 import type { Nullable } from "core/types";
 import type { Color4 } from "core/Maths/math.color";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Texture } from "core/Materials/Textures/texture";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Mesh } from "core/Meshes/mesh";
 import type { ColorGradient, FactorGradient } from "core/Misc";
@@ -1074,8 +1075,19 @@ function _CreateGradientValueBlockGroup(
     return gradientValueBlock.output;
 }
 
-function _CreateTextureBlock(texture: BaseTexture): NodeParticleConnectionPoint {
+function _CreateTextureBlock(texture: Nullable<BaseTexture>): NodeParticleConnectionPoint {
+    // Texture
     const textureBlock = new ParticleTextureSourceBlock("Texture");
-    textureBlock.sourceTexture = texture;
+    const url = (texture as Texture).url || "";
+    if (url) {
+        textureBlock.url = url;
+    } else {
+        textureBlock.sourceTexture = texture;
+    }
+
+    if (texture && (texture as Texture).invertY !== undefined) {
+        textureBlock.invertY = (texture as Texture).invertY;
+    }
+
     return textureBlock.texture;
 }
