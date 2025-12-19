@@ -1,7 +1,6 @@
 import type { Nullable } from "core/types";
 import type { Color4 } from "core/Maths/math.color";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Texture } from "core/Materials/Textures/texture";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Mesh } from "core/Meshes/mesh";
 import type { ColorGradient, FactorGradient } from "core/Misc";
@@ -845,9 +844,9 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
 
     _SystemEmitRateValue(oldSystem, newSystem, context);
-    const clonedTexture = oldSystem.particleTexture?.clone();
-    if (clonedTexture) {
-        _CreateTextureBlock(clonedTexture).connectTo(newSystem.texture);
+    const texture = oldSystem.particleTexture;
+    if (texture) {
+        _CreateTextureBlock(texture).connectTo(newSystem.texture);
     }
     _SystemTargetStopDuration(oldSystem, newSystem, context);
 
@@ -1076,18 +1075,8 @@ function _CreateGradientValueBlockGroup(
 }
 
 function _CreateTextureBlock(texture: Nullable<BaseTexture>): NodeParticleConnectionPoint {
-    // Texture
+    // Texture - always use sourceTexture to preserve all texture options
     const textureBlock = new ParticleTextureSourceBlock("Texture");
-    const url = (texture as Texture).url || "";
-    if (url) {
-        textureBlock.url = url;
-    } else {
-        textureBlock.sourceTexture = texture;
-    }
-
-    if (texture && (texture as Texture).invertY !== undefined) {
-        textureBlock.invertY = (texture as Texture).invertY;
-    }
-
+    textureBlock.sourceTexture = texture;
     return textureBlock.texture;
 }
