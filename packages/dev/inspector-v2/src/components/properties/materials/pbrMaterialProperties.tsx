@@ -5,7 +5,7 @@ import { BoundProperty } from "../boundProperty";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { BoundTextureProperty } from "../textures/boundTextureProperty";
+import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 
 /**
  * Displays the lighting and color properties of a PBR material.
@@ -39,19 +39,34 @@ export const PBRMaterialTextureProperties: FunctionComponent<{ material: PBRMate
 
     return (
         <>
-            <BoundTextureProperty label="Albedo" target={material} propertyKey="albedoTexture" scene={scene} />
-            <BoundTextureProperty label="Base Weight" target={material} propertyKey="baseWeightTexture" scene={scene} />
-            <BoundTextureProperty label="Base Diffuse Roughness" target={material} propertyKey="baseDiffuseRoughnessTexture" scene={scene} />
-            <BoundTextureProperty label="Metallic Roughness" target={material} propertyKey="metallicTexture" scene={scene} />
-            <BoundTextureProperty label="Reflection" target={material} propertyKey="reflectionTexture" scene={scene} cubeOnly />
-            <BoundTextureProperty label="Refraction" target={material} propertyKey="refractionTexture" scene={scene} />
-            <BoundTextureProperty label="Reflectivity" target={material} propertyKey="reflectivityTexture" scene={scene} />
-            <BoundTextureProperty label="Micro-surface" target={material} propertyKey="microSurfaceTexture" scene={scene} />
-            <BoundTextureProperty label="Bump" target={material} propertyKey="bumpTexture" scene={scene} />
-            <BoundTextureProperty label="Emissive" target={material} propertyKey="emissiveTexture" scene={scene} />
-            <BoundTextureProperty label="Opacity" target={material} propertyKey="opacityTexture" scene={scene} />
-            <BoundTextureProperty label="Ambient" target={material} propertyKey="ambientTexture" scene={scene} />
-            <BoundTextureProperty label="Lightmap" target={material} propertyKey="lightmapTexture" scene={scene} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Albedo" target={material} propertyKey="albedoTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Base Weight" target={material} propertyKey="baseWeightTexture" scene={scene} defaultValue={null} />
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
+                label="Base Diffuse Roughness"
+                target={material}
+                propertyKey="baseDiffuseRoughnessTexture"
+                scene={scene}
+                defaultValue={null}
+            />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Metallic Roughness" target={material} propertyKey="metallicTexture" scene={scene} defaultValue={null} />
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
+                label="Reflection"
+                target={material}
+                propertyKey="reflectionTexture"
+                scene={scene}
+                cubeOnly
+                defaultValue={null}
+            />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Refraction" target={material} propertyKey="refractionTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Reflectivity" target={material} propertyKey="reflectivityTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Micro-surface" target={material} propertyKey="microSurfaceTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Bump" target={material} propertyKey="bumpTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Emissive" target={material} propertyKey="emissiveTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Opacity" target={material} propertyKey="opacityTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Ambient" target={material} propertyKey="ambientTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Lightmap" target={material} propertyKey="lightmapTexture" scene={scene} defaultValue={null} />
         </>
     );
 };
