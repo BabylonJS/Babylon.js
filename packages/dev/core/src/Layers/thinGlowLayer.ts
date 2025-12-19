@@ -187,6 +187,14 @@ export class ThinGlowLayer extends ThinEffectLayer {
         return ThinGlowLayer.EffectName;
     }
 
+    /** @internal */
+    public override _internalShouldRender(): boolean {
+        if (this._options.excludeByDefault && !this._includedOnlyMeshes.length) {
+            return false;
+        }
+        return super._internalShouldRender();
+    }
+
     public override _createMergeEffect(): Effect {
         let defines = "#define EMISSIVE \n";
         if (this._options.ldrMerge) {
@@ -359,10 +367,6 @@ export class ThinGlowLayer extends ThinEffectLayer {
     }
 
     public override hasMesh(mesh: AbstractMesh): boolean {
-        if (this._options.excludeByDefault && !this._includedOnlyMeshes.length) {
-            return false;
-        }
-
         if (!super.hasMesh(mesh)) {
             return false;
         }
