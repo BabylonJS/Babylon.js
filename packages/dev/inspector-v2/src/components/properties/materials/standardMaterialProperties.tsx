@@ -8,7 +8,7 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
-import { BoundTextureProperty } from "../textures/boundTextureProperty";
+import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 
 export const StandardMaterialGeneralProperties: FunctionComponent<{ material: StandardMaterial }> = (props) => {
     const { material } = props;
@@ -41,16 +41,16 @@ export const StandardMaterialTexturesProperties: FunctionComponent<{ material: S
 
     return (
         <>
-            <BoundTextureProperty label="Diffuse" target={material} propertyKey="diffuseTexture" scene={scene} />
-            <BoundTextureProperty label="Specular" target={material} propertyKey="specularTexture" scene={scene} />
-            <BoundTextureProperty label="Reflection" target={material} propertyKey="reflectionTexture" scene={scene} />
-            <BoundTextureProperty label="Refraction" target={material} propertyKey="refractionTexture" scene={scene} />
-            <BoundTextureProperty label="Emissive" target={material} propertyKey="emissiveTexture" scene={scene} />
-            <BoundTextureProperty label="Bump" target={material} propertyKey="bumpTexture" scene={scene} />
-            <BoundTextureProperty label="Opacity" target={material} propertyKey="opacityTexture" scene={scene} />
-            <BoundTextureProperty label="Ambient" target={material} propertyKey="ambientTexture" scene={scene} />
-            <BoundTextureProperty label="Lightmap" target={material} propertyKey="lightmapTexture" scene={scene} />
-            <BoundTextureProperty label="Detailmap" target={material.detailMap} propertyKey="texture" scene={scene} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Diffuse" target={material} propertyKey="diffuseTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Specular" target={material} propertyKey="specularTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Reflection" target={material} propertyKey="reflectionTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Refraction" target={material} propertyKey="refractionTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Emissive" target={material} propertyKey="emissiveTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Bump" target={material} propertyKey="bumpTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Opacity" target={material} propertyKey="opacityTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Ambient" target={material} propertyKey="ambientTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Lightmap" target={material} propertyKey="lightmapTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Detailmap" target={material.detailMap} propertyKey="texture" scene={scene} defaultValue={null} />
             <BoundProperty component={SwitchPropertyLine} label="Use lightmap as shadowmap" target={material} propertyKey="useLightmapAsShadowmap" />
             <BoundProperty component={SwitchPropertyLine} label="Use detailmap" target={material.detailMap} propertyKey="isEnabled" />
             <BoundProperty component={SwitchPropertyLine} label="Use decalmap" target={material.decalMap} propertyKey="isEnabled" />

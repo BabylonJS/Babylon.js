@@ -13,9 +13,8 @@ import { Vector2PropertyLine } from "shared-ui-components/fluent/hoc/propertyLin
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import { Color3 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
-import { BoundTextureProperty } from "../textures/boundTextureProperty";
+import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 
 declare module "core/Materials/PBR/pbrSheenConfiguration" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -153,20 +152,42 @@ export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PB
 
     return (
         <>
-            <BoundTextureProperty label="Albedo" target={material} propertyKey="_albedoTexture" scene={scene} />
-            <BoundTextureProperty label="Base Weight" target={material} propertyKey="_baseWeightTexture" scene={scene} />
-            <BoundTextureProperty label="Base Diffuse Roughness" target={material} propertyKey="_baseDiffuseRoughnessTexture" scene={scene} />
-            <BoundTextureProperty label="Metallic Roughness" target={material} propertyKey="_metallicTexture" scene={scene} />
-            <BoundTextureProperty label="Reflection" target={material} propertyKey="_reflectionTexture" scene={scene} cubeOnly />
-            <BoundTextureProperty label="Refraction" target={material.subSurface} propertyKey="refractionTexture" scene={scene} />
-            <BoundTextureProperty label="Reflectivity" target={material} propertyKey="_reflectivityTexture" scene={scene} />
-            <BoundTextureProperty label="Micro-surface" target={material} propertyKey="_microSurfaceTexture" scene={scene} />
-            <BoundTextureProperty label="Bump" target={material} propertyKey="_bumpTexture" scene={scene} />
-            <BoundTextureProperty label="Emissive" target={material} propertyKey="_emissiveTexture" scene={scene} />
-            <BoundTextureProperty label="Opacity" target={material} propertyKey="_opacityTexture" scene={scene} />
-            <BoundTextureProperty label="Ambient" target={material} propertyKey="_ambientTexture" scene={scene} />
-            <BoundTextureProperty label="Lightmap" target={material} propertyKey="_lightmapTexture" scene={scene} />
-            <BoundTextureProperty label="Detailmap" target={material.detailMap} propertyKey="texture" scene={scene} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Albedo" target={material} propertyKey="_albedoTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Base Weight" target={material} propertyKey="_baseWeightTexture" scene={scene} defaultValue={null} />
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
+                label="Base Diffuse Roughness"
+                target={material}
+                propertyKey="_baseDiffuseRoughnessTexture"
+                scene={scene}
+                defaultValue={null}
+            />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Metallic Roughness" target={material} propertyKey="_metallicTexture" scene={scene} defaultValue={null} />
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
+                label="Reflection"
+                target={material}
+                propertyKey="_reflectionTexture"
+                scene={scene}
+                cubeOnly
+                defaultValue={null}
+            />
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
+                label="Refraction"
+                target={material.subSurface}
+                propertyKey="refractionTexture"
+                scene={scene}
+                defaultValue={null}
+            />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Reflectivity" target={material} propertyKey="_reflectivityTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Micro-surface" target={material} propertyKey="_microSurfaceTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Bump" target={material} propertyKey="_bumpTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Emissive" target={material} propertyKey="_emissiveTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Opacity" target={material} propertyKey="_opacityTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Ambient" target={material} propertyKey="_ambientTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Lightmap" target={material} propertyKey="_lightmapTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Detailmap" target={material.detailMap} propertyKey="texture" scene={scene} defaultValue={null} />
             <BoundProperty component={SwitchPropertyLine} label="Use lightmap as shadowmap" target={material} propertyKey="_useLightmapAsShadowmap" />
             <BoundProperty component={SwitchPropertyLine} label="Use detailmap" target={material.detailMap} propertyKey="isEnabled" />
             <BoundProperty component={SwitchPropertyLine} label="Use decalmap" target={material.decalMap} propertyKey="isEnabled" />
@@ -237,8 +258,22 @@ export const PBRBaseMaterialMetallicWorkflowProperties: FunctionComponent<{ mate
                 target={material}
                 propertyKey="_useOnlyMetallicFromMetallicReflectanceTexture"
             />
-            <BoundTextureProperty label="MetallicReflectance Texture" target={material} propertyKey="_metallicReflectanceTexture" scene={scene} />
-            <BoundTextureProperty label="Reflectance Texture" target={material} propertyKey="_reflectanceTexture" scene={scene} />
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
+                label="MetallicReflectance Texture"
+                target={material}
+                propertyKey="_metallicReflectanceTexture"
+                scene={scene}
+                defaultValue={null}
+            />
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
+                label="Reflectance Texture"
+                target={material}
+                propertyKey="_reflectanceTexture"
+                scene={scene}
+                defaultValue={null}
+            />
         </>
     );
 };
@@ -268,9 +303,16 @@ export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: P
                     step={0.01}
                 />
                 <BoundProperty component={SwitchPropertyLine} label="Remap F0" target={material.clearCoat} propertyKey="remapF0OnInterfaceChange" />
-                <BoundTextureProperty label="Clear coat" target={material.clearCoat} propertyKey="texture" scene={scene} />
-                <BoundTextureProperty label="Roughness" target={material.clearCoat} propertyKey="textureRoughness" scene={scene} />
-                <BoundTextureProperty label="Bump" target={material.clearCoat} propertyKey="bumpTexture" scene={scene} />
+                <BoundProperty component={TextureSelectorPropertyLine} label="Clear coat" target={material.clearCoat} propertyKey="texture" scene={scene} defaultValue={null} />
+                <BoundProperty
+                    component={TextureSelectorPropertyLine}
+                    label="Roughness"
+                    target={material.clearCoat}
+                    propertyKey="textureRoughness"
+                    scene={scene}
+                    defaultValue={null}
+                />
+                <BoundProperty component={TextureSelectorPropertyLine} label="Bump" target={material.clearCoat} propertyKey="bumpTexture" scene={scene} defaultValue={null} />
                 <Collapse visible={bumpTexture !== null}>
                     <BoundProperty component={SyncedSliderPropertyLine} label="Bump Strength" target={bumpTexture} propertyKey="level" min={0} max={2} step={0.01} />
                 </Collapse>
@@ -296,7 +338,7 @@ export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: P
                         max={20}
                         step={0.1}
                     />
-                    <BoundTextureProperty label="Tint" target={material.clearCoat} propertyKey="tintTexture" scene={scene} />
+                    <BoundProperty component={TextureSelectorPropertyLine} label="Tint" target={material.clearCoat} propertyKey="tintTexture" scene={scene} defaultValue={null} />
                 </Collapse>
             </Collapse>
         </>
@@ -342,8 +384,15 @@ export const PBRBaseMaterialIridescenceProperties: FunctionComponent<{ material:
                     max={1000}
                     step={10}
                 />
-                <BoundTextureProperty label="Iridescence" target={material.iridescence} propertyKey="texture" scene={scene} />
-                <BoundTextureProperty label="Thickness" target={material.iridescence} propertyKey="thicknessTexture" scene={scene} />
+                <BoundProperty component={TextureSelectorPropertyLine} label="Iridescence" target={material.iridescence} propertyKey="texture" scene={scene} defaultValue={null} />
+                <BoundProperty
+                    component={TextureSelectorPropertyLine}
+                    label="Thickness"
+                    target={material.iridescence}
+                    propertyKey="thicknessTexture"
+                    scene={scene}
+                    defaultValue={null}
+                />
             </Collapse>
         </>
     );
@@ -362,7 +411,7 @@ export const PBRBaseMaterialAnisotropicProperties: FunctionComponent<{ material:
                 <BoundProperty component={SwitchPropertyLine} label="Legacy Mode" target={material.anisotropy} propertyKey="legacy" />
                 <BoundProperty component={SyncedSliderPropertyLine} label="Intensity" target={material.anisotropy} propertyKey="intensity" min={0} max={1} step={0.01} />
                 <BoundProperty component={Vector2PropertyLine} label="Direction" target={material.anisotropy} propertyKey="direction" />
-                <BoundTextureProperty label="Anisotropic" target={material.anisotropy} propertyKey="texture" scene={scene} />
+                <BoundProperty component={TextureSelectorPropertyLine} label="Anisotropic" target={material.anisotropy} propertyKey="texture" scene={scene} defaultValue={null} />
             </Collapse>
         </>
     );
@@ -382,8 +431,8 @@ export const PBRBaseMaterialSheenProperties: FunctionComponent<{ material: PBRBa
                 <BoundProperty component={SwitchPropertyLine} label="Link to Albedo" target={material.sheen} propertyKey="linkSheenWithAlbedo" />
                 <BoundProperty component={SyncedSliderPropertyLine} label="Intensity" target={material.sheen} propertyKey="intensity" min={0} max={1} step={0.01} />
                 <BoundProperty component={Color3PropertyLine} label="Color" target={material.sheen} propertyKey="color" isLinearMode={true} />
-                <BoundTextureProperty label="Sheen" target={material.sheen} propertyKey="texture" scene={scene} />
-                <BoundTextureProperty label="Roughness" target={material.sheen} propertyKey="textureRoughness" scene={scene} />
+                <BoundProperty component={TextureSelectorPropertyLine} label="Sheen" target={material.sheen} propertyKey="texture" scene={scene} defaultValue={null} />
+                <BoundProperty component={TextureSelectorPropertyLine} label="Roughness" target={material.sheen} propertyKey="textureRoughness" scene={scene} defaultValue={null} />
                 <BoundProperty component={SwitchPropertyLine} label="Use Roughness" target={material.sheen} propertyKey="_useRoughness" />
                 <Collapse visible={useRoughness}>
                     <BoundProperty
@@ -416,7 +465,14 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
 
     return (
         <>
-            <BoundTextureProperty label="Thickness" target={material.subSurface} propertyKey="thicknessTexture" scene={scene} />
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
+                label="Thickness"
+                target={material.subSurface}
+                propertyKey="thicknessTexture"
+                scene={scene}
+                defaultValue={null}
+            />
             <BoundProperty component={SyncedSliderPropertyLine} label="Min Thickness" target={material.subSurface} propertyKey="minimumThickness" min={0} max={10} step={0.1} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Max Thickness" target={material.subSurface} propertyKey="maximumThickness" min={0} max={10} step={0.1} />
             <BoundProperty component={SwitchPropertyLine} label="Mask From Thickness" target={material.subSurface} propertyKey="useMaskFromThicknessTexture" />
@@ -438,8 +494,22 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
             <BoundProperty component={SwitchPropertyLine} label="Refraction Enabled" target={material.subSurface} propertyKey="isRefractionEnabled" />
             <Collapse visible={useRefraction}>
                 <BoundProperty component={SyncedSliderPropertyLine} label="Intensity" target={material.subSurface} propertyKey="refractionIntensity" min={0} max={1} step={0.01} />
-                <BoundTextureProperty label="Refraction Intensity" target={material.subSurface} propertyKey="refractionIntensityTexture" scene={scene} />
-                <BoundTextureProperty label="Refraction" target={material.subSurface} propertyKey="refractionTexture" scene={scene} />
+                <BoundProperty
+                    component={TextureSelectorPropertyLine}
+                    label="Refraction Intensity"
+                    target={material.subSurface}
+                    propertyKey="refractionIntensityTexture"
+                    scene={scene}
+                    defaultValue={null}
+                />
+                <BoundProperty
+                    component={TextureSelectorPropertyLine}
+                    label="Refraction"
+                    target={material.subSurface}
+                    propertyKey="refractionTexture"
+                    scene={scene}
+                    defaultValue={null}
+                />
                 <BoundProperty
                     component={SyncedSliderPropertyLine}
                     label="Volume Index of Refraction"
@@ -481,7 +551,14 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
                     max={1}
                     step={0.01}
                 />
-                <BoundTextureProperty label="Intensity" target={material.subSurface} propertyKey="translucencyIntensityTexture" scene={scene} />
+                <BoundProperty
+                    component={TextureSelectorPropertyLine}
+                    label="Intensity"
+                    target={material.subSurface}
+                    propertyKey="translucencyIntensityTexture"
+                    scene={scene}
+                    defaultValue={null}
+                />
                 <BoundProperty component={Color3PropertyLine} label="Diffusion Distance" target={material.subSurface} propertyKey="diffusionDistance" isLinearMode={true} />
                 <BoundProperty
                     component={SwitchPropertyLine}
@@ -489,7 +566,7 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
                     target={material.subSurface}
                     propertyKey="useAlbedoToTintTranslucency"
                 />
-                {/* TODO: reenable when Color3PropertyLine supports nullable values <BoundProperty
+                {/* TODO: fix it <BoundProperty
                     component={Color3PropertyLine}
                     label="Translucency Tint"
                     target={material.subSurface}
@@ -498,7 +575,14 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
                     nullable
                     defaultValue={Color3.White()}
                 /> */}
-                <BoundTextureProperty label="Translucency Tint" target={material.subSurface} propertyKey="translucencyColorTexture" scene={scene} />
+                <BoundProperty
+                    component={TextureSelectorPropertyLine}
+                    label="Translucency Tint"
+                    target={material.subSurface}
+                    propertyKey="translucencyColorTexture"
+                    scene={scene}
+                    defaultValue={null}
+                />
             </Collapse>
         </>
     );
