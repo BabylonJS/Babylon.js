@@ -27,8 +27,13 @@ void main(void) {
     vec2 sinCos = position.xy * sqrt(sinSq * cosSq);
 
     // Apply rotation
+#ifdef RIGHT_HANDED
+    vec2 rotatedX = mat2(cosSq.x, sinCos.x, -sinCos.x, cosSq.x) * viewPosition.xz;
+    vec2 rotatedY = mat2(cosSq.y, sinCos.y, -sinCos.y, cosSq.y) * viewPosition.yz;
+#else
     vec2 rotatedX = mat2(cosSq.x, -sinCos.x, sinCos.x, cosSq.x) * viewPosition.xz;
     vec2 rotatedY = mat2(cosSq.y, -sinCos.y, sinCos.y, cosSq.y) * viewPosition.yz;
+#endif
     // Apply projection
     vec4 projX = projection * vec4(rotatedX.x, 0, rotatedX.y, 1);
     vec4 projY = projection * vec4(0, rotatedY.x, rotatedY.y, 1);

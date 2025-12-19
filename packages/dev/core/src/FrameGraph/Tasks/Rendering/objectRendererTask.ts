@@ -20,7 +20,6 @@ import type {
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
-import { FrameGraphCascadedShadowGeneratorTask } from "./csmShadowGeneratorTask";
 import { Constants } from "../../../Engines/constants";
 import { ThinDepthPeelingRenderer } from "../../../Rendering/thinDepthPeelingRenderer";
 import { RenderingManager } from "../../../Rendering/renderingManager";
@@ -575,7 +574,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
                 const light = shadowGenerator.getLight();
                 if (light.isEnabled() && light.shadowEnabled) {
                     lightsForShadow.add(light);
-                    if (FrameGraphCascadedShadowGeneratorTask.IsCascadedShadowGenerator(shadowGeneratorTask)) {
+                    if (shadowGeneratorTask.getClassName() === "FrameGraphCascadedShadowGeneratorTask") {
                         light._shadowGenerators!.set(shadowGeneratorTask.camera, shadowGenerator);
                     } else {
                         light._shadowGenerators!.set(null, shadowGenerator);
