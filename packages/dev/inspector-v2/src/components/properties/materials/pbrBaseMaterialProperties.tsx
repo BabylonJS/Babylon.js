@@ -489,7 +489,7 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
                     target={material.subSurface}
                     propertyKey="useAlbedoToTintTranslucency"
                 />
-                {/* <BoundProperty
+                {/* TODO: reenable when Color3PropertyLine supports nullable values <BoundProperty
                     component={Color3PropertyLine}
                     label="Translucency Tint"
                     target={material.subSurface}
