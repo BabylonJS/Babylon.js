@@ -2,7 +2,6 @@ import { Body1Strong, makeStyles, tokens } from "@fluentui/react-components";
 
 import { ExtensibleAccordion } from "../extensibleAccordion";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     placeholderDiv: {
         padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalM}`,

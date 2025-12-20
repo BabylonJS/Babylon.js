@@ -245,8 +245,6 @@ export interface IShellService extends IService<typeof ShellServiceIdentity> {
 
 type ToolbarMode = "full" | "compact";
 
-type LayoutMode = "inline" | "overlay";
-
 /**
  * Options for configuring the shell service.
  */
@@ -285,25 +283,21 @@ export type ShellServiceOptions = {
      * @returns The new location for the side pane.
      */
     sidePaneRemapper?: (sidePane: Readonly<SidePaneDefinition>) => Nullable<{ horizontalLocation: HorizontalLocation; verticalLocation: VerticalLocation }>;
-
-    /**
-     * Determines whether the side panes and toolbars are displayed inline with the central content, or overlayed on top of it.
-     */
-    layoutMode?: LayoutMode;
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     mainView: {
         flex: 1,
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
+        backgroundColor: tokens.colorTransparentBackground,
     },
     verticallyCentralContent: {
         flexGrow: 1,
         display: "flex",
         overflow: "hidden",
+        backgroundColor: tokens.colorTransparentBackground,
     },
     barDiv: {
         display: "flex",
@@ -311,6 +305,7 @@ const useStyles = makeStyles({
         flex: "0 0 auto",
         height: "36px",
         backgroundColor: tokens.colorNeutralBackground2,
+        pointerEvents: "auto",
     },
     bar: {
         display: "flex",
@@ -378,16 +373,7 @@ const useStyles = makeStyles({
         overflowX: "hidden",
         overflowY: "hidden",
         zIndex: 1,
-    },
-    paneContainerOverlay: {
-        position: "absolute",
-        height: "100%",
-    },
-    paneContainerOverlayLeft: {
-        left: 0,
-    },
-    paneContainerOverlayRight: {
-        right: 0,
+        pointerEvents: "auto",
     },
     paneContent: {
         display: "flex",
@@ -457,6 +443,10 @@ const useStyles = makeStyles({
         flexGrow: 1,
         display: "flex",
         overflow: "hidden",
+        backgroundColor: tokens.colorTransparentBackground,
+        "> *": {
+            pointerEvents: "auto",
+        },
     },
     expandButtonContainer: {
         position: "absolute",
@@ -675,7 +665,6 @@ const SidePaneTab: FunctionComponent<
 // In "full" mode, the returned tab list is later injected into the toolbar.
 function usePane(
     location: HorizontalLocation,
-    layoutMode: LayoutMode,
     defaultWidth: number,
     minWidth: number,
     sidePanes: SidePaneDefinition[],
@@ -1048,15 +1037,7 @@ function usePane(
             <>
                 {/* If there is no window state, then we are docked, so render the resizable div and the collapse container. */}
                 {!isChildWindowOpen && (
-                    <div
-                        ref={paneContainerRef}
-                        className={mergeClasses(
-                            classes.paneContainer,
-                            layoutMode === "inline"
-                                ? undefined
-                                : mergeClasses(classes.paneContainerOverlay, location === "left" ? classes.paneContainerOverlayLeft : classes.paneContainerOverlayRight)
-                        )}
-                    >
+                    <div ref={paneContainerRef} className={classes.paneContainer}>
                         {(topPanes.length > 0 || bottomPanes.length > 0) && (
                             <div className={`${classes.pane} ${location === "left" ? classes.paneLeft : classes.paneRight}`}>
                                 <Collapse orientation="horizontal" visible={!collapsed}>
@@ -1095,7 +1076,6 @@ export function MakeShellServiceDefinition({
     rightPaneMinWidth = 350,
     toolbarMode = "full",
     sidePaneRemapper = undefined,
-    layoutMode = "inline",
 }: ShellServiceOptions = {}): ServiceDefinition<[IShellService, IRootComponentService], []> {
     return {
         friendlyName: "MainView",
@@ -1291,7 +1271,6 @@ export function MakeShellServiceDefinition({
 
                 const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed, leftPaneUndocked, setLeftPaneUndocked] = usePane(
                     "left",
-                    layoutMode,
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
                     coercedSidePanes,
@@ -1309,7 +1288,6 @@ export function MakeShellServiceDefinition({
 
                 const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed, rightPaneUndocked, setRightPaneUndocked] = usePane(
                     "right",
-                    layoutMode,
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
                     coercedSidePanes,
@@ -1367,14 +1345,14 @@ export function MakeShellServiceDefinition({
                                 ))}
                                 {toolbarMode === "compact" && (
                                     <>
-                                        <FluentFade visible={leftPaneCollapsed} delay={50}>
+                                        <FluentFade visible={leftPaneCollapsed} delay={50} duration={100} unmountOnExit>
                                             <div className={mergeClasses(classes.expandButtonContainer, classes.expandButtonContainerLeft)}>
                                                 <Tooltip content="Show Side Pane" relationship="label">
                                                     <Button className={classes.expandButton} icon={<PanelLeftExpandRegular />} onClick={() => setLeftPaneCollapsed(false)} />
                                                 </Tooltip>
                                             </div>
                                         </FluentFade>
-                                        <FluentFade visible={rightPaneCollapsed} delay={50}>
+                                        <FluentFade visible={rightPaneCollapsed} delay={50} duration={100} unmountOnExit>
                                             <div className={mergeClasses(classes.expandButtonContainer, classes.expandButtonContainerRight)}>
                                                 <Tooltip content="Show Side Pane" relationship="label">
                                                     <Button className={classes.expandButton} icon={<PanelRightExpandRegular />} onClick={() => setRightPaneCollapsed(false)} />
