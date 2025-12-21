@@ -2,6 +2,20 @@ import type { Nullable, FrameGraphRenderContext, AbstractEngine, IFrameGraphPass
 import { FrameGraphPass } from "./pass";
 
 /**
+ * Type used to define layer and face indices for multi-render target rendering scenarios.
+ */
+export type LayerAndFaceIndex = {
+    /** Index of the texture to update */
+    targetIndex: number;
+
+    /** Index of the layer to set (optional - not used if the texture is not an array or a 3D texture) */
+    layerIndex?: number;
+
+    /** Index of the cube face to set (optional - not used if the texture is not a cube texture) */
+    faceIndex?: number;
+};
+
+/**
  * Render pass used to render objects.
  */
 export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext> {
@@ -115,6 +129,19 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
 
         if (this._renderTargetDepth !== undefined) {
             dependencies.add(this._renderTargetDepth);
+        }
+    }
+
+    /**
+     * Sets the output layer and face indices for multi-render target rendering.
+     * @param indices The array of layer and face indices.
+     */
+    public setOutputLayerAndFaceIndices(indices: LayerAndFaceIndex[]): void {
+        const renderTargetWrapper = this.frameGraphRenderTarget.renderTargetWrapper;
+        if (renderTargetWrapper) {
+            for (const index of indices) {
+                renderTargetWrapper.setLayerAndFaceIndex(index.targetIndex, index.layerIndex, index.faceIndex);
+            }
         }
     }
 

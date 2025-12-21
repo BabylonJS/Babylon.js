@@ -356,21 +356,6 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param applyImmediately If true, the render target will be applied immediately (otherwise it will be applied at first use). Default is false (delayed application).
      */
     public bindRenderTarget(renderTarget?: FrameGraphRenderTarget, debugMessage?: string, applyImmediately = false): void {
-        if (
-            (renderTarget?.renderTargetWrapper === undefined && this._currentRenderTarget === undefined) ||
-            (renderTarget && this._currentRenderTarget && renderTarget.equals(this._currentRenderTarget))
-        ) {
-            this._flushDebugMessages();
-            if (debugMessage !== undefined) {
-                this.pushDebugGroup(debugMessage);
-                this._debugMessageWhenTargetBound = undefined;
-                this._debugMessageHasBeenPushed = true;
-            }
-            if (applyImmediately) {
-                this._applyRenderTarget();
-            }
-            return;
-        }
         this._currentRenderTarget = renderTarget?.renderTargetWrapper === undefined ? undefined : renderTarget;
         this._debugMessageWhenTargetBound = debugMessage;
         this._renderTargetIsBound = false;
@@ -398,8 +383,10 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         const renderTargetWrapper = this._currentRenderTarget?.renderTargetWrapper;
 
         if (renderTargetWrapper === undefined) {
-            this._engine.restoreDefaultFramebuffer();
-        } else {
+            if (this._engine._currentRenderTarget) {
+                this._engine.restoreDefaultFramebuffer();
+            }
+        } else if (this._engine._currentRenderTarget !== renderTargetWrapper) {
             if (this._engine._currentRenderTarget) {
                 this._engine.unBindFramebuffer(this._engine._currentRenderTarget);
             }

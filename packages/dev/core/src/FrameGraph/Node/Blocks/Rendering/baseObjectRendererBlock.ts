@@ -64,7 +64,9 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
             )
         );
 
-        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
+        this.target.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil | NodeRenderGraphBlockConnectionPointTypes.ResourceContainer
+        );
         this.depth.addExcludedConnectionPointFromAllowedTypes(
             NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment | NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment
         );
@@ -428,7 +430,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.outputDepth.value = this._frameGraphTask.outputDepthTexture; // the value of the outputDepth connection point is the "outputDepth" texture of the task
         this.objectRenderer.value = this._frameGraphTask; // the value of the objectRenderer connection point is the task itself
 
-        this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.targetTexture = this._getConnectedTextures(this.target.connectedPoint) || [];
         this._frameGraphTask.depthTexture = this.depth.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.camera = this.camera.connectedPoint?.value as Camera;
         this._frameGraphTask.objectList = this.objects.connectedPoint?.value as FrameGraphObjectList;

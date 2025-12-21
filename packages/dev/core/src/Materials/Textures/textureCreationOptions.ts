@@ -27,6 +27,8 @@ export interface InternalTextureCreationOptions {
     createMSAATexture?: boolean;
     /** Comparison function. Used only for depth textures (default: 0) */
     comparisonFunction?: number;
+    /** If the created texture is a cube texture */
+    isCube?: boolean;
 }
 
 /**
@@ -74,7 +76,6 @@ export type TextureSize = number | { width: number; height: number; depth?: numb
  * @returns True if the TextureSize is an object
  */
 export function textureSizeIsObject(size: TextureSize): size is { width: number; height: number } {
-    // eslint-disable-next-line jsdoc/require-jsdoc
     return (size as { width: number }).width !== undefined;
 }
 
