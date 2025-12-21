@@ -2352,6 +2352,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             fullOptions.creationFlags = options.creationFlags ?? 0;
             fullOptions.useSRGBBuffer = options.useSRGBBuffer ?? false;
             fullOptions.label = options.label;
+            fullOptions.isCube = !!options.isCube;
         } else {
             fullOptions.generateMipMaps = options;
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -2360,6 +2361,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             fullOptions.samples = 1;
             fullOptions.creationFlags = 0;
             fullOptions.useSRGBBuffer = false;
+            fullOptions.isCube = false;
         }
 
         if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
@@ -2392,6 +2394,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         texture.format = fullOptions.format;
         texture.is2DArray = layers > 0;
         texture.is3D = depth > 0;
+        texture.isCube = fullOptions.isCube;
         texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._useSRGBBuffer = fullOptions.useSRGBBuffer;
@@ -2407,7 +2410,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 texture.generateMipMaps = true;
             }
 
-            this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, layers || 1, fullOptions.creationFlags);
+            this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, texture.depth || 1, fullOptions.creationFlags);
 
             if (createMipMapsOnly) {
                 // So that we don't automatically generate mipmaps when the render target is unbound
@@ -2967,7 +2970,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param data defines the data to fill with the read pixels (if not provided, a new one will be created)
      * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     public readPixels(x: number, y: number, width: number, height: number, _hasAlpha = true, flushRenderer = true, data: Nullable<Uint8Array> = null): Promise<ArrayBufferView> {
         const renderPassWrapper = this._getCurrentRenderPassWrapper();
         const hardwareTexture = renderPassWrapper.colorAttachmentGPUTextures[0];
