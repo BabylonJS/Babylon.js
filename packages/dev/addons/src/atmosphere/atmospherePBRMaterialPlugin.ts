@@ -12,7 +12,6 @@ import { Vector3FromFloatsToRef, Vector3ScaleToRef } from "core/Maths/math.vecto
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import "./ShadersWGSL/ShadersInclude/atmosphereFunctions";
 import "./ShadersWGSL/ShadersInclude/atmosphereUboDeclaration";
-import "./ShadersWGSL/ShadersInclude/atmosphereFragmentDeclaration";
 
 class AtmospherePBRMaterialDefines extends MaterialDefines {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -236,7 +235,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
         const useUbo = this._atmosphere.scene.getEngine().supportsUniformBuffers;
         const directionToLightSnippet = useUbo ? "-light0.vLightData.xyz" : "-vLightData0.xyz";
 
-        const useAtmosphereUbo = this._atmosphere.uniformBuffer.useUbo;
+        const useAtmosphereUbo = shaderLanguage === ShaderLanguage.WGSL || this._atmosphere.uniformBuffer.useUbo;
         const atmosphereImportSnippet = useAtmosphereUbo ? "#include<atmosphereUboDeclaration>" : "#include<atmosphereFragmentDeclaration>";
 
         if (shaderLanguage === ShaderLanguage.GLSL) {
