@@ -135,7 +135,7 @@
         },
         {
             "title": "OpenPBR Base Diffuse Roughness SH IBL",
-            "playgroundId": "#MXACV7#21",
+            "playgroundId": "#MXACV7#31",
             "renderCount": 2,
             "referenceImage": "openpbr_base_diffuse_roughness_spherical_harmonics.png"
         },
@@ -2585,7 +2585,7 @@
         },
         {
             "title": "IBL Voxel Shadowing",
-            "playgroundId": "#8R5SSE#628",
+            "playgroundId": "#8R5SSE#791",
             "referenceImage": "voxelShadows.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"],
@@ -2598,21 +2598,21 @@
         },
         {
             "title": "IBL Voxel Shadowing Right-Handed",
-            "playgroundId": "#8R5SSE#630",
+            "playgroundId": "#8R5SSE#792",
             "referenceImage": "voxelShadowsRightHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "IBL Voxel Shadowing Left-Handed",
-            "playgroundId": "#8R5SSE#629",
+            "playgroundId": "#8R5SSE#793",
             "referenceImage": "voxelShadowsLeftHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "IBL Screen-space Shadowing Left-Handed",
-            "playgroundId": "#8R5SSE#631",
+            "playgroundId": "#8R5SSE#794",
             "referenceImage": "ssShadowsLeftHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"],
@@ -2620,7 +2620,7 @@
         },
         {
             "title": "IBL Screen-space Shadowing Right-Handed",
-            "playgroundId": "#8R5SSE#632",
+            "playgroundId": "#8R5SSE#795",
             "referenceImage": "ssShadowsRightHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"],
@@ -3219,7 +3219,7 @@
         },
         {
             "title": "OpenPBR Thin Film Textures - IBL",
-            "playgroundId": "#GRQHVV#101",
+            "playgroundId": "#GRQHVV#153",
             "excludedEngines": ["webgl1"],
             "renderCount": 2
         },
