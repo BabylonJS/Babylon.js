@@ -335,6 +335,10 @@ export abstract class EnvCubeTexture extends BaseTexture {
             this._onLoad,
             this._onError
         );
+
+        if (!this._generateHarmonics) {
+            this._texture._sphericalPolynomial = new SphericalPolynomial();
+        }
     }
 
     // Methods
