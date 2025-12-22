@@ -14,6 +14,7 @@ import { HDRIrradianceFiltering } from "../../Materials/Textures/Filtering/hdrIr
 import { ToHalfFloat } from "../../Misc/textureTools";
 import "../../Materials/Textures/baseTexture.polynomial";
 import type { CubeMapInfo } from "../../Misc/HighDynamicRange/panoramaToCubemap";
+import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 
 /**
  * This represents an environment base texture which could for instance be from HDR or EXR files.
