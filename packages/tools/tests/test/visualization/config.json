@@ -2862,7 +2862,7 @@
         },
         {
             "title": "Conductor Transmission",
-            "playgroundId": "#KQYNYS#15"
+            "playgroundId": "#KQYNYS#52"
         },
         {
             "title": "Furnace Test (Legacy) for Spec-Gloss",
@@ -2882,7 +2882,7 @@
         },
         {
             "title": "Specular reflectance models for IBL",
-            "playgroundId": "#GRQHVV#24"
+            "playgroundId": "#GRQHVV#154"
         },
         {
             "title": "Specular reflectance models for analytic lights",
@@ -2890,11 +2890,11 @@
         },
         {
             "title": "F82 Specular Roughness vs Weight",
-            "playgroundId": "#GRQHVV#22"
+            "playgroundId": "#GRQHVV#155"
         },
         {
             "title": "F82 Specular Metal vs Weight",
-            "playgroundId": "#GRQHVV#21"
+            "playgroundId": "#GRQHVV#156"
         },
         {
             "title": "Test code inlining",
@@ -3000,17 +3000,17 @@
         },
         {
             "title": "OpenPBR IBL Reflectance with IOR",
-            "playgroundId": "#KQYNYS#46",
+            "playgroundId": "#KQYNYS#53",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR IBL F82 Specular Metal vs Weight",
-            "playgroundId": "#GRQHVV#25",
+            "playgroundId": "#GRQHVV#157",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR IBL F82 Specular Roughness vs Weight",
-            "playgroundId": "#GRQHVV#26",
+            "playgroundId": "#GRQHVV#158",
             "excludedEngines": ["webgl1"]
         },
         {
