@@ -1009,14 +1009,7 @@ export class WebGPUTextureManager {
         }
     }
 
-    public createGPUTextureForInternalTexture(
-        texture: InternalTexture,
-        width?: number,
-        height?: number,
-        depth?: number,
-        creationFlags?: number,
-        dontCreateMSAATexture?: boolean
-    ): WebGPUHardwareTexture {
+    public createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number): WebGPUHardwareTexture {
         if (!texture._hardwareTexture) {
             texture._hardwareTexture = new WebGPUHardwareTexture(this._engine);
         }
@@ -1039,10 +1032,6 @@ export class WebGPUTextureManager {
         const isStorageTexture = ((creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE) !== 0;
 
         gpuTextureWrapper.format = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, texture._useSRGBBuffer);
-
-        if (!dontCreateMSAATexture) {
-            this.createMSAATexture(texture, texture.samples);
-        }
 
         if (texture.samples > 1) {
             // In case of a MSAA texture, the current texture will be the "resolve" texture, which cannot have a depth format
@@ -1160,35 +1149,21 @@ export class WebGPUTextureManager {
         return gpuTextureWrapper;
     }
 
-    public createMSAATexture(texture: InternalTexture, samples: number, releaseExisting = true, index = 0): void {
-        const gpuTextureWrapper = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
-
-        if (releaseExisting) {
-            gpuTextureWrapper?.releaseMSAATexture();
-        }
-
-        if (!gpuTextureWrapper || (samples ?? 1) <= 1) {
-            return;
-        }
-
-        const width = texture.width;
-        const height = texture.height;
-
-        const gpuMSAATexture = this.createTexture(
-            { width, height, layers: 1 },
+    public createMSAATexture(gpuTexture: GPUTexture, samples: number) {
+        return this.createTexture(
+            { width: gpuTexture.width, height: gpuTexture.height, layers: 1 },
             false,
             false,
             false,
             false,
             false,
-            gpuTextureWrapper.format,
+            gpuTexture.format,
             samples,
             this._commandEncoderForCreation,
             WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.TextureBinding,
             0,
-            texture.label ? "MSAA_" + texture.label : "MSAA"
+            gpuTexture.label ? gpuTexture.label + " (MSAA)" : "MSAA"
         );
-        gpuTextureWrapper.setMSAATexture(gpuMSAATexture, index);
     }
 
     public resolveMSAADepthTexture(msaaTexture: GPUTexture, outputTexture: GPUTexture, commandEncoder?: GPUCommandEncoder): void {

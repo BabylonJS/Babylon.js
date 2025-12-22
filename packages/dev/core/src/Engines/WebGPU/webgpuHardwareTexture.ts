@@ -3,7 +3,6 @@
 import type { IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 import { ILog2 } from "../../Maths/math.scalar.functions";
 import type { Nullable } from "../../types";
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import type { WebGPUEngine } from "../webgpuEngine";
@@ -36,36 +35,27 @@ export class WebGPUHardwareTexture implements IHardwareTextureWrapper {
     private _webgpuTexture: Nullable<GPUTexture>;
     // There can be multiple MSAA textures for a single WebGPU texture because different layers of a 2DArrayTexture / 3DTexture
     // or different faces of a cube texture can be bound to different render targets at the same time (in a multi RenderTargetWrapper)
-    private _webgpuMSAATexture: Nullable<GPUTexture[]>;
+    private _webgpuMSAATexture: GPUTexture[];
 
     public get underlyingResource(): Nullable<GPUTexture> {
         return this._webgpuTexture;
     }
 
-    public getMSAATexture(index: number): Nullable<GPUTexture> {
-        return this._webgpuMSAATexture?.[index] ?? null;
+    // index is the index of the texture in the list of the render target textures (in case of multi render targets).
+    // In single render target case, index is 0.
+    public getMSAATexture(sampleCount: number, index = 0): GPUTexture {
+        const texture = this._webgpuMSAATexture[index];
+        if (!texture) {
+            this._createMSAATexture(sampleCount, index);
+        }
+        return this._webgpuMSAATexture[index];
     }
 
-    public setMSAATexture(texture: GPUTexture, index: number) {
-        if (!this._webgpuMSAATexture) {
-            this._webgpuMSAATexture = [];
+    public releaseMSAATextures(): void {
+        for (const texture of this._webgpuMSAATexture) {
+            this._engine._textureHelper.releaseTexture(texture);
         }
-
-        this._webgpuMSAATexture[index] = texture;
-    }
-
-    public releaseMSAATexture(index?: number): void {
-        if (this._webgpuMSAATexture) {
-            if (index !== undefined) {
-                this._engine._textureHelper.releaseTexture(this._webgpuMSAATexture[index]);
-                delete this._webgpuMSAATexture[index];
-            } else {
-                for (const texture of this._webgpuMSAATexture) {
-                    this._engine._textureHelper.releaseTexture(texture);
-                }
-                this._webgpuMSAATexture = null;
-            }
-        }
+        this._webgpuMSAATexture.length = 0;
     }
 
     public view: Nullable<GPUTextureView>;
@@ -79,7 +69,7 @@ export class WebGPUHardwareTexture implements IHardwareTextureWrapper {
         existingTexture: Nullable<GPUTexture> = null
     ) {
         this._webgpuTexture = existingTexture;
-        this._webgpuMSAATexture = null;
+        this._webgpuMSAATexture = [];
         this.view = null;
         this.viewForWriting = null;
     }
@@ -131,15 +121,27 @@ export class WebGPUHardwareTexture implements IHardwareTextureWrapper {
 
     public reset(): void {
         this._webgpuTexture = null;
-        this._webgpuMSAATexture = null;
+        this._webgpuMSAATexture.length = 0;
         this.view = null;
         this.viewForWriting = null;
     }
 
     public release(): void {
         this._webgpuTexture?.destroy();
-        this.releaseMSAATexture();
+        this.releaseMSAATextures();
         this._copyInvertYTempTexture?.destroy();
         this.reset();
+    }
+
+    private _createMSAATexture(samples: number, index: number): void {
+        if (!this._webgpuTexture) {
+            throw new Error("Cannot create GPU MSAA texture because underlying GPU texture is not created yet.");
+        }
+
+        if (!this._webgpuMSAATexture) {
+            this._webgpuMSAATexture = [];
+        }
+
+        this._webgpuMSAATexture[index] = this._engine._textureHelper.createMSAATexture(this._webgpuTexture, samples);
     }
 }

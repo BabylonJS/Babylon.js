@@ -3128,18 +3128,36 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._endCurrentRenderPass();
 
         const rtWrapper = renderTargetWrapper as WebGPURenderTargetWrapper;
+        const sampleCount = renderTargetWrapper.samples;
+        const useMSAA = sampleCount > 1;
 
         const depthStencilTexture = rtWrapper._depthStencilTexture;
         const gpuDepthStencilWrapper = depthStencilTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
-        const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource as Nullable<GPUTexture>;
-        const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.getMSAATexture(0);
+        const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource;
 
-        const depthMSAATextureView = gpuDepthStencilMSAATexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
-        const depthTextureView = depthMSAATextureView ? undefined : gpuDepthStencilTexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
-        // We use the MSAA texture format (if available) to determine if it has a stencil aspect or not because, for MSAA depth textures,
+        // We use the MSAA texture format first (if available) to determine if it has a stencil aspect or not because, for MSAA depth textures,
         // the format of the "resolve" texture (gpuDepthStencilWrapper.format) is a single red channel format, not a depth-stencil format.
-        const depthTextureHasStencil = gpuDepthStencilWrapper ? WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilMSAATexture?.format ?? gpuDepthStencilWrapper.format) : false;
-        const depthTextureHasDepth = gpuDepthStencilWrapper ? WebGPUTextureHelper.HasDepthAspect(gpuDepthStencilMSAATexture?.format ?? gpuDepthStencilWrapper.format) : false;
+
+        let depthStencilView: GPUTextureView | undefined;
+        let format: GPUTextureFormat | undefined;
+
+        if (useMSAA) {
+            const gpuMSAATexture = gpuDepthStencilWrapper?.getMSAATexture(sampleCount);
+
+            depthStencilView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
+            format = gpuMSAATexture?.format;
+        }
+
+        if (!depthStencilView && gpuDepthStencilTexture) {
+            depthStencilView = gpuDepthStencilTexture.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
+        }
+
+        if (!format && gpuDepthStencilWrapper) {
+            format = gpuDepthStencilWrapper.format;
+        }
+
+        const depthTextureHasStencil = format ? WebGPUTextureHelper.HasStencilAspect(format) : false;
+        const depthTextureHasDepth = format ? WebGPUTextureHelper.HasDepthAspect(format) : false;
 
         const colorAttachments: (GPURenderPassColorAttachment | null)[] = [];
 
@@ -3171,7 +3189,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
                 if (gpuMRTWrapper && gpuMRTTexture) {
                     const baseArrayLayer = rtWrapper.getBaseArrayLayer(i);
-                    const gpuMSAATexture = gpuMRTWrapper.getMSAATexture(baseArrayLayer);
+                    const gpuMSAATexture = useMSAA ? gpuMRTWrapper.getMSAATexture(sampleCount, i) : undefined;
 
                     const viewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
@@ -3242,7 +3260,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             depthStencilAttachment:
                 depthStencilTexture && gpuDepthStencilTexture
                     ? {
-                          view: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
+                          view: depthStencilView!,
                           depthClearValue: mustClearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : undefined,
                           depthLoadOp: rtWrapper.depthReadOnly || !depthTextureHasDepth ? undefined : mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                           depthStoreOp: rtWrapper.depthReadOnly || !depthTextureHasDepth ? undefined : WebGPUConstants.StoreOp.Store,
