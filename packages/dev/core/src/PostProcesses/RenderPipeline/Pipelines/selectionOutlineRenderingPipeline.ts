@@ -40,9 +40,9 @@ class SelectionMaterial extends ShaderMaterial {
             shaderLanguage: shaderLanguage,
             extraInitializationsAsync: async () => {
                 if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                    // await Promise.all([import("../ShadersWGSL/selection.fragment"), import("../ShadersWGSL/selection.vertex")]);
+                    await Promise.all([import("../../../ShadersWGSL/selection.fragment"), import("../../../ShadersWGSL/selection.vertex")]);
                 } else {
-                    await Promise.all([import("../../../Shaders/selection.fragment"), import("../Shaders/selection.vertex")]);
+                    await Promise.all([import("../../../Shaders/selection.fragment"), import("../../../Shaders/selection.vertex")]);
                 }
             },
         };
@@ -113,9 +113,9 @@ class ThinSelectionOutlinePostprocess extends EffectWrapper {
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]): void {
         if (useWebGPU) {
             this._webGPUReady = true;
-            // list.push(import("../ShadersWGSL/selectionOutline.fragment"));
+            list.push(import("../../../ShadersWGSL/selectionOutline.fragment"));
         } else {
-            list.push(import("../Shaders/selectionOutline.fragment"));
+            list.push(import("../../../Shaders/selectionOutline.fragment"));
         }
     }
 
