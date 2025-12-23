@@ -30,7 +30,7 @@ import { FrameGraphRenderTarget } from "../../frameGraphRenderTarget";
  */
 export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarget {
     /**
-     * The target texture where the objects will be rendered.
+     * The target texture(s) where the objects will be rendered.
      */
     public targetTexture: FrameGraphTextureHandle | FrameGraphTextureHandle[];
 

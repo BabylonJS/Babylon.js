@@ -2744,7 +2744,7 @@
         },
         {
             "title": "FrameGraph nrge multi-render targets",
-            "playgroundId": "#XSNYAU#161"
+            "playgroundId": "#XSNYAU#160"
         },
         {
             "title": "FrameGraph nrg gui bloom",
@@ -2823,7 +2823,7 @@
         },
         {
             "title": "FrameGraph multi-render targets",
-            "playgroundId": "#XSNYAU#160"
+            "playgroundId": "#XSNYAU#165"
         },
         {
             "title": "Render target texture with clustered lights",
