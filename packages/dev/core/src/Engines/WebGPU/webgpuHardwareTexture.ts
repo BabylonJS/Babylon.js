@@ -61,6 +61,9 @@ export class WebGPUHardwareTexture implements IHardwareTextureWrapper {
     public view: Nullable<GPUTextureView>;
     public viewForWriting: Nullable<GPUTextureView>;
     public format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
+    // This is the original format requested. It can be different from "format" in case original format is a depth/stencil format and MSAA is requested.
+    // In that case, format will be a R16 or R32 format, because the texture will be used as the resolve texture.
+    public originalFormat: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
     public textureUsages = 0;
     public textureAdditionalUsages = 0;
 
@@ -142,6 +145,6 @@ export class WebGPUHardwareTexture implements IHardwareTextureWrapper {
             this._webgpuMSAATexture = [];
         }
 
-        this._webgpuMSAATexture[index] = this._engine._textureHelper.createMSAATexture(this._webgpuTexture, samples);
+        this._webgpuMSAATexture[index] = this._engine._textureHelper.createMSAATexture(this._webgpuTexture, this.originalFormat, samples);
     }
 }

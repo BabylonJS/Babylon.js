@@ -1031,7 +1031,7 @@ export class WebGPUTextureManager {
         const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
         const isStorageTexture = ((creationFlags ?? 0) & Constants.TEXTURE_CREATIONFLAG_STORAGE) !== 0;
 
-        gpuTextureWrapper.format = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, texture._useSRGBBuffer);
+        gpuTextureWrapper.format = gpuTextureWrapper.originalFormat = WebGPUTextureHelper.GetWebGPUTextureFormat(texture.type, texture.format, texture._useSRGBBuffer);
 
         if (texture.samples > 1) {
             // In case of a MSAA texture, the current texture will be the "resolve" texture, which cannot have a depth format
@@ -1149,7 +1149,7 @@ export class WebGPUTextureManager {
         return gpuTextureWrapper;
     }
 
-    public createMSAATexture(gpuTexture: GPUTexture, samples: number) {
+    public createMSAATexture(gpuTexture: GPUTexture, format: GPUTextureFormat, samples: number) {
         return this.createTexture(
             { width: gpuTexture.width, height: gpuTexture.height, layers: 1 },
             false,
@@ -1157,7 +1157,7 @@ export class WebGPUTextureManager {
             false,
             false,
             false,
-            gpuTexture.format,
+            format,
             samples,
             this._commandEncoderForCreation,
             WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.TextureBinding,
