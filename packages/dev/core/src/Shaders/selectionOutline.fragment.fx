@@ -48,7 +48,7 @@ void main(void)
     float occlusionY = step(occlusionThreshold, abs(maskY.g - depthY));
     float occlusionXY = step(occlusionThreshold, abs(maskXY.g - depthXY));
 
-    float occlusionFactor = max(max(occlusionCenter, occlusionX), max(occlusionY, occlusionXY));
+    float occlusionFactor = min(min(occlusionCenter, occlusionX), min(occlusionY, occlusionXY));
 
     float finalOutlineMask = outlineMask * (1.0 - occlusionStrength * occlusionFactor);
 
