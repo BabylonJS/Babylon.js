@@ -903,7 +903,7 @@ export class WebGPUTextureManager {
 
         commandEncoder!.pushDebugGroup?.(`create cube mipmaps - ${mipLevelCount} levels`);
 
-        for (let f = 0; f < 6 * gpuTexture.depthOrArrayLayers; ++f) {
+        for (let f = 0; f < gpuTexture.depthOrArrayLayers; ++f) {
             this.generateMipmaps(gpuOrHdwTexture, mipLevelCount, f, commandEncoder);
         }
 

@@ -3589,7 +3589,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         if (texture.resolveMSAADepth && texture._depthStencilTexture) {
             const gpuTextureWrapper = texture._depthStencilTexture._hardwareTexture as WebGPUHardwareTexture;
 
-            this._textureHelper.resolveMSAADepthTexture(gpuTextureWrapper.getMSAATexture(0)!, gpuTextureWrapper.underlyingResource!, this._renderEncoder);
+            this._textureHelper.resolveMSAADepthTexture(gpuTextureWrapper.getMSAATexture(texture.samples)!, gpuTextureWrapper.underlyingResource!, this._renderEncoder);
         }
     }
 
