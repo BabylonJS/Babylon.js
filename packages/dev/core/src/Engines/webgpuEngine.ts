@@ -3234,7 +3234,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer = 0;
                 }
 
-                const gpuMSAATexture = gpuWrapper.getMSAATexture(0);
+                const gpuMSAATexture = useMSAA ? gpuWrapper.getMSAATexture(sampleCount) : undefined;
                 const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const isRtInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
