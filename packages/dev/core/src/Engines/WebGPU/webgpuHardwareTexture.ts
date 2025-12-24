@@ -53,7 +53,9 @@ export class WebGPUHardwareTexture implements IHardwareTextureWrapper {
 
     public releaseMSAATextures(): void {
         for (const texture of this._webgpuMSAATexture) {
-            this._engine._textureHelper.releaseTexture(texture);
+            if (texture) {
+                this._engine._textureHelper.releaseTexture(texture);
+            }
         }
         this._webgpuMSAATexture.length = 0;
     }
