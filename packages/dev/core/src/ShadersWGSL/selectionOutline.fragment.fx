@@ -45,7 +45,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var depthY: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, input.vUV + vec2f(0.0, sampleOffset.y), 0.0).r;
     var depthXY: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, input.vUV + sampleOffset, 0.0).r;
 
-    const occlusionThreshold: f32 = 0.01;
+    const occlusionThreshold: f32 = 0.0000001;
     var occlusionCenter: f32 = step(occlusionThreshold, abs(centerMask.g - depthCenter));
     var occlusionX: f32 = step(occlusionThreshold, abs(maskX.g - depthX));
     var occlusionY: f32 = step(occlusionThreshold, abs(maskY.g - depthY));
