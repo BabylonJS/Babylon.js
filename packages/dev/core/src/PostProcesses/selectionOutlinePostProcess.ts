@@ -1,7 +1,7 @@
 import type { Effect } from "../Materials/effect";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { Color3 } from "../Maths/math.color";
-import { serialize } from "../Misc/decorators";
+import { serialize, serializeAsColor3 } from "../Misc/decorators";
 import { Logger } from "../Misc/logger";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Nullable } from "../types";
@@ -16,7 +16,7 @@ export class SelectionOutlinePostProcess extends PostProcess {
     /**
      * Gets or sets the outline color
      */
-    @serialize()
+    @serializeAsColor3()
     public get outlineColor(): Color3 {
         return this._effectWrapper.outlineColor;
     }
