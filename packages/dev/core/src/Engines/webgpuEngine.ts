@@ -2689,7 +2689,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
             const texture = loadData.texture as InternalTexture;
             if (!createPolynomials) {
-                texture._sphericalPolynomial = new SphericalPolynomial();
+                texture._sphericalPolynomial = texture._sphericalPolynomial ?? new SphericalPolynomial();
             } else if (loadData.info.sphericalPolynomial) {
                 texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
             }
