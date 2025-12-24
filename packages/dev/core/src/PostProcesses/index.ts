@@ -24,6 +24,7 @@ export * from "./postProcess";
 export * from "./postProcessManager";
 export * from "./refractionPostProcess";
 export * from "./RenderPipeline/index";
+export * from "./selectionOutlinePostProcess";
 export * from "./sharpenPostProcess";
 export * from "./stereoscopicInterlacePostProcess";
 export * from "./tonemapPostProcess";
@@ -51,6 +52,7 @@ export * from "./thinMotionBlurPostProcess";
 export * from "./thinPassPostProcess";
 export * from "./thinSharpenPostProcess";
 export * from "./thinScreenSpaceCurvaturePostProcess";
+export * from "./thinSelectionOutlinePostProcess";
 export * from "./thinTonemapPostProcess";
 
 // Postprocess

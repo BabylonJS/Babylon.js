@@ -1,10 +1,7 @@
 import { Camera } from "../../../Cameras/camera";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import { Constants } from "../../../Engines/constants";
-import { Engine } from "../../../Engines/engine";
 import type { Effect } from "../../../Materials/effect";
-import type { EffectWrapperCreationOptions } from "../../../Materials/effectRenderer";
-import { EffectWrapper } from "../../../Materials/effectRenderer";
 import { ShaderLanguage } from "../../../Materials/shaderLanguage";
 import type { IShaderMaterialOptions } from "../../../Materials/shaderMaterial";
 import { ShaderMaterial } from "../../../Materials/shaderMaterial";
@@ -16,19 +13,29 @@ import { VertexBuffer } from "../../../Meshes/buffer";
 import type { InstancedMesh } from "../../../Meshes/instancedMesh";
 import type { Mesh } from "../../../Meshes/mesh";
 import type { SubMesh } from "../../../Meshes/subMesh";
-import { serialize } from "../../../Misc/decorators";
-import { Logger } from "../../../Misc/logger";
 import type { Observer } from "../../../Misc/observable";
 import type { DepthRenderer } from "../../../Rendering/depthRenderer";
-import "../../../Rendering/depthRendererSceneComponent";
 import type { Scene } from "../../../scene";
 import type { Nullable } from "../../../types";
-import type { PostProcessOptions } from "../../postProcess";
-import { PostProcess } from "../../postProcess";
 
+import "../../../Rendering/depthRendererSceneComponent";
+import { SelectionOutlinePostProcess } from "../../selectionOutlinePostProcess";
+
+/**
+ * Selection material used to generate the selection mask
+ *
+ * Selection material use r and g channels to store the selection ID and depth information
+ */
 class SelectionMaterial extends ShaderMaterial {
     private readonly _meshUniqueIdToSelectionId: number[];
 
+    /**
+     * Constructs a new selection mask material
+     * @param name The name of the material
+     * @param scene The scene the material belongs to
+     * @param shaderLanguage The shader language to use
+     * @param meshUniqueIdToSelectionId Mapping from mesh unique IDs to selection IDs
+     */
     public constructor(name: string, scene: Scene, shaderLanguage: ShaderLanguage, meshUniqueIdToSelectionId: number[]) {
         const defines: string[] = [];
         const options: Partial<IShaderMaterialOptions> = {
@@ -51,6 +58,13 @@ class SelectionMaterial extends ShaderMaterial {
         this._meshUniqueIdToSelectionId = meshUniqueIdToSelectionId;
     }
 
+    /**
+     * Binds the material to the mesh
+     * @param world The world matrix
+     * @param mesh The mesh to bind the material to
+     * @param effectOverride An optional effect override
+     * @param subMesh The submesh to bind the material to
+     */
     public override bind(world: Matrix, mesh?: AbstractMesh, effectOverride?: Nullable<Effect>, subMesh?: SubMesh): void {
         super.bind(world, mesh, effectOverride, subMesh);
         if (!mesh) {
@@ -90,173 +104,9 @@ class SelectionMaterial extends ShaderMaterial {
 }
 
 /**
- * Options used to create a ThinSelectionOutlinePostprocess
+ * Options for the selection outline rendering pipeline
  */
-export interface IThinSelectionOutlinePostProcessOptions extends EffectWrapperCreationOptions {}
-
-class ThinSelectionOutlinePostprocess extends EffectWrapper {
-    /**
-     * The fragment shader url
-     */
-    public static readonly FragmentUrl = "selectionOutline";
-
-    /**
-     * The list of uniforms used by the effect
-     */
-    public static readonly Uniforms = ["screenSize", "outlineColor", "outlineThickness", "occlusionStrength"];
-
-    /**
-     * The list of samplers used by the effect
-     */
-    public static readonly Samplers = ["maskSampler", "depthSampler"];
-
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]): void {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../../../ShadersWGSL/selectionOutline.fragment"));
-        } else {
-            list.push(import("../../../Shaders/selectionOutline.fragment"));
-        }
-    }
-
-    /**
-     * Constructs a new thin selection outline post process
-     * @param name Name of the effect
-     * @param engine Engine to use to render the effect. If not provided, the last created engine will be used
-     * @param options Options to configure the effect
-     */
-    public constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: IThinSelectionOutlinePostProcessOptions) {
-        super({
-            ...options,
-            name,
-            engine: engine || Engine.LastCreatedEngine!,
-            useShaderStore: true,
-            useAsPostProcess: true,
-            fragmentShader: ThinSelectionOutlinePostprocess.FragmentUrl,
-            uniforms: ThinSelectionOutlinePostprocess.Uniforms,
-            samplers: ThinSelectionOutlinePostprocess.Samplers,
-        });
-    }
-
-    /**
-     * The camera to use to calculate the outline
-     */
-    public camera: Nullable<Camera> = null;
-
-    /**
-     * THe outline color
-     */
-    public outlineColor: Color3 = new Color3(1, 0.5, 0);
-
-    /**
-     * The thickness of the edges
-     */
-    public outlineThickness: number = 2.0;
-
-    /**
-     * The strength of the occlusion effect (default: 0.8)
-     */
-    public occlusionStrength: number = 0.8;
-
-    /**
-     * The width of the source texture
-     */
-    public textureWidth: number = 0;
-
-    /**
-     * The height of the source texture
-     */
-    public textureHeight: number = 0;
-
-    public override bind(noDefaultBindings = false): void {
-        super.bind(noDefaultBindings);
-
-        const effect = this._drawWrapper.effect!;
-
-        effect.setFloat2("screenSize", this.textureWidth, this.textureHeight);
-        effect.setColor3("outlineColor", this.outlineColor);
-        effect.setFloat("outlineThickness", this.outlineThickness);
-        effect.setFloat("occlusionStrength", this.occlusionStrength);
-    }
-}
-
-interface ISelectionOutlinePostprocessOptions extends IThinSelectionOutlinePostProcessOptions, PostProcessOptions {}
-
-class SelectionOutlinePostprocess extends PostProcess {
-    @serialize()
-    public get outlineColor(): Color3 {
-        return this._effectWrapper.outlineColor;
-    }
-    public set outlineColor(value: Color3) {
-        this._effectWrapper.outlineColor = value;
-    }
-
-    @serialize()
-    public get outlineThickness(): number {
-        return this._effectWrapper.outlineThickness;
-    }
-    public set outlineThickness(value: number) {
-        this._effectWrapper.outlineThickness = value;
-    }
-
-    @serialize()
-    public get occlusionStrength(): number {
-        return this._effectWrapper.occlusionStrength;
-    }
-    public set occlusionStrength(value: number) {
-        this._effectWrapper.occlusionStrength = value;
-    }
-
-    declare protected _effectWrapper: ThinSelectionOutlinePostprocess;
-    private _maskTexture: Nullable<RenderTargetTexture> = null;
-    private _depthTexture: Nullable<RenderTargetTexture> = null;
-
-    public constructor(name: string, maskTexture: RenderTargetTexture, depthTexture: RenderTargetTexture, options: ISelectionOutlinePostprocessOptions) {
-        const localOptions: PostProcessOptions = {
-            uniforms: ThinSelectionOutlinePostprocess.Uniforms,
-            samplers: ThinSelectionOutlinePostprocess.Samplers,
-            ...options,
-        };
-
-        super(name, ThinSelectionOutlinePostprocess.FragmentUrl, {
-            effectWrapper: !options.effectWrapper ? new ThinSelectionOutlinePostprocess(name, options.engine, localOptions) : undefined,
-            uniforms: ThinSelectionOutlinePostprocess.Uniforms,
-            samplers: ThinSelectionOutlinePostprocess.Samplers,
-            ...options,
-        });
-
-        this._maskTexture = maskTexture;
-        this._depthTexture = depthTexture;
-        this.onApplyObservable.add((effect: Effect) => {
-            if (!this._maskTexture) {
-                Logger.Warn("No mask texture set on SelectionOutlinePostprocess");
-                return;
-            }
-
-            this._effectWrapper.textureWidth = this.width;
-            this._effectWrapper.textureHeight = this.height;
-
-            effect.setTexture("maskSampler", this._maskTexture);
-            effect.setTexture("depthSampler", this._depthTexture);
-
-            this._effectWrapper.camera = this._maskTexture.activeCamera!;
-        });
-    }
-
-    public override getClassName(): string {
-        return "SelectionOutlinePostprocess";
-    }
-
-    public set maskTexture(value: RenderTargetTexture) {
-        this._maskTexture = value;
-    }
-
-    public set depthTexture(value: RenderTargetTexture) {
-        this._depthTexture = value;
-    }
-}
-
-interface ISelectionOutlineRendererOptions {
+export interface ISelectionOutlineRenderingPipelineOptions {
     /**
      * Color of the outline (default: (1, 0.5, 0) - orange)
      */
@@ -268,11 +118,18 @@ interface ISelectionOutlineRendererOptions {
 }
 
 /**
+ * Selection outline rendering pipeline
  *
+ * Use optimized brute force approach to render outlines around selected objects
+ *
+ * The selection rendering pipeline use two main steps:
+ * 1. Render selected objects to a mask texture where r and g channels store selection ID and depth information
+ * 2. Apply a post process that will use the mask texture to render outlines around selected objects
  */
 export class SelectionOutlineRenderingPipeline {
     /**
-     *
+     * Name of the instance selection ID attribute
+     * @internal
      */
     public static readonly InstanceSelectionIdAttributeName = "instanceSelectionId";
 
@@ -282,6 +139,9 @@ export class SelectionOutlineRenderingPipeline {
     private readonly _depthRenderer: DepthRenderer;
 
     private _samples: number = 4;
+    /**
+     * Gets or sets the number of samples used for the outline post process (default: 4)
+     */
     public get samples(): number {
         return this._samples;
     }
@@ -293,6 +153,9 @@ export class SelectionOutlineRenderingPipeline {
     }
 
     private _outlineColor: Color3 = new Color3(1, 0.5, 0);
+    /**
+     * Gets or sets the outline color (default: (1, 0.5, 0) - orange)
+     */
     public get outlineColor(): Color3 {
         return this._outlineColor;
     }
@@ -304,6 +167,9 @@ export class SelectionOutlineRenderingPipeline {
     }
 
     private _outlineThickness: number = 2.0;
+    /**
+     * Gets or sets the outline thickness (default: 2.0)
+     */
     public get outlineThickness(): number {
         return this._outlineThickness;
     }
@@ -315,6 +181,9 @@ export class SelectionOutlineRenderingPipeline {
     }
 
     private _occlusionStrength: number = 0.8;
+    /**
+     * Gets or sets the occlusion strength (default: 0.8)
+     */
     public get occlusionStrength(): number {
         return this._occlusionStrength;
     }
@@ -331,7 +200,7 @@ export class SelectionOutlineRenderingPipeline {
     private readonly _selection: AbstractMesh[] = [];
 
     private _maskTexture: Nullable<RenderTargetTexture> = null;
-    private _outlineProcess: Nullable<SelectionOutlinePostprocess> = null;
+    private _outlineProcess: Nullable<SelectionOutlinePostProcess> = null;
     private _isOutlineProcessAttached: boolean = false;
 
     private _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
@@ -354,7 +223,7 @@ export class SelectionOutlineRenderingPipeline {
      * @param options options for the outline renderer
      *
      */
-    public constructor(name: string, camera: Camera, options: ISelectionOutlineRendererOptions = {}) {
+    public constructor(name: string, camera: Camera, options: ISelectionOutlineRenderingPipelineOptions = {}) {
         this._name = name;
         this._camera = camera;
         this._scene = camera.getScene();
@@ -463,7 +332,7 @@ export class SelectionOutlineRenderingPipeline {
             throw new Error("Mask texture not created before preparing outline post process");
         }
 
-        this._outlineProcess = new SelectionOutlinePostprocess(this._name + "_outline", this._maskTexture, this._depthRenderer.getDepthMap(), {
+        this._outlineProcess = new SelectionOutlinePostProcess(this._name + "_outline", this._maskTexture, this._depthRenderer.getDepthMap(), {
             camera: this._camera,
             engine: this._scene.getEngine(),
         });
@@ -475,6 +344,9 @@ export class SelectionOutlineRenderingPipeline {
         this._isOutlineProcessAttached = true;
     }
 
+    /**
+     * Clears the current selection
+     */
     public clearSelection(): void {
         if (this._selection.length === 0) {
             return;
@@ -503,6 +375,12 @@ export class SelectionOutlineRenderingPipeline {
         }
     }
 
+    /**
+     * Adds meshe or group of meshes to the current selection
+     * 
+     * If a group of meshes is provided, they will outline as a single unit
+     * @param meshes Meshes to add to the selection
+     */
     public addSelection(meshes: (AbstractMesh | AbstractMesh[])[]): void {
         if (meshes.length === 0) {
             return;
@@ -551,6 +429,20 @@ export class SelectionOutlineRenderingPipeline {
         }
     }
 
+    /**
+     * Sets the current selection, replacing any previous selection
+     *
+     * If a group of meshes is provided, they will outline as a single unit
+     * @param meshes Meshes to set as the current selection
+     */
+    public setSelection(meshes: (AbstractMesh | AbstractMesh[])[]): void {
+        this.clearSelection();
+        this.addSelection(meshes);
+    }
+
+    /**
+     * Disposes the rendering pipeline
+     */
     public dispose(): void {
         this.clearSelection();
 
