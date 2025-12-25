@@ -8,6 +8,55 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
+import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
+
+export const StandardMaterialGeneralProperties: FunctionComponent<{ material: StandardMaterial }> = (props) => {
+    const { material } = props;
+
+    return (
+        <>
+            <BoundProperty component={SwitchPropertyLine} label="Disable Lighting" target={material} propertyKey="disableLighting" />
+        </>
+    );
+};
+
+export const StandardMaterialTransparencyProperties: FunctionComponent<{ material: StandardMaterial }> = (props) => {
+    const { material } = props;
+
+    return (
+        <>
+            {material.diffuseTexture && (
+                <>
+                    <BoundProperty component={SwitchPropertyLine} label="Diffuse texture has alpha" target={material.diffuseTexture} propertyKey="hasAlpha" />
+                </>
+            )}
+            <BoundProperty component={SwitchPropertyLine} label="Use alpha from diffuse texture" target={material} propertyKey="useAlphaFromDiffuseTexture" />
+        </>
+    );
+};
+
+export const StandardMaterialTexturesProperties: FunctionComponent<{ material: StandardMaterial }> = (props) => {
+    const { material } = props;
+    const scene = material.getScene();
+
+    return (
+        <>
+            <BoundProperty component={TextureSelectorPropertyLine} label="Diffuse" target={material} propertyKey="diffuseTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Specular" target={material} propertyKey="specularTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Reflection" target={material} propertyKey="reflectionTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Refraction" target={material} propertyKey="refractionTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Emissive" target={material} propertyKey="emissiveTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Bump" target={material} propertyKey="bumpTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Opacity" target={material} propertyKey="opacityTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Ambient" target={material} propertyKey="ambientTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Lightmap" target={material} propertyKey="lightmapTexture" scene={scene} defaultValue={null} />
+            <BoundProperty component={TextureSelectorPropertyLine} label="Detailmap" target={material.detailMap} propertyKey="texture" scene={scene} defaultValue={null} />
+            <BoundProperty component={SwitchPropertyLine} label="Use lightmap as shadowmap" target={material} propertyKey="useLightmapAsShadowmap" />
+            <BoundProperty component={SwitchPropertyLine} label="Use detailmap" target={material.detailMap} propertyKey="isEnabled" />
+            <BoundProperty component={SwitchPropertyLine} label="Use decalmap" target={material.decalMap} propertyKey="isEnabled" />
+        </>
+    );
+};
 
 /**
  * Displays the levels properties of a standard material.
@@ -86,24 +135,6 @@ export const StandardMaterialLightingAndColorProperties: FunctionComponent<{ sta
             <BoundProperty component={Color3PropertyLine} label="Emissive Color" target={standardMaterial} propertyKey="emissiveColor" />
             <BoundProperty component={Color3PropertyLine} label="Ambient Color" target={standardMaterial} propertyKey="ambientColor" />
             <BoundProperty component={SwitchPropertyLine} label="Use Specular Over Alpha" target={standardMaterial} propertyKey="useSpecularOverAlpha" />
-        </>
-    );
-};
-
-/**
- * Displays the texture properties of a standard material.
- * @param props - The required properties
- * @returns A JSX element representing the texture properties.
- */
-export const StandardMaterialTexturesProperties: FunctionComponent<{ standardMaterial: StandardMaterial }> = (props) => {
-    const { standardMaterial } = props;
-
-    // TODO: Add buttons and links for adding the textures themselves
-    return (
-        <>
-            <BoundProperty component={SwitchPropertyLine} label="Use Lightmap as Shadowmap" target={standardMaterial} propertyKey="useLightmapAsShadowmap" />
-            <BoundProperty component={SwitchPropertyLine} label="Use Detailmap" target={standardMaterial.detailMap} propertyKey="isEnabled" />
-            <BoundProperty component={SwitchPropertyLine} label="Use Decalmap" target={standardMaterial.decalMap} propertyKey="isEnabled" />
         </>
     );
 };

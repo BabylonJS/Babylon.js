@@ -160,16 +160,20 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @serialize()
     public translucencyIntensity: number = 1;
 
+    private _useAlbedoToTintRefraction = false;
     /**
      * When enabled, transparent surfaces will be tinted with the albedo colour (independent of thickness)
      */
     @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useAlbedoToTintRefraction: boolean = false;
 
+    private _useAlbedoToTintTranslucency = false;
     /**
      * When enabled, translucent surfaces will be tinted with the albedo colour (independent of thickness)
      */
     @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useAlbedoToTintTranslucency: boolean = false;
 
     private _thicknessTexture: Nullable<BaseTexture> = null;
@@ -560,7 +564,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                         defines.SS_REFRACTIONMAP_OPPOSITEZ = this._scene.useRightHandedSystem && refractionTexture.isCube ? !refractionTexture.invertZ : refractionTexture.invertZ;
                         defines.SS_LODINREFRACTIONALPHA = refractionTexture.lodLevelInAlpha;
                         defines.SS_LINKREFRACTIONTOTRANSPARENCY = this._linkRefractionWithTransparency;
-                        defines.SS_ALBEDOFORREFRACTIONTINT = this.useAlbedoToTintRefraction;
+                        defines.SS_ALBEDOFORREFRACTIONTINT = this._useAlbedoToTintRefraction;
                         defines.SS_USE_LOCAL_REFRACTIONMAP_CUBIC = refractionTexture.isCube && (<any>refractionTexture).boundingBoxSize;
                         defines.SS_USE_THICKNESS_AS_DEPTH = this.useThicknessAsDepth;
                     }
@@ -568,7 +572,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             }
 
             if (this._isTranslucencyEnabled) {
-                defines.SS_ALBEDOFORTRANSLUCENCYTINT = this.useAlbedoToTintTranslucency;
+                defines.SS_ALBEDOFORTRANSLUCENCYTINT = this._useAlbedoToTintTranslucency;
             }
         }
     }
