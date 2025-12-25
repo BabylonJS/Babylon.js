@@ -5,6 +5,7 @@ import { TextureSourcePropertyTabComponent } from "./properties/textureSourceNod
 import { DebugPropertyTabComponent } from "./properties/debugNodePropertyComponent";
 import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePropertyComponent";
 import { MeshShapePropertyTabComponent } from "./properties/meshShapeNodePropertyComponent";
+import { MeshSourcePropertyTabComponent } from "./properties/meshSourceNodePropertyComponent";
 
 export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.DefaultControl = GenericPropertyComponent;
@@ -13,4 +14,14 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["ParticleDebugBlock"] = DebugPropertyTabComponent;
     PropertyLedger.RegisteredControls["ParticleTeleportOutBlock"] = TeleportOutPropertyTabComponent;
     PropertyLedger.RegisteredControls["MeshShapeBlock"] = MeshShapePropertyTabComponent;
+
+    PropertyLedger.RegisteredControls["MeshSourceBlock"] = MeshSourcePropertyTabComponent;
+    PropertyLedger.RegisteredControls["CreateSolidParticleBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["MergeSolidParticlesBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SolidParticleSystemBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["UpdateSolidParticlePositionBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["UpdateSolidParticleVelocityBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["UpdateSolidParticleColorBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["UpdateSolidParticleScalingBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["UpdateSolidParticleRotationBlock"] = GenericPropertyComponent;
 };

@@ -38,6 +38,17 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["UpdateFlowMapBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateNoiseBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["SystemBlock"] = SystemDisplayManager;
+
+    DisplayLedger.RegisteredControls["MeshSourceBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["CreateSolidParticleBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["MergeSolidParticlesBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["SolidParticleSystemBlock"] = SystemDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateSolidParticlePositionBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateSolidParticleVelocityBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateSolidParticleColorBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateSolidParticleScalingBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateSolidParticleRotationBlock"] = UpdateDisplayManager;
+
     DisplayLedger.RegisteredControls["ParticleDebugBlock"] = DebugDisplayManager;
     DisplayLedger.RegisteredControls["ParticleElbowBlock"] = ElbowDisplayManager;
     DisplayLedger.RegisteredControls["ParticleTeleportInBlock"] = TeleportInDisplayManager;

@@ -134,9 +134,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 ];
                 break;
             case NodeParticleBlockConnectionPointTypes.Int:
-                contextualSourcesOptions = [{ label: "Sprite cell index", value: NodeParticleContextualSources.SpriteCellIndex }];
-                contextualSourcesOptions = [{ label: "Sprite cell start", value: NodeParticleContextualSources.SpriteCellStart }];
-                contextualSourcesOptions = [{ label: "Sprite cell end", value: NodeParticleContextualSources.SpriteCellEnd }];
+                contextualSourcesOptions = [
+                    { label: "Sprite cell index", value: NodeParticleContextualSources.SpriteCellIndex },
+                    { label: "Sprite cell start", value: NodeParticleContextualSources.SpriteCellStart },
+                    { label: "Sprite cell end", value: NodeParticleContextualSources.SpriteCellEnd },
+                    { label: "Solid Particle Index", value: NodeParticleContextualSources.SolidParticleIndex },
+                ];
                 break;
             case NodeParticleBlockConnectionPointTypes.Vector2:
                 contextualSourcesOptions = [{ label: "Scale", value: NodeParticleContextualSources.Scale }];
@@ -148,6 +151,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Scaled direction", value: NodeParticleContextualSources.ScaledDirection },
                     { label: "Initial Direction", value: NodeParticleContextualSources.InitialDirection },
                     { label: "Local Position Updated", value: NodeParticleContextualSources.LocalPositionUpdated },
+                    { label: "Solid Particle Velocity", value: NodeParticleContextualSources.SolidParticleVelocity },
+                    { label: "Solid Particle Scaling", value: NodeParticleContextualSources.SolidParticleScaling },
+                    { label: "Solid Particle Rotation", value: NodeParticleContextualSources.SolidParticleRotation },
                 ];
                 systemSourcesOptions = [
                     { label: "Emitter", value: NodeParticleSystemSources.Emitter },

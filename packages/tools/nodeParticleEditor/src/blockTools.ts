@@ -44,6 +44,15 @@ import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicCo
 import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
+import { MeshSourceBlock } from "core/Particles/Node/Blocks/SolidParticle/meshSourceBlock";
+import { UpdateSolidParticlePositionBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticlePositionBlock";
+import { UpdateSolidParticleVelocityBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleVelocityBlock";
+import { UpdateSolidParticleColorBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleColorBlock";
+import { UpdateSolidParticleScalingBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleScalingBlock";
+import { UpdateSolidParticleRotationBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleRotationBlock";
+import { CreateSolidParticleBlock } from "core/Particles/Node/Blocks/SolidParticle/createSolidParticleBlock";
+import { MergeSolidParticlesBlock } from "core/Particles/Node/Blocks/SolidParticle/mergeSolidParticlesBlock";
+import { SolidParticleSystemBlock } from "core/Particles/Node/Blocks/SolidParticle/solidParticleSystemBlock";
 import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
 
 /**
@@ -157,6 +166,24 @@ export class BlockTools {
                 return new UpdateAttractorBlock("Update attractor");
             case "SystemBlock":
                 return new SystemBlock("System");
+            case "MeshSourceBlock":
+                return new MeshSourceBlock("Mesh Source for SPS");
+            case "SolidParticleSystemBlock":
+                return new SolidParticleSystemBlock("SPS System");
+            case "CreateSolidParticleBlock":
+                return new CreateSolidParticleBlock("Create Solid Particle");
+            case "MergeSolidParticlesBlock":
+                return new MergeSolidParticlesBlock("Merge Solid Particles");
+            case "UpdateSolidParticlePositionBlock":
+                return new UpdateSolidParticlePositionBlock("Update SPS Position");
+            case "UpdateSolidParticleVelocityBlock":
+                return new UpdateSolidParticleVelocityBlock("Update SPS Velocity");
+            case "UpdateSolidParticleColorBlock":
+                return new UpdateSolidParticleColorBlock("Update SPS Color");
+            case "UpdateSolidParticleScalingBlock":
+                return new UpdateSolidParticleScalingBlock("Update SPS Scaling");
+            case "UpdateSolidParticleRotationBlock":
+                return new UpdateSolidParticleRotationBlock("Update SPS Rotation");
             case "TextureBlock":
                 return new ParticleTextureSourceBlock("Texture");
             case "BoxShapeBlock":
@@ -251,6 +278,26 @@ export class BlockTools {
             case "SpriteCellIndexBlock": {
                 const block = new ParticleInputBlock("Sprite cell index");
                 block.contextualValue = NodeParticleContextualSources.SpriteCellIndex;
+                return block;
+            }
+            case "SolidParticleIndexBlock": {
+                const block = new ParticleInputBlock("Solid Particle Index");
+                block.contextualValue = NodeParticleContextualSources.SolidParticleIndex;
+                return block;
+            }
+            case "SolidParticleVelocityBlock": {
+                const block = new ParticleInputBlock("Solid Particle Velocity");
+                block.contextualValue = NodeParticleContextualSources.SolidParticleVelocity;
+                return block;
+            }
+            case "SolidParticleScalingBlock": {
+                const block = new ParticleInputBlock("Solid Particle Scaling");
+                block.contextualValue = NodeParticleContextualSources.SolidParticleScaling;
+                return block;
+            }
+            case "SolidParticleRotationBlock": {
+                const block = new ParticleInputBlock("Solid Particle Rotation");
+                block.contextualValue = NodeParticleContextualSources.SolidParticleRotation;
                 return block;
             }
             case "SpriteCellStartBlock": {
@@ -473,6 +520,12 @@ export class BlockTools {
             case NodeParticleBlockConnectionPointTypes.System:
                 color = "#f20a2e";
                 break;
+            case NodeParticleBlockConnectionPointTypes.SolidParticle:
+                color = "#84995c";
+                break;
+            case NodeParticleBlockConnectionPointTypes.Mesh:
+                color = "#4682b4";
+                break;
         }
 
         return color;
@@ -492,6 +545,10 @@ export class BlockTools {
                 return NodeParticleBlockConnectionPointTypes.Color4;
             case "Matrix":
                 return NodeParticleBlockConnectionPointTypes.Matrix;
+            case "SolidParticle":
+                return NodeParticleBlockConnectionPointTypes.SolidParticle;
+            case "Mesh":
+                return NodeParticleBlockConnectionPointTypes.Mesh;
         }
 
         return NodeParticleBlockConnectionPointTypes.AutoDetect;
@@ -511,6 +568,10 @@ export class BlockTools {
                 return "Color4";
             case NodeParticleBlockConnectionPointTypes.Matrix:
                 return "Matrix";
+            case NodeParticleBlockConnectionPointTypes.SolidParticle:
+                return "SolidParticle";
+            case NodeParticleBlockConnectionPointTypes.Mesh:
+                return "Mesh";
         }
 
         return "";
