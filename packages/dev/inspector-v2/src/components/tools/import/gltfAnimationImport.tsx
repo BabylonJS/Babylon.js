@@ -17,7 +17,13 @@ const AnimationGroupLoadingModes = [
     { label: "NoSync", value: SceneLoaderAnimationGroupLoadingMode.NoSync },
 ] as const satisfies DropdownOption<number>[];
 
-export const ImportAnimationsTools: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+/**
+ * Component for importing animations into an existing scene.
+ * Allows configuration of animation merge behavior and provides file upload interface.
+ * @param props - Component props
+ * @returns The animation import UI
+ */
+export const GLTFAnimationImport: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
     const [importDefaults, setImportDefaults] = useState({
         overwriteAnimations: true,
         animationGroupLoadingMode: SceneLoaderAnimationGroupLoadingMode.Clean,

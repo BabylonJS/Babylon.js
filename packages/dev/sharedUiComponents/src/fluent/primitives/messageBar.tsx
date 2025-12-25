@@ -11,8 +11,8 @@ const useClasses = makeStyles({
 });
 
 type MessageBarProps = {
-    message: string;
-    title: string;
+    message?: string;
+    title?: string;
     docLink?: string;
     intent: "info" | "success" | "warning" | "error";
 };
@@ -25,7 +25,7 @@ export const MessageBar: FunctionComponent<MessageBarProps> = (props) => {
         <div className={classes.container}>
             <FluentMessageBar intent={intent} layout="multiline">
                 <MessageBarBody>
-                    <MessageBarTitle>{header}</MessageBarTitle>
+                    {header && <MessageBarTitle>{header}</MessageBarTitle>}
                     {message}
                     {docLink && (
                         <>

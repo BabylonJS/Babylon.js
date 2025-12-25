@@ -60,6 +60,7 @@ import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
+import { GLTFLoaderServiceDefinition } from "./services/panes/tools/gltfLoaderService";
 
 export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & { autoResizeEngine?: boolean };
 
@@ -268,6 +269,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
 
                 // Tools pane tab and related services.
                 ToolsServiceDefinition,
+                GLTFLoaderServiceDefinition,
 
                 // Settings pane tab and related services.
                 SettingsServiceDefinition,
