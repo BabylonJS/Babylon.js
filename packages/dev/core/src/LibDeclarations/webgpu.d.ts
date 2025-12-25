@@ -201,6 +201,7 @@ declare class GPUTexture implements GPUObjectBase {
     readonly dimension: GPUTextureDimension;
     readonly format: GPUTextureFormat;
     readonly usage: GPUFlagsConstant;
+    readonly textureBindingViewDimension: GPUTextureViewDimension | undefined;
 }
 
 interface GPUTextureDescriptor extends GPUObjectDescriptorBase {

@@ -1,4 +1,4 @@
-import type { NodeRenderGraphConnectionPoint, Scene, FrameGraphTextureHandle, FrameGraph, NodeRenderGraphBuildState } from "core/index";
+import type { Scene, FrameGraphTextureHandle, FrameGraph, NodeRenderGraphBuildState, NodeRenderGraphConnectionPoint } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
@@ -35,7 +35,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll | NodeRenderGraphBlockConnectionPointTypes.ResourceContainer);
         this.depth.addExcludedConnectionPointFromAllowedTypes(
             NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment | NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment
         );
@@ -138,7 +138,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         this.output.value = this._frameGraphTask.outputTexture;
         this.outputDepth.value = this._frameGraphTask.outputDepthTexture;
 
-        this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.targetTexture = this._getConnectedTextures(this.target.connectedPoint);
         this._frameGraphTask.depthTexture = this.depth.connectedPoint?.value as FrameGraphTextureHandle;
     }
 

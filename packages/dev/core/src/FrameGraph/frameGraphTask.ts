@@ -42,14 +42,14 @@ export abstract class FrameGraphTask {
     }
 
     /**
-     * Gets the render passes of the task.
+     * Gets the passes of the task.
      */
     public get passes() {
         return this._passes;
     }
 
     /**
-     * Gets the disabled render passes of the task.
+     * Gets the disabled passes of the task.
      */
     public get passesDisabled() {
         return this._passesDisabled;
@@ -227,20 +227,20 @@ export abstract class FrameGraphTask {
 
         this.onBeforeTaskExecute.notifyObservers(this);
 
-        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`, 2);
+        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`, 1);
 
         for (const pass of passes) {
             pass._execute();
         }
 
-        this._frameGraph.engine._debugPopGroup?.(2);
+        this._frameGraph.engine._debugPopGroup?.(1);
 
         this.onAfterTaskExecute.notifyObservers(this);
     }
 
     /** @internal */
     public _initializePasses() {
-        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`, 2);
+        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`, 1);
 
         for (const pass of this._passes) {
             pass._initialize();
@@ -250,7 +250,7 @@ export abstract class FrameGraphTask {
             pass._initialize();
         }
 
-        this._frameGraph.engine._debugPopGroup?.(2);
+        this._frameGraph.engine._debugPopGroup?.(1);
     }
 
     private _checkSameRenderTarget(src: Nullable<Nullable<InternalTexture>[]>, dst: Nullable<Nullable<InternalTexture>[]>) {

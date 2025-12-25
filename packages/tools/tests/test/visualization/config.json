@@ -2744,6 +2744,10 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "FrameGraph nrge multi-render targets",
+            "playgroundId": "#XSNYAU#160"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#3",
             "errorRatio": 2
@@ -2817,6 +2821,10 @@
             "title": "FrameGraph OIT",
             "playgroundId": "#MIACY4#11",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "FrameGraph multi-render targets",
+            "playgroundId": "#XSNYAU#165"
         },
         {
             "title": "Render target texture with clustered lights",

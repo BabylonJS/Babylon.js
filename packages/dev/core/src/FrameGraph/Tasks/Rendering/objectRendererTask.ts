@@ -18,7 +18,7 @@ import type {
     SubMesh,
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
-import { FrameGraphTask } from "../../frameGraphTask";
+import { FrameGraphTaskMultiRenderTarget } from "../../frameGraphTaskMultiRenderTarget";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
 import { Constants } from "../../../Engines/constants";
 import { ThinDepthPeelingRenderer } from "../../../Rendering/thinDepthPeelingRenderer";
@@ -28,9 +28,9 @@ import { FrameGraphRenderTarget } from "../../frameGraphRenderTarget";
 /**
  * Task used to render objects to a texture.
  */
-export class FrameGraphObjectRendererTask extends FrameGraphTask {
+export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarget {
     /**
-     * The target texture where the objects will be rendered.
+     * The target texture(s) where the objects will be rendered.
      */
     public targetTexture: FrameGraphTextureHandle | FrameGraphTextureHandle[];
 
@@ -430,6 +430,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
+
+            this._updateLayerAndFaceIndices(pass);
 
             const renderTargetWrapper = pass.frameGraphRenderTarget!.renderTargetWrapper;
             if (renderTargetWrapper) {
