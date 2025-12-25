@@ -30,8 +30,11 @@ import {
     BindMorphTargetParameters,
     BindSceneUniformBuffer,
     PrepareDefinesAndAttributesForMorphTargets,
+    PrepareVertexPullingUniforms,
+    BindVertexPullingUniforms,
     PushAttributesForInstances,
 } from "./materialHelper.functions";
+import type { IVertexPullingMetadata } from "./materialHelper.functions";
 import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like, IVector4Like } from "core/Maths/math.like";
 import type { InternalTexture } from "./Textures/internalTexture";
 
@@ -147,6 +150,7 @@ export class ShaderMaterial extends PushMaterial {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _multiview = false;
+    private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
     /**
      * @internal
@@ -897,6 +901,20 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
+        const renderingMesh = subMesh ? subMesh.getRenderingMesh() : mesh;
+        if (renderingMesh && this.useVertexPulling) {
+            // Add vertex buffer metadata defines for proper stride/offset handling
+            const geometry = renderingMesh.geometry;
+            if (geometry) {
+                this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
+                if (this._vertexPullingMetadata) {
+                    this._vertexPullingMetadata.forEach((_, attribute) => {
+                        uniforms.push(`vp_${attribute}_info`);
+                    });
+                }
+            }
+        }
+
         if (this.customShaderNameResolve) {
             uniforms = uniforms.slice();
             uniformBuffers = uniformBuffers.slice();
@@ -904,12 +922,11 @@ export class ShaderMaterial extends PushMaterial {
             shaderName = this.customShaderNameResolve(this.name, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
-        const renderingMesh = subMesh ? subMesh.getRenderingMesh() : mesh;
         if (renderingMesh && this.useVertexPulling) {
             defines.push("#define USE_VERTEX_PULLING");
 
             const indexBuffer = renderingMesh.geometry?.getIndexBuffer();
-            if (indexBuffer) {
+            if (indexBuffer && !(renderingMesh as Mesh).isUnIndexed) {
                 defines.push("#define VERTEX_PULLING_USE_INDEX_BUFFER");
                 if (indexBuffer.is32Bits) {
                     defines.push("#define VERTEX_PULLING_INDEX_BUFFER_32BITS");
@@ -1084,6 +1101,10 @@ export class ShaderMaterial extends PushMaterial {
 
             // Clip plane
             BindClipPlane(effect, this, scene);
+
+            if (this._vertexPullingMetadata) {
+                BindVertexPullingUniforms(effect, this._vertexPullingMetadata);
+            }
 
             // Misc
             if (this._useLogarithmicDepth) {
