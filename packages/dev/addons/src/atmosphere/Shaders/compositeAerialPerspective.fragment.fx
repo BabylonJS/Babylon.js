@@ -79,10 +79,9 @@ void main() {
             return;
         }
 
-        vec3 transmittance;
-        vec3 radiance;
         bool isAerialPerspectiveLut = clampedCameraRadius < atmosphereRadius;
-        integrateScatteredRadiance(
+        vec3 transmittance;
+        vec3 radiance = integrateScatteredRadiance(
             isAerialPerspectiveLut, // isAerialPerspectiveLut
             atmosphereExposure * lightIntensity,
             transmittanceLut,
@@ -94,7 +93,6 @@ void main() {
             100000000.,
             SkyViewLutSampleCount,
             distanceToSurface,
-            radiance,
             transmittance);
 
         float transparency = 1. - avg(transmittance);

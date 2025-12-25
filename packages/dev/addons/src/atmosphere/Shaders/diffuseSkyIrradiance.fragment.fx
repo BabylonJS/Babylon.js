@@ -15,9 +15,8 @@ uniform sampler2D multiScatteringLut;
 #include<atmosphereFunctions>
 
 vec3 integrateForIrradiance(vec3 directionToLight, vec3 rayDirection, vec3 rayOrigin) {
-    vec3 radiance;
     vec3 transmittance;
-    integrateScatteredRadiance(
+    vec3 radiance = integrateScatteredRadiance(
         false, // isAerialPerspectiveLut
         1.,
         transmittanceLut,
@@ -30,7 +29,6 @@ vec3 integrateForIrradiance(vec3 directionToLight, vec3 rayDirection, vec3 rayOr
         100000000.,
         DiffuseSkyIrradianceLutSampleCount,
         -1., // No planet hit.
-        radiance,
         transmittance);
     return radiance;
 }

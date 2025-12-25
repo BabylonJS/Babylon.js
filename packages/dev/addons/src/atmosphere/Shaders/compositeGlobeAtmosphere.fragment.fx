@@ -44,16 +44,15 @@ void main() {
 
         float cosAngleBetweenViewAndZenith;
         bool isRayIntersectingGround;
-        vec4 skyColor =
-            sampleSkyViewLut(
-                skyViewLut,
-                clampedCameraRadius,
-                cameraGeocentricNormal,
-                rayDirection,
-                directionToLight,
-                cosCameraHorizonAngleFromZenith,
-                cosAngleBetweenViewAndZenith,
-                isRayIntersectingGround);
+        vec4 skyColor = sampleSkyViewLut(
+            skyViewLut,
+            clampedCameraRadius,
+            cameraGeocentricNormal,
+            rayDirection,
+            directionToLight,
+            cosCameraHorizonAngleFromZenith,
+            cosAngleBetweenViewAndZenith,
+            isRayIntersectingGround);
 
         gl_FragColor = skyColor;
 
@@ -102,8 +101,7 @@ void main() {
         #endif
 
         vec3 transmittance;
-        vec3 radiance;
-        integrateScatteredRadiance(
+        vec3 radiance = integrateScatteredRadiance(
             false, // isAerialPerspectiveLut
             atmosphereExposure * lightIntensity,
             transmittanceLut,
@@ -115,7 +113,6 @@ void main() {
             100000000.,
             SkyViewLutSampleCount,
             distanceToSurface,
-            radiance,
             transmittance);
 
         float transparency = 1. - avg(transmittance);
