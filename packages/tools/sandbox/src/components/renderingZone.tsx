@@ -178,15 +178,52 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         this.props.globalState.filesInput = filesInput;
 
-        window.addEventListener("keydown", (event) => {
+        window.addEventListener("keydown", async (event) => {
+            // Ignore if in an input field or if modifier keys are pressed
+            if ((event.target as HTMLElement).nodeName === "INPUT" || event.ctrlKey || event.metaKey || event.altKey) {
+                return;
+            }
+
             // Press R to reload
-            if (event.keyCode === 82 && event.target && (event.target as HTMLElement).nodeName !== "INPUT" && this._scene) {
+            if (event.keyCode === 82 && this._scene) {
                 if (this.props.globalState.assetUrl) {
                     this.loadAssetFromUrl(this.props.globalState.assetUrl);
                 } else {
                     filesInput.reload();
                 }
+                return;
             }
+
+            // Gizmo hotkeys for inspector v2 (number keys to avoid camera control conflicts)
+            const handle = await this.props.globalState.getInspectorV2HandleAsync();
+            if (!handle) {
+                return;
+            }
+
+            switch (event.key) {
+                case "1":
+                    handle.setGizmoMode("translate");
+                    break;
+                case "2":
+                    handle.setGizmoMode("rotate");
+                    break;
+                case "3":
+                    handle.setGizmoMode("scale");
+                    break;
+                case "4":
+                    handle.setGizmoMode("boundingBox");
+                    break;
+                case "0":
+                    handle.setGizmoMode(null);
+                    break;
+                case "`":
+                    handle.setCoordinatesMode(handle.getCoordinatesMode() === "local" ? "world" : "local");
+                    break;
+                default:
+                    return;
+            }
+
+            event.preventDefault();
         });
     }
 

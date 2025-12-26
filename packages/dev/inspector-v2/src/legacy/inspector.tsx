@@ -1,5 +1,4 @@
 import type {
-    IDisposable,
     IExplorerAdditionalChild,
     IInspectorContextMenuItem,
     IInspectorContextMenuType,
@@ -9,7 +8,7 @@ import type {
     WritableObject,
 } from "core/index";
 import type { EntityBase } from "../components/scene/sceneExplorer";
-import type { InspectorOptions as InspectorV2Options } from "../inspector";
+import type { IInspectorHandle, InspectorOptions as InspectorV2Options } from "../inspector";
 import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IGizmoService } from "../services/gizmoService";
@@ -288,7 +287,7 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
  * @deprecated This class only exists for backward compatibility. Use the module-level ShowInspector function instead.
  */
 export class Inspector {
-    private static _CurrentInstance: Nullable<{ scene: Scene; options: Partial<InspectorV2Options>; disposeToken: IDisposable }> = null;
+    private static _CurrentInstance: Nullable<{ scene: Scene; options: Partial<InspectorV2Options>; disposeToken: IInspectorHandle }> = null;
     private static _PopupToggler: Nullable<(side: "left" | "right") => void> = null;
     private static _SectionHighlighter: Nullable<(sectionIds: readonly string[]) => void> = null;
     private static _SidePaneOpenCounter: Nullable<() => number> = null;
@@ -323,6 +322,14 @@ export class Inspector {
 
     public static get IsVisible(): boolean {
         return !!this._CurrentInstance;
+    }
+
+    /**
+     * Gets the current inspector handle, or null if the inspector is not visible.
+     * This provides access to the IInspectorHandle API for external control (e.g., gizmo hotkeys).
+     */
+    public static get CurrentHandle(): Nullable<IInspectorHandle> {
+        return this._CurrentInstance?.disposeToken ?? null;
     }
 
     public static Show(scene: Scene, userOptions: Partial<InspectorV1Options>) {

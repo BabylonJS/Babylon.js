@@ -9,7 +9,9 @@ import { DownloadManager } from "../tools/downloadManager";
 import { AddFileRevision } from "../tools/localSession";
 
 import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger } from "@dev/core";
-import type { IDisposable, Nullable, Scene, ThinEngine } from "@dev/core";
+import type { Nullable, Scene, ThinEngine } from "@dev/core";
+
+import type { IInspectorHandle } from "inspector-v2/index";
 
 import "../scss/rendering.scss";
 
@@ -35,7 +37,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _downloadManager: DownloadManager;
     private _inspectorFallback: boolean = false;
     private readonly _inspectorV2ModulePromise: Promise<InspectorV2Module | undefined>;
-    private _inspectorV2Token: Nullable<IDisposable> = null;
+    private _inspectorV2Token: Nullable<IInspectorHandle> = null;
+    private _hotkeyDisposable: Nullable<{ dispose(): void }> = null;
 
     /**
      * Create the rendering component.
@@ -136,6 +139,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             if (isInspectorV2Enabled && (!isInspectorV2ModeEnabled || action === "disable")) {
                 this._inspectorV2Token?.dispose();
                 this._inspectorV2Token = null;
+                this._removeGizmoHotkeys();
             }
 
             if (!isInspectorV1Enabled && !isInspectorV2ModeEnabled && action === "enable") {
@@ -197,8 +201,22 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
                 } as const;
                 this._inspectorV2Token = inspectorV2Module.ShowInspector(this._scene, options);
+                this._setupGizmoHotkeys();
             }
         }
+    }
+
+    private _setupGizmoHotkeys() {
+        const handle = this._inspectorV2Token;
+        const canvas = this._canvasRef.current;
+        if (handle && canvas) {
+            this._hotkeyDisposable = handle.setupGizmoHotkeys(canvas);
+        }
+    }
+
+    private _removeGizmoHotkeys() {
+        this._hotkeyDisposable?.dispose();
+        this._hotkeyDisposable = null;
     }
 
     private _saveError = (_err: ErrorEvent) => {

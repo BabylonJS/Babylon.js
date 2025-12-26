@@ -3,10 +3,11 @@ import type { FunctionComponent } from "react";
 
 import type { IDisposable, Nullable, Scene, TransformNode } from "core/index";
 import type { IGizmoService } from "../services/gizmoService";
+import type { GizmoMode, IGizmoToolbarService } from "../services/gizmoToolbarService";
 
 import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
 import { ArrowExpandRegular, ArrowRotateClockwiseRegular, CubeRegular, GlobeRegular, SelectObjectRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 
 import { Bone } from "core/Bones/bone";
 import { Camera } from "core/Cameras/camera";
@@ -18,10 +19,8 @@ import { Node } from "core/node";
 import { TranslateIcon } from "shared-ui-components/fluent/icons";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
-import { useProperty } from "../hooks/compoundPropertyHooks";
+import { useObservableState } from "../hooks/observableHooks";
 import { useResource } from "../hooks/resourceHooks";
-
-type GizmoMode = "translate" | "rotate" | "scale" | "boundingBox";
 
 const useStyles = makeStyles({
     coordinatesModeButton: {
@@ -32,8 +31,13 @@ const useStyles = makeStyles({
     },
 });
 
-export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gizmoService: IGizmoService }> = (props) => {
-    const { scene, entity, gizmoService } = props;
+export const GizmoToolbar: FunctionComponent<{
+    scene: Scene;
+    entity: unknown;
+    gizmoService: IGizmoService;
+    gizmoToolbarService: IGizmoToolbarService;
+}> = (props) => {
+    const { scene, entity, gizmoService, gizmoToolbarService } = props;
 
     const classes = useStyles();
 
@@ -55,9 +59,16 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
         }, [scene])
     );
 
-    const coordinatesMode = useProperty(gizmoManager, "coordinatesMode");
+    // Subscribe to gizmo mode from the service
+    const gizmoMode = useObservableState(() => gizmoToolbarService.gizmoMode, gizmoToolbarService.onGizmoModeChanged);
 
-    const [gizmoMode, setGizmoMode] = useState<GizmoMode>();
+    // Subscribe to coordinates mode from the service
+    const coordinatesMode = useObservableState(() => gizmoToolbarService.coordinatesMode, gizmoToolbarService.onCoordinatesModeChanged);
+
+    // Sync coordinates mode to gizmo manager
+    useEffect(() => {
+        gizmoManager.coordinatesMode = coordinatesMode === "local" ? GizmoCoordinatesMode.Local : GizmoCoordinatesMode.World;
+    }, [gizmoManager, coordinatesMode]);
 
     useEffect(() => {
         let visualizationGizmoRef: Nullable<IDisposable> = null;
@@ -78,23 +89,23 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
 
         let resolvedGizmoMode = gizmoMode;
         if (!resolvedEntity) {
-            resolvedGizmoMode = undefined;
+            resolvedGizmoMode = null;
         } else {
             if (resolvedGizmoMode === "translate") {
                 if (!(resolvedEntity as TransformNode).position) {
-                    resolvedGizmoMode = undefined;
+                    resolvedGizmoMode = null;
                 }
             } else if (resolvedGizmoMode === "rotate") {
                 if (!(resolvedEntity as TransformNode).rotation) {
-                    resolvedGizmoMode = undefined;
+                    resolvedGizmoMode = null;
                 }
             } else if (resolvedGizmoMode === "scale") {
                 if (!(resolvedEntity as TransformNode).scaling) {
-                    resolvedGizmoMode = undefined;
+                    resolvedGizmoMode = null;
                 }
             } else {
                 if (!(resolvedEntity instanceof AbstractMesh)) {
-                    resolvedGizmoMode = undefined;
+                    resolvedGizmoMode = null;
                 }
             }
         }
@@ -124,17 +135,26 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
         };
     }, [gizmoManager, gizmoMode, entity]);
 
-    const updateGizmoMode = useCallback((mode: GizmoMode) => {
-        setGizmoMode((currentMode) => (currentMode === mode ? undefined : mode));
-    }, []);
+    const updateGizmoMode = useCallback(
+        (mode: GizmoMode) => {
+            gizmoToolbarService.gizmoMode = gizmoToolbarService.gizmoMode === mode ? null : mode;
+        },
+        [gizmoToolbarService]
+    );
 
-    const onCoordinatesModeChange = useCallback((e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
-        gizmoManager.coordinatesMode = Number(data.checkedItems[0]);
-    }, []);
+    const onCoordinatesModeChange = useCallback(
+        (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
+            gizmoToolbarService.coordinatesMode = Number(data.checkedItems[0]) === GizmoCoordinatesMode.Local ? "local" : "world";
+        },
+        [gizmoToolbarService]
+    );
 
     const toggleCoordinatesMode = useCallback(() => {
-        gizmoManager.coordinatesMode = coordinatesMode === GizmoCoordinatesMode.Local ? GizmoCoordinatesMode.World : GizmoCoordinatesMode.Local;
-    }, [gizmoManager, coordinatesMode]);
+        gizmoToolbarService.coordinatesMode = coordinatesMode === "local" ? "world" : "local";
+    }, [gizmoToolbarService, coordinatesMode]);
+
+    // Convert coordinatesMode string to GizmoCoordinatesMode number for the menu
+    const coordinatesModeValue = coordinatesMode === "local" ? GizmoCoordinatesMode.Local : GizmoCoordinatesMode.World;
 
     return (
         <>
@@ -144,7 +164,7 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
             <ToggleButton title="Bounding Box" checkedIcon={SelectObjectRegular} value={gizmoMode === "boundingBox"} onChange={() => updateGizmoMode("boundingBox")} />
             <Collapse visible={!!gizmoMode} orientation="horizontal">
                 {/* TODO: gehalper factor this into a shared component */}
-                <Menu positioning="below-end" checkedValues={{ coordinatesMode: [coordinatesMode.toString()] }} onCheckedValueChange={onCoordinatesModeChange}>
+                <Menu positioning="below-end" checkedValues={{ coordinatesMode: [coordinatesModeValue.toString()] }} onCheckedValueChange={onCoordinatesModeChange}>
                     <MenuTrigger disableButtonEnhancement={true}>
                         {(triggerProps: MenuButtonProps) => (
                             <Tooltip content="Coordinates Mode" relationship="label">
@@ -157,7 +177,7 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
                                     size="small"
                                     appearance="transparent"
                                     shape="rounded"
-                                    icon={coordinatesMode === GizmoCoordinatesMode.Local ? <CubeRegular /> : <GlobeRegular />}
+                                    icon={coordinatesMode === "local" ? <CubeRegular /> : <GlobeRegular />}
                                 ></SplitButton>
                             </Tooltip>
                         )}

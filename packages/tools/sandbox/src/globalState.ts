@@ -57,6 +57,13 @@ export class GlobalState {
         this.onSceneLoaded.addOnce(async () => await this.refreshDebugLayerAsync());
     }
 
+    public async getInspectorV2HandleAsync() {
+        if (!this.isDebugLayerEnabled || !this._isInspectorV2ModeEnabled) {
+            return null;
+        }
+        return (await this._inspectorV2ModulePromise)?.Inspector.CurrentHandle ?? null;
+    }
+
     private async _showInspectorV1Async() {
         const inspectorV2Module = await this._inspectorV2ModulePromise;
         inspectorV2Module?.DetachInspectorGlobals();
