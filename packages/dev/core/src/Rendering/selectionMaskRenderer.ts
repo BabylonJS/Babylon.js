@@ -1,4 +1,5 @@
-import { Camera } from "../Cameras/camera";
+import type { Camera } from "../Cameras/camera";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 import type { Effect } from "../Materials/effect";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
@@ -12,6 +13,7 @@ import { VertexBuffer } from "../Meshes/buffer";
 import type { InstancedMesh } from "../Meshes/instancedMesh";
 import type { Mesh } from "../Meshes/mesh";
 import type { SubMesh } from "../Meshes/subMesh";
+import type { Observer } from "../Misc/observable";
 import type { Scene } from "../scene";
 import type { Nullable } from "../types";
 
@@ -34,7 +36,7 @@ class SelectionMaterial extends ShaderMaterial {
         const defines: string[] = [];
         const options: Partial<IShaderMaterialOptions> = {
             attributes: [VertexBuffer.PositionKind, SelectionMaskRenderer.InstanceSelectionIdAttributeName],
-            uniforms: ["world", "viewProjection", "selectionId", "depthValues"],
+            uniforms: ["world", "viewProjection", "view", "selectionId"],
             needAlphaBlending: false,
             defines: defines,
             useClipPlane: null,
@@ -76,24 +78,6 @@ class SelectionMaterial extends ShaderMaterial {
             const selectionId = this._meshUniqueIdToSelectionId[mesh.uniqueId];
             effect.setFloat("selectionId", selectionId);
         }
-
-        const engine = this.getScene().getEngine();
-
-        const camera = this.getScene().activeCamera;
-        let minZ: number = 1;
-        let maxZ: number = 10000;
-        if (camera) {
-            const cameraIsOrtho = camera.mode === Camera.ORTHOGRAPHIC_CAMERA;
-
-            if (cameraIsOrtho) {
-                minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
-                maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
-            } else {
-                minZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? camera.minZ : engine.isNDCHalfZRange ? 0 : camera.minZ;
-                maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : camera.maxZ;
-            }
-        }
-        effect.setFloat2("depthValues", minZ, minZ + maxZ);
     }
 }
 
@@ -113,6 +97,8 @@ export class SelectionMaskRenderer {
     private readonly _scene: Scene;
     private _maskTexture: Nullable<RenderTargetTexture>;
     private _isRttAddedToScene;
+
+    private _resizeObserver: Nullable<Observer<AbstractEngine>>;
 
     private readonly _meshUniqueIdToSelectionId: number[] = [];
 
@@ -157,7 +143,7 @@ export class SelectionMaskRenderer {
         this._maskTexture.renderParticles = false;
         this._maskTexture.renderList = null;
         this._maskTexture.noPrePassRenderer = true;
-        this._maskTexture.clearColor = new Color4(0, 1, 1, 1);
+        this._maskTexture.clearColor = new Color4(0, 0, 1, 1);
 
         this._maskTexture.activeCamera = camera;
         this._maskTexture.ignoreCameraViewport = true;
@@ -165,6 +151,27 @@ export class SelectionMaskRenderer {
 
         this._isRttAddedToScene = false;
         // this._scene.customRenderTargets.push(this._maskTexture);
+
+        this._resizeObserver = engine.onResizeObservable.add(() => {
+            this._maskTexture?.resize({ width: engine.getRenderWidth(), height: engine.getRenderHeight() });
+        });
+    }
+
+    /**
+     * Disposes the selection mask renderer
+     */
+    public dispose(): void {
+        this.clearSelection();
+
+        if (this._maskTexture !== null) {
+            this._removeRenderTargetFromScene();
+            this._maskTexture.dispose();
+            this._maskTexture = null;
+        }
+        this._clearSelectionMaterials();
+
+        this._resizeObserver?.remove();
+        this._resizeObserver = null;
     }
 
     private _clearSelectionMaterials(): void {
@@ -318,22 +325,5 @@ export class SelectionMaskRenderer {
      */
     public getMaskTexture(): Nullable<RenderTargetTexture> {
         return this._maskTexture;
-    }
-
-    /**
-     * Disposes the selection mask renderer
-     */
-    public dispose(): void {
-        this.clearSelection();
-
-        if (this._maskTexture !== null) {
-            const index = this._scene.customRenderTargets.indexOf(this._maskTexture);
-            if (index !== -1) {
-                this._scene.customRenderTargets.splice(index, 1);
-            }
-            this._maskTexture.dispose();
-            this._maskTexture = null;
-        }
-        this._clearSelectionMaterials();
     }
 }

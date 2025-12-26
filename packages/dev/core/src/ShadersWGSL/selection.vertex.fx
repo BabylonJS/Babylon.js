@@ -13,13 +13,13 @@ attribute instanceSelectionId: f32;
 
 #include<instancesDeclaration>
 uniform viewProjection: mat4x4f;
-uniform depthValues: vec2f;
+uniform view: mat4x4f;
 
 // Output
 #if defined(INSTANCES)
 flat varying vSelectionId: f32;
 #endif
-varying vDepthMetric: f32;
+varying vViewPosZ: f32;
 
 @vertex
 fn main(input: VertexInputs) -> FragmentInputs {
@@ -32,11 +32,7 @@ fn main(input: VertexInputs) -> FragmentInputs {
     var worldPos: vec4f = finalWorld * vec4f(input.position, 1.0);
     vertexOutputs.position = uniforms.viewProjection * worldPos;
 
-    #ifdef USE_REVERSE_DEPTHBUFFER
-        vertexOutputs.vDepthMetric = ((-vertexOutputs.position.z + uniforms.depthValues.x) / (uniforms.depthValues.y));
-    #else
-        vertexOutputs.vDepthMetric = ((vertexOutputs.position.z + uniforms.depthValues.x) / (uniforms.depthValues.y));
-    #endif
+    vertexOutputs.vViewPosZ = (uniforms.view * worldPos).z;
 
 #if defined(INSTANCES)
     vertexOutputs.vSelectionId = input.instanceSelectionId;

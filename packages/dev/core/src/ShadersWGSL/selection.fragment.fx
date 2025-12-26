@@ -3,7 +3,7 @@ flat varying vSelectionId: f32;
 #else
 uniform selectionId: f32;
 #endif
-varying vDepthMetric: f32;
+varying vViewPosZ: f32;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
@@ -13,5 +13,5 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var id: f32 = uniforms.selectionId;
 #endif
 
-    fragmentOutputs.color = vec4(id, input.vDepthMetric, 0.0, 1.0);
+    fragmentOutputs.color = vec4(id, input.vViewPosZ, 0.0, 1.0);
 }

@@ -13,13 +13,13 @@ attribute float instanceSelectionId;
 
 #include<instancesDeclaration>
 uniform mat4 viewProjection;
-uniform vec2 depthValues;
+uniform mat4 view;
 
 // Output
 #if defined(INSTANCES)
 flat varying float vSelectionId;
 #endif
-varying float vDepthMetric;
+varying float vViewPosZ;
 
 void main(void) {
     
@@ -31,11 +31,7 @@ void main(void) {
     vec4 worldPos = finalWorld * vec4(position, 1.0);
     gl_Position = viewProjection * worldPos;
 
-    #ifdef USE_REVERSE_DEPTHBUFFER
-        vDepthMetric = ((-gl_Position.z + depthValues.x) / (depthValues.y));
-    #else
-        vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y));
-    #endif
+    vViewPosZ = (view * worldPos).z;
 
 #if defined(INSTANCES)
     vSelectionId = instanceSelectionId;

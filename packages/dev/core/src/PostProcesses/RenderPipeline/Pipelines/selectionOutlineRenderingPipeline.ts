@@ -1,121 +1,23 @@
-import { Camera } from "../../../Cameras/camera";
-import type { AbstractEngine } from "../../../Engines/abstractEngine";
+import type { Camera } from "../../../Cameras/camera";
 import { Constants } from "../../../Engines/constants";
-import type { Effect } from "../../../Materials/effect";
-import { ShaderLanguage } from "../../../Materials/shaderLanguage";
-import type { IShaderMaterialOptions } from "../../../Materials/shaderMaterial";
-import { ShaderMaterial } from "../../../Materials/shaderMaterial";
-import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
-import { Color3, Color4 } from "../../../Maths/math.color";
-import type { Matrix } from "../../../Maths/math.vector";
+import type { Color3 } from "../../../Maths/math.color";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
-import { VertexBuffer } from "../../../Meshes/buffer";
-import type { InstancedMesh } from "../../../Meshes/instancedMesh";
-import type { Mesh } from "../../../Meshes/mesh";
-import type { SubMesh } from "../../../Meshes/subMesh";
-import type { Observer } from "../../../Misc/observable";
-import type { DepthRenderer } from "../../../Rendering/depthRenderer";
 import type { Scene } from "../../../scene";
 import type { Nullable } from "../../../types";
 
-import "../../../Rendering/depthRendererSceneComponent";
-import { SelectionOutlinePostProcess } from "../../selectionOutlinePostProcess";
-
-/**
- * Selection material used to generate the selection mask
- *
- * Selection material use r and g channels to store the selection ID and depth information
- */
-class SelectionMaterial extends ShaderMaterial {
-    private readonly _meshUniqueIdToSelectionId: number[];
-
-    /**
-     * Constructs a new selection mask material
-     * @param name The name of the material
-     * @param scene The scene the material belongs to
-     * @param shaderLanguage The shader language to use
-     * @param meshUniqueIdToSelectionId Mapping from mesh unique IDs to selection IDs
-     */
-    public constructor(name: string, scene: Scene, shaderLanguage: ShaderLanguage, meshUniqueIdToSelectionId: number[]) {
-        const defines: string[] = [];
-        const options: Partial<IShaderMaterialOptions> = {
-            attributes: [VertexBuffer.PositionKind, SelectionOutlineRenderingPipeline.InstanceSelectionIdAttributeName],
-            uniforms: ["world", "viewProjection", "selectionId", "depthValues"],
-            needAlphaBlending: false,
-            defines: defines,
-            useClipPlane: null,
-            shaderLanguage: shaderLanguage,
-            extraInitializationsAsync: async () => {
-                if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                    await Promise.all([import("../../../ShadersWGSL/selection.fragment"), import("../../../ShadersWGSL/selection.vertex")]);
-                } else {
-                    await Promise.all([import("../../../Shaders/selection.fragment"), import("../../../Shaders/selection.vertex")]);
-                }
-            },
-        };
-        super(name, scene, "selection", options, false);
-
-        this._meshUniqueIdToSelectionId = meshUniqueIdToSelectionId;
-    }
-
-    /**
-     * Binds the material to the mesh
-     * @param world The world matrix
-     * @param mesh The mesh to bind the material to
-     * @param effectOverride An optional effect override
-     * @param subMesh The submesh to bind the material to
-     */
-    public override bind(world: Matrix, mesh?: AbstractMesh, effectOverride?: Nullable<Effect>, subMesh?: SubMesh): void {
-        super.bind(world, mesh, effectOverride, subMesh);
-        if (!mesh) {
-            return;
-        }
-
-        const storeEffectOnSubMeshes = subMesh && this._storeEffectOnSubMeshes;
-        const effect = effectOverride ?? (storeEffectOnSubMeshes ? subMesh.effect : this.getEffect());
-
-        if (!effect) {
-            return;
-        }
-
-        if (!mesh.hasInstances && !mesh.isAnInstance && this._meshUniqueIdToSelectionId[mesh.uniqueId] !== undefined) {
-            const selectionId = this._meshUniqueIdToSelectionId[mesh.uniqueId];
-            effect.setFloat("selectionId", selectionId);
-        }
-
-        const engine = this.getScene().getEngine();
-
-        const camera = this.getScene().activeCamera;
-        let minZ: number = 1;
-        let maxZ: number = 10000;
-        if (camera) {
-            const cameraIsOrtho = camera.mode === Camera.ORTHOGRAPHIC_CAMERA;
-
-            if (cameraIsOrtho) {
-                minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
-                maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
-            } else {
-                minZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? camera.minZ : engine.isNDCHalfZRange ? 0 : camera.minZ;
-                maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : camera.maxZ;
-            }
-        }
-        effect.setFloat2("depthValues", minZ, minZ + maxZ);
-    }
-}
-
-/**
- * Options for the selection outline rendering pipeline
- */
-export interface ISelectionOutlineRenderingPipelineOptions {
-    /**
-     * Color of the outline (default: (1, 0.5, 0) - orange)
-     */
-    outlineColor?: Color3;
-    /**
-     * Number of samples for the final post process (default: 4)
-     */
-    samples?: number;
-}
+import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
+import { serialize, serializeAsColor3 } from "../../../Misc/decorators";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { SerializationHelper } from "../../../Misc/decorators.serialization";
+import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
+import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
+import { SelectionMaskRenderer } from "../../../Rendering/selectionMaskRenderer";
+import { PostProcess } from "../../postProcess";
+import { ThinSelectionOutlinePostProcess } from "../../thinSelectionOutlinePostProcess";
+import type { Effect } from "../../../Materials/effect";
+import { SelectionOutlineConfiguration } from "../../../Rendering/selectionOutlineConfiguration";
+import type { ISize } from "../../../Maths/math.size";
+import { PostProcessRenderEffect } from "../postProcessRenderEffect";
 
 /**
  * Selection outline rendering pipeline
@@ -126,307 +28,244 @@ export interface ISelectionOutlineRenderingPipelineOptions {
  * 1. Render selected objects to a mask texture where r and g channels store selection ID and depth information
  * 2. Apply a post process that will use the mask texture to render outlines around selected objects
  */
-export class SelectionOutlineRenderingPipeline {
+export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline {
     /**
-     * Name of the instance selection ID attribute
-     * @internal
+     * The Selection Outline PostProcess effect id in the pipeline
      */
-    public static readonly InstanceSelectionIdAttributeName = "instanceSelectionId";
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public SelectionOutlineEffect: string = "SelectionOutlineEffect";
 
-    private readonly _name: string;
-    private readonly _camera: Camera;
-    private readonly _scene: Scene;
-    private readonly _depthRenderer: DepthRenderer;
-
-    private _samples: number = 4;
+    @serialize("msaaSamples")
+    private _msaaSamples: number = 4;
     /**
-     * Gets or sets the number of samples used for the outline post process (default: 4)
+     * Gets or sets the number of samples used for the outline post process
      */
-    public get samples(): number {
-        return this._samples;
+    public get msaaSamples(): number {
+        return this._msaaSamples;
     }
-    public set samples(value: number) {
-        this._samples = value;
-        if (this._outlineProcess) {
-            this._outlineProcess.samples = value;
+    public set msaaSamples(value: number) {
+        this._msaaSamples = value;
+        if (this._outlinePostProcess) {
+            this._outlinePostProcess.samples = value;
         }
     }
 
-    private _outlineColor: Color3 = new Color3(1, 0.5, 0);
+    private _forcedGeometryBuffer: Nullable<GeometryBufferRenderer> = null;
+    /**
+     * Force rendering the geometry through geometry buffer.
+     */
+    @serialize()
+    private _forceGeometryBuffer: boolean = false;
+    private get _geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
+        if (!this._forceGeometryBuffer) {
+            return null;
+        }
+        return this._forcedGeometryBuffer ?? this._scene.geometryBufferRenderer;
+    }
+    private get _prePassRenderer(): Nullable<PrePassRenderer> {
+        if (this._forceGeometryBuffer) {
+            return null;
+        }
+        return this._scene.prePassRenderer;
+    }
+
     /**
      * Gets or sets the outline color (default: (1, 0.5, 0) - orange)
      */
+    @serializeAsColor3("outlineColor")
     public get outlineColor(): Color3 {
-        return this._outlineColor;
+        return this._thinOutlinePostProcess.outlineColor;
     }
     public set outlineColor(value: Color3) {
-        this._outlineColor = value;
-        if (this._outlineProcess) {
-            this._outlineProcess.outlineColor = value;
-        }
+        this._thinOutlinePostProcess.outlineColor = value;
     }
 
-    private _outlineThickness: number = 2.0;
     /**
      * Gets or sets the outline thickness (default: 2.0)
      */
+    @serialize("outlineThickness")
     public get outlineThickness(): number {
-        return this._outlineThickness;
+        return this._thinOutlinePostProcess.outlineThickness;
     }
     public set outlineThickness(value: number) {
-        this._outlineThickness = value;
-        if (this._outlineProcess) {
-            this._outlineProcess.outlineThickness = value;
-        }
+        this._thinOutlinePostProcess.outlineThickness = value;
     }
 
-    private _occlusionStrength: number = 0.8;
     /**
      * Gets or sets the occlusion strength (default: 0.8)
      */
+    @serialize("occlusionStrength")
     public get occlusionStrength(): number {
-        return this._occlusionStrength;
+        return this._thinOutlinePostProcess.occlusionStrength;
     }
     public set occlusionStrength(value: number) {
-        this._occlusionStrength = value;
-        if (this._outlineProcess) {
-            this._outlineProcess.occlusionStrength = value;
-        }
+        this._thinOutlinePostProcess.occlusionStrength = value;
     }
 
-    private readonly _meshUniqueIdToSelectionId: number[] = [];
+    private readonly _scene: Scene;
+    private readonly _textureType: number;
 
-    private readonly _selectionMaterialCache: Nullable<SelectionMaterial>[] = new Array(9).fill(null);
-    private readonly _selection: AbstractMesh[] = [];
-
-    private _maskTexture: Nullable<RenderTargetTexture> = null;
-    private _outlineProcess: Nullable<SelectionOutlinePostProcess> = null;
-    private _isOutlineProcessAttached: boolean = false;
-
-    private _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
-
-    private _nextSelectionId = 1;
-
-    /** Shader language used by the generator */
-    protected _shaderLanguage = ShaderLanguage.GLSL;
+    private _maskRenderer: SelectionMaskRenderer;
+    private _thinOutlinePostProcess: ThinSelectionOutlinePostProcess;
+    private _outlinePostProcess: PostProcess;
 
     /**
-     * Gets the shader language used in this generator.
-     */
-    public get shaderLanguage(): ShaderLanguage {
-        return this._shaderLanguage;
-    }
-
-    /**
-     * @param name name of the process
-     * @param camera  camera used for post process
-     * @param options options for the outline renderer
+     * Constructs a new selection outline rendering pipeline
+     * @param name The rendering pipeline name
+     * @param scene The scene linked to this pipeline
+     * @param cameras The array of cameras that the rendering pipeline will be attached to
+     * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer. You can also pass an existing instance of GeometryBufferRenderer if you want to use your own geometry buffer renderer.
+     * @param textureType The type of texture where the scene will be rendered (default: Constants.TEXTURETYPE_UNSIGNED_BYTE)
      *
      */
-    public constructor(name: string, camera: Camera, options: ISelectionOutlineRenderingPipelineOptions = {}) {
-        this._name = name;
-        this._camera = camera;
-        this._scene = camera.getScene();
+    public constructor(
+        name: string,
+        scene: Scene,
+        cameras?: Camera[],
+        forceGeometryBuffer: boolean | GeometryBufferRenderer = false,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE
+    ) {
+        super(scene.getEngine(), name);
 
-        this._depthRenderer = this._scene.enableDepthRenderer(camera);
-
-        if (options.outlineColor) {
-            this._outlineColor = options.outlineColor;
-        }
-        if (options.samples) {
-            this._samples = options.samples;
-        }
-
-        const engine = this._scene.getEngine();
-
-        if (engine.isWebGPU) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
+        this._scene = scene;
+        this._textureType = textureType;
+        if (forceGeometryBuffer instanceof GeometryBufferRenderer) {
+            this._forceGeometryBuffer = true;
+            this._forcedGeometryBuffer = forceGeometryBuffer;
+        } else {
+            this._forceGeometryBuffer = forceGeometryBuffer;
         }
 
-        // handle resize
-        this._resizeObserver = engine.onResizeObservable.add(this._resizeBuffer, undefined, undefined, this);
-    }
-
-    private _resizeBuffer(): void {
-        const engine = this._scene.getEngine();
-        const width = engine.getRenderWidth();
-        const height = engine.getRenderHeight();
-
-        if (this._maskTexture !== null) {
-            const size = this._maskTexture.getSize();
-            if (size.width !== width || size.height !== height) {
-                this._maskTexture.resize({ width: width, height: height });
+        // Set up assets
+        if (this._forceGeometryBuffer) {
+            if (!this._forcedGeometryBuffer) {
+                scene.enableGeometryBufferRenderer();
             }
+        } else {
+            scene.enablePrePassRenderer();
         }
 
-        if (this._depthRenderer !== null) {
-            const depthMap = this._depthRenderer.getDepthMap();
-            const depthSize = depthMap.getSize();
-            if (depthSize.width !== width || depthSize.height !== height) {
-                depthMap.resize({ width: width, height: height });
-            }
+        this._maskRenderer = new SelectionMaskRenderer(name, scene);
+        this._thinOutlinePostProcess = new ThinSelectionOutlinePostProcess(name, scene.getEngine());
+
+        this._outlinePostProcess = this._createSelectionOutlinePostProcess(this._textureType);
+
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                this.SelectionOutlineEffect,
+                () => {
+                    return this._outlinePostProcess;
+                },
+                true
+            )
+        );
+
+        scene.postProcessRenderPipelineManager.addPipeline(this);
+        if (cameras) {
+            scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
         }
     }
 
-    private _createRenderTargetTexture(): RenderTargetTexture {
-        if (this._maskTexture) {
-            return this._maskTexture;
+    /**
+     * Get the class name
+     * @returns "SelectionOutlineRenderingPipeline"
+     */
+    public override getClassName(): string {
+        return "SelectionOutlineRenderingPipeline";
+    }
+
+    /**
+     * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
+     * @param disableGeometryBufferRenderer Set to true if you want to disable the Geometry Buffer renderer
+     */
+    public override dispose(disableGeometryBufferRenderer: boolean = false): void {
+        this.clearSelection();
+
+        for (let i = 0; i < this._cameras.length; i++) {
+            const camera = this._cameras[i];
+            this._outlinePostProcess?.dispose(camera);
         }
 
+        if (disableGeometryBufferRenderer && !this._forcedGeometryBuffer) {
+            this._scene.disableGeometryBufferRenderer();
+        }
+
+        this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+        this._scene.postProcessRenderPipelineManager.removePipeline(this._name);
+
+        this._thinOutlinePostProcess.dispose();
+
+        super.dispose();
+    }
+
+    private _getTextureSize(): ISize {
         const engine = this._scene.getEngine();
+        const prePassRenderer = this._prePassRenderer;
 
-        this._maskTexture = new RenderTargetTexture(this._name + "_mask", { width: engine.getRenderWidth(), height: engine.getRenderHeight() }, this._scene, {
-            type: Constants.TEXTURETYPE_HALF_FLOAT,
-            format: Constants.TEXTUREFORMAT_RG,
-        });
-        this._maskTexture.noPrePassRenderer = true;
-        this._maskTexture.clearColor = new Color4(0, 1, 1, 1);
-        this._maskTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-        this._maskTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        let textureSize: ISize = { width: engine.getRenderWidth(), height: engine.getRenderHeight() };
 
-        this._scene.customRenderTargets.push(this._maskTexture);
+        if (prePassRenderer && this._scene.activeCamera?._getFirstPostProcess() === this._outlinePostProcess) {
+            const renderTarget = prePassRenderer.getRenderTarget();
 
-        return this._maskTexture;
-    }
-
-    private _clearSelectionMaterials(): void {
-        for (let i = 0; i < this._selectionMaterialCache.length; ++i) {
-            const material = this._selectionMaterialCache[i];
-            if (material !== null) {
-                material.dispose();
-                this._selectionMaterialCache[i] = null;
+            if (renderTarget && renderTarget.textures) {
+                textureSize = renderTarget.textures[prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)].getSize();
             }
+        } else if (this._outlinePostProcess!.inputTexture) {
+            textureSize.width = this._outlinePostProcess!.inputTexture.width;
+            textureSize.height = this._outlinePostProcess!.inputTexture.height;
         }
+
+        return textureSize;
     }
 
-    private _getSelectionMaterial(scene: Scene, fillMode: number): SelectionMaterial {
-        if (fillMode < 0 || 8 < fillMode) {
-            fillMode = Constants.MATERIAL_TriangleFillMode;
-        }
-
-        const cachedMaterial = this._selectionMaterialCache[fillMode];
-        if (cachedMaterial) {
-            return cachedMaterial;
-        }
-
-        const engine = scene.getEngine();
-
-        if (engine.isWebGPU) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
-        }
-
-        const newMaterial = new SelectionMaterial(this._name + "_selection_material", scene, this._shaderLanguage, this._meshUniqueIdToSelectionId);
-        newMaterial.fillMode = fillMode;
-        newMaterial.backFaceCulling = false;
-
-        this._selectionMaterialCache[fillMode] = newMaterial;
-        return newMaterial;
-    }
-
-    private _prepareSelectionOutlinePostProcess(): void {
-        if (this._outlineProcess) {
-            return;
-        }
-
-        if (!this._maskTexture) {
-            throw new Error("Mask texture not created before preparing outline post process");
-        }
-
-        this._outlineProcess = new SelectionOutlinePostProcess(this._name + "_outline", this._maskTexture, this._depthRenderer.getDepthMap(), {
-            camera: this._camera,
+    private _createSelectionOutlinePostProcess(textureType: number): PostProcess {
+        const outlinePostProcess = new PostProcess("selectionOutline", ThinSelectionOutlinePostProcess.FragmentUrl, {
             engine: this._scene.getEngine(),
+            textureType,
+            effectWrapper: this._thinOutlinePostProcess,
         });
-        this._outlineProcess.outlineColor = this._outlineColor;
-        this._outlineProcess.outlineThickness = this._outlineThickness;
-        this._outlineProcess.occlusionStrength = this._occlusionStrength;
-        this._outlineProcess.samples = this._samples;
+        if (!this._forceGeometryBuffer) {
+            outlinePostProcess._prePassEffectConfiguration = new SelectionOutlineConfiguration();
+        }
+        outlinePostProcess.samples = this._msaaSamples;
+        outlinePostProcess.onApplyObservable.add((effect: Effect) => {
+            if (this._geometryBufferRenderer) {
+                effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[0]);
+            } else if (this._prePassRenderer) {
+                effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
+            }
 
-        this._isOutlineProcessAttached = true;
+            const textureSize = this._getTextureSize();
+            this._thinOutlinePostProcess.textureWidth = textureSize.width;
+            this._thinOutlinePostProcess.textureHeight = textureSize.height;
+
+            effect.setTexture("maskSampler", this._maskRenderer.getMaskTexture());
+        });
+
+        return outlinePostProcess;
     }
 
     /**
      * Clears the current selection
      */
     public clearSelection(): void {
-        if (this._selection.length === 0) {
-            return;
-        }
+        this._maskRenderer.clearSelection();
 
-        for (let index = 0; index < this._selection.length; ++index) {
-            const mesh = this._selection[index];
-            if (mesh.hasInstances) {
-                (mesh as Mesh).removeVerticesData(SelectionOutlineRenderingPipeline.InstanceSelectionIdAttributeName);
-            }
-            if (this._maskTexture) {
-                this._maskTexture.setMaterialForRendering(mesh, undefined);
-            }
-        }
-        this._selection.length = 0;
-        this._meshUniqueIdToSelectionId.length = 0;
-        if (this._maskTexture) {
-            this._maskTexture.renderList = [];
-        }
-
-        this._nextSelectionId = 1;
-
-        if (this._outlineProcess && this._isOutlineProcessAttached) {
-            this._camera.detachPostProcess(this._outlineProcess);
-            this._isOutlineProcessAttached = false;
-        }
+        // if (this._outlinePostProcess && this._isOutlineProcessAttached) {
+        //     this._camera.detachPostProcess(this._outlinePostProcess);
+        //     this._isOutlineProcessAttached = false;
+        // }
     }
 
     /**
      * Adds meshe or group of meshes to the current selection
-     * 
+     *
      * If a group of meshes is provided, they will outline as a single unit
      * @param meshes Meshes to add to the selection
      */
     public addSelection(meshes: (AbstractMesh | AbstractMesh[])[]): void {
-        if (meshes.length === 0) {
-            return;
-        }
-
-        // prepare target texture
-        const maskTexture = this._createRenderTargetTexture();
-
-        let nextId = this._nextSelectionId;
-        for (let groupIndex = 0; groupIndex < meshes.length; ++groupIndex) {
-            const meshOrGroup = meshes[groupIndex];
-            const id = nextId;
-            nextId += 1;
-
-            const group = Array.isArray(meshOrGroup) ? meshOrGroup : [meshOrGroup];
-            for (let meshIndex = 0; meshIndex < group.length; ++meshIndex) {
-                const mesh = group[meshIndex];
-
-                const material = this._getSelectionMaterial(this._scene, mesh.material?.fillMode ?? Constants.MATERIAL_TriangleFillMode);
-                maskTexture.setMaterialForRendering(group, material);
-                this._selection.push(mesh); // add to render list
-
-                if (mesh.hasInstances || mesh.isAnInstance) {
-                    const sourceMesh = (mesh as InstancedMesh).sourceMesh ?? (mesh as Mesh);
-
-                    if (sourceMesh.instancedBuffers?.[SelectionOutlineRenderingPipeline.InstanceSelectionIdAttributeName] === undefined) {
-                        sourceMesh.registerInstancedBuffer(SelectionOutlineRenderingPipeline.InstanceSelectionIdAttributeName, 1);
-                        // todo: consider unregistering buffer on dispose
-                    }
-
-                    mesh.instancedBuffers[SelectionOutlineRenderingPipeline.InstanceSelectionIdAttributeName] = id;
-                } else {
-                    this._meshUniqueIdToSelectionId[mesh.uniqueId] = id;
-                }
-            }
-        }
-        this._nextSelectionId = nextId;
-
-        maskTexture.renderList = [...this._selection];
-
-        // set up outline post process
-        this._prepareSelectionOutlinePostProcess();
-        if (!this._isOutlineProcessAttached) {
-            this._camera.attachPostProcess(this._outlineProcess!);
-            this._isOutlineProcessAttached = true;
-        }
+        this._maskRenderer.addSelection(meshes);
     }
 
     /**
@@ -436,37 +275,34 @@ export class SelectionOutlineRenderingPipeline {
      * @param meshes Meshes to set as the current selection
      */
     public setSelection(meshes: (AbstractMesh | AbstractMesh[])[]): void {
-        this.clearSelection();
-        this.addSelection(meshes);
+        this._maskRenderer.setSelection(meshes);
+    }
+    /**
+     * Serialize the rendering pipeline (Used when exporting)
+     * @returns the serialized object
+     */
+    public serialize(): any {
+        const serializationObject = SerializationHelper.Serialize(this);
+        serializationObject.customType = "SelectionOutlineRenderingPipeline";
+
+        return serializationObject;
     }
 
     /**
-     * Disposes the rendering pipeline
+     * Parse the serialized pipeline
+     * @param source Source pipeline.
+     * @param scene The scene to load the pipeline to.
+     * @param rootUrl The URL of the serialized pipeline.
+     * @returns An instantiated pipeline from the serialized object.
      */
-    public dispose(): void {
-        this.clearSelection();
-
-        if (this._maskTexture !== null) {
-            const index = this._scene.customRenderTargets.indexOf(this._maskTexture);
-            if (index !== -1) {
-                this._scene.customRenderTargets.splice(index, 1);
-            }
-            this._maskTexture.dispose();
-            this._maskTexture = null;
-        }
-        this._clearSelectionMaterials();
-
-        if (this._outlineProcess) {
-            if (this._isOutlineProcessAttached) {
-                this._camera.detachPostProcess(this._outlineProcess);
-                this._isOutlineProcessAttached = false;
-            }
-        }
-
-        this._outlineProcess?.dispose();
-        this._outlineProcess = null;
-
-        this._resizeObserver?.remove();
-        this._resizeObserver = null;
+    public static Parse(source: any, scene: Scene, rootUrl: string): SelectionOutlineRenderingPipeline {
+        return SerializationHelper.Parse(
+            () => new SelectionOutlineRenderingPipeline(source._name, scene, undefined, source._forceGeometryBuffer, source._textureType),
+            source,
+            scene,
+            rootUrl
+        );
     }
 }
+
+RegisterClass("BABYLON.SelectionOutlineRenderingPipeline", SelectionOutlineRenderingPipeline);
