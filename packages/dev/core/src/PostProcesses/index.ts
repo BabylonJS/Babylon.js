@@ -24,7 +24,6 @@ export * from "./postProcess";
 export * from "./postProcessManager";
 export * from "./refractionPostProcess";
 export * from "./RenderPipeline/index";
-export * from "./selectionOutlinePostProcess";
 export * from "./sharpenPostProcess";
 export * from "./stereoscopicInterlacePostProcess";
 export * from "./tonemapPostProcess";
