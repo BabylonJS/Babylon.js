@@ -13,6 +13,7 @@ export * from "./iblCdfGeneratorSceneComponent";
 export * from "./IBLShadows/iblShadowsRenderPipeline";
 export * from "./prePassRenderer";
 export * from "./prePassRendererSceneComponent";
+export * from "./selectionMaskRenderer";
 export * from "./subSurfaceSceneComponent";
 export * from "./outlineRenderer";
 export * from "./renderingGroup";
