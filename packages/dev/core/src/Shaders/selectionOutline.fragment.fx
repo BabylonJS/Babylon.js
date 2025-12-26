@@ -42,7 +42,7 @@ void main(void)
     float depthY = texture2D(depthSampler, vUV + vec2(0.0, sampleOffset.y)).r;
     float depthXY = texture2D(depthSampler, vUV + sampleOffset).r;
 
-    const float occlusionThreshold = 0.0000001;
+    const float occlusionThreshold = 1.0000001;
     float occlusionCenter = step(occlusionThreshold, abs(centerMask.g - depthCenter));
     float occlusionX = step(occlusionThreshold, abs(maskX.g - depthX));
     float occlusionY = step(occlusionThreshold, abs(maskY.g - depthY));
