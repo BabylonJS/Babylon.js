@@ -27,12 +27,13 @@ void main(void) {
     
 #define CUSTOM_VERTEX_MAIN_BEGIN
 
+    vec3 positionUpdated = position;
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 #include<instancesVertex>
 #include<bonesVertex>
 #include<bakedVertexAnimation>
-    vec4 worldPos = finalWorld * vec4(position, 1.0);
+    vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     gl_Position = viewProjection * worldPos;
 
     vViewPosZ = (view * worldPos).z;
