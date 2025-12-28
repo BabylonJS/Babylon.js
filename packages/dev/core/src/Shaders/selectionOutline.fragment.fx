@@ -14,8 +14,10 @@ uniform float occlusionStrength;
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
-void main(void)
-{
+void main(void) {
+    
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
     vec4 screenColor = texture2D(textureSampler, vUV);
 
     vec2 texelSize = 1.0 / screenSize;
@@ -55,4 +57,6 @@ void main(void)
     vec3 finalColor = mix(screenColor.rgb, outlineColor, finalOutlineMask);
 
     gl_FragColor = vec4(finalColor, screenColor.a);
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }

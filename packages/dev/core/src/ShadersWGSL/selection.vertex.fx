@@ -21,9 +21,13 @@ flat varying vSelectionId: f32;
 #endif
 varying vViewPosZ: f32;
 
+#define CUSTOM_VERTEX_DEFINITIONS
+
 @vertex
 fn main(input: VertexInputs) -> FragmentInputs {
     
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 #include<instancesVertex>
@@ -37,4 +41,6 @@ fn main(input: VertexInputs) -> FragmentInputs {
 #if defined(INSTANCES)
     vertexOutputs.vSelectionId = input.instanceSelectionId;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

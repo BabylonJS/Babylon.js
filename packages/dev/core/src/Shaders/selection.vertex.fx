@@ -21,8 +21,12 @@ flat varying float vSelectionId;
 #endif
 varying float vViewPosZ;
 
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void) {
     
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 #include<instancesVertex>
@@ -36,4 +40,6 @@ void main(void) {
 #if defined(INSTANCES)
     vSelectionId = instanceSelectionId;
 #endif
+
+#define CUSTOM_VERTEX_MAIN_END
 }

@@ -19,6 +19,9 @@ uniform occlusionStrength: f32;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
+    
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
     var screenColor: vec4f = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV, 0.0);
 
     var texelSize: vec2f = 1.0 / uniforms.screenSize;
@@ -58,4 +61,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var finalColor: vec3f = mix(screenColor.rgb, uniforms.outlineColor, finalOutlineMask);
 
     fragmentOutputs.color = vec4f(finalColor, screenColor.a);
+
+#define CUSTOM_FRAGMENT_MAIN_END
 }
