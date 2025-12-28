@@ -671,6 +671,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The transmission weight value (0-1)
      */
     public set transmissionWeight(value: number) {
+        this._material.dynamicRefractionTexture = value > 0;
         this._material.subSurface.isRefractionEnabled = value > 0;
         this._material.subSurface.refractionIntensity = value;
     }
@@ -689,6 +690,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The transmission weight texture or null
      */
     public set transmissionWeightTexture(value: Nullable<BaseTexture>) {
+        this._material.dynamicRefractionTexture = true;
         this._material.subSurface.isRefractionEnabled = true;
         this._material.subSurface.refractionIntensityTexture = value;
         this._material.subSurface.useGltfStyleTextures = true;

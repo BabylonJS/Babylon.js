@@ -206,6 +206,12 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public indexOfRefraction = 1.5;
 
+    /**
+     * If sets to true, the refraction texture will be generated dynamically
+     */
+    @serialize()
+    public dynamicRefractionTexture: boolean = false;
+
     @serialize()
     private _volumeIndexOfRefraction = -1.0;
 

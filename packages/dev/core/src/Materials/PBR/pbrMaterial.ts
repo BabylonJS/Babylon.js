@@ -364,6 +364,16 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
+     * If sets to true, the refraction texture will be generated dynamically
+     */
+    public get dynamicRefractionTexture(): boolean {
+        return this.subSurface.dynamicRefractionTexture;
+    }
+    public set dynamicRefractionTexture(value: boolean) {
+        this.subSurface.dynamicRefractionTexture = value;
+    }
+
+    /**
      * If true, the light map contains occlusion information instead of lighting info.
      */
     @serialize()

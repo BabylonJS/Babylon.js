@@ -594,6 +594,12 @@ export class StandardMaterial extends StandardMaterialBase {
     private _shadersLoaded = false;
 
     /**
+     * If sets to true, the refraction texture will be generated dynamically
+     */
+    @serialize()
+    public dynamicRefractionTexture = false;
+
+    /**
      * Defines additional PrePass parameters for the material.
      */
     public readonly prePassConfiguration: PrePassConfiguration;
