@@ -552,7 +552,7 @@ export class WebGPUTextureManager {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup?.(`copy video to texture - invertY=${invertY}`);
+        commandEncoder!.pushDebugGroup(`copy video to texture (invertY=${invertY})`);
 
         const webgpuHardwareTexture = texture._hardwareTexture as WebGPUHardwareTexture;
 
@@ -599,7 +599,7 @@ export class WebGPUTextureManager {
         passEncoder.draw(4, 1, 0, 0);
         passEncoder.end();
 
-        commandEncoder!.popDebugGroup?.();
+        commandEncoder!.popDebugGroup();
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
@@ -638,8 +638,6 @@ export class WebGPUTextureManager {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup?.(`internal process texture - invertY=${invertY} premultiplyAlpha=${premultiplyAlpha}`);
-
         let gpuTexture: Nullable<GPUTexture>;
         if (WebGPUTextureHelper.IsHardwareTexture(gpuOrHdwTexture)) {
             gpuTexture = gpuOrHdwTexture.underlyingResource;
@@ -654,6 +652,8 @@ export class WebGPUTextureManager {
         if (!gpuTexture) {
             return;
         }
+
+        commandEncoder!.pushDebugGroup(`internal process texture "${gpuTexture.label}" (invertY=${invertY} premultiplyAlpha=${premultiplyAlpha})`);
 
         if (useRect) {
             this._bufferManager.setRawData(this._ubCopyWithOfst, 0, new Float32Array([ofstX, ofstY, rectWidth, rectHeight]), 0, 4 * 4);
@@ -765,7 +765,7 @@ export class WebGPUTextureManager {
             this._deferredReleaseTextures.push([outputTexture, null]);
         }
 
-        commandEncoder!.popDebugGroup?.();
+        commandEncoder!.popDebugGroup();
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
@@ -901,13 +901,13 @@ export class WebGPUTextureManager {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup?.(`create cube mipmaps - ${mipLevelCount} levels`);
+        commandEncoder!.pushDebugGroup(`create cube mipmaps for "${gpuTexture.label}" (${mipLevelCount} levels)`);
 
         for (let f = 0; f < gpuTexture.depthOrArrayLayers; ++f) {
             this.generateMipmaps(gpuOrHdwTexture, mipLevelCount, f, commandEncoder);
         }
 
-        commandEncoder!.popDebugGroup?.();
+        commandEncoder!.popDebugGroup();
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
@@ -924,8 +924,6 @@ export class WebGPUTextureManager {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup?.(`create mipmaps for face #${faceIndex} - ${mipLevelCount} levels`);
-
         let gpuTexture: Nullable<GPUTexture>;
         if (WebGPUTextureHelper.IsHardwareTexture(gpuOrHdwTexture)) {
             gpuTexture = gpuOrHdwTexture.underlyingResource;
@@ -938,6 +936,8 @@ export class WebGPUTextureManager {
         if (!gpuTexture) {
             return;
         }
+
+        commandEncoder!.pushDebugGroup(`create mipmaps for "${gpuTexture.label}" (face #${faceIndex} - ${mipLevelCount} levels)`);
 
         const format = gpuTexture.format;
         const [pipeline, bindGroupLayout] = this._getPipeline(format);
@@ -1001,7 +1001,7 @@ export class WebGPUTextureManager {
             passEncoder.end();
         }
 
-        commandEncoder!.popDebugGroup?.();
+        commandEncoder!.popDebugGroup();
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
@@ -1176,7 +1176,7 @@ export class WebGPUTextureManager {
             commandEncoder = this._device.createCommandEncoder({});
         }
 
-        commandEncoder!.pushDebugGroup(`resolve MSAA Depth texture${msaaTexture.label ? " - " + msaaTexture.label : ""}`);
+        commandEncoder!.pushDebugGroup(`resolve MSAA Depth texture "${msaaTexture.label}" to "${outputTexture.label}"`);
 
         const renderPassDescriptor: GPURenderPassDescriptor = {
             label: `BabylonWebGPUDevice${this._engine.uniqueId}_resolveMSAADepthTexture${msaaTexture.label ? "_" + msaaTexture.label : ""}`,

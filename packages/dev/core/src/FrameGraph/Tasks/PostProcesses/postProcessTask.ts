@@ -179,6 +179,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         pass.setRenderTarget(this.outputTexture);
         pass.setRenderTargetDepth(this.depthAttachmentTexture);
         pass.setExecuteFunc((context) => {
+            context.pushDebugGroup(`Apply post-process (${this.name})`);
             if (this.sourceTexture !== undefined) {
                 context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
             }
@@ -201,6 +202,8 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
                 this.depthTest,
                 this.viewport !== undefined
             );
+            context.restoreDefaultFramebuffer();
+            context.popDebugGroup();
         });
 
         if (!skipCreationOfDisabledPasses) {

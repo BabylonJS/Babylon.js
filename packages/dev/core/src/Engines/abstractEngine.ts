@@ -276,6 +276,9 @@ export abstract class AbstractEngine {
     /** @internal */
     protected _isWebGPU: boolean = false;
 
+    /** @internal */
+    public _enableGPUDebugMarkers: boolean = false;
+
     // Focus
     /** @internal */
     public _onFocus: () => void;

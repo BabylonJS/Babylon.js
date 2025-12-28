@@ -900,7 +900,10 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         this._shadowMap.onBeforeBindObservable.add(() => {
             this._currentSceneUBO = this._scene.getSceneUniformBuffer();
-            engine._debugPushGroup?.(`cascaded shadow map generation for pass id ${engine.currentRenderPassId}`, 1);
+            if (engine._enableGPUDebugMarkers) {
+                engine.restoreDefaultFramebuffer();
+                engine._debugPushGroup(`Cascaded shadow map generation for pass id ${engine.currentRenderPassId}`);
+            }
             if (this._breaksAreDirty) {
                 this._splitFrustum();
             }

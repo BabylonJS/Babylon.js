@@ -222,10 +222,11 @@ export const evaluateInitEngineForVisualization = async ({
             wasmPath: baseUrl + "/twgsl/twgsl.wasm",
         };
 
-        const options = {
+        const options: BABYLON.WebGPUEngineOptions = {
             enableAllFeatures: true,
             setMaximumLimits: true,
             antialias: false,
+            enableGPUDebugMarkers: false,
         };
 
         const engine = new BABYLON.WebGPUEngine(window.canvas, options);

@@ -393,6 +393,14 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
+
+        this.onBeforeTaskExecute.add(() => {
+            /**
+             * When clustered lights are used, we need to disable the debug markers because there's a flushFramebuffer call
+             * done by the clustered light container during the frame rendering that breaks the debug groups.
+             */
+            this._disableDebugMarkers = this._engine._enableGPUDebugMarkers && this._sceneHasClusteredLights();
+        });
     }
 
     public override isReady() {
@@ -451,7 +459,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
                 currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
             }
 
-            this._prepareRendering(context, depthEnabled);
+            const attachments = this._prepareRendering(context, depthEnabled);
 
             const currentOITRenderer = this._scene.depthPeelingRenderer;
             this._scene._depthPeelingRenderer = this._oitRenderer;
@@ -465,13 +473,23 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
 
                     this._renderer.activeCamera = rigCamera;
 
-                    context.render(this._renderer, this._textureWidth, this._textureHeight);
+                    context.pushDebugGroup(`Render ${renderTransmissiveMeshes ? "non transmissive meshes" : "objects"} for camera rig ${index} "${rigCamera.name}"`);
+                    context.bindRenderTarget(pass.frameGraphRenderTarget);
+                    attachments && context.bindAttachments(attachments);
+                    context.render(this._renderer, this._textureWidth, this._textureHeight, true);
+                    context.popDebugGroup();
 
                     rigCamera.rigParent = camera;
                 }
                 this._renderer.activeCamera = camera;
             } else {
-                context.render(this._renderer, this._textureWidth, this._textureHeight);
+                context.pushDebugGroup(
+                    `Render ${renderTransmissiveMeshes ? "non transmissive meshes" : "objects"} for camera "${this._renderer.activeCamera?.name ?? "undefined"}"`
+                );
+                context.bindRenderTarget(pass.frameGraphRenderTarget);
+                attachments && context.bindAttachments(attachments);
+                context.render(this._renderer, this._textureWidth, this._textureHeight, true);
+                context.popDebugGroup();
             }
 
             additionalExecute?.(context);
@@ -562,8 +580,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
         return Array.isArray(this.targetTexture) ? this.targetTexture : [this.targetTexture];
     }
 
-    protected _prepareRendering(context: FrameGraphRenderContext, depthEnabled: boolean) {
+    protected _prepareRendering(context: FrameGraphRenderContext, depthEnabled: boolean): Nullable<number[]> {
         context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
+        return null;
     }
 
     protected _setLightsForShadow() {
@@ -629,5 +648,14 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
         }
 
         this._scene._useOrderIndependentTransparency = saveOIT;
+    }
+
+    protected _sceneHasClusteredLights() {
+        for (const light of this._scene.lights) {
+            if (light.getTypeID() === LightConstants.LIGHTTYPEID_CLUSTERED_CONTAINER && (light as ClusteredLightContainer).isSupported) {
+                return true;
+            }
+        }
+        return false;
     }
 }
