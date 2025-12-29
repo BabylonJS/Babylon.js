@@ -213,8 +213,22 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
         if (value === this._renderTransmissiveMeshes) {
             return;
         }
+        if (this._renderTransmissiveMeshes && !value) {
+            this._setRefractionTexture(this.transmissiveMeshList?.meshes ?? this._transmissiveMeshes, true);
+        }
         this._renderTransmissiveMeshes = value;
     }
+
+    /**
+     * The parameters used to create the refraction texture for transmissive materials.
+     * Only used if renderTransmissiveMeshes is true.
+     */
+    public refractionTextureParameters = {
+        width: 1024,
+        height: 1024,
+        sizeIsPercentage: false,
+        type: Constants.TEXTURETYPE_HALF_FLOAT,
+    };
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private _useOITForTransparentMeshes = false;
@@ -490,16 +504,16 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
         let nonTransmissiveMeshesTexture: FrameGraphTextureHandle | undefined = undefined;
         if (this._renderTransmissiveMeshes) {
             nonTransmissiveMeshesTexture = this._frameGraph.textureManager.createRenderTargetTexture("transmisionTexture", {
-                size: { width: 1024, height: 1024 },
+                size: { width: this.refractionTextureParameters.width, height: this.refractionTextureParameters.height },
                 options: {
                     createMipMaps: true,
-                    types: [Constants.TEXTURETYPE_HALF_FLOAT],
+                    types: [this.refractionTextureParameters.type],
                     formats: [Constants.TEXTUREFORMAT_RGBA],
                     samples: 1,
                     useSRGBBuffers: [false],
                     labels: ["transmissionTexture"],
                 },
-                sizeIsPercentage: false,
+                sizeIsPercentage: this.refractionTextureParameters.sizeIsPercentage,
             });
             nonTransmissiveMeshesRenderTarget = new FrameGraphRenderTarget(this.name + "_nonTransmissiveMeshesRT", this._frameGraph.textureManager, nonTransmissiveMeshesTexture);
         }
@@ -813,16 +827,18 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
         return false;
     }
 
-    protected _setRefractionTexture(transmissiveMeshList: AbstractMesh[]) {
+    protected _setRefractionTexture(transmissiveMeshList: AbstractMesh[], remove = false) {
         if (this.transmissiveMeshList) {
             return;
         }
+
+        const texture = remove ? null : this.refractionTexture;
 
         for (let i = 0; i < transmissiveMeshList.length; i++) {
             const mesh = transmissiveMeshList[i];
             const material = mesh.material;
             if (material) {
-                (material as any).refractionTexture = this.refractionTexture;
+                (material as any).refractionTexture = texture;
             }
         }
     }

@@ -14,6 +14,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 import { NodeRenderGraphConnectionPointCustomObject } from "../../nodeRenderGraphConnectionPointCustomObject";
 import { FrameGraphObjectRendererTask } from "core/FrameGraph/Tasks/Rendering/objectRendererTask";
+import { Constants } from "core/Engines/constants";
 
 /**
  * @internal
@@ -242,6 +243,56 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this._frameGraphTask.oitPassCount = value;
     }
 
+    /** Indicates if transmissive meshes should be rendered */
+    @editableInPropertyPage("    Render transmissive meshes", PropertyTypeForEdition.Boolean, "RENDERING")
+    public get renderTransmissiveMeshes() {
+        return this._frameGraphTask.renderTransmissiveMeshes;
+    }
+
+    public set renderTransmissiveMeshes(value: boolean) {
+        this._frameGraphTask.renderTransmissiveMeshes = value;
+    }
+
+    /** Indicates if the refraction texture size is in percentage */
+    @editableInPropertyPage("        Size is in percentage", PropertyTypeForEdition.Boolean, "RENDERING")
+    public get refractionTextureSizeIsPercentage() {
+        return this._frameGraphTask.refractionTextureParameters.sizeIsPercentage;
+    }
+
+    public set refractionTextureSizeIsPercentage(value: boolean) {
+        this._frameGraphTask.refractionTextureParameters.sizeIsPercentage = value;
+    }
+
+    /** Sets the width of the refraction texture */
+    @editableInPropertyPage("        Refraction texture width", PropertyTypeForEdition.Int, "RENDERING", { min: 1, max: 8192 })
+    public get refractionTextureWidth() {
+        return this._frameGraphTask.refractionTextureParameters.width;
+    }
+
+    public set refractionTextureWidth(value: number) {
+        this._frameGraphTask.refractionTextureParameters.width = value;
+    }
+
+    /** Sets the height of the refraction texture */
+    @editableInPropertyPage("        Refraction texture height", PropertyTypeForEdition.Int, "RENDERING", { min: 1, max: 8192 })
+    public get refractionTextureHeight() {
+        return this._frameGraphTask.refractionTextureParameters.height;
+    }
+
+    public set refractionTextureHeight(value: number) {
+        this._frameGraphTask.refractionTextureParameters.height = value;
+    }
+
+    /** Indicates if the refraction texture size is in percentage */
+    @editableInPropertyPage("        Refraction texture type", PropertyTypeForEdition.TextureType, "RENDERING")
+    public get refractionTextureType() {
+        return this._frameGraphTask.refractionTextureParameters.type;
+    }
+
+    public set refractionTextureType(value: number) {
+        this._frameGraphTask.refractionTextureParameters.type = value;
+    }
+
     /** Indicates if particles should be rendered */
     @editableInPropertyPage("Render particles", PropertyTypeForEdition.Boolean, "RENDERING")
     public get renderParticles() {
@@ -464,6 +515,11 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         codes.push(`${this._codeVariableName}.renderTransparentMeshes = ${this.renderTransparentMeshes};`);
         codes.push(`${this._codeVariableName}.useOITForTransparentMeshes = ${this.useOITForTransparentMeshes};`);
         codes.push(`${this._codeVariableName}.oitPassCount = ${this.oitPassCount};`);
+        codes.push(`${this._codeVariableName}.renderTransmissiveMeshes = ${this.renderTransmissiveMeshes};`);
+        codes.push(`${this._codeVariableName}.refractionTextureSizeIsPercentage = ${this.refractionTextureSizeIsPercentage};`);
+        codes.push(`${this._codeVariableName}.refractionTextureWidth = ${this.refractionTextureWidth};`);
+        codes.push(`${this._codeVariableName}.refractionTextureHeight = ${this.refractionTextureHeight};`);
+        codes.push(`${this._codeVariableName}.refractionTextureType = ${this.refractionTextureType};`);
         codes.push(`${this._codeVariableName}.renderParticles = ${this.renderParticles};`);
         codes.push(`${this._codeVariableName}.renderSprites = ${this.renderSprites};`);
         codes.push(`${this._codeVariableName}.forceLayerMaskCheck = ${this.forceLayerMaskCheck};`);
@@ -488,6 +544,11 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         serializationObject.renderTransparentMeshes = this.renderTransparentMeshes;
         serializationObject.useOITForTransparentMeshes = this.useOITForTransparentMeshes;
         serializationObject.oitPassCount = this.oitPassCount;
+        serializationObject.renderTransmissiveMeshes = this.renderTransmissiveMeshes;
+        serializationObject.refractionTextureSizeIsPercentage = this.refractionTextureSizeIsPercentage;
+        serializationObject.refractionTextureWidth = this.refractionTextureWidth;
+        serializationObject.refractionTextureHeight = this.refractionTextureHeight;
+        serializationObject.refractionTextureType = this.refractionTextureType;
         serializationObject.renderParticles = this.renderParticles;
         serializationObject.renderSprites = this.renderSprites;
         serializationObject.forceLayerMaskCheck = this.forceLayerMaskCheck;
@@ -512,6 +573,11 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.renderTransparentMeshes = serializationObject.renderTransparentMeshes ?? true;
         this.useOITForTransparentMeshes = serializationObject.useOITForTransparentMeshes ?? false;
         this.oitPassCount = serializationObject.oitPassCount ?? 5;
+        this.renderTransmissiveMeshes = serializationObject.renderTransmissiveMeshes ?? true;
+        this.refractionTextureSizeIsPercentage = serializationObject.refractionTextureSizeIsPercentage ?? false;
+        this.refractionTextureWidth = serializationObject.refractionTextureWidth ?? 1024;
+        this.refractionTextureHeight = serializationObject.refractionTextureHeight ?? 1024;
+        this.refractionTextureType = serializationObject.refractionTextureType ?? Constants.TEXTURETYPE_HALF_FLOAT;
         this.renderParticles = serializationObject.renderParticles ?? true;
         this.renderSprites = serializationObject.renderSprites ?? true;
         this.forceLayerMaskCheck = serializationObject.forceLayerMaskCheck ?? true;

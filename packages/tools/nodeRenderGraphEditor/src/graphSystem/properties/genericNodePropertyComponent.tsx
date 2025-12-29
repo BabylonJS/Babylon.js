@@ -242,6 +242,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                                 label={displayName}
                                 target={block}
                                 propertyName={propertyName}
+                                decimalCount={0}
                                 step={1}
                                 minimum={Math.min(options.min as number, options.max as number)}
                                 maximum={options.max as number}
