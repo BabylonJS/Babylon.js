@@ -37,12 +37,6 @@ export class GeospatialCameraMovement extends CameraMovement {
 
     public zoomToCursor: boolean = true;
 
-    /**
-     * Enables rotation around a specific point, instead of default rotation around center
-     * @internal
-     */
-    public alternateRotationPt?: Vector3;
-
     private _tempPickingRay: Ray;
     private _storedZoomPickDistance: number | undefined;
 
