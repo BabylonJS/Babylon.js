@@ -1120,6 +1120,7 @@ export class Geometry implements IGetSetVerticesData {
      * Vertex buffers will not store CPU data anymore (this will prevent picking, collisions or physics to work correctly)
      */
     public clearCachedData(): void {
+        this._totalIndices = this._indices.length; // save the current value so that getTotalIndices can still work
         this._indices = [];
         this._resetPointsArrayCache();
 
