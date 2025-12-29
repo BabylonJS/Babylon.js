@@ -2747,6 +2747,10 @@
             "playgroundId": "#XSNYAU#160"
         },
         {
+            "title": "FrameGraph nrge transmission",
+            "playgroundId": "#L9FVNT#1"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#3",
             "errorRatio": 2
@@ -2824,6 +2828,10 @@
         {
             "title": "FrameGraph multi-render targets",
             "playgroundId": "#XSNYAU#165"
+        },
+        {
+            "title": "FrameGraph transmission (manual)",
+            "playgroundId": "#L9FVNT#2"
         },
         {
             "title": "Render target texture with clustered lights",

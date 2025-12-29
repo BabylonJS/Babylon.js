@@ -199,6 +199,11 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
     private _renderTransmissiveMeshes = true;
     /**
      * Defines if transmissive meshes should be rendered (default is true). Always subject to the renderMeshes property, though.
+     * If you don't have transmissive materials in your scene, you should set this property to false to improve performance.
+     * If set to true, you can improve performance further by providing a list of transmissive meshes via the transmissiveMeshList property.
+     * It will free the task from the cost of generating the list of transmissive meshes on each frame.
+     * Note that if transmissiveMeshList is provided, you are also responsible for setting the refraction texture on the transmissive materials.
+     * You can access the refraction texture via the refractionTexture property.
      */
     public get renderTransmissiveMeshes() {
         return this._renderTransmissiveMeshes;
@@ -431,6 +436,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
         this._generateMipMaps = new FrameGraphGenerateMipMapsTask(name + "_generateMipMaps", frameGraph);
 
         this.refractionTexture = new Texture(null, scene, true);
+        this.refractionTexture.name = name + "_refractionTexture";
         this.refractionTexture.anisotropicFilteringLevel = 1;
         this.refractionTexture.lodGenerationScale = 1;
         this.refractionTexture.lodGenerationOffset = -4;
@@ -450,7 +456,18 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
     }
 
     public override isReady() {
-        return this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
+        this._renderer.renderList = this.objectList.meshes;
+        this._renderer.particleSystemList = this.objectList.particleSystems;
+
+        let isReady = this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
+
+        if (this._renderTransmissiveMeshes && this.transmissiveMeshList && this.transmissiveMeshList.meshes && this.transmissiveMeshList.meshes.length > 0) {
+            this._renderer.renderList = this.transmissiveMeshList.meshes;
+
+            isReady = isReady && this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
+        }
+
+        return isReady;
     }
 
     public override getClassName(): string {
@@ -459,10 +476,6 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
 
     public record(skipCreationOfDisabledPasses = false, additionalExecute?: (context: FrameGraphRenderContext) => void): FrameGraphRenderPass {
         this._checkParameters();
-
-        // Make sure the renderList / particleSystemList are set when FrameGraphObjectRendererTask.isReady() is called!
-        this._renderer.renderList = this.objectList.meshes;
-        this._renderer.particleSystemList = this.objectList.particleSystems;
 
         const targetTextures = this._getTargetHandles();
 
@@ -503,6 +516,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
             if (nonTransmissiveMeshesTexture !== undefined) {
                 context.setTextureSamplingMode(nonTransmissiveMeshesTexture, Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
                 this.refractionTexture._texture = nonTransmissiveMeshesRenderTarget!.renderTargetWrapper!.texture!;
+                this.refractionTexture._texture.incrementReferences();
             }
         });
         pass.setExecuteFunc((context) => {
@@ -521,7 +535,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
                 this._oitRenderer.blendOutput = this._rtForOrderIndependentTransparency.renderTargetWrapper!;
             }
 
-            const renderTransmissiveMeshes = this._renderTransmissiveMeshes && nonTransmissiveMeshesRenderTarget;
+            const renderTransmissiveMeshes = this._renderTransmissiveMeshes && !!nonTransmissiveMeshesRenderTarget;
 
             if (this._renderTransmissiveMeshes && !this.transmissiveMeshList) {
                 this._generateMeshLists();
@@ -537,7 +551,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
 
             const attachments = this._prepareRendering(context, depthEnabled);
 
-            const currentOITRenderer = this._scene.depthPeelingRenderer;
+            const currentOITRenderer = this._scene._depthPeelingRenderer;
             this._scene._depthPeelingRenderer = this._oitRenderer;
 
             const camera = this._renderer.activeCamera;
@@ -580,6 +594,11 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
             if (renderTransmissiveMeshes) {
                 const transmissiveMeshes = this.transmissiveMeshList ? this.transmissiveMeshList.meshes : this._transmissiveMeshes;
                 if (transmissiveMeshes && transmissiveMeshes.length > 0) {
+                    const transmissiveMeshList = this.transmissiveMeshList?.meshes ?? this._transmissiveMeshes;
+
+                    this._renderer.renderList = transmissiveMeshList;
+                    this._setRefractionTexture(transmissiveMeshList);
+
                     // Copy the output texture (non transmissive meshes have been rendered in it at this point) to the non transmissive meshes texture
                     context.restoreDefaultFramebuffer();
                     context.setTextureSamplingMode(this.outputTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
@@ -597,20 +616,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
                     context.restoreDefaultFramebuffer();
                     context.popDebugGroup();
 
-                    const meshList = this.transmissiveMeshList?.meshes ?? this._transmissiveMeshes;
-
-                    if (!this.transmissiveMeshList) {
-                        for (let i = 0; i < meshList.length; i++) {
-                            const mesh = meshList[i];
-                            const material = mesh.material;
-                            if (material) {
-                                (material as any).refractionTexture = this.refractionTexture;
-                            }
-                        }
-                    }
-
-                    this._renderer.renderList = meshList;
-
+                    // Render transmissive meshes
                     context.pushDebugGroup(`Render transmissive meshes`);
                     context.bindRenderTarget(pass.frameGraphRenderTarget);
                     context.render(this._renderer, this._textureWidth, this._textureHeight, true);
@@ -805,5 +811,19 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
             }
         }
         return false;
+    }
+
+    protected _setRefractionTexture(transmissiveMeshList: AbstractMesh[]) {
+        if (this.transmissiveMeshList) {
+            return;
+        }
+
+        for (let i = 0; i < transmissiveMeshList.length; i++) {
+            const mesh = transmissiveMeshList[i];
+            const material = mesh.material;
+            if (material) {
+                (material as any).refractionTexture = this.refractionTexture;
+            }
+        }
     }
 }
