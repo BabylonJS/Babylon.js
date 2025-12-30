@@ -30,13 +30,13 @@ import {
     BindMorphTargetParameters,
     BindSceneUniformBuffer,
     PrepareDefinesAndAttributesForMorphTargets,
-    PrepareVertexPullingUniforms,
-    BindVertexPullingUniforms,
     PushAttributesForInstances,
 } from "./materialHelper.functions";
-import type { IVertexPullingMetadata } from "./materialHelper.functions";
 import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like, IVector4Like } from "core/Maths/math.like";
 import type { InternalTexture } from "./Textures/internalTexture";
+
+import { PrepareVertexPullingUniforms, BindVertexPullingUniforms } from "./vertexPullingHelper.functions";
+import type { IVertexPullingMetadata } from "./vertexPullingHelper.functions";
 
 const OnCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -913,16 +913,7 @@ export class ShaderMaterial extends PushMaterial {
                     });
                 }
             }
-        }
 
-        if (this.customShaderNameResolve) {
-            uniforms = uniforms.slice();
-            uniformBuffers = uniformBuffers.slice();
-            samplers = samplers.slice();
-            shaderName = this.customShaderNameResolve(this.name, uniforms, uniformBuffers, samplers, defines, attribs);
-        }
-
-        if (renderingMesh && this.useVertexPulling) {
             defines.push("#define USE_VERTEX_PULLING");
 
             const indexBuffer = renderingMesh.geometry?.getIndexBuffer();
@@ -932,6 +923,13 @@ export class ShaderMaterial extends PushMaterial {
                     defines.push("#define VERTEX_PULLING_INDEX_BUFFER_32BITS");
                 }
             }
+        }
+
+        if (this.customShaderNameResolve) {
+            uniforms = uniforms.slice();
+            uniformBuffers = uniformBuffers.slice();
+            samplers = samplers.slice();
+            shaderName = this.customShaderNameResolve(this.name, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
         const drawWrapper = storeEffectOnSubMeshes ? subMesh._getDrawWrapper(undefined, true) : this._drawWrapper;
