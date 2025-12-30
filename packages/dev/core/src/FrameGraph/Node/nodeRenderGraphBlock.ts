@@ -299,6 +299,10 @@ export class NodeRenderGraphBlock {
             NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer |
                 NodeRenderGraphBlockConnectionPointTypes.ResourceContainer |
                 NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator |
+                NodeRenderGraphBlockConnectionPointTypes.ObjectList |
+                NodeRenderGraphBlockConnectionPointTypes.ShadowLight |
+                NodeRenderGraphBlockConnectionPointTypes.Camera |
+                NodeRenderGraphBlockConnectionPointTypes.Object |
                 additionalAllowedTypes
         );
 
@@ -385,6 +389,26 @@ export class NodeRenderGraphBlock {
         this.onBuildObservable.notifyObservers(this);
 
         return false;
+    }
+
+    protected _getConnectedTextures(targetConnectedPoint: Nullable<NodeRenderGraphConnectionPoint>) {
+        let textureHandles: FrameGraphTextureHandle | FrameGraphTextureHandle[] | undefined;
+        if (targetConnectedPoint) {
+            if (targetConnectedPoint.type === NodeRenderGraphBlockConnectionPointTypes.ResourceContainer) {
+                const container = targetConnectedPoint.ownerBlock as NodeRenderGraphResourceContainerBlock;
+                textureHandles = [];
+                for (let i = 0; i < container.inputs.length; i++) {
+                    const input = container.inputs[i];
+                    if (input.connectedPoint && input.connectedPoint.value !== undefined && NodeRenderGraphConnectionPoint.IsTextureHandle(input.connectedPoint.value)) {
+                        textureHandles.push(input.connectedPoint.value as FrameGraphTextureHandle);
+                    }
+                }
+            } else {
+                textureHandles = targetConnectedPoint.value as FrameGraphTextureHandle;
+            }
+        }
+
+        return textureHandles;
     }
 
     protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling = false) {

@@ -699,7 +699,6 @@ describe("Flow Nodes", () => {
         expect(log).not.toHaveBeenCalled();
     });
 
-    // variable/get and variable/set - set a variable and then get it. testing the out flow as well.
     test("variable/get and variable/set", async () => {
         await generateSimpleNodeGraph(
             [{ op: "variable/set" }, { op: "variable/get" }, { op: "flow/log", extension: "BABYLON" }],
@@ -707,57 +706,8 @@ describe("Flow Nodes", () => {
                 {
                     declaration: 0,
                     configuration: {
-                        variable: {
-                            value: [0], //the index of the variable
-                        },
-                    },
-                    values: {
-                        value: {
-                            type: 0,
-                            value: [1],
-                        },
-                    },
-                    flows: {
-                        out: {
-                            node: 2,
-                            socket: "in",
-                        },
-                    },
-                },
-                {
-                    declaration: 1,
-                    configuration: {
-                        variable: {
-                            value: [0], //the index of the variable
-                        },
-                    },
-                },
-                {
-                    declaration: 2,
-                    values: {
-                        message: {
-                            node: 1,
-                            socket: "value",
-                        },
-                    },
-                },
-            ],
-            [{ signature: "float" }],
-            [{ type: 0, value: [0] }]
-        );
-
-        expect(log).toHaveBeenCalledWith(1);
-    });
-
-    test("variable/get and variable/setMultiple", async () => {
-        await generateSimpleNodeGraph(
-            [{ op: "variable/setMultiple" }, { op: "variable/get" }, { op: "flow/log", extension: "BABYLON" }],
-            [
-                {
-                    declaration: 0,
-                    configuration: {
                         variables: {
-                            value: [0, 1], //the index of the variable
+                            value: [0, 1],
                         },
                     },
                     values: {
@@ -781,7 +731,7 @@ describe("Flow Nodes", () => {
                     declaration: 1,
                     configuration: {
                         variable: {
-                            value: [1], //the index of the variable
+                            value: [1],
                         },
                     },
                 },
@@ -1128,12 +1078,12 @@ describe("Flow Nodes", () => {
                 {
                     declaration: 2,
                     configuration: {
-                        variable: {
+                        variables: {
                             value: [0], // the index of the variable
                         },
                     },
                     values: {
-                        value: {
+                        0: {
                             node: 4, // math add that increments the variable
                             socket: "value",
                         },
@@ -1144,7 +1094,7 @@ describe("Flow Nodes", () => {
                     declaration: 3,
                     configuration: {
                         variable: {
-                            value: [0], //the index of the variable
+                            value: [0], // the index of the variable
                         },
                     },
                 },

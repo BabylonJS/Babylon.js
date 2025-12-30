@@ -2,7 +2,7 @@ import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import { GeneralPropertyTabComponent, textureDepthStencilFormatList, textureFormatList, textureTypeList } from "./genericNodePropertyComponent";
+import { GeneralPropertyTabComponent, textureDepthStencilFormatList, textureFormatList, TextureTargetTypeList, textureTypeList } from "./genericNodePropertyComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { Nullable } from "core/types";
@@ -67,6 +67,20 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     propertyName="sizeIsPercentage"
                                     onValueChanged={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
+                                {creationOptions.options.targetTypes && (
+                                    <OptionsLine
+                                        label="Target Type"
+                                        options={TextureTargetTypeList}
+                                        target={creationOptions}
+                                        propertyName=""
+                                        onSelect={(value: number | string) => {
+                                            creationOptions.options.targetTypes![0] = value as number;
+                                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                        }}
+                                        extractValue={() => creationOptions.options.targetTypes![0]}
+                                        noDirectUpdate={true}
+                                    />
+                                )}
                                 <FloatLineComponent
                                     lockObject={this.props.stateManager.lockObject}
                                     digits={0}
@@ -87,6 +101,21 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     target={creationOptions.size}
                                     onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
+                                {creationOptions.options.layerCounts && (
+                                    <FloatLineComponent
+                                        lockObject={this.props.stateManager.lockObject}
+                                        digits={0}
+                                        step={"1"}
+                                        isInteger={true}
+                                        label="Layers/Depth"
+                                        propertyName=""
+                                        target={creationOptions.options}
+                                        onChange={(value) => {
+                                            creationOptions.options.layerCounts![0] = value;
+                                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                        }}
+                                    />
+                                )}
                                 {creationOptions.options.formats && (
                                     <OptionsLine
                                         label="Format"

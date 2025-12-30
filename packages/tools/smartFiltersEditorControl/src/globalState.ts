@@ -5,7 +5,7 @@ import type { ThinEngine } from "core/Engines/thinEngine";
 import type { Nullable } from "core/types";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager.js";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject.js";
-import { type BaseBlock, type ConnectionPoint, SmartFilter } from "smart-filters";
+import { type BaseBlock, type ConnectionPoint, type OptimizerDebugMode, SmartFilter } from "smart-filters";
 import type { IBlockRegistration } from "smart-filters-blocks";
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport.js";
@@ -36,6 +36,8 @@ export class GlobalState {
     onSmartFilterLoadedObservable: Nullable<Observable<SmartFilter>>;
 
     optimizerEnabled: Nullable<ObservableProperty<boolean>>;
+
+    optimizerDebugMode: Nullable<ObservableProperty<OptimizerDebugMode | null>>;
 
     previewSizeManager: PreviewSizeManager = new PreviewSizeManager();
 
@@ -119,6 +121,7 @@ export class GlobalState {
         onNewEngine: Nullable<(engine: ThinEngine) => void>,
         onSmartFilterLoadedObservable: Nullable<Observable<SmartFilter>>,
         optimizerEnabled: Nullable<ObservableProperty<boolean>>,
+        optimizerDebugMode: Nullable<ObservableProperty<OptimizerDebugMode | null>>,
         smartFilter: Nullable<SmartFilter>,
         blockEditorRegistration: Nullable<BlockEditorRegistration>,
         hostElement: HTMLElement,
@@ -161,6 +164,7 @@ export class GlobalState {
         this.onNewEngine = onNewEngine;
         this.onSmartFilterLoadedObservable = onSmartFilterLoadedObservable;
         this.optimizerEnabled = optimizerEnabled;
+        this.optimizerDebugMode = optimizerDebugMode;
         this.smartFilter = smartFilter ?? new SmartFilter("New Filter");
         this.blockEditorRegistration = blockEditorRegistration;
         this.hostElement = hostElement;
