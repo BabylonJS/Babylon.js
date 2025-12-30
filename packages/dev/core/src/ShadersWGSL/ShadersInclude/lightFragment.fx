@@ -106,7 +106,9 @@
 
             // Simulates Light radius for diffuse and spec term
             // clear coat is using a dedicated roughness
-            #if defined(HEMILIGHT{X}) || defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+            #if defined(HEMILIGHT{X})
+                preInfo.roughness = roughness;
+            #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
                 preInfo.roughness = roughness;
             #else
                 preInfo.roughness = adjustRoughnessFromLightProperties(roughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
@@ -125,7 +127,7 @@
 
             #ifdef HEMILIGHT{X}
                 info.diffuse = computeHemisphericDiffuseLighting(preInfo, diffuse{X}.rgb, light{X}.vLightGround);
-            #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+            #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
                 info.diffuse = computeAreaDiffuseLighting(preInfo, diffuse{X}.rgb);
             #elif defined(SS_TRANSLUCENCY)
                 #ifndef SS_TRANSLUCENCY_LEGACY

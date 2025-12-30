@@ -80,7 +80,10 @@
 
         // Simulates Light radius for diffuse and spec term
         // clear coat is using a dedicated roughness
-        #if defined(HEMILIGHT{X}) || defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+        #if defined(HEMILIGHT{X})
+            preInfo{X}.roughness = specular_roughness;
+            preInfoCoat{X}.roughness = coat_roughness;
+        #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
             preInfo{X}.roughness = specular_roughness;
             preInfoCoat{X}.roughness = coat_roughness;
         #else
