@@ -155,6 +155,8 @@ export class SelectionMaskRenderer {
         this._resizeObserver = engine.onResizeObservable.add(() => {
             this._maskTexture?.resize({ width: engine.getRenderWidth(), height: engine.getRenderHeight() });
         });
+
+        this._addRenderTargetToScene();
     }
 
     /**
@@ -229,9 +231,8 @@ export class SelectionMaskRenderer {
 
     /**
      * Clears the current selection
-     * @param removeRenderTargetFromScene If true, removes the render target from the scene's custom render targets
      */
-    public clearSelection(removeRenderTargetFromScene = true): void {
+    public clearSelection(): void {
         if (this._selection.length === 0) {
             return;
         }
@@ -252,9 +253,6 @@ export class SelectionMaskRenderer {
         }
 
         this._nextSelectionId = 1;
-        if (removeRenderTargetFromScene) {
-            this._removeRenderTargetFromScene();
-        }
     }
 
     /**
@@ -305,7 +303,6 @@ export class SelectionMaskRenderer {
         this._nextSelectionId = nextId;
 
         maskTexture.renderList = [...this._selection];
-        this._addRenderTargetToScene();
     }
 
     /**
@@ -315,7 +312,7 @@ export class SelectionMaskRenderer {
      * @param meshes Meshes to set as the current selection
      */
     public setSelection(meshes: (AbstractMesh | AbstractMesh[])[]): void {
-        this.clearSelection(false);
+        this.clearSelection();
         this.addSelection(meshes);
     }
 
@@ -325,5 +322,12 @@ export class SelectionMaskRenderer {
      */
     public getMaskTexture(): Nullable<RenderTargetTexture> {
         return this._maskTexture;
+    }
+
+    /**
+     * Gets the current selection
+     */
+    public get selection(): readonly AbstractMesh[] {
+        return this._selection;
     }
 }

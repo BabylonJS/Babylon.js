@@ -103,11 +103,14 @@ export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline
     }
 
     private readonly _scene: Scene;
+    private _isDirty: boolean = true;
+    private _isDisposed: boolean = false;
+    private readonly _camerasToBeAttached: Camera[] = [];
     private readonly _textureType: number;
 
-    private _maskRenderer: SelectionMaskRenderer;
-    private _thinOutlinePostProcess: ThinSelectionOutlinePostProcess;
-    private _outlinePostProcess: PostProcess;
+    private readonly _thinOutlinePostProcess: ThinSelectionOutlinePostProcess;
+    private _maskRenderer: Nullable<SelectionMaskRenderer> = null;
+    private _outlinePostProcess: Nullable<PostProcess> = null;
 
     /**
      * Constructs a new selection outline rendering pipeline
@@ -127,6 +130,10 @@ export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline
     ) {
         super(scene.getEngine(), name);
 
+        this._cameras = cameras || scene.cameras;
+        this._cameras = this._cameras.slice();
+        this._camerasToBeAttached = this._cameras.slice();
+
         this._scene = scene;
         this._textureType = textureType;
         if (forceGeometryBuffer instanceof GeometryBufferRenderer) {
@@ -136,6 +143,8 @@ export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline
             this._forceGeometryBuffer = forceGeometryBuffer;
         }
 
+        this._thinOutlinePostProcess = new ThinSelectionOutlinePostProcess(this._name, scene.getEngine());
+
         // Set up assets
         if (this._forceGeometryBuffer) {
             if (!this._forcedGeometryBuffer) {
@@ -143,27 +152,6 @@ export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline
             }
         } else {
             scene.enablePrePassRenderer();
-        }
-
-        this._maskRenderer = new SelectionMaskRenderer(name, scene);
-        this._thinOutlinePostProcess = new ThinSelectionOutlinePostProcess(name, scene.getEngine());
-
-        this._outlinePostProcess = this._createSelectionOutlinePostProcess(this._textureType);
-
-        this.addEffect(
-            new PostProcessRenderEffect(
-                scene.getEngine(),
-                this.SelectionOutlineEffect,
-                () => {
-                    return this._outlinePostProcess;
-                },
-                true
-            )
-        );
-
-        scene.postProcessRenderPipelineManager.addPipeline(this);
-        if (cameras) {
-            scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
         }
     }
 
@@ -176,25 +164,50 @@ export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline
     }
 
     /**
+     * Adds a camera to the pipeline
+     * @param camera the camera to be added
+     */
+    public addCamera(camera: Camera): void {
+        this._camerasToBeAttached.push(camera);
+        this._isDirty = true;
+        if (this._maskRenderer !== null) {
+            // if pipeline is already built, build again
+            this._buildPipeline();
+        }
+    }
+
+    /**
+     * Removes a camera from the pipeline
+     * @param camera the camera to remove
+     */
+    public removeCamera(camera: Camera): void {
+        const index = this._camerasToBeAttached.indexOf(camera);
+        this._camerasToBeAttached.splice(index, 1);
+        this._isDirty = true;
+        if (this._maskRenderer !== null) {
+            // if pipeline is already built, build again
+            this._buildPipeline();
+        }
+    }
+
+    /**
      * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
      * @param disableGeometryBufferRenderer Set to true if you want to disable the Geometry Buffer renderer
      */
     public override dispose(disableGeometryBufferRenderer: boolean = false): void {
-        this.clearSelection();
-
-        for (let i = 0; i < this._cameras.length; i++) {
-            const camera = this._cameras[i];
-            this._outlinePostProcess?.dispose(camera);
+        if (this._isDisposed) {
+            return;
         }
+
+        this._disposePipeline();
 
         if (disableGeometryBufferRenderer && !this._forcedGeometryBuffer) {
             this._scene.disableGeometryBufferRenderer();
         }
 
-        this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
-        this._scene.postProcessRenderPipelineManager.removePipeline(this._name);
-
         this._thinOutlinePostProcess.dispose();
+
+        this._isDisposed = true;
 
         super.dispose();
     }
@@ -219,6 +232,51 @@ export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline
         return textureSize;
     }
 
+    private _buildPipeline(): void {
+        if (!this._isDirty || this._isDisposed) {
+            return;
+        }
+        this._disposePipeline();
+        this._isDirty = false;
+
+        const scene = this._scene;
+        this._maskRenderer = new SelectionMaskRenderer(this._name, scene);
+        this._outlinePostProcess = this._createSelectionOutlinePostProcess(this._textureType);
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                this.SelectionOutlineEffect,
+                () => {
+                    return this._outlinePostProcess;
+                },
+                true
+            )
+        );
+
+        scene.postProcessRenderPipelineManager.addPipeline(this);
+        scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
+    }
+
+    private _disposePipeline(): void {
+        this._maskRenderer?.dispose();
+        this._maskRenderer = null;
+
+        if (this._outlinePostProcess) {
+            for (let i = 0; i < this._cameras.length; i++) {
+                const camera = this._cameras[i];
+                this._outlinePostProcess.dispose(camera);
+            }
+            this._outlinePostProcess = null;
+        }
+
+        this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
+        // get back cameras to be used to reattach pipeline
+        this._cameras = this._camerasToBeAttached.slice();
+        this._reset();
+
+        this._isDirty = true; // to allow rebuilding
+    }
+
     private _createSelectionOutlinePostProcess(textureType: number): PostProcess {
         const outlinePostProcess = new PostProcess("selectionOutline", ThinSelectionOutlinePostProcess.FragmentUrl, {
             engine: this._scene.getEngine(),
@@ -240,7 +298,7 @@ export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline
             this._thinOutlinePostProcess.textureWidth = textureSize.width;
             this._thinOutlinePostProcess.textureHeight = textureSize.height;
 
-            effect.setTexture("maskSampler", this._maskRenderer.getMaskTexture());
+            effect.setTexture("maskSampler", this._maskRenderer!.getMaskTexture());
         });
 
         return outlinePostProcess;
@@ -248,14 +306,17 @@ export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline
 
     /**
      * Clears the current selection
+     * @param disablePipeline If true, disables the pipeline until a new selection is set (default: false)
      */
-    public clearSelection(): void {
-        this._maskRenderer.clearSelection();
+    public clearSelection(disablePipeline: boolean = false): void {
+        if (this._maskRenderer === null) {
+            return;
+        }
 
-        // if (this._outlinePostProcess && this._isOutlineProcessAttached) {
-        //     this._camera.detachPostProcess(this._outlinePostProcess);
-        //     this._isOutlineProcessAttached = false;
-        // }
+        this._maskRenderer.clearSelection();
+        if (disablePipeline) {
+            this._disposePipeline();
+        }
     }
 
     /**
@@ -265,7 +326,8 @@ export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline
      * @param meshes Meshes to add to the selection
      */
     public addSelection(meshes: (AbstractMesh | AbstractMesh[])[]): void {
-        this._maskRenderer.addSelection(meshes);
+        this._buildPipeline();
+        this._maskRenderer!.addSelection(meshes);
     }
 
     /**
@@ -275,8 +337,20 @@ export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline
      * @param meshes Meshes to set as the current selection
      */
     public setSelection(meshes: (AbstractMesh | AbstractMesh[])[]): void {
-        this._maskRenderer.setSelection(meshes);
+        this._buildPipeline();
+        this._maskRenderer!.setSelection(meshes);
     }
+
+    /**
+     * Gets the current selection
+     */
+    public get selection(): readonly AbstractMesh[] {
+        if (this._maskRenderer === null) {
+            return [];
+        }
+        return this._maskRenderer.selection;
+    }
+
     /**
      * Serialize the rendering pipeline (Used when exporting)
      * @returns the serialized object
