@@ -326,6 +326,9 @@ export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline
      * @param meshes Meshes to add to the selection
      */
     public addSelection(meshes: (AbstractMesh | AbstractMesh[])[]): void {
+        if (meshes.length === 0) {
+            return;
+        }
         this._buildPipeline();
         this._maskRenderer!.addSelection(meshes);
     }
@@ -335,8 +338,15 @@ export class SelectionOutlineRenderingPipeline extends PostProcessRenderPipeline
      *
      * If a group of meshes is provided, they will outline as a single unit
      * @param meshes Meshes to set as the current selection
+     * @param disablePipeline If true, disables the pipeline if the selection is empty (default: false)
      */
-    public setSelection(meshes: (AbstractMesh | AbstractMesh[])[]): void {
+    public setSelection(meshes: (AbstractMesh | AbstractMesh[])[], disablePipeline: boolean = false): void {
+        if (meshes.length === 0) {
+            if (disablePipeline) {
+                this._disposePipeline();
+            }
+            return;
+        }
         this._buildPipeline();
         this._maskRenderer!.setSelection(meshes);
     }
