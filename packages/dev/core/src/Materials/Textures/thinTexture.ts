@@ -164,6 +164,10 @@ export class ThinTexture {
         this._texture = ThinTexture._IsRenderTargetWrapper(internalTexture) ? internalTexture.texture : internalTexture;
         if (this._texture) {
             this._engine = this._texture.getEngine();
+
+            this.wrapU = this._texture._cachedWrapU ?? this.wrapU;
+            this.wrapV = this._texture._cachedWrapV ?? this.wrapV;
+            this.wrapR = this._texture._cachedWrapR ?? this.wrapR;
         }
     }
 
@@ -279,10 +283,11 @@ export class ThinTexture {
      *    > _min_: minification filter (far from the viewer)
      *    > _mip_: filter used between mip map levels
      *@param samplingMode Define the new sampling mode of the texture
+     *@param generateMipMaps Define if the texture should generate mip maps or not. Default is false.
      */
-    public updateSamplingMode(samplingMode: number): void {
+    public updateSamplingMode(samplingMode: number, generateMipMaps = false): void {
         if (this._texture && this._engine) {
-            this._engine.updateTextureSamplingMode(samplingMode, this._texture);
+            this._engine.updateTextureSamplingMode(samplingMode, this._texture, this._texture.generateMipMaps && generateMipMaps);
         }
     }
 

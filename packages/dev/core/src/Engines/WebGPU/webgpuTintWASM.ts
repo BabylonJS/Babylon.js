@@ -4,6 +4,7 @@ import { Tools } from "../../Misc/tools";
 /**
  * Options to load the associated Twgsl library
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface TwgslOptions {
     /**
      * Defines an existing instance of Twgsl (useful in modules who do not access the global instance).
@@ -22,7 +23,7 @@ export interface TwgslOptions {
 /** @internal */
 export class WebGPUTintWASM {
     // Default twgsl options.
-    private static readonly _TWgslDefaultOptions: TwgslOptions = {
+    private static readonly _TwgslDefaultOptions: TwgslOptions = {
         jsPath: `${Tools._DefaultCdnUrl}/twgsl/twgsl.js`,
         wasmPath: `${Tools._DefaultCdnUrl}/twgsl/twgsl.wasm`,
     };
@@ -33,6 +34,7 @@ export class WebGPUTintWASM {
 
     private static _Twgsl: any = null;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async initTwgsl(twgslOptions?: TwgslOptions): Promise<void> {
         if (WebGPUTintWASM._Twgsl) {
             return;
@@ -40,13 +42,13 @@ export class WebGPUTintWASM {
 
         twgslOptions = twgslOptions || {};
         twgslOptions = {
-            ...WebGPUTintWASM._TWgslDefaultOptions,
+            ...WebGPUTintWASM._TwgslDefaultOptions,
             ...twgslOptions,
         };
 
         if (twgslOptions.twgsl) {
             WebGPUTintWASM._Twgsl = twgslOptions.twgsl;
-            return Promise.resolve();
+            return;
         }
 
         if (twgslOptions.jsPath && twgslOptions.wasmPath) {
@@ -54,11 +56,12 @@ export class WebGPUTintWASM {
         }
 
         if ((self as any).twgsl) {
-            WebGPUTintWASM._Twgsl = await (self as any).twgsl(Tools.GetBabylonScriptURL(twgslOptions!.wasmPath!));
-            return Promise.resolve();
+            // eslint-disable-next-line require-atomic-updates
+            WebGPUTintWASM._Twgsl = await (self as any).twgsl(Tools.GetBabylonScriptURL(twgslOptions.wasmPath!));
+            return;
         }
 
-        return Promise.reject("twgsl is not available.");
+        throw new Error("twgsl is not available.");
     }
 
     public convertSpirV2WGSL(code: Uint32Array, disableUniformityAnalysis = false): string {

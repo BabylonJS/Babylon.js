@@ -106,15 +106,15 @@ export class BlockNodeData implements INodeData {
         nodeContainer: INodeContainer
     ) {
         if (data.inputs) {
-            this.data.inputs.forEach((input) => {
+            for (const input of this.data.inputs) {
                 this._inputs.push(new ConnectionPointPortData(input, nodeContainer));
-            });
+            }
         }
 
         if (data.outputs && !this.data.isTeleportIn) {
-            this.data.outputs.forEach((output) => {
+            for (const output of this.data.outputs) {
                 this._outputs.push(new ConnectionPointPortData(output, nodeContainer));
-            });
+            }
         }
     }
 

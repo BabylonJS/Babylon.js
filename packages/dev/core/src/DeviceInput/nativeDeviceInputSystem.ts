@@ -4,6 +4,7 @@ import { DeviceEventFactory } from "./eventFactory";
 import { DeviceType } from "./InputDevices/deviceEnums";
 import type { IDeviceInputSystem } from "./inputInterfaces";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
 
 /** @internal */

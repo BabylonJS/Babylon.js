@@ -45,9 +45,10 @@ export class FlowGraphSwitchBlock<T extends FlowGraphNumber> extends FlowGraphEx
         this.case = this.registerDataInput("case", RichTypeAny);
 
         // iterate the set not using for of
-        (this.config.cases || []).forEach((caseValue) => {
+        const array = this.config.cases || [];
+        for (const caseValue of array) {
             this._caseToOutputFlow.set(caseValue, this._registerSignalOutput(`out_${caseValue}`));
-        });
+        }
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {

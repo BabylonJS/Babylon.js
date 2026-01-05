@@ -36,6 +36,34 @@ struct Splat {
 #endif
 };
 
+float getSplatIndex(int localIndex)
+{
+    float splatIndex;
+    switch (localIndex)
+    {
+        case 0: splatIndex = splatIndex0.x; break;
+        case 1: splatIndex = splatIndex0.y; break;
+        case 2: splatIndex = splatIndex0.z; break;
+        case 3: splatIndex = splatIndex0.w; break;
+
+        case 4: splatIndex = splatIndex1.x; break;
+        case 5: splatIndex = splatIndex1.y; break;
+        case 6: splatIndex = splatIndex1.z; break;
+        case 7: splatIndex = splatIndex1.w; break;
+
+        case 8: splatIndex = splatIndex2.x; break;
+        case 9: splatIndex = splatIndex2.y; break;
+        case 10: splatIndex = splatIndex2.z; break;
+        case 11: splatIndex = splatIndex2.w; break;
+
+        case 12: splatIndex = splatIndex3.x; break;
+        case 13: splatIndex = splatIndex3.y; break;
+        case 14: splatIndex = splatIndex3.z; break;
+        case 15: splatIndex = splatIndex3.w; break;
+    }
+    return splatIndex;
+}
+
 Splat readSplat(float splatIndex)
 {
     Splat splat;
@@ -126,12 +154,11 @@ vec4 decompose(uint value)
     return components * vec4(2./255.) - vec4(1.);
 }
 
-vec3 computeSH(Splat splat, vec3 color, vec3 dir)
+vec3 computeSH(Splat splat, vec3 dir)
 {
     vec3 sh[16];
     
-    sh[0] = color;
-
+    sh[0] = vec3(0.,0.,0.);
 #if SH_DEGREE > 0
     vec4 sh00 = decompose(splat.sh0.x);
     vec4 sh01 = decompose(splat.sh0.y);
@@ -172,16 +199,16 @@ vec3 computeSH(Splat splat, vec3 color, vec3 dir)
     return computeColorFromSHDegree(dir, sh);
 }
 #else
-vec3 computeSH(Splat splat, vec3 color, vec3 dir)
+vec3 computeSH(Splat splat, vec3 dir)
 {
-    return color;
+    return vec3(0.,0.,0.);
 }
 #endif
 
 vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 covB, mat4 worldMatrix, mat4 viewMatrix, mat4 projectionMatrix)
 {
     mat4 modelView = viewMatrix * worldMatrix;
-    vec4 camspace = viewMatrix * vec4(worldPos,1.);
+    vec4 camspace = viewMatrix * vec4(worldPos, 1.);
     vec4 pos2d = projectionMatrix * camspace;
 
     float bounds = 1.2 * pos2d.w;
@@ -196,16 +223,46 @@ vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 
         covA.z, covB.y, covB.z
     );
 
-    mat3 J = mat3(
-        focal.x / camspace.z, 0., -(focal.x * camspace.x) / (camspace.z * camspace.z), 
-        0., focal.y / camspace.z, -(focal.y * camspace.y) / (camspace.z * camspace.z), 
-        0., 0., 0.
-    );
+    // Detect if projection is orthographic (projectionMatrix[3][3] == 1.0)
+    bool isOrtho = abs(projectionMatrix[3][3] - 1.0) < 0.001;
+    
+    mat3 J;
+    if (isOrtho) {
+        // Orthographic projection: no perspective division needed
+        // Just the focal/scale terms without z-dependence
+        J = mat3(
+            focal.x, 0., 0., 
+            0., focal.y, 0., 
+            0., 0., 0.
+        );
+    } else {
+        // Perspective projection: original Jacobian with z-dependence
+        J = mat3(
+            focal.x / camspace.z, 0., -(focal.x * camspace.x) / (camspace.z * camspace.z), 
+            0., focal.y / camspace.z, -(focal.y * camspace.y) / (camspace.z * camspace.z), 
+            0., 0., 0.
+        );
+    }
 
-    mat3 invy = mat3(1,0,0, 0,-1,0,0,0,1);
-
-    mat3 T = invy * transpose(mat3(modelView)) * J;
+    mat3 T = transpose(mat3(modelView)) * J;
     mat3 cov2d = transpose(T) * Vrk * T;
+
+#if COMPENSATION
+    float c00 = cov2d[0][0];
+    float c11 = cov2d[1][1];
+    float c01 = cov2d[0][1];
+    float detOrig = c00 * c11 - c01 * c01;
+#endif
+
+    cov2d[0][0] += kernelSize;
+    cov2d[1][1] += kernelSize;
+
+#if COMPENSATION
+    vec3 c2d = vec3(cov2d[0][0], c01, cov2d[1][1]);
+    float detBlur = c2d.x * c2d.z - c2d.y * c2d.y;
+    float compensation = sqrt(max(0., detOrig / detBlur));
+    vColor.w *= compensation;
+#endif
 
     float mid = (cov2d[0][0] + cov2d[1][1]) / 2.0;
     float radius = length(vec2((cov2d[0][0] - cov2d[1][1]) / 2.0, cov2d[0][1]));
@@ -222,8 +279,12 @@ vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 
     vec2 minorAxis = min(sqrt(2.0 * lambda2), 1024.0) * vec2(diagonalVector.y, -diagonalVector.x);
 
     vec2 vCenter = vec2(pos2d);
+    
+    // For ortho projection, pos2d.w is 1.0
+    float scaleFactor = isOrtho ? 1.0 : pos2d.w;
+    
     return vec4(
         vCenter 
         + ((meshPos.x * majorAxis
-        + meshPos.y * minorAxis) * invViewport * pos2d.w) * scale, pos2d.zw);
+        + meshPos.y * minorAxis) * invViewport * scaleFactor) * scale, pos2d.zw);
 }

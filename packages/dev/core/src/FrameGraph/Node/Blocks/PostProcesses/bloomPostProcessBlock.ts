@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Scene, FrameGraph } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
@@ -10,6 +9,8 @@ import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
  */
 export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
     protected override _frameGraphTask: FrameGraphBloomTask;
+
+    public override _additionalConstructionParameters: [boolean, number];
 
     /**
      * Gets the frame graph task associated with this block
@@ -71,7 +72,7 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBasePos
     }
 
     /** The luminance threshold to find bright areas of the image to bloom. */
-    @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 2 })
+    @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
     public get threshold(): number {
         return this._frameGraphTask.bloom.threshold;
     }

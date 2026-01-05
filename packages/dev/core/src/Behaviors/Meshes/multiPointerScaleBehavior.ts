@@ -19,6 +19,13 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
     private _sceneRenderObserver: Nullable<Observer<Scene>> = null;
 
     /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<Mesh> {
+        return this._ownerNode;
+    }
+
+    /**
      * Instantiate a new behavior that when attached to a mesh will allow the mesh to be scaled
      */
     constructor() {
@@ -26,6 +33,7 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
         this._dragBehaviorA.moveAttached = false;
         this._dragBehaviorB = new PointerDragBehavior({});
         this._dragBehaviorB.moveAttached = false;
+        this._ownerNode = null!;
     }
 
     /**
@@ -74,14 +82,15 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
         });
 
         // Once both drag behaviors are active scale based on the distance between the two pointers
-        [this._dragBehaviorA, this._dragBehaviorB].forEach((behavior) => {
+        const dragBehaviors = [this._dragBehaviorA, this._dragBehaviorB];
+        for (const behavior of dragBehaviors) {
             behavior.onDragObservable.add(() => {
                 if (this._dragBehaviorA.dragging && this._dragBehaviorB.dragging) {
                     const ratio = this._getCurrentDistance() / this._startDistance;
                     this._initialScale.scaleToRef(ratio, this._targetScale);
                 }
             });
-        });
+        }
 
         ownerNode.addBehavior(this._dragBehaviorA);
         ownerNode.addBehavior(this._dragBehaviorB);
@@ -101,10 +110,12 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
      */
     public detach(): void {
         this._ownerNode.getScene().onBeforeRenderObservable.remove(this._sceneRenderObserver);
-        [this._dragBehaviorA, this._dragBehaviorB].forEach((behavior) => {
+        const dragBehaviors = [this._dragBehaviorA, this._dragBehaviorB];
+        for (const behavior of dragBehaviors) {
             behavior.onDragStartObservable.clear();
             behavior.onDragObservable.clear();
             this._ownerNode.removeBehavior(behavior);
-        });
+        }
+        this._ownerNode = null!;
     }
 }

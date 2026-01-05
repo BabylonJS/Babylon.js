@@ -1,16 +1,16 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as GLTF1 from "loaders/glTF/1.0/index";
 
 /**
  * This is the entry point for the UMD module.
  * The entry point for a future ESM package should be index.ts
  */
-const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
-if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    (<any>globalObject).BABYLON.GLTF1 = (<any>globalObject).BABYLON.GLTF1 || {};
+const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
+if (typeof GlobalObject !== "undefined") {
+    (<any>GlobalObject).BABYLON = (<any>GlobalObject).BABYLON || {};
+    (<any>GlobalObject).BABYLON.GLTF1 = (<any>GlobalObject).BABYLON.GLTF1 || {};
     for (const key in GLTF1) {
-        (<any>globalObject).BABYLON.GLTF1[key] = (<any>GLTF1)[key];
+        (<any>GlobalObject).BABYLON.GLTF1[key] = (<any>GLTF1)[key];
     }
 }
 

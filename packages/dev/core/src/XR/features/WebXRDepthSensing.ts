@@ -17,10 +17,11 @@ import type { Material } from "core/Materials/material";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
-import { RegisterMaterialPlugin } from "core/Materials/materialPluginManager";
+import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager";
 import type { Camera } from "core/Cameras/camera";
 import { Matrix } from "core/Maths/math.vector";
 import type { Engine } from "core/Engines/engine";
+import { RegisterClass } from "../../Misc/typeStore";
 
 export type WebXRDepthUsage = "cpu" | "gpu";
 export type WebXRDepthDataFormat = "ushort" | "float" | "luminance-alpha";
@@ -84,16 +85,16 @@ class DepthSensingMaterialDefines extends MaterialDefines {
     DEPTH_SENSING_DISCARD = true;
 }
 
-let isPluginEnabled = false;
-let depthTexture: Nullable<RawTexture> = null;
-let alphaLuminanceTexture = false;
-const screenSize = { width: 512, height: 512 };
-const shaderViewport = { x: 0, y: 0, width: 1, height: 1 };
-let globalRawValueToMeters = 1;
-let viewIndex = 0;
-let enableDiscard = true;
-const uvTransform = Matrix.Identity();
-const managedMaterialPlugins: WebXRDepthSensingMaterialPlugin[] = [];
+let IsPluginEnabled = false;
+let DepthTexture: Nullable<RawTexture> = null;
+let AlphaLuminanceTexture = false;
+const ScreenSize = { width: 512, height: 512 };
+const ShaderViewport = { x: 0, y: 0, width: 1, height: 1 };
+let GlobalRawValueToMeters = 1;
+let ViewIndex = 0;
+let EnableDiscard = true;
+const UvTransform = Matrix.Identity();
+const ManagedMaterialPlugins: WebXRDepthSensingMaterialPlugin[] = [];
 
 /**
  * @internal
@@ -145,7 +146,8 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
     constructor(material: Material) {
         super(material, "DepthSensing", 222, new DepthSensingMaterialDefines());
         this._varColorName = material instanceof PBRBaseMaterial ? "finalColor" : "color";
-        managedMaterialPlugins.push(this);
+        this.doNotSerialize = true;
+        ManagedMaterialPlugins.push(this);
     }
 
     /**
@@ -153,10 +155,10 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
      * @param defines the defines
      */
     public override prepareDefines(defines: DepthSensingMaterialDefines) {
-        defines.DEPTH_SENSING = !!depthTexture && isPluginEnabled;
-        defines.DEPTH_SENSING_TEXTURE_ARRAY = depthTexture?.is2DArray ?? false;
-        defines.DEPTH_SENSING_TEXTURE_AL = alphaLuminanceTexture;
-        defines.DEPTH_SENSING_DISCARD = enableDiscard;
+        defines.DEPTH_SENSING = !!DepthTexture && IsPluginEnabled;
+        defines.DEPTH_SENSING_TEXTURE_ARRAY = DepthTexture?.is2DArray ?? false;
+        defines.DEPTH_SENSING_TEXTURE_AL = AlphaLuminanceTexture;
+        defines.DEPTH_SENSING_DISCARD = EnableDiscard;
     }
 
     public override getUniforms() {
@@ -186,13 +188,13 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
     }
 
     public override bindForSubMesh(uniformBuffer: UniformBuffer) {
-        if (isPluginEnabled && depthTexture) {
-            uniformBuffer.updateFloat2("ds_invScreenSize", 1 / screenSize.width, 1 / screenSize.height);
-            uniformBuffer.updateFloat("ds_rawValueToMeters", globalRawValueToMeters);
-            uniformBuffer.updateFloat("ds_viewIndex", viewIndex);
-            uniformBuffer.updateFloat4("ds_shaderViewport", shaderViewport.x, shaderViewport.y, shaderViewport.width, shaderViewport.height);
-            uniformBuffer.setTexture("ds_depthSampler", depthTexture);
-            uniformBuffer.updateMatrix("ds_uvTransform", uvTransform);
+        if (IsPluginEnabled && DepthTexture) {
+            uniformBuffer.updateFloat2("ds_invScreenSize", 1 / ScreenSize.width, 1 / ScreenSize.height);
+            uniformBuffer.updateFloat("ds_rawValueToMeters", GlobalRawValueToMeters);
+            uniformBuffer.updateFloat("ds_viewIndex", ViewIndex);
+            uniformBuffer.updateFloat4("ds_shaderViewport", ShaderViewport.x, ShaderViewport.y, ShaderViewport.width, ShaderViewport.height);
+            uniformBuffer.setTexture("ds_depthSampler", DepthTexture);
+            uniformBuffer.updateMatrix("ds_uvTransform", UvTransform);
         }
     }
 
@@ -279,13 +281,15 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
     }
 
     public override dispose(_forceDisposeTextures?: boolean): void {
-        const index = managedMaterialPlugins.indexOf(this);
+        const index = ManagedMaterialPlugins.indexOf(this);
         if (index !== -1) {
-            managedMaterialPlugins.splice(index, 1);
+            ManagedMaterialPlugins.splice(index, 1);
         }
         super.dispose(_forceDisposeTextures);
     }
 }
+
+RegisterClass(`BABYLON.DepthSensingMaterialPlugin`, WebXRDepthSensingMaterialPlugin);
 
 /**
  * WebXR Feature for WebXR Depth Sensing Module
@@ -424,7 +428,9 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         // https://immersive-web.github.io/depth-sensing/
         Tools.Warn("depth-sensing is an experimental and unstable feature.");
-        enableDiscard = !options.useToleranceFactorForDepthSensing;
+        EnableDiscard = !options.useToleranceFactorForDepthSensing;
+
+        RegisterMaterialPlugin("WebXRDepthSensingMaterialPlugin", (material) => new WebXRDepthSensingMaterialPlugin(material));
     }
 
     /**
@@ -433,7 +439,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * @param force should attachment be forced (even when already attached)
      * @returns true if successful.
      */
-    public override attach(force?: boolean | undefined): boolean {
+    public override attach(force?: boolean): boolean {
         if (!super.attach(force)) {
             return false;
         }
@@ -445,29 +451,29 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         this._glBinding = new XRWebGLBinding(this._xrSessionManager.session, (this._xrSessionManager.scene.getEngine() as ThinEngine)._gl);
 
-        isPluginEnabled = !this.options.disableDepthSensingOnMaterials;
-        if (isPluginEnabled) {
-            managedMaterialPlugins.forEach((plugin) => {
+        IsPluginEnabled = !this.options.disableDepthSensingOnMaterials;
+        if (IsPluginEnabled) {
+            for (const plugin of ManagedMaterialPlugins) {
                 plugin.isEnabled = true;
-            });
+            }
             this._onCameraObserver = this._xrSessionManager.scene.onBeforeCameraRenderObservable.add((camera) => {
-                if (!isPluginEnabled) {
+                if (!IsPluginEnabled) {
                     return;
                 }
                 // make sure this is a webxr camera
                 if (camera.outputRenderTarget) {
                     const viewport = camera.rigCameras.length > 0 ? camera.rigCameras[0].viewport : camera.viewport;
-                    screenSize.width = camera.outputRenderTarget.getRenderWidth() / (camera.rigParent ? camera.rigParent.rigCameras.length || 1 : 1);
-                    screenSize.height = camera.outputRenderTarget.getRenderHeight();
-                    shaderViewport.x = viewport.x;
-                    shaderViewport.y = viewport.y;
-                    shaderViewport.width = viewport.width;
-                    shaderViewport.height = viewport.height;
+                    ScreenSize.width = camera.outputRenderTarget.getRenderWidth() / (camera.rigParent ? camera.rigParent.rigCameras.length || 1 : 1);
+                    ScreenSize.height = camera.outputRenderTarget.getRenderHeight();
+                    ShaderViewport.x = viewport.x;
+                    ShaderViewport.y = viewport.y;
+                    ShaderViewport.width = viewport.width;
+                    ShaderViewport.height = viewport.height;
 
                     // find the viewIndex
                     if (camera.rigParent) {
                         // should use the viewIndexes array!
-                        viewIndex = camera.isLeftCamera ? 0 : 1;
+                        ViewIndex = camera.isLeftCamera ? 0 : 1;
                     }
                 }
             });
@@ -477,13 +483,13 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     }
 
     public override detach() {
-        isPluginEnabled = false;
-        depthTexture = null;
+        IsPluginEnabled = false;
+        DepthTexture = null;
         this._cachedWebGLTexture = null;
         this._cachedDepthBuffer = null;
-        managedMaterialPlugins.forEach((plugin) => {
+        for (const plugin of ManagedMaterialPlugins) {
             plugin.isEnabled = false;
-        });
+        }
         if (this._onCameraObserver) {
             this._xrSessionManager.scene.onBeforeCameraRenderObservable.remove(this._onCameraObserver);
         }
@@ -494,12 +500,17 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Dispose this feature and all of the resources attached
      */
     public override dispose(): void {
+        UnregisterMaterialPlugin("WebXRDepthSensingMaterialPlugin");
         this._cachedDepthImageTexture?.dispose();
         this.onGetDepthInMetersAvailable.clear();
         // cleanup
         if (this._onCameraObserver) {
             this._xrSessionManager.scene.onBeforeCameraRenderObservable.remove(this._onCameraObserver);
         }
+        for (const plugin of ManagedMaterialPlugins) {
+            plugin.dispose();
+        }
+        ManagedMaterialPlugins.length = 0;
     }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
@@ -539,9 +550,9 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         this._height = height;
         this._rawValueToMeters = rawValueToMeters;
         this._cachedDepthBuffer = data;
-        globalRawValueToMeters = rawValueToMeters;
-        alphaLuminanceTexture = dataFormat === "luminance-alpha";
-        uvTransform.fromArray(normDepthBufferFromNormView.matrix);
+        GlobalRawValueToMeters = rawValueToMeters;
+        AlphaLuminanceTexture = dataFormat === "luminance-alpha";
+        UvTransform.fromArray(normDepthBufferFromNormView.matrix);
 
         // to avoid Illegal Invocation error, bind `this`
         this.onGetDepthInMetersAvailable.notifyObservers(getDepthInMeters.bind(depthInfo));
@@ -557,7 +568,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                 Texture.NEAREST_SAMPLINGMODE,
                 Constants.TEXTURETYPE_FLOAT
             );
-            depthTexture = this._cachedDepthImageTexture;
+            DepthTexture = this._cachedDepthImageTexture;
         }
 
         let float32Array: Float32Array | null = null;
@@ -589,9 +600,9 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
         const { texture, width, height, textureType, rawValueToMeters, normDepthBufferFromNormView } = depthInfo as XRWebGLDepthInformation;
 
-        globalRawValueToMeters = rawValueToMeters;
-        alphaLuminanceTexture = dataFormat === "luminance-alpha";
-        uvTransform.fromArray(normDepthBufferFromNormView.matrix);
+        GlobalRawValueToMeters = rawValueToMeters;
+        AlphaLuminanceTexture = dataFormat === "luminance-alpha";
+        UvTransform.fromArray(normDepthBufferFromNormView.matrix);
 
         if (this._cachedWebGLTexture) {
             return;
@@ -619,7 +630,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
 
         this._cachedDepthImageTexture._texture = internalTexture;
-        depthTexture = this._cachedDepthImageTexture;
+        DepthTexture = this._cachedDepthImageTexture;
         this._xrSessionManager.scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
@@ -627,11 +638,11 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Extends the session init object if needed
      * @returns augmentation object for the xr session init object.
      */
-    public getXRSessionInitExtension(): Promise<Partial<XRSessionInit>> {
+    public async getXRSessionInitExtension(): Promise<Partial<XRSessionInit>> {
         const isDepthUsageDeclared = this.options.usagePreference != null && this.options.usagePreference.length !== 0;
         const isDataFormatDeclared = this.options.dataFormatPreference != null && this.options.dataFormatPreference.length !== 0;
 
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
             if (isDepthUsageDeclared && isDataFormatDeclared) {
                 const usages: XRDepthUsage[] = this.options.usagePreference.map((usage) => {
                     switch (usage) {
@@ -702,5 +713,3 @@ WebXRFeaturesManager.AddWebXRFeature(
     WebXRDepthSensing.Version,
     false
 );
-
-RegisterMaterialPlugin("WebXRDepthSensingMaterialPlugin", (material) => new WebXRDepthSensingMaterialPlugin(material));

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../../Maths/math.vector";
 import {
     PhysicsShapeType,
@@ -18,7 +20,8 @@ import type {
     IBasePhysicsCollisionEvent,
     ConstrainedBodyPair,
 } from "../IPhysicsEnginePlugin";
-import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
+import type { IRaycastQuery } from "../../physicsRaycastResult";
+import { PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
 import type { PhysicsConstraint, Physics6DoFConstraint } from "../physicsConstraint";
@@ -104,19 +107,19 @@ class MeshAccumulator {
             //  Ignore any children which have a physics body.
             //  Other plugin implementations do not have this check, which appears to be
             //  a bug, as otherwise, the mesh will have a duplicate collider
-            children
-                .filter((m: any) => !m.physicsBody)
-                .forEach((m: TransformNode) => {
-                    const childToWorld = m.computeWorldMatrix();
-                    const childToRootScaled = TmpVectors.Matrix[3];
-                    childToWorld.multiplyToRef(worldToRootScaled, childToRootScaled);
+            const transformNodes = children.filter((m: any) => !m.physicsBody);
 
-                    if (m instanceof Mesh) {
-                        this._addMesh(m, childToRootScaled);
-                    } else if (m instanceof InstancedMesh) {
-                        this._addMesh(m.sourceMesh, childToRootScaled);
-                    }
-                });
+            for (const m of transformNodes) {
+                const childToWorld = m.computeWorldMatrix();
+                const childToRootScaled = TmpVectors.Matrix[3];
+                childToWorld.multiplyToRef(worldToRootScaled, childToRootScaled);
+
+                if (m instanceof Mesh) {
+                    this._addMesh(m, childToRootScaled);
+                } else if (m instanceof InstancedMesh) {
+                    this._addMesh(m.sourceMesh, childToRootScaled);
+                }
+            }
         }
     }
 
@@ -270,6 +273,13 @@ class TriggerEvent {
     }
 }
 
+export interface HavokPluginParameters {
+    /**
+     * Maximum number of raycast hits to process
+     */
+    maxQueryCollectorHits?: number;
+}
+
 /**
  * The Havok Physics plugin
  */
@@ -290,7 +300,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * We only have a single raycast in-flight right now
      */
     private _queryCollector;
+    private _multiQueryCollector: any = undefined;
     private _fixedTimeStep: number = 1 / 60;
+    private _maxQueryCollectorHits: number = 1;
     private _tmpVec3 = BuildArray(3, Vector3.Zero);
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
     private _shapes = new Map<bigint, PhysicsShape>();
@@ -314,7 +326,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
     public constructor(
         private _useDeltaForWorldStep: boolean = true,
-        hpInjection: any = HK
+        hpInjection: any = HK,
+        parameters: HavokPluginParameters = {}
     ) {
         if (typeof hpInjection === "function") {
             Logger.Error("Havok is not ready. Please make sure you await HK() before using the plugin.");
@@ -328,7 +341,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             return;
         }
         this.world = this._hknp.HP_World_Create()[1];
+
         this._queryCollector = this._hknp.HP_QueryCollector_Create(1)[1];
+        this.setMaxQueryCollectorHits(parameters.maxQueryCollectorHits ?? 1);
     }
     /**
      * If this plugin is supported
@@ -366,6 +381,35 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     public getTimeStep(): number {
         return this._fixedTimeStep;
+    }
+
+    /**
+     * Sets the maximum number of raycast hits to process.
+     *
+     * @param maxQueryCollectorHits - The maximum number of raycast hits to process.
+     */
+    public setMaxQueryCollectorHits(maxQueryCollectorHits: number): void {
+        if (maxQueryCollectorHits === this._maxQueryCollectorHits) {
+            return;
+        }
+
+        if (this._multiQueryCollector) {
+            this._hknp.HP_QueryCollector_Release(this._multiQueryCollector);
+            this._multiQueryCollector = undefined;
+        }
+
+        if (maxQueryCollectorHits > 1) {
+            this._multiQueryCollector = this._hknp.HP_QueryCollector_Create(maxQueryCollectorHits)[1];
+        }
+    }
+
+    /**
+     * Gets the maximum number of raycast hits to process.
+     *
+     * @returns The maximum number of raycast hits to process.
+     */
+    public getMaxQueryCollectorHits(): number {
+        return this._maxQueryCollectorHits;
     }
 
     /**
@@ -499,9 +543,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             return; // TODO: error handling
         }
         this._createOrUpdateBodyInstances(body, motionType, matrixData, 0, instancesCount, false);
-        body._pluginDataInstances.forEach((bodyId, index) => {
+        for (let index = 0; index < body._pluginDataInstances.length; index++) {
+            const bodyId = body._pluginDataInstances[index];
             this._bodies.set(bodyId.hpBodyId[0], { body: body, index: index });
-        });
+        }
     }
 
     private _createOrUpdateBodyInstances(body: PhysicsBody, motionType: PhysicsMotionType, matrixData: Float32Array, startIndex: number, endIndex: number, update: boolean): void {
@@ -686,7 +731,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             this._internalUpdateMassProperties(body._pluginData);
             return;
         }
-        const m = body.transformNode as Mesh;
+        const m = body.transformNode;
         const instancesCount = m._thinInstanceDataStorage?.instancesCount ?? 0;
         for (let i = 0; i < instancesCount; i++) {
             this._hknp.HP_Body_SetShape(body._pluginDataInstances[i].hpBodyId, shapeHandle);
@@ -1172,7 +1217,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param rotation The target rotation
      * @param instanceIndex The index of the instance in an instanced body
      */
-    public setTargetTransform(body: PhysicsBody, position: Vector3, rotation: Quaternion, instanceIndex?: number | undefined): void {
+    public setTargetTransform(body: PhysicsBody, position: Vector3, rotation: Quaternion, instanceIndex?: number): void {
         this._applyToBodyOrInstances(
             body,
             (pluginRef) => {
@@ -1637,6 +1682,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * This method is useful for releasing a physics shape from the physics engine, freeing up resources and preventing memory leaks.
      */
     public disposeShape(shape: PhysicsShape): void {
+        this._shapes.delete(shape._pluginData[0]);
         this._hknp.HP_Shape_Release(shape._pluginData);
         shape._pluginData = undefined;
     }
@@ -2102,28 +2148,65 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      * @param from - The start point of the raycast.
      * @param to - The end point of the raycast.
-     * @param result - The PhysicsRaycastResult object to store the result of the raycast.
+     * @param result - The PhysicsRaycastResult object (or array of PhysicsRaycastResults) to store the result of the raycast.
      * @param query - The raycast query options. See [[IRaycastQuery]] for more information.
      *
      * Performs a raycast. It takes in two points, from and to, and a PhysicsRaycastResult object to store the result of the raycast.
      * It then performs the raycast and stores the hit data in the PhysicsRaycastResult object.
+     * If result is an empty array, it will be populated with every detected raycast hit.
+     * If result is a populated array, it will only fill the PhysicsRaycastResults present in the array.
      */
-    public raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult, query?: IRaycastQuery): void {
+    public raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult | Array<PhysicsRaycastResult>, query?: IRaycastQuery): void {
         const queryMembership = query?.membership ?? ~0;
         const queryCollideWith = query?.collideWith ?? ~0;
         const shouldHitTriggers = query?.shouldHitTriggers ?? false;
+        const bodyToIgnore = query?.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
 
-        result.reset(from, to);
+        const results = Array.isArray(result) ? result : [result];
+        for (const raycastResult of results) {
+            raycastResult.reset(from, to);
+        }
 
-        const bodyToIgnore = [BigInt(0)];
         const hkQuery = [this._bVecToV3(from), this._bVecToV3(to), [queryMembership, queryCollideWith], shouldHitTriggers, bodyToIgnore];
-        this._hknp.HP_World_CastRayWithCollector(this.world, this._queryCollector, hkQuery);
+        const queryCollector = results.length === 1 || !this._multiQueryCollector ? this._queryCollector : this._multiQueryCollector;
+        this._hknp.HP_World_CastRayWithCollector(this.world, queryCollector, hkQuery);
 
-        if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
-            const [, hitData] = this._hknp.HP_QueryCollector_GetCastRayResult(this._queryCollector, 0)[1];
+        const numHits = this._hknp.HP_QueryCollector_GetNumHits(queryCollector)[1];
+        if (numHits <= 0) {
+            return;
+        }
 
-            this._populateHitData(hitData, result);
-            result.calculateHitDistance();
+        if (!results.length) {
+            for (let i = 0; i < numHits; i++) {
+                const raycastResult = new PhysicsRaycastResult();
+                raycastResult.reset(from, to);
+                results.push(raycastResult);
+            }
+        }
+
+        // QueryCollector results are not sorted by distance, so we need to sort them manually
+        const hitDatas: Array<{ hitData: any; distance: number }> = new Array(numHits);
+        for (let i = 0; i < numHits; i++) {
+            const [, hitData] = this._hknp.HP_QueryCollector_GetCastRayResult(queryCollector, i)[1];
+
+            const hitPos = hitData[3];
+            from.subtractFromFloatsToRef(hitPos[0], hitPos[1], hitPos[2], this._tmpVec3[0]);
+            const distance = this._tmpVec3[0].lengthSquared();
+
+            hitDatas[i] = {
+                hitData,
+                distance: distance,
+            };
+        }
+
+        hitDatas.sort((a, b) => a.distance - b.distance);
+
+        for (let i = 0; i < Math.min(numHits, results.length); i++) {
+            const raycastResult = results[i];
+            const hitData = hitDatas[i];
+
+            this._populateHitData(hitData.hitData, raycastResult);
+            raycastResult.setHitDistance(Math.sqrt(hitData.distance));
         }
     }
 
@@ -2244,9 +2327,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         // Register for collide events by default
         const collideEvents = this._hknp.EventType.COLLISION_STARTED.value | this._hknp.EventType.COLLISION_CONTINUED.value | this._hknp.EventType.COLLISION_FINISHED.value;
         if (body._pluginDataInstances && body._pluginDataInstances.length) {
-            body._pluginDataInstances.forEach((bodyId) => {
+            for (let index = 0; index < body._pluginDataInstances.length; index++) {
+                const bodyId = body._pluginDataInstances[index];
                 this._hknp.HP_Body_SetEventMask(bodyId.hpBodyId, enabled ? collideEvents : 0);
-            });
+            }
         } else if (body._pluginData) {
             this._hknp.HP_Body_SetEventMask(body._pluginData.hpBodyId, enabled ? collideEvents : 0);
         }
@@ -2266,9 +2350,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             ? currentCollideEvents | this._hknp.EventType.COLLISION_FINISHED.value
             : currentCollideEvents & ~this._hknp.EventType.COLLISION_FINISHED.value;
         if (body._pluginDataInstances && body._pluginDataInstances.length) {
-            body._pluginDataInstances.forEach((bodyId) => {
+            for (let index = 0; index < body._pluginDataInstances.length; index++) {
+                const bodyId = body._pluginDataInstances[index];
                 this._hknp.HP_Body_SetEventMask(bodyId.hpBodyId, currentCollideEvents);
-            });
+            }
         } else if (body._pluginData) {
             this._hknp.HP_Body_SetEventMask(body._pluginData.hpBodyId, currentCollideEvents);
         }
@@ -2397,6 +2482,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         if (this._queryCollector) {
             this._hknp.HP_QueryCollector_Release(this._queryCollector);
             this._queryCollector = undefined;
+        }
+        if (this._multiQueryCollector) {
+            this._hknp.HP_QueryCollector_Release(this._multiQueryCollector);
+            this._multiQueryCollector;
         }
         if (this.world) {
             this._hknp.HP_World_Release(this.world);

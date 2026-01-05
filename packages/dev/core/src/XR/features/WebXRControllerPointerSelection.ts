@@ -296,7 +296,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             return false;
         }
 
-        this._options.xrInput.controllers.forEach(this._attachController);
+        for (const controller of this._options.xrInput.controllers) {
+            this._attachController(controller);
+        }
         this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController, true);
         this._addNewAttachObserver(
             this._options.xrInput.onControllerRemovedObservable,
@@ -340,10 +342,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (!super.detach()) {
             return false;
         }
-
-        Object.keys(this._controllers).forEach((controllerId) => {
+        const keys = Object.keys(this._controllers);
+        for (const controllerId of keys) {
             this._detachController(controllerId);
-        });
+        }
 
         return true;
     }
@@ -412,18 +414,19 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     private _viewportRef = new Viewport(0, 0, 0, 0);
 
     protected _onXRFrame(_xrFrame: XRFrame) {
-        Object.keys(this._controllers).forEach((id) => {
+        const keys = Object.keys(this._controllers);
+        for (const id of keys) {
             // look and pick mode
             // only do this for the selected pointer
             const controllerData = this._controllers[id];
             if (this._options.lookAndPickMode && controllerData.xrController?.inputSource.targetRayMode !== "transient-pointer") {
-                return;
+                continue;
             }
             if ((!this._options.enablePointerSelectionOnAllControllers && id !== this._attachedController) || controllerData.disabledByNearInteraction) {
                 controllerData.selectionMesh.isVisible = false;
                 controllerData.laserPointer.isVisible = false;
                 controllerData.pick = null;
-                return;
+                continue;
             }
 
             controllerData.laserPointer.isVisible = this.displayLaserPointer;
@@ -441,7 +444,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerGlobalPosition = controllerData.webXRCamera.position;
                 controllerData.webXRCamera.getForwardRayToRef(controllerData.tmpRay);
             } else {
-                return;
+                continue;
             }
 
             if (this._options.maxPointerDistance) {
@@ -530,7 +533,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 this._updatePointerDistance(controllerData.laserPointer, 1);
                 controllerData.meshUnderPointer = null;
             }
-        });
+        }
     }
 
     private get _utilityLayerScene() {
@@ -782,13 +785,14 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             this._xrSessionManager.onXRFrameObservable.remove(controllerData.onFrameObserver);
         }
         if (controllerData.eventListeners) {
-            Object.keys(controllerData.eventListeners).forEach((eventName: string) => {
+            const keys = Object.keys(controllerData.eventListeners);
+            for (const eventName of keys) {
                 const func = controllerData.eventListeners && controllerData.eventListeners[eventName as XREventType];
                 if (func) {
                     // For future reference - this is an issue in the WebXR typings.
                     this._xrSessionManager.session.removeEventListener(eventName as XREventType, func as any);
                 }
-            });
+            }
         }
 
         if (!controllerData.finalPointerUpTriggered && controllerData.pointerDownTriggered) {

@@ -61,9 +61,11 @@ export class MeshButton3D extends Button3D {
     // Mesh association
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected override _createNode(scene: Scene): TransformNode {
-        this._currentMesh.getChildMeshes().forEach((mesh) => {
+        const meshes = this._currentMesh.getChildMeshes();
+
+        for (const mesh of meshes) {
             this._injectGUI3DReservedDataStore(mesh).control = this;
-        });
+        }
         return this._currentMesh;
     }
 

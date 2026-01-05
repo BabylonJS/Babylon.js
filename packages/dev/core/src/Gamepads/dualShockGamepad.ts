@@ -190,7 +190,7 @@ export class DualShockPad extends Gamepad {
         return newValue;
     }
 
-    private _setDPadValue(newValue: number, currentValue: number, buttonType: DualShockDpad): number {
+    private _setDpadValue(newValue: number, currentValue: number, buttonType: DualShockDpad): number {
         if (newValue !== currentValue) {
             if (newValue === 1) {
                 if (this._ondpaddown) {
@@ -350,7 +350,7 @@ export class DualShockPad extends Gamepad {
      * Sets the value of D-pad up
      */
     public set dPadUp(value) {
-        this._dPadUp = this._setDPadValue(value, this._dPadUp, DualShockDpad.Up);
+        this._dPadUp = this._setDpadValue(value, this._dPadUp, DualShockDpad.Up);
     }
 
     /**
@@ -363,7 +363,7 @@ export class DualShockPad extends Gamepad {
      * Sets the value of D-pad down
      */
     public set dPadDown(value) {
-        this._dPadDown = this._setDPadValue(value, this._dPadDown, DualShockDpad.Down);
+        this._dPadDown = this._setDpadValue(value, this._dPadDown, DualShockDpad.Down);
     }
 
     /**
@@ -376,7 +376,7 @@ export class DualShockPad extends Gamepad {
      * Sets the value of D-pad left
      */
     public set dPadLeft(value) {
-        this._dPadLeft = this._setDPadValue(value, this._dPadLeft, DualShockDpad.Left);
+        this._dPadLeft = this._setDpadValue(value, this._dPadLeft, DualShockDpad.Left);
     }
 
     /**
@@ -389,7 +389,7 @@ export class DualShockPad extends Gamepad {
      * Sets the value of D-pad right
      */
     public set dPadRight(value) {
-        this._dPadRight = this._setDPadValue(value, this._dPadRight, DualShockDpad.Right);
+        this._dPadRight = this._setDpadValue(value, this._dPadRight, DualShockDpad.Right);
     }
 
     /**

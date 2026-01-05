@@ -6,10 +6,11 @@ module.exports = (env) => {
         devPackageName: "ktx2decoder",
         namespace: "KTX2DECODER",
         maxMode: true,
+        minToMax: true,
         outputPath: path.resolve(__dirname),
         devPackageAliasPath: `../../../tools/ktx2Decoder/dist`,
         alias: {
-            "core": path.resolve(__dirname, "../../../dev/core/dist"),
+            core: path.resolve(__dirname, "../../../dev/core/dist"),
         },
         extendedWebpackConfig: {
             externals: {},
@@ -19,7 +20,7 @@ module.exports = (env) => {
                     includeCSS: true,
                 }),
             },
-        }
+        },
     });
     return commonConfig;
 };

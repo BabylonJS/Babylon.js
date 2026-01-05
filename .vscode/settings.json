@@ -1,5 +1,21 @@
 {
-    "cSpell.words": ["babylonjs", "Pickable"],
+    "cSpell.words": [
+        "acumin",
+        "babylonjs",
+        "chirality",
+        "desaturated",
+        "fluentui",
+        "multilines",
+        "ONEDEF",
+        "Pickable",
+        "Premultiplies",
+        "Resizer",
+        "smartfilter",
+        "Spector",
+        "spritesheet",
+        "webgl",
+        "webgpu"
+    ],
     "files.exclude": {
         "**/node_modules": true,
         "**/dist": false,
@@ -8,9 +24,14 @@
         "**/packages/dev/**/Shaders/**/*.ts": true,
         "**/packages/dev/**/shaders/**/*.ts": true,
         "**/packages/dev/**/ShadersWGSL/**/*.ts": true,
+        "**/packages/dev/**/shadersWGSL/**/*.ts": true,
         "**/*.fragment.ts": true,
         "**/*.vertex.ts": true,
-        "**/*.compute.ts": true
+        "**/*.compute.ts": true,
+        "**/*.block.ts": true
+    },
+    "search.exclude": {
+        "**/dist": true
     },
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -34,5 +55,7 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "editor.formatOnSave": true,
-    "jest.runMode": "on-demand"
+    "jest.runMode": "on-demand",
+    "typescript.preferences.importModuleSpecifier": "project-relative",
+    "javascript.preferences.importModuleSpecifier": "project-relative"
 }

@@ -31,6 +31,7 @@ export class _OcclusionDataStorage {
 }
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
@@ -102,6 +103,7 @@ AbstractEngine.prototype.endOcclusionQuery = function (algorithmType: number): A
 };
 
 declare module "../../Meshes/abstractMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractMesh {
         /**
          * Backing filed

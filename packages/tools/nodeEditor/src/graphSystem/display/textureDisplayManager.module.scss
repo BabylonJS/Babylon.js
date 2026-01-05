@@ -1,5 +1,9 @@
 .regular-texture-block {
-    margin-top: 80px;
+    margin-top: 100px;
+}
+
+.smart-filter-texture-block {
+    margin-top: 60px;
 }
 
 .reduced-texture-block {
@@ -11,9 +15,14 @@
 }
 
 .triplanar-texture-block {
-    margin-top: 155px;
+    margin-top: 10px;
+    margin-left: 5px;
 }
 
 .refraction-texture-block {
     margin-top: 80px;
+}
+
+.hidden {
+    display: none;
 }

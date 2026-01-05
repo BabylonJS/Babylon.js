@@ -14,6 +14,9 @@ import deleteButton from "../../imgs/delete.svg";
 import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 
 import "./nodeList.scss";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import { Accordion } from "shared-ui-components/fluent/primitives/accordion";
+import { SearchBar } from "shared-ui-components/fluent/primitives/searchBar";
 
 interface INodeListComponentProps {
     globalState: GlobalState;
@@ -64,6 +67,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         StepBlock: "Outputs 1 for any input value above the edge input, outputs 0 for any input value below the edge input",
         Matrix: "A 4x4 table of related values",
         ProjectionMatrixBlock: "A matrix to remap points in 3D space to 2D plane relative to the screen",
+        ProjectionInverseMatrixBlock: "A matrix to remap points in 2D screen space to 3D space",
         ViewMatrixBlock: "A matrix to remap points in 3D space to 2D plane relative to the view of the scene camera",
         ViewProjectionMatrixBlock: "A matrix to remap points in 3D space to 2D view space before remapping to 2D screen space",
         WorldMatrixBlock: "A matrix to remap points in 3D local space to 3D world space",
@@ -89,6 +93,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FragmentOutputBlock: "A mandatory final node for outputing the color of each pixel",
         PrePassOutputBlock: "An optional final node for outputing geometry data on prepass textures",
         VertexOutputBlock: "A mandatory final node for outputing the position of each vertex",
+        SmartFilterFragmentOutputBlock: "A mandatory final node for outputing the color of each pixel in Smart Filters mode",
         ClampBlock: "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
         NormalizeBlock: "Remaps the length of a vector or color to 1",
         RemapBlock: "Remaps input value between sourceMin and sourceMax to a new range between targetMin and targetMax",
@@ -146,6 +151,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ClearCoatBlock: "PBR ClearCoat block",
         RefractionBlock: "PBR Refraction block",
         SubSurfaceBlock: "PBR SubSurface block",
+        IridescenceBlock: "PBR Iridescence block",
         ScreenPositionBlock: "A Vector2 representing the position of each vertex of the screen quad (derived from UV set from the quad used to render)",
         CurrentScreenBlock: "The screen buffer used as input for the post process",
         ParticleUVBlock: "The particle uv texture coordinate",
@@ -155,6 +161,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ParticleRampGradientBlock: "The particle ramp gradient block",
         ParticleBlendMultiplyBlock: "The particle blend multiply block",
         ParticlePositionWorldBlock: "The world position of the particle",
+        ScreenUVBlock: "The screen quad's UV texture coordinates",
         GaussianSplattingBlock: "The gaussian splatting block",
         GaussianBlock: "The gaussian color computation block",
         SplatReaderBlock: "The gaussian splat reader block",
@@ -173,6 +180,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         OrBlock: "Return a value if (a or b) > 0",
         AndBlock: "Return a value if (a and b) > 0",
         ImageSourceBlock: "Centralize texture access for TextureBlocks",
+        DepthSourceBlock: "Centralize depth texture access for TextureBlocks",
         CloudBlock: "Generate Fractal Brownian Motion Clouds",
         VoronoiNoiseBlock: "Generate Voronoi Noise",
         ScreenSpaceBlock: "Convert a Vector3 or a Vector4 into screen space",
@@ -196,6 +204,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         StorageWriteBlock: "Block used to write to a loop storage variable",
         MatrixSplitterBlock: "Block used to split a matrix into Vector4",
         DebugBlock: "Block used to render intermediate debug values",
+        SmartFilterTextureBlock: "Block used to add a Smart Filter Effect (SFE) shader interface",
+        AmbientOcclusionBlock: "Block used to compute screen space ambient occlusion",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -232,6 +242,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     loadCustomFrame(file: File) {
         Tools.ReadFile(
             file,
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             async (data) => {
                 // get Frame Data from file
                 const decoder = new TextDecoder("utf-8");
@@ -280,6 +291,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     loadCustomBlock(file: File) {
         Tools.ReadFile(
             file,
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             async (data) => {
                 // get Block Data from file
                 const decoder = new TextDecoder("utf-8");
@@ -321,6 +333,38 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
     }
 
+    renderFluent(blockMenu: JSX.Element[]) {
+        return (
+            <div>
+                <SearchBar placeholder="Filter" onChange={(val) => this.filterContent(val.toString())} />
+                <Accordion>{blockMenu}</Accordion>
+            </div>
+        );
+    }
+
+    renderOriginal(blockMenu: JSX.Element[]) {
+        return (
+            <div id="nmeNodeList">
+                <div className="panes">
+                    <div className="pane">
+                        <div className="filter">
+                            <input
+                                type="text"
+                                placeholder="Filter"
+                                onFocus={() => (this.props.globalState.lockObject.lock = true)}
+                                onBlur={() => {
+                                    this.props.globalState.lockObject.lock = false;
+                                }}
+                                onChange={(evt) => this.filterContent(evt.target.value)}
+                            />
+                        </div>
+                        <div className="list-container">{blockMenu}</div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     override render() {
         const customFrameNames: string[] = [];
         for (const frame in this._customFrameList) {
@@ -333,9 +377,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         // Block types used to create the menu from
-        const allBlocks: any = {
+        const allBlocks: Record<string, string[]> = {
             Custom_Frames: customFrameNames,
             Custom_Blocks: customBlockNames,
+            SFE: ["ScreenUVBlock", "SmartFilterTextureBlock", "SmartFilterFragmentOutputBlock"],
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock", "ColorConverterBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
@@ -356,6 +401,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FragCoordBlock",
                 "ScreenSizeBlock",
                 "ImageSourceBlock",
+                "DepthSourceBlock",
                 "TriPlanarBlock",
                 "BiPlanarBlock",
             ],
@@ -420,12 +466,13 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ViewMatrixBlock",
                 "ViewProjectionMatrixBlock",
                 "ProjectionMatrixBlock",
+                "ProjectionInverseMatrixBlock",
                 "MatrixBuilderBlock",
                 "MatrixDeterminantBlock",
                 "MatrixTransposeBlock",
                 "MatrixSplitterBlock",
             ],
-            Misc: ["ElbowBlock", "ShadowMapBlock", "TeleportInBlock", "TeleportOutBlock", "DebugBlock"],
+            Misc: ["ElbowBlock", "ShadowMapBlock", "TeleportInBlock", "TeleportOutBlock", "DebugBlock", "AmbientOcclusionBlock"],
             Mesh: [
                 "InstancesBlock",
                 "PositionBlock",
@@ -461,7 +508,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ParticleUVBlock",
             ],
             GaussianSplatting: ["GaussianSplattingBlock", "SplatIndexBlock", "SplatReaderBlock", "GaussianBlock"],
-            PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
+            PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "IridescenceBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock", "PrePassTextureBlock"],
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
@@ -479,60 +526,79 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             ],
         };
 
+        let excludeNodes: Record<string, string[]> = {};
+        let excludeCategories: string[] = [];
         switch (this.props.globalState.mode) {
             case NodeMaterialModes.Material:
-                delete allBlocks["PostProcess"];
-                delete allBlocks["Particle"];
-                delete allBlocks["Procedural__Texture"];
-                delete allBlocks["GaussianSplatting"];
+                excludeCategories = ["SFE", "PostProcess", "Particle", "Procedural__Texture", "GaussianSplatting"];
+                break;
+            case NodeMaterialModes.SFE:
+                excludeCategories = ["Animation", "Mesh", "Particle", "Procedural__Texture", "PostProcess", "PBR", "Scene", "GaussianSplatting"];
+                excludeNodes = {
+                    Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "PrePassOutputBlock", "ClipPlanesBlock", "FragDepthBlock"],
+                    Inputs: [
+                        "TextureBlock",
+                        "MaterialAlphaBlock",
+                        "BiPlanarBlock",
+                        "TriPlanarBlock",
+                        "ReflectionTextureBlock",
+                        "DeltaTimeBlock",
+                        "RealTimeBlock",
+                        "MouseInfoBlock",
+                    ],
+                    Matrices: [
+                        "WorldMatrixBlock",
+                        "WorldViewMatrixBlock",
+                        "WorldViewProjectionMatrixBlock",
+                        "ViewMatrixBlock",
+                        "ViewProjectionMatrixBlock",
+                        "ProjectionMatrixBlock",
+                        "ProjectionInverseMatrixBlock",
+                    ],
+                    Misc: ["ShadowMapBlock"],
+                    Math__Vector: ["ScreenSpaceBlock"],
+                };
                 break;
             case NodeMaterialModes.PostProcess:
-                delete allBlocks["Animation"];
-                delete allBlocks["Mesh"];
-                delete allBlocks["Particle"];
-                delete allBlocks["Procedural__Texture"];
-                delete allBlocks["PBR"];
-                delete allBlocks["GaussianSplatting"];
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                excludeCategories = ["SFE", "Animation", "Mesh", "Particle", "Procedural__Texture", "PBR", "GaussianSplatting"];
+                excludeNodes = {
+                    Output_Nodes: ["PrePassOutputBlock"],
+                };
                 break;
             case NodeMaterialModes.ProceduralTexture:
-                delete allBlocks["Animation"];
-                delete allBlocks["Mesh"];
-                delete allBlocks["Particle"];
-                delete allBlocks["PostProcess"];
-                delete allBlocks["PBR"];
-                delete allBlocks["GaussianSplatting"];
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                excludeCategories = ["SFE", "Animation", "Mesh", "Particle", "PostProcess", "PBR", "GaussianSplatting"];
+                excludeNodes = {
+                    Output_Nodes: ["PrePassOutputBlock"],
+                };
                 break;
             case NodeMaterialModes.Particle:
-                delete allBlocks["Animation"];
-                delete allBlocks["Mesh"];
-                delete allBlocks["PostProcess"];
-                delete allBlocks["Procedural__Texture"];
-                delete allBlocks["PBR"];
-                delete allBlocks["GaussianSplatting"];
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
-                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
-                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                excludeCategories = ["SFE", "Animation", "Mesh", "PostProcess", "Procedural__Texture", "PBR", "GaussianSplatting"];
+                excludeNodes = {
+                    Output_Nodes: ["VertexOutputBlock", "PrePassOutputBlock"],
+                    Scene: ["FogBlock", "FogColorBlock"],
+                };
                 break;
             case NodeMaterialModes.GaussianSplatting:
-                delete allBlocks["Animation"];
-                delete allBlocks["Mesh"];
-                delete allBlocks["PostProcess"];
-                delete allBlocks["Procedural__Texture"];
-                delete allBlocks["PBR"];
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
-                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
-                allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
-                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
+                excludeCategories = ["SFE", "Animation", "Mesh", "PostProcess", "Procedural__Texture", "PBR"];
+                excludeNodes = {
+                    Output_Nodes: ["VertexOutputBlock", "PrePassOutputBlock"],
+                    Scene: ["FogBlock", "FogColorBlock"],
+                };
                 break;
+        }
+        for (const category in excludeNodes) {
+            allBlocks[category] = allBlocks[category].filter((node) => !excludeNodes[category].includes(node));
+        }
+        for (const category of excludeCategories) {
+            if (allBlocks[category]) {
+                delete allBlocks[category];
+            }
         }
 
         // Create node menu
-        const blockMenu = [];
+        const blockMenu: JSX.Element[] = [];
         for (const key in allBlocks) {
-            const blockList = (allBlocks as any)[key]
+            const blockList = allBlocks[key]
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
                 .sort((a: string, b: string) => a.localeCompare(b))
                 .map((block: any) => {
@@ -635,25 +701,6 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             };
         }
 
-        return (
-            <div id="nmeNodeList">
-                <div className="panes">
-                    <div className="pane">
-                        <div className="filter">
-                            <input
-                                type="text"
-                                placeholder="Filter"
-                                onFocus={() => (this.props.globalState.lockObject.lock = true)}
-                                onBlur={() => {
-                                    this.props.globalState.lockObject.lock = false;
-                                }}
-                                onChange={(evt) => this.filterContent(evt.target.value)}
-                            />
-                        </div>
-                        <div className="list-container">{blockMenu}</div>
-                    </div>
-                </div>
-            </div>
-        );
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent(blockMenu) : this.renderOriginal(blockMenu))}</ToolContext.Consumer>;
     }
 }

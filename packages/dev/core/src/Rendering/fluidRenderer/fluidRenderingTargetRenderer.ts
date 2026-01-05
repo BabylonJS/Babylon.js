@@ -757,6 +757,7 @@ export class FluidRenderingTargetRenderer {
             true,
             undefined,
             this._shaderLanguage,
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             async () => {
                 if (this._shaderLanguage === ShaderLanguage.WGSL) {
                     await import("../../ShadersWGSL/fluidRenderingRender.fragment");
@@ -955,8 +956,8 @@ export class FluidRenderingTargetRenderer {
     }
 
     /**
-     * Releases all the ressources used by the class
-     * @param onlyPostProcesses If true, releases only the ressources used by the render post processes
+     * Releases all the resources used by the class
+     * @param onlyPostProcesses If true, releases only the resources used by the render post processes
      */
     public dispose(onlyPostProcesses = false): void {
         if (!onlyPostProcesses) {

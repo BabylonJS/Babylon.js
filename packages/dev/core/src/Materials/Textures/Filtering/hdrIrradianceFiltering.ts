@@ -139,7 +139,7 @@ export class HDRIrradianceFiltering {
         this._engine.restoreDefaultFramebuffer();
         effect.setTexture("inputTexture", null);
         effect.setTexture("icdfTexture", null);
-        const irradianceTexture = new BaseTexture(texture.getScene(), outputTexture.texture!);
+        const irradianceTexture = new BaseTexture(texture.getScene(), outputTexture.texture);
         irradianceTexture.name = texture.name + "_irradiance";
         irradianceTexture.displayName = texture.name + "_irradiance";
         irradianceTexture.gammaSpace = false;
@@ -200,6 +200,7 @@ export class HDRIrradianceFiltering {
      * @param texture Texture to filter
      * @returns Promise called when prefiltering is done
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async prefilter(texture: BaseTexture): Promise<BaseTexture> {
         if (!this._engine._features.allowTexturePrefiltering) {
             throw new Error("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
@@ -217,6 +218,13 @@ export class HDRIrradianceFiltering {
         await this._effectWrapper.effect.whenCompiledAsync();
 
         const irradianceTexture = this._prefilterInternal(texture);
+
+        if (this.useCdf) {
+            // eslint-disable-next-line github/no-then
+            await this._cdfGenerator.findDominantDirection().then((dir) => {
+                irradianceTexture._dominantDirection = dir;
+            });
+        }
         this._effectRenderer.dispose();
         this._effectWrapper.dispose();
         this._cdfGenerator?.dispose();

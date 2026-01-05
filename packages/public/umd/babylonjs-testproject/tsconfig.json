@@ -5,7 +5,7 @@
         "declaration": false,
         "strict": true,
         "target": "es2015",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "jsx": "react",
         "esModuleInterop": true,
         "skipLibCheck": false,

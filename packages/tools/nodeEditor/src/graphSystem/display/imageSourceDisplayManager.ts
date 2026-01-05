@@ -33,13 +33,14 @@ export class ImageSourceDisplayManager implements IDisplayManager {
             contentArea.classList.add(commonStyles["texture-block"]);
             contentArea.classList.add(localStyles["image-source-block"]);
 
-            this._previewCanvas = contentArea.ownerDocument!.createElement("canvas");
-            this._previewImage = contentArea.ownerDocument!.createElement("img");
+            this._previewCanvas = contentArea.ownerDocument.createElement("canvas");
+            this._previewImage = contentArea.ownerDocument.createElement("img");
             contentArea.appendChild(this._previewImage);
             this._previewImage.classList.add(commonStyles.empty);
         }
 
         if (imageSourceBlock.texture) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             TextureLineComponent.UpdatePreview(
                 this._previewCanvas,
                 imageSourceBlock.texture,

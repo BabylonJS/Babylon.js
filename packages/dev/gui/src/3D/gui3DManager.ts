@@ -75,13 +75,13 @@ export class GUI3DManager implements IDisposable {
             const scaleRatio = newScale / this._customControlScaling;
             this._customControlScaling = newScale;
 
-            this._rootContainer.children.forEach((control: Control3D) => {
+            for (const control of this._rootContainer.children) {
                 control.scaling.scaleInPlace(scaleRatio);
 
                 if (newScale !== 1) {
                     control._isScaledByManager = true;
                 }
-            });
+            }
         }
     }
 

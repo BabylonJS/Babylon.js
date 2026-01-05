@@ -31,6 +31,7 @@ import type { TargetCamera } from "core/Cameras/targetCamera";
 import type { Camera } from "core/Cameras/camera";
 import type { PostProcessRenderPipeline } from "core/PostProcesses";
 import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
+import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
 
 // side effects
 import "core/Sprites/spriteSceneComponent";
@@ -468,6 +469,33 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         return useDefaults ? [...defaultMenuItems, ...customMenuItems] : customMenuItems;
     }
 
+    private _getFrameGraphsContextMenus(scene: Scene): IInspectorContextMenuItem[] {
+        const defaultMenuItems: IInspectorContextMenuItem[] = [];
+
+        const getUniqueName = (name: string): string => {
+            let idSubscript = 1;
+            while (scene.getFrameGraphByName(name)) {
+                name = name + " " + idSubscript++;
+            }
+            return name;
+        };
+
+        defaultMenuItems.push({
+            label: "Add new Frame Graph",
+            action: () => {
+                const newNodeRenderGraph = new NodeRenderGraph(getUniqueName("Frame Graph"), scene);
+                newNodeRenderGraph.setToDefault();
+                newNodeRenderGraph.build();
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newNodeRenderGraph);
+            },
+        });
+
+        const customMenuItems = this.props.contextMenu?.frameGraphs || [];
+        const useDefaults = !this.props.contextMenuOverride?.includes("frameGraphs");
+
+        return useDefaults ? [...defaultMenuItems, ...customMenuItems] : customMenuItems;
+    }
+
     renderContent(allNodes: any[]) {
         const scene = this.state.scene;
 
@@ -506,6 +534,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         const materialsContextMenus = this._getMaterialsContextMenus(scene);
         const spriteManagersContextMenus = this._getSpriteManagersContextMenus(scene);
         const particleSystemsContextMenus = this._getParticleSystemsContextMenus(scene);
+        const frameGraphsContextMenus = this._getFrameGraphsContextMenus(scene);
 
         const materials = [];
 
@@ -535,7 +564,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             scene.particleSystems,
             scene.spriteManagers,
             guiElements,
-            scene.animationGroups
+            scene.animationGroups,
+            scene.frameGraphs
         );
         if (scene.mainSoundTrack) {
             allNodes.push(scene.mainSoundTrack.soundCollection);
@@ -680,6 +710,17 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                         filter={this.state.filter}
                     />
                 )}
+                <TreeItemComponent
+                    globalState={this.props.globalState}
+                    contextMenuItems={frameGraphsContextMenus}
+                    forceSubitems={true}
+                    extensibilityGroups={this.props.extensibilityGroups}
+                    selectedEntity={this.state.selectedEntity}
+                    items={scene.frameGraphs}
+                    label="Frame Graphs"
+                    offset={1}
+                    filter={this.state.filter}
+                />
                 {this.props.additionalNodes &&
                     this.props.additionalNodes.map((additionalNode) => {
                         return (

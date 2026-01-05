@@ -1,29 +1,31 @@
-import type { Scene } from "core/scene";
+/* eslint-disable github/no-then */
+/* eslint-disable no-console */
 
-import { createScene as createSceneTS } from "./createScene";
-// import { createScene as createSceneJS } from "./createSceneJS.js";
-import { engine } from "./engine";
+// Lowercase only the parameter names (keys), keep values untouched. Later entries overwrite earlier ones.
+const RawParams = new URLSearchParams(window.location.search);
+const SearchParams = new URLSearchParams();
+RawParams.forEach((value, key) => SearchParams.set(key.toLowerCase(), value));
 
-const createScene = createSceneTS;
+const ExpQsp = SearchParams.get("exp");
 
-let scene: Scene;
-
-// avoid await on main level
-const createSceneResult = createScene();
-if (createSceneResult instanceof Promise) {
-    createSceneResult.then(function (result) {
-        scene = result;
-    });
-} else {
-    scene = createSceneResult;
+// Sanitize the input to only allow certain strings
+let ImportPromise: Promise<any> | undefined = undefined;
+switch (ExpQsp) {
+    case "lottie": {
+        ImportPromise = import("./lottie/main");
+        break;
+    }
+    case "testscene":
+    default: {
+        ImportPromise = import("./testScene/main");
+        break;
+    }
 }
 
-// Register a render loop to repeatedly render the scene
-engine.runRenderLoop(function () {
-    scene && scene.render();
-});
-
-// Watch for browser/canvas resize events
-window.addEventListener("resize", function () {
-    engine && engine.resize();
+ImportPromise.then(async (module) => {
+    console.log("Loading experience:", ExpQsp);
+    await module.Main(SearchParams);
+    console.log("Loading experience completed");
+}).catch((err) => {
+    console.log("Error loading experience:", err);
 });

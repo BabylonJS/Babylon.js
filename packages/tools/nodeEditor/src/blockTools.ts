@@ -87,6 +87,7 @@ import { ScreenSizeBlock } from "core/Materials/Node/Blocks/Fragment/screenSizeB
 import { MatrixBuilderBlock } from "core/Materials/Node/Blocks/matrixBuilderBlock";
 import { SceneDepthBlock } from "core/Materials/Node/Blocks/Dual/sceneDepthBlock";
 import { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
+import { DepthSourceBlock } from "core/Materials/Node/Blocks/Dual/depthSourceBlock";
 import { CloudBlock } from "core/Materials/Node/Blocks/cloudBlock";
 import { VoronoiNoiseBlock } from "core/Materials/Node/Blocks/voronoiNoiseBlock";
 import { ScreenSpaceBlock } from "core/Materials/Node/Blocks/Fragment/screenSpaceBlock";
@@ -110,10 +111,15 @@ import { StorageReadBlock } from "core/Materials/Node/Blocks/storageReadBlock";
 import { StorageWriteBlock } from "core/Materials/Node/Blocks/storageWriteBlock";
 import { MatrixSplitterBlock } from "core/Materials/Node/Blocks/matrixSplitterBlock";
 import { NodeMaterialDebugBlock } from "core/Materials/Node/Blocks/debugBlock";
+import { IridescenceBlock } from "core/Materials/Node/Blocks/PBR/iridescenceBlock";
+import { SmartFilterTextureBlock } from "core/Materials/Node/Blocks/Dual/smartFilterTextureBlock";
+import { AmbientOcclusionBlock } from "core/Materials/Node/Blocks/Fragment/ambientOcclusionBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "AmbientOcclusionBlock":
+                return new AmbientOcclusionBlock("Ambient Occlusion");
             case "DebugBlock":
                 return new NodeMaterialDebugBlock("Debug");
             case "MatrixSplitterBlock":
@@ -411,6 +417,11 @@ export class BlockTools {
                 projectionMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.Projection);
                 return projectionMatrixBlock;
             }
+            case "ProjectionInverseMatrixBlock": {
+                const projectionInverseMatrixBlock = new InputBlock("ProjectionInverse");
+                projectionInverseMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.ProjectionInverse);
+                return projectionInverseMatrixBlock;
+            }
             case "CameraPositionBlock": {
                 const cameraPosition = new InputBlock("Camera position");
                 cameraPosition.setAsSystemValue(NodeMaterialSystemValues.CameraPosition);
@@ -589,6 +600,8 @@ export class BlockTools {
                 return new RefractionBlock("Refraction");
             case "SubSurfaceBlock":
                 return new SubSurfaceBlock("SubSurface");
+            case "IridescenceBlock":
+                return new IridescenceBlock("Iridescence");
             case "CurrentScreenBlock":
                 return new CurrentScreenBlock("CurrentScreen");
             case "ParticleUVBlock": {
@@ -612,6 +625,11 @@ export class BlockTools {
                 const pos = new InputBlock("PositionWorld");
                 pos.setAsAttribute("particle_positionw");
                 return pos;
+            }
+            case "ScreenUVBlock": {
+                const uv = new InputBlock("uv");
+                uv.setAsAttribute("postprocess_uv");
+                return uv;
             }
             case "ParticleRampGradientBlock":
                 return new ParticleRampGradientBlock("ParticleRampGradient");
@@ -670,6 +688,8 @@ export class BlockTools {
             }
             case "ImageSourceBlock":
                 return new ImageSourceBlock("ImageSource");
+            case "DepthSourceBlock":
+                return new DepthSourceBlock("DepthSource");
             case "ClipPlanesBlock":
                 return new ClipPlanesBlock("ClipPlanes");
             case "FragDepthBlock":
@@ -692,13 +712,15 @@ export class BlockTools {
                 return new GaussianBlock("Gaussian");
             case "SplatReaderBlock":
                 return new SplatReaderBlock("SplatReader");
+            case "SmartFilterTextureBlock":
+                return new SmartFilterTextureBlock("SmartFilterTexture");
         }
 
         return null;
     }
 
     public static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes) {
-        let color = "#880000";
+        let color = "#964848";
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
                 color = "#cb9e27";

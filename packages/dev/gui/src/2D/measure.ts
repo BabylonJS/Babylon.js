@@ -1,12 +1,12 @@
 import type { Matrix2D } from "./math2D";
 import { Vector2 } from "core/Maths/math.vector";
 
-const tmpRect = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)];
+const TmpRect = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)];
 
-const tmpRect2 = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)];
+const TmpRect2 = [new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0)];
 
-const tmpV1 = new Vector2(0, 0);
-const tmpV2 = new Vector2(0, 0);
+const TmpV1 = new Vector2(0, 0);
+const TmpV2 = new Vector2(0, 0);
 
 /**
  * Class used to store 2D control sizes
@@ -87,24 +87,24 @@ export class Measure {
         const width = this.width + addWidth;
         const height = this.height + addHeight;
 
-        tmpRect[0].copyFromFloats(left, top);
-        tmpRect[1].copyFromFloats(left + width, top);
-        tmpRect[2].copyFromFloats(left + width, top + height);
-        tmpRect[3].copyFromFloats(left, top + height);
+        TmpRect[0].copyFromFloats(left, top);
+        TmpRect[1].copyFromFloats(left + width, top);
+        TmpRect[2].copyFromFloats(left + width, top + height);
+        TmpRect[3].copyFromFloats(left, top + height);
 
-        tmpV1.copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE);
-        tmpV2.copyFromFloats(0, 0);
+        TmpV1.copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE);
+        TmpV2.copyFromFloats(0, 0);
         for (let i = 0; i < 4; i++) {
-            transform.transformCoordinates(tmpRect[i].x, tmpRect[i].y, tmpRect2[i]);
-            tmpV1.x = Math.floor(Math.min(tmpV1.x, tmpRect2[i].x));
-            tmpV1.y = Math.floor(Math.min(tmpV1.y, tmpRect2[i].y));
-            tmpV2.x = Math.ceil(Math.max(tmpV2.x, tmpRect2[i].x));
-            tmpV2.y = Math.ceil(Math.max(tmpV2.y, tmpRect2[i].y));
+            transform.transformCoordinates(TmpRect[i].x, TmpRect[i].y, TmpRect2[i]);
+            TmpV1.x = Math.floor(Math.min(TmpV1.x, TmpRect2[i].x));
+            TmpV1.y = Math.floor(Math.min(TmpV1.y, TmpRect2[i].y));
+            TmpV2.x = Math.ceil(Math.max(TmpV2.x, TmpRect2[i].x));
+            TmpV2.y = Math.ceil(Math.max(TmpV2.y, TmpRect2[i].y));
         }
-        result.left = tmpV1.x;
-        result.top = tmpV1.y;
-        result.width = tmpV2.x - tmpV1.x;
-        result.height = tmpV2.y - tmpV1.y;
+        result.left = TmpV1.x;
+        result.top = TmpV1.y;
+        result.width = TmpV2.x - TmpV1.x;
+        result.height = TmpV2.y - TmpV1.y;
     }
 
     /**

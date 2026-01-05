@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphTextureHandle } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 
@@ -25,6 +24,10 @@ export class FrameGraphGenerateMipMapsTask extends FrameGraphTask {
         super(name, frameGraph);
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphGenerateMipMapsTask";
     }
 
     public record() {

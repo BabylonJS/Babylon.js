@@ -6,7 +6,7 @@ import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger";
 import { RichTypeFlowGraphInteger } from "./flowGraphRichTypes";
 import type { IObjectAccessor } from "./typeDefinitions";
 
-const pathHasTemplatesRegex = new RegExp(/\/\{(\w+)\}\//g);
+const PathHasTemplatesRegex = new RegExp(/\/\{(\w+)\}(?=\/|$)/g);
 
 /**
  * @experimental
@@ -21,7 +21,7 @@ export class FlowGraphPathConverterComponent {
         public path: string,
         public ownerBlock: FlowGraphBlock
     ) {
-        let match = pathHasTemplatesRegex.exec(path);
+        let match = PathHasTemplatesRegex.exec(path);
         const templateSet = new Set<string>();
         while (match) {
             const [, matchGroup] = match;
@@ -30,7 +30,7 @@ export class FlowGraphPathConverterComponent {
             }
             templateSet.add(matchGroup);
             this.templatedInputs.push(ownerBlock.registerDataInput(matchGroup, RichTypeFlowGraphInteger, new FlowGraphInteger(0)));
-            match = pathHasTemplatesRegex.exec(path);
+            match = PathHasTemplatesRegex.exec(path);
         }
     }
 

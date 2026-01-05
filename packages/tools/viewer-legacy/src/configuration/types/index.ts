@@ -4,7 +4,7 @@ import { extendedConfiguration } from "./extended";
 import type { ViewerConfiguration } from "../configuration";
 import { shadowDirectionalLightConfiguration, shadowSpotlLightConfiguration } from "./shadowLight";
 import { environmentMapConfiguration } from "./environmentMap";
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { deepmerge } from "../../helper/index";
 
 /**
@@ -16,7 +16,7 @@ import { deepmerge } from "../../helper/index";
  * @param types a comma-separated string of the type(s) or configuration to load.
  * @returns the configuration object
  */
-const getConfigurationType = function (types: string): ViewerConfiguration {
+const GetConfigurationType = function (types: string): ViewerConfiguration {
     let config: ViewerConfiguration = {};
     const typesSeparated = types.split(",");
     typesSeparated.forEach((type) => {
@@ -45,10 +45,10 @@ const getConfigurationType = function (types: string): ViewerConfiguration {
         }
 
         if (config.extends) {
-            config = deepmerge(config, getConfigurationType(config.extends));
+            config = deepmerge(config, GetConfigurationType(config.extends));
         }
     });
     return config;
 };
 
-export { getConfigurationType, defaultConfiguration, minimalConfiguration };
+export { GetConfigurationType as getConfigurationType, defaultConfiguration, minimalConfiguration };

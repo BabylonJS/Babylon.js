@@ -221,11 +221,12 @@ export class Slider3D extends Control3D {
         sliderBackplate.visibility = 0;
         sliderBackplate.scaling = new Vector3(1, 0.5, 0.8);
         const baseUrl = Tools.GetAssetUrl(Slider3D.MODEL_BASE_URL);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         SceneLoader.ImportMeshAsync(undefined, baseUrl, Slider3D.MODEL_FILENAME, scene).then((result) => {
             // make all meshes not pickable. Required meshes' pickable state will be set later.
-            result.meshes.forEach((m) => {
+            for (const m of result.meshes) {
                 m.isPickable = false;
-            });
+            }
             const sliderBackplateModel = result.meshes[1];
             const sliderBarModel = result.meshes[1].clone(`${this.name}_sliderbar`, sliderBackplate);
             const sliderThumbModel = result.meshes[1].clone(`${this.name}_sliderthumb`, sliderBackplate);
@@ -267,9 +268,10 @@ export class Slider3D extends Control3D {
             }
 
             this._injectGUI3DReservedDataStore(sliderBackplate).control = this;
-            sliderBackplate.getChildMeshes().forEach((mesh) => {
+            const meshes = sliderBackplate.getChildMeshes();
+            for (const mesh of meshes) {
                 this._injectGUI3DReservedDataStore(mesh).control = this;
-            });
+            }
         });
 
         this._affectMaterial(sliderBackplate);

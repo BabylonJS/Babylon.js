@@ -274,7 +274,7 @@ export class PrePassRenderer {
     public renderTargets: PrePassRenderTarget[] = [];
 
     private readonly _clearColor = new Color4(0, 0, 0, 0);
-    private readonly _clearDepthColor = new Color4(1e8, 0, 0, 1); // "infinity" value - depth in the depth texture is view.z, not a 0..1 value!
+    private readonly _clearDepthColor = new Color4(0, 0, 0, 1); //  // sets an invalid value by default - depth in the depth texture is view.z, so 0 is not possible because view.z can't be less than camera.minZ
 
     private _enabled: boolean = false;
 
@@ -634,6 +634,9 @@ export class PrePassRenderer {
         }
 
         this._effectConfigurations.push(cfg);
+        if (cfg.clearColor) {
+            this._clearColor.copyFrom(cfg.clearColor);
+        }
         return cfg;
     }
 
@@ -894,7 +897,10 @@ export class PrePassRenderer {
             if (this.renderTargets[i].renderTargetTexture) {
                 postProcesses = this._getPostProcessesSource(this.renderTargets[i]);
             } else {
-                const camera = this._scene.activeCamera;
+                // When there are multiple active cameras, we have to choose one. We assume it's the first one and not scene.activeCamera, because in a number of cases,
+                // _update() will be called from an async method, meaning the active camera will be the last one in the list of active cameras,
+                // which is generally not the right camera to use for the prepass setup.
+                const camera = this._scene.activeCameras && this._scene.activeCameras.length > 0 ? this._scene.activeCameras[0] : this._scene.activeCamera;
                 if (!camera) {
                     continue;
                 }

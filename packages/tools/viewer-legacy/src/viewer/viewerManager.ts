@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Observable } from "core/Misc/observable";
 import type { AbstractViewer } from "./viewer";
 
@@ -77,8 +78,8 @@ export class ViewerManager {
      * @param id the viewer id to find
      * @returns a promise that will resolve to the viewer
      */
-    public getViewerPromiseById(id: string): Promise<AbstractViewer> {
-        return new Promise((resolve) => {
+    public async getViewerPromiseById(id: string): Promise<AbstractViewer> {
+        return await new Promise((resolve) => {
             const localViewer = this.getViewerById(id);
             if (localViewer) {
                 return resolve(localViewer);

@@ -27,6 +27,7 @@ export class WebGLPipelineContext implements IPipelineContext {
     /** @internal */
     public _isDisposed = false;
 
+    // eslint-disable-next-line no-restricted-syntax
     public get isAsync() {
         return this.isParallelCompiled;
     }

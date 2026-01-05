@@ -13,6 +13,12 @@ uniform vec2 emitPower;
 uniform vec2 sizeRange;
 uniform vec4 scaleRange;
 
+#ifdef FLOWMAP
+uniform mat4 flowMapProjection;
+uniform float flowMapStrength;
+uniform sampler2D flowMapSampler;
+#endif
+
 #ifndef COLORGRADIENTS
 uniform vec4 color1;
 uniform vec4 color2;
@@ -409,6 +415,15 @@ void main() {
     outDirection = direction;
 #else
     vec3 updatedDirection = direction + gravity * timeDelta;
+
+    #ifdef FLOWMAP
+        vec4 clipSpace = (flowMapProjection * vec4(position, 1.));
+        vec3 ndcSpace = clipSpace.xyz / clipSpace.w;
+        vec2 flowMapUV = ndcSpace.xy * 0.5 + 0.5;
+        vec4 flowMapValue = texture(flowMapSampler, flowMapUV);
+        vec3 flowMapDirection = (flowMapValue.xyz * 2.0 - 1.0) * flowMapValue.w;
+        updatedDirection += flowMapDirection * timeDelta * flowMapStrength;
+    #endif
 
     #ifdef LIMITVELOCITYGRADIENTS
         float limitVelocity = texture(limitVelocityGradientSampler, vec2(ageGradient, 0)).r;

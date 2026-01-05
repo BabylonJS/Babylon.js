@@ -7,6 +7,9 @@ import { VertexData } from "../mesh.vertexData";
 import { CreateTiledPlaneVertexData } from "./tiledPlaneBuilder";
 import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 
+const OP_ADD = 1;
+const OP_SUB = -1;
+
 /**
  * Creates the VertexData for a tiled box
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/tiled_box
@@ -20,7 +23,7 @@ import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
  * * tileWidth sets the tile width and overwrites tileSize
  * * tileHeight sets the tile width and overwrites tileSize
  * * faceUV an array of 6 Vector4 elements used to set different images to each box side
- * * faceColors an array of 6 Color3 elements used to set different colors to each box side
+ * * faceColors an array of 6 Color4 elements used to set different colors to each box side
  * * alignHorizontal places whole tiles aligned to the center, left or right of a row
  * * alignVertical places whole tiles aligned to the center, left or right of a column
  * @param options.pattern
@@ -136,8 +139,8 @@ export function CreateTiledBoxVertexData(options: {
         });
     }
 
-    let positions: Array<number> = [];
-    let normals: Array<number> = [];
+    const positions: Array<number> = [];
+    const normals: Array<number> = [];
     let uvs: Array<number> = [];
     let indices: Array<number> = [];
     const colors: Array<number> = [];
@@ -173,88 +176,44 @@ export function CreateTiledBoxVertexData(options: {
         indices = indices.concat(<Array<number>>faceVertexData[f].indices!.map((x: number) => x + li));
         li += facePositions[f].length;
         if (faceColors) {
-            for (let c = 0; c < 4; c++) {
-                colors.push(faceColors[f].r, faceColors[f].g, faceColors[f].b, faceColors[f].a);
+            const color = faceColors[f];
+            for (let p = 0; p < facePositions[f].length; p++) {
+                colors.push(color.r, color.g, color.b, color.a);
             }
         }
     }
 
-    const vec0 = new Vector3(0, 0, halfDepth);
-    const mtrx0 = Matrix.RotationY(Math.PI);
-    positions = facePositions[0]
-        .map((entry) => Vector3.TransformNormal(entry, mtrx0).add(vec0))
-        .map((entry) => [entry.x, entry.y, entry.z])
-        .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), []);
-    normals = faceNormals[0]
-        .map((entry) => Vector3.TransformNormal(entry, mtrx0))
-        .map((entry) => [entry.x, entry.y, entry.z])
-        .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), []);
-    positions = positions.concat(
-        facePositions[1]
-            .map((entry) => entry.subtract(vec0))
-            .map((entry) => [entry.x, entry.y, entry.z])
-            .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), [])
-    );
-    normals = normals.concat(faceNormals[1].map((entry) => [entry.x, entry.y, entry.z]).reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), []));
+    // Define transforms for each face
+    const faceTransforms = [
+        // FRONT
+        { m: Matrix.RotationY(Math.PI), t: new Vector3(0, 0, halfDepth), op: OP_ADD },
+        // BACK
+        { m: Matrix.Identity(), t: new Vector3(0, 0, halfDepth), op: OP_SUB },
+        // RIGHT
+        { m: Matrix.RotationY(-Math.PI / 2), t: new Vector3(halfWidth, 0, 0), op: OP_ADD },
+        // LEFT
+        { m: Matrix.RotationY(Math.PI / 2), t: new Vector3(halfWidth, 0, 0), op: OP_SUB },
+        // TOP
+        { m: Matrix.RotationX(Math.PI / 2), t: new Vector3(0, halfHeight, 0), op: OP_ADD },
+        // BOTTOM
+        { m: Matrix.RotationX(-Math.PI / 2), t: new Vector3(0, halfHeight, 0), op: OP_SUB },
+    ];
 
-    const vec2 = new Vector3(halfWidth, 0, 0);
-    const mtrx2 = Matrix.RotationY(-Math.PI / 2);
-    positions = positions.concat(
-        facePositions[2]
-            .map((entry) => Vector3.TransformNormal(entry, mtrx2).add(vec2))
-            .map((entry) => [entry.x, entry.y, entry.z])
-            .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), [])
-    );
-    normals = normals.concat(
-        faceNormals[2]
-            .map((entry) => Vector3.TransformNormal(entry, mtrx2))
-            .map((entry) => [entry.x, entry.y, entry.z])
-            .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), [])
-    );
-    const mtrx3 = Matrix.RotationY(Math.PI / 2);
-    positions = positions.concat(
-        facePositions[3]
-            .map((entry) => Vector3.TransformNormal(entry, mtrx3).subtract(vec2))
-            .map((entry) => [entry.x, entry.y, entry.z])
-            .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), [])
-    );
-    normals = normals.concat(
-        faceNormals[3]
-            .map((entry) => Vector3.TransformNormal(entry, mtrx3))
-            .map((entry) => [entry.x, entry.y, entry.z])
-            .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), [])
-    );
+    // Assemble positions and normals
+    for (let f = 0; f < nbFaces; f++) {
+        const { m, t, op } = faceTransforms[f];
 
-    const vec4 = new Vector3(0, halfHeight, 0);
-    const mtrx4 = Matrix.RotationX(Math.PI / 2);
-    positions = positions.concat(
-        facePositions[4]
-            .map((entry) => Vector3.TransformNormal(entry, mtrx4).add(vec4))
-            .map((entry) => [entry.x, entry.y, entry.z])
-            .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), [])
-    );
-    normals = normals.concat(
-        faceNormals[4]
-            .map((entry) => Vector3.TransformNormal(entry, mtrx4))
-            .map((entry) => [entry.x, entry.y, entry.z])
-            .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), [])
-    );
-    const mtrx5 = Matrix.RotationX(-Math.PI / 2);
-    positions = positions.concat(
-        facePositions[5]
-            .map((entry) => Vector3.TransformNormal(entry, mtrx5).subtract(vec4))
-            .map((entry) => [entry.x, entry.y, entry.z])
-            .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), [])
-    );
-    normals = normals.concat(
-        faceNormals[5]
-            .map((entry) => Vector3.TransformNormal(entry, mtrx5))
-            .map((entry) => [entry.x, entry.y, entry.z])
-            .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), [])
-    );
+        for (const v of facePositions[f]) {
+            const p = Vector3.TransformCoordinates(v, m);
+            const final = op === OP_ADD ? p.add(t) : p.subtract(t);
+            positions.push(final.x, final.y, final.z);
+        }
 
-    // sides
-    VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs);
+        for (const n of faceNormals[f]) {
+            const nn = Vector3.TransformNormal(n, m);
+            normals.push(nn.x, nn.y, nn.z);
+        }
+    }
 
     // Result
     const vertexData = new VertexData();

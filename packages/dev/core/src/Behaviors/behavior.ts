@@ -3,6 +3,7 @@ import type { Nullable } from "../types";
 /**
  * Interface used to define a behavior
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface Behavior<T> {
     /** gets or sets behavior's name */
     name: string;
@@ -20,6 +21,10 @@ export interface Behavior<T> {
      * Called when the behavior is detached from its target
      */
     detach(): void;
+    /**
+     * Gets the current attached target
+     */
+    attachedNode: Nullable<T>;
 }
 
 /**

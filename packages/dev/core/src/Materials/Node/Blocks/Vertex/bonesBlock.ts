@@ -45,6 +45,7 @@ export class BonesBlock extends NodeMaterialBlock {
         state._excludeVariableName("mBones");
         state._excludeVariableName("BonesPerMesh");
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
@@ -140,7 +141,7 @@ export class BonesBlock extends NodeMaterialBlock {
         }
     }
 
-    public override provideFallbacks(mesh: AbstractMesh, fallbacks: EffectFallbacks) {
+    public override provideFallbacks(fallbacks: EffectFallbacks, mesh?: AbstractMesh) {
         if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             fallbacks.addCPUSkinningFallback(0, mesh);
         }
@@ -150,8 +151,8 @@ export class BonesBlock extends NodeMaterialBlock {
         BindBonesParameters(mesh, effect);
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        if (!defines._areAttributesDirty) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
+        if (!defines._areAttributesDirty || !mesh) {
             return;
         }
         PrepareDefinesForBones(mesh, defines);

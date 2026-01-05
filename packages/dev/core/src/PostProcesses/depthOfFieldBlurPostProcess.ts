@@ -9,6 +9,7 @@ import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { ThinDepthOfFieldBlurPostProcess } from "./thinDepthOfFieldBlurPostProcess";
 
 /**
  * The DepthOfFieldBlurPostProcess applied a blur in a give direction.
@@ -58,8 +59,11 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         blockCompilation = false,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
-        super(name, direction, kernel, {
+        const localOptions = {
+            size: typeof options === "number" ? options : undefined,
             camera,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            samplingMode: (samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE),
             engine,
             reusable,
             textureType,
@@ -67,8 +71,11 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
             blockCompilation,
             textureFormat,
             ...(options as PostProcessOptions),
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            samplingMode: (samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE),
+        };
+
+        super(name, direction, kernel, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinDepthOfFieldBlurPostProcess(name, engine, direction, kernel, localOptions) : undefined,
+            ...localOptions,
         });
 
         this.externalTextureSamplerBinding = !!imageToBlur;

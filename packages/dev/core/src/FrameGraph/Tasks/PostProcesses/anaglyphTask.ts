@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphRenderPass, FrameGraphTextureHandle } from "core/index";
 import { ThinAnaglyphPostProcess } from "core/PostProcesses/thinAnaglyphPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
@@ -22,6 +21,10 @@ export class FrameGraphAnaglyphTask extends FrameGraphPostProcessTask {
      */
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinAnaglyphPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinAnaglyphPostProcess(name, frameGraph.engine));
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphAnaglyphTask";
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {

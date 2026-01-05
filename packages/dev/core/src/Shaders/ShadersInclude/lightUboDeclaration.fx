@@ -12,8 +12,11 @@
 			vec4 vLightFalloff;
 		#elif defined(HEMILIGHT{X})
 			vec3 vLightGround;
+		#elif defined(CLUSTLIGHT{X})
+			vec2 vSliceData;
+			vec2 vSliceRanges[CLUSTLIGHT_SLICES];
 		#endif
-		#if defined(AREALIGHT{X})
+		#if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 			vec4 vLightWidth;
 			vec4 vLightHeight;
 		#endif
@@ -29,6 +32,11 @@
 #ifdef PROJECTEDLIGHTTEXTURE{X}
 	uniform mat4 textureProjectionMatrix{X};
 	uniform sampler2D projectionLightTexture{X};
+#endif
+#ifdef CLUSTLIGHT{X}
+	uniform sampler2D lightDataTexture{X};
+	// Ensure the mask is sampled with high precision
+	uniform highp sampler2D tileMaskTexture{X};
 #endif
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}

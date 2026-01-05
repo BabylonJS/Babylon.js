@@ -1,13 +1,13 @@
 {
     "name": "babylonjs-procedural-textures",
-    "version": "7.53.0",
-    "main": "babylonjs.proceduralTextures.js",
+    "version": "8.44.0",
+    "main": "babylonjs.proceduralTextures.min.js",
     "types": "babylonjs.proceduralTextures.module.d.ts",
     "files": [
         "*"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
+        "build": "npm run clean && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
@@ -15,15 +15,15 @@
         "test:escheck": "es-check es6 ./babylonjs.proceduralTextures.js"
     },
     "dependencies": {
-        "babylonjs": "^7.53.0"
+        "babylonjs": "^8.44.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
         "@dev/core": "1.0.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
-        "webpack": "^5.73.0",
-        "webpack-cli": "^5.1.0",
+        "webpack": "^5.103.0",
+        "webpack-cli": "6.0.1",
         "webpack-merge": "^5.8.0"
     },
     "keywords": [

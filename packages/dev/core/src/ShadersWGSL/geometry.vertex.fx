@@ -10,7 +10,9 @@
 #include<clipPlaneVertexDeclaration>
 
 attribute position: vec3f;
-attribute normal: vec3f;
+#ifdef HAS_NORMAL_ATTRIBUTE
+	attribute normal: vec3f;
+#endif
 
 #ifdef NEED_UV
 	varying vUV: vec2f;
@@ -27,6 +29,14 @@ attribute normal: vec3f;
 	uniform albedoMatrix: mat4x4f;
 	varying vReflectivityUV: vec2f;
 	varying vAlbedoUV: vec2f;
+	#endif
+	#ifdef METALLIC_TEXTURE
+	varying vMetallicUV: vec2f;
+	uniform metallicMatrix: mat4x4f;
+	#endif
+	#ifdef ROUGHNESS_TEXTURE
+	varying vRoughnessUV: vec2f;
+	uniform roughnessMatrix: mat4x4f;
 	#endif
 
 	#ifdef UV1
@@ -70,7 +80,11 @@ varying vPreviousPosition: vec4f;
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
     var positionUpdated: vec3f = input.position;
+#ifdef HAS_NORMAL_ATTRIBUTE
     var normalUpdated: vec3f = input.normal;
+#else
+    var normalUpdated: vec3f = vec3f(0.0, 0.0, 0.0);
+#endif
 #ifdef UV1
     var uvUpdated: vec2f = input.uv;
 #endif
@@ -117,28 +131,28 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 		#if NUM_BONE_INFLUENCERS > 0
 			var previousInfluence: mat4x4f;
-			previousInfluence = mPreviousBones[ i32(matricesIndices[0])] * matricesWeights[0];
+			previousInfluence = uniforms.mPreviousBones[ i32(vertexInputs.matricesIndices[0])] * vertexInputs.matricesWeights[0];
 			#if NUM_BONE_INFLUENCERS > 1
-				previousInfluence += mPreviousBones[ i32(matricesIndices[1])] * matricesWeights[1];
+				previousInfluence += uniforms.mPreviousBones[ i32(vertexInputs.matricesIndices[1])] * vertexInputs.matricesWeights[1];
 			#endif
 			#if NUM_BONE_INFLUENCERS > 2
-				previousInfluence += mPreviousBones[ i32(matricesIndices[2])] * matricesWeights[2];
+				previousInfluence += uniforms.mPreviousBones[ i32(vertexInputs.matricesIndices[2])] * vertexInputs.matricesWeights[2];
 			#endif
 			#if NUM_BONE_INFLUENCERS > 3
-				previousInfluence += mPreviousBones[ i32(matricesIndices[3])] * matricesWeights[3];
+				previousInfluence += uniforms.mPreviousBones[ i32(vertexInputs.matricesIndices[3])] * vertexInputs.matricesWeights[3];
 			#endif
 
 			#if NUM_BONE_INFLUENCERS > 4
-				previousInfluence += mPreviousBones[ i32(matricesIndicesExtra[0])] * matricesWeightsExtra[0];
+				previousInfluence += uniforms.mPreviousBones[ i32(vertexInputs.matricesIndicesExtra[0])] * vertexInputs.matricesWeightsExtra[0];
 			#endif
 			#if NUM_BONE_INFLUENCERS > 5
-				previousInfluence += mPreviousBones[ i32(matricesIndicesExtra[1])] * matricesWeightsExtra[1];
+				previousInfluence += uniforms.mPreviousBones[ i32(vertexInputs.matricesIndicesExtra[1])] * vertexInputs.matricesWeightsExtra[1];
 			#endif
 			#if NUM_BONE_INFLUENCERS > 6
-				previousInfluence += mPreviousBones[ i32(matricesIndicesExtra[2])] * matricesWeightsExtra[2];
+				previousInfluence += uniforms.mPreviousBones[ i32(vertexInputs.matricesIndicesExtra[2])] * vertexInputs.matricesWeightsExtra[2];
 			#endif
 			#if NUM_BONE_INFLUENCERS > 7
-				previousInfluence += mPreviousBones[ i32(matricesIndicesExtra[3])] * matricesWeightsExtra[3];
+				previousInfluence += uniforms.mPreviousBones[ i32(vertexInputs.matricesIndicesExtra[3])] * vertexInputs.matricesWeightsExtra[3];
 			#endif
 
 			vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld * previousInfluence *  vec4f(positionUpdated, 1.0);
@@ -168,6 +182,13 @@ fn main(input : VertexInputs) -> FragmentInputs {
 			#endif
 			#ifdef REFLECTIVITY_UV1
 			vertexOutputs.vReflectivityUV = (uniforms.reflectivityMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
+			#else
+				#ifdef METALLIC_UV1
+				vertexOutputs.vMetallicUV = (uniforms.metallicMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
+				#endif
+				#ifdef ROUGHNESS_UV1
+				vertexOutputs.vRoughnessUV = (uniforms.roughnessMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
+				#endif
 			#endif
 			#ifdef ALBEDO_UV1
 			vertexOutputs.vAlbedoUV = (uniforms.albedoMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
@@ -185,6 +206,13 @@ fn main(input : VertexInputs) -> FragmentInputs {
 			#endif
 			#ifdef REFLECTIVITY_UV2
 			vertexOutputs.vReflectivityUV = (uniforms.reflectivityMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
+			#else
+				#ifdef METALLIC_UV2
+				vertexOutputs.vMetallicUV = (uniforms.metallicMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
+				#endif
+				#ifdef ROUGHNESS_UV2
+				vertexOutputs.vRoughnessUV = (uniforms.roughnessMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
+				#endif
 			#endif
 			#ifdef ALBEDO_UV2
 			vertexOutputs.vAlbedoUV = (uniforms.albedoMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;

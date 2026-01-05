@@ -1182,7 +1182,8 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         // Create callbacks and add effects
         let lastLuminance: Nullable<PostProcess> = this.luminancePostProcess;
 
-        this.luminanceDownSamplePostProcesses.forEach((pp, index) => {
+        for (let index = 0; index < this.luminanceDownSamplePostProcesses.length; index++) {
+            const pp = this.luminanceDownSamplePostProcesses[index];
             const downSampleOffsets = new Array<number>(18);
 
             pp.onApply = (effect: Effect) => {
@@ -1213,6 +1214,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 pp.onAfterRender = () => {
                     const pixel = scene.getEngine().readPixels(0, 0, 1, 1);
                     const bit_shift = new Vector4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                     pixel.then((pixel) => {
                         const data = new Uint8Array(pixel.buffer);
                         this._hdrCurrentLuminance = (data[0] * bit_shift.x + data[1] * bit_shift.y + data[2] * bit_shift.z + data[3] * bit_shift.w) / 100.0;
@@ -1230,7 +1232,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                     true
                 )
             );
-        });
+        }
     }
 
     // Create HDR post-process
@@ -1634,6 +1636,8 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         this._disposePostProcesses();
 
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
+
+        this._scene.postProcessRenderPipelineManager.removePipeline(this._name);
 
         super.dispose();
     }

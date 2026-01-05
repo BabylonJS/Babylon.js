@@ -21,7 +21,8 @@ export class RenderingGroup {
     private static _ZeroVector: DeepImmutable<Vector3> = Vector3.Zero();
     private _scene: Scene;
     private _opaqueSubMeshes = new SmartArray<SubMesh>(256);
-    private _transparentSubMeshes = new SmartArray<SubMesh>(256);
+    /** @internal */
+    public _transparentSubMeshes = new SmartArray<SubMesh>(256);
     private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);
     private _depthOnlySubMeshes = new SmartArray<SubMesh>(256);
     private _particleSystems = new SmartArray<IParticleSystem>(256);
@@ -33,7 +34,8 @@ export class RenderingGroup {
 
     private _renderOpaque: (subMeshes: SmartArray<SubMesh>) => void;
     private _renderAlphaTest: (subMeshes: SmartArray<SubMesh>) => void;
-    private _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
+    /** @internal */
+    public _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
 
     /** @internal */
     public _empty = true;
@@ -42,6 +44,8 @@ export class RenderingGroup {
     public _edgesRenderers = new SmartArrayNoDuplicate<IEdgesRenderer>(16);
 
     public onBeforeTransparentRendering: () => void;
+
+    public disableDepthPrePass = false;
 
     /**
      * Set the opaque sort comparison function.
@@ -110,6 +114,11 @@ export class RenderingGroup {
      * @param renderSprites
      * @param renderParticles
      * @param activeMeshes
+     * @param renderDepthOnlyMeshes
+     * @param renderOpaqueMeshes
+     * @param renderAlphaTestMeshes
+     * @param renderTransparentMeshes
+     * @param customRenderTransparentSubMeshes
      */
     public render(
         customRenderFunction: Nullable<
@@ -122,7 +131,12 @@ export class RenderingGroup {
         >,
         renderSprites: boolean,
         renderParticles: boolean,
-        activeMeshes: Nullable<AbstractMesh[]>
+        activeMeshes: Nullable<AbstractMesh[]>,
+        renderDepthOnlyMeshes: boolean = true,
+        renderOpaqueMeshes: boolean = true,
+        renderAlphaTestMeshes: boolean = true,
+        renderTransparentMeshes: boolean = true,
+        customRenderTransparentSubMeshes?: (transparentSubMeshes: SmartArray<SubMesh>) => void
     ): void {
         if (customRenderFunction) {
             customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, this._depthOnlySubMeshes);
@@ -132,19 +146,19 @@ export class RenderingGroup {
         const engine = this._scene.getEngine();
 
         // Depth only
-        if (this._depthOnlySubMeshes.length !== 0) {
+        if (renderDepthOnlyMeshes && this._depthOnlySubMeshes.length !== 0) {
             engine.setColorWrite(false);
             this._renderAlphaTest(this._depthOnlySubMeshes);
             engine.setColorWrite(true);
         }
 
         // Opaque
-        if (this._opaqueSubMeshes.length !== 0) {
+        if (renderOpaqueMeshes && this._opaqueSubMeshes.length !== 0) {
             this._renderOpaque(this._opaqueSubMeshes);
         }
 
         // Alpha test
-        if (this._alphaTestSubMeshes.length !== 0) {
+        if (renderAlphaTestMeshes && this._alphaTestSubMeshes.length !== 0) {
             this._renderAlphaTest(this._alphaTestSubMeshes);
         }
 
@@ -166,16 +180,20 @@ export class RenderingGroup {
         }
 
         // Transparent
-        if (this._transparentSubMeshes.length !== 0 || this._scene.useOrderIndependentTransparency) {
+        if (renderTransparentMeshes && (customRenderTransparentSubMeshes || this._transparentSubMeshes.length !== 0 || this._scene.useOrderIndependentTransparency)) {
             engine.setStencilBuffer(stencilState);
-            if (this._scene.useOrderIndependentTransparency) {
-                const excludedMeshes = this._scene.depthPeelingRenderer!.render(this._transparentSubMeshes);
-                if (excludedMeshes.length) {
-                    // Render leftover meshes that could not be processed by depth peeling
-                    this._renderTransparent(excludedMeshes);
-                }
+            if (customRenderTransparentSubMeshes) {
+                customRenderTransparentSubMeshes(this._transparentSubMeshes);
             } else {
-                this._renderTransparent(this._transparentSubMeshes);
+                if (this._scene.useOrderIndependentTransparency) {
+                    const excludedMeshes = this._scene.depthPeelingRenderer!.render(this._transparentSubMeshes);
+                    if (excludedMeshes.length) {
+                        // Render leftover meshes that could not be processed by depth peeling
+                        this._renderTransparent(excludedMeshes);
+                    }
+                } else {
+                    this._renderTransparent(this._transparentSubMeshes);
+                }
             }
             engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
@@ -184,7 +202,7 @@ export class RenderingGroup {
         engine.setStencilBuffer(false);
 
         // Edges
-        if (this._edgesRenderers.length) {
+        if (renderOpaqueMeshes && this._edgesRenderers.length) {
             for (let edgesRendererIndex = 0; edgesRendererIndex < this._edgesRenderers.length; edgesRendererIndex++) {
                 this._edgesRenderers.data[edgesRendererIndex].render();
             }
@@ -201,7 +219,7 @@ export class RenderingGroup {
      * @param subMeshes The submeshes to render
      */
     private _renderOpaqueSorted(subMeshes: SmartArray<SubMesh>): void {
-        RenderingGroup._RenderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera, false);
+        RenderingGroup._RenderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera, false, this.disableDepthPrePass);
     }
 
     /**
@@ -209,7 +227,7 @@ export class RenderingGroup {
      * @param subMeshes The submeshes to render
      */
     private _renderAlphaTestSorted(subMeshes: SmartArray<SubMesh>): void {
-        RenderingGroup._RenderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera, false);
+        RenderingGroup._RenderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera, false, this.disableDepthPrePass);
     }
 
     /**
@@ -217,7 +235,7 @@ export class RenderingGroup {
      * @param subMeshes The submeshes to render
      */
     private _renderTransparentSorted(subMeshes: SmartArray<SubMesh>): void {
-        RenderingGroup._RenderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera, true);
+        RenderingGroup._RenderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera, true, this.disableDepthPrePass);
     }
 
     /**
@@ -226,12 +244,14 @@ export class RenderingGroup {
      * @param sortCompareFn The comparison function use to sort
      * @param camera The camera position use to preprocess the submeshes to help sorting
      * @param transparent Specifies to activate blending if true
+     * @param disableDepthPrePass Specifies to disable depth pre-pass if true (default: false)
      */
     private static _RenderSorted(
         subMeshes: SmartArray<SubMesh>,
         sortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>,
         camera: Nullable<Camera>,
-        transparent: boolean
+        transparent: boolean,
+        disableDepthPrePass?: boolean
     ): void {
         let subIndex = 0;
         let subMesh: SubMesh;
@@ -262,7 +282,7 @@ export class RenderingGroup {
             if (transparent) {
                 const material = subMesh.getMaterial();
 
-                if (material && material.needDepthPrePass) {
+                if (material && material.needDepthPrePass && !disableDepthPrePass) {
                     const engine = material.getScene().getEngine();
                     engine.setColorWrite(false);
                     engine.setAlphaMode(Constants.ALPHA_DISABLE);
@@ -413,13 +433,13 @@ export class RenderingGroup {
             this._transparentSubMeshes.push(subMesh);
         } else if (material.needAlphaTestingForMesh(mesh)) {
             // Alpha test
-            if (material.needDepthPrePass) {
+            if (material.needDepthPrePass && !this.disableDepthPrePass) {
                 this._depthOnlySubMeshes.push(subMesh);
             }
 
             this._alphaTestSubMeshes.push(subMesh);
         } else {
-            if (material.needDepthPrePass) {
+            if (material.needDepthPrePass && !this.disableDepthPrePass) {
                 this._depthOnlySubMeshes.push(subMesh);
             }
 

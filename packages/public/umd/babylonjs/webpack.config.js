@@ -9,6 +9,7 @@ module.exports = (env) => {
         namespace: "BABYLON",
         outputPath: path.resolve(__dirname),
         maxMode: true,
+        minToMax: true,
         alias: {
             core: path.resolve(__dirname, "../../../dev/core/src"),
             "@lts/core": path.resolve(__dirname, "../../../lts/core/src"),

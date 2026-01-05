@@ -2,6 +2,8 @@
  * Manages the defines for the Material
  */
 export class MaterialDefines {
+    public VERTEXOUTPUT_INVARIANT = false;
+
     /** @internal */
     protected _keys: string[] = [];
     private _isDirty = true;
@@ -221,7 +223,9 @@ export class MaterialDefines {
      * Resets the material define values
      */
     public reset(): void {
-        this._keys.forEach((prop) => this._setDefaultValue(prop));
+        for (const prop of this._keys) {
+            this._setDefaultValue(prop);
+        }
     }
 
     private _setDefaultValue(prop: string): void {

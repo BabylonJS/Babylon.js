@@ -46,6 +46,7 @@ export interface IPortData {
     isExposedOnFrame: boolean;
     exposedPortPosition: number;
     isConnected: boolean;
+    isInactive: boolean;
     direction: PortDataDirection;
     ownerData: any;
     connectedPort: Nullable<IPortData>;

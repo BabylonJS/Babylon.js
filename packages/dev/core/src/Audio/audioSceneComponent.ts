@@ -44,6 +44,7 @@ AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, co
 });
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * @internal
@@ -53,11 +54,12 @@ declare module "../scene" {
         /**
          * The main sound track played by the scene.
          * It contains your primary collection of sounds.
+         * @deprecated please use AudioEngineV2 instead
          */
         mainSoundTrack: SoundTrack;
         /**
          * The list of sound tracks added to the scene
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
+         * @deprecated please use AudioEngineV2 instead
          */
         soundTracks: Nullable<Array<SoundTrack>>;
 
@@ -65,35 +67,37 @@ declare module "../scene" {
          * Gets a sound using a given name
          * @param name defines the name to search for
          * @returns the found sound or null if not found at all.
+         * @deprecated please use AudioEngineV2 instead
          */
         getSoundByName(name: string): Nullable<Sound>;
 
         /**
          * Gets or sets if audio support is enabled
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
+         * @deprecated please use AudioEngineV2 instead
          */
         audioEnabled: boolean;
 
         /**
          * Gets or sets if audio will be output to headphones
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
+         * @deprecated please use AudioEngineV2 instead
          */
         headphone: boolean;
 
         /**
          * Gets or sets custom audio listener position provider
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
+         * @deprecated please use AudioEngineV2 instead
          */
         audioListenerPositionProvider: Nullable<() => Vector3>;
 
         /**
          * Gets or sets custom audio listener rotation provider
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
+         * @deprecated please use AudioEngineV2 instead
          */
         audioListenerRotationProvider: Nullable<() => Vector3>;
 
         /**
          * Gets or sets a refresh rate when using 3D audio positioning
+         * @deprecated please use AudioEngineV2 instead
          */
         audioPositioningRefreshRate: number;
     }
@@ -272,6 +276,7 @@ Object.defineProperty(Scene.prototype, "audioPositioningRefreshRate", {
 /**
  * Defines the sound scene component responsible to manage any sounds
  * in a given scene.
+ * @deprecated please use AudioEngineV2 instead
  */
 export class AudioSceneComponent implements ISceneSerializableComponent {
     private static _CameraDirection = new Vector3(0, 0, -1);
@@ -377,11 +382,11 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         if (!container.sounds) {
             return;
         }
-        container.sounds.forEach((sound) => {
+        for (const sound of container.sounds) {
             sound.play();
             sound.autoplay = true;
             this.scene.mainSoundTrack.addSound(sound);
-        });
+        }
     }
 
     /**
@@ -393,14 +398,14 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         if (!container.sounds) {
             return;
         }
-        container.sounds.forEach((sound) => {
+        for (const sound of container.sounds) {
             sound.stop();
             sound.autoplay = false;
             this.scene.mainSoundTrack.removeSound(sound);
             if (dispose) {
                 sound.dispose();
             }
-        });
+        }
     }
 
     /**
@@ -427,6 +432,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         this._audioEnabled = false;
 
         if (AbstractEngine.audioEngine && AbstractEngine.audioEngine.audioContext) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             AbstractEngine.audioEngine.audioContext.suspend();
         }
 
@@ -451,6 +457,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         this._audioEnabled = true;
 
         if (AbstractEngine.audioEngine && AbstractEngine.audioEngine.audioContext) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             AbstractEngine.audioEngine.audioContext.resume();
         }
 

@@ -17,10 +17,10 @@ import * as webpackTools from "./webpackTools.js";
 import * as fs from "fs";
 import * as path from "path";
 
-const cliCommand = checkArgs(["-c", "--command"], false, true) as string;
-runCommand(cliCommand);
+const CliCommand = checkArgs(["-c", "--command"], false, true) as string;
+RunCommand(CliCommand);
 
-function processConfigFile() {
+function ProcessConfigFile() {
     const baseDir = path.resolve(".");
     const configFile = (checkArgs(["-f", "--file"], false, true) as string) || "config.tasks.json";
     if (configFile) {
@@ -33,23 +33,23 @@ function processConfigFile() {
                     // populate the args
                     externalArgs.length = 0;
                     if (command.args) {
-                        externalArgs.push(...(command.args as string[]));
+                        externalArgs.push(...command.args);
                     }
-                    runCommand(command.command);
+                    RunCommand(command.command);
                 }
             }
         }
     }
 }
 
-function runCommand(command: string) {
+function RunCommand(command: string) {
     if (command) {
         console.log("Babylon.js build tools");
         console.log(`Command: ${command}`);
         switch (command) {
             case "run-tasks":
             case "rt":
-                processConfigFile();
+                ProcessConfigFile();
                 break;
             case "add-js-to-es6":
             case "ajte":
@@ -69,6 +69,7 @@ function runCommand(command: string) {
                 break;
             case "prepare-es6-build":
             case "peb":
+                // eslint-disable-next-line github/no-then
                 prepareES6Build().catch((e) => {
                     console.error(e);
                     process.exit(1);
@@ -88,6 +89,7 @@ function runCommand(command: string) {
                 break;
             case "update-engine-version":
             case "uev":
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 updateEngineVersion();
                 break;
             case "declarations-es6":

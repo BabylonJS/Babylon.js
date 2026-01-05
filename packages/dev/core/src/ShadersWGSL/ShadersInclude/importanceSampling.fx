@@ -87,6 +87,34 @@ fn hemisphereImportanceSampleDggx(u: vec2f, a: f32) -> vec3f {
     return  vec3f(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta);
 }
 
+// Helper function for anisotropic GGX importance sampling
+fn hemisphereImportanceSampleDggxAnisotropic(Xi: vec2f, alphaTangent: f32, alphaBitangent: f32) -> vec3f
+{
+    // Clamp to avoid division by zero but allow extreme anisotropy
+    let alphaT: f32 = max(alphaTangent, 0.0001);
+    let alphaB: f32 = max(alphaBitangent, 0.0001);
+    
+    
+    // Map [0,1]^2 → spherical coordinates
+    var phi: f32 = atan(alphaB / alphaT * tan(2.0f * PI * Xi.x));
+    if (Xi.x > 0.5) {
+        phi += PI; // make sure phi ∈ [0, 2π]
+    }
+
+    let cosPhi: f32 = cos(phi);
+    let sinPhi: f32 = sin(phi);
+
+    let alpha2: f32 = (cosPhi*cosPhi) / (alphaTangent*alphaTangent) +
+                   (sinPhi*sinPhi) / (alphaB*alphaB);
+    let tanTheta2: f32 = Xi.y / (1.0f - Xi.y) / alpha2;
+
+    let cosTheta: f32 = 1.0f / sqrt(1.0f + tanTheta2);
+    let sinTheta: f32 = sqrt(max(0.0f, 1.0f - cosTheta*cosTheta));
+
+    // Local half-vector in stretched space
+    return vec3f(sinTheta * cosPhi, sinTheta * sinPhi, cosTheta);
+}
+
 //
 //
 // Importance sampling Charlie

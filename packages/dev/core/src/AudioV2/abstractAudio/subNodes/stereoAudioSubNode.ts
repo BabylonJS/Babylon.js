@@ -26,11 +26,6 @@ export function _GetStereoAudioSubNode(subGraph: _AbstractAudioSubGraph): Nullab
 }
 
 /** @internal */
-export function _GetStereoAudioProperty<K extends keyof typeof _StereoAudioDefaults>(subGraph: _AbstractAudioSubGraph, property: K): (typeof _StereoAudioDefaults)[K] {
-    return _GetStereoAudioSubNode(subGraph)?.[property] ?? _StereoAudioDefaults[property];
-}
-
-/** @internal */
 export function _SetStereoAudioProperty<K extends keyof typeof _StereoAudioDefaults>(subGraph: _AbstractAudioSubGraph, property: K, value: _StereoAudioSubNode[K]): void {
     subGraph.callOnSubNode<_StereoAudioSubNode>(AudioSubNode.STEREO, (node) => {
         node[property] = value;

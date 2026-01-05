@@ -90,6 +90,7 @@ export class FogBlock extends NodeMaterialBlock {
     }
 
     public override initialize(state: NodeMaterialBuildState) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
@@ -127,7 +128,11 @@ export class FogBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
+        if (!mesh) {
+            return;
+        }
+
         const scene = mesh.getScene();
         defines.setValue("FOG", nodeMaterial.fogEnabled && GetFogState(mesh, scene));
     }

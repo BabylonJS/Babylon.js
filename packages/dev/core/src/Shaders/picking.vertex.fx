@@ -1,7 +1,7 @@
 ﻿// Attributes
 attribute vec3 position;
 #if defined(INSTANCES)
-attribute vec4 instanceMeshID;
+attribute float instanceMeshID;
 #endif
 
 #include<bonesDeclaration>
@@ -16,17 +16,18 @@ uniform mat4 viewProjection;
 
 // Output
 #if defined(INSTANCES)
-varying vec4 vMeshID;
+flat varying float vMeshID;
 #endif
 
 void main(void) {
-    
+
+    vec3 positionUpdated = position;
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 #include<instancesVertex>
 #include<bonesVertex>
 #include<bakedVertexAnimation>
-    vec4 worldPos = finalWorld * vec4(position, 1.0);
+    vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 	gl_Position = viewProjection * worldPos;
 
 #if defined(INSTANCES)

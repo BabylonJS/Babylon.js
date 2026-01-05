@@ -8,14 +8,14 @@ import type { Nullable } from "../../types";
 export type ShaderCustomProcessingFunction = (shaderType: string, code: string, defines?: string[]) => string;
 
 /** @internal */
-export interface ShaderProcessingContext {
+export interface _IShaderProcessingContext {
     // For engines that check for non float vertex buffers, this object is populated only with the vertex kinds known to be FLOAT by the engine (position, uv, ...)
     // and only if the type of the corresponding vertex buffer is an integer type. If the type is a signed integer type, the value is negated.
     vertexBufferKindToNumberOfComponents?: { [kind: string]: number };
 }
 
 /** @internal */
-export interface ProcessingOptions {
+export interface _IProcessingOptions {
     defines: string[];
     indexParameters: any;
     isFragment: boolean;
@@ -27,7 +27,8 @@ export interface ProcessingOptions {
     version: string;
     platformName: string;
     lookForClosingBracketForUniformBuffer?: boolean;
-    processingContext: Nullable<ShaderProcessingContext>;
+    processingContext: Nullable<_IShaderProcessingContext>;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     isNDCHalfZRange: boolean;
     useReverseDepthBuffer: boolean;
     processCodeAfterIncludes?: ShaderCustomProcessingFunction;

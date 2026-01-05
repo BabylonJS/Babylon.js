@@ -1,7 +1,7 @@
 import type { SmartArray } from "../../Misc/smartArray";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
-import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
+import { Matrix, Vector3, Vector2, TmpVectors } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { VertexBuffer } from "../../Buffers/buffer";
 import type { SubMesh } from "../../Meshes/subMesh";
@@ -26,7 +26,7 @@ import { DrawWrapper } from "../../Materials/drawWrapper";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import type { Camera } from "../../Cameras/camera";
 
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import {
     BindMorphTargetParameters,
@@ -35,6 +35,7 @@ import {
     PushAttributesForInstances,
 } from "../../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { FloatingOriginCurrentScene, GetFullOffsetViewProjectionToRef } from "../../Materials/floatingOriginMatrixOverrides";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -151,8 +152,8 @@ export interface IShadowGenerator {
  * Default implementation IShadowGenerator.
  * This is the main object responsible of generating shadows in the framework.
  * Documentation: https://doc.babylonjs.com/features/featuresDeepDive/lights/shadows
- * #IFYDRS#0: WebGL
- * #IFYDRS#835: WebGPU
+ * @see [WebGL](https://playground.babylonjs.com/#IFYDRS#0)
+ * @see [WebGPU](https://playground.babylonjs.com/#IFYDRS#835)
  */
 export class ShadowGenerator implements IShadowGenerator {
     /**
@@ -901,6 +902,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._camera = camera ?? null;
         this._useRedTextureType = !!useRedTextureType;
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(forceGLSL);
 
         let shadowGenerators = light._shadowGenerators;
@@ -950,6 +952,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _createTargetRenderTexture(): void {
         const engine = this._scene.getEngine();
+        this._shadowMap?.dispose();
         if (engine._features.supportDepthStencilTexture) {
             this._shadowMap = new RenderTargetTexture(
                 this._light.name + "_shadowMap",
@@ -1007,7 +1010,7 @@ export class ShadowGenerator implements IShadowGenerator {
         // When preWarm is false, forces the mesh is ready function to true as we are double checking it
         // in the custom render function. Also it prevents side effects and useless
         // shader variations in DEPTHPREPASS mode.
-        this._shadowMap.customIsReadyFunction = (mesh: AbstractMesh, _refreshRate: number, preWarm?: boolean | undefined): boolean => {
+        this._shadowMap.customIsReadyFunction = (mesh: AbstractMesh, _refreshRate: number, preWarm?: boolean): boolean => {
             if (!preWarm || !mesh.subMeshes) {
                 return true;
             }
@@ -1057,6 +1060,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.setColorWrite(false);
             }
             this.getTransformMatrix(); // generate the view/projection matrix
+            FloatingOriginCurrentScene.eyeAtCamera = false;
             this._scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
             if (this._useUBO) {
                 this._scene.getSceneUniformBuffer().unbindEffect();
@@ -1069,6 +1073,7 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this._sceneUBOs) {
                 this._scene.setSceneUniformBuffer(this._currentSceneUBO);
             }
+            FloatingOriginCurrentScene.eyeAtCamera = true;
             this._scene.updateTransformMatrix(); // restore the view/projection matrices of the active camera
 
             if (this._filter === ShadowGenerator.FILTER_PCF) {
@@ -1326,7 +1331,7 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
                 effect.setVector3("lightDataSM", this._cachedDirection);
             } else {
-                effect.setVector3("lightDataSM", this._cachedPosition);
+                effect.setVector3("lightDataSM", this._cachedPosition.subtractToRef(this._scene.floatingOriginOffset, TmpVectors.Vector3[0]));
             }
 
             const camera = this._getCamera();
@@ -1382,7 +1387,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 }
 
                 // Clip planes
-                bindClipPlane(effect, material, scene);
+                BindClipPlane(effect, material, scene);
             }
 
             if (!this._useUBO && !shadowDepthWrapper) {
@@ -1517,8 +1522,8 @@ export class ShadowGenerator implements IShadowGenerator {
      * @param options Sets of optional options forcing the compilation with different modes
      * @returns A promise that resolves when the compilation completes
      */
-    public forceCompilationAsync(options?: Partial<{ useInstances: boolean }>): Promise<void> {
-        return new Promise((resolve) => {
+    public async forceCompilationAsync(options?: Partial<{ useInstances: boolean }>): Promise<void> {
+        return await new Promise((resolve) => {
             this.forceCompilation(() => {
                 resolve();
             }, options);
@@ -1684,7 +1689,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 : 0;
 
             // ClipPlanes
-            prepareStringDefinesForClipPlanes(material, this._scene, defines);
+            PrepareStringDefinesForClipPlanes(material, this._scene, defines);
 
             // Instances
             if (useInstances) {
@@ -1742,7 +1747,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 const samplers = ["diffuseSampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"];
                 const uniformBuffers = ["Scene", "Mesh"];
 
-                addClipPlaneUniforms(uniforms);
+                AddClipPlaneUniforms(uniforms);
 
                 // Custom shader?
                 if (this.customShaderOptions) {
@@ -1885,7 +1890,11 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         if (!light.needCube()) {
-            effect.setMatrix("lightMatrix" + lightIndex, this.getTransformMatrix());
+            const offset = scene.floatingOriginOffset;
+            const transform = this.getTransformMatrix(); // ensures updated view/projection
+            // Doing the check for floatingOrigin here to avoid unnecessary matrix operations when offset is 0
+            const lightMatrix = scene.floatingOriginMode ? GetFullOffsetViewProjectionToRef(offset, this._viewMatrix, this._projectionMatrix, TmpVectors.Matrix[0]) : transform;
+            effect.setMatrix("lightMatrix" + lightIndex, lightMatrix);
         }
 
         // Only PCF uses depth stencil texture.
@@ -2154,17 +2163,18 @@ export class ShadowGenerator implements IShadowGenerator {
         const shadowGenerator = constr ? constr(parsedShadowGenerator.mapSize, light, camera) : new ShadowGenerator(parsedShadowGenerator.mapSize, light, undefined, camera);
         const shadowMap = shadowGenerator.getShadowMap();
 
-        for (let meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
-            const meshes = scene.getMeshesById(parsedShadowGenerator.renderList[meshIndex]);
-            meshes.forEach(function (mesh) {
-                if (!shadowMap) {
-                    return;
+        if (parsedShadowGenerator.renderList.length && shadowMap) {
+            const renderSet = new Set<string>(parsedShadowGenerator.renderList);
+            let renderList = shadowMap.renderList;
+            if (!renderList) {
+                renderList = shadowMap.renderList = [];
+            }
+            const meshes = scene.meshes;
+            for (const mesh of meshes) {
+                if (renderSet.has(mesh.id)) {
+                    renderList.push(mesh);
                 }
-                if (!shadowMap.renderList) {
-                    shadowMap.renderList = [];
-                }
-                shadowMap.renderList.push(mesh);
-            });
+            }
         }
 
         if (parsedShadowGenerator.id !== undefined) {

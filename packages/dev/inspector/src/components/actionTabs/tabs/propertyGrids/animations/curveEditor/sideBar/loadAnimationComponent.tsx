@@ -65,6 +65,7 @@ export class LoadAnimationComponent extends React.Component<ILoadAnimationCompon
         const snippetId = this._textInput.current!.value;
 
         Animation.ParseFromSnippetAsync(snippetId)
+            // eslint-disable-next-line github/no-then
             .then((animations) => {
                 context.snippetId = snippetId;
 
@@ -82,6 +83,7 @@ export class LoadAnimationComponent extends React.Component<ILoadAnimationCompon
                 context.onAnimationsLoaded.notifyObservers();
                 context.onActiveAnimationChanged.notifyObservers({});
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 this._root.current?.ownerDocument.defaultView!.alert("Unable to load your animations: " + err);
             });

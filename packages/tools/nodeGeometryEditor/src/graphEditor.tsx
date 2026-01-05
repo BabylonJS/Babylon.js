@@ -13,7 +13,7 @@ import { PreviewManager } from "./components/preview/previewManager";
 import { PreviewMeshControlComponent } from "./components/preview/previewMeshControlComponent";
 import { PreviewAreaComponent } from "./components/preview/previewAreaComponent";
 import { SerializationTools } from "./serializationTools";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import type { IInspectorOptions } from "core/Debug/debugLayer";
 import { CreatePopup } from "shared-ui-components/popupHelper";
 
@@ -69,8 +69,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         return this._graphCanvas.createNodeFromObject(
             dataToAppend instanceof NodeGeometryBlock ? TypeLedger.NodeDataBuilder(dataToAppend, this._graphCanvas) : dataToAppend,
             (block: NodeGeometryBlock) => {
-                if (this.props.globalState.nodeGeometry!.attachedBlocks.indexOf(block) === -1) {
-                    this.props.globalState.nodeGeometry!.attachedBlocks.push(block);
+                if (this.props.globalState.nodeGeometry.attachedBlocks.indexOf(block) === -1) {
+                    this.props.globalState.nodeGeometry.attachedBlocks.push(block);
                 }
 
                 if (block instanceof GeometryOutputBlock) {
@@ -111,16 +111,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Connect to relevant events
         globalState.stateManager.onUpdateRequiredObservable.add(() => {
-            this._historyStack.store();
+            void this._historyStack.storeAsync();
         });
         globalState.stateManager.onRebuildRequiredObservable.add(() => {
-            this._historyStack.store();
+            void this._historyStack.storeAsync();
         });
         globalState.stateManager.onNodeMovedObservable.add(() => {
-            this._historyStack.store();
+            void this._historyStack.storeAsync();
         });
         globalState.stateManager.onNewNodeCreatedObservable.add(() => {
-            this._historyStack.store();
+            void this._historyStack.storeAsync();
         });
         globalState.onClearUndoStack.add(() => {
             this._historyStack.reset();
@@ -137,10 +137,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             (this.props.globalState as any)._previewManager = this._previewManager;
         }
 
-        if (navigator.userAgent.indexOf("Mobile") !== -1) {
-            ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
-        }
-
         this.props.globalState.onPopupClosedObservable.addOnce(() => {
             this.componentWillUnmount();
         });
@@ -154,7 +150,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const globalState = this.props.globalState;
 
         if (globalState.hostDocument) {
-            globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
+            globalState.hostDocument.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
 
         globalState.stateManager.onUpdateRequiredObservable.clear();
@@ -233,9 +229,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             const frameData = source.editorData.frames[0];
 
             // create new graph nodes for only blocks from frame (last blocks added)
-            this.props.globalState.nodeGeometry.attachedBlocks.slice(-frameData.blocks.length).forEach((block: NodeGeometryBlock) => {
+            const blocks = this.props.globalState.nodeGeometry.attachedBlocks.slice(-frameData.blocks.length);
+
+            for (const block of blocks) {
                 this.appendBlock(block);
-            });
+            }
             this._graphCanvas.addFrame(frameData);
             this.reOrganize(this.props.globalState.nodeGeometry.editorData, true);
         });
@@ -252,19 +250,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return this._graphCanvas.findNodeFromData(block);
         };
 
-        this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
+        this.props.globalState.hostDocument.addEventListener("keydown", (evt) => {
             if (this._historyStack.processKeyEvent(evt)) {
                 return;
             }
 
-            this._graphCanvas.handleKeyDown(
+            void this._graphCanvas.handleKeyDownAsync(
                 evt,
                 (nodeData) => {
-                    this.props.globalState.nodeGeometry!.removeBlock(nodeData.data as NodeGeometryBlock);
+                    this.props.globalState.nodeGeometry.removeBlock(nodeData.data as NodeGeometryBlock);
                 },
                 this._mouseLocationX,
                 this._mouseLocationY,
-                (nodeData) => {
+                async (nodeData) => {
                     const block = nodeData.data as NodeGeometryBlock;
                     const clone = block.clone();
 
@@ -274,7 +272,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                     return this.appendBlock(clone, false);
                 },
-                this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement
+                this.props.globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement
             );
         });
 
@@ -331,12 +329,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this.appendBlock(geometry.outputBlock, true);
         }
 
-        geometry.attachedBlocks.forEach((n: any) => {
+        for (const n of geometry.attachedBlocks) {
             this.appendBlock(n, true);
-        });
+        }
 
         // Links
-        geometry.attachedBlocks.forEach((n: any) => {
+        for (const n of geometry.attachedBlocks) {
             if (n.inputs.length) {
                 const nodeData = this._graphCanvas.findNodeFromData(n);
                 for (const input of nodeData.content.inputs) {
@@ -345,7 +343,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     }
                 }
             }
-        });
+        }
     }
 
     showWaitScreen() {
@@ -467,7 +465,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     dropNewBlock(event: React.DragEvent<HTMLDivElement>) {
-        const data = event.dataTransfer.getData("babylonjs-geometry-node") as string;
+        const data = event.dataTransfer.getData("babylonjs-geometry-node");
 
         const container = this._diagramContainerRef.current!;
         this.emitNewBlock(data, event.clientX - container.offsetLeft, event.clientY - container.offsetTop);
@@ -523,68 +521,83 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 parentControl.id = "node-geometry-editor-graph-root";
                 parentControl.className = "nge-right-panel popup";
             },
-            onWindowCreateCallback: (w) => {
+            // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
+            onWindowCreateCallback: async (w) => {
                 popUpWindow = w;
                 if (popUpWindow) {
                     popUpWindow.addEventListener("beforeunload", this.handleClosingPopUp);
                     const parentControl = popUpWindow.document.getElementById("node-geometry-editor-graph-root");
-                    this.createPreviewMeshControlHost(options, parentControl);
-                    this.createPreviewHost(options, parentControl);
+                    await this.createPreviewMeshControlHostAsync(options, parentControl);
+                    await this.createPreviewHostAsync(options, parentControl);
                     if (parentControl) {
-                        this.fixPopUpStyles(parentControl.ownerDocument!);
-                        this.initiatePreviewArea(parentControl.ownerDocument!.getElementById("preview-canvas") as HTMLCanvasElement);
+                        this.fixPopUpStyles(parentControl.ownerDocument);
+                        this.initiatePreviewArea(parentControl.ownerDocument.getElementById("preview-canvas") as HTMLCanvasElement);
                     }
                 }
             },
         });
     };
 
-    createPreviewMeshControlHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
+    createPreviewMeshControlHostAsync = async (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
         // Prepare the preview control host
-        if (parentControl) {
-            const host = parentControl.ownerDocument!.createElement("div");
+        return await new Promise((resolve) => {
+            if (parentControl) {
+                const host = parentControl.ownerDocument.createElement("div");
 
-            host.id = "PreviewMeshControl-host";
-            host.style.width = options.embedHostWidth || "auto";
+                host.id = "PreviewMeshControl-host";
+                host.style.width = options.embedHostWidth || "auto";
 
-            parentControl.appendChild(host);
-            const previewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
-                globalState: this.props.globalState,
-                togglePreviewAreaComponent: this.handlePopUp,
-            });
-            ReactDOM.render(previewMeshControlComponentHost, host);
-        }
+                parentControl.appendChild(host);
+                const previewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
+                    globalState: this.props.globalState,
+                    togglePreviewAreaComponent: this.handlePopUp,
+                    onMounted: () => {
+                        resolve(true);
+                    },
+                });
+                const root = createRoot(host);
+                root.render(previewMeshControlComponentHost);
+            }
+            resolve(false);
+        });
     };
 
-    createPreviewHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
-        // Prepare the preview host
-        if (parentControl) {
-            const host = parentControl.ownerDocument!.createElement("div");
+    createPreviewHostAsync = async (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
+        return await new Promise((resolve) => {
+            // Prepare the preview host
+            if (parentControl) {
+                const host = parentControl.ownerDocument.createElement("div");
 
-            host.id = "PreviewAreaComponent-host";
-            host.style.width = options.embedHostWidth || "auto";
-            host.style.height = "100%";
-            host.style.overflow = "hidden";
-            host.style.display = "grid";
-            host.style.gridRow = "2";
-            host.style.gridTemplateRows = "auto 40px";
-            host.style.gridTemplateRows = "calc(100% - 40px) 40px";
+                host.id = "PreviewAreaComponent-host";
+                host.style.width = options.embedHostWidth || "auto";
+                host.style.height = "100%";
+                host.style.overflow = "hidden";
+                host.style.display = "grid";
+                host.style.gridRow = "2";
+                host.style.gridTemplateRows = "auto 40px";
+                host.style.gridTemplateRows = "calc(100% - 40px) 40px";
 
-            parentControl.appendChild(host);
+                parentControl.appendChild(host);
 
-            this._previewHost = host;
+                this._previewHost = host;
 
-            if (!options.overlay) {
-                this._previewHost.style.position = "relative";
+                if (!options.overlay) {
+                    this._previewHost.style.position = "relative";
+                }
             }
-        }
 
-        if (this._previewHost) {
-            const previewAreaComponentHost = React.createElement(PreviewAreaComponent, {
-                globalState: this.props.globalState,
-            });
-            ReactDOM.render(previewAreaComponentHost, this._previewHost);
-        }
+            if (this._previewHost) {
+                const previewAreaComponentHost = React.createElement(PreviewAreaComponent, {
+                    globalState: this.props.globalState,
+                    onMounted: () => {
+                        resolve(true);
+                    },
+                });
+                const root = createRoot(this._previewHost);
+                root.render(previewAreaComponentHost);
+            }
+            resolve(false);
+        });
     };
 
     fixPopUpStyles = (document: Document) => {
@@ -667,7 +680,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     </SplitContainer>
                 </SplitContainer>
                 <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
-                <div className="blocker">Node Geometry Editor runs only on desktop</div>
+                <div className="blocker">Node Geometry Editor needs a horizontal resolution of at least 900px</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
         );

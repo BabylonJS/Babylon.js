@@ -170,6 +170,8 @@ vec4 applyImageProcessing(vec4 result) {
 		// Increase contrast: apply simple shoulder-toe high contrast curve
 		result.rgb = mix(result.rgb, resultHighContrast, contrast - 1.0);
 	}
+
+	result.rgb = max(result.rgb, 0.);
 #endif
 
 	// Apply Color Transform

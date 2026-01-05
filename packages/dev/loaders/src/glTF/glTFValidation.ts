@@ -1,3 +1,6 @@
+/* eslint-disable github/no-then */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable @typescript-eslint/promise-function-async */
 import type * as GLTF2 from "babylonjs-gltf2interface";
 import { Tools } from "core/Misc/tools";
 
@@ -5,10 +8,12 @@ import { Tools } from "core/Misc/tools";
 declare let GLTFValidator: GLTF2.IGLTFValidator;
 
 // WorkerGlobalScope
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare function importScripts(...urls: string[]): void;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare function postMessage(message: any, transfer?: any[]): void;
 
-function validateAsync(
+function ValidateAsync(
     data: string | Uint8Array,
     rootUrl: string,
     fileName: string,
@@ -28,7 +33,7 @@ function validateAsync(
 /**
  * The worker function that gets converted to a blob url to pass into a worker.
  */
-function workerFunc(): void {
+function WorkerFunc(): void {
     const pendingExternalResources: Array<{ resolve: (data: any) => void; reject: (reason: any) => void }> = [];
 
     onmessage = (message) => {
@@ -39,7 +44,7 @@ function workerFunc(): void {
                 break;
             }
             case "validate": {
-                validateAsync(
+                ValidateAsync(
                     data.data,
                     data.rootUrl,
                     data.fileName,
@@ -110,13 +115,14 @@ export class GLTFValidation {
     ): Promise<GLTF2.IGLTFValidationResults> {
         if (typeof Worker === "function") {
             return new Promise((resolve, reject) => {
-                const workerContent = `${validateAsync}(${workerFunc})()`;
+                const workerContent = `${ValidateAsync}(${WorkerFunc})()`;
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
                 const worker = new Worker(workerBlobUrl);
 
                 const onError = (error: ErrorEvent) => {
                     worker.removeEventListener("error", onError);
                     worker.removeEventListener("message", onMessage);
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(error);
                 };
 
@@ -144,6 +150,7 @@ export class GLTFValidation {
                         case "validate.reject": {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                             reject(data.reason);
                             worker.terminate();
                         }
@@ -169,7 +176,7 @@ export class GLTFValidation {
             }
 
             return this._LoadScriptPromise.then(() => {
-                return validateAsync(data, rootUrl, fileName, getExternalResource);
+                return ValidateAsync(data, rootUrl, fileName, getExternalResource);
             });
         }
     }

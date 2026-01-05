@@ -47,7 +47,8 @@ export class Line extends Control {
     }
 
     public set connectedControl(value: Control) {
-        if (this._connectedControl === value) {
+        // Don't allow circular references, and no-op if the same control is assigned
+        if (this._connectedControl === value || (value instanceof Line && value._connectedControl === (this as Control))) {
             return;
         }
 
@@ -187,8 +188,8 @@ export class Line extends Control {
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
             context.shadowBlur = this.shadowBlur;
-            context.shadowOffsetX = this.shadowOffsetX;
-            context.shadowOffsetY = this.shadowOffsetY;
+            context.shadowOffsetX = this.shadowOffsetX * this._host.idealRatio;
+            context.shadowOffsetY = this.shadowOffsetY * this._host.idealRatio;
         }
 
         this._applyStates(context);
@@ -209,6 +210,14 @@ export class Line extends Control {
         // Width / Height
         this._currentMeasure.width = Math.abs(this._x1.getValue(this._host) - this._effectiveX2) + this._lineWidth;
         this._currentMeasure.height = Math.abs(this._y1.getValue(this._host) - this._effectiveY2) + this._lineWidth;
+    }
+
+    public override _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
+        if (this._connectedControl) {
+            // If we have a connected control, we need to let it layout first so we can ensure our layout math uses its latest position
+            this._connectedControl._layout(parentMeasure, context);
+        }
+        return super._layout(parentMeasure, context);
     }
 
     protected override _computeAlignment(parentMeasure: Measure): void {

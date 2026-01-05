@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphTextureHandle, Camera, FrameGraphTextureCreationOptions } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphTask } from "../../frameGraphTask";
@@ -87,7 +86,7 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
     public override set name(name: string) {
         this._name = name;
         if (this._ssr) {
-            this._ssr.name = `${name} SSR`;
+            this._ssr.name = `${name} SSR main`;
         }
         if (this._ssrBlurX) {
             this._ssrBlurX.name = `${name} SSR Blur X`;
@@ -124,26 +123,20 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
 
         this.ssr = new ThinSSRRenderingPipeline(name, frameGraph.scene);
 
-        this._ssr = new FrameGraphSSRTask(`${name} SSR`, this._frameGraph, this.ssr._ssrPostProcess);
+        this._ssr = new FrameGraphSSRTask(`${name} SSR main`, this._frameGraph, this.ssr._ssrPostProcess);
         this._ssrBlurX = new FrameGraphSSRBlurTask(`${name} SSR Blur X`, this._frameGraph, this.ssr._ssrBlurXPostProcess);
         this._ssrBlurY = new FrameGraphSSRBlurTask(`${name} SSR Blur Y`, this._frameGraph, this.ssr._ssrBlurYPostProcess);
         this._ssrBlurCombiner = new FrameGraphPostProcessTask(`${name} SSR Blur Combiner`, this._frameGraph, this.ssr._ssrBlurCombinerPostProcess);
-
-        this.onTexturesAllocatedObservable.add((context) => {
-            this._ssr.onTexturesAllocatedObservable.notifyObservers(context);
-            // We should not forward the notification if blur is not enabled
-            if (this.ssr.blurDispersionStrength !== 0) {
-                this._ssrBlurX.onTexturesAllocatedObservable.notifyObservers(context);
-                this._ssrBlurY.onTexturesAllocatedObservable.notifyObservers(context);
-                this._ssrBlurCombiner.onTexturesAllocatedObservable.notifyObservers(context);
-            }
-        });
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public override isReady() {
         return this.ssr.isReady();
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphSSRRenderingPipelineTask";
     }
 
     public record(): void {
@@ -170,8 +163,8 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
         let ssrTextureHandle: FrameGraphTextureHandle | undefined;
 
         const textureSize = {
-            width: Math.floor(sourceTextureDescription.size.width / (this.ssr.ssrDownsample + 1)),
-            height: Math.floor(sourceTextureDescription.size.height / (this.ssr.ssrDownsample + 1)),
+            width: Math.floor(sourceTextureDescription.size.width / (this.ssr.ssrDownsample + 1)) || 1,
+            height: Math.floor(sourceTextureDescription.size.height / (this.ssr.ssrDownsample + 1)) || 1,
         };
         const textureCreationOptions: FrameGraphTextureCreationOptions = {
             size: textureSize,
@@ -204,8 +197,8 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
             this._ssr.targetTexture = ssrTextureHandle;
             this._ssr.record(true);
 
-            textureSize.width = Math.floor(sourceTextureDescription.size.width / (this.ssr.blurDownsample + 1));
-            textureSize.height = Math.floor(sourceTextureDescription.size.height / (this.ssr.blurDownsample + 1));
+            textureSize.width = Math.floor(sourceTextureDescription.size.width / (this.ssr.blurDownsample + 1)) || 1;
+            textureSize.height = Math.floor(sourceTextureDescription.size.height / (this.ssr.blurDownsample + 1)) || 1;
 
             const sourceTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.sourceTexture);
 

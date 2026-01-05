@@ -45,9 +45,9 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
         this._backPlateMargin = value;
 
         if (this._children.length >= 1) {
-            this.children.forEach((control) => {
+            for (const control of this.children) {
                 this._updateCurrentMinMax(control.position);
-            });
+            }
 
             this._updateMargins();
         }

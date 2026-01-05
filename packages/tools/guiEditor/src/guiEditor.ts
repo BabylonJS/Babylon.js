@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { GlobalState } from "./globalState";
 import { WorkbenchEditor } from "./workbenchEditor";
 import { CreatePopup } from "shared-ui-components/popupHelper";
@@ -30,6 +30,7 @@ export class GUIEditor {
      * @param options defines the options to use to configure the gui editor
      * @param embed defines whether editor is being opened from the Playground
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static async Show(options: IGUIEditorOptions, embed?: boolean) {
         let hostElement = options.hostElement;
 
@@ -37,6 +38,7 @@ export class GUIEditor {
         if (this._CurrentState && hostElement) {
             if (options.currentSnippetToken) {
                 try {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this._CurrentState.workbench.loadFromSnippet(options.currentSnippetToken);
                 } catch (error) {
                     //swallow and continue
@@ -60,25 +62,30 @@ export class GUIEditor {
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
         globalState.customLoad = options.customLoad;
-        globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
+        globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.registerEventListeners();
 
-        const graphEditor = React.createElement(WorkbenchEditor, {
-            globalState: globalState,
-        });
-
-        ReactDOM.render(graphEditor, hostElement);
-        // create the middle workbench canvas
-        if (!globalState.guiTexture) {
-            globalState.workbench.createGUICanvas(embed);
-            if (options.currentSnippetToken) {
-                try {
-                    await globalState.workbench.loadFromSnippet(options.currentSnippetToken);
-                } catch (error) {
-                    //swallow and continue
+        const onReadyAsync = async () => {
+            // create the middle workbench canvas
+            if (!globalState.guiTexture) {
+                globalState.workbench.createGUICanvas(embed);
+                if (options.currentSnippetToken) {
+                    try {
+                        await globalState.workbench.loadFromSnippet(options.currentSnippetToken);
+                    } catch (error) {
+                        //swallow and continue
+                    }
                 }
             }
-        }
+        };
+
+        const graphEditor = React.createElement(WorkbenchEditor, {
+            globalState,
+            onReady: onReadyAsync,
+        });
+
+        const root = createRoot(hostElement);
+        root.render(graphEditor);
 
         if (options.customLoadObservable) {
             options.customLoadObservable.add(() => {

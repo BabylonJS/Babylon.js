@@ -36,8 +36,8 @@ export interface IStreamingSoundStoredOptions extends IAbstractSoundStoredOption
  *
  * Due to the way streaming sounds are typically implemented, there can be a significant delay when attempting to play
  * a streaming sound for the first time. To prevent this delay, it is recommended to preload instances of the sound
- * using the {@link IStreamingSoundStoredOptions.preloadCount} options, or the {@link preloadInstance} and
- * {@link preloadInstances} methods before calling the `play` method.
+ * using the {@link IStreamingSoundStoredOptions.preloadCount} options, or the {@link preloadInstanceAsync} and
+ * {@link preloadInstancesAsync} methods before calling the `play` method.
  *
  * Streaming sounds are created by the {@link CreateStreamingSoundAsync} function.
  */
@@ -46,8 +46,8 @@ export abstract class StreamingSound extends AbstractSound {
 
     protected abstract override readonly _options: IStreamingSoundStoredOptions;
 
-    protected constructor(name: string, engine: AudioEngineV2) {
-        super(name, engine);
+    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStreamingSoundOptions>) {
+        super(name, engine, options);
     }
 
     /**
@@ -68,7 +68,8 @@ export abstract class StreamingSound extends AbstractSound {
      * Preloads an instance of the sound.
      * @returns A promise that resolves when the instance is preloaded.
      */
-    public preloadInstance(): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    public preloadInstanceAsync(): Promise<void> {
         const instance = this._createInstance();
 
         this._addPreloadedInstance(instance);
@@ -81,12 +82,13 @@ export abstract class StreamingSound extends AbstractSound {
      * @param count - The number of instances to preload.
      * @returns A promise that resolves when all instances are preloaded.
      */
-    public async preloadInstances(count: number): Promise<void> {
+    public async preloadInstancesAsync(count: number): Promise<void> {
         for (let i = 0; i < count; i++) {
-            this.preloadInstance();
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this.preloadInstanceAsync();
         }
 
-        await Promise.all(this._preloadedInstances.map((instance) => instance.preloadedPromise));
+        await Promise.all(this._preloadedInstances.map(async (instance) => await instance.preloadedPromise));
     }
 
     /**

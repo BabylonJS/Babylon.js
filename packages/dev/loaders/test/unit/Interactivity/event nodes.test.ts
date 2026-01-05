@@ -53,20 +53,12 @@ describe("Interactivity event nodes", () => {
         };
 
         const pathConverter = GetPathToObjectConverter(mockGltf);
-        const i2fg = new InteractivityGraphToFlowGraphParser(
-            ig,
-            {
-                ...mockGltf,
-                extensions: {
-                    KHR_interactivity: ig,
-                },
+        const i2fg = new InteractivityGraphToFlowGraphParser(ig, {
+            ...mockGltf,
+            extensions: {
+                KHR_interactivity: ig,
             },
-            {
-                parent: {
-                    targetFps: 60,
-                },
-            } as unknown as any
-        );
+        });
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = await ParseFlowGraphAsync(json, { coordinator, pathConverter });

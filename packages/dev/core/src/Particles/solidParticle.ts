@@ -68,6 +68,15 @@ export class SolidParticle {
      */
     public isVisible: boolean = true;
     /**
+     * Defines how long will the life of the particle be.
+     * Set to Infinity for particles that should never die (default behavior for SolidParticleSystem).
+     */
+    public lifeTime = Infinity;
+    /**
+     * The current age of the particle.
+     */
+    public age = 0;
+    /**
      * Index of this particle in the global "positions" array (Internal use)
      * @internal
      */
@@ -202,7 +211,7 @@ export class SolidParticle {
         target.rotation.copyFrom(this.rotation);
         if (this.rotationQuaternion) {
             if (target.rotationQuaternion) {
-                target.rotationQuaternion!.copyFrom(this.rotationQuaternion!);
+                target.rotationQuaternion.copyFrom(this.rotationQuaternion);
             } else {
                 target.rotationQuaternion = this.rotationQuaternion.clone();
             }
@@ -210,7 +219,7 @@ export class SolidParticle {
         target.scaling.copyFrom(this.scaling);
         if (this.color) {
             if (target.color) {
-                target.color!.copyFrom(this.color!);
+                target.color.copyFrom(this.color);
             } else {
                 target.color = this.color.clone();
             }
@@ -223,6 +232,8 @@ export class SolidParticle {
         target.isVisible = this.isVisible;
         target.parentId = this.parentId;
         target.cullingStrategy = this.cullingStrategy;
+        target.lifeTime = this.lifeTime;
+        target.age = this.age;
         if (this.materialIndex !== null) {
             target.materialIndex = this.materialIndex;
         }
@@ -309,9 +320,11 @@ export class ModelShape {
      * Get or set the shapeId
      * @deprecated Please use shapeId instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get shapeID(): number {
         return this.shapeId;
     }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public set shapeID(shapeID: number) {
         this.shapeId = shapeID;
     }

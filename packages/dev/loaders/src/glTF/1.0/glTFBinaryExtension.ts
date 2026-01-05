@@ -31,6 +31,7 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
         super("KHR_binary_glTF");
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public override loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void): boolean {
         const extensionsUsed = (<any>data.json).extensionsUsed;
         if (!extensionsUsed || extensionsUsed.indexOf(this.name) === -1 || !data.bin) {
@@ -42,6 +43,7 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
         return true;
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public override loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): boolean {
         if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
             return false;
@@ -51,10 +53,12 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
             return false;
         }
 
+        // eslint-disable-next-line github/no-then
         this._bin.readAsync(0, this._bin.byteLength).then(onSuccess, (error) => onError(error.message));
         return true;
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public override loadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void): boolean {
         const texture: IGLTFTexture = gltfRuntime.textures[id];
         const source: IGLTFImage = gltfRuntime.images[texture.source];
@@ -69,6 +73,7 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
         return true;
     }
 
+    // eslint-disable-next-line no-restricted-syntax
     public override loadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void): boolean {
         const shader: IGLTFShader = gltfRuntime.shaders[id];
         if (!shader.extensions || !(this.name in shader.extensions)) {

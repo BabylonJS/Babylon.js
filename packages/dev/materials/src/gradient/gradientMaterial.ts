@@ -19,7 +19,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import "./gradient.fragment";
 import "./gradient.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -144,7 +144,19 @@ export class GradientMaterial extends PushMaterial {
 
         PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this.needAlphaTestingForMesh(mesh), defines);
+        PrepareDefinesForMisc(
+            mesh,
+            scene,
+            this._useLogarithmicDepth,
+            this.pointsCloud,
+            this.fogEnabled,
+            this.needAlphaTestingForMesh(mesh),
+            defines,
+            undefined,
+            undefined,
+            undefined,
+            this._isVertexOutputInvariant
+        );
 
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
@@ -216,7 +228,7 @@ export class GradientMaterial extends PushMaterial {
                 "smoothness",
                 "scale",
             ];
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
             const samplers: string[] = ["areaLightsLTC1Sampler", "areaLightsLTC2Sampler"];
             const uniformBuffers: string[] = [];
 
@@ -293,7 +305,7 @@ export class GradientMaterial extends PushMaterial {
 
         if (this._mustRebind(scene, effect, subMesh)) {
             // Clip plane
-            bindClipPlane(effect, this, scene);
+            BindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

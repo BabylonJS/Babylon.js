@@ -9,8 +9,8 @@ interface IFileMultipleButtonLineComponentProps {
 }
 
 export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
-    private static _IDGenerator = 0;
-    private _id = FileMultipleButtonLineComponent._IDGenerator++;
+    private static _IdGenerator = 0;
+    private _id = FileMultipleButtonLineComponent._IdGenerator++;
     private _uploadInputRef: React.RefObject<HTMLInputElement>;
 
     constructor(props: IFileMultipleButtonLineComponentProps) {

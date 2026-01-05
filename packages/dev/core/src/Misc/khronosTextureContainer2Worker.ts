@@ -2,6 +2,7 @@ import type { IDecodedData } from "core/Materials/Textures/ktx2decoderTypes";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 export type AllowedKeys =
+    | "wasmBaseUrl"
     | "wasmUASTCToASTC"
     | "wasmUASTCToBC7"
     | "wasmUASTCToRGBA_UNORM"
@@ -19,7 +20,12 @@ declare let KTX2DECODER: any;
 
 export function applyConfig(urls?: { [key in AllowedKeys]: string }, binariesAndModulesContainer?: { [key in AllowedKeys]: ArrayBuffer | any }): void {
     const KTX2DecoderModule = binariesAndModulesContainer?.jsDecoderModule || KTX2DECODER;
+
     if (urls) {
+        if (urls.wasmBaseUrl) {
+            KTX2DecoderModule.Transcoder.WasmBaseUrl = urls.wasmBaseUrl;
+        }
+
         if (urls.wasmUASTCToASTC) {
             KTX2DecoderModule.LiteTranscoder_UASTC_ASTC.WasmModuleURL = urls.wasmUASTCToASTC;
         }
@@ -122,6 +128,7 @@ export function workerFunction(KTX2DecoderModule: any): void {
             case "decode":
                 ktx2Decoder
                     .decode(event.data.data, event.data.caps, event.data.options)
+                    // eslint-disable-next-line github/no-then
                     .then((data: IDecodedData) => {
                         const buffers = [];
                         for (let mip = 0; mip < data.mipmaps.length; ++mip) {
@@ -132,6 +139,7 @@ export function workerFunction(KTX2DecoderModule: any): void {
                         }
                         postMessage({ action: "decoded", success: true, decodedData: data }, buffers);
                     })
+                    // eslint-disable-next-line github/no-then
                     .catch((reason: any) => {
                         postMessage({ action: "decoded", success: false, msg: reason });
                     });
@@ -140,11 +148,12 @@ export function workerFunction(KTX2DecoderModule: any): void {
     };
 }
 
-export function initializeWebWorker(worker: Worker, wasmBinaries?: { [key in AllowedKeys]?: ArrayBuffer }, urls?: { [key in AllowedKeys]: string }): Promise<Worker> {
-    return new Promise((resolve, reject) => {
+export async function initializeWebWorker(worker: Worker, wasmBinaries?: { [key in AllowedKeys]?: ArrayBuffer }, urls?: { [key in AllowedKeys]: string }): Promise<Worker> {
+    return await new Promise((resolve, reject) => {
         const onError = (error: ErrorEvent) => {
             worker.removeEventListener("error", onError);
             worker.removeEventListener("message", onMessage);
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(error);
         };
 

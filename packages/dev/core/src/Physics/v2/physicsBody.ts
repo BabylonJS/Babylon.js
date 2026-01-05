@@ -78,8 +78,6 @@ export class PhysicsBody {
 
     private _shape: Nullable<PhysicsShape> = null;
 
-    private _motionType: PhysicsMotionType;
-
     private _prestepType: PhysicsPrestepType = PhysicsPrestepType.DISABLED;
     /**
      * Constructs a new physics body for the given node.
@@ -112,14 +110,12 @@ export class PhysicsBody {
             throw new Error("No Physics Plugin available.");
         }
 
-        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
+        this._physicsPlugin = physicsPlugin;
         if (!transformNode.rotationQuaternion) {
             transformNode.rotationQuaternion = Quaternion.FromEulerAngles(transformNode.rotation.x, transformNode.rotation.y, transformNode.rotation.z);
         }
 
         this.startAsleep = startsAsleep;
-
-        this._motionType = motionType;
 
         // only dynamic and animated body needs sync from physics to transformNode
         this.disableSync = motionType == PhysicsMotionType.STATIC;
@@ -188,7 +184,7 @@ export class PhysicsBody {
      * Get the motion type of the physics body. Can be STATIC, DYNAMIC, or ANIMATED.
      */
     public get motionType(): PhysicsMotionType {
-        return this._motionType;
+        return this._physicsPlugin.getMotionType(this);
     }
 
     /**
@@ -256,10 +252,10 @@ export class PhysicsBody {
     /**
      * Sets the motion type of the physics body. Can be STATIC, DYNAMIC, or ANIMATED.
      * @param motionType - The motion type to set.
-     * @param instanceIndex - If this body is instanced, the index of the instance to set the motion type for.
+     * @param instanceIndex - If this body is instanced, the index of the instance to set the motion type for. If body is instanced but instanceIndex is undefined, the motion type will be set for all instances.
      */
     public setMotionType(motionType: PhysicsMotionType, instanceIndex?: number) {
-        this.disableSync = motionType == PhysicsMotionType.STATIC;
+        this.disableSync = instanceIndex === undefined && motionType == PhysicsMotionType.STATIC;
         this._physicsPlugin.setMotionType(this, motionType, instanceIndex);
     }
 
@@ -505,7 +501,7 @@ export class PhysicsBody {
      *
      * This method is useful for retrieving the geometry of the body from the physics plugin, which can be used for various physics calculations.
      */
-    public getGeometry(): {} {
+    public getGeometry(): object {
         return this._physicsPlugin.getBodyGeometry(this);
     }
 

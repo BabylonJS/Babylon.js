@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, AbstractEngine, EffectWrapperCreationOptions, Camera } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
 import { Engine } from "../Engines/engine";
@@ -177,8 +176,8 @@ export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
         this._updateEffectDefines();
     }
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
 
         const effect = this._drawWrapper.effect!;
 

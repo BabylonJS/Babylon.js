@@ -7,6 +7,7 @@ import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import type { NodeRenderGraphConnectionPoint } from "core/FrameGraph/Node/nodeRenderGraphBlockConnectionPoint";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph";
+import { GetListOfAcceptedTypes } from "shared-ui-components/nodeGraphSystem/tools";
 
 export interface IFrameNodePortPropertyTabComponentProps {
     stateManager: StateManager;
@@ -25,14 +26,13 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
 
     override render() {
         const port = this.props.nodePort.portData.data as NodeRenderGraphConnectionPoint;
-        const acceptedConnectionPointTypes: string[] = [];
-
-        for (const type of port.acceptedConnectionPointTypes) {
-            const enumValue = NodeRenderGraphBlockConnectionPointTypes[type];
-            if (enumValue) {
-                acceptedConnectionPointTypes.push(enumValue);
-            }
-        }
+        const acceptedConnectionPointTypes = GetListOfAcceptedTypes(
+            NodeRenderGraphBlockConnectionPointTypes,
+            NodeRenderGraphBlockConnectionPointTypes.All,
+            NodeRenderGraphBlockConnectionPointTypes.AutoDetect,
+            port,
+            [NodeRenderGraphBlockConnectionPointTypes.BasedOnInput]
+        );
 
         const info = this.props.nodePort.hasLabel() ? (
             <>

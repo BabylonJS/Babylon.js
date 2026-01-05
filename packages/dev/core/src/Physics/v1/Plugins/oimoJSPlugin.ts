@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { IPhysicsEnabledObject } from "../physicsImpostor";
 import { PhysicsImpostor } from "../physicsImpostor";
 import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../physicsJoint";
@@ -57,18 +59,18 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     private _tmpImpostorsArray: Array<PhysicsImpostor> = [];
 
     public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
-        impostors.forEach(function (impostor) {
+        for (const impostor of impostors) {
             impostor.beforeStep();
-        });
+        }
 
         this.world.timeStep = this._useDeltaForWorldStep ? delta : this._fixedTimeStep;
         this.world.step();
 
-        impostors.forEach((impostor) => {
+        for (const impostor of impostors) {
             impostor.afterStep();
             //update the ordered impostors array
             this._tmpImpostorsArray[impostor.uniqueId] = impostor;
-        });
+        }
 
         //check for collisions
         let contact = this.world.contacts;
@@ -136,12 +138,13 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 if (!parent.getChildMeshes) {
                     return;
                 }
-                parent.getChildMeshes().forEach(function (m) {
+                const meshes = parent.getChildMeshes();
+                for (const m of meshes) {
                     if (m.physicsImpostor) {
                         impostors.push(m.physicsImpostor);
                         //m.physicsImpostor._init();
                     }
-                });
+                }
             };
             addToArray(impostor.object);
 
@@ -151,9 +154,9 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
             const globalQuaternion: Quaternion = new Quaternion();
 
-            impostors.forEach((i) => {
+            for (const i of impostors) {
                 if (!i.object.rotationQuaternion) {
-                    return;
+                    continue;
                 }
                 //get the correct bounding box
                 const oldQuaternion = i.object.rotationQuaternion;
@@ -244,7 +247,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
                 //actually not needed, but hey...
                 i.object.rotationQuaternion = oldQuaternion;
-            });
+            }
             impostor.physicsBody = this.world.add(bodyConfig);
             // set the quaternion, ignoring the previously defined (euler) rotation
             impostor.physicsBody.resetQuaternion(globalQuaternion);

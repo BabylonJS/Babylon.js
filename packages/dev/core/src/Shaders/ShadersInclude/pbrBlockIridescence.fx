@@ -21,6 +21,7 @@ struct iridescenceOutParams
         #endif
         #ifdef CLEARCOAT
             , in float NdotVUnclamped
+            , in vec2 vClearCoatParams
             #ifdef CLEARCOAT_TEXTURE
                 , in vec2 clearCoatMapData
             #endif

@@ -8,6 +8,9 @@ import { conflictingValuesPlaceholder } from "./targetsProxy";
 import { InputArrowsComponent } from "./inputArrowsComponent";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import copyIcon from "../imgs/copy.svg";
+import { NumberInputPropertyLine } from "../fluent/hoc/propertyLines/inputPropertyLine";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
+import { SpinButtonPropertyLine } from "../fluent/hoc/propertyLines/spinButtonPropertyLine";
 
 interface IFloatLineComponentProps {
     label: string;
@@ -169,6 +172,11 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+        // While we do lock when getting focus, it's possible that as the user changes this value,
+        // that the UI hosting us has reacted by hiding another line component, and that line component
+        // will release the lock we took. Since the user is typing now, we ensure we have the lock.
+        this.lock();
+
         const step = parseFloat(this.props.step || this.props.isInteger ? "1" : "0.01");
         const handleArrowKey = (sign: number) => {
             if (event.shiftKey) {
@@ -199,7 +207,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
             const targetName = "globalThis.debugNode";
             const targetProperty = this.props.propertyName;
-            const value = this.props.target[this.props.propertyName!];
+            const value = this.props.target[this.props.propertyName];
             const strCommand = targetName + "." + targetProperty + " = " + value + ";// (debugNode as " + babylonNamespace + className + ")";
             copyCommandToClipboard(strCommand);
         } else {
@@ -207,7 +215,25 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
     }
 
-    override render() {
+    renderFluent() {
+        const props = {
+            label: this.props.label,
+            value: Number(this.state.value),
+            onChange: (value: number) => this.updateValue(value.toString()),
+            min: this.props.min,
+            max: this.props.max,
+            precision: this.props.digits ?? (this.props.isInteger ? 0 : undefined),
+            disabled: this.props.disabled,
+            step: this.props.step ? parseFloat(this.props.step) : undefined,
+        };
+
+        if (this.props.arrows) {
+            return <SpinButtonPropertyLine {...props} />;
+        }
+        return <NumberInputPropertyLine {...props} />;
+    }
+
+    renderOriginal() {
         let valueAsNumber: number;
 
         if (this.props.isInteger) {
@@ -289,5 +315,8 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                 )}
             </>
         );
+    }
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }

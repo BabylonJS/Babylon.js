@@ -6,7 +6,6 @@ import { TreeItemSpecializedComponent } from "./treeItemSpecializedComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Tools } from "../../tools";
-import * as ReactDOM from "react-dom";
 import * as React from "react";
 import type { GlobalState } from "../globalState";
 
@@ -23,8 +22,9 @@ export interface ITreeItemSelectableComponentProps {
     filter: Nullable<string>;
 }
 
-export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, { isExpanded: boolean; isSelected: boolean }> {
+export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, { isExpanded: boolean; mustExpand: boolean; isSelected: boolean }> {
     private _wasSelected = false;
+    private _thisRef: React.RefObject<HTMLDivElement> = React.createRef<HTMLDivElement>();
 
     constructor(props: ITreeItemSelectableComponentProps) {
         super(props);
@@ -32,11 +32,12 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         this.state = {
             isSelected: this.props.entity === this.props.selectedEntity,
             isExpanded: this.props.mustExpand || Tools.LookForItem(this.props.entity, this.props.selectedEntity),
+            mustExpand: this.props.mustExpand || false,
         };
     }
 
-    switchExpandedState(): void {
-        this.setState({ isExpanded: !this.state.isExpanded });
+    switchExpandedState(mustExpand: boolean): void {
+        this.setState({ isExpanded: !this.state.isExpanded, mustExpand: mustExpand });
     }
 
     override shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: { isExpanded: boolean; isSelected: boolean }) {
@@ -62,7 +63,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
     }
 
     scrollIntoView() {
-        const element = ReactDOM.findDOMNode(this) as Element;
+        const element = this._thisRef.current;
 
         if (element) {
             element.scrollIntoView(false);
@@ -105,7 +106,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                 <TreeItemSelectableComponent
                     globalState={this.props.globalState}
                     gizmoCamera={this.props.gizmoCamera}
-                    mustExpand={this.props.mustExpand}
+                    mustExpand={this.state.mustExpand}
                     extensibilityGroups={this.props.extensibilityGroups}
                     selectedEntity={this.props.selectedEntity}
                     key={i}
@@ -156,10 +157,16 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         }
 
         return (
-            <div>
+            <div ref={this._thisRef}>
                 <div className={this.state.isSelected ? "itemContainer selected" : "itemContainer"} style={marginStyle}>
                     {hasChildren && (
-                        <div className="arrow icon" onClick={() => this.switchExpandedState()}>
+                        <div
+                            className="arrow icon"
+                            onClick={(event) => {
+                                const expandChildren = event.shiftKey;
+                                this.switchExpandedState(expandChildren);
+                            }}
+                        >
                             {chevron}
                         </div>
                     )}

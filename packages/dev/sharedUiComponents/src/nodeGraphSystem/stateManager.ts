@@ -40,7 +40,7 @@ export class StateManager {
     exportData: (data: any, frame?: Nullable<GraphFrame>) => string;
     isElbowConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
     isDebugConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
-    applyNodePortDesign: (data: IPortData, element: HTMLElement, img: HTMLImageElement, pip: HTMLDivElement) => void;
+    applyNodePortDesign: (data: IPortData, element: HTMLElement, imgHost: HTMLImageElement, pip: HTMLDivElement) => boolean;
 
     getPortColor: (portData: IPortData) => string;
 

@@ -23,6 +23,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
         this.state = { isExpanded: false };
 
         if (typeof WebGPUEngine !== "undefined") {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             WebGPUEngine.IsSupportedAsync.then((result) => {
                 this._webGPUSupported = result;
                 if (location.search.indexOf("webgpu") !== -1 && this._webGPUSupported) {
@@ -31,6 +32,10 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                 this.forceUpdate();
             });
         }
+
+        this.props.globalState.onEngineChangedObservable.add(() => {
+            this.forceUpdate();
+        });
     }
 
     onPlay() {
@@ -59,7 +64,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
     }
 
     onInspector() {
-        this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+        this.props.globalState.onInspectorRequiredObservable.notifyObservers("toggle");
         this.setState({ isExpanded: false });
     }
 

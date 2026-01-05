@@ -8,7 +8,7 @@ import type { Effect } from "../../../effect";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { bindClipPlane } from "../../../../Materials/clipPlaneMaterialHelper";
+import { BindClipPlane } from "../../../../Materials/clipPlaneMaterialHelper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 /**
  * Block used to implement clip planes
@@ -50,6 +50,7 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
         state._excludeVariableName("vClipPlane6");
         state._excludeVariableName("fClipDistance6");
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
@@ -89,7 +90,11 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
 
     public override set target(value: NodeMaterialBlockTargets) {}
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
+        if (!mesh) {
+            return;
+        }
+
         const scene = mesh.getScene();
 
         const useClipPlane1 = (nodeMaterial.clipPlane ?? scene.clipPlane) ? true : false;
@@ -114,7 +119,7 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
 
         const scene = mesh.getScene();
 
-        bindClipPlane(effect, nodeMaterial, scene);
+        BindClipPlane(effect, nodeMaterial, scene);
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {

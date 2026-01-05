@@ -341,7 +341,7 @@ export class Image extends Control {
         }
         const canvas = engine.createCanvas(height, width);
 
-        const context = canvas.getContext("2d")!;
+        const context = canvas.getContext("2d");
 
         context.translate(canvas.width / 2, canvas.height / 2);
         context.rotate((n * Math.PI) / 2);
@@ -429,7 +429,7 @@ export class Image extends Control {
             this._workingCanvas = engine.createCanvas(width, height);
         }
         const canvas = this._workingCanvas;
-        const context = canvas.getContext("2d")!;
+        const context = canvas.getContext("2d");
 
         context.drawImage(this._domImage, 0, 0, width, height);
         const imageData = context.getImageData(0, 0, width, height);
@@ -566,8 +566,9 @@ export class Image extends Control {
 
         // Should abstract platform instead of using LastCreatedEngine
         const engine = this._host?.getScene()?.getEngine() || EngineStore.LastCreatedEngine;
+        // If no engine, skip all other DOM operations.
         if (!engine) {
-            throw new Error("Invalid engine. Unable to create a canvas.");
+            return;
         }
         if (value && Image.SourceImgCache.has(value)) {
             const cachedData = Image.SourceImgCache.get(value)!;
@@ -619,14 +620,70 @@ export class Image extends Control {
         }
     }
 
+    private _sanitizeSVG(svgString: string) {
+        if (svgString.indexOf("<svg") === -1) {
+            return svgString; // Not an SVG, return as is
+        }
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svgString, "image/svg+xml");
+
+        const dangerousTags = ["script", "iframe", "foreignObject", "object", "embed", "link", "style"];
+        const dangerousAttrs = [/^on/i, /^xlink:href$/, /^href$/];
+
+        // Remove dangerous elements
+        dangerousTags.forEach((tag) => {
+            const elements = doc.getElementsByTagName(tag);
+            for (let i = elements.length - 1; i >= 0; i--) {
+                elements[i].remove();
+            }
+        });
+
+        // Recursively sanitize attributes
+        function sanitizeElement(el: Element) {
+            if (el.attributes) {
+                for (let i = el.attributes.length - 1; i >= 0; i--) {
+                    const attr = el.attributes[i];
+                    const name = attr.name;
+                    const value = attr.value;
+
+                    // Remove dangerous attributes
+                    if (dangerousAttrs.some((regex) => regex.test(name))) {
+                        el.removeAttribute(name);
+                    }
+
+                    // Remove javascript: links
+                    if (typeof value === "string" && value.trim().toLowerCase().startsWith("javascript:")) {
+                        el.removeAttribute(name);
+                    }
+                }
+            }
+
+            // Recursively sanitize children
+            for (let i = 0; i < el.children.length; i++) {
+                sanitizeElement(el.children[i]);
+            }
+        }
+
+        sanitizeElement(doc.documentElement);
+
+        return new XMLSerializer().serializeToString(doc);
+    }
+
     /**
      * Checks for svg document with icon id present
      * @param value the source svg
      * @returns the svg
      */
     private _svgCheck(value: string): string {
+        // Skip SVG processing if no window/document or SVG support
+        if (typeof window === "undefined" || typeof document === "undefined" || !window.SVGSVGElement) {
+            return value;
+        }
+
         if (window.SVGSVGElement && value.search(/(\.svg|\.svg?[?|#].*)$/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
             this._isSVG = true;
+            value = this._sanitizeSVG(value);
             const svgsrc = value.split("#")[0];
             const elemid = value.split("#")[1];
             // check if object alr exist in document
@@ -687,26 +744,26 @@ export class Image extends Control {
             // get element bbox and matrix transform
             const elem = svgDoc.getElementById(elemid) as Nullable<SVGGraphicsElement>;
             if (vb && docwidth && docheight && elem) {
-                const vb_width = Number(vb.split(" ")[2]);
-                const vb_height = Number(vb.split(" ")[3]);
-                const elem_bbox = elem.getBBox();
-                let elem_matrix_a = 1;
-                let elem_matrix_d = 1;
-                let elem_matrix_e = 0;
-                let elem_matrix_f = 0;
+                const vbWidth = Number(vb.split(" ")[2]);
+                const vbHeight = Number(vb.split(" ")[3]);
+                const elemBbox = elem.getBBox();
+                let elemMatrixA = 1;
+                let elemMatrixD = 1;
+                let elemMatrixE = 0;
+                let elemMatrixF = 0;
                 const mainMatrix = elem.transform.baseVal.consolidate()!.matrix;
                 if (elem.transform && elem.transform.baseVal.consolidate()) {
-                    elem_matrix_a = mainMatrix.a;
-                    elem_matrix_d = mainMatrix.d;
-                    elem_matrix_e = mainMatrix.e;
-                    elem_matrix_f = mainMatrix.f;
+                    elemMatrixA = mainMatrix.a;
+                    elemMatrixD = mainMatrix.d;
+                    elemMatrixE = mainMatrix.e;
+                    elemMatrixF = mainMatrix.f;
                 }
 
                 // compute source coordinates and dimensions
-                this.sourceLeft = ((elem_matrix_a * elem_bbox.x + elem_matrix_e) * docwidth) / vb_width;
-                this.sourceTop = ((elem_matrix_d * elem_bbox.y + elem_matrix_f) * docheight) / vb_height;
-                this.sourceWidth = elem_bbox.width * elem_matrix_a * (docwidth / vb_width);
-                this.sourceHeight = elem_bbox.height * elem_matrix_d * (docheight / vb_height);
+                this.sourceLeft = ((elemMatrixA * elemBbox.x + elemMatrixE) * docwidth) / vbWidth;
+                this.sourceTop = ((elemMatrixD * elemBbox.y + elemMatrixF) * docheight) / vbHeight;
+                this.sourceWidth = elemBbox.width * elemMatrixA * (docwidth / vbWidth);
+                this.sourceHeight = elemBbox.height * elemMatrixD * (docheight / vbHeight);
                 this._svgAttributesComputationCompleted = true;
                 this.onSVGAttributesComputedObservable.notifyObservers(this);
             }
@@ -800,7 +857,7 @@ export class Image extends Control {
 
         if (!imageData || this._imageDataCache.key !== key) {
             const canvas = this._workingCanvas;
-            const context = canvas.getContext("2d")!;
+            const context = canvas.getContext("2d");
 
             this._imageDataCache.data = imageData = context.getImageData(0, 0, width, height).data;
             this._imageDataCache.key = key;
@@ -872,7 +929,7 @@ export class Image extends Control {
         }
         const canvas = this._workingCanvas;
 
-        const context = canvas.getContext("2d")!;
+        const context = canvas.getContext("2d");
 
         context.clearRect(0, 0, width, height);
     }
@@ -887,7 +944,7 @@ export class Image extends Control {
         const transform = context.getTransform();
 
         const canvas = this._workingCanvas!;
-        const workingCanvasContext = canvas.getContext("2d")!;
+        const workingCanvasContext = canvas.getContext("2d");
         workingCanvasContext.save();
         const ttx = tx - this._currentMeasure.left;
         const tty = ty - this._currentMeasure.top;
@@ -904,8 +961,8 @@ export class Image extends Control {
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
             context.shadowBlur = this.shadowBlur;
-            context.shadowOffsetX = this.shadowOffsetX;
-            context.shadowOffsetY = this.shadowOffsetY;
+            context.shadowOffsetX = this.shadowOffsetX * this._host.idealRatio;
+            context.shadowOffsetY = this.shadowOffsetY * this._host.idealRatio;
         }
 
         let x, y, width, height;
@@ -960,11 +1017,7 @@ export class Image extends Control {
     }
 
     private _renderNinePatch(context: ICanvasRenderingContext, sx: number, sy: number, sw: number, sh: number): void {
-        const idealRatio = this.host.idealWidth
-            ? this._width.getValue(this.host) / this.host.idealWidth
-            : this.host.idealHeight
-              ? this._height.getValue(this.host) / this.host.idealHeight
-              : 1;
+        const idealRatio = this.host.idealRatio;
         const leftWidth = this._sliceLeft;
         const topHeight = this._sliceTop;
         const bottomHeight = sh - this._sliceBottom;

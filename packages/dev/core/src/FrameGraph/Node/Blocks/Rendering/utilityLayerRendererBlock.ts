@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { NodeRenderGraphConnectionPoint, Scene, FrameGraph, NodeRenderGraphBuildState, FrameGraphTextureHandle, Camera } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
@@ -31,23 +30,25 @@ export class NodeRenderGraphUtilityLayerRendererBlock extends NodeRenderGraphBlo
 
         this._additionalConstructionParameters = [handleEvents];
 
-        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this._addDependenciesInput();
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
         this.output._typeConnectionSource = this.target;
 
         this._frameGraphTask = new FrameGraphUtilityLayerRendererTask(name, frameGraph, scene, handleEvents);
     }
 
     private _createTask(handleEvents: boolean) {
+        const disabled = this._frameGraphTask.disabled;
+
         this._frameGraphTask.dispose();
-
         this._frameGraphTask = new FrameGraphUtilityLayerRendererTask(this.name, this._frameGraph, this._scene, handleEvents);
-
         this._additionalConstructionParameters = [handleEvents];
+
+        this._frameGraphTask.disabled = disabled;
     }
 
     /** If the utility layer should handle events */

@@ -307,7 +307,7 @@ export class NativePipelineContext implements IPipelineContext {
             return;
         }
 
-        if (this._engine.setUInt(this._uniforms[uniformName]!, value)) {
+        if (this._engine.setUInt(this._uniforms[uniformName], value)) {
             this._valueCache[uniformName] = value;
         }
     }
@@ -364,7 +364,7 @@ export class NativePipelineContext implements IPipelineContext {
      */
     public setUIntArray(uniformName: string, array: Uint32Array): void {
         this._valueCache[uniformName] = null;
-        this._engine.setUIntArray(this._uniforms[uniformName]!, array);
+        this._engine.setUIntArray(this._uniforms[uniformName], array);
     }
 
     /**
@@ -374,7 +374,7 @@ export class NativePipelineContext implements IPipelineContext {
      */
     public setUIntArray2(uniformName: string, array: Uint32Array): void {
         this._valueCache[uniformName] = null;
-        this._engine.setUIntArray2(this._uniforms[uniformName]!, array);
+        this._engine.setUIntArray2(this._uniforms[uniformName], array);
     }
 
     /**
@@ -384,7 +384,7 @@ export class NativePipelineContext implements IPipelineContext {
      */
     public setUIntArray3(uniformName: string, array: Uint32Array): void {
         this._valueCache[uniformName] = null;
-        this._engine.setUIntArray3(this._uniforms[uniformName]!, array);
+        this._engine.setUIntArray3(this._uniforms[uniformName], array);
     }
 
     /**
@@ -394,7 +394,7 @@ export class NativePipelineContext implements IPipelineContext {
      */
     public setUIntArray4(uniformName: string, array: Uint32Array): void {
         this._valueCache[uniformName] = null;
-        this._engine.setUIntArray4(this._uniforms[uniformName]!, array);
+        this._engine.setUIntArray4(this._uniforms[uniformName], array);
     }
 
     /**

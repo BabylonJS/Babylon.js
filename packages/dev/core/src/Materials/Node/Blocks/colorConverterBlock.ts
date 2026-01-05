@@ -70,6 +70,16 @@ export class ColorConverterBlock extends NodeMaterialBlock {
         return name;
     }
 
+    protected override _outputRename(name: string) {
+        if (name === "rgb") {
+            return "rgbOut";
+        }
+        if (name === "hsl") {
+            return "hslOut";
+        }
+        return name;
+    }
+
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 

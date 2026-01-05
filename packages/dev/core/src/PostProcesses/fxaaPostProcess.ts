@@ -9,6 +9,7 @@ import { Constants } from "../Engines/constants";
 
 import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators.serialization";
+import { ThinFXAAPostProcess } from "./thinFXAAPostProcess";
 
 import type { Scene } from "../scene";
 /**
@@ -24,6 +25,8 @@ export class FxaaPostProcess extends PostProcess {
         return "FxaaPostProcess";
     }
 
+    protected override _effectWrapper: ThinFXAAPostProcess;
+
     constructor(
         name: string,
         options: number | PostProcessOptions,
@@ -33,40 +36,25 @@ export class FxaaPostProcess extends PostProcess {
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ) {
-        super(name, "fxaa", ["texelSize"], null, options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "fxaa", undefined, true);
+        const localOptions = {
+            uniforms: ThinFXAAPostProcess.Uniforms,
+            size: typeof options === "number" ? options : undefined,
+            camera,
+            samplingMode: samplingMode || Texture.BILINEAR_SAMPLINGMODE,
+            engine,
+            reusable,
+            textureType,
+            ...(options as PostProcessOptions),
+        };
 
-        const defines = this._getDefines();
-        this.updateEffect(defines);
-
-        this.onApplyObservable.add((effect: Effect) => {
-            const texelSize = this.texelSize;
-            effect.setFloat2("texelSize", texelSize.x, texelSize.y);
+        super(name, ThinFXAAPostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinFXAAPostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
         });
-    }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/fxaa.fragment"), import("../ShadersWGSL/fxaa.vertex")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/fxaa.fragment"), import("../Shaders/fxaa.vertex")]));
-        }
-
-        super._gatherImports(useWebGPU, list);
-    }
-
-    private _getDefines(): Nullable<string> {
-        const engine = this.getEngine();
-        if (!engine) {
-            return null;
-        }
-
-        const driverInfo = engine.extractDriverInfo();
-        if (driverInfo.toLowerCase().indexOf("mali") > -1) {
-            return "#define MALI 1\n";
-        }
-
-        return null;
+        this.onApplyObservable.add((_effect: Effect) => {
+            this._effectWrapper.texelSize = this.texelSize;
+        });
     }
 
     /**

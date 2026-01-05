@@ -52,7 +52,7 @@ export interface IWebXRPlane {
     xrPlane: XRPlane;
 }
 
-let planeIdProvider = 0;
+let PlaneIdProvider = 0;
 
 /**
  * The plane detector is used to detect planes in the real world when in AR
@@ -157,11 +157,12 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
      * @see https://immersive-web.github.io/real-world-geometry/plane-detection.html#dom-xrsession-initiateroomcapture
      * @returns true if plane detection is enabled and supported. Will reject if not supported.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async initiateRoomCapture(): Promise<void> {
         if (this._xrSessionManager.session.initiateRoomCapture) {
-            return this._xrSessionManager.session.initiateRoomCapture();
+            return await this._xrSessionManager.session.initiateRoomCapture();
         }
-        return Promise.reject("initiateRoomCapture is not supported on this session");
+        throw "initiateRoomCapture is not supported on this session";
     }
 
     protected _onXRFrame(frame: XRFrame) {
@@ -184,7 +185,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
             detectedPlanes.forEach((xrPlane) => {
                 if (!this._lastFrameDetected.has(xrPlane)) {
                     const newPlane: Partial<IWebXRPlane> = {
-                        id: planeIdProvider++,
+                        id: PlaneIdProvider++,
                         xrPlane: xrPlane,
                         polygonDefinition: [],
                     };

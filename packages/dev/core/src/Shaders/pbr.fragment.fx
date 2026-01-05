@@ -1,4 +1,6 @@
-﻿#define CUSTOM_FRAGMENT_EXTENSION
+﻿#define PBR_FRAGMENT_SHADER
+
+#define CUSTOM_FRAGMENT_EXTENSION
 
 #if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
 #extension GL_OES_standard_derivatives : enable
@@ -14,7 +16,9 @@
 #extension GL_EXT_frag_depth : enable
 #endif
 
+#if SCENE_MRT_COUNT > 0
 #include<prePassDeclaration>[SCENE_MRT_COUNT]
+#endif
 
 precision highp float;
 #include<oitDeclaration>
@@ -69,6 +73,8 @@ precision highp float;
 #include<pbrBlockIridescence>
 #include<pbrBlockSubSurface>
 
+#include<pbrClusteredLightingFunctions>
+
 // _____________________________ MAIN FUNCTION ____________________________
 void main(void) {
 
@@ -90,7 +96,7 @@ void main(void) {
     vec4 albedoTexture = texture2D(albedoSampler, vAlbedoUV + uvOffset);
 #endif
 
-#ifdef BASEWEIGHT
+#ifdef BASE_WEIGHT
     vec4 baseWeightTexture = texture2D(baseWeightSampler, vBaseWeightUV + uvOffset);
 #endif
 
@@ -109,7 +115,7 @@ void main(void) {
         , vAlbedoInfos
     #endif
         , baseWeight
-    #ifdef BASEWEIGHT
+    #ifdef BASE_WEIGHT
         , baseWeightTexture
         , vBaseWeightInfos
     #endif
@@ -195,8 +201,12 @@ void main(void) {
         #ifndef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
             metallicReflectanceFactors.rgb *= metallicReflectanceFactorsMap.rgb;
         #endif
-        metallicReflectanceFactors *= metallicReflectanceFactorsMap.a;
+        metallicReflectanceFactors.a *= metallicReflectanceFactorsMap.a;
     #endif
+#endif
+
+#ifdef BASE_DIFFUSE_ROUGHNESS
+    float baseDiffuseRoughnessTexture = texture2D(baseDiffuseRoughnessSampler, vBaseDiffuseRoughnessUV + uvOffset).r;
 #endif
 
     reflectivityOut = reflectivityBlock(
@@ -204,6 +214,11 @@ void main(void) {
     #ifdef METALLICWORKFLOW
         , surfaceAlbedo
         , metallicReflectanceFactors
+    #endif
+        , baseDiffuseRoughness
+    #ifdef BASE_DIFFUSE_ROUGHNESS
+        , baseDiffuseRoughnessTexture
+        , vBaseDiffuseRoughnessInfos
     #endif
     #ifdef REFLECTIVITY
         , vReflectivityInfos
@@ -223,6 +238,7 @@ void main(void) {
 
     float microSurface = reflectivityOut.microSurface;
     float roughness = reflectivityOut.roughness;
+    float diffuseRoughness = reflectivityOut.diffuseRoughness;
 
     #ifdef METALLICWORKFLOW
         surfaceAlbedo = reflectivityOut.surfaceAlbedo;
@@ -300,6 +316,9 @@ void main(void) {
             #endif
             #ifdef USEIRRADIANCEMAP
                 , irradianceSampler
+                #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                    , vReflectionDominantDirection
+                #endif
             #endif
             #ifndef LODBASEDMICROSFURACE
                 , reflectionSamplerLow
@@ -311,6 +330,9 @@ void main(void) {
                     , icdfSampler
                 #endif
             #endif
+                , viewDirectionW
+                , diffuseRoughness
+                , baseColor
             );
         #else
             #define CUSTOM_REFLECTION
@@ -344,7 +366,7 @@ void main(void) {
             , sheenMapData
             , vSheenInfos.y
         #endif
-            , reflectance
+            , reflectanceF0
         #ifdef SHEEN_LINKWITHALBEDO
             , baseColor
             , surfaceAlbedo
@@ -413,6 +435,7 @@ void main(void) {
             #endif
             #ifdef CLEARCOAT
                 , NdotVUnclamped
+                , vClearCoatParams
                 #ifdef CLEARCOAT_TEXTURE
                     , clearCoatMapData
                 #endif
@@ -518,6 +541,13 @@ void main(void) {
 
         #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
             vec4 translucencyColorMap = texture2D(translucencyColorSampler, vTranslucencyColorUV + uvOffset);
+            #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE_GAMMA
+                translucencyColorMap = toLinearSpace(translucencyColorMap);
+            #endif
+        #endif
+
+        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+            vec3 vSpecularEnvironmentReflectance = vec3(max(colorSpecularEnvironmentReflectance.r, max(colorSpecularEnvironmentReflectance.g, colorSpecularEnvironmentReflectance.b)));
         #endif
 
         subSurfaceOut = subSurfaceBlock(
@@ -525,7 +555,11 @@ void main(void) {
             , vThicknessParam
             , vTintColor
             , normalW
-            , specularEnvironmentReflectance
+        #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+            , vSpecularEnvironmentReflectance
+        #else
+            , baseSpecularEnvironmentReflectance
+        #endif
         #ifdef SS_THICKNESSANDMASK_TEXTURE
             , thicknessMap
         #endif
@@ -611,7 +645,7 @@ void main(void) {
             #endif
         #endif
     #else
-        subSurfaceOut.specularEnvironmentReflectance = specularEnvironmentReflectance;
+        subSurfaceOut.specularEnvironmentReflectance = colorSpecularEnvironmentReflectance;
     #endif
 
     // _____________________________ Direct Lighting Info __________________________________

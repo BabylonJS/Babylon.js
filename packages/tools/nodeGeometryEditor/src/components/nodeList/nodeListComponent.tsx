@@ -150,6 +150,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         AggregatorBlock: "Block used to aggregate values from a geometry",
         CleanGeometryBlock: "Try to clean a geometry",
         SubdivideBlock: "Subdivide a geometry using Catmull-Clark algorithm",
+        EaseBlock: "Block used to apply easing on a value",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -286,6 +287,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "IntFloatConverterBlock",
                 "ModBlock",
                 "ClampBlock",
+                "EaseBlock",
             ],
             Math__Scientific: [
                 "AbsBlock",
@@ -352,7 +354,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Create node menu
         const blockMenu = [];
         for (const key in allBlocks) {
-            const blockList = (allBlocks as any)[key]
+            const blockList = allBlocks[key]
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
                 .sort((a: string, b: string) => a.localeCompare(b))
                 .map((block: any) => {

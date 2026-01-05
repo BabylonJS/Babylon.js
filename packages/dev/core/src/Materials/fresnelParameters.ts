@@ -8,6 +8,7 @@ import { AbstractEngine } from "core/Engines/abstractEngine";
 /**
  * Options to be used when creating a FresnelParameters.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type IFresnelParametersCreationOptions = {
     /**
      * Define the color used on edges (grazing angle)
@@ -38,6 +39,7 @@ export type IFresnelParametersCreationOptions = {
 /**
  * Serialized format for FresnelParameters.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type IFresnelParametersSerialized = {
     /**
      * Define the color used on edges (grazing angle) [as an array]

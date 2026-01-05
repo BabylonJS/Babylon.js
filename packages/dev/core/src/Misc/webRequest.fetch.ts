@@ -7,12 +7,12 @@ import { WebRequest } from "./webRequest";
  * @returns a promise that resolves when the resource is fetched
  * @internal
  */
-export function _FetchAsync(
+export async function _FetchAsync(
     url: string,
     options: Partial<{ method: string; responseHeaders?: string[] }>
 ): Promise<{ response: Response; headerValues: { [key: string]: string } }> {
     const method = options.method || "GET";
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         const request = new WebRequest();
         request.addEventListener("readystatechange", () => {
             if (request.readyState == 4) {
@@ -26,6 +26,7 @@ export function _FetchAsync(
 
                     resolve({ response: request.response, headerValues: headerValues });
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(`Unable to fetch data from ${url}. Error code: ${request.status}`);
                 }
             }

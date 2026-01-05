@@ -50,10 +50,19 @@ export class DepthReducer extends MinMaxReducer {
                 scene._depthRenderer = {};
             }
 
-            depthRenderer = this._depthRenderer = new DepthRenderer(scene, type, this._camera, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+            this._depthRendererId = "minmax_" + this._camera.id;
+
+            depthRenderer = this._depthRenderer = new DepthRenderer(
+                scene,
+                type,
+                this._camera,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                false,
+                `DepthRenderer ${this._depthRendererId}`
+            );
             depthRenderer.enabled = false;
 
-            this._depthRendererId = "minmax" + this._camera.id;
             scene._depthRenderer[this._depthRendererId] = depthRenderer;
         }
 
@@ -104,11 +113,6 @@ export class DepthReducer extends MinMaxReducer {
         super.dispose(disposeAll);
 
         if (this._depthRenderer && disposeAll) {
-            const scene = this._depthRenderer.getDepthMap().getScene();
-            if (scene) {
-                delete scene._depthRenderer[this._depthRendererId];
-            }
-
             this._depthRenderer.dispose();
             this._depthRenderer = null;
         }

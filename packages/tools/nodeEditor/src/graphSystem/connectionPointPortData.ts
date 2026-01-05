@@ -10,6 +10,7 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { GetConnectionErrorMessage } from "shared-ui-components/nodeGraphSystem/tools";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 
 export class ConnectionPointPortData implements IPortData {
@@ -52,24 +53,28 @@ export class ConnectionPointPortData implements IPortData {
         return this.data.isConnected;
     }
 
+    public get isInactive() {
+        return this.data.isInactive;
+    }
+
     public get connectedPort() {
         if (!this.isConnected) {
             return null;
         }
         if (!this._connectedPort && this.data.connectedPoint) {
-            const otherBlock = this.data.connectedPoint!.ownerBlock;
+            const otherBlock = this.data.connectedPoint.ownerBlock;
             let otherNode = this._nodeContainer.nodes.find((n) => n.content.data === otherBlock);
 
             if (!otherNode) {
                 otherNode = this._nodeContainer.appendNode(TypeLedger.NodeDataBuilder(otherBlock, this._nodeContainer));
 
                 const globalState = (this._nodeContainer as GraphCanvasComponent).stateManager.data as GlobalState;
-                if (globalState.nodeMaterial!.attachedBlocks.indexOf(otherBlock) === -1) {
-                    globalState.nodeMaterial!.attachedBlocks.push(otherBlock);
+                if (globalState.nodeMaterial.attachedBlocks.indexOf(otherBlock) === -1) {
+                    globalState.nodeMaterial.attachedBlocks.push(otherBlock);
                 }
             }
 
-            this._connectedPort = otherNode.getPortDataForPortDataContent(this.data.connectedPoint!);
+            this._connectedPort = otherNode.getPortDataForPortDataContent(this.data.connectedPoint);
         }
 
         return this._connectedPort;
@@ -103,11 +108,11 @@ export class ConnectionPointPortData implements IPortData {
     public get endpoints() {
         const endpoints: IPortData[] = [];
 
-        this.data.endpoints.forEach((endpoint) => {
+        for (const endpoint of this.data.endpoints) {
             const endpointOwnerBlock = endpoint.ownerBlock;
             const endpointNode = this._nodeContainer.nodes.find((n) => n.content.data === endpointOwnerBlock);
             endpoints.push(endpointNode!.getPortDataForPortDataContent(endpoint)!);
-        });
+        }
 
         return endpoints;
     }
@@ -164,12 +169,13 @@ export class ConnectionPointPortData implements IPortData {
 
         switch (issue) {
             case NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible: {
-                const port = targetPort.data as NodeMaterialConnectionPoint;
-                let acceptedTypes = port.acceptedConnectionPointTypes.map((t) => NodeMaterialBlockConnectionPointTypes[t]).join(", ");
-
-                acceptedTypes = `${NodeMaterialBlockConnectionPointTypes[port.type]}` + (acceptedTypes ? `,${acceptedTypes}` : "");
-
-                return `Cannot connect two different connection types:\nSource is ${NodeMaterialBlockConnectionPointTypes[this.data.type]} but destination only accepts ${acceptedTypes}`;
+                return GetConnectionErrorMessage(
+                    this.data.type,
+                    NodeMaterialBlockConnectionPointTypes,
+                    NodeMaterialBlockConnectionPointTypes.All,
+                    NodeMaterialBlockConnectionPointTypes.AutoDetect,
+                    targetPort.data as NodeMaterialConnectionPoint
+                );
             }
 
             case NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible:

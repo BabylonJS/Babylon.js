@@ -126,16 +126,19 @@ export abstract class DracoCodec implements IDisposable {
                   };
         // If using workers, initialize a worker pool with either the wasm or url?
         if (useWorkers) {
+            // eslint-disable-next-line github/no-then
             this._workerPoolPromise = codecInfo.wasmBinaryPromise.then((wasmBinary) => {
                 const workerContent = this._getWorkerContent();
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
 
-                return new AutoReleaseWorkerPool(numberOfWorkers as number, () => {
+                // eslint-disable-next-line @typescript-eslint/promise-function-async
+                return new AutoReleaseWorkerPool(numberOfWorkers, () => {
                     const worker = new Worker(workerBlobUrl);
                     return initializeWebWorker(worker, wasmBinary, codecInfo.url);
                 });
             });
         } else {
+            // eslint-disable-next-line github/no-then
             this._modulePromise = codecInfo.wasmBinaryPromise.then(async (wasmBinary) => {
                 if (!this._isModuleAvailable()) {
                     if (!configuration.jsModule) {
@@ -145,7 +148,7 @@ export abstract class DracoCodec implements IDisposable {
                         await Tools.LoadBabylonScriptAsync(codecInfo.url);
                     }
                 }
-                return this._createModuleAsync(wasmBinary as ArrayBuffer, configuration.jsModule);
+                return await this._createModuleAsync(wasmBinary as ArrayBuffer, configuration.jsModule);
             });
         }
     }
@@ -171,6 +174,7 @@ export abstract class DracoCodec implements IDisposable {
      */
     public dispose(): void {
         if (this._workerPoolPromise) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
             this._workerPoolPromise.then((workerPool) => {
                 workerPool.dispose();
             });

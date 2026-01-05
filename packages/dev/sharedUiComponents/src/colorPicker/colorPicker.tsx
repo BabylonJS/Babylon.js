@@ -197,7 +197,6 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                         ></div>
                     </div>
                 </div>
-                <div className="color-picker-alpha"></div>
                 <div className="color-picker-rgb">
                     <div className="red">
                         <ColorComponentEntry
@@ -252,27 +251,51 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                         />
                     </div>
                 </div>
-                <div className="color-picker-hex">
-                    <div className="color-picker-hex-label">Hex</div>
-                    <div className="color-picker-hex-value">
-                        <HexColor
-                            lockObject={this.props.lockObject}
-                            expectedLength={hasAlpha ? 8 : 6}
-                            value={colorHex}
-                            onChange={(value) => {
-                                if (hasAlpha) {
-                                    const color4 = Color4.FromHexString(value);
-                                    this.setState({ color: new Color3(color4.r, color4.g, color4.b), alpha: color4.a });
-                                } else {
-                                    this.setState({ color: Color3.FromHexString(value) });
-                                }
-                            }}
-                        />
+                <div className="color-picker-hex-row">
+                    <div className="color-picker-hex">
+                        <div className="color-picker-hex-label">Gamma Hex</div>
+                        <div className="color-picker-hex-value">
+                            <HexColor
+                                lockObject={this.props.lockObject}
+                                expectedLength={hasAlpha ? 8 : 6}
+                                value={colorHex}
+                                onChange={(value) => {
+                                    if (hasAlpha) {
+                                        const color4 = Color4.FromHexString(value);
+                                        this.setState({ color: new Color3(color4.r, color4.g, color4.b), alpha: color4.a });
+                                    } else {
+                                        this.setState({ color: Color3.FromHexString(value) });
+                                    }
+                                }}
+                            />
+                        </div>
                     </div>
+                    {this.props.linearhint && (
+                        <div className="color-picker-hex">
+                            <div className="color-picker-hex-label">Linear Hex</div>
+                            <div className="color-picker-hex-value">
+                                <HexColor
+                                    lockObject={this.props.lockObject}
+                                    expectedLength={hasAlpha ? 8 : 6}
+                                    value={Color4.FromHexString(colorHex).toLinearSpace().toHexString()}
+                                    onChange={(value) => {
+                                        if (hasAlpha) {
+                                            const color4 = Color4.FromHexString(value).toGammaSpace();
+                                            this.setState({ color: new Color3(color4.r, color4.g, color4.b), alpha: color4.a });
+                                        } else {
+                                            this.setState({ color: Color3.FromHexString(value).toGammaSpace() });
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
+
                 {this.props.linearhint && (
                     <div className="color-picker-warning">
-                        (Note: color is stored in linear mode and was converted to gamma to be displayed here (toGammaSpace() / toLinearSpace()))
+                        (Note: This color is stored in linear but converted to gamma to be displayed here. To set color in code, use the linear hex above or use
+                        gamma.toLinearSpace()
                     </div>
                 )}
             </div>

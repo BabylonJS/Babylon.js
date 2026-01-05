@@ -1,5 +1,29 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Color4, Scene, FrameGraphTextureHandle, Camera, FrameGraphObjectList, IShadowLight, FrameGraphShadowGeneratorTask, FrameGraphObjectRendererTask } from "core/index";
+import type {
+    Color4,
+    Scene,
+    FrameGraphTextureHandle,
+    Camera,
+    FrameGraphObjectList,
+    IShadowLight,
+    FrameGraphShadowGeneratorTask,
+    FrameGraphObjectRendererTask,
+    FrameGraph,
+    NodeRenderGraphBlock,
+} from "core/index";
+
+/**
+ * Description of a custom block to be used in the node render graph editor
+ */
+export interface INodeRenderGraphCustomBlockDescription {
+    /** Block name. It will be used as the block name in the left menu of the editor. Spaces must be replaced by underscores in the name. */
+    name: string;
+    /** Description (tooltip) of the block. */
+    description: string;
+    /** Category of the block. Spaces must be replaced by underscores in the category name. */
+    menu: string;
+    /** Factory function to create the block. */
+    factory: (frameGraph: FrameGraph, scene: Scene) => NodeRenderGraphBlock;
+}
 
 /**
  * Interface used to configure the node render graph editor
@@ -11,6 +35,7 @@ export interface INodeRenderGraphEditorOptions {
     nodeRenderGraphEditorConfig?: {
         backgroundColor?: Color4;
         hostScene?: Scene;
+        customBlockDescriptions?: INodeRenderGraphCustomBlockDescription[];
     };
 }
 
@@ -66,6 +91,8 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     TextureLocalPosition = 0x00004000,
     /** Linear velocity geometry texture */
     TextureLinearVelocity = 0x00008000,
+    /** Normalied depth (in view space) geometry texture */
+    TextureNormalizedViewDepth = 0x00010000,
 
     /** Bit field for all textures but back buffer depth/stencil */
     TextureAllButBackBufferDepthStencil = 0x000ffffb,

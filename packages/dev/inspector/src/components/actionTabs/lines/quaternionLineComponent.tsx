@@ -150,7 +150,7 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
             const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
             const targetName = "globalThis.debugNode";
             const targetProperty = this.props.propertyName;
-            const value = this.props.target[this.props.propertyName!];
+            const value = this.props.target[this.props.propertyName];
             const strVector = "new " + babylonNamespace + "Quaternion(" + value.x + ", " + value.y + ", " + value.z + ", " + value.w + ")";
             const strCommand = targetName + "." + targetProperty + " = " + strVector + ";// (debugNode as " + babylonNamespace + className + ")";
             copyCommandToClipboard(strCommand);

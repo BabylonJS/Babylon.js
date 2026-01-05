@@ -8,6 +8,10 @@ import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame
 
 export class SerializationTools {
     public static UpdateLocations(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
+        if (!globalState.onGetNodeFromBlock) {
+            return;
+        }
+
         material.editorData = {
             locations: [],
         };
@@ -45,13 +49,13 @@ export class SerializationTools {
     }
 
     public static Deserialize(serializationObject: any, globalState: GlobalState) {
-        globalState.nodeMaterial!.parseSerializedObject(serializationObject, "");
+        globalState.nodeMaterial.parseSerializedObject(serializationObject, "");
         globalState.onIsLoadingChanged.notifyObservers(false);
     }
 
     public static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: NodeMaterial) {
         this.UpdateLocations(currentMaterial, globalState);
-        globalState.nodeMaterial!.parseSerializedObject(serializationObject, "", true);
+        globalState.nodeMaterial.parseSerializedObject(serializationObject, "", true);
         globalState.onImportFrameObservable.notifyObservers(serializationObject);
         globalState.onIsLoadingChanged.notifyObservers(false);
     }

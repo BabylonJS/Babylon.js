@@ -14,5 +14,6 @@ node_modules
 !node-editor/**/*.*
 !node-geometry-editor/**/*.*
 !node-render-graph-editor/**/*.*
+!node-particle-editor/**/*.*
 !gui-editor/**/*.*
 !accessibility/**/*.*

@@ -30,8 +30,8 @@ export class TextureDisplayManager implements IDisplayManager {
         if (!this._previewCanvas) {
             contentArea.classList.add(localStyles["texture-block"]);
 
-            this._previewCanvas = contentArea.ownerDocument!.createElement("canvas");
-            this._previewImage = contentArea.ownerDocument!.createElement("img");
+            this._previewCanvas = contentArea.ownerDocument.createElement("canvas");
+            this._previewImage = contentArea.ownerDocument.createElement("img");
             contentArea.appendChild(this._previewImage);
             this._previewImage.classList.add(localStyles.empty);
         }

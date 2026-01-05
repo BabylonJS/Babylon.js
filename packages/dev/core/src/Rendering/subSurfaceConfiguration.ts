@@ -1,11 +1,12 @@
 import { Logger } from "../Misc/logger";
 import type { Scene } from "../scene";
-import { Color3 } from "../Maths/math.color";
+import { Color3, Color4 } from "../Maths/math.color";
 import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { _WarnImport } from "../Misc/devTools";
 import { Constants } from "../Engines/constants";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Contains all parameters needed for the prepass to perform
@@ -88,6 +89,12 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
         Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
     ];
 
+    /**
+     * The clear color of the render targets.
+     * We need 1 for the alpha channel of the irradiance texture so that we early exit from the SSS post-process if the pixel should not be processed
+     */
+    public clearColor = new Color4(0, 0, 0, 1);
+
     private _scene: Scene;
 
     /**
@@ -135,7 +142,11 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      * @returns The created post process
      */
     public createPostProcess(): SubSurfaceScatteringPostProcess {
-        this.postProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._scene.getEngine());
+        this.postProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, {
+            size: 1,
+            engine: this._scene.getEngine(),
+            shaderLanguage: this._scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+        });
         this.postProcess.autoClear = false;
 
         return this.postProcess;

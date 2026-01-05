@@ -49,7 +49,9 @@ export class TreeItemLabelComponent extends React.Component<ITreeItemLabelCompon
                             this.setState({ value: ev.target.value });
                         }}
                         onKeyDown={(ev) => {
-                            if (ev.key === "Enter") this.onBlur();
+                            if (ev.key === "Enter") {
+                                this.onBlur();
+                            }
                         }}
                         className="titleText"
                     />

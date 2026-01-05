@@ -37,6 +37,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
     }
 
     edit() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.props.material.edit({ nodeEditorConfig: { backgroundColor: this.props.material.getScene().clearColor } });
     }
 
@@ -182,15 +183,15 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             });
 
         const namedGroups: string[] = [];
-        configurableInputBlocks.forEach((block) => {
+        for (const block of configurableInputBlocks) {
             if (!block.groupInInspector) {
-                return;
+                continue;
             }
 
             if (namedGroups.indexOf(block.groupInInspector) === -1) {
                 namedGroups.push(block.groupInInspector);
             }
-        });
+        }
         namedGroups.sort();
 
         const gradiantNodeMaterialBlocks = this.props.material.attachedBlocks

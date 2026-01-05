@@ -5,13 +5,14 @@ import type { UMDPackageName } from "./packageMapping.js";
 import { umdPackageMapping } from "./packageMapping.js";
 import { copyFile, findRootDirectory } from "./utils.js";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const prepareSnapshot = () => {
     const baseDirectory = findRootDirectory();
     const snapshotDirectory = path.join(baseDirectory, ".snapshot");
     Object.keys(umdPackageMapping).forEach((packageName) => {
         const metadata = umdPackageMapping[packageName as UMDPackageName];
         const corePath = path.join(baseDirectory, "packages", "public", "umd", packageName);
-        const coreUmd = globSync(`${corePath}/*+(.js|.d.ts|.map)`);
+        const coreUmd = globSync(`${corePath}/*+(.js|.d.ts|.map)`).filter((file) => path.basename(file) !== "webpack.config.js");
         for (const file of coreUmd) {
             copyFile(file, path.join(snapshotDirectory, metadata.baseDir, path.basename(file)), true);
         }

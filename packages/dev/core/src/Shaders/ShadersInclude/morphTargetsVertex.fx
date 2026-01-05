@@ -2,7 +2,7 @@
 	#ifdef MORPHTARGETS_TEXTURE
 		#if {X} == 0
 		for (int i = 0; i < NUM_MORPH_INFLUENCERS; i++) {
-			if (i >= morphTargetCount) break;
+			if (float(i) >= morphTargetCount) break;
 
 			vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;
 

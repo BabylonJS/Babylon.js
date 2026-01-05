@@ -147,7 +147,7 @@ export class GoldbergMesh extends Mesh {
     }
 
     private _changeGoldbergFaceUVs(uvRange: (number | Vector2)[][]): FloatArray {
-        const uvs: FloatArray = this.getVerticesData(VertexBuffer.UVKind)!!;
+        const uvs: FloatArray = this.getVerticesData(VertexBuffer.UVKind)!;
         for (let i = 0; i < uvRange.length; i++) {
             const min: number = <number>uvRange[i][0];
             const max: number = <number>uvRange[i][1];

@@ -1,4 +1,5 @@
 export * from "./fragmentOutputBlock";
+export * from "./smartFilterFragmentOutputBlock";
 export * from "./imageProcessingBlock";
 export * from "./perturbNormalBlock";
 export * from "./discardBlock";
@@ -13,6 +14,7 @@ export * from "./heightToNormalBlock";
 export * from "./fragDepthBlock";
 export * from "./shadowMapBlock";
 export * from "./prePassOutputBlock";
+export * from "./ambientOcclusionBlock";
 
 // async-loaded shaders
 

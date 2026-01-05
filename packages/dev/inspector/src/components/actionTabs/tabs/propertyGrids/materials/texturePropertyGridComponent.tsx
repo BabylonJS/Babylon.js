@@ -46,7 +46,7 @@ interface ITexturePropertyGridComponentState {
     textureEditing: Nullable<BaseTexture>;
 }
 
-const textureFormat = [
+const TextureFormat = [
     { label: "Alpha", normalizable: 0, value: Constants.TEXTUREFORMAT_ALPHA },
     { label: "Luminance", normalizable: 0, value: Constants.TEXTUREFORMAT_LUMINANCE },
     { label: "Luminance/Alpha", normalizable: 0, value: Constants.TEXTUREFORMAT_LUMINANCE_ALPHA },
@@ -66,16 +66,29 @@ const textureFormat = [
     { label: "Depth24Unorm/Stencil8", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 },
     { label: "Depth32Float/Stencil8", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 },
     { label: "RGBA BPTC UNorm", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM },
+    { label: "SRGB+A BPTC UNorm", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM },
     { label: "RGB BPTC UFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT },
     { label: "RGB BPTC SFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT },
     { label: "RGBA S3TC DXT5", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 },
+    { label: "SRGB+A S3TC DXT5", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT },
     { label: "RGBA S3TC DXT3", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 },
+    { label: "SRGB+A S3TC DXT3", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT },
     { label: "RGBA S3TC DXT1", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 },
+    { label: "SRGB+A S3TC DXT1", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT },
     { label: "RGB S3TC DXT1", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 },
+    { label: "SRGB S3TC DXT1", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT },
     { label: "RGBA ASTC 4x4", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 },
+    { label: "SRGB+A ASTC 4x4", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR },
+    { label: "RGB ETC1", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL },
+    { label: "RGB ETC2", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2 },
+    { label: "SRGB ETC2", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2 },
+    { label: "RGB+A1 ETC2", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 },
+    { label: "SRGB+A1 ETC2", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 },
+    { label: "RGBA ETC2", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC },
+    { label: "SRGB+A ETC2", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC },
 ];
 
-const textureType = [
+const TextureType = [
     { label: "unsigned byte", normalizable: 1, value: Constants.TEXTURETYPE_UNSIGNED_BYTE },
     { label: "32-bit float", normalizable: 0, value: Constants.TEXTURETYPE_FLOAT },
     { label: "16-bit float", normalizable: 0, value: Constants.TEXTURETYPE_HALF_FLOAT },
@@ -94,6 +107,9 @@ const textureType = [
     { label: "32-bits with only 8-bit used (stencil)", normalizable: 0, value: Constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV },
 ];
 
+/**
+ *
+ */
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps, ITexturePropertyGridComponentState> {
     private _adtInstrumentation: Nullable<AdvancedDynamicTextureInstrumentation>;
     private _popoutWindowRef: React.RefObject<PopupComponent>;
@@ -120,8 +136,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const adt = texture as AdvancedDynamicTexture;
 
         this._adtInstrumentation = new AdvancedDynamicTextureInstrumentation(adt);
-        this._adtInstrumentation!.captureRenderTime = true;
-        this._adtInstrumentation!.captureLayoutTime = true;
+        this._adtInstrumentation.captureRenderTime = true;
+        this._adtInstrumentation.captureLayoutTime = true;
 
         this.onOpenTextureEditor.bind(this);
         this.onCloseTextureEditor.bind(this);
@@ -191,22 +207,23 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
     forceRefresh() {
         this.forceUpdate();
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         (this._textureLineRef.current as TextureLineComponent).updatePreview();
     }
 
     findTextureFormat(format: number) {
-        for (let i = 0; i < textureFormat.length; ++i) {
-            if (textureFormat[i].value === format) {
-                return textureFormat[i];
+        for (let i = 0; i < TextureFormat.length; ++i) {
+            if (TextureFormat[i].value === format) {
+                return TextureFormat[i];
             }
         }
         return null;
     }
 
     findTextureType(type: number) {
-        for (let i = 0; i < textureType.length; ++i) {
-            if (textureType[i].value === type) {
-                return textureType[i];
+        for (let i = 0; i < TextureType.length; ++i) {
+            if (TextureType[i].value === type) {
+                return TextureType[i];
             }
         }
         return null;
@@ -280,7 +297,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         label="Edit"
                         onClick={() => {
                             if (this.props.texture instanceof AdvancedDynamicTexture) {
-                                EditAdvancedDynamicTexture(this.props.texture as AdvancedDynamicTexture);
+                                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                                EditAdvancedDynamicTexture(this.props.texture);
                             } else {
                                 this.openTextureEditor();
                             }
@@ -375,6 +393,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     {texture.isRenderTarget && <TextLineComponent label="Depth/stencil texture format" value={oformatDepthStencil?.label ?? "no"} />}
                     {texture instanceof Texture && <TextLineComponent label="Stored as inverted on Y" value={texture.invertY ? "Yes" : "No"} />}
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
+                    <TextLineComponent label="Samples" value={texture._texture?.samples.toString() ?? "unknown"} />
                     <SliderLineComponent
                         lockObject={this.props.lockObject}
                         label="UV set"
@@ -421,8 +440,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 )}
                 {(texture as any).rootContainer && this._adtInstrumentation && (
                     <LineContainerComponent title="ADVANCED TEXTURE PROPERTIES" selection={this.props.globalState}>
-                        <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
-                        <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />
+                        <ValueLineComponent label="Last layout time" value={this._adtInstrumentation.renderTimeCounter.current} units="ms" />
+                        <ValueLineComponent label="Last render time" value={this._adtInstrumentation.layoutTimeCounter.current} units="ms" />
                         <SliderLineComponent
                             lockObject={this.props.lockObject}
                             label="Render scale"

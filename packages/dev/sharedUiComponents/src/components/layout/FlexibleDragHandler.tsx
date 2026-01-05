@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { FC, PropsWithChildren } from "react";
 import { useContext, useRef } from "react";
 import { Vector2 } from "core/Maths/math";
 import type { Nullable } from "core/types";
@@ -25,7 +25,7 @@ export interface IFlexibleDragHandlerProps {
  * @param props properties
  * @returns DragHandler element
  */
-export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
+export const FlexibleDragHandler: FC<PropsWithChildren<IFlexibleDragHandlerProps>> = (props) => {
     const { layout, setLayout } = useContext(LayoutContext);
     // CLICK/DRAG INFORMATION
     const pointerPos = useRef<Nullable<Vector2>>(null);

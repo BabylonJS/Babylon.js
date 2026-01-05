@@ -19,7 +19,7 @@ import "./shadowOnly.fragment";
 import "./shadowOnly.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import type { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
-import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -141,7 +141,19 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
         PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this.needAlphaTestingForMesh(mesh), defines);
+        PrepareDefinesForMisc(
+            mesh,
+            scene,
+            this._useLogarithmicDepth,
+            this.pointsCloud,
+            this.fogEnabled,
+            this.needAlphaTestingForMesh(mesh),
+            defines,
+            undefined,
+            undefined,
+            undefined,
+            this._isVertexOutputInvariant
+        );
 
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, false, 1);
 
@@ -206,9 +218,9 @@ export class ShadowOnlyMaterial extends PushMaterial {
             ];
             const samplers: string[] = [];
 
-            const uniformBuffers: string[] = [];
+            const uniformBuffers: string[] = ["Scene"];
 
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
             PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
@@ -220,7 +232,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
             subMesh.setEffect(
                 scene.getEngine().createEffect(
                     shaderName,
-                    <IEffectCreationOptions>{
+                    {
                         attributes: attribs,
                         uniformsNames: uniforms,
                         uniformBuffersNames: uniformBuffers,
@@ -264,14 +276,14 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
         // Matrices
         this.bindOnlyWorldMatrix(world);
-        this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
+        this.bindViewProjection(effect);
 
         // Bones
         BindBonesParameters(mesh, this._activeEffect);
 
         if (this._mustRebind(scene, effect, subMesh)) {
             // Clip plane
-            bindClipPlane(effect, this, scene);
+            BindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {
@@ -307,7 +319,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
         // View
         if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || defines["SHADOWCSM0"]) {
-            this._activeEffect.setMatrix("view", scene.getViewMatrix());
+            this.bindView(effect);
         }
 
         // Fog

@@ -252,8 +252,8 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
 
         const cache: GizmoAxisCache = {
-            gizmoMeshes: arrow.getChildMeshes() as Mesh[],
-            colliderMeshes: collider.getChildMeshes() as Mesh[],
+            gizmoMeshes: arrow.getChildMeshes(),
+            colliderMeshes: collider.getChildMeshes(),
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
@@ -314,11 +314,12 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
         if (this._gizmoMesh) {
             this._gizmoMesh.dispose();
         }
-        [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
+        const mats = [this._coloredMaterial, this._hoverMaterial, this._disableMaterial];
+        for (const matl of mats) {
             if (matl) {
                 matl.dispose();
             }
-        });
+        }
         super.dispose();
     }
 }

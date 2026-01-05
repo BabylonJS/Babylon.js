@@ -1,9 +1,4 @@
-import type {
-    FrameGraph,
-    Scene,
-    IThinGlowLayerOptions,
-    // eslint-disable-next-line import/no-internal-modules
-} from "core/index";
+import type { FrameGraph, Scene, IThinGlowLayerOptions } from "core/index";
 import { ThinGlowLayer } from "core/Layers/thinGlowLayer";
 import { FrameGraphBaseLayerTask } from "./baseLayerTask";
 
@@ -27,5 +22,9 @@ export class FrameGraphGlowLayerTask extends FrameGraphBaseLayerTask {
         super(name, frameGraph, scene, new ThinGlowLayer(name, scene, options, true), 2);
 
         this.layer._renderPassId = this._objectRendererForLayer.objectRenderer.renderPassId;
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphGlowLayerTask";
     }
 }

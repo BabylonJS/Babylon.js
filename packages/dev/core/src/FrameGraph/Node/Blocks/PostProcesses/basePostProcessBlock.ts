@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraphTextureHandle, FrameGraph, FrameGraphTask } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
@@ -6,13 +5,13 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 
 interface IPostProcessLike {
     sourceSamplingMode: number;
-    sourceTexture: FrameGraphTextureHandle;
+    sourceTexture?: FrameGraphTextureHandle;
     targetTexture?: FrameGraphTextureHandle;
     outputTexture: FrameGraphTextureHandle;
 }
 
 /**
- * @internal
+ * Base class for post process like blocks.
  */
 export class NodeRenderGraphBasePostProcessBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: IPostProcessLike & FrameGraphTask;
@@ -26,11 +25,11 @@ export class NodeRenderGraphBasePostProcessBlock extends NodeRenderGraphBlock {
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+        this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
 
-        this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
-        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
+        this.source.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
     }
 
     protected _finalizeInputOutputRegistering() {
@@ -43,7 +42,7 @@ export class NodeRenderGraphBasePostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /** Sampling mode used to sample from the source texture */
-    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode, "PROPERTIES")
+    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode, "BASE PROPERTIES")
     public get sourceSamplingMode() {
         return this._frameGraphTask.sourceSamplingMode;
     }

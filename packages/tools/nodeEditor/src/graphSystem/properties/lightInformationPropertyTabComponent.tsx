@@ -1,15 +1,16 @@
 import * as React from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { LightInformationBlock } from "core/Materials/Node/Blocks/Vertex/lightInformationBlock";
-import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
+import { GetGeneralProperties } from "./genericNodePropertyComponent";
 import type { Light } from "core/Lights/light";
 import type { GlobalState } from "../../globalState";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
+import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 
 export class LightInformationPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     override render() {
-        const scene = (this.props.stateManager.data as GlobalState).nodeMaterial!.getScene();
+        const scene = (this.props.stateManager.data as GlobalState).nodeMaterial.getScene();
         const lightOptions = scene.lights.map((l: Light) => {
             return { label: l.name, value: l.name };
         });
@@ -17,8 +18,8 @@ export class LightInformationPropertyTabComponent extends React.Component<IPrope
         const lightInformationBlock = this.props.nodeData.data as LightInformationBlock;
 
         return (
-            <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
+            <PropertyTabComponentBase>
+                {GetGeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLine
                         label="Light"
@@ -35,7 +36,7 @@ export class LightInformationPropertyTabComponent extends React.Component<IPrope
                         }}
                     />
                 </LineContainerComponent>
-            </div>
+            </PropertyTabComponentBase>
         );
     }
 }

@@ -4,6 +4,7 @@ import type { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { BaseTexture } from "./baseTexture";
 
 declare module "./baseTexture" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface BaseTexture {
         /**
          * Get the polynomial representation of the texture data.
@@ -41,6 +42,7 @@ Object.defineProperty(BaseTexture.prototype, "sphericalPolynomial", {
                     if (this._texture._sphericalPolynomialPromise === null) {
                         this._texture._sphericalPolynomialComputed = true;
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         this._texture._sphericalPolynomialPromise.then((sphericalPolynomial) => {
                             this._texture!._sphericalPolynomial = sphericalPolynomial;
                             this._texture!._sphericalPolynomialComputed = true;

@@ -16,6 +16,7 @@ import offsetIcon from "./svgs/offset.svg";
 interface IPreviewMeshControlComponent {
     globalState: GlobalState;
     togglePreviewAreaComponent: () => void;
+    onMounted?: () => void;
 }
 
 interface IPreviewMeshControlComponentState {
@@ -45,6 +46,10 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     override componentWillUnmount() {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
         this.props.globalState.onRefreshPreviewMeshControlComponentRequiredObservable.remove(this._onRefreshPreviewMeshControlComponentRequiredObserver);
+    }
+
+    override componentDidMount(): void {
+        this.props.onMounted?.();
     }
 
     onPopUp() {

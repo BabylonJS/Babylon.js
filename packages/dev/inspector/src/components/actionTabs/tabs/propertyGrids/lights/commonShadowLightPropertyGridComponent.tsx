@@ -39,15 +39,15 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
         const internals = this._internals;
         const generator = internals.generatorType === 0 ? new ShadowGenerator(internals.mapSize, light) : new CascadedShadowGenerator(internals.mapSize, light as DirectionalLight);
 
-        scene.meshes.forEach((m) => {
+        for (const m of scene.meshes) {
             if (m.infiniteDistance) {
-                return;
+                continue;
             }
             generator.addShadowCaster(m);
             if (!m.isAnInstance) {
                 m.receiveShadows = true;
             }
-        });
+        }
 
         this.forceUpdate();
     }

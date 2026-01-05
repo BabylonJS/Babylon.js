@@ -1,7 +1,8 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { AbstractEngine, AbstractEngineOptions, EngineOptions, IDisposable, Nullable, WebGPUEngineOptions } from "core/index";
-import type { ViewerOptions } from "./viewer";
+import type { ViewerDetails, ViewerOptions } from "./viewer";
 
+import { Deferred } from "core/Misc/deferred";
+import { Logger } from "core/Misc/logger";
 import { Viewer } from "./viewer";
 
 /**
@@ -13,10 +14,12 @@ export type CanvasViewerOptions = ViewerOptions & { onFaulted?: (error: Error) =
         | ({ engine: "WebGPU" } & WebGPUEngineOptions)
     );
 
-const defaultCanvasViewerOptions: CanvasViewerOptions = {
+const DefaultCanvasViewerOptions = {
     antialias: true,
     adaptToDeviceRatio: true,
-};
+    enableAllFeatures: true,
+    setMaximumLimits: true,
+} as const satisfies CanvasViewerOptions;
 
 /**
  * Chooses a default engine for the current browser environment.
@@ -46,12 +49,14 @@ export function GetDefaultEngine(): NonNullable<CanvasViewerOptions["engine"]> {
  */
 export function CreateViewerForCanvas<DerivedViewer extends Viewer>(
     canvas: HTMLCanvasElement,
-    options: CanvasViewerOptions & {
-        /**
-         * The Viewer subclass to use when creating the Viewer instance.
-         */
-        viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => DerivedViewer;
-    }
+    options: Readonly<
+        CanvasViewerOptions & {
+            /**
+             * The Viewer subclass to use when creating the Viewer instance.
+             */
+            viewerClass: new (...args: ConstructorParameters<typeof Viewer>) => DerivedViewer;
+        }
+    >
 ): Promise<DerivedViewer>;
 export function CreateViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Promise<Viewer>;
 
@@ -60,26 +65,52 @@ export function CreateViewerForCanvas(canvas: HTMLCanvasElement, options?: Canva
  */
 export async function CreateViewerForCanvas(
     canvas: HTMLCanvasElement,
-    options?: CanvasViewerOptions & { viewerClass?: new (...args: ConstructorParameters<typeof Viewer>) => Viewer }
+    options: Readonly<CanvasViewerOptions & { viewerClass?: new (...args: ConstructorParameters<typeof Viewer>) => Viewer }> = {}
 ): Promise<Viewer> {
-    options = { ...defaultCanvasViewerOptions, ...options };
+    const detailsDeferred = new Deferred<Readonly<ViewerDetails>>();
+
+    options = new Proxy(options as CanvasViewerOptions & EngineOptions & WebGPUEngineOptions, {
+        get(target, prop: keyof (CanvasViewerOptions & EngineOptions & WebGPUEngineOptions)) {
+            switch (prop) {
+                case "antialias":
+                    return target.antialias ?? DefaultCanvasViewerOptions.antialias;
+                case "adaptToDeviceRatio":
+                    return target.adaptToDeviceRatio ?? DefaultCanvasViewerOptions.adaptToDeviceRatio;
+                case "enableAllFeatures":
+                    return target.enableAllFeatures ?? DefaultCanvasViewerOptions.enableAllFeatures;
+                case "setMaximumLimits":
+                    return target.setMaximumLimits ?? DefaultCanvasViewerOptions.setMaximumLimits;
+                case "onInitialized":
+                    return (details: ViewerDetails) => {
+                        target.onInitialized?.(details);
+                        detailsDeferred.resolve(details);
+                    };
+                default:
+                    return target[prop];
+            }
+        },
+    });
+
     const disposeActions: (() => void)[] = [];
 
     // Create an engine instance.
     let engine: AbstractEngine;
     switch (options.engine ?? GetDefaultEngine()) {
-        case "WebGL": {
-            // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
-            const { Engine } = await import("core/Engines/engine");
-            engine = new Engine(canvas, undefined, options);
-            break;
-        }
         case "WebGPU": {
-            // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
             const { WebGPUEngine } = await import("core/Engines/webgpuEngine");
             const webGPUEngine = new WebGPUEngine(canvas, options);
-            await webGPUEngine.initAsync();
-            engine = webGPUEngine;
+            try {
+                await webGPUEngine.initAsync();
+                engine = webGPUEngine;
+                break;
+            } catch {
+                Logger.Warn("Failed to initialize WebGPU engine. Falling back to WebGL.");
+            }
+        }
+        // eslint-disable-next-line no-fallthrough
+        case "WebGL": {
+            const { Engine } = await import("core/Engines/engine");
+            engine = new Engine(canvas, undefined, options);
             break;
         }
     }
@@ -92,9 +123,12 @@ export async function CreateViewerForCanvas(
         disposeActions.push(() => contextLostObserver.remove());
     }
 
-    // Override the onInitialized callback to add in some specific behavior.
-    const onInitialized = options.onInitialized;
-    options.onInitialized = (details) => {
+    // Instantiate the Viewer with the engine and options.
+    const viewerClass = options?.viewerClass ?? Viewer;
+    const viewer = new viewerClass(engine, options);
+
+    {
+        const details = await detailsDeferred.promise;
         // If the canvas is resized, note that the engine needs a resize, but don't resize it here as it will result in flickering.
         let needsResize = false;
         const resizeObserver = new ResizeObserver(() => {
@@ -127,14 +161,8 @@ export async function CreateViewerForCanvas(
         });
         intersectionObserver.observe(canvas);
         disposeActions.push(() => intersectionObserver.disconnect());
+    }
 
-        // Call the original onInitialized callback, if one was provided.
-        onInitialized?.(details);
-    };
-
-    // Instantiate the Viewer with the engine and options.
-    const viewerClass = options?.viewerClass ?? Viewer;
-    const viewer = new viewerClass(engine, options);
     disposeActions.push(viewer.dispose.bind(viewer));
 
     disposeActions.push(() => engine.dispose());

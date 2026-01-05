@@ -3,7 +3,8 @@ import type { InternalTexture } from "../internalTexture";
 import type { IInternalTextureLoader } from "./internalTextureLoader";
 import { GetExrHeader } from "./EXR/exrLoader.header";
 import { CreateDecoderAsync, ScanData } from "./EXR/exrLoader.decoder";
-import { ExrLoaderGlobalConfiguration } from "./EXR/exrLoader.configuration";
+import { ExrLoaderGlobalConfiguration, EXROutputType } from "./EXR/exrLoader.configuration";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Inspired by https://github.com/sciecode/three.js/blob/dev/examples/jsm/loaders/EXRLoader.js
@@ -78,10 +79,11 @@ import { ExrLoaderGlobalConfiguration } from "./EXR/exrLoader.configuration";
 
 /**
  * Loader for .exr file format
- * #4RN0VF#151: PIZ compression
- * #4RN0VF#146: ZIP compression
- * #4RN0VF#149: RLE compression
- * #4RN0VF#150: PXR24 compression
+ * @see [PIZ compression](https://playground.babylonjs.com/#4RN0VF#151)
+ * @see [ZIP compression](https://playground.babylonjs.com/#4RN0VF#146)
+ * @see [RLE compression](https://playground.babylonjs.com/#4RN0VF#149)
+ * @see [PXR24 compression](https://playground.babylonjs.com/#4RN0VF#150)
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _ExrTextureLoader implements IInternalTextureLoader {
@@ -116,7 +118,8 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
      * @param texture defines the BabylonJS internal texture
      * @param callback defines the method to call once ready to upload
      */
-    public async loadData(
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public loadData(
         data: ArrayBufferView,
         texture: InternalTexture,
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, failedLoading?: boolean) => void
@@ -125,22 +128,59 @@ export class _ExrTextureLoader implements IInternalTextureLoader {
 
         const offset = { value: 0 };
         const header = GetExrHeader(dataView, offset);
-        const decoder = await CreateDecoderAsync(header, dataView, offset, ExrLoaderGlobalConfiguration.DefaultOutputType);
+        CreateDecoderAsync(header, dataView, offset, ExrLoaderGlobalConfiguration.DefaultOutputType)
+            // eslint-disable-next-line github/no-then
+            .then((decoder) => {
+                ScanData(decoder, header, dataView, offset);
 
+                // Updating texture
+                const width = header.dataWindow.xMax - header.dataWindow.xMin + 1;
+                const height = header.dataWindow.yMax - header.dataWindow.yMin + 1;
+                callback(width, height, texture.generateMipMaps, false, () => {
+                    const engine = texture.getEngine();
+                    texture.format = header.format;
+                    texture.type = decoder.textureType;
+                    texture.invertY = false;
+                    texture._gammaSpace = !header.linearSpace;
+                    if (decoder.byteArray) {
+                        engine._uploadDataToTextureDirectly(texture, decoder.byteArray, 0, 0, undefined, true);
+                    }
+                });
+            })
+            // eslint-disable-next-line github/no-then
+            .catch((error) => {
+                Logger.Error("Failed to load EXR texture: ", error);
+            });
+    }
+}
+
+/**
+ * Read the EXR data from an ArrayBufferView asynchronously.
+ * @param data ArrayBufferView containing the EXR data
+ * @returns An object containing the width, height, and data of the EXR texture.
+ */
+export async function ReadExrDataAsync(data: ArrayBuffer): Promise<{ width: number; height: number; data: Nullable<Float32Array> }> {
+    const dataView = new DataView(data);
+
+    const offset = { value: 0 };
+    const header = GetExrHeader(dataView, offset);
+    try {
+        const decoder = await CreateDecoderAsync(header, dataView, offset, EXROutputType.Float);
         ScanData(decoder, header, dataView, offset);
 
-        // Updating texture
-        const width = header.dataWindow.xMax - header.dataWindow.xMin + 1;
-        const height = header.dataWindow.yMax - header.dataWindow.yMin + 1;
-        callback(width, height, texture.generateMipMaps, false, () => {
-            const engine = texture.getEngine();
-            texture.format = header.format;
-            texture.type = decoder.textureType;
-            texture.invertY = false;
-            texture._gammaSpace = !header.linearSpace;
-            if (decoder.byteArray) {
-                engine._uploadDataToTextureDirectly(texture, decoder.byteArray, 0, 0, undefined, true);
-            }
-        });
+        if (!decoder.byteArray) {
+            Logger.Error("Failed to decode EXR data: No byte array available.");
+            return { width: 0, height: 0, data: null };
+        }
+
+        return {
+            width: header.dataWindow.xMax - header.dataWindow.xMin + 1,
+            height: header.dataWindow.yMax - header.dataWindow.yMin + 1,
+            data: new Float32Array(decoder.byteArray),
+        };
+    } catch (error) {
+        Logger.Error("Failed to load EXR data: ", error);
     }
+
+    return { width: 0, height: 0, data: null };
 }

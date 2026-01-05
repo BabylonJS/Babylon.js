@@ -25,6 +25,7 @@ import type { Observer } from "core/Misc/observable";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
+    onReady?: () => Promise<void>;
 }
 
 interface IGraphEditorState {
@@ -43,6 +44,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     private _draggedItem: Nullable<string>;
     private _rootRef: React.RefObject<HTMLDivElement>;
     private _onErrorMessageObserver: Nullable<Observer<string>>;
+    private _workbenchRef: React.RefObject<WorkbenchComponent> = React.createRef();
 
     override componentDidMount() {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
@@ -50,6 +52,8 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
         document.addEventListener("keydown", this.addToolControls);
         document.addEventListener("keyup", this.removePressToolControls);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this.props.onReady?.();
     }
 
     override componentWillUnmount() {
@@ -127,13 +131,17 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
-        if (evt.button !== 0) return;
+        if (evt.button !== 0) {
+            return;
+        }
         this._moveInProgress = true;
         evt.currentTarget.setPointerCapture(evt.pointerId);
     }
 
     onPointerUp(evt: React.PointerEvent<HTMLDivElement>) {
-        if (evt.button !== 0) return;
+        if (evt.button !== 0) {
+            return;
+        }
         this._moveInProgress = false;
         evt.currentTarget.releasePointerCapture(evt.pointerId);
     }
@@ -143,7 +151,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
             return;
         }
 
-        const rootElement = evt.currentTarget.ownerDocument!.getElementById("gui-editor-workbench-root") as HTMLDivElement;
+        const rootElement = evt.currentTarget.ownerDocument.getElementById("gui-editor-workbench-root") as HTMLDivElement;
 
         const maxWidth = this.props.globalState.hostWindow.innerWidth;
 
@@ -230,7 +238,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                         }}
                     >
                         <ArtBoardComponent globalState={this.props.globalState} />
-                        <WorkbenchComponent ref={"workbenchCanvas"} globalState={this.props.globalState} />
+                        <WorkbenchComponent ref={this._workbenchRef} globalState={this.props.globalState} />
                         <GizmoWrapper globalState={this.props.globalState} />
                     </div>
                     {/* Property tab */}

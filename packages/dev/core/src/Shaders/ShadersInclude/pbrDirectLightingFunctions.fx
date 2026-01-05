@@ -4,6 +4,9 @@
 struct lightingInfo
 {
     vec3 diffuse;
+    #ifdef SS_TRANSLUCENCY
+        vec3 diffuseTransmission;
+    #endif
     #ifdef SPECULARTERM
         vec3 specular;
     #endif
@@ -20,7 +23,7 @@ struct lightingInfo
 // Simulate area (small) lights by increasing roughness
 float adjustRoughnessFromLightProperties(float roughness, float lightRadius, float lightDistance) {
     #if defined(USEPHYSICALLIGHTFALLOFF) || defined(USEGLTFLIGHTFALLOFF)
-        // At small angle this approximation works. 
+        // At small angle this approximation works.
         float lightRoughness = lightRadius / lightDistance;
         // Distribution can sum.
         float totalRoughness = saturate(lightRoughness + roughness);
@@ -41,7 +44,16 @@ vec3 computeHemisphericDiffuseLighting(preLightingInfo info, vec3 lightColor, ve
 #endif
 
 vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
-    float diffuseTerm = diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness);
+    vec3 diffuseTerm = vec3(1.0 / PI);
+    #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_LEGACY
+        diffuseTerm = vec3(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness));
+    #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
+        diffuseTerm = vec3(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
+    #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
+        vec3 clampedAlbedo = clamp(info.surfaceAlbedo, vec3(0.1), vec3(1.0));
+        diffuseTerm = diffuseBRDF_EON(clampedAlbedo, info.diffuseRoughness, info.NdotL, info.NdotV, info.LdotV);
+        diffuseTerm /= clampedAlbedo;
+    #endif
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
 
@@ -54,31 +66,42 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 }
 
 #ifdef SS_TRANSLUCENCY
-    vec3 computeDiffuseAndTransmittedLighting(preLightingInfo info, vec3 lightColor, vec3 transmittance, float transmittanceIntensity, vec3 surfaceAlbedo) {
+    vec3 computeDiffuseTransmittedLighting(preLightingInfo info, vec3 lightColor, vec3 transmittance) {
         vec3 transmittanceNdotL = vec3(0.);
         float NdotL = absEps(info.NdotLUnclamped);
+    #ifndef SS_TRANSLUCENCY_LEGACY
         if (info.NdotLUnclamped < 0.0) {
+    #endif
             // Use wrap lighting to simulate SSS.
             float wrapNdotL = computeWrappedDiffuseNdotL(NdotL, 0.02);
 
             // Remap transmittance from tr to 1. if ndotl is negative.
             float trAdapt = step(0., info.NdotLUnclamped);
             transmittanceNdotL = mix(transmittance * wrapNdotL, vec3(wrapNdotL), trAdapt);
-            }
-
+    #ifndef SS_TRANSLUCENCY_LEGACY
+        }
+        vec3 diffuseTerm = vec3(1.0 / PI);
+        #if BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_LEGACY
+            diffuseTerm = vec3(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.roughness));
+        #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_BURLEY
+            diffuseTerm = vec3(diffuseBRDF_Burley(info.NdotL, info.NdotV, info.VdotH, info.diffuseRoughness));
+        #elif BASE_DIFFUSE_MODEL == BRDF_DIFFUSE_MODEL_EON
+            vec3 clampedAlbedo = clamp(info.surfaceAlbedo, vec3(0.1), vec3(1.0));
+            diffuseTerm = diffuseBRDF_EON(clampedAlbedo, info.diffuseRoughness, info.NdotL, info.NdotV, info.LdotV);
+            diffuseTerm /= clampedAlbedo;
+        #endif
+    #else
         float diffuseTerm = diffuseBRDF_Burley(NdotL, info.NdotV, info.VdotH, info.roughness);
-        // Note: we use a Lambert BRDF for the transmitted term.
-        return (transmittanceNdotL / PI + (1.0 - transmittanceIntensity) * diffuseTerm * surfaceAlbedo * info.NdotL) * info.attenuation * lightColor;
+    #endif
+        return diffuseTerm * transmittanceNdotL * info.attenuation * lightColor;
     }
 #endif
 
 #ifdef SPECULARTERM
-    vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor) {
+    vec3 computeSpecularLighting(preLightingInfo info, vec3 N, vec3 reflectance0, vec3 fresnel, float geometricRoughnessFactor, vec3 lightColor) {
         float NdotH = saturateEps(dot(N, info.H));
         float roughness = max(info.roughness, geometricRoughnessFactor);
         float alphaG = convertRoughnessToAverageSlope(roughness);
-
-        vec3 fresnel = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
 
         #ifdef IRIDESCENCE
             fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);
@@ -97,15 +120,62 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
     }
 
     #if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-        vec3 computeAreaSpecularLighting(preLightingInfo info, vec3 specularColor) {
-            vec3 fresnel = ( specularColor * info.areaLightFresnel.x + ( vec3( 1.0 ) - specularColor ) * info.areaLightFresnel.y );
+        vec3 computeAreaSpecularLighting(preLightingInfo info, vec3 specularColor, vec3 reflectance0, vec3 reflectance90) {
+            vec3 fresnel = specularColor * info.areaLightFresnel.x * reflectance0 + ( vec3( 1.0 ) - specularColor ) * info.areaLightFresnel.y * reflectance90;
 	        return specularColor * fresnel * info.areaLightSpecular;
         }
     #endif
 
 #endif
 
-#ifdef ANISOTROPIC
+#ifdef FUZZ
+float evalFuzz(vec3 L, float NdotL, float NdotV, vec3 T, vec3 B, vec3 ltcLut)
+{
+    // Cosine terms
+    if (NdotL <= 0.0 || NdotV <= 0.0)
+        return 0.0;
+
+    // === 3. Build LTC transform ===
+    // This matrix warps the hemisphere to match the BRDF shape
+    mat3 M = mat3(
+        vec3(ltcLut.r, 0.0, 0.0),
+        vec3(ltcLut.g, 1.0, 0.0),
+        vec3(0.0, 0.0, 1.0)
+    );
+
+    // === 4. Transform light direction to local tangent space ===
+    vec3 Llocal = vec3(dot(L, T), dot(L, B), NdotL);
+
+    // Apply the LTC transform
+    vec3 Lwarp = normalize(M * Llocal);
+
+    // === 5. Compute projected cosine term ===
+    float cosThetaWarp = max(Lwarp.z, 0.0);
+    return cosThetaWarp * NdotL;
+}
+#endif
+
+#if defined(ANISOTROPIC) && defined(ANISOTROPIC_OPENPBR)
+    // Version used in OpenPBR differs only in that it does not include the Fresnel term.
+    vec3 computeAnisotropicSpecularLighting(preLightingInfo info, vec3 V, vec3 N, vec3 T, vec3 B, float anisotropy, float geometricRoughnessFactor, vec3 lightColor) {
+        float NdotH = saturateEps(dot(N, info.H));
+        float TdotH = dot(T, info.H);
+        float BdotH = dot(B, info.H);
+        float TdotV = dot(T, V);
+        float BdotV = dot(B, V);
+        float TdotL = dot(T, info.L);
+        float BdotL = dot(B, info.L);
+        float alphaG = convertRoughnessToAverageSlope(info.roughness);
+        vec2 alphaTB = getAnisotropicRoughness(alphaG, anisotropy);
+        alphaTB = max(alphaTB, square(geometricRoughnessFactor));
+
+        float distribution = normalDistributionFunction_BurleyGGX_Anisotropic(NdotH, TdotH, BdotH, alphaTB);
+        float smithVisibility = smithVisibility_GGXCorrelated_Anisotropic(info.NdotL, info.NdotV, TdotV, BdotV, TdotL, BdotL, alphaTB);
+
+        vec3 specTerm = vec3(distribution * smithVisibility);
+        return specTerm * info.attenuation * info.NdotL * lightColor;
+    }
+#elif defined(ANISOTROPIC)
     vec3 computeAnisotropicSpecularLighting(preLightingInfo info, vec3 V, vec3 N, vec3 T, vec3 B, float anisotropy, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor) {
         float NdotH = saturateEps(dot(N, info.H));
         float TdotH = dot(T, info.H);

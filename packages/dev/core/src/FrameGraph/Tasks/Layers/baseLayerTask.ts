@@ -12,7 +12,6 @@ import type {
     ThinEffectLayer,
     FrameGraphRenderPass,
     FrameGraphRenderContext,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { FrameGraphObjectRendererTask } from "../Rendering/objectRendererTask";
@@ -37,6 +36,10 @@ class FrameGraphGlowBlurTask extends FrameGraphPostProcessTask {
      */
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinGlowBlurPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinGlowBlurPostProcess(name, frameGraph.engine, new Vector2(1, 0), 1));
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphGlowBlurTask";
     }
 
     public override record(
@@ -108,6 +111,13 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         if (this._objectRendererForLayer) {
             this._objectRendererForLayer.name = name + " Render to Layer";
         }
+    }
+
+    /**
+     * Gets the object renderer used to render the layer.
+     */
+    public get objectRendererForLayer() {
+        return this._objectRendererForLayer;
     }
 
     protected readonly _scene: Scene;
@@ -182,19 +192,14 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         }
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
-
-        this.onTexturesAllocatedObservable.add((context) => {
-            for (let i = 0; i < this._blurX.length; i++) {
-                this._blurX[i].onTexturesAllocatedObservable.notifyObservers(context);
-                this._blurY[i].onTexturesAllocatedObservable.notifyObservers(context);
-            }
-
-            context.setTextureSamplingMode(this._blurY[this._blurY.length - 1].targetTexture!, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
-        });
     }
 
     public override isReady() {
         return this._objectRendererForLayer.isReady() && this.layer.isLayerReady();
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphBaseLayerTask";
     }
 
     public record() {
@@ -223,8 +228,8 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
             const fixedTextureSize = this.layer._options.mainTextureFixedSize ? Math.max(2, this.layer._options.mainTextureFixedSize) : 0;
 
             textureSize = getDimensionsFromTextureSize(targetTextureCreationOptions.size);
-            textureSize.width = fixedTextureSize || Math.floor(textureSize.width * (this.layer._options.mainTextureRatio || 0.1));
-            textureSize.height = fixedTextureSize || Math.floor(textureSize.height * (this.layer._options.mainTextureRatio || 0.1));
+            textureSize.width = fixedTextureSize || Math.floor(textureSize.width * (this.layer._options.mainTextureRatio || 0.1)) || 1;
+            textureSize.height = fixedTextureSize || Math.floor(textureSize.height * (this.layer._options.mainTextureRatio || 0.1)) || 1;
 
             textureCreationOptions = {
                 size: textureSize,
@@ -282,8 +287,8 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
 
         const blurTextureSizeRatio = (this.layer._options as any).blurTextureSizeRatio !== undefined ? (this.layer._options as any).blurTextureSizeRatio || 0.1 : undefined;
         if (blurTextureSizeRatio !== undefined) {
-            textureSize.width = Math.floor(textureSize.width * blurTextureSizeRatio);
-            textureSize.height = Math.floor(textureSize.height * blurTextureSizeRatio);
+            textureSize.width = Math.floor(textureSize.width * blurTextureSizeRatio) || 1;
+            textureSize.height = Math.floor(textureSize.height * blurTextureSizeRatio) || 1;
         }
 
         const onBeforeBlurPass = this._onBeforeBlurTask?.record();
@@ -357,43 +362,43 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         if (this._setRenderTargetDepth) {
             pass.setRenderTargetDepth(this.objectRendererTask.depthTexture);
         }
-        pass.setExecuteFunc((context) => {
-            if (!this.layer.bindTexturesForCompose) {
-                this.layer.bindTexturesForCompose = (effect: Effect) => {
-                    for (let i = 0; i < this._blurY.length; i++) {
-                        context.bindTextureHandle(effect, `textureSampler${i > 0 ? i + 1 : ""}`, this._blurY[i].outputTexture);
-                    }
-                };
+        pass.setInitializeFunc((context) => {
+            this.layer.bindTexturesForCompose = (effect: Effect) => {
+                for (let i = 0; i < this._blurY.length; i++) {
+                    context.bindTextureHandle(effect, `textureSampler${i > 0 ? i + 1 : ""}`, this._blurY[i].outputTexture);
+                }
+            };
+
+            if (this.layer._options.renderingGroupId === -1) {
+                return;
             }
 
-            if (this.layer._options.renderingGroupId !== -1) {
-                if (!this._onAfterRenderingGroupObserver) {
-                    this._onAfterRenderingGroupObserver = this._scene.onAfterRenderingGroupObservable.add((info) => {
-                        if (
-                            !this.layer.shouldRender() ||
-                            info.renderingGroupId !== this.layer._options.renderingGroupId ||
-                            info.renderingManager !== this.objectRendererTask.objectRenderer._renderingManager
-                        ) {
-                            return;
-                        }
-                        this._objectRendererForLayer.objectList = this.objectRendererTask.objectList;
-                        context.saveDepthStates();
-                        context.setDepthStates(false, false);
-                        context._applyRenderTarget();
-                        this.layer.compose();
-                        context.restoreDepthStates();
-                    });
+            this._onAfterRenderingGroupObserver = this._scene.onAfterRenderingGroupObservable.add((info) => {
+                if (
+                    !this.layer.shouldRender() ||
+                    info.renderingGroupId !== this.layer._options.renderingGroupId ||
+                    info.renderingManager !== this.objectRendererTask.objectRenderer.renderingManager
+                ) {
+                    return;
                 }
-            } else {
-                this._clearAfterRenderingGroupObserver();
-                if (this.layer.shouldRender()) {
-                    this._objectRendererForLayer.objectList = this.objectRendererTask.objectList; // in case the object list has changed in objectRendererTask
+                this._objectRendererForLayer.objectList = this.objectRendererTask.objectList;
+                context.saveDepthStates();
+                context.setDepthStates(false, false);
+                context._applyRenderTarget();
+                this.layer.compose();
+                context.restoreDepthStates();
+            });
+        });
+        pass.setExecuteFunc((context) => {
+            context.setTextureSamplingMode(this._blurY[this._blurY.length - 1].targetTexture!, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
 
-                    context.setDepthStates(false, false);
-                    context._applyRenderTarget();
+            if (this.layer._options.renderingGroupId === -1 && this.layer.shouldRender()) {
+                this._objectRendererForLayer.objectList = this.objectRendererTask.objectList; // in case the object list has changed in objectRendererTask
 
-                    this.layer.compose();
-                }
+                context.setDepthStates(false, false);
+                context._applyRenderTarget();
+
+                this.layer.compose();
             }
         });
 

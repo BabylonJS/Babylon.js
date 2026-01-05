@@ -7,6 +7,7 @@ import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper
 import type { RenderTargetCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Creates a new render target cube wrapper

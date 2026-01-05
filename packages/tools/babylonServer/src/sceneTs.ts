@@ -1,5 +1,5 @@
-const canvas = document.getElementById("babylon-canvas") as HTMLCanvasElement; // Get the canvas element
-const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+const Canvas = document.getElementById("babylon-canvas") as HTMLCanvasElement; // Get the canvas element
+const Engine = new BABYLON.Engine(Canvas, true); // Generate the BABYLON 3D engine
 
 class Playground {
     public static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {
@@ -34,16 +34,16 @@ class Playground {
     }
 }
 
-Playground.CreateScene(engine, canvas);
+Playground.CreateScene(Engine, Canvas);
 
-const scene = Playground.CreateScene(engine, canvas);
+const Scene = Playground.CreateScene(Engine, Canvas);
 
 // Register a render loop to repeatedly render the scene
-engine.runRenderLoop(function () {
-    scene.render();
+Engine.runRenderLoop(function () {
+    Scene.render();
 });
 
 // Watch for browser/canvas resize events
 window.addEventListener("resize", function () {
-    engine.resize();
+    Engine.resize();
 });

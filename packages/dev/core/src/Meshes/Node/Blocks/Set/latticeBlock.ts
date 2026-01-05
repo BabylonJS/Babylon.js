@@ -147,7 +147,7 @@ export class LatticeBlock extends NodeGeometryBlock implements INodeGeometryExec
                 return;
             }
             const positions = this._vertexData.positions;
-            const boundingInfo = extractMinAndMax(positions!, 0, positions!.length / 3);
+            const boundingInfo = extractMinAndMax(positions, 0, positions.length / 3);
 
             // Building the lattice
             const size = boundingInfo.maximum.subtract(boundingInfo.minimum);

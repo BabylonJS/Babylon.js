@@ -24,7 +24,7 @@ import { EffectFallbacks } from "core/Materials/effectFallbacks";
 
 import "./fur.fragment";
 import "./fur.vertex";
-import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -230,7 +230,19 @@ export class FurMaterial extends PushMaterial {
         }
 
         // Misc.
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this.needAlphaTestingForMesh(mesh), defines);
+        PrepareDefinesForMisc(
+            mesh,
+            scene,
+            this._useLogarithmicDepth,
+            this.pointsCloud,
+            this.fogEnabled,
+            this.needAlphaTestingForMesh(mesh),
+            defines,
+            undefined,
+            undefined,
+            undefined,
+            this._isVertexOutputInvariant
+        );
 
         // Lights
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
@@ -310,7 +322,7 @@ export class FurMaterial extends PushMaterial {
                 "furDensity",
                 "furOcclusion",
             ];
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
             const samplers = ["diffuseSampler", "heightTexture", "furTexture", "areaLightsLTC1Sampler", "areaLightsLTC2Sampler"];
 
             const uniformBuffers: string[] = [];
@@ -399,7 +411,7 @@ export class FurMaterial extends PushMaterial {
             }
 
             // Clip plane
-            bindClipPlane(this._activeEffect, this, scene);
+            BindClipPlane(this._activeEffect, this, scene);
 
             // Point size
             if (this.pointsCloud) {
@@ -598,7 +610,7 @@ export class FurMaterial extends PushMaterial {
             offsetFur.furTime = mat.furTime;
             offsetFur.furDensity = mat.furDensity;
 
-            const offsetMesh = sourceMesh.clone(sourceMesh.name + i) as Mesh;
+            const offsetMesh = sourceMesh.clone(sourceMesh.name + i);
 
             offsetMesh.material = offsetFur;
             offsetMesh.skeleton = sourceMesh.skeleton;

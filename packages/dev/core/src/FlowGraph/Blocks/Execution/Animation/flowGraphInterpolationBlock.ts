@@ -81,7 +81,7 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
      * If provided, this function will be used to create the animation object(s).
      */
     public readonly customBuildAnimation: FlowGraphDataConnection<
-        () => (keys: any[], fps: number, animationType: number, easingFunction?: EasingFunction) => Animation | Animation[]
+        (target: any, propertname: any, context: FlowGraphContext) => (keys: any[], fps: number, animationType: number, easingFunction?: EasingFunction) => Animation | Animation[]
     >;
 
     /**
@@ -157,7 +157,7 @@ export class FlowGraphInterpolationBlock<T> extends FlowGraphBlock {
         }
         const customBuildAnimation = this.customBuildAnimation.getValue(context);
         if (customBuildAnimation) {
-            return customBuildAnimation()(keys, 60, type.animationType, easingFunction);
+            return customBuildAnimation(null, null, context)(keys, 60, type.animationType, easingFunction);
         }
         if (typeof propertyName === "string") {
             const animation = Animation.CreateAnimation(propertyName, type.animationType, 60, easingFunction);

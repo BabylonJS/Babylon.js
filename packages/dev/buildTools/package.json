@@ -14,9 +14,7 @@
     },
     "sideEffects": true,
     "devDependencies": {
-        "@types/glob": "^7.2.0",
         "@types/mv": "^2.1.2",
-        "@types/node": "^16.11.6",
         "mv": "^2.1.1"
     },
     "bin": {

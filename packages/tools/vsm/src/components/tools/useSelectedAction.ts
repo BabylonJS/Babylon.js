@@ -3,6 +3,7 @@ import { useContext } from "react";
 import type { BaseAction } from "../../actions/actions/BaseAction";
 import { ActionSelectionContext } from "../../context/ActionSelectionContext";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const useSelectedAction = () => {
     const { selectedActionWrapper, setSelectedActionWrapper } = useContext(ActionSelectionContext);
     const { action, lastUpdate } = selectedActionWrapper;

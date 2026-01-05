@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import type { IPaneComponentProps } from "../paneComponent";
 import { PaneComponent } from "../paneComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -42,8 +42,9 @@ import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Logger } from "core/Misc/logger";
+import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 
-const envExportImageTypes = [
+const EnvExportImageTypes = [
     { label: "PNG", value: 0, imageType: "image/png" },
     { label: "WebP", value: 1, imageType: "image/webp" },
 ];
@@ -53,6 +54,7 @@ interface IGlbExportOptions {
     exportSkyboxes: boolean;
     exportCameras: boolean;
     exportLights: boolean;
+    dracoCompression: boolean;
 }
 
 export class ToolsTabComponent extends PaneComponent {
@@ -62,7 +64,7 @@ export class ToolsTabComponent extends PaneComponent {
     private _gifOptions = { width: 512, frequency: 200 };
     private _useWidthHeight = false;
     private _isExportingGltf = false;
-    private _gltfExportOptions: IGlbExportOptions = { exportDisabledNodes: false, exportSkyboxes: false, exportCameras: false, exportLights: false };
+    private _gltfExportOptions: IGlbExportOptions = { exportDisabledNodes: false, exportSkyboxes: false, exportCameras: false, exportLights: false, dracoCompression: false };
     private _gifWorkerBlob: Blob;
     private _gifRecorder: any;
     private _previousRenderingScale: number;
@@ -113,20 +115,31 @@ export class ToolsTabComponent extends PaneComponent {
 
     captureScreenshot() {
         const scene = this.props.scene;
-        if (scene.activeCamera) {
-            Tools.CreateScreenshot(scene.getEngine(), scene.activeCamera, this._screenShotSize);
+        const camera = scene.frameGraph ? FrameGraphUtils.FindMainCamera(scene.frameGraph) : scene.activeCamera;
+        if (camera) {
+            Tools.CreateScreenshot(scene.getEngine(), camera, this._screenShotSize);
         }
     }
 
     captureEquirectangular() {
         const scene = this.props.scene;
+        const currentActiveCamera = scene.activeCamera;
+        if (!currentActiveCamera && scene.frameGraph) {
+            scene.activeCamera = FrameGraphUtils.FindMainCamera(scene.frameGraph);
+        }
         if (scene.activeCamera) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             captureEquirectangularFromScene(scene, { size: 1024, filename: "equirectangular_capture.png" });
         }
+        scene.activeCamera = currentActiveCamera;
     }
 
     captureRender() {
         const scene = this.props.scene;
+        const currentActiveCamera = scene.activeCamera;
+        if (!currentActiveCamera && scene.frameGraph) {
+            scene.activeCamera = FrameGraphUtils.FindMainCamera(scene.frameGraph);
+        }
         const oldScreenshotSize: IScreenshotSize = {
             height: this._screenShotSize.height,
             width: this._screenShotSize.width,
@@ -139,6 +152,7 @@ export class ToolsTabComponent extends PaneComponent {
         if (scene.activeCamera) {
             Tools.CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize, undefined, undefined, 4);
         }
+        scene.activeCamera = currentActiveCamera;
         this._screenShotSize = oldScreenshotSize;
     }
 
@@ -153,6 +167,7 @@ export class ToolsTabComponent extends PaneComponent {
             this._videoRecorder = new VideoRecorder(scene.getEngine());
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         this._videoRecorder.startRecording().then(() => {
             this.setState({ tag: "Record video" });
         });
@@ -207,6 +222,7 @@ export class ToolsTabComponent extends PaneComponent {
             return;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         Tools.LoadFileAsync("https://cdn.jsdelivr.net/gh//terikon/gif.js.optimized@0.1.6/dist/gif.worker.js").then((value) => {
             this._gifWorkerBlob = new Blob([value], {
                 type: "application/javascript",
@@ -230,6 +246,7 @@ export class ToolsTabComponent extends PaneComponent {
                         currentGroup.play(true);
                     }
                 };
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 SceneLoader.ImportAnimationsAsync("file:", sceneFile, scene, overwriteAnimations, animationGroupLoadingMode, null, onSuccess);
             }
         };
@@ -287,12 +304,17 @@ export class ToolsTabComponent extends PaneComponent {
             return true;
         };
 
-        GLTF2Export.GLBAsync(scene, "scene", { shouldExportNode: (node) => shouldExport(node) })
+        GLTF2Export.GLBAsync(scene, "scene", {
+            meshCompressionMethod: this._gltfExportOptions.dracoCompression ? "Draco" : undefined,
+            shouldExportNode: (node) => shouldExport(node),
+        })
+            // eslint-disable-next-line github/no-then
             .then((glb: GLTFData) => {
                 this._isExportingGltf = false;
                 this.forceUpdate();
                 glb.downloadFiles();
             })
+            // eslint-disable-next-line github/no-then
             .catch((reason) => {
                 Logger.Error(`Failed to export GLB: ${reason}`);
                 this._isExportingGltf = false;
@@ -316,14 +338,16 @@ export class ToolsTabComponent extends PaneComponent {
 
         const scene = this.props.scene;
         EnvironmentTextureTools.CreateEnvTextureAsync(scene.environmentTexture as CubeTexture, {
-            imageType: envExportImageTypes[this._envOptions.imageTypeIndex].imageType,
+            imageType: EnvExportImageTypes[this._envOptions.imageTypeIndex].imageType,
             imageQuality: this._envOptions.imageQuality,
             disableIrradianceTexture: !this._envOptions.iblDiffuse,
         })
+            // eslint-disable-next-line github/no-then
             .then((buffer: ArrayBuffer) => {
                 const blob = new Blob([buffer], { type: "octet/stream" });
                 Tools.Download(blob, "environment.env");
             })
+            // eslint-disable-next-line github/no-then
             .catch((error: any) => {
                 Logger.Error(error);
                 alert(error);
@@ -468,7 +492,7 @@ export class ToolsTabComponent extends PaneComponent {
                             )}
                             <OptionsLine
                                 label="Image type"
-                                options={envExportImageTypes}
+                                options={EnvExportImageTypes}
                                 target={this._envOptions}
                                 propertyName="imageTypeIndex"
                                 onSelect={() => {
@@ -513,11 +537,16 @@ export class ToolsTabComponent extends PaneComponent {
                                 isSelected={() => this._gltfExportOptions.exportLights}
                                 onSelect={(value) => (this._gltfExportOptions.exportLights = value)}
                             />
+                            <CheckBoxLineComponent
+                                label="Draco Compression"
+                                isSelected={() => this._gltfExportOptions.dracoCompression}
+                                onSelect={(value) => (this._gltfExportOptions.dracoCompression = value)}
+                            />
                             <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                         </>
                     )}
                 </LineContainerComponent>
-                {GLTFFileLoader && <GLTFComponent lockObject={this._lockObject} scene={scene} globalState={this.props.globalState!} />}
+                {GLTFFileLoader && <GLTFComponent lockObject={this._lockObject} scene={scene} globalState={this.props.globalState} />}
                 <LineContainerComponent title="REFLECTOR" selection={this.props.globalState}>
                     <TextInputLineComponent lockObject={this._lockObject} label="Hostname" target={this} propertyName="_reflectorHostname" />
                     <FloatLineComponent lockObject={this._lockObject} label="Port" target={this} propertyName="_reflectorPort" isInteger={true} />

@@ -1,3 +1,5 @@
+#define PBR_VERTEX_SHADER
+
 #include<pbrUboDeclaration>
 
 #define CUSTOM_VERTEX_BEGIN
@@ -20,6 +22,7 @@ attribute color: vec4f;
 #endif
 
 #include<helperFunctions>
+#include<pbrBRDFFunctions>
 #include<bonesDeclaration>
 #include<bakedVertexAnimationDeclaration>
 
@@ -27,7 +30,8 @@ attribute color: vec4f;
 #include<prePassVertexDeclaration>
 
 #include<samplerVertexDeclaration>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo)
-#include<samplerVertexDeclaration>(_DEFINENAME_,BASEWEIGHT,_VARYINGNAME_,BaseWeight)
+#include<samplerVertexDeclaration>(_DEFINENAME_,BASE_WEIGHT,_VARYINGNAME_,BaseWeight)
+#include<samplerVertexDeclaration>(_DEFINENAME_,BASE_DIFFUSE_ROUGHNESS,_VARYINGNAME_,BaseDiffuseRoughness)
 #include<samplerVertexDeclaration>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail)
 #include<samplerVertexDeclaration>(_DEFINENAME_,AMBIENT,_VARYINGNAME_,Ambient)
 #include<samplerVertexDeclaration>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity)
@@ -102,6 +106,10 @@ varying vPositionUVW: vec3f;
 varying vDirectionW: vec3f;
 #endif
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+varying vViewDepth: f32;
+#endif
+
 #include<logDepthDeclaration>
 #define CUSTOM_VERTEX_DEFINITIONS
 
@@ -171,10 +179,19 @@ fn main(input : VertexInputs) -> FragmentInputs {
     #endif
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        var reflectionVector: vec3f =  (uniforms.reflectionMatrix *  vec4f(vertexOutputs.vNormalW, 0)).xyz;
+        #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT && BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LEGACY
+            // Bend the normal towards the viewer based on the diffuse roughness
+            var viewDirectionW: vec3f = normalize(scene.vEyePosition.xyz - vertexOutputs.vPositionW);
+            var NdotV: f32 = max(dot(vertexOutputs.vNormalW, viewDirectionW), 0.0);
+            var roughNormal: vec3f = mix(vertexOutputs.vNormalW, viewDirectionW, (0.5 * (1.0 - NdotV)) * uniforms.baseDiffuseRoughness);
+            var reflectionVector: vec3f =  (uniforms.reflectionMatrix *  vec4f(roughNormal, 0)).xyz;
+        #else
+            var reflectionVector: vec3f =  (uniforms.reflectionMatrix *  vec4f(vertexOutputs.vNormalW, 0)).xyz;
+        #endif
         #ifdef REFLECTIONMAP_OPPOSITEZ
             reflectionVector.z *= -1.0;
         #endif
+        
         vertexOutputs.vEnvironmentIrradiance = computeEnvironmentIrradiance(reflectionVector);
     #endif
 #endif
@@ -199,6 +216,14 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vDirectionW = normalize((finalWorld * vec4f(positionUpdated, 0.0)).xyz);
 #endif
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+    #ifdef RIGHT_HANDED
+        vertexOutputs.vViewDepth = -(scene.view * worldPos).z;
+    #else
+        vertexOutputs.vViewDepth = (scene.view * worldPos).z;
+    #endif
+#endif
+
     // Texture coordinates
 #ifndef UV1
     var uvUpdated: vec2f =  vec2f(0., 0.);
@@ -216,7 +241,8 @@ fn main(input : VertexInputs) -> FragmentInputs {
     #include<uvVariableDeclaration>[3..7]
 
     #include<samplerVertexImplementation>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo,_MATRIXNAME_,albedo,_INFONAME_,AlbedoInfos.x)
-    #include<samplerVertexImplementation>(_DEFINENAME_,BASEWEIGHT,_VARYINGNAME_,BaseWeight,_MATRIXNAME_,baseWeight,_INFONAME_,BaseWeightInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,BASE_WEIGHT,_VARYINGNAME_,BaseWeight,_MATRIXNAME_,baseWeight,_INFONAME_,BaseWeightInfos.x)
+    #include<samplerVertexImplementation>(_DEFINENAME_,BASE_DIFFUSE_ROUGHNESS,_VARYINGNAME_,BaseDiffuseRoughness,_MATRIXNAME_,baseDiffuseRoughness,_INFONAME_,BaseDiffuseRoughnessInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail,_MATRIXNAME_,detail,_INFONAME_,DetailInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,AMBIENT,_VARYINGNAME_,Ambient,_MATRIXNAME_,ambient,_INFONAME_,AmbientInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity,_MATRIXNAME_,opacity,_INFONAME_,OpacityInfos.x)

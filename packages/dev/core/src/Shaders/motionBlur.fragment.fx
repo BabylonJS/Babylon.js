@@ -24,9 +24,10 @@ void main(void)
     #ifdef GEOMETRY_SUPPORTED
         #ifdef OBJECT_BASED
             vec2 texelSize = 1.0 / screenSize;
-            vec4 velocityColor = texture2D(velocitySampler, vUV);
+            vec4 velocityColor = textureLod(velocitySampler, vUV, 0.0);
             velocityColor.rg = velocityColor.rg * 2.0 - vec2(1.0);
-            vec2 velocity = vec2(pow(velocityColor.r, 3.0), pow(velocityColor.g, 3.0)) * velocityColor.a;
+            vec2 signs = sign(velocityColor.rg);
+            vec2 velocity = pow(abs(velocityColor.rg), vec2(3.0)) * signs * velocityColor.a;
             velocity *= motionScale * motionStrength;
             float speed = length(velocity / texelSize);
             int samplesCount = int(clamp(speed, 1.0, SAMPLES));
@@ -34,7 +35,7 @@ void main(void)
             velocity = normalize(velocity) * texelSize;
             float hlim = float(-samplesCount) * 0.5 + 0.5;
 
-            vec4 result = texture2D(textureSampler, vUV);
+            vec4 result = textureLod(textureSampler, vUV, 0.0);
 
             for (int i = 1; i < int(SAMPLES); ++i)
             {
@@ -42,18 +43,21 @@ void main(void)
                     break;
                 
                 vec2 offset = vUV + velocity * (hlim + float(i));
-                #if defined(WEBGPU)
-                    result += texture2DLodEXT(textureSampler, offset, 0.0);
-                #else
-                    result += texture2D(textureSampler, offset);
-                #endif
+                result += textureLod(textureSampler, offset, 0.0);
             }
 
             gl_FragColor = result / float(samplesCount);
             gl_FragColor.a = 1.0;
         #else
+            vec4 result = textureLod(textureSampler, vUV, 0.0);
+
             vec2 texelSize = 1.0 / screenSize;
-            float depth = texture2D(depthSampler, vUV).r;
+            float depth = textureLod(depthSampler, vUV, 0.0).r;
+            if (depth == 0.0) {
+                gl_FragColor = result;
+                return;
+            }
+
             depth = projection[2].z + projection[3].z / depth; // convert from view linear z to NDC z
 
             vec4 cpos = vec4(vUV * 2.0 - 1.0, depth, 1.0);
@@ -68,18 +72,12 @@ void main(void)
             float speed = length(velocity / texelSize);
             int nSamples = int(clamp(speed, 1.0, SAMPLES));
 
-            vec4 result = texture2D(textureSampler, vUV);
-
             for (int i = 1; i < int(SAMPLES); ++i) {
                 if (i >= nSamples)
                     break;
                 
                 vec2 offset1 = vUV + velocity * (float(i) / float(nSamples - 1) - 0.5);
-                #if defined(WEBGPU)
-                    result += texture2DLodEXT(textureSampler, offset1, 0.0);
-                #else
-                    result += texture2D(textureSampler, offset1);
-                #endif
+                result += textureLod(textureSampler, offset1, 0.0);
             }
 
             gl_FragColor = result / float(nSamples);

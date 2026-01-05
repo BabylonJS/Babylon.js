@@ -298,7 +298,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     override bindForSubMesh(uniformBuffer: UniformBuffer) {
         if (this._cameraFacing) {
             uniformBuffer.updateMatrix("grl_projection", this._scene.getProjectionMatrix());
-            !this._isGLSL(this._material.shaderLanguage) && uniformBuffer.updateMatrix("viewProjection", this._scene.getTransformMatrix());
+            if (!this._isGLSL(this._material.shaderLanguage)) {
+                uniformBuffer.updateMatrix("viewProjection", this._scene.getTransformMatrix());
+            }
 
             const resolutionLineWidth = TmpVectors.Vector4[0];
             resolutionLineWidth.x = this._aspect;
@@ -482,7 +484,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     public setColor(value: Nullable<Color3>, doNotMarkDirty = false) {
         if ((this._color === null && value !== null) || (this._color !== null && value === null)) {
             this._color = value;
-            !doNotMarkDirty && this.markAllDefinesAsDirty();
+            if (!doNotMarkDirty) {
+                this.markAllDefinesAsDirty();
+            }
         } else {
             this._color = value;
         }
@@ -543,8 +547,12 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
             width: this.width,
         };
 
-        this._colors && (greasedLineMaterialOptions.colors = this._colors);
-        this._color && (greasedLineMaterialOptions.color = this._color);
+        if (this._colors) {
+            greasedLineMaterialOptions.colors = this._colors;
+        }
+        if (this._color) {
+            greasedLineMaterialOptions.color = this._color;
+        }
 
         serializationObject.greasedLineMaterialOptions = greasedLineMaterialOptions;
 
@@ -563,21 +571,48 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
         this.colorsTexture?.dispose();
 
-        greasedLineMaterialOptions.color && this.setColor(greasedLineMaterialOptions.color, true);
-        greasedLineMaterialOptions.colorDistributionType && (this.colorsDistributionType = greasedLineMaterialOptions.colorDistributionType);
-        greasedLineMaterialOptions.colors && (this.colors = greasedLineMaterialOptions.colors);
-        greasedLineMaterialOptions.colorsSampling && (this.colorsSampling = greasedLineMaterialOptions.colorsSampling);
-        greasedLineMaterialOptions.colorMode && (this.colorMode = greasedLineMaterialOptions.colorMode);
-        greasedLineMaterialOptions.useColors && (this.useColors = greasedLineMaterialOptions.useColors);
-        greasedLineMaterialOptions.visibility && (this.visibility = greasedLineMaterialOptions.visibility);
-        greasedLineMaterialOptions.useDash && (this.useDash = greasedLineMaterialOptions.useDash);
-        greasedLineMaterialOptions.dashCount && (this.dashCount = greasedLineMaterialOptions.dashCount);
-        greasedLineMaterialOptions.dashRatio && (this.dashRatio = greasedLineMaterialOptions.dashRatio);
-        greasedLineMaterialOptions.dashOffset && (this.dashOffset = greasedLineMaterialOptions.dashOffset);
-        greasedLineMaterialOptions.width && (this.width = greasedLineMaterialOptions.width);
-        greasedLineMaterialOptions.sizeAttenuation && (this.sizeAttenuation = greasedLineMaterialOptions.sizeAttenuation);
-        greasedLineMaterialOptions.resolution && (this.resolution = greasedLineMaterialOptions.resolution);
-
+        if (greasedLineMaterialOptions.color) {
+            this.setColor(greasedLineMaterialOptions.color, true);
+        }
+        if (greasedLineMaterialOptions.colorDistributionType) {
+            this.colorsDistributionType = greasedLineMaterialOptions.colorDistributionType;
+        }
+        if (greasedLineMaterialOptions.colors) {
+            this.colors = greasedLineMaterialOptions.colors;
+        }
+        if (greasedLineMaterialOptions.colorsSampling) {
+            this.colorsSampling = greasedLineMaterialOptions.colorsSampling;
+        }
+        if (greasedLineMaterialOptions.colorMode) {
+            this.colorMode = greasedLineMaterialOptions.colorMode;
+        }
+        if (greasedLineMaterialOptions.useColors) {
+            this.useColors = greasedLineMaterialOptions.useColors;
+        }
+        if (greasedLineMaterialOptions.visibility) {
+            this.visibility = greasedLineMaterialOptions.visibility;
+        }
+        if (greasedLineMaterialOptions.useDash) {
+            this.useDash = greasedLineMaterialOptions.useDash;
+        }
+        if (greasedLineMaterialOptions.dashCount) {
+            this.dashCount = greasedLineMaterialOptions.dashCount;
+        }
+        if (greasedLineMaterialOptions.dashRatio) {
+            this.dashRatio = greasedLineMaterialOptions.dashRatio;
+        }
+        if (greasedLineMaterialOptions.dashOffset) {
+            this.dashOffset = greasedLineMaterialOptions.dashOffset;
+        }
+        if (greasedLineMaterialOptions.width) {
+            this.width = greasedLineMaterialOptions.width;
+        }
+        if (greasedLineMaterialOptions.sizeAttenuation) {
+            this.sizeAttenuation = greasedLineMaterialOptions.sizeAttenuation;
+        }
+        if (greasedLineMaterialOptions.resolution) {
+            this.resolution = greasedLineMaterialOptions.resolution;
+        }
         if (this.colors) {
             this.colorsTexture = GreasedLineTools.CreateColorsTexture(`${this._material.name}-colors-texture`, this.colors, this.colorsSampling, scene);
         } else {

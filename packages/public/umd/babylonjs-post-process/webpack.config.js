@@ -18,6 +18,7 @@ module.exports = (env) => {
         overrideFilename: (pathData) => {
             return pathData.chunk.name === "postProcess" ? `babylonjs.[name]${env.production ? ".min" : ""}.js` : `babylon.[name]PostProcess${env.production ? ".min" : ""}.js`;
         },
+        minToMax: true,
     });
     return commonConfig;
 };

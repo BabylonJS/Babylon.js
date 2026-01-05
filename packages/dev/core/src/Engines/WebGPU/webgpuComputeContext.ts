@@ -11,6 +11,7 @@ import type { WebGPUCacheSampler } from "./webgpuCacheSampler";
 import * as WebGPUConstants from "./webgpuConstants";
 import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 
 /** @internal */
 export class WebGPUComputeContext implements IComputeContext {
@@ -83,6 +84,21 @@ export class WebGPUComputeContext implements IComputeContext {
                         break;
                     }
 
+                    case ComputeBindingType.InternalTexture: {
+                        const texture = object as InternalTexture;
+                        const hardwareTexture = texture._hardwareTexture as WebGPUHardwareTexture;
+                        if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
+                            entries[indexInGroupEntries].resource = hardwareTexture.view!;
+                        } else {
+                            binding.indexInGroupEntries = entries.length;
+                            entries.push({
+                                binding: index,
+                                resource: hardwareTexture.view!,
+                            });
+                        }
+                        break;
+                    }
+
                     case ComputeBindingType.StorageTexture: {
                         const texture = object as BaseTexture;
                         const hardwareTexture = texture._texture!._hardwareTexture as WebGPUHardwareTexture;
@@ -124,7 +140,7 @@ export class WebGPUComputeContext implements IComputeContext {
                                 ? (object as DataBuffer)
                                 : type === ComputeBindingType.UniformBuffer
                                   ? (object as UniformBuffer).getBuffer()!
-                                  : (object as StorageBuffer).getBuffer()!;
+                                  : (object as StorageBuffer).getBuffer();
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
                         if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
                             (entries[indexInGroupEntries].resource as GPUBufferBinding).buffer = webgpuBuffer;

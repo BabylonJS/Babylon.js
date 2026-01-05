@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Behavior } from "../../Behaviors/behavior";
-import type { Mesh } from "../../Meshes/mesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
 import type { Nullable } from "../../types";
@@ -39,8 +36,8 @@ type VirtualMeshInfo = {
  * Creates virtual meshes that are dragged around
  * And observables for position/rotation changes
  */
-export class BaseSixDofDragBehavior implements Behavior<Mesh> {
-    protected static _virtualScene: Scene;
+export class BaseSixDofDragBehavior implements Behavior<TransformNode> {
+    protected static _VirtualScene: Scene;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _attachedToElement: boolean = false;
     protected _virtualMeshesInfo: {
@@ -59,7 +56,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
     protected _scene: Scene;
     protected _moving = false;
-    protected _ownerNode: TransformNode;
+    protected _ownerNode: TransformNode = null!;
     protected _dragging = this._dragType.NONE;
 
     /**
@@ -95,9 +92,11 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
      * Get or set the currentDraggingPointerId
      * @deprecated Please use currentDraggingPointerId instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get currentDraggingPointerID(): number {
         return this.currentDraggingPointerId;
     }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public set currentDraggingPointerID(currentDraggingPointerID: number) {
         this.currentDraggingPointerId = currentDraggingPointerID;
     }
@@ -118,7 +117,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     /**
      *  Fires each time a drag ends (eg. mouse release after drag)
      */
-    public onDragEndObservable = new Observable<{}>();
+    public onDragEndObservable = new Observable<unknown>();
 
     /**
      * Should the behavior allow simultaneous pointers to interact with the owner node.
@@ -140,6 +139,13 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     }
 
     /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<TransformNode> {
+        return this._ownerNode;
+    }
+
+    /**
      *  Initializes the behavior
      */
     public init() {}
@@ -158,11 +164,11 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     private _createVirtualMeshInfo() {
         // Setup virtual meshes to be used for dragging without dirtying the existing scene
 
-        const dragMesh = new TransformNode("", BaseSixDofDragBehavior._virtualScene);
+        const dragMesh = new TransformNode("", BaseSixDofDragBehavior._VirtualScene);
         dragMesh.rotationQuaternion = new Quaternion();
-        const originMesh = new TransformNode("", BaseSixDofDragBehavior._virtualScene);
+        const originMesh = new TransformNode("", BaseSixDofDragBehavior._VirtualScene);
         originMesh.rotationQuaternion = new Quaternion();
-        const pivotMesh = new TransformNode("", BaseSixDofDragBehavior._virtualScene);
+        const pivotMesh = new TransformNode("", BaseSixDofDragBehavior._VirtualScene);
         pivotMesh.rotationQuaternion = new Quaternion();
 
         return {
@@ -199,7 +205,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
     private _pointerUpdate2D(ray: Ray, pointerId: number, zDragFactor: number) {
         if (this._pointerCamera && this._pointerCamera.cameraRigMode == Camera.RIG_MODE_NONE && !this._pointerCamera._isLeftCamera && !this._pointerCamera._isRightCamera) {
-            ray.origin.copyFrom(this._pointerCamera!.globalPosition);
+            ray.origin.copyFrom(this._pointerCamera.globalPosition);
             zDragFactor = 0;
         }
 
@@ -282,9 +288,9 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     public attach(ownerNode: TransformNode): void {
         this._ownerNode = ownerNode;
         this._scene = this._ownerNode.getScene();
-        if (!BaseSixDofDragBehavior._virtualScene) {
-            BaseSixDofDragBehavior._virtualScene = new Scene(this._scene.getEngine(), { virtual: true });
-            BaseSixDofDragBehavior._virtualScene.detachControl();
+        if (!BaseSixDofDragBehavior._VirtualScene) {
+            BaseSixDofDragBehavior._VirtualScene = new Scene(this._scene.getEngine(), { virtual: true });
+            BaseSixDofDragBehavior._VirtualScene.detachControl();
         }
 
         const pickPredicate = (m: AbstractMesh) => {
@@ -320,7 +326,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         !this._pointerCamera._isLeftCamera &&
                         !this._pointerCamera._isRightCamera
                     ) {
-                        pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera!.globalPosition);
+                        pointerInfo.pickInfo.ray.origin.copyFrom(this._pointerCamera.globalPosition);
                     }
 
                     this._ownerNode.computeWorldMatrix(true);
@@ -427,7 +433,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this._tmpQuaternion.x = -this._tmpQuaternion.x;
                     this._tmpQuaternion.y = -this._tmpQuaternion.y;
                     this._tmpQuaternion.z = -this._tmpQuaternion.z;
-                    virtualMeshesInfo.pivotMesh.absoluteRotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
+                    virtualMeshesInfo.pivotMesh.absoluteRotationQuaternion.multiplyToRef(this._tmpQuaternion, this._tmpQuaternion);
                     virtualMeshesInfo.pivotMesh.absolutePosition.subtractToRef(virtualMeshesInfo.startingPivotPosition, this._tmpVector);
 
                     this.onDragObservable.notifyObservers({ delta: this._tmpVector, position: virtualMeshesInfo.pivotMesh.position, pickInfo: pointerInfo.pickInfo });
@@ -501,5 +507,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         this.onDragEndObservable.clear();
         this.onDragObservable.clear();
         this.onDragStartObservable.clear();
+
+        this._ownerNode = null!;
     }
 }

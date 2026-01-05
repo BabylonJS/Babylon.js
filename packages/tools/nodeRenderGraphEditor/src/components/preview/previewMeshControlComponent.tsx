@@ -13,6 +13,7 @@ import frameIcon from "./svgs/frameIcon.svg";
 interface IPreviewMeshControlComponent {
     globalState: GlobalState;
     togglePreviewAreaComponent: () => void;
+    onMounted?: () => void;
 }
 
 export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
@@ -44,6 +45,10 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
         this.props.globalState.onDropEventReceivedObservable.remove(this._onDropEventObserver);
         this.props.globalState.onRefreshPreviewMeshControlComponentRequiredObservable.remove(this._onRefreshPreviewMeshControlComponentRequiredObserver);
+    }
+
+    override componentDidMount(): void {
+        this.props.onMounted?.();
     }
 
     changeMeshType(newOne: PreviewType) {

@@ -100,6 +100,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             Tools.Warn("waiting for viewer reference space to initialize");
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         this._xrSessionManager.session.requestHitTestSource!(hitTestOptions).then((hitTestSource) => {
             if (this._xrHitTestSource) {
                 this._xrHitTestSource.cancel();
@@ -176,10 +177,12 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
         }
         if (this.options.enableTransientHitTest) {
             const offsetRay = new XRRay(this.options.transientOffsetRay || {});
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this._xrSessionManager.session.requestHitTestSourceForTransientInput!({
                 profile: this.options.transientHitTestProfile || "generic-touchscreen",
                 offsetRay,
                 entityTypes: this.options.entityTypes,
+                // eslint-disable-next-line github/no-then
             }).then((hitSource) => {
                 this._transientXrHitTestSource = hitSource;
             });
@@ -231,18 +234,18 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
         if (this._transientXrHitTestSource) {
             const hitTestResultsPerInputSource = frame.getHitTestResultsForTransientInput(this._transientXrHitTestSource);
 
-            hitTestResultsPerInputSource.forEach((resultsPerInputSource) => {
+            for (const resultsPerInputSource of hitTestResultsPerInputSource) {
                 this._processWebXRHitTestResult(resultsPerInputSource.results, resultsPerInputSource.inputSource);
-            });
+            }
         }
     }
 
     private _processWebXRHitTestResult(hitTestResults: readonly XRHitTestResult[], inputSource?: XRInputSource) {
         const results: IWebXRHitResult[] = [];
-        hitTestResults.forEach((hitTestResult) => {
+        for (const hitTestResult of hitTestResults) {
             const pose = hitTestResult.getPose(this._xrSessionManager.referenceSpace);
             if (!pose) {
-                return;
+                continue;
             }
             const pos = pose.transform.position;
             const quat = pose.transform.orientation;
@@ -265,7 +268,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
                 xrHitResult: hitTestResult,
             };
             results.push(result);
-        });
+        }
 
         this.onHitTestResultObservable.notifyObservers(results);
     }

@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { MaterialDefines, Effect, Mesh, AbstractMesh, Material } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { Matrix } from "core/Maths/math.vector";
@@ -21,6 +20,11 @@ export const enum GeometryRenderingTextureClearType {
      * Clear the texture with the maximum view Z value.
      */
     MaxViewZ = 2,
+
+    /**
+     * Do not clear the texture.
+     */
+    NoClear = 3,
 }
 
 /**
@@ -161,6 +165,20 @@ export class MaterialHelperGeometryRendering {
             define: "PREPASS_ALBEDO",
             defineIndex: "PREPASS_ALBEDO_INDEX",
         },
+        {
+            type: Constants.PREPASS_NORMALIZED_VIEW_DEPTH_TEXTURE_TYPE,
+            name: "NormalizedViewDepth",
+            clearType: GeometryRenderingTextureClearType.One,
+            define: "PREPASS_NORMALIZED_VIEW_DEPTH",
+            defineIndex: "PREPASS_NORMALIZED_VIEW_DEPTH_INDEX",
+        },
+        {
+            type: Constants.PREPASS_COLOR_TEXTURE_TYPE,
+            name: "Color",
+            clearType: GeometryRenderingTextureClearType.NoClear,
+            define: "PREPASS_COLOR",
+            defineIndex: "PREPASS_COLOR_INDEX",
+        },
     ];
 
     private static _Configurations: { [renderPassId: number]: GeometryRenderingConfiguration } = {};
@@ -244,8 +262,6 @@ export class MaterialHelperGeometryRendering {
         }
 
         defines["PREPASS"] = true;
-        defines["PREPASS_COLOR"] = false;
-        defines["PREPASS_COLOR_INDEX"] = -1;
 
         let numMRT = 0;
 

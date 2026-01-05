@@ -17,6 +17,7 @@ import { BoundingBox } from "../../Culling/boundingBox";
 /**
  * The interface for the physics aggregate parameters
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsAggregateParameters {
     /**
      * The mass of the physics aggregate
@@ -81,8 +82,8 @@ export interface PhysicsAggregateParameters {
 /**
  * Helper class to create and interact with a PhysicsAggregate.
  * This is a transition object that works like Physics Plugin V1 Impostors.
- * This helper instanciate all mandatory physics objects to get a body/shape and material.
- * It's less efficient that handling body and shapes independently but for prototyping or
+ * This helper instantiates all mandatory physics objects to get a body/shape and material.
+ * It's less efficient than handling body and shapes independently but for prototyping or
  * a small numbers of physics objects, it's good enough.
  */
 export class PhysicsAggregate {

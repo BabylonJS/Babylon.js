@@ -2,7 +2,7 @@ import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import { GeneralPropertyTabComponent, textureDepthStencilFormatList, textureFormatList, textureTypeList } from "./genericNodePropertyComponent";
+import { GeneralPropertyTabComponent, textureDepthStencilFormatList, textureFormatList, TextureTargetTypeList, textureTypeList } from "./genericNodePropertyComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { Nullable } from "core/types";
@@ -10,7 +10,11 @@ import type { Observer } from "core/Misc/observable";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
-import type { FrameGraphTextureCreationOptions } from "core/FrameGraph/frameGraphTypes";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
+import type { Camera } from "core/Cameras/camera";
+import type { IShadowLight } from "core/Lights/shadowLight";
+import { Constants } from "core/Engines/constants";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<NodeRenderGraphInputBlock>>;
@@ -40,9 +44,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         switch (inputBlock.type) {
             case NodeRenderGraphBlockConnectionPointTypes.Texture: {
                 const isExternal = inputBlock.isExternal;
-                const creationOptions = inputBlock.creationOptions as FrameGraphTextureCreationOptions;
+                const creationOptions = inputBlock.creationOptions;
                 if (!isExternal && !inputBlock.creationOptions) {
                     inputBlock.setDefaultValue();
+                }
+                if (!creationOptions.options.creationFlags) {
+                    creationOptions.options.creationFlags = [0];
                 }
                 return (
                     <>
@@ -60,6 +67,20 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     propertyName="sizeIsPercentage"
                                     onValueChanged={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
+                                {creationOptions.options.targetTypes && (
+                                    <OptionsLine
+                                        label="Target Type"
+                                        options={TextureTargetTypeList}
+                                        target={creationOptions}
+                                        propertyName=""
+                                        onSelect={(value: number | string) => {
+                                            creationOptions.options.targetTypes![0] = value as number;
+                                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                        }}
+                                        extractValue={() => creationOptions.options.targetTypes![0]}
+                                        noDirectUpdate={true}
+                                    />
+                                )}
                                 <FloatLineComponent
                                     lockObject={this.props.stateManager.lockObject}
                                     digits={0}
@@ -80,6 +101,21 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     target={creationOptions.size}
                                     onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
+                                {creationOptions.options.layerCounts && (
+                                    <FloatLineComponent
+                                        lockObject={this.props.stateManager.lockObject}
+                                        digits={0}
+                                        step={"1"}
+                                        isInteger={true}
+                                        label="Layers/Depth"
+                                        propertyName=""
+                                        target={creationOptions.options}
+                                        onChange={(value) => {
+                                            creationOptions.options.layerCounts![0] = value;
+                                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                        }}
+                                    />
+                                )}
                                 {creationOptions.options.formats && (
                                     <OptionsLine
                                         label="Format"
@@ -121,6 +157,16 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
                                 <CheckBoxLineComponent
+                                    label="Create as storage texture"
+                                    target={creationOptions}
+                                    propertyName=""
+                                    onSelect={(value: boolean) => {
+                                        creationOptions.options.creationFlags![0] = value ? Constants.TEXTURE_CREATIONFLAG_STORAGE : 0;
+                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                    }}
+                                    isSelected={() => creationOptions.options.creationFlags![0] === Constants.TEXTURE_CREATIONFLAG_STORAGE}
+                                />
+                                <CheckBoxLineComponent
                                     label="Create mipmaps"
                                     target={creationOptions.options}
                                     propertyName="createMipMaps"
@@ -131,10 +177,20 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     target={creationOptions}
                                     propertyName=""
                                     onSelect={(value: boolean) => {
-                                        creationOptions.options.useSRGBBuffers![0] = value as boolean;
+                                        creationOptions.options.useSRGBBuffers![0] = value;
                                         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                                     }}
-                                    extractValue={() => creationOptions.options.useSRGBBuffers![0]}
+                                    isSelected={() => creationOptions.options.useSRGBBuffers![0]}
+                                />
+                                <CheckBoxLineComponent
+                                    label="History texture"
+                                    target={creationOptions}
+                                    propertyName=""
+                                    onSelect={(value: boolean) => {
+                                        creationOptions.isHistoryTexture = value;
+                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                    }}
+                                    isSelected={() => creationOptions.isHistoryTexture!}
                                 />
                             </>
                         )}
@@ -142,7 +198,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 );
             }
             case NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment: {
-                const creationOptions = inputBlock.creationOptions as FrameGraphTextureCreationOptions;
+                const creationOptions = inputBlock.creationOptions;
                 const isExternal = inputBlock.isExternal;
                 if (!isExternal && !inputBlock.creationOptions) {
                     inputBlock.setDefaultValue();
@@ -211,6 +267,36 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 />
                             </>
                         )}
+                    </>
+                );
+            }
+            case NodeRenderGraphBlockConnectionPointTypes.ObjectList: {
+                const objectList = inputBlock.value as FrameGraphObjectList;
+                return (
+                    <>
+                        <TextLineComponent label="Number of meshes" value={objectList.meshes ? "" + objectList.meshes.length : "Unknown (meshes from the scene)"} />
+                        <TextLineComponent
+                            label="Number of particle systems"
+                            value={objectList.particleSystems ? "" + objectList.particleSystems.length : "Unknown (particle systems from the scene)"}
+                        />
+                    </>
+                );
+            }
+            case NodeRenderGraphBlockConnectionPointTypes.Camera: {
+                const camera = inputBlock.value as Camera;
+                return (
+                    <>
+                        <TextLineComponent label="Name" value={camera?.name ?? ""} />
+                        <TextLineComponent label="Type" value={camera?.getClassName() ?? ""} />
+                    </>
+                );
+            }
+            case NodeRenderGraphBlockConnectionPointTypes.ShadowLight: {
+                const shadowLight = inputBlock.value as IShadowLight;
+                return (
+                    <>
+                        <TextLineComponent label="Name" value={shadowLight?.name ?? ""} />
+                        <TextLineComponent label="Type" value={shadowLight?.getClassName() ?? ""} />
                     </>
                 );
             }

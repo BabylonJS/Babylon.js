@@ -49,6 +49,7 @@ export class MultiObserver<T> {
 }
 
 declare module "./observable" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Observable<T> {
         /**
          * Calling this will execute each callback, expecting it to be a promise or return a value.
@@ -74,7 +75,7 @@ Observable.prototype.notifyObserversWithPromise = async function <T>(eventData: 
 
     // no observers? return this promise.
     if (!this.observers.length) {
-        return p;
+        return await p;
     }
 
     const state = this._eventState;
@@ -85,20 +86,22 @@ Observable.prototype.notifyObserversWithPromise = async function <T>(eventData: 
     state.userInfo = userInfo;
 
     // execute one callback after another (not using Promise.all, the order is important)
-    this.observers.forEach((obs) => {
+    for (const obs of this.observers) {
         if (state.skipNextObservers) {
-            return;
+            continue;
         }
         if (obs._willBeUnregistered) {
-            return;
+            continue;
         }
         if (obs.mask & mask) {
             if (obs.scope) {
+                // eslint-disable-next-line github/no-then
                 p = p.then((lastReturnedValue) => {
                     state.lastReturnValue = lastReturnedValue;
                     return obs.callback.apply(obs.scope, [eventData, state]);
                 });
             } else {
+                // eslint-disable-next-line github/no-then
                 p = p.then((lastReturnedValue) => {
                     state.lastReturnValue = lastReturnedValue;
                     return obs.callback(eventData, state);
@@ -108,7 +111,7 @@ Observable.prototype.notifyObserversWithPromise = async function <T>(eventData: 
                 this._deferUnregister(obs);
             }
         }
-    });
+    }
 
     // return the eventData
     await p;

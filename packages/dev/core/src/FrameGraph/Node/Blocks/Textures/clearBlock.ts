@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { NodeRenderGraphConnectionPoint, Scene, FrameGraphTextureHandle, FrameGraph, NodeRenderGraphBuildState } from "core/index";
+import type { Scene, FrameGraphTextureHandle, FrameGraph, NodeRenderGraphBuildState, NodeRenderGraphConnectionPoint } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
@@ -29,15 +28,17 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
-        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment, true);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
         this._addDependenciesInput();
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("outputDepth", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-        this.depth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll | NodeRenderGraphBlockConnectionPointTypes.ResourceContainer);
+        this.depth.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment | NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment
+        );
 
         this.output._typeConnectionSource = this.target;
         this.outputDepth._typeConnectionSource = this.depth;
@@ -63,6 +64,16 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
 
     public set clearColor(value: boolean) {
         this._frameGraphTask.clearColor = value;
+    }
+
+    /** Gets or sets a boolean indicating whether the color should be converted to linear space. */
+    @editableInPropertyPage("Convert color to linear space", PropertyTypeForEdition.Boolean)
+    public get convertColorToLinearSpace(): boolean {
+        return !!this._frameGraphTask.convertColorToLinearSpace;
+    }
+
+    public set convertColorToLinearSpace(value: boolean) {
+        this._frameGraphTask.convertColorToLinearSpace = value;
     }
 
     /** Gets or sets a boolean indicating whether the depth part of the texture should be cleared. */
@@ -124,10 +135,10 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._propagateInputValueToOutput(this.target, this.output);
-        this._propagateInputValueToOutput(this.depth, this.outputDepth);
+        this.output.value = this._frameGraphTask.outputTexture;
+        this.outputDepth.value = this._frameGraphTask.outputDepthTexture;
 
-        this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
+        this._frameGraphTask.targetTexture = this._getConnectedTextures(this.target.connectedPoint);
         this._frameGraphTask.depthTexture = this.depth.connectedPoint?.value as FrameGraphTextureHandle;
     }
 
@@ -135,6 +146,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.color = new BABYLON.Color4(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a});`);
         codes.push(`${this._codeVariableName}.clearColor = ${this.clearColor};`);
+        codes.push(`${this._codeVariableName}.convertColorToLinearSpace = ${this.convertColorToLinearSpace};`);
         codes.push(`${this._codeVariableName}.clearDepth = ${this.clearDepth};`);
         codes.push(`${this._codeVariableName}.clearStencil = ${this.clearStencil};`);
         return super._dumpPropertiesCode() + codes.join("\n");
@@ -144,6 +156,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         const serializationObject = super.serialize();
         serializationObject.color = this.color.asArray();
         serializationObject.clearColor = this.clearColor;
+        serializationObject.convertColorToLinearSpace = this.convertColorToLinearSpace;
         serializationObject.clearDepth = this.clearDepth;
         serializationObject.clearStencil = this.clearStencil;
         return serializationObject;
@@ -153,6 +166,7 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
         super._deserialize(serializationObject);
         this.color = Color4.FromArray(serializationObject.color);
         this.clearColor = serializationObject.clearColor;
+        this.convertColorToLinearSpace = !!serializationObject.convertColorToLinearSpace;
         this.clearDepth = serializationObject.clearDepth;
         this.clearStencil = serializationObject.clearStencil;
     }

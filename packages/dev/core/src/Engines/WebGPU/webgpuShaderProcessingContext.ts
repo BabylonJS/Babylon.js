@@ -2,13 +2,13 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 import type { ShaderLanguage } from "../../Materials/shaderLanguage";
-import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
-const _maxGroups = 4;
-const _maxBindingsPerGroup = 1 << 16;
+const MaxGroups = 4;
+const MaxBindingsPerGroup = 1 << 16;
 
 // all types not listed are assumed to consume 1 location
-const _typeToLocationSize: { [key: string]: number } = {
+const TypeToLocationSize: { [key: string]: number } = {
     // GLSL types
     mat2: 2,
     mat3: 3,
@@ -56,7 +56,7 @@ export interface WebGPUBindGroupLayoutEntryInfo {
 /**
  * @internal
  */
-export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
+export class WebGPUShaderProcessingContext implements _IShaderProcessingContext {
     /** @internal */
     public static _SimplifiedKnownBindings = true; // if true, use only group=0,binding=0 as a known group/binding for the Scene ubo and use group=1,binding=X for all other bindings
     // if false, see _KnownUBOs for the known groups/bindings used
@@ -231,7 +231,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public getAttributeNextLocation(dataType: string, arrayLength: number = 0): number {
         const index = this._attributeNextLocation;
 
-        this._attributeNextLocation += (_typeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
+        this._attributeNextLocation += (TypeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
 
         return index;
     }
@@ -239,7 +239,7 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public getVaryingNextLocation(dataType: string, arrayLength: number = 0): number {
         const index = this._varyingNextLocation;
 
-        this._varyingNextLocation += (_typeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
+        this._varyingNextLocation += (TypeToLocationSize[dataType] ?? 1) * (arrayLength || 1);
 
         return index;
     }
@@ -249,12 +249,12 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     }
 
     private _getNextFreeBinding(bindingCount: number) {
-        if (this.freeBindingIndex > _maxBindingsPerGroup - bindingCount) {
+        if (this.freeBindingIndex > MaxBindingsPerGroup - bindingCount) {
             this.freeGroupIndex++;
             this.freeBindingIndex = 0;
         }
 
-        if (this.freeGroupIndex === _maxGroups) {
+        if (this.freeGroupIndex === MaxGroups) {
             // eslint-disable-next-line no-throw-literal
             throw "Too many textures or UBOs have been declared and it is not supported in WebGPU.";
         }

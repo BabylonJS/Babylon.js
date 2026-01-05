@@ -31,6 +31,7 @@ export class AnimationBar extends React.Component<IAnimationBarProps, { groupInd
         this.state = { groupIndex: 0 };
 
         props.globalState.onSceneLoaded.add((info) => {
+            this.setState({ groupIndex: 0 });
             this.registerBeforeRender(info.scene);
         });
 

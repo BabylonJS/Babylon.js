@@ -56,7 +56,7 @@ export class FlyCamera extends TargetCamera {
      * Define the current local rotation of the camera as a quaternion to prevent Gimbal lock.
      * This overrides and empties cameraRotation.
      */
-    public override rotationQuaternion: Quaternion;
+    public override rotationQuaternion: Nullable<Quaternion>;
 
     /**
      * Track Roll to maintain the wanted Rolling when looking around.
@@ -285,7 +285,6 @@ export class FlyCamera extends TargetCamera {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public override attachControl(ignored: any, noPreventDefault?: boolean): void {
-        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.inputs.attachElement(noPreventDefault);
     }

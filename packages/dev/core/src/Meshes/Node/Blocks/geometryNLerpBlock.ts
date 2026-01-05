@@ -6,6 +6,7 @@ import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 /**
  * Block used to normalize lerp between 2 values
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class GeometryNLerpBlock extends NodeGeometryBlock {
     /**
      * Creates a new GeometryNLerpBlock
@@ -81,27 +82,22 @@ export class GeometryNLerpBlock extends NodeGeometryBlock {
             switch (this.left.type) {
                 case NodeGeometryBlockConnectionPointTypes.Int:
                 case NodeGeometryBlockConnectionPointTypes.Float: {
-                    return func!(gradient, left, right); // NLerp is really lerp in that case
+                    return func(gradient, left, right); // NLerp is really lerp in that case
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector2: {
-                    const result = new Vector2(func!(gradient, left.x, right.x), func!(gradient, left.y, right.y));
+                    const result = new Vector2(func(gradient, left.x, right.x), func(gradient, left.y, right.y));
                     result.normalize();
 
                     return result;
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector3: {
-                    const result = new Vector3(func!(gradient, left.x, right.x), func!(gradient, left.y, right.y), func!(gradient, left.z, right.z));
+                    const result = new Vector3(func(gradient, left.x, right.x), func(gradient, left.y, right.y), func(gradient, left.z, right.z));
                     result.normalize();
 
                     return result;
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector4: {
-                    const result = new Vector4(
-                        func!(gradient, left.x, right.x),
-                        func!(gradient, left.y, right.y),
-                        func!(gradient, left.z, right.z),
-                        func!(gradient, left.w, right.w)
-                    );
+                    const result = new Vector4(func(gradient, left.x, right.x), func(gradient, left.y, right.y), func(gradient, left.z, right.z), func(gradient, left.w, right.w));
                     result.normalize();
 
                     return result;

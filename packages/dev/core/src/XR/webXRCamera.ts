@@ -57,6 +57,11 @@ export class WebXRCamera extends FreeCamera {
     public _lastXRViewerPose?: XRViewerPose;
 
     /**
+     * webXRCamera relies on rotationQuaternion and doesn't use camera rotation property
+     */
+    public override rotationQuaternion: Quaternion;
+
+    /**
      * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
      * @param name the name of the camera
      * @param scene the scene to add the camera to
@@ -198,7 +203,7 @@ export class WebXRCamera extends FreeCamera {
         target.subtractToRef(this.position, tmpVector);
         tmpVector.y = 0;
         tmpVector.normalize();
-        const yRotation = Math.atan2(tmpVector.x, tmpVector.z);
+        const yRotation = Math.atan2(tmpVector.x, tmpVector.z) + (this._scene.useRightHandedSystem ? Math.PI : 0);
         this.rotationQuaternion.toEulerAnglesToRef(tmpVector);
         Quaternion.FromEulerAnglesToRef(tmpVector.x, yRotation, tmpVector.z, this.rotationQuaternion);
     }
@@ -221,8 +226,6 @@ export class WebXRCamera extends FreeCamera {
         this._cache.minZ = this.minZ;
         this._cache.maxZ = far;
     }
-
-    private _rotate180 = new Quaternion(0, 1, 0, 0);
 
     private _updateFromXRSession() {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
@@ -256,8 +259,6 @@ export class WebXRCamera extends FreeCamera {
                 this._referencedPosition.z *= -1;
                 this._referenceQuaternion.z *= -1;
                 this._referenceQuaternion.w *= -1;
-            } else {
-                this._referenceQuaternion.multiplyInPlace(this._rotate180);
             }
 
             if (this._firstFrame) {
@@ -281,7 +282,8 @@ export class WebXRCamera extends FreeCamera {
             this._updateNumberOfRigCameras(pose.views.length);
         }
 
-        pose.views.forEach((view: XRView, i: number) => {
+        for (let i = 0; i < pose.views.length; i++) {
+            const view = pose.views[i];
             const currentRig = <TargetCamera>this.rigCameras[i];
             // update right and left, where applicable
             if (!currentRig.isLeftCamera && !currentRig.isRightCamera) {
@@ -308,13 +310,11 @@ export class WebXRCamera extends FreeCamera {
             currentRig.parent = this.parent;
 
             currentRig.position.set(pos.x, pos.y, pos.z).scaleInPlace(this._xrSessionManager.worldScalingFactor);
-            currentRig.rotationQuaternion.set(orientation.x, orientation.y, orientation.z, orientation.w);
-            if (!this._scene.useRightHandedSystem) {
+            currentRig.rotationQuaternion?.set(orientation.x, orientation.y, orientation.z, orientation.w);
+            if (!this._scene.useRightHandedSystem && currentRig.rotationQuaternion) {
                 currentRig.position.z *= -1;
                 currentRig.rotationQuaternion.z *= -1;
                 currentRig.rotationQuaternion.w *= -1;
-            } else {
-                currentRig.rotationQuaternion.multiplyInPlace(this._rotate180);
             }
             Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
 
@@ -350,7 +350,7 @@ export class WebXRCamera extends FreeCamera {
 
             // Replicate parent rig camera behavior
             currentRig.layerMask = this.layerMask;
-        });
+        }
     }
 
     private _updateNumberOfRigCameras(viewCount = 1) {
@@ -395,6 +395,7 @@ export class WebXRCamera extends FreeCamera {
                     x: this._referencedPosition.x / this._xrSessionManager.worldScalingFactor,
                     y: this._referencedPosition.y / this._xrSessionManager.worldScalingFactor,
                     z: this._referencedPosition.z / this._xrSessionManager.worldScalingFactor,
+                    w: 1,
                 },
                 {
                     x: this._referenceQuaternion.x,

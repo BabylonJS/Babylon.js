@@ -2,9 +2,11 @@ import type { Effect } from "./effect";
 import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
 import type { Nullable } from "../types";
 import type { Plane } from "../Maths/math.plane";
+import { FloatingOriginCurrentScene } from "./floatingOriginMatrixOverrides";
+import { Vector3 } from "../Maths/math.vector";
 
 /** @internal */
-export function addClipPlaneUniforms(uniforms: string[]): void {
+export function AddClipPlaneUniforms(uniforms: string[]): void {
     if (uniforms.indexOf("vClipPlane") === -1) {
         uniforms.push("vClipPlane");
     }
@@ -26,7 +28,7 @@ export function addClipPlaneUniforms(uniforms: string[]): void {
 }
 
 /** @internal */
-export function prepareStringDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder, defines: string[]): void {
+export function PrepareStringDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder, defines: string[]): void {
     const clipPlane = !!(primaryHolder.clipPlane ?? secondaryHolder.clipPlane);
     const clipPlane2 = !!(primaryHolder.clipPlane2 ?? secondaryHolder.clipPlane2);
     const clipPlane3 = !!(primaryHolder.clipPlane3 ?? secondaryHolder.clipPlane3);
@@ -34,16 +36,28 @@ export function prepareStringDefinesForClipPlanes(primaryHolder: IClipPlanesHold
     const clipPlane5 = !!(primaryHolder.clipPlane5 ?? secondaryHolder.clipPlane5);
     const clipPlane6 = !!(primaryHolder.clipPlane6 ?? secondaryHolder.clipPlane6);
 
-    if (clipPlane) defines.push("#define CLIPPLANE");
-    if (clipPlane2) defines.push("#define CLIPPLANE2");
-    if (clipPlane3) defines.push("#define CLIPPLANE3");
-    if (clipPlane4) defines.push("#define CLIPPLANE4");
-    if (clipPlane5) defines.push("#define CLIPPLANE5");
-    if (clipPlane6) defines.push("#define CLIPPLANE6");
+    if (clipPlane) {
+        defines.push("#define CLIPPLANE");
+    }
+    if (clipPlane2) {
+        defines.push("#define CLIPPLANE2");
+    }
+    if (clipPlane3) {
+        defines.push("#define CLIPPLANE3");
+    }
+    if (clipPlane4) {
+        defines.push("#define CLIPPLANE4");
+    }
+    if (clipPlane5) {
+        defines.push("#define CLIPPLANE5");
+    }
+    if (clipPlane6) {
+        defines.push("#define CLIPPLANE6");
+    }
 }
 
 /** @internal */
-export function prepareDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder, defines: Record<string, any>): boolean {
+export function PrepareDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder, defines: Record<string, any>): boolean {
     let changed = false;
 
     const clipPlane = !!(primaryHolder.clipPlane ?? secondaryHolder.clipPlane);
@@ -83,23 +97,31 @@ export function prepareDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, se
 }
 
 /** @internal */
-export function bindClipPlane(effect: Effect, primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder): void {
+export function BindClipPlane(effect: Effect, primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder): void {
     let clipPlane = primaryHolder.clipPlane ?? secondaryHolder.clipPlane;
-    setClipPlane(effect, "vClipPlane", clipPlane);
+    SetClipPlane(effect, "vClipPlane", clipPlane);
     clipPlane = primaryHolder.clipPlane2 ?? secondaryHolder.clipPlane2;
-    setClipPlane(effect, "vClipPlane2", clipPlane);
+    SetClipPlane(effect, "vClipPlane2", clipPlane);
     clipPlane = primaryHolder.clipPlane3 ?? secondaryHolder.clipPlane3;
-    setClipPlane(effect, "vClipPlane3", clipPlane);
+    SetClipPlane(effect, "vClipPlane3", clipPlane);
     clipPlane = primaryHolder.clipPlane4 ?? secondaryHolder.clipPlane4;
-    setClipPlane(effect, "vClipPlane4", clipPlane);
+    SetClipPlane(effect, "vClipPlane4", clipPlane);
     clipPlane = primaryHolder.clipPlane5 ?? secondaryHolder.clipPlane5;
-    setClipPlane(effect, "vClipPlane5", clipPlane);
+    SetClipPlane(effect, "vClipPlane5", clipPlane);
     clipPlane = primaryHolder.clipPlane6 ?? secondaryHolder.clipPlane6;
-    setClipPlane(effect, "vClipPlane6", clipPlane);
+    SetClipPlane(effect, "vClipPlane6", clipPlane);
 }
 
-function setClipPlane(effect: Effect, uniformName: string, clipPlane: Nullable<Plane>): void {
+function SetClipPlane(effect: Effect, uniformName: string, clipPlane: Nullable<Plane>): void {
     if (clipPlane) {
-        effect.setFloat4(uniformName, clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+        // Original clipplane is using equation normal.dot(p) + d = 0
+        // Assume we have p' = p - offset, that means normal.dot(p') + d' = 0
+        // So to get the offset plane,
+        // normal.dot(p' + offset) + d = 0
+        // normal.dot(p') + normal.dot(offset) + d = 0
+        // -d' + normal.dot(offset) + d = 0
+        // d' = d + normal.dot(offset)
+        const offset = FloatingOriginCurrentScene.getScene()?.floatingOriginOffset || Vector3.ZeroReadOnly;
+        effect.setFloat4(uniformName, clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d + Vector3.Dot(clipPlane.normal, offset));
     }
 }

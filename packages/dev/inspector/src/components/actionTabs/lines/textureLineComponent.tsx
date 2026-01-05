@@ -43,10 +43,12 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
     }
 
     override componentDidMount() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.updatePreview();
     }
 
     override componentDidUpdate() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.updatePreview();
     }
 
@@ -155,6 +157,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                     <ButtonLineComponent
                         label="Refresh"
                         onClick={() => {
+                            // eslint-disable-next-line @typescript-eslint/no-floating-promises
                             this.updatePreview();
                         }}
                     />

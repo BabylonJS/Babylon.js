@@ -98,22 +98,24 @@ export class TouchButton3D extends Button3D {
                 this._collisionMesh.reservedDataStore.GUI3D = {};
             }
 
-            this._collisionMesh.getChildMeshes().forEach((mesh) => {
+            const meshes = this._collisionMesh.getChildMeshes();
+            for (const mesh of meshes) {
                 mesh.isNearPickable = false;
                 if (mesh.reservedDataStore?.GUI3D) {
                     mesh.reservedDataStore.GUI3D = {};
                 }
-            });
+            }
         }
 
         this._collisionMesh = collisionMesh;
         this._injectGUI3DReservedDataStore(this._collisionMesh).control = this;
         this._collisionMesh.isNearPickable = true;
 
-        this._collisionMesh.getChildMeshes().forEach((mesh) => {
+        const meshes = this._collisionMesh.getChildMeshes();
+        for (const mesh of meshes) {
             this._injectGUI3DReservedDataStore(mesh).control = this;
             mesh.isNearPickable = true;
-        });
+        }
         this.collidableFrontDirection = collisionMesh.forward;
     }
 

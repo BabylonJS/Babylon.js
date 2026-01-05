@@ -4,7 +4,7 @@ import { VRCameraMetrics } from "./vrCameraMetrics";
 import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
-import { setVRRigMode } from "../RigModes/vrRigMode";
+import { _SetVrRigMode } from "../RigModes/vrRigMode";
 
 Node.AddNodeConstructor("VRDeviceOrientationFreeCamera", (name, scene) => {
     return () => new VRDeviceOrientationFreeCamera(name, Vector3.Zero(), scene);
@@ -38,5 +38,5 @@ export class VRDeviceOrientationFreeCamera extends DeviceOrientationCamera {
         return "VRDeviceOrientationFreeCamera";
     }
 
-    protected override _setRigMode = (rigParams: any) => setVRRigMode(this, rigParams);
+    protected override _setRigMode = (rigParams: any) => _SetVrRigMode(this, rigParams);
 }

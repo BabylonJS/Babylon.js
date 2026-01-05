@@ -351,15 +351,13 @@
     
     fn computeShadowWithPCF1(vPositionFromLight: vec4f, depthMetric: f32, shadowTexture: texture_depth_2d, shadowSampler: sampler_comparison, darkness: f32, frustumEdgeFalloff: f32) -> f32
     {
-        if (depthMetric > 1.0 || depthMetric < 0.0) {
-            return 1.0;
-        }
-        else
-        {
-            var clipSpace: vec3f = vPositionFromLight.xyz / vPositionFromLight.w;
-            var uvDepth: vec3f =  vec3f(0.5 * clipSpace.xyz +  vec3f(0.5));
-            uvDepth.z = getZInClip(clipSpace, uvDepth);
+        var clipSpace: vec3f = vPositionFromLight.xyz / vPositionFromLight.w;
+        var uvDepth: vec3f =  vec3f(0.5 * clipSpace.xyz +  vec3f(0.5));
+        uvDepth.z = getZInClip(clipSpace, uvDepth);
 
+        if (depthMetric < 0.0 || depthMetric > 1.0 || uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0) {
+            return 1.0;
+        } else {
             var shadow: f32 = textureSampleCompareLevel(shadowTexture, shadowSampler, uvDepth.xy, uvDepth.z);
             shadow = mix(darkness, 1., shadow);
 
@@ -373,15 +371,13 @@
     
     fn computeShadowWithPCF3(vPositionFromLight: vec4f, depthMetric: f32, shadowTexture: texture_depth_2d, shadowSampler: sampler_comparison, shadowMapSizeAndInverse: vec2f, darkness: f32, frustumEdgeFalloff: f32) -> f32
     {
-        if (depthMetric > 1.0 || depthMetric < 0.0) {
-            return 1.0;
-        }
-        else
-        {
-            var clipSpace: vec3f = vPositionFromLight.xyz / vPositionFromLight.w;
-            var uvDepth: vec3f =  vec3f(0.5 * clipSpace.xyz +  vec3f(0.5));
-            uvDepth.z = getZInClip(clipSpace, uvDepth);
+        var clipSpace: vec3f = vPositionFromLight.xyz / vPositionFromLight.w;
+        var uvDepth: vec3f =  vec3f(0.5 * clipSpace.xyz +  vec3f(0.5));
+        uvDepth.z = getZInClip(clipSpace, uvDepth);
 
+        if (depthMetric < 0.0 || depthMetric > 1.0 || uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0) {
+            return 1.0;
+        } else {
             var uv: vec2f = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
             uv += 0.5;											// offset of half to be in the center of the texel
             var st: vec2f = fract(uv);								// how far from the center
@@ -416,15 +412,13 @@
     
     fn computeShadowWithPCF5(vPositionFromLight: vec4f, depthMetric: f32, shadowTexture: texture_depth_2d, shadowSampler: sampler_comparison, shadowMapSizeAndInverse: vec2f, darkness: f32, frustumEdgeFalloff: f32) -> f32
     {
-        if (depthMetric > 1.0 || depthMetric < 0.0) {
-            return 1.0;
-        }
-        else
-        {
-            var clipSpace: vec3f = vPositionFromLight.xyz / vPositionFromLight.w;
-            var uvDepth: vec3f =  vec3f(0.5 * clipSpace.xyz +  vec3f(0.5));
-            uvDepth.z = getZInClip(clipSpace, uvDepth);
+        var clipSpace: vec3f = vPositionFromLight.xyz / vPositionFromLight.w;
+        var uvDepth: vec3f =  vec3f(0.5 * clipSpace.xyz +  vec3f(0.5));
+        uvDepth.z = getZInClip(clipSpace, uvDepth);
 
+        if (depthMetric < 0.0 || depthMetric > 1.0 || uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0) {
+            return 1.0;
+        } else {
             var uv: vec2f = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
             uv += 0.5;											// offset of half to be in the center of the texel
             var st: vec2f = fract(uv);								// how far from the center
@@ -662,20 +656,23 @@
         var uvDepth: vec3f =  vec3f(0.5 * clipSpace.xyz +  vec3f(0.5));
         uvDepth.z = getZInClip(clipSpace, uvDepth);
 
+        if (depthMetric < 0.0 || depthMetric > 1.0 || uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0) {
+            return 1.0;
+        }
+
         var blockerDepth: f32 = 0.0;
         var sumBlockerDepth: f32 = 0.0;
         var numBlocker: f32 = 0.0;
-        var exitCondition: bool = depthMetric > 1.0 || depthMetric < 0.0;
         for (var i: i32 = 0; i < searchTapCount; i ++) {
-            if (exitCondition) {
-                break;
-            }
             blockerDepth = textureSampleLevel(depthTexture, depthSampler, uvDepth.xy + (lightSizeUV * shadowMapSizeInverse * PoissonSamplers32[i].xy), 0).r;
             numBlocker += select(0., 1., blockerDepth < depthMetric);
             sumBlockerDepth += select(0., blockerDepth, blockerDepth < depthMetric);
         }
 
-        exitCondition = exitCondition || numBlocker < 1.0;
+        if (numBlocker < 1.0) {
+            return 1.0;
+        }
+
         var avgBlockerDepth: f32 = sumBlockerDepth / numBlocker;
 
         // Offset preventing aliasing on contact.
@@ -691,9 +688,6 @@
 
         var shadow: f32 = 0.;
         for (var i: i32 = 0; i < pcfTapCount; i++) {
-            if (exitCondition) {
-                break;
-            }
             var offset: vec3f = poissonSamplers[i];
             // Rotated offset.
             offset =  vec3f(offset.x * rotationVector.x - offset.y * rotationVector.y, offset.y * rotationVector.x + offset.x * rotationVector.y, 0.);
@@ -709,7 +703,7 @@
         shadow = mix(darkness, 1., shadow);
 
         // Apply light frustrum fallof
-        return select(computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff), 1.0, exitCondition);
+        return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
     }
 
     

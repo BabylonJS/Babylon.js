@@ -72,16 +72,16 @@ export class GeometryModBlock extends NodeGeometryBlock {
             switch (this.left.type) {
                 case NodeGeometryBlockConnectionPointTypes.Int:
                 case NodeGeometryBlockConnectionPointTypes.Float: {
-                    return func!(left, right);
+                    return func(left, right);
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector2: {
-                    return new Vector2(func!(left.x, right.x), func!(left.y, right.y));
+                    return new Vector2(func(left.x, right.x), func(left.y, right.y));
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector3: {
-                    return new Vector3(func!(left.x, right.x), func!(left.y, right.y), func!(left.z, right.z));
+                    return new Vector3(func(left.x, right.x), func(left.y, right.y), func(left.z, right.z));
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector4: {
-                    return new Vector4(func!(left.x, right.x), func!(left.y, right.y), func!(left.z, right.z), func!(left.w, right.w));
+                    return new Vector4(func(left.x, right.x), func(left.y, right.y), func(left.z, right.z), func(left.w, right.w));
                 }
             }
 

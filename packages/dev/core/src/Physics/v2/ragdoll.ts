@@ -10,6 +10,7 @@ import type { Nullable } from "../../types";
 import type { Bone } from "../../Bones/bone";
 import { Logger } from "../../Misc/logger";
 import { TransformNode } from "../../Meshes/transformNode";
+import type { Observer } from "core/Misc/observable";
 
 /**
  * Ragdoll bone properties
@@ -81,6 +82,7 @@ export class Ragdoll {
     private _rootBoneIndex: number = -1;
     private _mass: number = 10;
     private _restitution: number = 0;
+    private _beforeRenderObserver: Nullable<Observer<Scene>> = null;
 
     /**
      * Pause synchronization between physics and bone position/orientation
@@ -214,7 +216,9 @@ export class Ragdoll {
         this._rootTransformNode.computeWorldMatrix();
         for (let i = 0; i < this._bones.length; i++) {
             // The root bone has no joints.
-            if (i == this._rootBoneIndex) continue;
+            if (i == this._rootBoneIndex) {
+                continue;
+            }
 
             const nearestParent = this._findNearestParent(i);
 
@@ -296,7 +300,9 @@ export class Ragdoll {
             this._bones[this._rootBoneIndex].setAbsolutePosition(TmpVectors.Vector3[0]);
 
             for (let i = 0; i < this._bones.length; i++) {
-                if (i == this._rootBoneIndex) continue;
+                if (i == this._rootBoneIndex) {
+                    continue;
+                }
                 this._setBodyOrientationToBone(i);
             }
         } else {
@@ -309,10 +315,10 @@ export class Ragdoll {
             this._rootTransformNode.rotationQuaternion ??
             Quaternion.FromEulerAngles(this._rootTransformNode.rotation.x, this._rootTransformNode.rotation.y, this._rootTransformNode.rotation.z);
         const qbind = this._initialRotation2[boneIndex];
-        const qphys = this._aggregates[boneIndex].body?.transformNode?.rotationQuaternion!;
+        const qphys = this._aggregates[boneIndex].body?.transformNode?.rotationQuaternion;
 
         qmesh.multiplyToRef(qbind, TmpVectors.Quaternion[1]);
-        qphys.multiplyToRef(TmpVectors.Quaternion[1], TmpVectors.Quaternion[0]);
+        qphys?.multiplyToRef(TmpVectors.Quaternion[1], TmpVectors.Quaternion[0]);
 
         this._bones[boneIndex].setRotationQuaternion(TmpVectors.Quaternion[0], Space.WORLD, this._rootTransformNode);
     }
@@ -328,6 +334,7 @@ export class Ragdoll {
         this._rootBoneName = skeletonRoots[0].name;
         this._rootBoneIndex = this._boneNames.indexOf(this._rootBoneName);
         if (this._rootBoneIndex == -1) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, @typescript-eslint/no-base-to-string
             Logger.Log("Ragdoll creation failed: the array boneNames doesn't have the root bone. The root bone is " + this._skeleton.getChildren());
             return false;
         }
@@ -357,7 +364,7 @@ export class Ragdoll {
         }
 
         this._initJoints();
-        this._scene.registerBeforeRender(() => {
+        this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
             this._syncBonesAndBoxes();
         });
         this._syncBonesToPhysics();
@@ -369,9 +376,9 @@ export class Ragdoll {
     public ragdoll(): void {
         this._ragdollMode = true;
         // detach bones with link transform to let physics have control
-        this._skeleton.bones.forEach((bone) => {
+        for (const bone of this._skeleton.bones) {
             bone.linkTransformNode(null);
-        });
+        }
         for (let i = 0; i < this._constraints.length; i++) {
             this._constraints[i].isEnabled = true;
         }
@@ -384,8 +391,22 @@ export class Ragdoll {
      * Dispose resources and remove physics objects
      */
     dispose(): void {
-        this._aggregates.forEach((aggregate: PhysicsAggregate) => {
+        for (const aggregate of this._aggregates) {
             aggregate.dispose();
-        });
+        }
+        this._aggregates.length = 0;
+        for (const transform of this._transforms) {
+            transform.dispose();
+        }
+        this._transforms.length = 0;
+        for (const constraint of this._constraints) {
+            constraint.dispose();
+        }
+        this._constraints.length = 0;
+
+        if (this._beforeRenderObserver) {
+            this._scene.onBeforeRenderObservable.remove(this._beforeRenderObserver);
+            this._beforeRenderObserver = null;
+        }
     }
 }

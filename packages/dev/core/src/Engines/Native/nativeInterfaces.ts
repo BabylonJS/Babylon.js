@@ -68,7 +68,6 @@ export interface INativeEngine {
     loadCubeTextureWithMips(texture: NativeTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     getTextureWidth(texture: NativeTexture): number;
     getTextureHeight(texture: NativeTexture): number;
-    copyTexture(desination: NativeTexture, source: NativeTexture): void;
     deleteTexture(texture: NativeTexture): void;
     readTexture(
         texture: NativeTexture,
@@ -82,7 +81,7 @@ export interface INativeEngine {
         bufferLength: number
     ): Promise<ArrayBuffer>;
 
-    createImageBitmap(data: ArrayBufferView | IImage): ImageBitmap;
+    createImageBitmap(data: ArrayBuffer | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
 
     createFrameBuffer(
@@ -104,7 +103,7 @@ export interface INativeEngine {
     setCommandDataStream(dataStream: NativeDataStream): void;
     submitCommands(): void;
 
-    populateFrameStats?(stats: NativeFrameStats): void;
+    populateFrameStats(stats: NativeFrameStats): void;
 }
 
 /** @internal */
@@ -323,8 +322,8 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETTEXTUREWRAPMODE: NativeData;
     readonly COMMAND_SETTEXTUREANISOTROPICLEVEL: NativeData;
     readonly COMMAND_SETTEXTURE: NativeData;
-    readonly COMMAND_UNSETTEXTURE?: NativeData;
-    readonly COMMAND_DISCARDALLTEXTURES?: NativeData;
+    readonly COMMAND_UNSETTEXTURE: NativeData;
+    readonly COMMAND_DISCARDALLTEXTURES: NativeData;
     readonly COMMAND_BINDVERTEXARRAY: NativeData;
     readonly COMMAND_SETSTATE: NativeData;
     readonly COMMAND_DELETEPROGRAM: NativeData;
@@ -342,13 +341,14 @@ interface INativeEngineConstructor {
     readonly COMMAND_UNBINDFRAMEBUFFER: NativeData;
     readonly COMMAND_DELETEFRAMEBUFFER: NativeData;
     readonly COMMAND_DRAWINDEXED: NativeData;
-    readonly COMMAND_DRAWINDEXEDINSTANCED?: NativeData;
+    readonly COMMAND_DRAWINDEXEDINSTANCED: NativeData;
     readonly COMMAND_DRAW: NativeData;
-    readonly COMMAND_DRAWINSTANCED?: NativeData;
+    readonly COMMAND_DRAWINSTANCED: NativeData;
     readonly COMMAND_CLEAR: NativeData;
     readonly COMMAND_SETSTENCIL: NativeData;
     readonly COMMAND_SETVIEWPORT: NativeData;
     readonly COMMAND_SETSCISSOR: NativeData;
+    readonly COMMAND_COPYTEXTURE: NativeData;
 }
 
 /** @internal */
@@ -414,14 +414,35 @@ interface INativeDataStreamConstructor {
     readonly VALIDATION_BOOLEAN: number;
 }
 
+// Note: These values need to match those in Babylon Native's NativeTracing plugin.
+export const enum NativeTraceLevel {
+    Mark = 1,
+    Log = 2,
+}
+
 /** @internal */
 export interface INative {
+    // NativeEngine plugin
     Engine: INativeEngineConstructor;
-    Camera: INativeCameraConstructor;
-    Canvas: INativeCanvasConstructor;
-    Image: INativeImageConstructor;
-    Path2D: INativePath2DConstructor;
-    XMLHttpRequest: any; // TODO: how to do this?
-    DeviceInputSystem: IDeviceInputSystemConstructor;
     NativeDataStream: INativeDataStreamConstructor;
+
+    // NativeCamera plugin
+    Camera?: INativeCameraConstructor;
+
+    // NativeCanvas plugin
+    Canvas?: INativeCanvasConstructor;
+    Image?: INativeImageConstructor;
+    Path2D?: INativePath2DConstructor;
+
+    // Native XMLHttpRequest polyfill
+    XMLHttpRequest?: typeof XMLHttpRequest;
+
+    // NativeInput plugin
+    DeviceInputSystem?: IDeviceInputSystemConstructor;
+
+    // NativeTracing plugin
+    enablePerformanceLogging?(level?: NativeTraceLevel): void;
+    disablePerformanceLogging?(): void;
+    startPerformanceCounter?(counter: string): unknown;
+    endPerformanceCounter?(counter: unknown): void;
 }

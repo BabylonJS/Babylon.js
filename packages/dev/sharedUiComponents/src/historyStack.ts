@@ -63,7 +63,7 @@ export class HistoryStack implements IDisposable {
         this._historyStack = [];
         this._redoStack = [];
         this._activeData = null;
-        this.store();
+        void this.storeAsync();
     }
 
     /**
@@ -87,7 +87,9 @@ export class HistoryStack implements IDisposable {
     }
 
     private _generateJSONDiff(obj1: any, obj2: any): any {
-        if (obj1 === obj2) return undefined;
+        if (obj1 === obj2) {
+            return undefined;
+        }
         if (obj1 === null || obj2 === null || typeof obj1 !== "object" || typeof obj2 !== "object") {
             if (obj1 !== obj2 && obj2 === undefined) {
                 return "@d@";
@@ -179,28 +181,42 @@ export class HistoryStack implements IDisposable {
     /**
      * Stores the current state
      */
-    public store() {
+    public async storeAsync() {
         if (this._locked || !this.isEnabled) {
             return;
         }
 
-        const data = this._copy(this._dataProvider());
+        this._locked = true;
+        try {
+            // _dataProvider can return T or Promise<T>; await handles both.
+            const provided = await this._dataProvider();
+            const data = this._copy(provided);
 
-        if (this._activeData) {
-            const diff = this._generateJSONDiff(data, this._activeData);
-            if (!diff) {
-                return;
+            if (this._activeData) {
+                const diff = this._generateJSONDiff(data, this._activeData);
+                if (!diff) {
+                    return; // finally will still run and release the lock
+                }
+                this._historyStack.push(JSON.stringify(diff));
             }
-            this._historyStack.push(JSON.stringify(diff));
+
+            this._activeData = data;
+
+            if (this._historyStack.length > this._maxHistoryLength) {
+                this._historyStack.shift();
+            }
+
+            this._redoStack.length = 0;
+        } finally {
+            this._locked = false;
         }
+    }
 
-        this._activeData = data;
-
-        if (this._historyStack.length > this._maxHistoryLength) {
-            this._historyStack.shift();
-        }
-
-        this._redoStack.length = 0;
+    /**
+     * Checks if there is any data in the history stack
+     */
+    public get hasData(): boolean {
+        return this._historyStack.length > 0;
     }
 
     /**

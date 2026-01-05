@@ -231,6 +231,8 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
 
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
+        this._scene.postProcessRenderPipelineManager.removePipeline(this._name);
+
         super.dispose();
     }
 

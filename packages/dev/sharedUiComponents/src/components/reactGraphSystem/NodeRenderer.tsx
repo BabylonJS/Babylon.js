@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ComponentType, PropsWithChildren } from "react";
 import { useState, useEffect, useMemo } from "react";
 import { GraphContainer } from "./GraphContainer";
 import { GraphLine } from "./GraphLine";
@@ -8,11 +8,15 @@ import { GraphLinesContainer } from "./GraphLinesContainer";
 import { GraphContextManager } from "./GraphContextManager";
 import type { Nullable } from "core/types";
 
-const fullscreenStyle = { width: "100%", height: "100%" };
+const FullscreenStyle = { width: "100%", height: "100%" };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type IVisualRecordsType = Record<string, { x: number; y: number }>;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type IConnectionType = { id: string; sourceId: string; targetId: string };
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type ICustomDataType = { type: string; value: any };
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type INodeType = { id: string; label: string; customData?: ICustomDataType };
 
 /**
@@ -64,7 +68,7 @@ export interface INodeRendererProps {
  * @param props
  * @returns
  */
-export const NodeRenderer = (props: INodeRendererProps) => {
+export const NodeRenderer = (props: PropsWithChildren<INodeRendererProps>) => {
     const { nodes, connections, updateConnections, highlightedNode } = props;
     // Store the nodes positions
     const [pos, setPos] = useState<IVisualRecordsType>({});
@@ -116,7 +120,7 @@ export const NodeRenderer = (props: INodeRendererProps) => {
 
     const graphContext = useMemo(() => ({ updatePos, onNodesConnected, onLineSelected, onNodeSelected }), []);
     return (
-        <div style={fullscreenStyle}>
+        <div style={FullscreenStyle}>
             <GraphContextManager.Provider value={graphContext}>
                 <GraphContainer>
                     <GraphNodesContainer id={props.id} onNodeMoved={updatePos}>

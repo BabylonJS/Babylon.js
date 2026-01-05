@@ -150,11 +150,12 @@ export class Logger {
         Logger.Log = Logger._LogDisabled;
         Logger.Warn = Logger._LogDisabled;
         Logger.Error = Logger._LogDisabled;
-        [Logger.MessageLogLevel, Logger.WarningLogLevel, Logger.ErrorLogLevel].forEach((l) => {
+        const levels = [Logger.MessageLogLevel, Logger.WarningLogLevel, Logger.ErrorLogLevel];
+        for (const l of levels) {
             if ((level & l) === l) {
                 const type = this._Levels[l];
                 Logger[type.name as "Log" | "Warn" | "Error"] = Logger._LogEnabled.bind(Logger, l);
             }
-        });
+        }
     }
 }

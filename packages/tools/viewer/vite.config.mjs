@@ -52,6 +52,7 @@ export default defineConfig(({ mode }) => {
         ],
         resolve: {
             alias: {
+                addons: `@${source}/addons/dist`,
                 core: `@${source}/core/dist`,
                 loaders: `@${source}/loaders/dist`,
                 inspector: `@${source}/inspector/dist`,

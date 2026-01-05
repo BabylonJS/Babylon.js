@@ -119,9 +119,9 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
             return false;
         }
         this._attached = false;
-        this._removeOnDetach.forEach((toRemove) => {
+        for (const toRemove of this._removeOnDetach) {
             toRemove.observable.remove(toRemove.observer);
-        });
+        }
         this.onFeatureDetachObservable.notifyObservers(this);
         return true;
     }

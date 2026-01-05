@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { FC, PropsWithChildren } from "react";
 import { JoinClassNames } from "../classNames";
 import { CommandButtonComponent } from "./CommandButtonComponent";
 import { CommandDropdownComponent } from "./CommandDropdownComponent";
@@ -30,7 +30,7 @@ export interface ICommandBarComponentProps {
     artboardColorPickerColor?: string;
 }
 
-export const CommandBarComponent: FC<ICommandBarComponentProps> = (props) => {
+export const CommandBarComponent: FC<PropsWithChildren<ICommandBarComponentProps>> = (props) => {
     return (
         <div className={style.commandBar}>
             <div className={style.commandsLeft}>

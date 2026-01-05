@@ -8,6 +8,7 @@ import { GeometryBufferRenderer } from "./geometryBufferRenderer";
 import { Constants } from "../Engines/constants";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal (Backing field) */
         _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;

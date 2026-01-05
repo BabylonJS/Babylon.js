@@ -3,7 +3,7 @@ import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Node } from "../../node";
-import { setStereoscopicRigMode } from "../RigModes/stereoscopicRigMode";
+import { _SetStereoscopicRigMode } from "../RigModes/stereoscopicRigMode";
 
 Node.AddNodeConstructor("StereoscopicArcRotateCamera", (name, scene, options) => {
     return () => new StereoscopicArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);
@@ -42,5 +42,5 @@ export class StereoscopicArcRotateCamera extends ArcRotateCamera {
         return "StereoscopicArcRotateCamera";
     }
 
-    protected override _setRigMode = () => setStereoscopicRigMode(this);
+    protected override _setRigMode = () => _SetStereoscopicRigMode(this);
 }

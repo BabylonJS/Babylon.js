@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-param */
 /* eslint-disable no-console */
 import { globSync } from "glob";
 import * as fs from "fs";
@@ -22,7 +23,7 @@ export interface IGenerateDeclarationConfig {
     fileFilterRegex?: string;
 }
 
-function getModuleDeclaration(
+function GetModuleDeclaration(
     source: string,
     filename: string,
     config: IGenerateDeclarationConfig,
@@ -76,45 +77,56 @@ function getModuleDeclaration(
                     line = line.startsWith("    ") ? "    //" + line.substring(3) : "// " + line;
                 }
 
+                // replace type imports from directories with index (mixins are generating them)
+                line = line.replace(/import\("([./]+)"\)/g, `import("$1/index")`);
+
                 [
                     // Declaration
-                    /declare module ['"](.*)['"]/,
+                    /declare module ['"](.*)['"]/g,
                     // From
-                    / from ['"](.*)['"]/,
+                    / from ['"](.*)['"]/g,
                     // Module augmentation
-                    / {4}module ['"](.*)['"]/,
-                    /^module ['"](\..*)['"]/,
+                    / {4}module ['"](.*)['"]/g,
+                    /^module ['"](\..*)['"]/g,
                     // Inlined Import
-                    /import\(['"](.*)['"]/,
+                    /import\(['"]([^'"]*)['"]/g,
                     // Side Effect Import
-                    /import ['"](.*)['"]/,
+                    /import ['"](.*)['"]/g,
                 ].forEach((regex) => {
-                    const match = line.match(regex);
-                    if (match) {
-                        if (match[1][0] === ".") {
-                            const newLocation = path.join(sourceDir, match[1]).replace(/\\/g, "/");
-                            line = line.replace(match[1], newLocation);
-                        } else {
-                            let found = false;
-                            Object.keys(mapping).forEach((devPackageName) => {
-                                if (match[1].startsWith(devPackageName)) {
-                                    line = line.replace(
-                                        match[1],
-                                        getPublicPackageName(
-                                            mapping[(isValidDevPackageName(devPackageName, true) ? devPackageName : kebabize(config.devPackageName)) as DevPackageName][buildType],
-                                            match[1]
-                                        ) + match[1].substring(devPackageName.length)
-                                    );
-                                    found = true;
-                                }
-                            });
-                            if (!found) {
-                                // not a dev dependency
-                                // TODO - make a list of external dependencies per package
-                                // for now - we support react
-                                if (match[1] !== "react") {
-                                    // check what the line imports
-                                    line = "";
+                    const matches = line.matchAll(regex);
+                    if (matches) {
+                        for (const match of matches) {
+                            const group = match[1];
+                            if (group[0] === ".") {
+                                const newLocation = path.join(sourceDir, group).replace(/\\/g, "/");
+                                // replaceAll only avaialable by modifying the typescript lib
+                                // which we prefered to not change for now
+                                line = (line as any).replace(group, newLocation);
+                                // while (line.indexOf("//") > -1) {}
+                            } else {
+                                let found = false;
+                                Object.keys(mapping).forEach((devPackageName) => {
+                                    if (group.startsWith(devPackageName)) {
+                                        line = line.replace(
+                                            group,
+                                            getPublicPackageName(
+                                                mapping[(isValidDevPackageName(devPackageName, true) ? devPackageName : kebabize(config.devPackageName)) as DevPackageName][
+                                                    buildType
+                                                ],
+                                                group
+                                            ) + group.substring(devPackageName.length)
+                                        );
+                                        found = true;
+                                    }
+                                });
+                                if (!found) {
+                                    // not a dev dependency
+                                    // TODO - make a list of external dependencies per package
+                                    // for now - we support react
+                                    if (group !== "react" /* && !group.startsWith("@fluentui")*/) {
+                                        // check what the line imports
+                                        line = "";
+                                    }
                                 }
                             }
                         }
@@ -163,9 +175,9 @@ function getModuleDeclaration(
         // TODO - make a list of dependencies that are accepted by each package
         if (!devPackageName) {
             if (externalName) {
-                if (externalName === "@fortawesome" || externalName === "react-contextmenu") {
+                if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui" || externalName === "@recast-navigation") {
                     // replace with any
-                    const matchRegex = new RegExp(`([ <])(${alias}[^;\n ]*)([^\\w])`, "g");
+                    const matchRegex = new RegExp(`([ <])(${alias}[^,;\n>) ]*)([^\\w])`, "g");
                     processedLines = processedLines.replace(matchRegex, `$1any$3`);
                     return;
                 }
@@ -189,7 +201,7 @@ ${processedLines}
  * @param originalSourcefilePath
  * @returns an array of objects with alias, realClassName and package
  */
-function getClassesMap(source: string, originalDevPackageName: string, originalSourcefilePath: string) {
+function GetClassesMap(source: string, originalDevPackageName: string, originalSourcefilePath: string) {
     const regex = /import .*{([^}]*)} from ['"](.*)['"];/g;
     let matches = regex.exec(source);
     const mappingArray: {
@@ -213,7 +225,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
             }
             const realClassName = parts[0].trim();
             const alias = parts[1] ? parts[1].trim() : realClassName;
-            const firstSplit = matches[2]!.split("/")[0];
+            const firstSplit = matches[2].split("/")[0];
             const devPackageName = firstSplit[0] === "." ? originalDevPackageName : firstSplit;
             // if (alias !== realClassName) {
             //     console.log(
@@ -231,7 +243,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
                     alias,
                     realClassName,
                     devPackageName,
-                    fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]!).replace(/\\/g, "/") : matches[2]!,
+                    fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]).replace(/\\/g, "/") : matches[2],
                 });
             } else {
                 if (!devPackageName.startsWith("babylonjs")) {
@@ -240,7 +252,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
                         alias,
                         externalName: devPackageName,
                         realClassName,
-                        fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]!).replace(/\\/g, "/") : matches[2]!,
+                        fullPath: firstSplit[0] === "." ? path.resolve(path.dirname(originalSourcefilePath), matches[2]).replace(/\\/g, "/") : matches[2],
                     });
                 }
             }
@@ -294,7 +306,7 @@ function getClassesMap(source: string, originalDevPackageName: string, originalS
     return mappingArray;
 }
 
-function getPackageDeclaration(
+function GetPackageDeclaration(
     source: string,
     sourceFilePath: string,
     classesMappingArray: {
@@ -319,8 +331,8 @@ function getPackageDeclaration(
     while (i < lines.length) {
         let line = lines[i];
 
-        if (/import\("\.(.*)\)./g.test(line) && !/^declare type (.*) import/g.test(line)) {
-            line = line.replace(/import\((.*)\)./, "");
+        if (/import\("\.([^)]*)\)./g.test(line) && !/^declare type (.*) import/g.test(line)) {
+            line = line.replace(/import\(([^)]*)\)./g, "");
         }
 
         if (!line.includes("const enum") && !line.includes("=")) {
@@ -366,6 +378,11 @@ function getPackageDeclaration(
             }
         }
 
+        // if the import is a return-type import from core or local dir, we remove the import and the dot
+        if (line.match(/import\("core(.*)"\)\./g) || line.match(/import\("\.(.*)"\)\./g)) {
+            line = line.replace(/import\("(.*)"\)\./g, "");
+        }
+
         if (excludeLine) {
             lines[i] = "";
         } else {
@@ -394,9 +411,9 @@ function getPackageDeclaration(
             // TODO - make a list of dependencies that are accepted by each package
             if (!localDevPackageMap) {
                 if (externalName) {
-                    if (externalName === "@fortawesome" || externalName === "react-contextmenu") {
+                    if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui" || externalName === "@recast-navigation") {
                         // replace with any
-                        const matchRegex = new RegExp(`([ <])(${alias}[^;\n ]*)([^\\w])`, "g");
+                        const matchRegex = new RegExp(`([ <])(${alias}[^,;\n>) ]*)([^\\w])`, "g");
                         processedSource = processedSource.replace(matchRegex, `$1any$3`);
                         return;
                     } else if (externalName === "react") {
@@ -409,7 +426,7 @@ function getPackageDeclaration(
             }
             const devPackageToUse = isValidDevPackageName(localDevPackageMap, true) ? localDevPackageMap : devPackageName;
             const originalNamespace = getPublicPackageName(getPackageMappingByDevName(devPackageToUse).namespace);
-            const namespace = getPublicPackageName(getPackageMappingByDevName(devPackageToUse).namespace, fullPath /*, fullPath*/);
+            const namespace = getPublicPackageName(getPackageMappingByDevName(devPackageToUse).namespace, fullPath);
             if (namespace !== defaultModuleName || originalNamespace !== namespace || alias !== realClassName) {
                 const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
                 if (exported) {
@@ -493,6 +510,7 @@ ${linesToDefaultNamespace.join("\n")}
 // `;
 // }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function generateCombinedDeclaration(declarationFiles: string[], config: IGenerateDeclarationConfig, looseDeclarations: string[] = [], buildType: BuildType = "umd") {
     let declarations = "";
     let moduleDeclaration = "";
@@ -504,14 +522,14 @@ export function generateCombinedDeclaration(declarationFiles: string[], config: 
         }
         // The lines of the files now come as a Function inside declaration file.
         const data = fs.readFileSync(declarationFile, "utf8");
-        const classMap = getClassesMap(data, config.devPackageName, declarationFile);
-        moduleDeclaration += getModuleDeclaration(data, declarationFile, config, config.buildType, classMap);
+        const classMap = GetClassesMap(data, config.devPackageName, declarationFile);
+        moduleDeclaration += GetModuleDeclaration(data, declarationFile, config, config.buildType, classMap);
         if (declarationFile.indexOf("legacy.d.ts") !== -1) {
             return;
         }
         // const packageMapping = getPackageMappingByDevName(config.devPackageName);
         // const thisFileModuleName = getPublicPackageName(packageMapping.namespace, declarationFile);
-        declarations += getPackageDeclaration(data, declarationFile, classMap, config.devPackageName);
+        declarations += GetPackageDeclaration(data, declarationFile, classMap, config.devPackageName);
     });
     const looseDeclarationsString = looseDeclarations
         .map((declarationFile) => {
@@ -549,6 +567,7 @@ ${looseDeclarationsString}
     };
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function generateDeclaration() {
     const configFilePath = checkArgs("--config") as string;
     if (!configFilePath) {

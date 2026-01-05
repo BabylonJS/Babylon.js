@@ -9,7 +9,7 @@ import { AddObjectAccessorToKey } from "./objectModelMapping";
 const NAME = "KHR_node_selectability";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_selectability extension.
@@ -29,7 +29,7 @@ addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
             name: "variable",
             toBlock: FlowGraphBlockNames.GetVariable,
             dataTransformer(data) {
-                return ["pickedMesh_" + data[0]];
+                return "pickedMesh_" + data;
             },
         },
     },
@@ -73,7 +73,7 @@ addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
         serializedObject.config = serializedObject.config || {};
         serializedObject.config.glTF = globalGLTF;
         // find the listener nodeIndex value
-        const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value[0];
+        const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value?.[0];
         if (nodeIndex === undefined || typeof nodeIndex !== "number") {
             throw new Error("nodeIndex not found in configuration");
         }
@@ -132,6 +132,7 @@ export class KHR_node_selectability implements IGLTFLoaderExtension {
         this.enabled = loader.isExtensionUsed(NAME);
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
     public async onReady(): Promise<void> {
         this._loader.gltf.nodes?.forEach((node) => {
             if (node.extensions?.KHR_node_selectability && node.extensions?.KHR_node_selectability.selectable === false) {

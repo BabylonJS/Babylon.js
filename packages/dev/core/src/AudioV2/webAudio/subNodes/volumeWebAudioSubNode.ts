@@ -1,42 +1,64 @@
+import type { Nullable } from "../../../types";
 import { _VolumeAudioSubNode } from "../../abstractAudio/subNodes/volumeAudioSubNode";
+import type { IAudioParameterRampOptions } from "../../audioParameter";
+import { _WebAudioParameterComponent } from "../components/webAudioParameterComponent";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode, IWebAudioSubNode } from "../webAudioNode";
 
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function _CreateVolumeAudioSubNodeAsync(engine: _WebAudioEngine): Promise<_VolumeAudioSubNode> {
     return new _VolumeWebAudioSubNode(engine);
 }
 
 /** @internal */
 export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebAudioSubNode {
+    private _volume: _WebAudioParameterComponent;
+
     /** @internal */
-    public readonly node: GainNode;
+    public override readonly engine: _WebAudioEngine;
+
+    /** @internal */
+    public readonly node: AudioNode;
 
     /** @internal */
     public constructor(engine: _WebAudioEngine) {
         super(engine);
 
-        this.node = new GainNode(engine.audioContext);
+        const gainNode = (this.node = new GainNode(engine._audioContext));
+        this._volume = new _WebAudioParameterComponent(engine, gainNode.gain);
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._volume.dispose();
     }
 
     /** @internal */
     public get volume(): number {
-        return this.node.gain.value;
+        return this._volume.value;
     }
 
     /** @internal */
     public set volume(value: number) {
-        this.node.gain.value = value;
+        this.setVolume(value);
     }
 
     /** @internal */
-    public get inNode(): AudioNode {
+    public get _inNode(): AudioNode {
         return this.node;
     }
 
     /** @internal */
-    public get outNode(): AudioNode {
+    public get _outNode(): AudioNode {
         return this.node;
+    }
+
+    /** @internal */
+    public setVolume(value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
+        this._volume.setTargetValue(value, options);
     }
 
     protected override _connect(node: IWebAudioInNode): boolean {
@@ -47,8 +69,8 @@ export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebA
         }
 
         // If the wrapped node is not available now, it will be connected later by the subgraph.
-        if (node.inNode) {
-            this.node.connect(node.inNode);
+        if (node._inNode) {
+            this.node.connect(node._inNode);
         }
 
         return true;
@@ -61,8 +83,8 @@ export class _VolumeWebAudioSubNode extends _VolumeAudioSubNode implements IWebA
             return false;
         }
 
-        if (node.inNode) {
-            this.node.disconnect(node.inNode);
+        if (node._inNode) {
+            this.node.disconnect(node._inNode);
         }
 
         return true;

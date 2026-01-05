@@ -261,9 +261,9 @@ export class NodeGeometryConnectionPoint {
     public getConnectedValue(state: NodeGeometryBuildState) {
         if (this.isConnected) {
             if (this._connectedPoint?._storedFunction) {
-                this._connectedPoint!._callCount++;
-                this._connectedPoint!._executionCount++;
-                return this._connectedPoint!._storedFunction(state);
+                this._connectedPoint._callCount++;
+                this._connectedPoint._executionCount++;
+                return this._connectedPoint._storedFunction(state);
             }
             this._connectedPoint!._callCount++;
             this._connectedPoint!._executionCount = 1;
@@ -350,7 +350,7 @@ export class NodeGeometryConnectionPoint {
     public connectTo(connectionPoint: NodeGeometryConnectionPoint, ignoreConstraints = false): NodeGeometryConnectionPoint {
         if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
             // eslint-disable-next-line no-throw-literal
-            throw "Cannot connect these two connectors.";
+            throw `Cannot connect these two connectors. source: "${this.ownerBlock.name}".${this.name}, target: "${connectionPoint.ownerBlock.name}".${connectionPoint.name}`;
         }
 
         this._endpoints.push(connectionPoint);

@@ -27,6 +27,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { NodeRenderGraph } from "core/FrameGraph/Node/nodeRenderGraph";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -84,6 +85,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
                 this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                 this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                this.props.globalState.onClearUndoStack.notifyObservers();
                 this.props.globalState.onFrame.notifyObservers();
             },
             undefined,
@@ -115,10 +117,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Saving your render graph to Babylon.js snippet server...", false));
         this.props.globalState
             .customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeRenderGraph, this.props.globalState))
+            // eslint-disable-next-line github/no-then
             .then(() => {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Render graph saved successfully", false));
                 this.setState({ uploadInProgress: false });
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
                 this.setState({ uploadInProgress: false });
@@ -143,6 +147,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
                     this.forceUpdate();
                     if (navigator.clipboard) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
                         navigator.clipboard.writeText(renderGraph.snippetId);
                     }
 
@@ -193,10 +198,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
 
         NodeRenderGraph.ParseFromSnippetAsync(snippedId, this.props.globalState.scene, undefined, renderGraph)
-            .then(() => {
-                renderGraph.build();
+            // eslint-disable-next-line github/no-then
+            .then(async () => {
+                await renderGraph.buildAsync();
                 this.props.globalState.onFrame.notifyObservers();
+                this.props.globalState.onClearUndoStack.notifyObservers();
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node render graph: " + err);
             });
@@ -236,6 +244,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         const gridSize = DataStorage.ReadNumber("GridSize", 20);
 
+        const engineList = [
+            { label: "WebGL", value: 0 },
+            { label: "WebGPU", value: 1 },
+        ];
+
         return (
             <div id="propertyTab">
                 <div id="header">
@@ -244,6 +257,18 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
+                        <TextInputLineComponent label="Name" lockObject={this.props.globalState.lockObject} target={this.props.globalState.nodeRenderGraph} propertyName="name" />
+                        <OptionsLine
+                            label="Engine"
+                            target={this}
+                            extractValue={() => this.props.globalState.engine}
+                            options={engineList}
+                            onSelect={(value) => {
+                                this.props.globalState.engine = value as number;
+                                this.forceUpdate();
+                            }}
+                            propertyName={""}
+                        />
                         <TextLineComponent label="Version" value={Engine.Version} />
                         <TextLineComponent
                             label="Help"
@@ -255,16 +280,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             label="Comment"
                             multilines={true}
                             lockObject={this.props.globalState.lockObject}
-                            value={this.props.globalState.nodeRenderGraph!.comment}
+                            value={this.props.globalState.nodeRenderGraph.comment}
                             target={this.props.globalState.nodeRenderGraph}
                             propertyName="comment"
                         />
                         <ButtonLineComponent
                             label="Reset to default"
                             onClick={() => {
-                                this.props.globalState.nodeRenderGraph!.setToDefault();
+                                this.props.globalState.nodeRenderGraph.setToDefault();
                                 this.props.globalState.onResetRequiredObservable.notifyObservers(true);
                                 this.props.globalState.onFrame.notifyObservers();
+                                this.props.globalState.onClearUndoStack.notifyObservers();
                             }}
                         />
                     </LineContainerComponent>
@@ -317,13 +343,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <ButtonLineComponent
                             label="Generate code"
                             onClick={() => {
-                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeRenderGraph!.generateCode(), "code.txt");
+                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, this.props.globalState.nodeRenderGraph.generateCode(), "code.txt");
                             }}
                         />
                         {this.props.globalState.customSave && (
                             <>
                                 <ButtonLineComponent
-                                    label={this.props.globalState.customSave!.label}
+                                    label={this.props.globalState.customSave.label}
                                     isDisabled={this.state.uploadInProgress}
                                     onClick={() => {
                                         this.customSave();
@@ -335,9 +361,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     </LineContainerComponent>
                     {!this.props.globalState.customSave && (
                         <LineContainerComponent title="SNIPPET">
-                            {this.props.globalState.nodeRenderGraph!.snippetId && (
-                                <TextLineComponent label="Snippet ID" value={this.props.globalState.nodeRenderGraph!.snippetId} />
-                            )}
+                            {this.props.globalState.nodeRenderGraph.snippetId && <TextLineComponent label="Snippet ID" value={this.props.globalState.nodeRenderGraph.snippetId} />}
                             <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
                             <ButtonLineComponent
                                 label="Save to snippet server"

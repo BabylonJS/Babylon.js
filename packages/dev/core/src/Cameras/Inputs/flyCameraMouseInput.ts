@@ -79,7 +79,6 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
      * @param noPreventDefault Defines whether events caught by the controls should call preventdefault().
      */
     public attachControl(noPreventDefault?: boolean): void {
-        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._noPreventDefault = noPreventDefault;
 
@@ -241,12 +240,10 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
      */
     private _rotateCamera(offsetX: number, offsetY: number): void {
         const camera = this.camera;
+
         const handednessMultiplier = camera._calculateHandednessMultiplier();
-
-        offsetX *= handednessMultiplier;
-
-        const x = offsetX / this.angularSensibility;
-        const y = offsetY / this.angularSensibility;
+        const x = (offsetX * handednessMultiplier) / this.angularSensibility;
+        const y = (offsetY * handednessMultiplier) / this.angularSensibility;
 
         // Initialize to current rotation.
         const currentRotation = Quaternion.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, camera.rotation.z);

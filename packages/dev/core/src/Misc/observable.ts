@@ -2,7 +2,7 @@ import type { Nullable } from "../types";
 
 declare const WeakRef: any;
 
-const isWeakRefSupported = typeof WeakRef !== "undefined";
+const IsWeakRefSupported = typeof WeakRef !== "undefined";
 
 /**
  * A class serves as a medium between the observable and its observers
@@ -68,9 +68,20 @@ export class EventState {
 }
 
 /**
- * Represent an Observer registered to a given Observable object.
+ * Represent an observer registered to a given IObservable object.
  */
-export class Observer<T> {
+export interface IObserver {
+    /**
+     * Remove the observer from its observable
+     * @param defer if true, the removal will be deferred to avoid callback skipping (default: false)
+     */
+    remove(defer?: boolean): void;
+}
+
+/**
+ * Represent an observer registered to a given Observable object.
+ */
+export class Observer<T> implements IObserver {
     /** @internal */
     public _willBeUnregistered = false;
     /**
@@ -83,7 +94,7 @@ export class Observer<T> {
      * It will be set by the observable that the observer belongs to.
      * @internal
      */
-    public _remove: Nullable<() => void> = null;
+    public _remove: Nullable<(defer?: boolean) => void> = null;
 
     /**
      * Creates a new observer
@@ -109,12 +120,36 @@ export class Observer<T> {
     /**
      * Remove the observer from its observable
      * This can be used instead of using the observable's remove function.
+     * @param defer if true, the removal will be deferred to avoid callback skipping (default: false)
      */
-    public remove() {
+    public remove(defer = false) {
         if (this._remove) {
-            this._remove();
+            this._remove(defer);
         }
     }
+}
+
+/**
+ * An interface that defines the reader side of an Observable (receive notifications).
+ */
+export interface IReadonlyObservable<T = unknown> {
+    /**
+     * Create a new Observer with the specified callback
+     * @param callback the callback that will be executed for that Observer
+     * @param mask the mask used to filter observers
+     * @param insertFirst if true the callback will be inserted at the first position, hence executed before the others ones. If false (default behavior) the callback will be inserted at the last position, executed after all the others already present.
+     * @param scope optional scope for the callback to be called from
+     * @param unregisterOnFirstCall defines if the observer as to be unregistered after the next notification
+     * @returns the new observer created for the callback
+     */
+    add(callback: (eventData: T, eventState: EventState) => void, mask?: number, insertFirst?: boolean, scope?: unknown, unregisterOnFirstCall?: boolean): IObserver;
+
+    /**
+     * Create a new Observer with the specified callback and unregisters after the next notification
+     * @param callback the callback that will be executed for that Observer
+     * @returns the new observer created for the callback
+     */
+    addOnce(callback: (eventData: T, eventState: EventState) => void): IObserver;
 }
 
 /**
@@ -125,7 +160,7 @@ export class Observer<T> {
  * For instance you may have a given Observable that have four different types of notifications: Move (mask = 0x01), Stop (mask = 0x02), Turn Right (mask = 0X04), Turn Left (mask = 0X08).
  * A given observer can register itself with only Move and Stop (mask = 0x03), then it will only be notified when one of these two occurs and will never be for Turn Left/Right.
  */
-export class Observable<T> {
+export class Observable<T> implements IReadonlyObservable<T> {
     private _observers = new Array<Observer<T>>();
     private _numObserversMarkedAsDeleted = 0;
     private _hasNotified = false;
@@ -148,9 +183,11 @@ export class Observable<T> {
         const observable = new Observable<T>();
 
         promise
+            // eslint-disable-next-line github/no-then
             .then((ret: T) => {
                 observable.notifyObservers(ret);
             })
+            // eslint-disable-next-line github/no-then
             .catch((err) => {
                 if (onErrorObservable) {
                     onErrorObservable.notifyObservers(err as E);
@@ -199,17 +236,17 @@ export class Observable<T> {
      * @param unregisterOnFirstCall defines if the observer as to be unregistered after the next notification
      * @returns the new observer created for the callback
      */
-    public add(callback?: null | undefined, mask?: number, insertFirst?: boolean, scope?: any, unregisterOnFirstCall?: boolean): null;
+    public add(callback?: null, mask?: number, insertFirst?: boolean, scope?: any, unregisterOnFirstCall?: boolean): null;
     public add(callback: (eventData: T, eventState: EventState) => void, mask?: number, insertFirst?: boolean, scope?: any, unregisterOnFirstCall?: boolean): Observer<T>;
     public add(
-        callback?: ((eventData: T, eventState: EventState) => void) | null | undefined,
+        callback?: ((eventData: T, eventState: EventState) => void) | null,
         mask?: number,
         insertFirst?: boolean,
         scope?: any,
         unregisterOnFirstCall?: boolean
     ): Nullable<Observer<T>>;
     public add(
-        callback?: ((eventData: T, eventState: EventState) => void) | null | undefined,
+        callback?: ((eventData: T, eventState: EventState) => void) | null,
         mask: number = -1,
         insertFirst = false,
         scope: any = null,
@@ -240,11 +277,11 @@ export class Observable<T> {
         }
 
         // attach the remove function to the observer
-        const observableWeakRef = isWeakRefSupported ? new WeakRef(this) : { deref: () => this };
-        observer._remove = () => {
+        const observableWeakRef = IsWeakRefSupported ? new WeakRef(this) : { deref: () => this };
+        observer._remove = (defer = false) => {
             const observable = observableWeakRef.deref();
             if (observable) {
-                observable._remove(observer);
+                defer ? observable.remove(observer) : observable._remove(observer);
             }
         };
 
@@ -256,10 +293,10 @@ export class Observable<T> {
      * @param callback the callback that will be executed for that Observer
      * @returns the new observer created for the callback
      */
-    public addOnce(callback?: null | undefined): null;
+    public addOnce(callback?: null): null;
     public addOnce(callback: (eventData: T, eventState: EventState) => void): Observer<T>;
-    public addOnce(callback?: ((eventData: T, eventState: EventState) => void) | null | undefined): Nullable<Observer<T>>;
-    public addOnce(callback?: ((eventData: T, eventState: EventState) => void) | null | undefined): Nullable<Observer<T>> {
+    public addOnce(callback?: ((eventData: T, eventState: EventState) => void) | null): Nullable<Observer<T>>;
+    public addOnce(callback?: ((eventData: T, eventState: EventState) => void) | null): Nullable<Observer<T>> {
         return this.add(callback, undefined, undefined, undefined, true);
     }
 

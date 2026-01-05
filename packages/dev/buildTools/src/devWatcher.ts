@@ -6,6 +6,7 @@ import { spawn } from "child_process";
 // npx build-tools -c dw -p "core,gui" -wd -wa
 // npx build-tools -c dw  -wd -wa --lts -s --https
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const devWatch = () => {
     // read the options
     const pkgArg = checkArgs(["-p", "--packages"], false, true);

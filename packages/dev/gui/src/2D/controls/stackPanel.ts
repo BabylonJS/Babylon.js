@@ -149,6 +149,10 @@ export class StackPanel extends Container {
         let stackWidth = 0;
         let stackHeight = 0;
         const childrenCount = this._children.length;
+
+        // Calculate scaled spacing using idealRatio (same pattern as shadowOffset)
+        const scaledSpacing = this._spacing * this._host.idealRatio;
+
         for (let index = 0; index < childrenCount; index++) {
             const child = this._children[index];
             if (!child.isVisible || child.notRenderable) {
@@ -166,7 +170,7 @@ export class StackPanel extends Container {
                 if (!this.ignoreLayoutWarnings && !child.isDimensionFullyDefined("height")) {
                     Logger.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`, 1);
                 } else {
-                    stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
+                    stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? scaledSpacing : 0);
                 }
             } else {
                 const left = stackWidth + "px";
@@ -179,7 +183,7 @@ export class StackPanel extends Container {
                 if (!this.ignoreLayoutWarnings && !child.isDimensionFullyDefined("width")) {
                     Logger.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`, 1);
                 } else {
-                    stackWidth += child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels + (index < childrenCount - 1 ? this._spacing : 0);
+                    stackWidth += child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels + (index < childrenCount - 1 ? scaledSpacing : 0);
                 }
             }
         }
@@ -250,9 +254,10 @@ export class StackPanel extends Container {
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      * @param force force serialization even if isSerializable === false
+     * @param allowCanvas defines if the control is allowed to use a Canvas2D object to serialize
      */
-    public override serialize(serializationObject: any, force: boolean) {
-        super.serialize(serializationObject, force);
+    public override serialize(serializationObject: any, force: boolean, allowCanvas: boolean) {
+        super.serialize(serializationObject, force, allowCanvas);
         if (!this.isSerializable && !force) {
             return;
         }

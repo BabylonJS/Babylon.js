@@ -15,7 +15,8 @@ export interface ICollisionCoordinator {
         maximumRetry: number,
         excludedMesh: Nullable<AbstractMesh>,
         onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void,
-        collisionIndex: number
+        collisionIndex: number,
+        slideOnCollide?: boolean
     ): void;
     init(scene: Scene): void;
 }
@@ -36,7 +37,8 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
         maximumRetry: number,
         excludedMesh: AbstractMesh,
         onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void,
-        collisionIndex: number
+        collisionIndex: number,
+        slideOnCollide: boolean = true
     ): void {
         position.divideToRef(collider._radius, this._scaledPosition);
         displacement.divideToRef(collider._radius, this._scaledVelocity);
@@ -44,7 +46,7 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
         collider._retry = 0;
         collider._initialVelocity = this._scaledVelocity;
         collider._initialPosition = this._scaledPosition;
-        this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, this._finalPosition, excludedMesh);
+        this._collideWithWorld(this._scaledPosition, this._scaledVelocity, collider, maximumRetry, this._finalPosition, slideOnCollide, excludedMesh);
 
         this._finalPosition.multiplyInPlace(collider._radius);
         //run the callback
@@ -65,6 +67,7 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
         collider: Collider,
         maximumRetry: number,
         finalPosition: Vector3,
+        slideOnCollide: boolean,
         excludedMesh: Nullable<AbstractMesh> = null
     ): void {
         const closeDistance = AbstractEngine.CollisionsEpsilon * 10.0;
@@ -96,7 +99,11 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
         }
 
         if (velocity.x !== 0 || velocity.y !== 0 || velocity.z !== 0) {
-            collider._getResponse(position, velocity);
+            collider._getResponse(position, velocity, slideOnCollide);
+            // Halt all movement at the first collision, if not slideOnCollide
+            if (!slideOnCollide) {
+                velocity.setAll(0);
+            }
         }
 
         if (velocity.length() <= closeDistance) {
@@ -105,7 +112,7 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
         }
 
         collider._retry++;
-        this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh);
+        this._collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, slideOnCollide, excludedMesh);
     }
 }
 

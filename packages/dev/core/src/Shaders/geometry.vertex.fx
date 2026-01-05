@@ -12,7 +12,9 @@ precision highp float;
 #include<clipPlaneVertexDeclaration>
 
 attribute vec3 position;
-attribute vec3 normal;
+#ifdef HAS_NORMAL_ATTRIBUTE
+	attribute vec3 normal;
+#endif
 
 #ifdef NEED_UV
 	varying vec2 vUV;
@@ -29,6 +31,14 @@ attribute vec3 normal;
 	uniform mat4 albedoMatrix;
 	varying vec2 vReflectivityUV;
 	varying vec2 vAlbedoUV;
+	#endif
+	#ifdef METALLIC_TEXTURE
+	varying vec2 vMetallicUV;
+	uniform mat4 metallicMatrix;
+	#endif
+	#ifdef ROUGHNESS_TEXTURE
+	varying vec2 vRoughnessUV;
+	uniform mat4 roughnessMatrix;
 	#endif
 
 	#ifdef UV1
@@ -69,7 +79,11 @@ varying vec4 vPreviousPosition;
 void main(void)
 {
     vec3 positionUpdated = position;
+#ifdef HAS_NORMAL_ATTRIBUTE
     vec3 normalUpdated = normal;
+#else
+    vec3 normalUpdated = vec3(0.0, 0.0, 0.0);
+#endif
 #ifdef UV1
     vec2 uvUpdated = uv;
 #endif
@@ -162,6 +176,13 @@ void main(void)
 			#endif
 			#ifdef REFLECTIVITY_UV1
 			vReflectivityUV = vec2(reflectivityMatrix * vec4(uvUpdated, 1.0, 0.0));
+			#else
+				#ifdef METALLIC_UV1
+					vMetallicUV = vec2(metallicMatrix * vec4(uvUpdated, 1.0, 0.0));
+				#endif
+				#ifdef ROUGHNESS_UV1
+					vRoughnessUV = vec2(roughnessMatrix * vec4(uvUpdated, 1.0, 0.0));
+				#endif
 			#endif
 			#ifdef ALBEDO_UV1
 			vAlbedoUV = vec2(albedoMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -179,6 +200,13 @@ void main(void)
 			#endif
 			#ifdef REFLECTIVITY_UV2
 			vReflectivityUV = vec2(reflectivityMatrix * vec4(uv2Updated, 1.0, 0.0));
+			#else
+				#ifdef METALLIC_UV2
+					vMetallicUV = vec2(metallicMatrix * vec4(uv2Updated, 1.0, 0.0));
+				#endif
+				#ifdef ROUGHNESS_UV2
+					vRoughnessUV = vec2(roughnessMatrix * vec4(uv2Updated, 1.0, 0.0));
+				#endif
 			#endif
 			#ifdef ALBEDO_UV2
 			vAlbedoUV = vec2(albedoMatrix * vec4(uv2Updated, 1.0, 0.0));

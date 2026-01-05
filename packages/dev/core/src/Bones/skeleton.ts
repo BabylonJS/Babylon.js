@@ -129,6 +129,11 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
+     * Gets or sets an object used to store user defined information for the skeleton
+     */
+    public metadata: any = null;
+
+    /**
      * Creates a new skeleton
      * @param name defines the skeleton name
      * @param id defines the skeleton Id
@@ -648,6 +653,7 @@ export class Skeleton implements IAnimatable {
         const result = new Skeleton(name, id || name, this._scene);
 
         result.needInitialSkinMatrix = this.needInitialSkinMatrix;
+        result.metadata = this.metadata;
 
         for (let index = 0; index < this.bones.length; index++) {
             const source = this.bones[index];
@@ -693,12 +699,12 @@ export class Skeleton implements IAnimatable {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-blending
      */
     public enableBlending(blendingSpeed = 0.01) {
-        this.bones.forEach((bone) => {
-            bone.animations.forEach((animation: Animation) => {
+        for (const bone of this.bones) {
+            for (const animation of bone.animations) {
                 animation.enableBlending = true;
                 animation.blendingSpeed = blendingSpeed;
-            });
-        });
+            }
+        }
     }
 
     /**
@@ -706,6 +712,7 @@ export class Skeleton implements IAnimatable {
      */
     public dispose() {
         this._meshesWithPoseMatrix.length = 0;
+        this.metadata = null;
 
         // Animations
         this.getScene().stopAnimation(this);
@@ -744,6 +751,10 @@ export class Skeleton implements IAnimatable {
         serializationObject.bones = [];
 
         serializationObject.needInitialSkinMatrix = this.needInitialSkinMatrix;
+
+        if (this.metadata) {
+            serializationObject.metadata = this.metadata;
+        }
 
         for (let index = 0; index < this.bones.length; index++) {
             const bone = this.bones[index];
@@ -804,6 +815,10 @@ export class Skeleton implements IAnimatable {
         }
 
         skeleton.needInitialSkinMatrix = parsedSkeleton.needInitialSkinMatrix;
+
+        if (parsedSkeleton.metadata) {
+            skeleton.metadata = parsedSkeleton.metadata;
+        }
 
         let index: number;
         for (index = 0; index < parsedSkeleton.bones.length; index++) {
@@ -904,7 +919,9 @@ export class Skeleton implements IAnimatable {
         visited[index] = true;
 
         const bone = this.bones[index];
-        if (!bone) return;
+        if (!bone) {
+            return;
+        }
 
         if (bone._index === undefined) {
             bone._index = index;
@@ -922,8 +939,8 @@ export class Skeleton implements IAnimatable {
      * Set the current local matrix as the restPose for all bones in the skeleton.
      */
     public setCurrentPoseAsRest(): void {
-        this.bones.forEach((b) => {
+        for (const b of this.bones) {
             b.setCurrentPoseAsRest();
-        });
+        }
     }
 }

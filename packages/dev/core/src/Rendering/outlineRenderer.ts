@@ -9,13 +9,14 @@ import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import type { IEffectCreationOptions } from "core/Materials/effect";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal */
         _outlineRenderer: OutlineRenderer;
@@ -40,6 +41,7 @@ Scene.prototype.getOutlineRenderer = function (): OutlineRenderer {
 };
 
 declare module "../Meshes/abstractMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractMesh {
         /** @internal (Backing field) */
         _renderOutline: boolean;
@@ -117,6 +119,11 @@ export class OutlineRenderer implements ISceneComponent {
      * Defines a zOffset default Unit to prevent zFighting between the overlay and the mesh.
      */
     public zOffsetUnits = 4; // 4 to account for projection a bit by default
+
+    /**
+     * Gets or sets a boolean indicating if the renderer is enabled
+     */
+    public enabled = true;
 
     private _engine: AbstractEngine;
     private _savedDepthWrite: boolean;
@@ -251,7 +258,7 @@ export class OutlineRenderer implements ISceneComponent {
         }
 
         // Clip plane
-        bindClipPlane(effect, material, scene);
+        BindClipPlane(effect, material, scene);
 
         engine.setZOffset(-this.zOffset);
         engine.setZOffsetUnits(-this.zOffsetUnits);
@@ -310,7 +317,7 @@ export class OutlineRenderer implements ISceneComponent {
             defines.push("#define LOGARITHMICDEPTH");
         }
         // Clip planes
-        prepareStringDefinesForClipPlanes(material, scene, defines);
+        PrepareStringDefinesForClipPlanes(material, scene, defines);
 
         // Bones
         const fallbacks = new EffectFallbacks();
@@ -396,7 +403,7 @@ export class OutlineRenderer implements ISceneComponent {
             ];
             const samplers = ["diffuseSampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"];
 
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
             drawWrapper.setEffect(
                 this.scene.getEngine().createEffect(
@@ -430,6 +437,10 @@ export class OutlineRenderer implements ISceneComponent {
     }
 
     private _beforeRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {
+        if (!this.enabled) {
+            return;
+        }
+
         // Outline - step 1
         this._savedDepthWrite = this._engine.getDepthWrite();
         if (mesh.renderOutline) {
@@ -465,6 +476,10 @@ export class OutlineRenderer implements ISceneComponent {
     }
 
     private _afterRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {
+        if (!this.enabled) {
+            return;
+        }
+
         // Overlay
         if (mesh.renderOverlay) {
             const currentMode = this._engine.getAlphaMode();
@@ -473,7 +488,7 @@ export class OutlineRenderer implements ISceneComponent {
             this.render(subMesh, batch, true, this._passIdForDrawWrapper[3]);
             this._engine.setAlphaMode(currentMode);
             this._engine.setDepthWrite(this._savedDepthWrite);
-            this._engine.alphaState.alphaBlend = alphaBlendState;
+            this._engine.alphaState.setAlphaBlend(alphaBlendState);
         }
 
         // Outline - step 2

@@ -1,3 +1,5 @@
+#if SCENE_MRT_COUNT > 0
+
 var writeGeometryInfo: f32 = select(0.0, 1.0, finalColor.a > ALPHATESTVALUE);
 var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
 
@@ -63,6 +65,10 @@ var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
     fragData[PREPASS_SCREENSPACE_DEPTH_INDEX] = vec4f(fragmentInputs.position.z, 0.0, 0.0, writeGeometryInfo);
 #endif
 
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+    fragData[PREPASS_NORMALIZED_VIEW_DEPTH_INDEX] = vec4f(fragmentInputs.vNormViewDepth, 0.0, 0.0, writeGeometryInfo);
+#endif
+
 #ifdef PREPASS_NORMAL
     #ifdef PREPASS_NORMAL_WORLDSPACE
         fragData[PREPASS_NORMAL_INDEX] = vec4f(normalW, writeGeometryInfo);
@@ -110,4 +116,6 @@ var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
 #endif
 #if SCENE_MRT_COUNT > 7
     fragmentOutputs.fragData7 = fragData[7];
+#endif
+
 #endif

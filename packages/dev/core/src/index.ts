@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./Actions/index";
 export * from "./Animations/index";
 export * from "./assetContainer";
@@ -47,3 +47,5 @@ export * from "./Sprites/index";
 export * from "./States/index";
 export * from "./types";
 export * from "./XR/index";
+
+import "./Shaders/ShadersInclude/sceneFragmentDeclaration";

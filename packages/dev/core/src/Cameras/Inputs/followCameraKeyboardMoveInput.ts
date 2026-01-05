@@ -142,7 +142,6 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
-        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         if (this._onCanvasBlurObserver) {
             return;
@@ -233,7 +232,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
      */
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
-            this._keys.forEach((keyCode) => {
+            for (const keyCode of this._keys) {
                 if (this.keysHeightOffsetIncr.indexOf(keyCode) !== -1 && this._modifierHeightOffset()) {
                     this.camera.heightOffset += this.heightSensibility;
                 } else if (this.keysHeightOffsetDecr.indexOf(keyCode) !== -1 && this._modifierHeightOffset()) {
@@ -249,7 +248,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
                 } else if (this.keysRadiusDecr.indexOf(keyCode) !== -1 && this._modifierRadius()) {
                     this.camera.radius -= this.radiusSensibility;
                 }
-            });
+            }
         }
     }
 

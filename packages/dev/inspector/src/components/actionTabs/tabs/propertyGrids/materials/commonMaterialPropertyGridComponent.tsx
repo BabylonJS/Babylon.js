@@ -20,6 +20,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 import { HexLineComponent } from "shared-ui-components/lines/hexLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 
 interface ICommonMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -27,6 +28,54 @@ interface ICommonMaterialPropertyGridComponentProps {
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
+
+const OrientationOptions = [
+    { label: "<None>", value: Number.MAX_SAFE_INTEGER },
+    { label: "Clockwise", value: Material.ClockWiseSideOrientation },
+    { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
+];
+
+const TransparencyModeOptions = [
+    { label: "<Not Defined>", value: Null_Value },
+    { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
+    { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
+    { label: "Alpha blend", value: PBRMaterial.PBRMATERIAL_ALPHABLEND },
+    { label: "Alpha blend and test", value: PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
+];
+
+const DepthFunctionOptions = [
+    { label: "<Engine Default>", value: 0 },
+    { label: "Never", value: Engine.NEVER },
+    { label: "Always", value: Engine.ALWAYS },
+    { label: "Equal", value: Engine.EQUAL },
+    { label: "Less", value: Engine.LESS },
+    { label: "Less or equal", value: Engine.LEQUAL },
+    { label: "Greater", value: Engine.GREATER },
+    { label: "Greater or equal", value: Engine.GEQUAL },
+    { label: "Not equal", value: Engine.NOTEQUAL },
+];
+
+const StencilFunctionOptions = [
+    { label: "Never", value: Constants.NEVER },
+    { label: "Always", value: Constants.ALWAYS },
+    { label: "Equal", value: Constants.EQUAL },
+    { label: "Less", value: Constants.LESS },
+    { label: "Less or equal", value: Constants.LEQUAL },
+    { label: "Greater", value: Constants.GREATER },
+    { label: "Greater or equal", value: Constants.GEQUAL },
+    { label: "Not equal", value: Constants.NOTEQUAL },
+];
+
+const StencilOperationOptions = [
+    { label: "Keep", value: Constants.KEEP },
+    { label: "Zero", value: Constants.ZERO },
+    { label: "Replace", value: Constants.REPLACE },
+    { label: "Incr", value: Constants.INCR },
+    { label: "Decr", value: Constants.DECR },
+    { label: "Invert", value: Constants.INVERT },
+    { label: "Incr wrap", value: Constants.INCR_WRAP },
+    { label: "Decr wrap", value: Constants.DECR_WRAP },
+];
 
 export class CommonMaterialPropertyGridComponent extends React.Component<ICommonMaterialPropertyGridComponentProps> {
     constructor(props: ICommonMaterialPropertyGridComponentProps) {
@@ -37,64 +86,6 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         const material = this.props.material;
 
         material.depthFunction = material.depthFunction ?? 0;
-
-        const orientationOptions = [
-            { label: "<None>", value: Number.MAX_SAFE_INTEGER },
-            { label: "Clockwise", value: Material.ClockWiseSideOrientation },
-            { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
-        ];
-
-        const transparencyModeOptions = [
-            { label: "<Not Defined>", value: Null_Value },
-            { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
-            { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
-            { label: "Alpha blend", value: PBRMaterial.PBRMATERIAL_ALPHABLEND },
-            { label: "Alpha blend and test", value: PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
-        ];
-
-        const alphaModeOptions = [
-            { label: "Combine", value: Constants.ALPHA_COMBINE },
-            { label: "One one", value: Constants.ALPHA_ONEONE },
-            { label: "Add", value: Constants.ALPHA_ADD },
-            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
-            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
-            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
-            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
-        ];
-
-        const depthfunctionOptions = [
-            { label: "<Engine Default>", value: 0 },
-            { label: "Never", value: Engine.NEVER },
-            { label: "Always", value: Engine.ALWAYS },
-            { label: "Equal", value: Engine.EQUAL },
-            { label: "Less", value: Engine.LESS },
-            { label: "Less or equal", value: Engine.LEQUAL },
-            { label: "Greater", value: Engine.GREATER },
-            { label: "Greater or equal", value: Engine.GEQUAL },
-            { label: "Not equal", value: Engine.NOTEQUAL },
-        ];
-
-        const stencilFunctionOptions = [
-            { label: "Never", value: Constants.NEVER },
-            { label: "Always", value: Constants.ALWAYS },
-            { label: "Equal", value: Constants.EQUAL },
-            { label: "Less", value: Constants.LESS },
-            { label: "Less or equal", value: Constants.LEQUAL },
-            { label: "Greater", value: Constants.GREATER },
-            { label: "Greater or equal", value: Constants.GEQUAL },
-            { label: "Not equal", value: Constants.NOTEQUAL },
-        ];
-
-        const stencilOperationOptions = [
-            { label: "Keep", value: Constants.KEEP },
-            { label: "Zero", value: Constants.ZERO },
-            { label: "Replace", value: Constants.REPLACE },
-            { label: "Incr", value: Constants.INCR },
-            { label: "Decr", value: Constants.DECR },
-            { label: "Invert", value: Constants.INVERT },
-            { label: "Incr wrap", value: Constants.INCR_WRAP },
-            { label: "Decr wrap", value: Constants.DECR_WRAP },
-        ];
 
         return (
             <div>
@@ -123,7 +114,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     />
                     <OptionsLine
                         label="Orientation"
-                        options={orientationOptions}
+                        options={OrientationOptions}
                         target={material}
                         propertyName="sideOrientation"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -150,7 +141,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     />
                     <OptionsLine
                         label="Depth function"
-                        options={depthfunctionOptions}
+                        options={DepthFunctionOptions}
                         target={material}
                         propertyName="depthFunction"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -217,7 +208,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                         <OptionsLine
                             allowNullValue={true}
                             label="Transparency mode"
-                            options={transparencyModeOptions}
+                            options={TransparencyModeOptions}
                             target={material}
                             propertyName="transparencyMode"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -226,7 +217,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     )}
                     <OptionsLine
                         label="Alpha mode"
-                        options={alphaModeOptions}
+                        options={AlphaModeOptions}
                         target={material}
                         propertyName="alphaMode"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
@@ -283,59 +274,95 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                             <HexLineComponent
                                 isInteger
                                 lockObject={this.props.lockObject}
-                                label="Mask"
+                                label="Write mask"
                                 target={material.stencil}
                                 propertyName="mask"
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                            />
-                            <OptionsLine
-                                label="Function"
-                                options={stencilFunctionOptions}
-                                target={material.stencil}
-                                propertyName="func"
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                                onSelect={(value) => this.setState({ stencilFunction: value })}
-                            />
-                            <FloatLineComponent
-                                isInteger
-                                lockObject={this.props.lockObject}
-                                label="Function reference"
-                                target={material.stencil}
-                                propertyName="funcRef"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <HexLineComponent
                                 isInteger
                                 lockObject={this.props.lockObject}
-                                label="Function mask"
+                                label="Read mask"
                                 target={material.stencil}
                                 propertyName="funcMask"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
-                            <OptionsLine
-                                label="Op stencil fail"
-                                options={stencilOperationOptions}
+                            <FloatLineComponent
+                                isInteger
+                                lockObject={this.props.lockObject}
+                                label="Reference value"
                                 target={material.stencil}
-                                propertyName="opStencilFail"
+                                propertyName="funcRef"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                                onSelect={(value) => this.setState({ opStencilFail: value })}
                             />
-                            <OptionsLine
-                                label="Op depth fail"
-                                options={stencilOperationOptions}
-                                target={material.stencil}
-                                propertyName="opDepthFail"
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                                onSelect={(value) => this.setState({ opDepthFail: value })}
-                            />
-                            <OptionsLine
-                                label="Op stencil+depth pass"
-                                options={stencilOperationOptions}
-                                target={material.stencil}
-                                propertyName="opStencilDepthPass"
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                                onSelect={(value) => this.setState({ opStencilDepthPass: value })}
-                            />
+                            <LineContainerComponent title="STENCIL - FRONT" selection={this.props.globalState}>
+                                <OptionsLine
+                                    label="Function"
+                                    options={StencilFunctionOptions}
+                                    target={material.stencil}
+                                    propertyName="func"
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                    onSelect={(value) => this.setState({ stencilFunction: value })}
+                                />
+                                <OptionsLine
+                                    label="Op stencil fail"
+                                    options={StencilOperationOptions}
+                                    target={material.stencil}
+                                    propertyName="opStencilFail"
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                    onSelect={(value) => this.setState({ opStencilFail: value })}
+                                />
+                                <OptionsLine
+                                    label="Op depth fail"
+                                    options={StencilOperationOptions}
+                                    target={material.stencil}
+                                    propertyName="opDepthFail"
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                    onSelect={(value) => this.setState({ opDepthFail: value })}
+                                />
+                                <OptionsLine
+                                    label="Op stencil+depth pass"
+                                    options={StencilOperationOptions}
+                                    target={material.stencil}
+                                    propertyName="opStencilDepthPass"
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                    onSelect={(value) => this.setState({ opStencilDepthPass: value })}
+                                />
+                            </LineContainerComponent>
+                            <LineContainerComponent title="STENCIL - BACK" selection={this.props.globalState}>
+                                <OptionsLine
+                                    label="Function"
+                                    options={StencilFunctionOptions}
+                                    target={material.stencil}
+                                    propertyName="backFunc"
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                    onSelect={(value) => this.setState({ stencilFunction: value })}
+                                />
+                                <OptionsLine
+                                    label="Op stencil fail"
+                                    options={StencilOperationOptions}
+                                    target={material.stencil}
+                                    propertyName="backOpStencilFail"
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                    onSelect={(value) => this.setState({ opStencilFail: value })}
+                                />
+                                <OptionsLine
+                                    label="Op depth fail"
+                                    options={StencilOperationOptions}
+                                    target={material.stencil}
+                                    propertyName="backOpDepthFail"
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                    onSelect={(value) => this.setState({ opDepthFail: value })}
+                                />
+                                <OptionsLine
+                                    label="Op stencil+depth pass"
+                                    options={StencilOperationOptions}
+                                    target={material.stencil}
+                                    propertyName="backOpStencilDepthPass"
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                    onSelect={(value) => this.setState({ opStencilDepthPass: value })}
+                                />
+                            </LineContainerComponent>
                         </LineContainerComponent>
                     </>
                 )}

@@ -10,8 +10,10 @@ import { ColorPickerLine } from "./colorPickerComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import copyIcon from "../imgs/copy.svg";
+import { Color3PropertyLine, Color4PropertyLine } from "../fluent/hoc/propertyLines/colorPropertyLine";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
-const emptyColor = new Color4(0, 0, 0, 0);
+const EmptyColor = new Color4(0, 0, 0, 0);
 
 export interface IColorLineProps {
     label: string;
@@ -61,10 +63,12 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
     getValue(props = this.props): Color4 {
         const target = props.target;
         const property = target[props.propertyName];
-        if (!property) return emptyColor;
+        if (!property) {
+            return EmptyColor;
+        }
         if (typeof property === "string") {
             if (property === conflictingValuesPlaceholder) {
-                return emptyColor;
+                return EmptyColor;
             }
             return this._convertToColor(property);
         } else {
@@ -81,6 +85,9 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
     }
 
     setColor(newColor: Color4) {
+        if (newColor.equals(this.state.color)) {
+            return;
+        }
         this.setState({ color: newColor.clone() });
         if (this.props.isLinear) {
             newColor.toLinearSpaceToRef(newColor);
@@ -133,7 +140,7 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
 
     private _convertToColor(color: string): Color4 {
         if (color === "" || color === "transparent") {
-            return emptyColor;
+            return EmptyColor;
         }
 
         if (color.substring(0, 1) !== "#" || (color.length !== 7 && color.length !== 9)) {
@@ -172,7 +179,7 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
             const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
             const targetName = "globalThis.debugNode";
             const targetProperty = this.props.propertyName;
-            const value = this.props.target[this.props.propertyName!];
+            const value = this.props.target[this.props.propertyName];
             const hex = this.state.color.toHexString();
             let strColor;
             if (value.a) {
@@ -188,7 +195,29 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
         }
     }
 
-    override render() {
+    renderFluent() {
+        if (this.props.disableAlpha) {
+            return (
+                <Color3PropertyLine
+                    label={this.props.label}
+                    value={this._toColor3(this.state.color)}
+                    isLinearMode={this.props.isLinear}
+                    onChange={(color) => this.setColorFromString(color.toHexString())}
+                />
+            );
+        } else {
+            return (
+                <Color4PropertyLine
+                    label={this.props.label}
+                    value={this.state.color}
+                    isLinearMode={this.props.isLinear}
+                    onChange={(color) => this.setColorFromString(color.toHexString())}
+                />
+            );
+        }
+    }
+
+    renderOriginal() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         return (
@@ -255,5 +284,9 @@ export class ColorLine extends React.Component<IColorLineProps, IColorLineCompon
                 )}
             </div>
         );
+    }
+
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }

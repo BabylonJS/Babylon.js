@@ -10,7 +10,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWrench, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Texture } from "core/Materials/Textures/texture";
-import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
+import { TextureButtonLine } from "shared-ui-components/lines/textureButtonLineComponent";
 import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
@@ -146,6 +146,20 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         this.props.onSelectionChangedObservable.notifyObservers(texture!);
     }
 
+    onLinkTexture(texture: BaseTexture) {
+        const material = this.props.material ?? this.props.texturedObject;
+        if (!material) {
+            return;
+        }
+        if (this.props.propertyName) {
+            (material as any)[this.props.propertyName] = texture;
+        } else if (this.props.onTextureCreated) {
+            this.props.onTextureCreated(texture);
+        }
+
+        this.forceUpdate();
+    }
+
     updateTexture(file: File) {
         const material = this.props.material ?? this.props.texturedObject;
         if (!material) {
@@ -163,7 +177,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
                     : new Texture(url, material.getScene(), false, false);
 
                 if (this.props.propertyName) {
-                    (material as any)[this.props.propertyName!] = texture;
+                    (material as any)[this.props.propertyName] = texture;
                 } else if (this.props.onTextureCreated) {
                     this.props.onTextureCreated(texture);
                 }
@@ -181,7 +195,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
             return;
         }
         if (this.props.propertyName) {
-            (material as any)[this.props.propertyName!] = null;
+            (material as any)[this.props.propertyName] = null;
         } else if (this.props.onTextureRemoved) {
             this.props.onTextureRemoved();
         }
@@ -191,12 +205,15 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
 
     override render() {
         const texture = this.props.texture;
+        const material = this.props.material ?? this.props.texturedObject;
 
         if (!texture) {
-            if (this.props.propertyName || this.props.onTextureCreated) {
+            if (material && (this.props.propertyName || this.props.onTextureCreated)) {
                 return (
-                    <FileButtonLine
-                        label={`Add ${this.props.label} texture`}
+                    <TextureButtonLine
+                        scene={material.getScene()}
+                        label={`${this.props.label}`}
+                        onLink={(texture) => this.onLinkTexture(texture)}
                         onClick={(file) => this.updateTexture(file)}
                         accept={this.props.fileFormats ?? ".jpg, .png, .tga, .dds, .env, .exr"}
                     />
@@ -206,10 +223,10 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         }
         return (
             <div className="textureLinkLine">
-                {(!texture.isCube || this.props.cubeOnly) && (this.props.material || this.props.texturedObject) && (
+                {(this.props.material || this.props.texturedObject) && (
                     <>
                         <div className={this.state.isDebugSelected ? "debug selected" : "debug"}>
-                            {this.props.material && (
+                            {(!texture.isCube || this.props.cubeOnly) && this.props.material && (
                                 <span className="actionIcon" onClick={() => this.debugTexture()} title="Render as main texture">
                                     <FontAwesomeIcon icon={faWrench} />
                                 </span>
@@ -220,7 +237,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
                         </div>
                     </>
                 )}
-                <TextLineComponent label={this.props.label} value={texture.name} onLink={() => this.onLink()} />
+                <TextLineComponent label={this.props.label} value={texture.displayName || texture.name} onLink={() => this.onLink()} />
             </div>
         );
     }

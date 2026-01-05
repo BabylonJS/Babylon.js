@@ -699,8 +699,8 @@ export class InputTextArea extends InputText {
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
             context.shadowBlur = this.shadowBlur;
-            context.shadowOffsetX = this.shadowOffsetX;
-            context.shadowOffsetY = this.shadowOffsetY;
+            context.shadowOffsetX = this.shadowOffsetX * this._host.idealRatio;
+            context.shadowOffsetY = this.shadowOffsetY * this._host.idealRatio;
         }
 
         if (this.outlineWidth) {
@@ -787,8 +787,8 @@ export class InputTextArea extends InputText {
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
             context.shadowBlur = this.shadowBlur;
-            context.shadowOffsetX = this.shadowOffsetX;
-            context.shadowOffsetY = this.shadowOffsetY;
+            context.shadowOffsetX = this.shadowOffsetX * this._host.idealRatio;
+            context.shadowOffsetY = this.shadowOffsetY * this._host.idealRatio;
         }
 
         // Background
@@ -903,7 +903,7 @@ export class InputTextArea extends InputText {
 
                 this._highlightedText = this.text.substring(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
 
-                context.globalAlpha = this._highligherOpacity;
+                context.globalAlpha = this._highlighterOpacity;
                 context.fillStyle = this._textHighlightColor;
 
                 const startLineIndex = Math.min(this._cursorInfo.currentLineIndex, this._highlightCursorInfo.initialLineIndex);
@@ -914,7 +914,7 @@ export class InputTextArea extends InputText {
                 for (let i = startLineIndex; i <= endLineIndex; i++) {
                     const line = this._lines[i];
 
-                    let highlightRootX = this._scrollLeft as number;
+                    let highlightRootX = this._scrollLeft;
                     switch (this._textHorizontalAlignment) {
                         case Control.HORIZONTAL_ALIGNMENT_LEFT:
                             highlightRootX += 0;

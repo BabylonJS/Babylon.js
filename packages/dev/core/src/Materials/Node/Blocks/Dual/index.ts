@@ -6,7 +6,9 @@ export * from "./reflectionTextureBlock";
 export * from "./currentScreenBlock";
 export * from "./sceneDepthBlock";
 export * from "./imageSourceBlock";
+export * from "./depthSourceBlock";
 export * from "./clipPlanesBlock";
+export * from "./smartFilterTextureBlock";
 
 // async-loaded shaders
 

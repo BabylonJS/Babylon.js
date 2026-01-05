@@ -216,7 +216,7 @@ export class TouchHolographicButton extends TouchButton3D {
      * Gets the mesh used to render this control
      */
     public override get mesh(): Nullable<AbstractMesh> {
-        return this._backPlate as AbstractMesh;
+        return this._backPlate;
     }
 
     /**
@@ -616,6 +616,7 @@ export class TouchHolographicButton extends TouchButton3D {
         backPlateMesh.visibility = 0;
         backPlateMesh.scaling.z = 0.2;
         const baseUrl = Tools.GetAssetUrl(TouchHolographicButton.MRTK_ASSET_BASE_URL);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         SceneLoader.ImportMeshAsync(undefined, baseUrl, TouchHolographicButton.BACKPLATE_MODEL_FILENAME, scene).then((result) => {
             const backPlateModel = result.meshes[1];
             backPlateModel.visibility = 0;
@@ -654,6 +655,7 @@ export class TouchHolographicButton extends TouchButton3D {
         collisionMesh.visibility = 0;
         collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale((this.backPlateDepth - this.frontPlateDepth) / 2);
         const baseUrl = Tools.GetAssetUrl(TouchHolographicButton.MRTK_ASSET_BASE_URL);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         SceneLoader.ImportMeshAsync(undefined, baseUrl, TouchHolographicButton.FRONTPLATE_MODEL_FILENAME, scene).then((result) => {
             const collisionPlate = CreateBox(
                 `${this.name}_collisionPlate`,
@@ -701,6 +703,7 @@ export class TouchHolographicButton extends TouchButton3D {
         innerQuadMesh.position.z += this.backPlateDepth / 2 - this.flatPlaneDepth;
 
         const baseUrl = Tools.GetAssetUrl(TouchHolographicButton.MRTK_ASSET_BASE_URL);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         SceneLoader.ImportMeshAsync(undefined, baseUrl, TouchHolographicButton.INNERQUAD_MODEL_FILENAME, scene).then((result) => {
             const innerQuadModel = result.meshes[1];
             innerQuadModel.name = `${this.name}_innerQuad`;
@@ -731,6 +734,7 @@ export class TouchHolographicButton extends TouchButton3D {
         backGlowMesh.position.z += this.backPlateDepth / 2 - this.flatPlaneDepth * 2;
 
         const baseUrl = Tools.GetAssetUrl(TouchHolographicButton.MRTK_ASSET_BASE_URL);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         SceneLoader.ImportMeshAsync(undefined, baseUrl, TouchHolographicButton.BACKGLOW_MODEL_FILENAME, scene).then((result) => {
             const backGlowModel = result.meshes[1];
             backGlowModel.name = `${this.name}_backGlow`;

@@ -36,7 +36,7 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
         return this._wasUsed;
     }
 
-    public postExportMaterialAdditionalTextures(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
+    public async postExportMaterialAdditionalTexturesAsync(context: string, node: IMaterial, babylonMaterial: Material): Promise<BaseTexture[]> {
         if (babylonMaterial instanceof PBRMaterial) {
             if (babylonMaterial.sheen.isEnabled && babylonMaterial.sheen.texture) {
                 return [babylonMaterial.sheen.texture];
@@ -46,8 +46,8 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
         return [];
     }
 
-    public postExportMaterialAsync(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
-        return new Promise((resolve) => {
+    public async postExportMaterialAsync(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
+        return await new Promise((resolve) => {
             if (babylonMaterial instanceof PBRMaterial) {
                 if (!babylonMaterial.sheen.isEnabled) {
                     resolve(node);

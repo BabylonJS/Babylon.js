@@ -1,6 +1,6 @@
 import type { Nullable } from "core/types";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { ThinBlurPostProcess } from "./thinBlurPostProcess";
+import { ThinDepthOfFieldBlurPostProcess } from "./thinDepthOfFieldBlurPostProcess";
 import { ThinCircleOfConfusionPostProcess } from "./thinCircleOfConfusionPostProcess";
 import { ThinDepthOfFieldMergePostProcess } from "./thinDepthOfFieldMergePostProcess";
 import { Vector2 } from "core/Maths/math.vector";
@@ -27,9 +27,9 @@ export class ThinDepthOfFieldEffect {
     /** @internal */
     public readonly _circleOfConfusion: ThinCircleOfConfusionPostProcess;
     /** @internal */
-    public readonly _depthOfFieldBlurX: Array<[ThinBlurPostProcess, number]> = [];
+    public readonly _depthOfFieldBlurX: Array<[ThinDepthOfFieldBlurPostProcess, number]> = [];
     /** @internal */
-    public readonly _depthOfFieldBlurY: Array<[ThinBlurPostProcess, number]> = [];
+    public readonly _depthOfFieldBlurY: Array<[ThinDepthOfFieldBlurPostProcess, number]> = [];
     /** @internal */
     public readonly _dofMerge: ThinDepthOfFieldMergePostProcess;
 
@@ -116,9 +116,9 @@ export class ThinDepthOfFieldEffect {
         const adjustedKernelSize = kernelSize / Math.pow(2, blurCount - 1);
         let ratio = 1.0;
         for (let i = 0; i < blurCount; i++) {
-            this._depthOfFieldBlurY.push([new ThinBlurPostProcess(name, engine, new Vector2(0, 1), adjustedKernelSize, { blockCompilation }), ratio]);
+            this._depthOfFieldBlurY.push([new ThinDepthOfFieldBlurPostProcess(name, engine, new Vector2(0, 1), adjustedKernelSize, { blockCompilation }), ratio]);
             ratio = 0.75 / Math.pow(2, i);
-            this._depthOfFieldBlurX.push([new ThinBlurPostProcess(name, engine, new Vector2(1, 0), adjustedKernelSize, { blockCompilation }), ratio]);
+            this._depthOfFieldBlurX.push([new ThinDepthOfFieldBlurPostProcess(name, engine, new Vector2(1, 0), adjustedKernelSize, { blockCompilation }), ratio]);
         }
 
         this._dofMerge = new ThinDepthOfFieldMergePostProcess(name, engine, { blockCompilation });

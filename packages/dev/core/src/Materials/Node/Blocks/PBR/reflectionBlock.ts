@@ -7,7 +7,6 @@ import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { ReflectionTextureBaseBlock } from "../Dual/reflectionTextureBaseBlock";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture";
 import type { BaseTexture } from "../../../Textures/baseTexture";
@@ -35,6 +34,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     /** @internal */
     public _vReflectionFilteringInfoName: string;
     private _scene: Scene;
+    private _iblIntensityName: string;
 
     /**
      * The properties below are set by the main PBR block prior to calling methods of this class.
@@ -195,8 +195,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return this._scene.environmentTexture;
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        super.prepareDefines(mesh, nodeMaterial, defines);
+    public override prepareDefines(defines: NodeMaterialDefines) {
+        super.prepareDefines(defines);
 
         const reflectionTexture = this._getTexture();
         const reflection = reflectionTexture && reflectionTexture.getTextureMatrix;
@@ -207,13 +207,13 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             return;
         }
 
-        defines.setValue(this._defineLODReflectionAlpha, reflectionTexture!.lodLevelInAlpha, true);
-        defines.setValue(this._defineLinearSpecularReflection, reflectionTexture!.linearSpecularLOD, true);
-        defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem ? !reflectionTexture!.invertZ : reflectionTexture!.invertZ, true);
+        defines.setValue(this._defineLODReflectionAlpha, reflectionTexture.lodLevelInAlpha, true);
+        defines.setValue(this._defineLinearSpecularReflection, reflectionTexture.linearSpecularLOD, true);
+        defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ, true);
 
         defines.setValue("SPHERICAL_HARMONICS", this.useSphericalHarmonics, true);
-        defines.setValue("GAMMAREFLECTION", reflectionTexture!.gammaSpace, true);
-        defines.setValue("RGBDREFLECTION", reflectionTexture!.isRGBD, true);
+        defines.setValue("GAMMAREFLECTION", reflectionTexture.gammaSpace, true);
+        defines.setValue("RGBDREFLECTION", reflectionTexture.isRGBD, true);
 
         if (reflectionTexture && reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
             if (reflectionTexture.isCube) {
@@ -242,6 +242,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         } else {
             effect.setTexture(this._2DSamplerName, reflectionTexture);
         }
+
+        effect.setFloat(this._iblIntensityName, this._scene.iblIntensity * reflectionTexture.level);
 
         const width = reflectionTexture.getSize().width;
 
@@ -401,8 +403,12 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         state._emitUniformFromString(this._vReflectionFilteringInfoName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
+        this._iblIntensityName = state._getFreeVariableName("iblIntensity");
+
+        state._emitUniformFromString(this._iblIntensityName, NodeMaterialBlockConnectionPointTypes.Float);
+
         code += `#ifdef REFLECTION
-            ${state._declareLocalVar(this._vReflectionInfosName, NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(1., 0.);
+            ${state._declareLocalVar(this._vReflectionInfosName, NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(${(isWebGPU ? "uniforms." : "") + this._iblIntensityName}, 0.);
 
             ${isWebGPU ? "var reflectionOut: reflectionOutParams" : "reflectionOutParams reflectionOut"};
 
@@ -438,6 +444,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             #ifdef USEIRRADIANCEMAP
                 , irradianceSampler         // ** not handled **
                 ${isWebGPU ? `, irradianceSamplerSampler` : ""}
+                #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                , vReflectionDominantDirection
+                #endif
             #endif
             #ifndef LODBASEDMICROSFURACE
                 #ifdef ${this._define3DName}
@@ -459,6 +468,9 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                     ${isWebGPU ? `, icdfSamplerSampler` : ""}
                 #endif
             #endif
+            , viewDirectionW
+            , diffuseRoughness
+            , surfaceAlbedo
             );
         #endif\n`;
 

@@ -6,7 +6,7 @@ import type { IInternalTextureLoader } from "./internalTextureLoader";
 import { Logger } from "../../../Misc/logger";
 import { Constants } from "../../../Engines/constants";
 
-function mapSRGBToLinear(format: number): Nullable<number> {
+function MapSRGBToLinear(format: number): Nullable<number> {
     switch (format) {
         case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT:
             return Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1;
@@ -94,7 +94,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
             texture._invertVScale = !texture.invertY;
             const ktx = new KhronosTextureContainer(data, 1);
 
-            const mappedFormat = mapSRGBToLinear(ktx.glInternalFormat);
+            const mappedFormat = MapSRGBToLinear(ktx.glInternalFormat);
             if (mappedFormat) {
                 texture.format = mappedFormat;
                 texture._useSRGBBuffer = texture.getEngine()._getUseSRGBBuffer(true, texture.generateMipMaps);
@@ -115,6 +115,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
             );
         } else if (KhronosTextureContainer2.IsValid(data)) {
             const ktx2 = new KhronosTextureContainer2(texture.getEngine());
+            // eslint-disable-next-line github/no-then
             ktx2._uploadAsync(data, texture, options).then(
                 () => {
                     callback(texture.width, texture.height, texture.generateMipMaps, true, () => {}, false);

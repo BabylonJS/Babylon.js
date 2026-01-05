@@ -1,4 +1,5 @@
-import type { FrameGraph } from "core/FrameGraph/frameGraph";
+// eslint-disable-next-line import/no-internal-modules
+import type { FrameGraph } from "core/index";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { ThinPassCubePostProcess, ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
 
@@ -17,6 +18,10 @@ export class FrameGraphPassTask extends FrameGraphPostProcessTask {
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinPassPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinPassPostProcess(name, frameGraph.engine));
     }
+
+    public override getClassName(): string {
+        return "FrameGraphPassTask";
+    }
 }
 
 /**
@@ -33,5 +38,9 @@ export class FrameGraphPassCubeTask extends FrameGraphPostProcessTask {
      */
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinPassCubePostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinPassCubePostProcess(name, frameGraph.engine));
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphPassCubeTask";
     }
 }

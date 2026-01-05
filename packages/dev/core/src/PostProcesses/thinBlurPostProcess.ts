@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, AbstractEngine, EffectWrapperCreationOptions, Vector2, Effect } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
@@ -64,6 +63,8 @@ export class ThinBlurPostProcess extends EffectWrapper {
             vertexUrl: ThinBlurPostProcess.VertexUrl,
             blockCompilation: true,
         });
+
+        this._staticDefines = options ? (Array.isArray(options.defines) ? options.defines.join("\n") : options.defines || "") : "";
 
         this.options.blockCompilation = blockCompilationFinal;
 
@@ -131,23 +132,23 @@ export class ThinBlurPostProcess extends EffectWrapper {
         return this._packedFloat;
     }
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
         this._drawWrapper.effect!.setFloat2("delta", (1 / this.textureWidth) * this.direction.x, (1 / this.textureHeight) * this.direction.y);
     }
 
     /** @internal */
     public _updateParameters(onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void {
         // Generate sampling offsets and weights
-        const N = this._kernel;
-        const centerIndex = (N - 1) / 2;
+        const n = this._kernel;
+        const centerIndex = (n - 1) / 2;
 
         // Generate Gaussian sampling weights over kernel
         let offsets = [];
         let weights = [];
         let totalWeight = 0;
-        for (let i = 0; i < N; i++) {
-            const u = i / (N - 1);
+        for (let i = 0; i < n; i++) {
+            const u = i / (n - 1);
             const w = this._gaussianWeight(u * 2.0 - 1);
             offsets[i] = i - centerIndex;
             weights[i] = w;

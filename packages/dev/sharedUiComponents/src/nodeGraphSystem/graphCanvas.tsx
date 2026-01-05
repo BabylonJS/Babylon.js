@@ -55,6 +55,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _candidateLinkedHasMoved = false;
     private _x = 0;
     private _y = 0;
+    private _lastx = 0;
+    private _lasty = 0;
     private _zoom = 1;
     private _selectedNodes: GraphNode[] = [];
     private _selectedLink: Nullable<NodeLink> = null;
@@ -69,6 +71,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _nodeDataContentList = new Array<any>();
 
     private _altKeyIsPressed = false;
+    private _shiftKeyIsPressed = false;
     private _multiKeyIsPressed = false;
     private _oldY = -1;
 
@@ -76,6 +79,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     public _isLoading = false;
     public _targetLinkCandidate: Nullable<NodeLink> = null;
 
+    private _isCopyingOrPasting: boolean = false;
     private _copiedNodes: GraphNode[] = [];
     private _copiedFrames: GraphFrame[] = [];
 
@@ -234,7 +238,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                         }
                     } else {
                         if (selection instanceof GraphFrame) {
-                            if (this._multiKeyIsPressed || forceKeepSelection) {
+                            if (this._multiKeyIsPressed || this._shiftKeyIsPressed || forceKeepSelection) {
                                 if (!this._selectedFrameAndNodesConflict([selection], this._selectedNodes) && !this._selectedFrames.includes(selection)) {
                                     this._selectedFrames.push(selection);
                                 }
@@ -245,7 +249,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                                 this._selectedPort = null;
                             }
                         } else if (selection instanceof GraphNode) {
-                            if (this._multiKeyIsPressed || forceKeepSelection) {
+                            if (this._multiKeyIsPressed || this._shiftKeyIsPressed || forceKeepSelection) {
                                 if (!this._selectedFrameAndNodesConflict(this._selectedFrames, [selection]) && !this._selectedNodes.includes(selection)) {
                                     this._selectedNodes.push(selection);
                                 }
@@ -269,19 +273,21 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         });
 
-        this.props.stateManager.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
-        this.props.stateManager.hostDocument!.addEventListener(
+        this.props.stateManager.hostDocument.addEventListener("keyup", () => this.onKeyUp(), false);
+        this.props.stateManager.hostDocument.addEventListener(
             "keydown",
             (evt) => {
                 this._altKeyIsPressed = evt.altKey;
+                this._shiftKeyIsPressed = evt.shiftKey;
                 this._multiKeyIsPressed = evt.ctrlKey || evt.metaKey;
             },
             false
         );
-        this.props.stateManager.hostDocument!.defaultView!.addEventListener(
+        this.props.stateManager.hostDocument.defaultView!.addEventListener(
             "blur",
             () => {
                 this._altKeyIsPressed = false;
+                this._shiftKeyIsPressed = false;
                 this._multiKeyIsPressed = false;
             },
             false
@@ -291,7 +297,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.props.stateManager.storeEditorData = (editorData, graphFrame) => {
             editorData.frames = [];
             if (graphFrame) {
-                editorData.frames.push(graphFrame!.serialize(false));
+                editorData.frames.push(graphFrame.serialize(false));
             } else {
                 editorData.x = this.x;
                 editorData.y = this.y;
@@ -440,19 +446,19 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
-    handleKeyDown(
+    async handleKeyDownAsync(
         evt: KeyboardEvent,
         onRemove: (nodeData: INodeData) => void,
         mouseLocationX: number,
         mouseLocationY: number,
-        dataGenerator: (nodeData: INodeData) => any,
+        dataGenerator: (nodeData: INodeData) => Promise<Nullable<GraphNode>>,
         rootElement: HTMLDivElement
     ) {
         if (this.stateManager.modalIsDisplayed) {
             return;
         }
 
-        if (evt.code === "Space" && evt.target === this.props.stateManager.hostDocument!.body) {
+        if (evt.code === "Space" && evt.target === this.props.stateManager.hostDocument.body) {
             this.stateManager.modalIsDisplayed = true;
             this.props.stateManager.onSearchBoxRequiredObservable.notifyObservers({ x: mouseLocationX, y: mouseLocationY });
             return;
@@ -466,89 +472,104 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        if (evt.key === "c" || evt.key === "C") {
-            // Copy
-            this._copiedNodes = [];
-            this._copiedFrames = [];
+        // Now we're doing copy or paste - ensure we only do one at a time since these operations are async
+        if (this._isCopyingOrPasting) {
+            return;
+        }
+        try {
+            if (evt.key === "c" || evt.key === "C") {
+                // Copy
+                this._copiedNodes = [];
+                this._copiedFrames = [];
 
-            if (this.selectedFrames.length) {
-                for (const frame of this.selectedFrames) {
-                    frame.serialize(true);
-                    this._copiedFrames.push(frame);
-                }
-                return;
-            }
-
-            const selectedItems = this.selectedNodes;
-            if (!selectedItems.length) {
-                return;
-            }
-
-            const selectedItem = selectedItems[0] as GraphNode;
-
-            if (!selectedItem.content.data) {
-                return;
-            }
-
-            this._copiedNodes = selectedItems.slice(0);
-        } else if (evt.key === "v" || evt.key === "V") {
-            // Paste
-            const zoomLevel = this.zoom;
-            let currentY = (mouseLocationY - rootElement.offsetTop - this.y - 20) / zoomLevel;
-
-            if (this._copiedFrames.length) {
-                for (const frame of this._copiedFrames) {
-                    // New frame
-                    const newFrame = new GraphFrame(null, this, true);
-                    this.frames.push(newFrame);
-
-                    newFrame.width = frame.width;
-                    newFrame.height = frame.height;
-                    newFrame.width / 2;
-                    newFrame.name = frame.name;
-                    newFrame.color = frame.color;
-
-                    let currentX = (mouseLocationX - rootElement.offsetLeft - this.x) / zoomLevel;
-                    newFrame.x = currentX - newFrame.width / 2;
-                    newFrame.y = currentY;
-
-                    // Paste nodes
-                    if (frame.nodes.length) {
-                        currentX = newFrame.x + frame.nodes[0].x - frame.x;
-                        currentY = newFrame.y + frame.nodes[0].y - frame.y;
-
-                        this._frameIsMoving = true;
-                        const newNodes = this.pasteSelection(frame.nodes, currentX, currentY, dataGenerator);
-                        if (newNodes) {
-                            for (const node of newNodes) {
-                                newFrame.syncNode(node);
-                            }
-                        }
-                        this._frameIsMoving = false;
+                if (this.selectedFrames.length) {
+                    for (const frame of this.selectedFrames) {
+                        frame.serialize(true);
+                        this._copiedFrames.push(frame);
                     }
-
-                    newFrame.adjustPorts();
-
-                    if (frame.isCollapsed) {
-                        newFrame.isCollapsed = true;
-                    }
-
-                    // Select
-                    this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newFrame, forceKeepSelection: true });
                     return;
                 }
-            }
 
-            if (!this._copiedNodes.length) {
-                return;
-            }
+                const selectedItems = this.selectedNodes;
+                if (!selectedItems.length) {
+                    return;
+                }
 
-            const currentX = (mouseLocationX - rootElement.offsetLeft - this.x - GraphCanvasComponent.NodeWidth) / zoomLevel;
-            this.pasteSelection(this._copiedNodes, currentX, currentY, dataGenerator, true);
+                const selectedItem = selectedItems[0];
+
+                if (!selectedItem.content.data) {
+                    return;
+                }
+
+                this._copiedNodes = selectedItems.slice(0);
+            } else if (evt.key === "v" || evt.key === "V") {
+                // Paste
+                const zoomLevel = this.zoom;
+                let currentY = (mouseLocationY - rootElement.offsetTop - this.y - 20) / zoomLevel;
+
+                if (this._copiedFrames.length) {
+                    for (const frame of this._copiedFrames) {
+                        // New frame
+                        const newFrame = new GraphFrame(null, this, true);
+                        this.frames.push(newFrame);
+
+                        newFrame.width = frame.width;
+                        newFrame.height = frame.height;
+                        newFrame.width / 2;
+                        newFrame.name = frame.name;
+                        newFrame.color = frame.color;
+
+                        let currentX = (mouseLocationX - rootElement.offsetLeft - this.x) / zoomLevel;
+                        newFrame.x = currentX - newFrame.width / 2;
+                        newFrame.y = currentY;
+
+                        // Paste nodes
+                        if (frame.nodes.length) {
+                            currentX = newFrame.x + frame.nodes[0].x - frame.x;
+                            currentY = newFrame.y + frame.nodes[0].y - frame.y;
+
+                            this._frameIsMoving = true;
+                            // eslint-disable-next-line no-await-in-loop
+                            const newNodes = await this.pasteSelectionAsync(frame.nodes, currentX, currentY, dataGenerator);
+                            if (newNodes) {
+                                for (const node of newNodes) {
+                                    newFrame.syncNode(node);
+                                }
+                            }
+                            this._frameIsMoving = false;
+                        }
+
+                        newFrame.adjustPorts();
+
+                        if (frame.isCollapsed) {
+                            newFrame.isCollapsed = true;
+                        }
+
+                        // Select
+                        this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newFrame, forceKeepSelection: true });
+                        return;
+                    }
+                }
+
+                if (!this._copiedNodes.length) {
+                    return;
+                }
+
+                const currentX = (mouseLocationX - rootElement.offsetLeft - this.x - GraphCanvasComponent.NodeWidth) / zoomLevel;
+                await this.pasteSelectionAsync(this._copiedNodes, currentX, currentY, dataGenerator, true);
+            }
+        } finally {
+            this._isCopyingOrPasting = false;
         }
     }
 
-    pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, dataGenerator: (nodeData: INodeData) => any, selectNew = false) {
+    async pasteSelectionAsync(
+        copiedNodes: GraphNode[],
+        currentX: number,
+        currentY: number,
+        dataGenerator: (nodeData: INodeData) => Promise<Nullable<GraphNode>>,
+        selectNew = false
+    ) {
         let originalNode: Nullable<GraphNode> = null;
 
         const newNodes: GraphNode[] = [];
@@ -567,7 +588,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 continue;
             }
 
-            const newNode = dataGenerator(node.content);
+            // eslint-disable-next-line no-await-in-loop
+            const newNode = await dataGenerator(node.content);
+
+            if (!newNode) {
+                continue;
+            }
 
             let x = 0;
             let y = 0;
@@ -598,6 +624,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         for (let index = 0; index < newNodes.length; index++) {
             this.reconnectNewNodes(index, newNodes, copiedNodes, done);
         }
+
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
 
         return newNodes;
     }
@@ -727,6 +755,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     onKeyUp() {
         this._altKeyIsPressed = false;
+        this._shiftKeyIsPressed = false;
         this._multiKeyIsPressed = false;
         this._oldY = -1;
     }
@@ -1017,7 +1046,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._rootContainer.setPointerCapture(evt.pointerId);
 
         // Port dragging
-        if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).nodeName === "IMG") {
+        if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).classList.contains("port-icon")) {
             if (!this._candidateLink) {
                 const portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
                 if (this._altKeyIsPressed && (portElement.portData.isConnected || portElement.portData.hasEndpoints)) {
@@ -1086,14 +1115,20 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
+        this._lastx = this.x;
+        this._lasty = this.y;
     }
 
     onUp(evt: React.PointerEvent) {
         if (this.stateManager.modalIsDisplayed) {
             return;
+        }
+
+        // Un select with no move click, 1 pixel tolerance
+        if (!this._selectionBox && !this.selectedLink && !this._frameCandidate && Math.abs(this.x - this._lastx) < 2 && Math.abs(this.y - this._lasty) < 2) {
+            this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
         }
 
         this._mouseStartPointX = null;

@@ -57,7 +57,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         const hardwareTexture = texture._hardwareTexture as Nullable<WebGLHardwareTexture>;
 
         if (hardwareTexture && texture._autoMSAAManagement && this._MSAAFramebuffer) {
-            const currentFB = engine._currentFramebuffer;
+            const currentFb = engine._currentFramebuffer;
             engine._bindUnboundFramebuffer(this._MSAAFramebuffer);
             gl.framebufferRenderbuffer(
                 gl.FRAMEBUFFER,
@@ -65,7 +65,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
                 gl.RENDERBUFFER,
                 hardwareTexture.getMSAARenderBuffer()
             );
-            engine._bindUnboundFramebuffer(currentFB);
+            engine._bindUnboundFramebuffer(currentFb);
         }
     }
 
@@ -175,7 +175,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
 
         const framebuffer = this._framebuffer;
         const engine = this._engine as ThinEngine;
-        const currentFB = engine._currentFramebuffer;
+        const currentFb = engine._currentFramebuffer;
         engine._bindUnboundFramebuffer(framebuffer);
 
         let attachment: any;
@@ -210,7 +210,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, hardwareTexture.getMSAARenderBuffer());
         }
 
-        engine._bindUnboundFramebuffer(currentFB);
+        engine._bindUnboundFramebuffer(currentFb);
     }
 
     /**

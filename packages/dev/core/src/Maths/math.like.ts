@@ -1,4 +1,4 @@
-import type { float, int, DeepImmutable, Tuple } from "../types";
+import type { float, int, Tuple } from "../types";
 
 /**
  * @internal
@@ -34,7 +34,7 @@ export interface IVector3Like extends IVector2Like {
 /**
  * @internal
  */
-export interface Vector3LikeInternal {
+export interface IVector3LikeInternal {
     _x: number;
     _y: number;
     _z: number;
@@ -68,7 +68,7 @@ export interface IPlaneLike {
  * @internal
  */
 export interface IMatrixLike {
-    asArray(): DeepImmutable<Tuple<number, 16>>;
+    asArray(): Tuple<number, 16>;
     updateFlag: int;
 }
 

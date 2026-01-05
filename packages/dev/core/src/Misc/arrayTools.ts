@@ -23,7 +23,7 @@ export function BuildArray<T>(size: number, itemBuilder: () => T): Array<T> {
  * @returns a new tuple filled with new objects.
  */
 export function BuildTuple<T, N extends number>(size: N, itemBuilder: () => T): Tuple<T, N> {
-    return BuildArray(size, itemBuilder) as any;
+    return BuildArray(size, itemBuilder) as Tuple<T, N>;
 }
 
 /**
@@ -39,7 +39,7 @@ export type _ObserveCallback = (functionName: string, previousLength: number) =>
  * @param callback Defines the callback to call when the function is called.
  * @returns A function to call to stop observing
  */
-function _observeArrayfunction(object: { [key: string]: any }, functionName: string, callback: _ObserveCallback): Nullable<() => void> {
+function ObserveArrayFunction(object: { [key: string]: any }, functionName: string, callback: _ObserveCallback): Nullable<() => void> {
     // Finds the function to observe
     const oldFunction = object[functionName];
     if (typeof oldFunction !== "function") {
@@ -51,6 +51,7 @@ function _observeArrayfunction(object: { [key: string]: any }, functionName: str
         const previousLength = object.length;
         const returnValue = newFunction.previous.apply(object, arguments);
         callback(functionName, previousLength);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return returnValue;
     } as any;
 
@@ -106,13 +107,13 @@ const observedArrayFunctions = ["push", "splice", "pop", "shift", "unshift"];
 export function _ObserveArray<T>(array: T[], callback: _ObserveCallback) {
     // Observes all the required array functions and stores the unhook functions
     const unObserveFunctions = observedArrayFunctions.map((name) => {
-        return _observeArrayfunction(array, name, callback);
+        return ObserveArrayFunction(array, name, callback);
     });
 
     // Returns a function that unhook all the observed functions
     return () => {
-        unObserveFunctions.forEach((unObserveFunction) => {
+        for (const unObserveFunction of unObserveFunctions) {
             unObserveFunction?.();
-        });
+        }
     };
 }

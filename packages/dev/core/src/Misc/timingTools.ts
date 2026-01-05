@@ -1,4 +1,4 @@
-let _immediateQueue: Array<() => void> = [];
+let ImmediateQueue: Array<() => void> = [];
 
 /**
  * Class used to provide helper for timing
@@ -9,22 +9,22 @@ export class TimingTools {
      * @param action defines the action to execute after the current execution block
      */
     public static SetImmediate(action: () => void) {
-        if (_immediateQueue.length === 0) {
+        if (ImmediateQueue.length === 0) {
             setTimeout(() => {
                 // Execute all immediate functions
-                const functionsToCall = _immediateQueue;
-                _immediateQueue = [];
+                const functionsToCall = ImmediateQueue;
+                ImmediateQueue = [];
 
                 for (const func of functionsToCall) {
                     func();
                 }
             }, 1);
         }
-        _immediateQueue.push(action);
+        ImmediateQueue.push(action);
     }
 }
 
-function _runWithCondition(condition: () => boolean, onSuccess: () => void, onError?: (e?: any, isTimeout?: boolean) => void) {
+function RunWithCondition(condition: () => boolean, onSuccess: () => void, onError?: (e?: any, isTimeout?: boolean) => void) {
     try {
         if (condition()) {
             onSuccess();
@@ -40,7 +40,7 @@ function _runWithCondition(condition: () => boolean, onSuccess: () => void, onEr
 /**
  * @internal
  */
-export const _retryWithInterval = (
+export const _RetryWithInterval = (
     condition: () => boolean,
     onSuccess: () => void,
     onError?: (e?: any, isTimeout?: boolean) => void,
@@ -52,13 +52,13 @@ export const _retryWithInterval = (
     // if checkConditionOnCall is true, we check the condition immediately. If it is true, run everything synchronously
     if (checkConditionOnCall) {
         // that means that one of the two happened - either the condition is true or an exception was thrown when checking the condition
-        if (_runWithCondition(condition, onSuccess, onError)) {
+        if (RunWithCondition(condition, onSuccess, onError)) {
             // don't schedule the interval, no reason to check it again.
             return null;
         }
     }
     const int = setInterval(() => {
-        if (_runWithCondition(condition, onSuccess, onError)) {
+        if (RunWithCondition(condition, onSuccess, onError)) {
             clearInterval(int);
         } else {
             maxTimeout -= step;

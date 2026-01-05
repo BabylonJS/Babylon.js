@@ -45,6 +45,10 @@ export interface IWebXRLightEstimationOptions {
      */
     createDirectionalLightSource?: boolean;
     /**
+     * The scale factor to multiply the intensity of the directional light by. Defaults to 1.0.
+     */
+    directionalLightIntensityFactor?: number;
+    /**
      * Define the format to be used for the light estimation texture.
      */
     reflectionFormat?: XRReflectionFormat;
@@ -133,6 +137,11 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
     public directionalLight: Nullable<DirectionalLight> = null;
 
     /**
+     * The scale factor to multiply the intensity of the directional light by. Defaults to 1.0.
+     */
+    public directionalLightIntensityFactor: number = 1.0;
+
+    /**
      * This observable will notify when the reflection cube map is updated.
      */
     public onReflectionCubeMapUpdatedObservable: Observable<BaseTexture> = new Observable();
@@ -159,6 +168,8 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
             this.directionalLight.intensity = 0;
             this.directionalLight.falloffType = LightConstants.FALLOFF_GLTF;
         }
+
+        this.directionalLightIntensityFactor = this.options.directionalLightIntensityFactor ?? 1.0;
 
         this._hdrFilter = new HDRFiltering(this._xrSessionManager.scene.getEngine() as ThinEngine);
 
@@ -243,7 +254,8 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
             }
             this._reflectionCubeMap._texture.isReady = true;
             if (!this.options.disablePreFiltering) {
-                this._xrLightProbe!.removeEventListener("reflectionchange", this._updateReflectionCubeMap);
+                this._xrLightProbe.removeEventListener("reflectionchange", this._updateReflectionCubeMap);
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 this._hdrFilter.prefilter(this._reflectionCubeMap).then(() => {
                     this._xrSessionManager.scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
                     this.onReflectionCubeMapUpdatedObservable.notifyObservers(this._reflectionCubeMap!);
@@ -270,10 +282,12 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
 
         const reflectionFormat = this.options.reflectionFormat ?? (this._xrSessionManager.session.preferredReflectionFormat || "srgba8");
         this.options.reflectionFormat = reflectionFormat;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._xrSessionManager.session
             .requestLightProbe({
                 reflectionFormat,
             })
+            // eslint-disable-next-line github/no-then
             .then((xrLightProbe: XRLightProbe) => {
                 this._xrLightProbe = xrLightProbe;
                 if (!this.options.disableCubeMapReflection) {
@@ -387,7 +401,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
                 // set the values after calculating them
                 if (this.directionalLight) {
                     this.directionalLight.direction.copyFrom(this._lightDirection);
-                    this.directionalLight.intensity = Math.min(this._intensity, 1.0);
+                    this.directionalLight.intensity = Math.min(this._intensity, 1.0) * this.directionalLightIntensityFactor;
                     this.directionalLight.diffuse.copyFrom(this._lightColor);
                 }
             }

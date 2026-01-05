@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Scene, FrameGraph } from "core/index";
 import { NodeRenderGraphBaseShadowGeneratorBlock } from "./baseShadowGeneratorBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -17,7 +16,9 @@ export class NodeRenderGraphShadowGeneratorBlock extends NodeRenderGraphBaseShad
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
         super(name, frameGraph, scene);
 
-        this._frameGraphTask = new FrameGraphShadowGeneratorTask(this.name, frameGraph, scene);
+        this._finalizeInputOutputRegistering();
+
+        this._frameGraphTask = new FrameGraphShadowGeneratorTask(this.name, frameGraph);
     }
 
     /**

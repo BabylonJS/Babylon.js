@@ -3,6 +3,20 @@ import type { IGLTF } from "../glTFLoaderInterfaces";
 import type { IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 
 /**
+ * Adding an exception here will break traversing through the glTF object tree.
+ * This is used for properties that might not be in the glTF object model, but are optional and have a default value.
+ * For example, the path /nodes/\{\}/extensions/KHR_node_visibility/visible is optional - the object can be deferred without the object fully existing.
+ */
+export const OptionalPathExceptionsList: {
+    regex: RegExp;
+}[] = [
+    {
+        // get the node as object when reading an extension
+        regex: new RegExp(`^/nodes/\\d+/extensions/`),
+    },
+];
+
+/**
  * A converter that takes a glTF Object Model JSON Pointer
  * and transforms it into an ObjectAccessorContainer, allowing
  * objects referenced in the glTF to be associated with their
@@ -75,9 +89,12 @@ export class GLTFPathToObjectConverter<T, BabylonType, BabylonValue> implements 
             }
             if (!ignoreObjectTree) {
                 if (objectTree === undefined) {
-                    throw new Error(`Path ${path} is invalid`);
-                }
-                if (!isLength) {
+                    // check if the path is in the exception list. If it is, break and return the last object that was found
+                    const exception = OptionalPathExceptionsList.find((e) => e.regex.test(path));
+                    if (!exception) {
+                        throw new Error(`Path ${path} is invalid`);
+                    }
+                } else if (!isLength) {
                     objectTree = objectTree?.[part];
                 }
             }

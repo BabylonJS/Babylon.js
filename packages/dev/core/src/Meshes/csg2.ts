@@ -87,6 +87,7 @@ interface IManifoldMesh {
     vertProperties: Float32Array;
     triVerts: Uint32Array;
     runIndex: Uint32Array;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     runOriginalID: Uint32Array;
     numRun: number;
 }
@@ -101,9 +102,9 @@ interface IManifoldVertexComponent {
  * Wrapper around the Manifold library
  * https://manifoldcad.org/
  * Use this class to perform fast boolean operations on meshes
- * #IW43EB#15 - basic operations
- * #JUKXQD#6218 - skull vs box
- * #JUKXQD#6219 - skull vs vertex data
+ * @see [basic operations](https://playground.babylonjs.com/#IW43EB#15)
+ * @see [skull vs box](https://playground.babylonjs.com/#JUKXQD#6218)
+ * @see [skull vs vertex data](https://playground.babylonjs.com/#JUKXQD#6219)
  */
 export class CSG2 implements IDisposable {
     private _manifold: any;
@@ -162,9 +163,8 @@ export class CSG2 implements IDisposable {
      */
     public printDebug() {
         Logger.Log("Genus:" + this._manifold.genus());
-        const properties = this._manifold.getProperties();
-        Logger.Log("Volume:" + properties.volume);
-        Logger.Log("surface area:" + properties.surfaceArea);
+        Logger.Log("Volume:" + this._manifold.volume());
+        Logger.Log("surface area:" + this._manifold.surfaceArea());
     }
 
     /**
@@ -231,6 +231,10 @@ export class CSG2 implements IDisposable {
         // Rebuild mesh from vertex data
         const output = new Mesh(name, scene);
         vertexData.applyToMesh(output);
+
+        if (!vertexCount) {
+            throw new Error("Unable to build a mesh. Manifold has 0 vertex");
+        }
 
         // Center mesh
         if (localOptions.centerMesh) {
@@ -308,6 +312,7 @@ export class CSG2 implements IDisposable {
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         const manifoldMesh = new ManifoldMesh({ numProp: numProp, vertProperties, triVerts, runIndex, runOriginalID });
         manifoldMesh.merge();
 
@@ -465,7 +470,7 @@ export function IsCSG2Ready() {
  */
 export async function InitializeCSG2Async(options?: Partial<ICSG2Options>) {
     const localOptions = {
-        manifoldUrl: "https://unpkg.com/manifold-3d@3.0.1",
+        manifoldUrl: "https://unpkg.com/manifold-3d@3.3.0",
         ...options,
     };
 

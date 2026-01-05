@@ -120,8 +120,8 @@ export interface IPath2D {
     /**
      * Adds a cubic Bézier curve to the current path.
      * @param cp1x The x-axis coordinate of the first control point.
-     * @param cp1x The x-axis coordinate of the first control point.
-     * @param cp2y The y-axis coordinate of the second control point.
+     * @param cp1y The y-axis coordinate of the first control point.
+     * @param cp2x The x-axis coordinate of the second control point.
      * @param cp2y The y-axis coordinate of the second control point.
      * @param x The x-axis coordinate of the end point.
      * @param y The y-axis coordinate of the end point.
@@ -144,7 +144,7 @@ export interface IPath2D {
      * @param radius The arc's radius. Must be positive.
      * @param startAngle The angle at which the arc starts in radians, measured from the positive x-axis.
      * @param endAngle The angle at which the arc ends in radians, measured from the positive x-axis.
-     * @param anticlockwise An optional Boolean. If true, draws the arc counter-clockwise between the start and end angles. The default is false (clockwise).
+     * @param counterclockwise An optional Boolean. If true, draws the arc counter-clockwise between the start and end angles. The default is false (clockwise).
      */
     arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, counterclockwise?: boolean): void;
 
@@ -236,6 +236,7 @@ export interface ITextMetrics {
 /**
  * Class used to abstract a matrix
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface DOMMatrix {
     /**
      * A Boolean flag whose value is true if the matrix was initialized as a 2D matrix. If false, the matrix is 3D.
@@ -363,6 +364,11 @@ export interface ICanvasRenderingContext {
      * Color or style to use inside shapes. Default #000 (black).
      */
     fillStyle: string | ICanvasGradient;
+
+    /**
+     * Provides filter effects such as blurring and grayscaling. It is similar to the CSS filter property and accepts the same values.
+     */
+    filter: string;
 
     /**
      * Alpha value that is applied to shapes and images before they are composited onto the canvas. Default 1.0 (opaque).

@@ -1,4 +1,5 @@
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { App } from "./App";
 
-ReactDOM.render(<App />, document.getElementById("root") as Element);
+const Root = createRoot(document.getElementById("root") as HTMLCanvasElement);
+Root.render(<App />);

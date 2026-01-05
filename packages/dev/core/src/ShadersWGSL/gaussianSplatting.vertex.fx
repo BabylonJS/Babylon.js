@@ -1,18 +1,25 @@
 #include<sceneUboDeclaration>
 #include<meshUboDeclaration>
 
+#include<helperFunctions>
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
 #include<logDepthDeclaration>
 
 // Attributes
-attribute splatIndex: f32;
-attribute position: vec2f;
+attribute splatIndex0: vec4f;
+attribute splatIndex1: vec4f;
+attribute splatIndex2: vec4f;
+attribute splatIndex3: vec4f;
+attribute position: vec3f;
 
 // Uniforms
 uniform invViewport: vec2f;
 uniform dataTextureSize: vec2f;
 uniform focal: vec2f;
+uniform kernelSize: f32;
+uniform eyePosition: vec3f;
+uniform alpha: f32;
 
 // textures
 var covariancesATexture: texture_2d<f32>;
@@ -37,22 +44,27 @@ varying vPosition: vec2f;
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
 
-    var splat: Splat = readSplat(input.splatIndex, uniforms.dataTextureSize);
+    let splatIndex: f32 = getSplatIndex(i32(input.position.z + 0.5), input.splatIndex0, input.splatIndex1, input.splatIndex2, input.splatIndex3);
+
+    var splat: Splat = readSplat(splatIndex, uniforms.dataTextureSize);
     var covA: vec3f = splat.covA.xyz;
     var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);
 
     let worldPos: vec4f = mesh.world * vec4f(splat.center.xyz, 1.0);
 
-    vertexOutputs.vPosition = input.position;
+    vertexOutputs.vPosition = input.position.xy;
 
 #if SH_DEGREE > 0
-    let dir: vec3f = normalize(worldPos.xyz - scene.vEyePosition.xyz);
-    vertexOutputs.vColor = vec4f(computeSH(splat, splat.color.xyz, dir), 1.0);
+    let worldRot: mat3x3f =  mat3x3f(mesh.world[0].xyz, mesh.world[1].xyz, mesh.world[2].xyz);
+    let normWorldRot: mat3x3f = inverseMat3(worldRot);
+
+    var eyeToSplatLocalSpace: vec3f = normalize(normWorldRot * (worldPos.xyz - uniforms.eyePosition.xyz));
+    vertexOutputs.vColor = vec4f(splat.color.xyz + computeSH(splat, eyeToSplatLocalSpace), splat.color.w * uniforms.alpha);
 #else
-    vertexOutputs.vColor = splat.color;
+    vertexOutputs.vColor = vec4f(splat.color.xyz, splat.color.w * uniforms.alpha);
 #endif
 
-    vertexOutputs.position = gaussianSplatting(input.position, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, mesh.world, scene.view, scene.projection, uniforms.focal, uniforms.invViewport);
+    vertexOutputs.position = gaussianSplatting(input.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, mesh.world, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
 
 #include<clipPlaneVertex>
 #include<fogVertex>

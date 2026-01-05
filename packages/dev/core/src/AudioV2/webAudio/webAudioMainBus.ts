@@ -14,19 +14,15 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
-    public audioContext: AudioContext;
-
-    /** @internal */
     public constructor(name: string, engine: _WebAudioEngine) {
         super(name, engine);
 
         this._subGraph = new _WebAudioMainBus._SubGraph(this);
-        this.audioContext = engine.audioContext;
     }
 
     /** @internal */
-    public async init(options: Partial<IMainAudioBusOptions>): Promise<void> {
-        await this._subGraph.init(options);
+    public async _initAsync(options: Partial<IMainAudioBusOptions>): Promise<void> {
+        await this._subGraph.initAsync(options);
 
         if (this.engine.mainOut) {
             if (!this._connect(this.engine.mainOut)) {
@@ -34,24 +30,24 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode
             }
         }
 
-        this.engine.addMainBus(this);
+        this.engine._addMainBus(this);
     }
 
     /** @internal */
     public override dispose(): void {
         super.dispose();
 
-        this.engine.removeMainBus(this);
+        this.engine._removeMainBus(this);
     }
 
     /** @internal */
-    public get inNode() {
-        return this._subGraph.inNode;
+    public get _inNode() {
+        return this._subGraph._inNode;
     }
 
     /** @internal */
-    public get outNode() {
-        return this._subGraph.outNode;
+    public get _outNode() {
+        return this._subGraph._outNode;
     }
 
     protected override _connect(node: IWebAudioInNode): boolean {
@@ -61,8 +57,8 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode
             return false;
         }
 
-        if (node.inNode) {
-            this.outNode?.connect(node.inNode);
+        if (node._inNode) {
+            this._outNode?.connect(node._inNode);
         }
 
         return true;
@@ -75,8 +71,8 @@ export class _WebAudioMainBus extends MainAudioBus implements IWebAudioSuperNode
             return false;
         }
 
-        if (node.inNode) {
-            this.outNode?.disconnect(node.inNode);
+        if (node._inNode) {
+            this._outNode?.disconnect(node._inNode);
         }
 
         return true;

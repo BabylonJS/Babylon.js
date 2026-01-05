@@ -44,7 +44,7 @@ export class DynamicTexture extends Texture {
      * @param name defines the name of the texture
      * @param options provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
      * @param scene defines the scene where you want the texture
-     * @param generateMipMaps defines the use of MinMaps or not (default is false)
+     * @param generateMipMaps defines the use of MipMaps or not (default is false)
      * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
      * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
      * @param invertY defines if the texture needs to be inverted on the y axis during loading
@@ -202,6 +202,11 @@ export class DynamicTexture extends Texture {
      * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
      */
     public update(invertY?: boolean, premulAlpha = false, allowGPUOptimization = false): void {
+        // When disposed, this._texture will be null.
+        if (!this._texture) {
+            return;
+        }
+
         this._getEngine()!.updateDynamicTexture(
             this._texture,
             this._canvas,
@@ -220,7 +225,7 @@ export class DynamicTexture extends Texture {
      * @param y defines the placement of the text from the top when invertY is true and from the bottom when false
      * @param font defines the font to be used with font-style, font-size, font-name
      * @param color defines the color used for the text
-     * @param fillColor defines the color for the canvas, use null to not overwrite canvas (this bleands with the background to replace, use the clear function)
+     * @param fillColor defines the color for the canvas, use null to not overwrite canvas (this blends with the background to replace, use the clear function)
      * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
      * @param update defines whether texture is immediately update (default is true)
      */

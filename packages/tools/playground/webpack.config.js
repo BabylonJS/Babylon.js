@@ -1,8 +1,14 @@
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
+const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 const webpackTools = require("@dev/build-tools").webpackTools;
 const path = require("path");
 
 module.exports = (env) => {
+    const production = env.mode === "production" || process.env.NODE_ENV === "production";
+    const BUILD_ID = process.env.BUILD_BUILDID || process.env.BUILD_SOURCEVERSION || String(Date.now());
+    // eslint-disable-next-line no-console
+    console.log(`Building playground in ${production ? "production" : "development"} mode using build id: ${BUILD_ID}`);
     const commonConfig = {
         entry: "./src/legacy/legacy.ts",
         ...webpackTools.commonDevWebpackConfiguration(
@@ -10,16 +16,24 @@ module.exports = (env) => {
                 ...env,
                 outputFilename: "babylon.playground.js",
                 dirName: __dirname,
+                enableHotReload: true,
             },
             {
                 static: ["public"],
                 port: process.env.PLAYGROUND_PORT || 1338,
-            }
+            },
+            [
+                new MonacoWebpackPlugin({
+                    languages: ["typescript", "javascript"],
+                    filename: "[name].[contenthash].worker.js",
+                    monacoEditorPath: path.resolve("../../../node_modules/monaco-editor"),
+                }),
+            ]
         ),
         resolve: {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
-                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
+                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
             },
         },
         externals: {
@@ -46,12 +60,59 @@ module.exports = (env) => {
                 },
             }),
         },
-        plugins: [
-            new MonacoWebpackPlugin({
-                // publicPath: "public/",
-                languages: ["typescript", "javascript"],
-            }),
-        ],
     };
-    return commonConfig;
+    const plugins = (commonConfig.plugins || []).filter((p) => !(p && p.constructor && p.constructor.name === "ReactRefreshWebpackPlugin"));
+    return {
+        ...commonConfig,
+        output: {
+            ...(commonConfig.output || {}),
+            filename: `babylon.playground.[fullhash].js`,
+            chunkFilename: `[name].[fullhash].js`,
+            assetModuleFilename: `assets/[name].[fullhash][ext]`,
+            hashSalt: BUILD_ID,
+            publicPath: commonConfig.output?.publicPath ?? "auto",
+        },
+        devServer: {
+            ...(commonConfig.devServer || {}),
+            client: {
+                ...(commonConfig.devServer?.client || {}),
+                overlay: false,
+            },
+        },
+        plugins: [
+            ...plugins,
+            new HtmlWebpackPlugin({
+                template: path.resolve(__dirname, "debug.html"),
+                filename: "debug.html",
+                templateParameters: (compilation) => ({
+                    PLAYGROUND_BUNDLE: `babylon.playground.${compilation.hash}.js`,
+                }),
+                inject: false,
+            }),
+            new HtmlWebpackPlugin({
+                template: path.resolve(__dirname, "frame.html"),
+                filename: "frame.html",
+                templateParameters: (compilation) => ({
+                    PLAYGROUND_BUNDLE: `babylon.playground.${compilation.hash}.js`,
+                }),
+                inject: false,
+            }),
+            new HtmlWebpackPlugin({
+                template: path.resolve(__dirname, "full.html"),
+                filename: "full.html",
+                templateParameters: (compilation) => ({
+                    PLAYGROUND_BUNDLE: `babylon.playground.${compilation.hash}.js`,
+                }),
+                inject: false,
+            }),
+            new HtmlWebpackPlugin({
+                template: path.resolve(__dirname, "index.html"),
+                templateParameters: (compilation) => ({
+                    PLAYGROUND_BUNDLE: `babylon.playground.${compilation.hash}.js`,
+                }),
+                inject: false,
+            }),
+            !production && new ReactRefreshWebpackPlugin({ overlay: false }),
+        ].filter(Boolean),
+    };
 };

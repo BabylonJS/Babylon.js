@@ -1,4 +1,0 @@
-dist/**/*.*
-.snapshot/**/*.*
-# temp
-**/tests/**/*.*

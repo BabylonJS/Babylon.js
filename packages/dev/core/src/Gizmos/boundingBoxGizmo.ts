@@ -8,7 +8,7 @@ import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
-import { CreateLines } from "../Meshes/Builders/linesBuilder";
+import { CreateLineSystem } from "../Meshes/Builders/linesBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import type { IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
@@ -320,11 +320,12 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     public setColor(color: Color3) {
         this._coloredMaterial.emissiveColor = color;
         this._hoverColoredMaterial.emissiveColor = color.clone().add(new Color3(0.3, 0.3, 0.3));
-        this._lineBoundingBox.getChildren().forEach((l) => {
+        const children = this._lineBoundingBox.getChildren();
+        for (const l of children) {
             if ((l as LinesMesh).color) {
                 (l as LinesMesh).color = color;
             }
-        });
+        }
     }
     /**
      * Creates an BoundingBoxGizmo
@@ -347,94 +348,34 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         // Build bounding box out of lines
         this._lineBoundingBox = new TransformNode("", gizmoLayer.utilityLayerScene);
         this._lineBoundingBox.rotationQuaternion = new Quaternion();
-        const lines = [];
-        lines.push(CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(this._boundingDimensions.x, 0, 0)] }, gizmoLayer.utilityLayerScene));
-        lines.push(CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(0, this._boundingDimensions.y, 0)] }, gizmoLayer.utilityLayerScene));
-        lines.push(CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(0, 0, this._boundingDimensions.z)] }, gizmoLayer.utilityLayerScene));
-        lines.push(
-            CreateLines(
-                "lines",
-                { points: [new Vector3(this._boundingDimensions.x, 0, 0), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] },
-                gizmoLayer.utilityLayerScene
-            )
-        );
-        lines.push(
-            CreateLines(
-                "lines",
-                { points: [new Vector3(this._boundingDimensions.x, 0, 0), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] },
-                gizmoLayer.utilityLayerScene
-            )
-        );
-        lines.push(
-            CreateLines(
-                "lines",
-                { points: [new Vector3(0, this._boundingDimensions.y, 0), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)] },
-                gizmoLayer.utilityLayerScene
-            )
-        );
-        lines.push(
-            CreateLines(
-                "lines",
-                { points: [new Vector3(0, this._boundingDimensions.y, 0), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] },
-                gizmoLayer.utilityLayerScene
-            )
-        );
-        lines.push(
-            CreateLines(
-                "lines",
-                { points: [new Vector3(0, 0, this._boundingDimensions.z), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)] },
-                gizmoLayer.utilityLayerScene
-            )
-        );
-        lines.push(
-            CreateLines(
-                "lines",
-                { points: [new Vector3(0, 0, this._boundingDimensions.z), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)] },
-                gizmoLayer.utilityLayerScene
-            )
-        );
-        lines.push(
-            CreateLines(
-                "lines",
-                {
-                    points: [
-                        new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z),
-                        new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z),
-                    ],
-                },
-                gizmoLayer.utilityLayerScene
-            )
-        );
-        lines.push(
-            CreateLines(
-                "lines",
-                {
-                    points: [
-                        new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z),
-                        new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z),
-                    ],
-                },
-                gizmoLayer.utilityLayerScene
-            )
-        );
-        lines.push(
-            CreateLines(
-                "lines",
-                {
-                    points: [
-                        new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z),
-                        new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0),
-                    ],
-                },
-                gizmoLayer.utilityLayerScene
-            )
-        );
-        lines.forEach((l) => {
-            l.color = color;
-            l.position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
-            l.isPickable = false;
-            this._lineBoundingBox.addChild(l);
-        });
+        const lines: Vector3[][] = [
+            [new Vector3(0, 0, 0), new Vector3(this._boundingDimensions.x, 0, 0)],
+            [new Vector3(0, 0, 0), new Vector3(0, this._boundingDimensions.y, 0)],
+            [new Vector3(0, 0, 0), new Vector3(0, 0, this._boundingDimensions.z)],
+            [new Vector3(this._boundingDimensions.x, 0, 0), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)],
+            [new Vector3(this._boundingDimensions.x, 0, 0), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)],
+            [new Vector3(0, this._boundingDimensions.y, 0), new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0)],
+            [new Vector3(0, this._boundingDimensions.y, 0), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)],
+            [new Vector3(0, 0, this._boundingDimensions.z), new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z)],
+            [new Vector3(0, 0, this._boundingDimensions.z), new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z)],
+            [
+                new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z),
+                new Vector3(0, this._boundingDimensions.y, this._boundingDimensions.z),
+            ],
+            [
+                new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z),
+                new Vector3(this._boundingDimensions.x, 0, this._boundingDimensions.z),
+            ],
+            [
+                new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, this._boundingDimensions.z),
+                new Vector3(this._boundingDimensions.x, this._boundingDimensions.y, 0),
+            ],
+        ];
+        const line = CreateLineSystem("lines", { lines }, gizmoLayer.utilityLayerScene);
+        line.color = color;
+        line.position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+        line.isPickable = false;
+        this._lineBoundingBox.addChild(line);
         this._rootMesh.addChild(this._lineBoundingBox);
 
         this.setColor(color);
@@ -534,7 +475,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                             this._tmpQuaternion.conjugateInPlace();
                         }
                         this._tmpQuaternion.normalize();
-                        this._anchorMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._anchorMesh.rotationQuaternion!);
+                        this._anchorMesh.rotationQuaternion.multiplyToRef(this._tmpQuaternion, this._anchorMesh.rotationQuaternion);
                         this._anchorMesh.rotationQuaternion.normalize();
                         this._anchorMesh.removeChild(this.attachedMesh);
                         this.attachedMesh.setParent(originalParent);
@@ -689,7 +630,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         totalRelativeDragDistance = 0;
                         previousScale = 0;
                         this._incrementalStartupValue.copyFrom(this.attachedMesh!.scaling);
-                        this._incrementalAnchorStartupValue.copyFrom(this._anchorMesh!.scaling);
+                        this._incrementalAnchorStartupValue.copyFrom(this._anchorMesh.scaling);
                     });
                     scaleBoxesDragBehavior.onDragEndObservable.add((event) => {
                         this.onScaleBoxDragEndObservable.notifyObservers({ dragOperation: DragOperation.Scaling, dragAxis: new Vector3(i - 1, j - 1, k - 1) });
@@ -710,21 +651,20 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         const pointerIds: AbstractMesh[] = [];
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (!pointerIds[(<IPointerEvent>pointerInfo.event).pointerId]) {
-                this._rotateAnchorsParent
-                    .getChildMeshes()
-                    .concat(this._scaleBoxesParent.getChildMeshes())
-                    .forEach((mesh) => {
-                        if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
-                            pointerIds[(<IPointerEvent>pointerInfo.event).pointerId] = mesh;
-                            mesh.material = this._hoverColoredMaterial;
-                            this.onHoverStartObservable.notifyObservers();
-                            this._isHovered = true;
-                        }
-                    });
+                const meshes = this._rotateAnchorsParent.getChildMeshes().concat(this._scaleBoxesParent.getChildMeshes());
+
+                for (const mesh of meshes) {
+                    if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
+                        pointerIds[(<IPointerEvent>pointerInfo.event).pointerId] = mesh;
+                        mesh.material = this._hoverColoredMaterial;
+                        this.onHoverStartObservable.notifyObservers();
+                        this._isHovered = true;
+                    }
+                }
             } else {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh != pointerIds[(<IPointerEvent>pointerInfo.event).pointerId]) {
                     pointerIds[(<IPointerEvent>pointerInfo.event).pointerId].material = this._coloredMaterial;
-                    delete pointerIds[(<IPointerEvent>pointerInfo.event).pointerId];
+                    pointerIds.splice((<IPointerEvent>pointerInfo.event).pointerId, 1);
                     this.onHoverEndObservable.notifyObservers();
                     this._isHovered = false;
                 }
@@ -762,10 +702,28 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             return this._cornerMesh!;
         }
 
-        return this._cornerMesh!.clone();
+        return this._cornerMesh.clone();
+    }
+
+    /**
+     * returns true if the combination of non uniform scaling and rotation of the attached mesh is not supported
+     * In that case, the matrix is skewed and the bounding box gizmo will not work correctly
+     * @returns True if the combination is not supported, otherwise false.
+     */
+    protected _hasInvalidNonUniformScaling() {
+        return (
+            this._attachedMesh?.parent instanceof TransformNode &&
+            this._attachedMesh?.parent.absoluteScaling.isNonUniformWithinEpsilon(0.001) &&
+            ((this._attachedMesh?.rotationQuaternion && !this._attachedMesh?.rotationQuaternion.equalsWithEpsilon(Quaternion.Identity(), Epsilon)) ||
+                this._attachedMesh?.rotation.equalsWithEpsilon(Vector3.Zero(), Epsilon) === false)
+        );
     }
     protected override _attachedNodeChanged(value: Nullable<AbstractMesh>) {
         if (value) {
+            if (this._hasInvalidNonUniformScaling()) {
+                Logger.Warn("BoundingBoxGizmo controls are not supported on meshes with non-uniform scaling and rotation");
+                return;
+            }
             // Reset anchor mesh to match attached mesh's scale
             // This is needed to avoid invalid box/anchor position on first drag
             this._anchorMesh.scaling.setAll(1);
@@ -776,9 +734,10 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             value.setParent(originalParent);
             PivotTools._RestorePivotPoint(value);
             this.updateBoundingBox();
-            value.getChildMeshes(false).forEach((m) => {
+            const children = value.getChildMeshes(false);
+            for (const m of children) {
                 m.markAsDirty("scaling");
-            });
+            }
 
             this.gizmoLayer.utilityLayerScene.onAfterRenderObservable.addOnce(() => {
                 this._updateDummy();
@@ -787,12 +746,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     }
 
     protected _selectNode(selectedMesh: Nullable<Mesh>) {
-        this._rotateAnchorsParent
-            .getChildMeshes()
-            .concat(this._scaleBoxesParent.getChildMeshes())
-            .forEach((m) => {
-                m.isVisible = !selectedMesh || m == selectedMesh;
-            });
+        const meshes = this._rotateAnchorsParent.getChildMeshes().concat(this._scaleBoxesParent.getChildMeshes());
+
+        for (const m of meshes) {
+            m.isVisible = !selectedMesh || m == selectedMesh;
+        }
     }
 
     protected _unhoverMeshOnTouchUp(pointerInfo: Nullable<PointerInfo>, selectedMesh: AbstractMesh) {
@@ -814,7 +772,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      * Updates the bounding box information for the Gizmo
      */
     public updateBoundingBox() {
-        if (this.attachedMesh) {
+        if (this.attachedMesh && !this._hasInvalidNonUniformScaling()) {
             PivotTools._RemoveAndStorePivotPoint(this.attachedMesh);
 
             // Store original parent
@@ -954,7 +912,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      * @param axis The list of axis that should be enabled (eg. "xy" or "xyz")
      */
     public setEnabledRotationAxis(axis: string) {
-        this._rotateAnchorsParent.getChildMeshes().forEach((m, i) => {
+        const meshes = this._rotateAnchorsParent.getChildMeshes();
+        for (let i = 0; i < meshes.length; i++) {
+            const m = meshes[i] as Mesh;
             if (i < 4) {
                 m.setEnabled(axis.indexOf("x") != -1);
             } else if (i < 8) {
@@ -962,7 +922,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             } else {
                 m.setEnabled(axis.indexOf("z") != -1);
             }
-        });
+        }
     }
 
     /**
@@ -971,14 +931,15 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      * @param homogeneousScaling defines if scaling should only be homogeneous
      */
     public setEnabledScaling(enable: boolean, homogeneousScaling = false) {
-        this._scaleBoxesParent.getChildMeshes().forEach((m) => {
+        const meshes = this._scaleBoxesParent.getChildMeshes();
+        for (const m of meshes) {
             let enableMesh = enable;
             // Disable heterogeneous scale handles if requested.
             if (homogeneousScaling && m._internalMetadata === true) {
                 enableMesh = false;
             }
             m.setEnabled(enableMesh);
-        });
+        }
     }
 
     protected _updateDummy() {
@@ -1004,12 +965,12 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      * Force release the drag action by code
      */
     public releaseDrag() {
-        this._scaleBoxesDragBehaviors.forEach((dragBehavior) => {
+        for (const dragBehavior of this._scaleBoxesDragBehaviors) {
             dragBehavior.releaseDrag();
-        });
-        this._rotateAnchorsDragBehaviors.forEach((dragBehavior) => {
+        }
+        for (const dragBehavior of this._rotateAnchorsDragBehaviors) {
             dragBehavior.releaseDrag();
-        });
+        }
         this._pointerDragBehavior.releaseDrag();
     }
 
@@ -1034,6 +995,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this.onScaleBoxDragEndObservable.clear();
         this.onRotationSphereDragObservable.clear();
         this.onRotationSphereDragEndObservable.clear();
+
+        this._coloredMaterial.dispose();
+        this._hoverColoredMaterial.dispose();
         super.dispose();
     }
 
@@ -1045,9 +1009,10 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     public static MakeNotPickableAndWrapInBoundingBox(mesh: Mesh): Mesh {
         const makeNotPickable = (root: AbstractMesh) => {
             root.isPickable = false;
-            root.getChildMeshes().forEach((c) => {
+            const children = root.getChildMeshes();
+            for (const c of children) {
                 makeNotPickable(c);
-            });
+            }
         };
         makeNotPickable(mesh);
 

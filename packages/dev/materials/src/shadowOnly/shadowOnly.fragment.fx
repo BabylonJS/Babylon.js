@@ -1,7 +1,7 @@
 ﻿precision highp float;
 
 // Constants
-uniform vec4 vEyePosition;
+#include<__decl__sceneFragment>
 uniform float alpha;
 uniform vec3 shadowColor;
 

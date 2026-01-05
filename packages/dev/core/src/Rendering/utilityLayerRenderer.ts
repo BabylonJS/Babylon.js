@@ -41,7 +41,7 @@ export class UtilityLayerRenderer implements IDisposable {
             if (this.originalScene.activeCameras && this.originalScene.activeCameras.length > 1) {
                 activeCam = this.originalScene.activeCameras[this.originalScene.activeCameras.length - 1];
             } else {
-                activeCam = <Camera>this.originalScene.activeCamera!;
+                activeCam = this.originalScene.activeCamera!;
             }
 
             if (getRigParentIfPossible && activeCam && activeCam.isRigCamera) {
@@ -161,7 +161,7 @@ export class UtilityLayerRenderer implements IDisposable {
         manualRender = false
     ) {
         // Create scene which will be rendered in the foreground and remove it from being referenced by engine to avoid interfering with existing app
-        this.utilityLayerScene = new Scene(originalScene.getEngine(), { virtual: true });
+        this.utilityLayerScene = new Scene(originalScene.getEngine(), { virtual: true, useFloatingOrigin: originalScene.floatingOriginMode });
         this.utilityLayerScene.useRightHandedSystem = originalScene.useRightHandedSystem;
         this.utilityLayerScene._allowPostProcessClearColor = false;
 
@@ -193,7 +193,7 @@ export class UtilityLayerRenderer implements IDisposable {
                 this.utilityLayerScene.pointerX = originalScene.pointerX;
                 this.utilityLayerScene.pointerY = originalScene.pointerY;
                 const pointerEvent = <IPointerEvent>prePointerInfo.event;
-                if (originalScene!.isPointerCaptured(pointerEvent.pointerId)) {
+                if (originalScene.isPointerCaptured(pointerEvent.pointerId)) {
                     this._pointerCaptures[pointerEvent.pointerId] = false;
                     return;
                 }

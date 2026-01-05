@@ -1,5 +1,5 @@
 /* eslint-disable import/export */
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./baseParticleSystem";
 export * from "./EmitterTypes/index";
 export * from "./webgl2ParticleSystem";
@@ -18,6 +18,9 @@ export * from "./solidParticleSystem";
 export * from "./cloudPoint";
 export * from "./pointsCloudSystem";
 export * from "./subEmitter";
+export * from "./attractor";
+export * from "./flowMap";
+export * from "./Node/index";
 
 export * from "../Shaders/particles.fragment";
 export * from "../Shaders/particles.vertex";

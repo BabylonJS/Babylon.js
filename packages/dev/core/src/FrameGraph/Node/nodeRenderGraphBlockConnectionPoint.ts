@@ -5,7 +5,6 @@ import type {
     NodeRenderGraphInputBlock,
     IShadowLight,
     FrameGraphShadowGeneratorTask,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointCompatibilityStates, NodeRenderGraphConnectionPointDirection } from "./Types/nodeRenderGraphTypes";
@@ -305,7 +304,7 @@ export class NodeRenderGraphConnectionPoint {
     public connectTo(connectionPoint: NodeRenderGraphConnectionPoint, ignoreConstraints = false): NodeRenderGraphConnectionPoint {
         if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
             // eslint-disable-next-line no-throw-literal
-            throw "Cannot connect these two connectors.";
+            throw `Cannot connect these two connectors. source: "${this.ownerBlock.name}".${this.name}, target: "${connectionPoint.ownerBlock.name}".${connectionPoint.name}`;
         }
 
         this._endpoints.push(connectionPoint);

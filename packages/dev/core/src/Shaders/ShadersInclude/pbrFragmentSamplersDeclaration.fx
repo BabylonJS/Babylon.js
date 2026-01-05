@@ -1,5 +1,6 @@
 #include<samplerFragmentDeclaration>(_DEFINENAME_,ALBEDO,_VARYINGNAME_,Albedo,_SAMPLERNAME_,albedo)
-#include<samplerFragmentDeclaration>(_DEFINENAME_,BASEWEIGHT,_VARYINGNAME_,BaseWeight,_SAMPLERNAME_,baseWeight)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,BASE_WEIGHT,_VARYINGNAME_,BaseWeight,_SAMPLERNAME_,baseWeight)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,BASE_DIFFUSE_ROUGHNESS,_VARYINGNAME_,BaseDiffuseRoughness,_SAMPLERNAME_,baseDiffuseRoughness)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,AMBIENT,_VARYINGNAME_,Ambient,_SAMPLERNAME_,ambient)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity,_SAMPLERNAME_,opacity)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,EMISSIVE,_VARYINGNAME_,Emissive,_SAMPLERNAME_,emissive)
@@ -82,11 +83,6 @@
 
 #ifdef ENVIRONMENTBRDF
     uniform sampler2D environmentBrdfSampler;
-#endif
-
-#if defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-    uniform sampler2D areaLightsLTC1Sampler;
-    uniform sampler2D areaLightsLTC2Sampler;
 #endif
 
 // SUBSURFACE

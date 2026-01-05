@@ -16,7 +16,7 @@ import { Texture } from "core/Materials/Textures/texture";
 const NAME = "EXT_lights_ies";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the EXT_lights_ies extension.
@@ -63,7 +63,7 @@ export class EXT_lights_ies implements IGLTFLoaderExtension {
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
-            const extension = extensions[this.name] as any;
+            const extension = extensions[this.name];
             this._lights = extension.lights;
             ArrayItem.Assign(this._lights);
         }
@@ -72,6 +72,8 @@ export class EXT_lights_ies implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IEXTLightsIES_LightReference, TransformNode>(context, node, this.name, async (extensionContext, extension) => {
             this._loader._allMaterialsDirtyRequired = true;

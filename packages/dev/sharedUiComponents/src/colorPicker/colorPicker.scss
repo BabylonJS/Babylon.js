@@ -150,12 +150,18 @@
             opacity: 0.5;
         }
     }
+    .color-picker-hex-row {
+        display: flex; /* Use flexbox to align items in a row */
+        flex-direction: row;
+        gap: 16px; /* Add spacing between the two hex pickers */
+        align-items: center; /* Align items vertically in the center */
+    }
 
     .color-picker-hex {
         grid-row: 4;
         grid-column: 1;
         display: grid;
-        grid-template-columns: 20% 80%;
+        grid-template-columns: 30% 70%;
         grid-template-rows: 100%;
 
         .color-picker-hex-label {

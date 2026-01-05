@@ -66,7 +66,6 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
-        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         let previousPosition: Nullable<{ x: number; y: number }> = null;
 
@@ -146,7 +145,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
         if (this._onLostFocus) {
             const engine = this.camera.getEngine();
             const element = engine.getInputElement();
-            element && element.addEventListener("blur", this._onLostFocus);
+            if (element) {
+                element.addEventListener("blur", this._onLostFocus);
+            }
         }
     }
 
@@ -163,7 +164,10 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             if (this._onLostFocus) {
                 const engine = this.camera.getEngine();
                 const element = engine.getInputElement();
-                element && element.removeEventListener("blur", this._onLostFocus);
+                if (element) {
+                    element.removeEventListener("blur", this._onLostFocus);
+                }
+
                 this._onLostFocus = null;
             }
             this._pointerPressed.length = 0;
@@ -186,12 +190,12 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
 
         const camera = this.camera;
         const handednessMultiplier = camera._calculateHandednessMultiplier();
-        camera.cameraRotation.y = (handednessMultiplier * this._offsetX) / this.touchAngularSensibility;
+        camera.cameraRotation.y = (this._offsetX * handednessMultiplier) / this.touchAngularSensibility;
 
         const rotateCamera = (this.singleFingerRotate && this._pointerPressed.length === 1) || (!this.singleFingerRotate && this._pointerPressed.length > 1);
 
         if (rotateCamera) {
-            camera.cameraRotation.x = -this._offsetY / this.touchAngularSensibility;
+            camera.cameraRotation.x = -(this._offsetY * handednessMultiplier) / this.touchAngularSensibility;
         } else {
             const speed = camera._computeLocalCameraSpeed();
             const direction = new Vector3(0, 0, this.touchMoveSensibility !== 0 ? (speed * this._offsetY) / this.touchMoveSensibility : 0);

@@ -100,7 +100,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Get color and reflectivity
     var colorFull: vec4f = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV, 0.0);
     var color: vec3f = colorFull.rgb;
-    var reflectivity: vec4f = textureSampleLevel(reflectivitySampler, reflectivitySamplerSampler, input.vUV, 0.0);
+    var reflectivity: vec4f = max(textureSampleLevel(reflectivitySampler, reflectivitySamplerSampler, input.vUV, 0.0), vec4f(0.0));
 #ifndef SSR_DISABLE_REFLECTIVITY_TEST
     if (max(reflectivity.r, max(reflectivity.g, reflectivity.b)) <= uniforms.reflectivityThreshold) {
         #ifdef SSR_USE_BLUR

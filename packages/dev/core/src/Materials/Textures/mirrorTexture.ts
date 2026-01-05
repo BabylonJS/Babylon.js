@@ -10,6 +10,8 @@ import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { Constants } from "../../Engines/constants";
 import { Plane } from "../../Maths/math.plane";
 import type { UniformBuffer } from "../uniformBuffer";
+import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+
 /**
  * Mirror texture can be used to simulate the view from a mirror in a scene.
  * It will dynamically be rendered every frame to adapt to the camera point of view.
@@ -102,6 +104,15 @@ export class MirrorTexture extends RenderTargetTexture {
         this.blurKernelY = this._adaptiveBlurKernel * dh;
     }
 
+    public override resize(size: TextureSize | { ratio: number }): void {
+        super.resize(size);
+        if (!this._adaptiveBlurKernel) {
+            this._preparePostProcesses();
+        } else {
+            this._autoComputeBlurKernel();
+        }
+    }
+
     protected override _onRatioRescale(): void {
         if (this._sizeRatio) {
             this.resize(this._initialSizeParameter);
@@ -187,30 +198,33 @@ export class MirrorTexture extends RenderTargetTexture {
 
         this.onBeforeRenderObservable.add(() => {
             if (this._sceneUBO) {
-                this._currentSceneUBO = scene!.getSceneUniformBuffer();
-                scene!.setSceneUniformBuffer(this._sceneUBO);
-                scene!.getSceneUniformBuffer().unbindEffect();
+                this._currentSceneUBO = scene.getSceneUniformBuffer();
+                scene.setSceneUniformBuffer(this._sceneUBO);
+                scene.getSceneUniformBuffer().unbindEffect();
             }
 
             Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
-            this._mirrorMatrix.multiplyToRef(scene!.getViewMatrix(), this._transformMatrix);
+            this._mirrorMatrix.multiplyToRef(scene.getViewMatrix(), this._transformMatrix);
 
-            scene!.setTransformMatrix(this._transformMatrix, scene!.getProjectionMatrix());
+            scene.setTransformMatrix(this._transformMatrix, scene.getProjectionMatrix());
 
-            saveClipPlane = scene!.clipPlane;
-            scene!.clipPlane = this.mirrorPlane;
+            saveClipPlane = scene.clipPlane;
+            scene.clipPlane = this.mirrorPlane;
 
-            scene!._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene!.activeCamera).globalPosition, this._mirrorMatrix);
+            const eyePos = Vector3.TransformCoordinates((<Camera>scene.activeCamera).globalPosition, this._mirrorMatrix);
+            scene._mirroredCameraPosition = eyePos;
+            scene._forcedViewPosition = eyePos; // More performant to set 2 properties here than to check both mirroredCameraPos and forcedViewPos within eye binding (which happens on critical rendering path)
         });
 
         this.onAfterRenderObservable.add(() => {
             if (this._sceneUBO) {
-                scene!.setSceneUniformBuffer(this._currentSceneUBO);
+                scene.setSceneUniformBuffer(this._currentSceneUBO);
             }
-            scene!.updateTransformMatrix();
-            scene!._mirroredCameraPosition = null;
+            scene.updateTransformMatrix();
+            scene._mirroredCameraPosition = null;
+            scene._forcedViewPosition = null;
 
-            scene!.clipPlane = saveClipPlane;
+            scene.clipPlane = saveClipPlane;
         });
     }
 

@@ -262,6 +262,7 @@
     #endif
 
     #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+        #define SMALLEST_ABOVE_ZERO 1.1754943508e-38
         #define GREATEST_LESS_THAN_ONE 0.99999994
 
         // We need to disable uniformity analysis when using CSM, as there's no textureLod overload that takes a sampler2DArrayShadow.
@@ -276,7 +277,11 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
+        #ifdef USE_REVERSE_DEPTHBUFFER
+            uvDepth.z = clamp(ZINCLIP, SMALLEST_ABOVE_ZERO, 1.);
+        #else
             uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
+        #endif
 
             vec4 uvDepthLayer = vec4(uvDepth.x, uvDepth.y, layer, uvDepth.z);
 
@@ -294,7 +299,11 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
+        #ifdef USE_REVERSE_DEPTHBUFFER
+            uvDepth.z = clamp(ZINCLIP, SMALLEST_ABOVE_ZERO, 1.);
+        #else
             uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
+        #endif
 
             vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
             uv += 0.5;											// offset of half to be in the center of the texel
@@ -331,7 +340,11 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
+        #ifdef USE_REVERSE_DEPTHBUFFER
+            uvDepth.z = clamp(ZINCLIP, SMALLEST_ABOVE_ZERO, 1.);
+        #else
             uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
+        #endif
 
             vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
             uv += 0.5;											// offset of half to be in the center of the texel
@@ -368,15 +381,13 @@
         #define inline
         float computeShadowWithPCF1(vec4 vPositionFromLight, float depthMetric, highp sampler2DShadow shadowSampler, float darkness, float frustumEdgeFalloff)
         {
-            if (depthMetric > 1.0 || depthMetric < 0.0) {
-                return 1.0;
-            }
-            else
-            {
-                vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
-                vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
-                uvDepth.z = ZINCLIP;
+            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+            vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+            uvDepth.z = ZINCLIP;
 
+            if (depthMetric < 0.0 || depthMetric > 1.0 || uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0) {
+                return 1.0;
+            } else {
                 float shadow = TEXTUREFUNC(shadowSampler, uvDepth, 0.);
                 shadow = mix(darkness, 1., shadow);
 
@@ -390,15 +401,13 @@
         #define inline
         float computeShadowWithPCF3(vec4 vPositionFromLight, float depthMetric, highp sampler2DShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
         {
-            if (depthMetric > 1.0 || depthMetric < 0.0) {
-                return 1.0;
-            }
-            else
-            {
-                vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
-                vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
-                uvDepth.z = ZINCLIP;
+            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+            vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+            uvDepth.z = ZINCLIP;
 
+            if (depthMetric < 0.0 || depthMetric > 1.0 || uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0) {
+                return 1.0;
+            } else {
                 vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
                 uv += 0.5;											// offset of half to be in the center of the texel
                 vec2 st = fract(uv);								// how far from the center
@@ -433,15 +442,13 @@
         #define inline
         float computeShadowWithPCF5(vec4 vPositionFromLight, float depthMetric, highp sampler2DShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
         {
-            if (depthMetric > 1.0 || depthMetric < 0.0) {
-                return 1.0;
-            }
-            else
-            {
-                vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
-                vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
-                uvDepth.z = ZINCLIP;
+            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+            vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+            uvDepth.z = ZINCLIP;
 
+            if (depthMetric < 0.0 || depthMetric > 1.0 || uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0) {
+                return 1.0;
+            } else {
                 vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
                 uv += 0.5;											// offset of half to be in the center of the texel
                 vec2 st = fract(uv);								// how far from the center
@@ -621,7 +628,11 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
+        #ifdef USE_REVERSE_DEPTHBUFFER
+            uvDepth.z = clamp(ZINCLIP, SMALLEST_ABOVE_ZERO, 1.);
+        #else
             uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
+        #endif
 
             vec4 uvDepthLayer = vec4(uvDepth.x, uvDepth.y, layer, uvDepth.z);
 
@@ -682,15 +693,13 @@
         #define inline
         float computeShadowWithPCSS(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, highp sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff, int searchTapCount, int pcfTapCount, vec3[64] poissonSamplers)
         {
-            if (depthMetric > 1.0 || depthMetric < 0.0) {
-                return 1.0;
-            }
-            else
-            {
-                vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
-                vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
-                uvDepth.z = ZINCLIP;
+            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+            vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+            uvDepth.z = ZINCLIP;
 
+            if (depthMetric < 0.0 || depthMetric > 1.0 || uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0) {
+                return 1.0;
+            } else {
                 float blockerDepth = 0.0;
                 float sumBlockerDepth = 0.0;
                 float numBlocker = 0.0;

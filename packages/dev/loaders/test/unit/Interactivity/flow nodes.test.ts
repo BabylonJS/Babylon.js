@@ -43,11 +43,7 @@ describe("Flow Nodes", () => {
             variables,
         };
 
-        const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf, {
-            parent: {
-                targetFps: 60,
-            },
-        } as unknown as any);
+        const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf);
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = await ParseFlowGraphAsync(json, { coordinator, pathConverter });
@@ -582,7 +578,7 @@ describe("Flow Nodes", () => {
         // wait for the delay to pass
         await new Promise((resolve) => setTimeout(resolve, duration * 1000 + 100));
         expect(log).toHaveBeenCalledTimes(1);
-        expect(log).toHaveBeenCalledWith(0);
+        expect(log).toHaveBeenCalledWith({ value: 0 });
     });
 
     // flowDelay with NaN as duration - should activate the error signal
@@ -703,7 +699,6 @@ describe("Flow Nodes", () => {
         expect(log).not.toHaveBeenCalled();
     });
 
-    // variable/get and variable/set - set a variable and then get it. testing the out flow as well.
     test("variable/get and variable/set", async () => {
         await generateSimpleNodeGraph(
             [{ op: "variable/set" }, { op: "variable/get" }, { op: "flow/log", extension: "BABYLON" }],
@@ -711,14 +706,18 @@ describe("Flow Nodes", () => {
                 {
                     declaration: 0,
                     configuration: {
-                        variable: {
-                            value: [0], //the index of the variable
+                        variables: {
+                            value: [0, 1],
                         },
                     },
                     values: {
-                        value: {
+                        0: {
                             type: 0,
-                            value: [1],
+                            value: [4],
+                        },
+                        1: {
+                            type: 0,
+                            value: [5],
                         },
                     },
                     flows: {
@@ -732,7 +731,7 @@ describe("Flow Nodes", () => {
                     declaration: 1,
                     configuration: {
                         variable: {
-                            value: [0], //the index of the variable
+                            value: [1],
                         },
                     },
                 },
@@ -747,10 +746,13 @@ describe("Flow Nodes", () => {
                 },
             ],
             [{ signature: "float" }],
-            [{ type: 0, value: [0] }]
+            [
+                { type: 0, value: [2] },
+                { type: 0, value: [3] },
+            ]
         );
 
-        expect(log).toHaveBeenCalledWith(1);
+        expect(log).toHaveBeenCalledWith(5);
     });
 
     test("variable/interpolate with float", async () => {
@@ -1076,12 +1078,12 @@ describe("Flow Nodes", () => {
                 {
                     declaration: 2,
                     configuration: {
-                        variable: {
+                        variables: {
                             value: [0], // the index of the variable
                         },
                     },
                     values: {
-                        value: {
+                        0: {
                             node: 4, // math add that increments the variable
                             socket: "value",
                         },
@@ -1092,7 +1094,7 @@ describe("Flow Nodes", () => {
                     declaration: 3,
                     configuration: {
                         variable: {
-                            value: [0], //the index of the variable
+                            value: [0], // the index of the variable
                         },
                     },
                 },
@@ -1494,7 +1496,7 @@ describe("Flow Nodes", () => {
 
         // wait for 1 second
         await new Promise((resolve) => setTimeout(resolve, 1000 + 100));
-        const values = log.mock.calls.map((c) => c[0]);
+        const values = log.mock.calls.map((c) => c[0].value);
         // expect log to be called 3 times - after the first was triggered (2 remaining), then after the second (1 remaining), and then after the last one (0 remaining - completed.)
         expect(log).toHaveBeenCalledTimes(3);
         // last remaining inputs test, also testing out and completed flows
@@ -1752,5 +1754,35 @@ describe("Flow Nodes", () => {
         await new Promise((resolve) => setTimeout(resolve, 1000 + 100));
         // expect log to be not have been called
         expect(log).not.toHaveBeenCalled();
+    });
+
+    test("debug/log", async () => {
+        await generateSimpleNodeGraph(
+            [{ op: "debug/log" }],
+            [
+                {
+                    declaration: 0,
+                    configuration: {
+                        message: {
+                            value: ["Hello World {a}, this is a test {b}"],
+                        },
+                    },
+                    values: {
+                        a: {
+                            type: 0,
+                            value: [1],
+                        },
+                        b: {
+                            type: 1,
+                            value: [2, 3],
+                        },
+                    },
+                },
+            ],
+            [{ signature: "float" }, { signature: "float2" }]
+        );
+        // expect log to be called 1 time with the message
+        expect(log).toHaveBeenCalledTimes(1);
+        expect(log).toHaveBeenCalledWith("Hello World 1, this is a test {X: 2 Y: 3}");
     });
 });

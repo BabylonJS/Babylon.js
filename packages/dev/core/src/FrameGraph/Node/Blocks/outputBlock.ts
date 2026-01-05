@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { NodeRenderGraphConnectionPoint, Scene, FrameGraph, NodeRenderGraphBuildState, FrameGraphTextureHandle } from "core/index";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
@@ -30,6 +29,7 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
         this._isUnique = true;
 
         this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this._addDependenciesInput();
 
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
 

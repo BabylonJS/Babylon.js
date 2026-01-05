@@ -29,6 +29,7 @@ import type { EffectWrapperCustomShaderCodeProcessing, EffectWrapperCreationOpti
 import { EffectWrapper } from "../Materials/effectRenderer";
 
 declare module "../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Sets a texture to the context from a postprocess
@@ -66,6 +67,7 @@ AbstractEngine.prototype.setTextureFromPostProcessOutput = function (channel: nu
 };
 
 declare module "../Materials/effect" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Effect {
         /**
          * Sets a texture to be the input of the specified post process. (To use the output, pass in the next post process in the pipeline)
@@ -331,6 +333,11 @@ export class PostProcess {
      */
     @serialize()
     public adaptScaleToCurrentViewport = false;
+
+    /**
+     * Specifies if the post process should be serialized
+     */
+    public doNotSerialize = false;
 
     private _camera: Camera;
     protected _scene: Scene;
@@ -676,7 +683,7 @@ export class PostProcess {
             camera.attachPostProcess(this);
             this._engine = this._scene.getEngine();
 
-            this._scene.postProcesses.push(this);
+            this._scene.addPostProcess(this);
             this.uniqueId = this._scene.getUniqueId();
         } else if (engine) {
             this._engine = engine;
@@ -1072,6 +1079,8 @@ export class PostProcess {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
         }
 
+        this._engine.setAlphaMode(this.alphaMode);
+
         // Bind the output texture of the preivous post process as the input to this post process.
         let source: RenderTargetWrapper;
         if (this._shareOutputWithPostProcess) {
@@ -1090,7 +1099,7 @@ export class PostProcess {
         this._effectWrapper.drawWrapper.effect!.setVector2("scale", this._scaleRatio);
         this.onApplyObservable.notifyObservers(this._effectWrapper.drawWrapper.effect!);
 
-        this._effectWrapper.bind();
+        this._effectWrapper.bind(true);
 
         return this._effectWrapper.drawWrapper.effect;
     }
@@ -1143,10 +1152,7 @@ export class PostProcess {
 
         let index;
         if (this._scene) {
-            index = this._scene.postProcesses.indexOf(this);
-            if (index !== -1) {
-                this._scene.postProcesses.splice(index, 1);
-            }
+            index = this._scene.removePostProcess(this);
         }
 
         if (this._parentContainer) {
@@ -1250,7 +1256,7 @@ export class PostProcess {
         }
 
         const camera = scene ? scene.getCameraById(parsedPostProcess.cameraId) : null;
-        return postProcessType._Parse(parsedPostProcess, camera, scene, rootUrl);
+        return postProcessType._Parse(parsedPostProcess, camera, scene, rootUrl) as Nullable<PostProcess>;
     }
 
     /**

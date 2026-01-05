@@ -21,6 +21,7 @@ AddParser(SceneComponentConstants.NAME_SUBSURFACE, (parsedData: any, scene: Scen
 });
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal (Backing field) */
         _subSurfaceConfiguration: Nullable<SubSurfaceConfiguration>;

@@ -28,11 +28,11 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
         }
 
         // If defined onclick, override default.
-        const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        const eventHandler = this.entity.accessibilityTag?.eventHandler;
         if (eventHandler?.click || eventHandler?.contextmenu) {
             this._isActionable = true;
         } else {
-            this._isActionable = (this.entity as Node)._getActionManagerForTrigger()?.hasPickTriggers!!;
+            this._isActionable = this.entity._getActionManagerForTrigger()?.hasPickTriggers!;
         }
 
         return this._isActionable;
@@ -55,14 +55,14 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
      */
     public override focus(): void {
         // If defined eventHandler, override default.
-        const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        const eventHandler = this.entity.accessibilityTag?.eventHandler;
         if (eventHandler?.focus) {
             eventHandler.focus();
             return;
         }
 
         if (this.entity instanceof Mesh) {
-            const mesh = this.entity as Mesh;
+            const mesh = this.entity;
             mesh.enableEdgesRendering(0.999);
             mesh.edgesWidth = 5;
             mesh.edgesColor = new Color4(0.25, 0.5, 1, 1);
@@ -74,14 +74,14 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
      */
     public override blur(): void {
         // If defined eventHandler, override default.
-        const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        const eventHandler = this.entity.accessibilityTag?.eventHandler;
         if (eventHandler?.blur) {
             eventHandler.blur();
             return;
         }
 
         if (this.entity instanceof Mesh) {
-            const mesh = this.entity as Mesh;
+            const mesh = this.entity;
             mesh.disableEdgesRendering();
         }
     }
@@ -92,7 +92,7 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
      * @param eventType - Which event is triggered. E.g. "click", "contextmenu"
      */
     public override triggerEvent(eventType: string): void {
-        const eventHandler = (this.entity as Node).accessibilityTag?.eventHandler;
+        const eventHandler = this.entity.accessibilityTag?.eventHandler;
         const actions: IAction[] = [];
 
         switch (eventType) {
@@ -118,9 +118,9 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
                 break;
         }
 
-        actions.forEach((action) => {
+        for (const action of actions) {
             action._executeCurrent();
-        });
+        }
     }
 
     private _getTriggerActions(node: Node, trigger: number): IAction[] {

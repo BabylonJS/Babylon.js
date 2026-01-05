@@ -39,6 +39,8 @@ export class WebGPUMaterialContext implements IMaterialContext {
     // There's the same problem with depth textures, where "float" filtering is not supported either.
     public textureState: number;
 
+    public useVertexPulling = false;
+
     public get forceBindGroupCreation() {
         // If there is at least one external texture to bind, we must recreate the bind groups each time
         // because we need to retrieve a new texture each frame (by calling device.importExternalTexture)

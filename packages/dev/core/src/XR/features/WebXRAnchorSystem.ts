@@ -5,7 +5,6 @@ import { Matrix, Vector3, Quaternion } from "../../Maths/math.vector";
 import type { TransformNode } from "../../Meshes/transformNode";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import type { IWebXRHitResult } from "./WebXRHitTest";
-import { Tools } from "../../Misc/tools";
 
 /**
  * Configuration options of the anchor system
@@ -91,7 +90,7 @@ interface IWebXRFutureAnchor {
     xrTransformation: XRRigidTransform;
 }
 
-let anchorIdProvider = 0;
+let AnchorIdProvider = 0;
 
 /**
  * An implementation of the anchor system for WebXR.
@@ -205,7 +204,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         } else {
             try {
                 const nativeAnchor = await hitTestResult.xrHitResult.createAnchor(m);
-                return new Promise<IWebXRAnchor>((resolve, reject) => {
+                return await new Promise<IWebXRAnchor>((resolve, reject) => {
                     this._futureAnchors.push({
                         nativeAnchor,
                         resolved: false,
@@ -247,10 +246,10 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         );
         const xrAnchor =
             forceCreateInCurrentFrame && this.attached && this._xrSessionManager.currentFrame
-                ? await this._createAnchorAtTransformation(xrTransformation, this._xrSessionManager.currentFrame)
+                ? await this._createAnchorAtTransformationAsync(xrTransformation, this._xrSessionManager.currentFrame)
                 : undefined;
         // add the transformation to the future anchors list
-        return new Promise<IWebXRAnchor>((resolve, reject) => {
+        return await new Promise<IWebXRAnchor>((resolve, reject) => {
             this._futureAnchors.push({
                 nativeAnchor: xrAnchor,
                 resolved: false,
@@ -313,23 +312,20 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
 
         const trackedAnchors = frame.trackedAnchors;
         if (trackedAnchors) {
-            const toRemove = this._trackedAnchors
-                .filter((anchor) => anchor._removed)
-                .map((anchor) => {
-                    return this._trackedAnchors.indexOf(anchor);
-                });
-            let idxTracker = 0;
-            toRemove.forEach((index) => {
-                const anchor = this._trackedAnchors.splice(index - idxTracker, 1)[0];
+            for (const anchor of this._trackedAnchors) {
+                if (!anchor._removed) {
+                    continue;
+                }
+                const index = this._trackedAnchors.indexOf(anchor);
+                this._trackedAnchors.splice(index, 1);
                 anchor.xrAnchor.delete();
                 this.onAnchorRemovedObservable.notifyObservers(anchor);
-                idxTracker++;
-            });
+            }
             // now check for new ones
             trackedAnchors.forEach((xrAnchor) => {
                 if (!this._lastFrameDetected.has(xrAnchor)) {
                     const newAnchor: Partial<IWebXRAnchor> = {
-                        id: anchorIdProvider++,
+                        id: AnchorIdProvider++,
                         xrAnchor: xrAnchor,
                         remove: () => {
                             newAnchor._removed = true;
@@ -347,27 +343,26 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                     }
                 } else {
                     const index = this._findIndexInAnchorArray(xrAnchor);
-                    const anchor = this._trackedAnchors[index];
-                    try {
-                        // anchors update every frame
-                        this._updateAnchorWithXRFrame(xrAnchor, anchor, frame);
-                        if (anchor.attachedNode) {
-                            anchor.attachedNode.rotationQuaternion = anchor.attachedNode.rotationQuaternion || new Quaternion();
-                            anchor.transformationMatrix.decompose(anchor.attachedNode.scaling, anchor.attachedNode.rotationQuaternion, anchor.attachedNode.position);
-                        }
-                        this.onAnchorUpdatedObservable.notifyObservers(anchor);
-                    } catch (e) {
-                        Tools.Warn(`Anchor could not be updated`);
+                    if (index < 0) {
+                        return;
                     }
+                    const anchor = this._trackedAnchors[index];
+                    this._updateAnchorWithXRFrame(xrAnchor, anchor, frame);
+                    if (anchor.attachedNode) {
+                        anchor.attachedNode.rotationQuaternion = anchor.attachedNode.rotationQuaternion || new Quaternion();
+                        anchor.transformationMatrix.decompose(anchor.attachedNode.scaling, anchor.attachedNode.rotationQuaternion, anchor.attachedNode.position);
+                    }
+                    this.onAnchorUpdatedObservable.notifyObservers(anchor);
                 }
             });
             this._lastFrameDetected = trackedAnchors;
         }
 
         // process future anchors
-        this._futureAnchors.forEach((futureAnchor) => {
+        for (const futureAnchor of this._futureAnchors) {
             if (!futureAnchor.resolved && !futureAnchor.submitted) {
-                this._createAnchorAtTransformation(futureAnchor.xrTransformation, frame).then(
+                // eslint-disable-next-line github/no-then
+                this._createAnchorAtTransformationAsync(futureAnchor.xrTransformation, frame).then(
                     (nativeAnchor) => {
                         futureAnchor.nativeAnchor = nativeAnchor;
                     },
@@ -378,7 +373,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 );
                 futureAnchor.submitted = true;
             }
-        });
+        }
     }
 
     /**
@@ -415,10 +410,10 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         return <IWebXRAnchor>anchor;
     }
 
-    private async _createAnchorAtTransformation(xrTransformation: XRRigidTransform, xrFrame: XRFrame) {
+    private async _createAnchorAtTransformationAsync(xrTransformation: XRRigidTransform, xrFrame: XRFrame) {
         if (xrFrame.createAnchor) {
             try {
-                return xrFrame.createAnchor(xrTransformation, this._referenceSpaceForFrameAnchors ?? this._xrSessionManager.referenceSpace);
+                return await xrFrame.createAnchor(xrTransformation, this._referenceSpaceForFrameAnchors ?? this._xrSessionManager.referenceSpace);
             } catch (error) {
                 throw new Error(error);
             }

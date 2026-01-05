@@ -2,6 +2,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { checkDirectorySync, checkArgs, getHashOfFile, getHashOfContent } from "./utils.js";
+import type { DevPackageName } from "./packageMapping.js";
+
 // import * as glob from "glob";
 // import * as chokidar from "chokidar";
 // import { DevPackageName } from "./packageMapping";
@@ -16,13 +18,15 @@ import { checkDirectorySync, checkArgs, getHashOfFile, getHashOfContent } from "
  * Template creating hidden ts file containing the shaders.
  * When moving to pure es6 we will need to remove the Shader assignment
  */
-const tsShaderTemplate = `// Do not edit.
+const TsShaderTemplate = `// Do not edit.
 import { ShaderStore } from "##SHADERSTORELOCATION_PLACEHOLDER##";
 ##INCLUDES_PLACEHOLDER##
 const name = "##NAME_PLACEHOLDER##";
 const shader = \`##SHADER_PLACEHOLDER##\`;
 // Sideeffect
-ShaderStore.##SHADERSTORE_PLACEHOLDER##[name] = shader;
+if (!ShaderStore.##SHADERSTORE_PLACEHOLDER##[name]) {
+    ShaderStore.##SHADERSTORE_PLACEHOLDER##[name] = shader;
+}
 ##EXPORT_PLACEHOLDER##
 `;
 
@@ -31,7 +35,7 @@ ShaderStore.##SHADERSTORE_PLACEHOLDER##[name] = shader;
  * @param filename
  * @returns the shader name
  */
-function getShaderName(filename: string) {
+function GetShaderName(filename: string) {
     const parts = filename.split(".");
     if (parts[1] !== "fx") {
         return parts[0] + (parts[1] === "fragment" ? "Pixel" : parts[1] === "compute" ? "Compute" : "Vertex") + "Shader";
@@ -45,7 +49,7 @@ function getShaderName(filename: string) {
  * @param sourceCode
  * @returns the includes
  */
-function getIncludes(sourceCode: string) {
+function GetIncludes(sourceCode: string) {
     const regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
     let match = regex.exec(sourceCode);
 
@@ -76,27 +80,48 @@ function getIncludes(sourceCode: string) {
     return includes;
 }
 
+function IsFromPackage(packageName: DevPackageName, filePath: string): boolean {
+    return filePath.includes(path.sep + packageName + path.sep) || filePath.includes(`/${packageName}/`);
+}
+
+function DetermineBasePackageNameForShaderInclude(shaderFilePath: string): string | undefined {
+    // Handle addons package:
+    // * Shaders for a given <addon> exist in "addons/src/<addon>/Shaders/" e.g., "addons/src/<addon>/Shaders/foo.fragment.fx"
+    // * Corresponding include files exist in "addons/src/<addon>/Shaders/ShadersInclude/" e.g., "addons/src/<addon>/Shaders/ShadersInclude/fooFunctions.fx"
+    // To ensure the generated imports have the correct path to their includes,
+    // the final import used from the generated "foo.fragment.ts" is `import "../Shaders/ShadersInclude/fooFunctions";`
+    // That resolves to "addons/src/<addon>/Shaders" + "../Shaders/ShadersInclude/fooFunctions", keeping the path relative to the addon itself.
+    // Therefore, the final base package name for these addon includes can be ".."
+    const isAddonShader = IsFromPackage("addons", shaderFilePath);
+    if (isAddonShader) {
+        return "..";
+    }
+
+    // Otherwise fallback to core for the base package name.
+    return "core";
+}
+
 /**
  * Generate a ts file per shader file.
  * @param filePath
  * @param basePackageName
  * @param isCore
  */
-export function buildShader(filePath: string, basePackageName: string = "core", isCore?: boolean | string) {
+export function BuildShader(filePath: string, basePackageName: string | undefined, isCore?: boolean | string) {
     const isVerbose = checkArgs("--verbose", true);
     isVerbose && console.log("Generating shaders for " + filePath);
     const content = fs.readFileSync(filePath, "utf8");
     const filename = path.basename(filePath);
     const normalized = path.normalize(filePath);
     const directory = path.dirname(normalized);
-    const isWGSL = directory.indexOf("ShadersWGSL") > -1;
+    const isWGSL = directory.indexOf("WGSL") > -1;
     const tsFilename = filename.replace(".fx", ".ts").replace(".wgsl", ".ts");
-    const shaderName = getShaderName(filename);
+    const shaderName = GetShaderName(filename);
     const appendDirName = isWGSL ? "WGSL" : "";
     let fxData = content.toString();
 
     if (checkArgs("--global", true)) {
-        isCore = filePath.includes(path.sep + "core" + path.sep) || filePath.includes("/core/");
+        isCore = IsFromPackage("core", filePath);
     }
 
     // Remove Trailing whitespace...
@@ -119,18 +144,37 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
 
     // Generate imports for includes.
     let includeText = "";
-    const includes = getIncludes(fxData);
+    const includes = GetIncludes(fxData);
     includes.forEach((entry) => {
+        // Entry may have been something like #include<core/helperFunctions> where "core" is intended to override the basePackageName.
+        const isCoreInclude = (entry as string).startsWith("core/");
+
+        // Currently only "core/" is supported for the include path.
+        if (!isCoreInclude && (entry as string).includes("/")) {
+            throw new Error("Currently only specifying 'core' in path includes (e.g. #include<core/helperFunctions.fx>) is supported.");
+        }
+
         if (isCore) {
+            // If this shader is already from core, consider #include<core/...> as an error since it's not necessary.
+            if (isCoreInclude) {
+                throw new Error("Unnecessary core include");
+            }
+
             includeText =
                 includeText +
                 `import "./ShadersInclude/${entry}";
 `;
         } else {
+            const basePackageNameForImport = isCoreInclude ? "core" : basePackageName === undefined ? DetermineBasePackageNameForShaderInclude(filePath) : basePackageName;
+            const actualEntry = (entry as string).replace(/^core\//, "");
             includeText =
                 includeText +
-                `import "${basePackageName}/Shaders/ShadersInclude/${entry}";
+                `import "${basePackageNameForImport}/Shaders/ShadersInclude/${actualEntry}";
 `;
+            // The shader code itself also needs to be updated by replacing `#include<core/helperFunctions>` with `#include<helperFunctions>`
+            if (isCoreInclude) {
+                fxData = fxData.replace(new RegExp(`#include<${entry}>`, "g"), `#include<${actualEntry}>`);
+            }
         }
     });
 
@@ -146,16 +190,16 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
             shaderStoreLocation = "../Engines/shaderStore";
         }
     } else {
-        shaderStoreLocation = basePackageName + "/Engines/shaderStore";
+        shaderStoreLocation = "core/Engines/shaderStore";
     }
 
     // Fill template in.
-    let tsContent = tsShaderTemplate.replace("##SHADERSTORELOCATION_PLACEHOLDER##", shaderStoreLocation);
+    let tsContent = TsShaderTemplate.replace("##SHADERSTORELOCATION_PLACEHOLDER##", shaderStoreLocation);
     tsContent = tsContent
         .replace("##INCLUDES_PLACEHOLDER##", includeText)
         .replace("##NAME_PLACEHOLDER##", shaderName)
         .replace("##SHADER_PLACEHOLDER##", fxData)
-        .replace("##SHADERSTORE_PLACEHOLDER##", shaderStore)
+        .replace(new RegExp("##SHADERSTORE_PLACEHOLDER##", "g"), shaderStore)
         .replace(
             "##EXPORT_PLACEHOLDER##",
             `/** @internal */

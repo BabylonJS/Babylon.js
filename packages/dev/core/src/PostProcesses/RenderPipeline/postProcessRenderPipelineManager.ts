@@ -1,18 +1,34 @@
-import type { Camera } from "../../Cameras/camera";
-import type { PostProcessRenderPipeline } from "./postProcessRenderPipeline";
+import type { Camera, IReadonlyObservable, PostProcessRenderPipeline } from "core/index";
+
+import { Observable } from "../../Misc/observable";
+
 /**
  * PostProcessRenderPipelineManager class
  * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
  */
 export class PostProcessRenderPipelineManager {
-    private _renderPipelines: { [Key: string]: PostProcessRenderPipeline };
+    private readonly _renderPipelines: { [Key: string]: PostProcessRenderPipeline } = {};
+    private readonly _onNewPipelineAddedObservable = new Observable<PostProcessRenderPipeline>();
+    private readonly _onPipelineRemovedObservable = new Observable<PostProcessRenderPipeline>();
 
     /**
      * Initializes a PostProcessRenderPipelineManager
      * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
      */
-    constructor() {
-        this._renderPipelines = {};
+    constructor() {}
+
+    /**
+     * An event triggered when a pipeline is added to the manager
+     */
+    public get onNewPipelineAddedObservable(): IReadonlyObservable<PostProcessRenderPipeline> {
+        return this._onNewPipelineAddedObservable;
+    }
+
+    /**
+     * An event triggered when a pipeline is removed from the manager
+     */
+    public get onPipelineRemovedObservable(): IReadonlyObservable<PostProcessRenderPipeline> {
+        return this._onPipelineRemovedObservable;
     }
 
     /**
@@ -38,7 +54,9 @@ export class PostProcessRenderPipelineManager {
      * @param renderPipeline The pipeline to add
      */
     public addPipeline(renderPipeline: PostProcessRenderPipeline): void {
+        this.removePipeline(renderPipeline._name);
         this._renderPipelines[renderPipeline._name] = renderPipeline;
+        this._onNewPipelineAddedObservable.notifyObservers(renderPipeline);
     }
 
     /**
@@ -46,7 +64,11 @@ export class PostProcessRenderPipelineManager {
      * @param renderPipelineName the name of the pipeline to remove
      */
     public removePipeline(renderPipelineName: string): void {
-        delete this._renderPipelines[renderPipelineName];
+        const pipeline = this._renderPipelines[renderPipelineName];
+        if (pipeline) {
+            this._onPipelineRemovedObservable.notifyObservers(pipeline);
+            delete this._renderPipelines[renderPipelineName];
+        }
     }
 
     /**
@@ -55,14 +77,14 @@ export class PostProcessRenderPipelineManager {
      * @param cameras the camera to attach
      * @param unique if the camera can be attached multiple times to the pipeline
      */
-    public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: any | Camera[] | Camera, unique: boolean = false): void {
+    public attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera[] | Camera, unique: boolean = false): void {
         const renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
         if (!renderPipeline) {
             return;
         }
 
-        renderPipeline._attachCameras(cameras, unique);
+        renderPipeline._attachCameras(cameras as Camera[], unique);
     }
 
     /**
@@ -70,14 +92,14 @@ export class PostProcessRenderPipelineManager {
      * @param renderPipelineName The name of the pipeline to detach from
      * @param cameras the camera to detach
      */
-    public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: any | Camera[] | Camera): void {
+    public detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: Camera[] | Camera): void {
         const renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
         if (!renderPipeline) {
             return;
         }
 
-        renderPipeline._detachCameras(cameras);
+        renderPipeline._detachCameras(cameras as Camera[]);
     }
 
     /**
@@ -86,14 +108,14 @@ export class PostProcessRenderPipelineManager {
      * @param renderEffectName the name of the effect to enable
      * @param cameras the cameras that the effect should be enabled on
      */
-    public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any | Camera[] | Camera): void {
+    public enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[] | Camera): void {
         const renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
         if (!renderPipeline) {
             return;
         }
 
-        renderPipeline._enableEffect(renderEffectName, cameras);
+        renderPipeline._enableEffect(renderEffectName, cameras as Camera[]);
     }
 
     /**
@@ -102,14 +124,14 @@ export class PostProcessRenderPipelineManager {
      * @param renderEffectName the name of the effect to disable
      * @param cameras the cameras that the effect should be disabled on
      */
-    public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: any | Camera[] | Camera): void {
+    public disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[] | Camera): void {
         const renderPipeline: PostProcessRenderPipeline = this._renderPipelines[renderPipelineName];
 
         if (!renderPipeline) {
             return;
         }
 
-        renderPipeline._disableEffect(renderEffectName, cameras);
+        renderPipeline._disableEffect(renderEffectName, cameras as Camera[]);
     }
 
     /**

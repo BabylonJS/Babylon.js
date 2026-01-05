@@ -6,13 +6,8 @@ aggShadow = aggShadow / numLights;
 // _____________________________ IBL BRDF + Energy Cons ________________________________
 #if defined(ENVIRONMENTBRDF)
     #ifdef MS_BRDF_ENERGY_CONSERVATION
-        vec3 energyConservationFactor = getEnergyConservationFactor(clearcoatOut.specularEnvironmentR0, environmentBrdf);
-    #endif
-#endif
-
-#ifndef METALLICWORKFLOW
-    #ifdef SPECULAR_GLOSSINESS_ENERGY_CONSERVATION
-        surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
+        vec3 baseSpecularEnergyConservationFactor = getEnergyConservationFactor(vec3(reflectanceF0), environmentBrdf);
+        vec3 coloredEnergyConservationFactor = getEnergyConservationFactor(clearcoatOut.specularEnvironmentR0, environmentBrdf);
     #endif
 #endif
 
@@ -20,9 +15,32 @@ aggShadow = aggShadow / numLights;
     surfaceAlbedo.rgb = sheenOut.sheenAlbedoScaling * surfaceAlbedo.rgb;
 #endif
 
+#ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+    // Remove F0 energy from albedo.
+    // For metallic workflow, this is already done in the reflectivity block.
+    #ifndef METALLICWORKFLOW
+        #ifdef SPECULAR_GLOSSINESS_ENERGY_CONSERVATION
+            surfaceAlbedo.rgb = (1. - reflectanceF0) * surfaceAlbedo.rgb;
+        #endif
+    #endif
+#endif
+
 // _____________________________ Irradiance ______________________________________
 #ifdef REFLECTION
     vec3 finalIrradiance = reflectionOut.environmentIrradiance;
+
+    #ifndef LEGACY_SPECULAR_ENERGY_CONSERVATION
+        #if defined(METALLICWORKFLOW) || defined(SPECULAR_GLOSSINESS_ENERGY_CONSERVATION)
+            // Account for energy loss due to specular reflectance
+            vec3 baseSpecularEnergy = vec3(baseSpecularEnvironmentReflectance);
+            #if defined(ENVIRONMENTBRDF)
+                #ifdef MS_BRDF_ENERGY_CONSERVATION
+                    baseSpecularEnergy *= baseSpecularEnergyConservationFactor;
+                #endif
+            #endif
+            finalIrradiance *= clamp(vec3(1.0) - baseSpecularEnergy, 0.0, 1.0);
+        #endif
+    #endif
 
     #if defined(CLEARCOAT)
         finalIrradiance *= clearcoatOut.conservationFactor;
@@ -31,8 +49,12 @@ aggShadow = aggShadow / numLights;
         #endif
     #endif
 
+    #ifndef SS_APPLY_ALBEDO_AFTER_SUBSURFACE
+        finalIrradiance *= surfaceAlbedo.rgb;
+    #endif
+
     #if defined(SS_REFRACTION)
-        finalIrradiance *= subSurfaceOut.refractionFactorForIrradiance;
+        finalIrradiance *= subSurfaceOut.refractionOpacity;
     #endif
 
     #if defined(SS_TRANSLUCENCY)
@@ -40,7 +62,10 @@ aggShadow = aggShadow / numLights;
         finalIrradiance += subSurfaceOut.refractionIrradiance;
     #endif
 
-    finalIrradiance *= surfaceAlbedo.rgb;
+    #ifdef SS_APPLY_ALBEDO_AFTER_SUBSURFACE
+        finalIrradiance *= surfaceAlbedo.rgb;
+    #endif
+
     finalIrradiance *= vLightingIntensity.z;
     finalIrradiance *= aoOut.ambientOcclusionColor;
 #endif
@@ -53,7 +78,7 @@ aggShadow = aggShadow / numLights;
     vec3 finalSpecularScaled = finalSpecular * vLightingIntensity.x * vLightingIntensity.w;
 
     #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
-        finalSpecularScaled *= energyConservationFactor;
+        finalSpecularScaled *= coloredEnergyConservationFactor;
     #endif
 
     #if defined(SHEEN) && defined(ENVIRONMENTBRDF) && defined(SHEEN_ALBEDOSCALING)
@@ -64,12 +89,12 @@ aggShadow = aggShadow / numLights;
 // _____________________________ Radiance ________________________________________
 #ifdef REFLECTION
     vec3 finalRadiance = reflectionOut.environmentRadiance.rgb;
-    finalRadiance *= subSurfaceOut.specularEnvironmentReflectance;
-
+    finalRadiance *= colorSpecularEnvironmentReflectance;
+    
     vec3 finalRadianceScaled = finalRadiance * vLightingIntensity.z;
 
     #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
-        finalRadianceScaled *= energyConservationFactor;
+        finalRadianceScaled *= coloredEnergyConservationFactor;
     #endif
 
     #if defined(SHEEN) && defined(ENVIRONMENTBRDF) && defined(SHEEN_ALBEDOSCALING)

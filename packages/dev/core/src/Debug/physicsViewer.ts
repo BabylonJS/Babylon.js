@@ -61,6 +61,7 @@ export class PhysicsViewer {
     private _inertiaRenderFunction: () => void;
     private _constraintRenderFunction: () => void;
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
+    private _ownUtilityLayer = false;
 
     private _debugBoxMesh: Mesh;
     private _debugSphereMesh: Mesh;
@@ -77,8 +78,9 @@ export class PhysicsViewer {
      * Creates a new PhysicsViewer
      * @param scene defines the hosting scene
      * @param size Physics V2 size scalar
+     * @param utilityLayer The utility layer the viewer will be added to
      */
-    constructor(scene?: Scene, size?: number) {
+    constructor(scene?: Scene, size?: number, utilityLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
         this._scene = scene || EngineStore.LastCreatedScene;
         if (!this._scene) {
             return;
@@ -89,9 +91,14 @@ export class PhysicsViewer {
             this._physicsEnginePlugin = physicEngine.getPhysicsPlugin();
         }
 
-        this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
-        this._utilityLayer.pickUtilitySceneFirst = false;
-        this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = true;
+        if (utilityLayer) {
+            this._utilityLayer = utilityLayer;
+        } else {
+            this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
+            this._utilityLayer.pickUtilitySceneFirst = false;
+            this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = true;
+            this._ownUtilityLayer = true;
+        }
         if (size) {
             this._constraintAxesSize = 0.4 * size;
             this._constraintAngularSize = 0.4 * size;
@@ -251,7 +258,8 @@ export class PhysicsViewer {
             return;
         }
 
-        parentingMesh.getDescendants(true).forEach((parentConstraintMesh) => {
+        const descendants = parentingMesh.getDescendants(true);
+        for (const parentConstraintMesh of descendants) {
             // Get the parent transform
             const parentCoordSystemNode = parentConstraintMesh.getDescendants(true)[0] as TransformNode;
             const childCoordSystemNode = parentConstraintMesh.getDescendants(true)[1] as TransformNode;
@@ -284,7 +292,7 @@ export class PhysicsViewer {
                 Matrix.FromXYZAxesToRef(axisB, perpAxisB, Vector3.CrossToRef(axisB, perpAxisB, TmpVectors.Vector3[1]), TmpVectors.Matrix[1]),
                 childTransformNode.rotationQuaternion!
             );
-        });
+        }
     }
 
     /**
@@ -583,10 +591,10 @@ export class PhysicsViewer {
                     continue;
                 }
 
-                meshes.forEach((mesh) => {
+                for (const mesh of meshes) {
                     utilityLayerScene.removeMesh(mesh);
                     mesh.dispose();
-                });
+                }
 
                 this._constraints.splice(i, 1);
                 this._constraintMeshes.splice(i, 1);
@@ -744,7 +752,7 @@ export class PhysicsViewer {
                     const childMeshes = targetMesh.getChildMeshes().filter((c) => {
                         return c.physicsImpostor ? 1 : 0;
                     });
-                    childMeshes.forEach((m) => {
+                    for (const m of childMeshes) {
                         if (m.physicsImpostor && m.getClassName() === "Mesh") {
                             const boundingInfo = m.getBoundingInfo();
                             const min = boundingInfo.boundingBox.minimum;
@@ -773,7 +781,7 @@ export class PhysicsViewer {
                                 mesh.parent = m;
                             }
                         }
-                    });
+                    }
                 } else {
                     Logger.Warn("No target mesh parameter provided for NoImpostor. Skipping.");
                 }
@@ -1120,7 +1128,7 @@ export class PhysicsViewer {
         this._scene = null;
         this._physicsEnginePlugin = null;
 
-        if (this._utilityLayer) {
+        if (this._ownUtilityLayer && this._utilityLayer) {
             this._utilityLayer.dispose();
             this._utilityLayer = null;
         }

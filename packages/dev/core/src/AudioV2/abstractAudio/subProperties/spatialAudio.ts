@@ -5,12 +5,21 @@ import { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 import type { _AbstractAudioSubGraph } from "../subNodes/abstractAudioSubGraph";
 import { AudioSubNode } from "../subNodes/audioSubNode";
 import type { _SpatialAudioSubNode } from "../subNodes/spatialAudioSubNode";
-import { _GetSpatialAudioProperty, _GetSpatialAudioSubNode, _SetSpatialAudioProperty } from "../subNodes/spatialAudioSubNode";
+import { _GetSpatialAudioSubNode, _SetSpatialAudioProperty } from "../subNodes/spatialAudioSubNode";
 import { _SpatialAudioDefaults, AbstractSpatialAudio } from "./abstractSpatialAudio";
 
 /** @internal */
 export abstract class _SpatialAudio extends AbstractSpatialAudio {
+    private _coneInnerAngle: number = _SpatialAudioDefaults.coneInnerAngle;
+    private _coneOuterAngle: number = _SpatialAudioDefaults.coneOuterAngle;
+    private _coneOuterVolume: number = _SpatialAudioDefaults.coneOuterVolume;
+    private _distanceModel: DistanceModelType = _SpatialAudioDefaults.distanceModel;
+    private _maxDistance: number = _SpatialAudioDefaults.maxDistance;
+    private _minDistance: number = _SpatialAudioDefaults.minDistance;
+    private _orientation: Vector3;
+    private _panningModel: PanningModelType = _SpatialAudioDefaults.panningModel;
     private _position: Vector3;
+    private _rolloffFactor: number = _SpatialAudioDefaults.rolloffFactor;
     private _rotation: Vector3;
     private _rotationQuaternion: Quaternion;
     private _subGraph: _AbstractAudioSubGraph;
@@ -21,53 +30,66 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
 
         const subNode = _GetSpatialAudioSubNode(subGraph);
         if (subNode) {
+            this._orientation = subNode.orientation.clone();
             this._position = subNode.position.clone();
             this._rotation = subNode.rotation.clone();
             this._rotationQuaternion = subNode.rotationQuaternion.clone();
         } else {
+            this._orientation = _SpatialAudioDefaults.orientation.clone();
             this._position = _SpatialAudioDefaults.position.clone();
             this._rotation = _SpatialAudioDefaults.rotation.clone();
             this._rotationQuaternion = _SpatialAudioDefaults.rotationQuaternion.clone();
 
-            subGraph.createAndAddSubNode(AudioSubNode.SPATIAL);
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            subGraph.createAndAddSubNodeAsync(AudioSubNode.SPATIAL);
         }
 
         this._subGraph = subGraph;
     }
 
     /** @internal */
+    public dispose(): void {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._subGraph.removeSubNodeAsync(_GetSpatialAudioSubNode(this._subGraph));
+    }
+
+    /** @internal */
     public get coneInnerAngle(): number {
-        return _GetSpatialAudioProperty(this._subGraph, "coneInnerAngle") ?? _SpatialAudioDefaults.coneInnerAngle;
+        return this._coneInnerAngle;
     }
 
     public set coneInnerAngle(value: number) {
+        this._coneInnerAngle = value;
         _SetSpatialAudioProperty(this._subGraph, "coneInnerAngle", value);
     }
 
     /** @internal */
     public get coneOuterAngle(): number {
-        return _GetSpatialAudioProperty(this._subGraph, "coneOuterAngle");
+        return this._coneOuterAngle;
     }
 
     public set coneOuterAngle(value: number) {
+        this._coneOuterAngle = value;
         _SetSpatialAudioProperty(this._subGraph, "coneOuterAngle", value);
     }
 
     /** @internal */
     public get coneOuterVolume(): number {
-        return _GetSpatialAudioProperty(this._subGraph, "coneOuterVolume");
+        return this._coneOuterVolume;
     }
 
     public set coneOuterVolume(value: number) {
+        this._coneOuterVolume = value;
         _SetSpatialAudioProperty(this._subGraph, "coneOuterVolume", value);
     }
 
     /** @internal */
     public get distanceModel(): DistanceModelType {
-        return _GetSpatialAudioProperty(this._subGraph, "distanceModel");
+        return this._distanceModel;
     }
 
     public set distanceModel(value: DistanceModelType) {
+        this._distanceModel = value;
         _SetSpatialAudioProperty(this._subGraph, "distanceModel", value);
     }
 
@@ -78,7 +100,7 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
 
     /** @internal */
     public get maxDistance(): number {
-        return _GetSpatialAudioProperty(this._subGraph, "maxDistance") ?? _SpatialAudioDefaults.maxDistance;
+        return this._maxDistance;
     }
 
     public set maxDistance(value: number) {
@@ -86,15 +108,37 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
             value = 0.000001;
         }
 
+        this._maxDistance = value;
         _SetSpatialAudioProperty(this._subGraph, "maxDistance", value);
     }
 
     /** @internal */
+    public get minDistance(): number {
+        return this._minDistance;
+    }
+
+    public set minDistance(value: number) {
+        this._minDistance = value;
+        _SetSpatialAudioProperty(this._subGraph, "minDistance", value);
+    }
+
+    /** @internal */
+    public get orientation(): Vector3 {
+        return this._orientation;
+    }
+
+    public set orientation(value: Vector3) {
+        this._orientation = value;
+        this._updateRotation();
+    }
+
+    /** @internal */
     public get panningModel(): PanningModelType {
-        return _GetSpatialAudioProperty(this._subGraph, "panningModel");
+        return this._panningModel;
     }
 
     public set panningModel(value: PanningModelType) {
+        this._panningModel = value;
         _SetSpatialAudioProperty(this._subGraph, "panningModel", value);
     }
 
@@ -109,20 +153,12 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /** @internal */
-    public get referenceDistance(): number {
-        return _GetSpatialAudioProperty(this._subGraph, "referenceDistance");
-    }
-
-    public set referenceDistance(value: number) {
-        _SetSpatialAudioProperty(this._subGraph, "referenceDistance", value);
-    }
-
-    /** @internal */
     public get rolloffFactor(): number {
-        return _GetSpatialAudioProperty(this._subGraph, "rolloffFactor");
+        return this._rolloffFactor;
     }
 
     public set rolloffFactor(value: number) {
+        this._rolloffFactor = value;
         _SetSpatialAudioProperty(this._subGraph, "rolloffFactor", value);
     }
 
@@ -147,17 +183,21 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /**
-     * Attaches the audio source to a scene object.
-     * @param sceneNode The scene node to attach the audio source to.
+     * Attaches to a scene node.
+     *
+     * Detaches automatically before attaching to the given scene node.
+     * If `sceneNode` is `null` it is the same as calling `detach()`.
+     *
+     * @param sceneNode The scene node to attach to, or `null` to detach.
      * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
-     * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
+     * @param attachmentType Whether to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
      */
-    public attach(sceneNode: Node, useBoundingBox: boolean = false, attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.PositionAndRotation): void {
+    public attach(sceneNode: Nullable<Node>, useBoundingBox: boolean = false, attachmentType: SpatialAudioAttachmentType = SpatialAudioAttachmentType.PositionAndRotation): void {
         _GetSpatialAudioSubNode(this._subGraph)?.attach(sceneNode, useBoundingBox, attachmentType);
     }
 
     /**
-     * Detaches the audio source from the currently attached graphics node.
+     * Detaches from the scene node if attached.
      */
     public detach(): void {
         _GetSpatialAudioSubNode(this._subGraph)?.detach();
@@ -191,7 +231,7 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
         const position = subNode.position;
         if (!position.equalsWithEpsilon(this._position)) {
             subNode.position.copyFrom(this._position);
-            subNode.updatePosition();
+            subNode._updatePosition();
         }
     }
 
@@ -206,10 +246,19 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
 
         if (!subNode.rotationQuaternion.equalsWithEpsilon(this._rotationQuaternion)) {
             subNode.rotationQuaternion.copyFrom(this._rotationQuaternion);
-            subNode.updateRotation();
+            subNode._updateRotation();
+            this._orientation.copyFrom(subNode.orientation);
+            this._rotation.copyFrom(subNode.rotation);
         } else if (!subNode.rotation.equalsWithEpsilon(this._rotation)) {
             subNode.rotation.copyFrom(this._rotation);
-            subNode.updateRotation();
+            subNode._updateRotation();
+            this._orientation.copyFrom(subNode.orientation);
+            this._rotationQuaternion.copyFrom(subNode.rotationQuaternion);
+        } else if (!subNode.orientation.equalsWithEpsilon(this._orientation)) {
+            subNode.orientation.copyFrom(this._orientation);
+            subNode._updateRotation();
+            this._rotation.copyFrom(subNode.rotation);
+            this._rotationQuaternion.copyFrom(subNode.rotationQuaternion);
         }
     }
 }

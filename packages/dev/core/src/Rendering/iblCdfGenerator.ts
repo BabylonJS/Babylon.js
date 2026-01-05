@@ -8,7 +8,7 @@ import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralT
 import type { IProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/proceduralTexture";
 import { PostProcess } from "../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../PostProcesses/postProcess";
-import { Vector4 } from "../Maths/math.vector";
+import { Vector3, Vector4 } from "../Maths/math.vector";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Observable } from "../Misc/observable";
@@ -18,6 +18,8 @@ import { Engine } from "../Engines/engine";
 import { _WarnImport } from "../Misc/devTools";
 import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
+import { Logger } from "../Misc/logger";
+import { _RetryWithInterval } from "../Misc/timingTools";
 
 /**
  * Build cdf maps to be used for IBL importance sampling.
@@ -30,8 +32,23 @@ export class IblCdfGenerator {
     private _cdfxPT: ProceduralTexture;
     private _icdfPT: ProceduralTexture;
     private _scaledLuminancePT: ProceduralTexture;
+    private _dominantDirectionPT: ProceduralTexture;
     private _iblSource: Nullable<BaseTexture>;
     private _dummyTexture: RawTexture;
+
+    private _cachedDominantDirection: Nullable<Vector3> = null;
+
+    /**
+     * Returns whether the CDF renderer is supported by the current engine
+     */
+    public get isSupported(): boolean {
+        const engine = EngineStore.LastCreatedEngine;
+        if (!engine) {
+            return false;
+        }
+        return engine.getCaps().texelFetch;
+    }
+
     /**
      * Gets the IBL source texture being used by the CDF renderer
      */
@@ -148,6 +165,10 @@ export class IblCdfGenerator {
         if (this._scene) {
             this._engine = this._scene.getEngine();
         }
+        if (!this.isSupported) {
+            Logger.Warn("CDF renderer is not supported by the current engine.");
+            return;
+        }
         const blackPixels = new Uint16Array([0, 0, 0, 255]);
         this._dummyTexture = new RawTexture(blackPixels, 1, 1, Engine.TEXTUREFORMAT_RGBA, sceneOrEngine, false, false, undefined, Constants.TEXTURETYPE_HALF_FLOAT);
         if (this._scene) {
@@ -176,7 +197,7 @@ export class IblCdfGenerator {
             this._iblSource.name = "Placeholder IBL Source";
         }
 
-        if (this._iblSource!.isCube) {
+        if (this._iblSource.isCube) {
             size.width *= 4;
             size.height *= 2;
             // Force the resolution to be a power of 2 because we rely on the
@@ -214,9 +235,9 @@ export class IblCdfGenerator {
             gammaSpace: false,
             extraInitializationsAsync: async () => {
                 if (isWebGPU) {
-                    await Promise.all([import("../ShadersWGSL/iblIcdf.fragment")]);
+                    await Promise.all([import("../ShadersWGSL/iblIcdf.fragment"), import("../ShadersWGSL/iblDominantDirection.fragment")]);
                 } else {
-                    await Promise.all([import("../Shaders/iblIcdf.fragment")]);
+                    await Promise.all([import("../Shaders/iblIcdf.fragment"), import("../Shaders/iblDominantDirection.fragment")]);
                 }
             },
         };
@@ -269,6 +290,12 @@ export class IblCdfGenerator {
         this._icdfPT.onGeneratedObservable.addOnce(() => {
             this.onGeneratedObservable.notifyObservers();
         });
+
+        this._dominantDirectionPT = new ProceduralTexture("iblDominantDirection", { width: 1, height: 1 }, "iblDominantDirection", this._scene, icdfOptions, false, false);
+        this._dominantDirectionPT.autoClear = false;
+        this._dominantDirectionPT.setTexture("icdfSampler", this._icdfPT);
+        this._dominantDirectionPT.refreshRate = 0;
+        this._dominantDirectionPT.defines = "#define NUM_SAMPLES 32u\n";
     }
 
     private _disposeTextures() {
@@ -276,6 +303,7 @@ export class IblCdfGenerator {
         this._cdfxPT?.dispose();
         this._icdfPT?.dispose();
         this._scaledLuminancePT?.dispose();
+        this._dominantDirectionPT?.dispose();
     }
 
     private _createDebugPass() {
@@ -342,30 +370,87 @@ export class IblCdfGenerator {
      * Explicitly trigger generation of CDF maps when they are ready to render.
      * @returns Promise that resolves when the CDF maps are rendered.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
     public renderWhenReady(): Promise<void> {
-        // Once the textures are generated, notify that they are ready to use.
-        this._icdfPT.onGeneratedObservable.addOnce(() => {
-            this.onGeneratedObservable.notifyObservers();
-        });
-        const promises: Array<Promise<void>> = [];
-        const renderTargets: Array<ProceduralTexture> = [this._cdfyPT, this._cdfxPT, this._scaledLuminancePT, this._icdfPT];
-        renderTargets.forEach((target) => {
-            promises.push(
-                new Promise((resolve) => {
-                    if (target.isReady()) {
-                        resolve();
-                    } else {
-                        target.getEffect().executeWhenCompiled(() => {
-                            resolve();
-                        });
-                    }
-                })
+        this._cachedDominantDirection = null;
+
+        // Even if a IBL source must be set before calling this function, _icdfPT may not yet be created because the creation may be asynchronous (see @set iblSource).
+        const icdfPTPromise = new Promise((resolve, reject) => {
+            _RetryWithInterval(
+                () => !!this._icdfPT,
+                () => resolve(void 0),
+                () => reject(new Error("Waiting for _icdfPT creation failed"))
             );
         });
-        return Promise.all(promises).then(() => {
-            renderTargets.forEach((target) => {
-                target.render();
+
+        // eslint-disable-next-line github/no-then, @typescript-eslint/promise-function-async
+        return icdfPTPromise.then(() => {
+            // Once the textures are generated, notify that they are ready to use.
+            this._icdfPT.onGeneratedObservable.addOnce(() => {
+                this.onGeneratedObservable.notifyObservers();
             });
+            const promises: Array<Promise<void>> = [];
+            const renderTargets: Array<ProceduralTexture> = [this._cdfyPT, this._cdfxPT, this._scaledLuminancePT, this._icdfPT];
+            for (const target of renderTargets) {
+                promises.push(
+                    new Promise((resolve) => {
+                        if (target.isReady()) {
+                            resolve();
+                        } else {
+                            target.getEffect().executeWhenCompiled(() => {
+                                resolve();
+                            });
+                        }
+                    })
+                );
+            }
+            // eslint-disable-next-line github/no-then
+            return Promise.all(promises).then(() => {
+                for (const target of renderTargets) {
+                    target.render();
+                }
+            });
+        });
+    }
+
+    /**
+     * Finds the average direction of the highest intensity areas of the IBL source
+     * @returns Async promise that resolves to the dominant direction of the IBL source
+     */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    public findDominantDirection(): Promise<Vector3> {
+        if (this._cachedDominantDirection) {
+            return Promise.resolve(this._cachedDominantDirection);
+        }
+        return new Promise((resolve) => {
+            this._dominantDirectionPT.onGeneratedObservable.addOnce(() => {
+                const data = new Float32Array(4);
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                this._dominantDirectionPT.readPixels(0, 0, data, true)!.then(() => {
+                    const dominantDirection = new Vector3(data[0], data[1], data[2]);
+                    this._cachedDominantDirection = dominantDirection;
+                    resolve(dominantDirection);
+                });
+            });
+            if (this.isReady()) {
+                if (this._dominantDirectionPT.isReady()) {
+                    this._dominantDirectionPT.render();
+                } else {
+                    this._dominantDirectionPT.getEffect().executeWhenCompiled(() => {
+                        this._dominantDirectionPT.render();
+                    });
+                }
+            } else {
+                this.onGeneratedObservable.addOnce(() => {
+                    if (this._dominantDirectionPT.isReady()) {
+                        this._dominantDirectionPT.render();
+                    } else {
+                        this._dominantDirectionPT.getEffect().executeWhenCompiled(() => {
+                            this._dominantDirectionPT.render();
+                        });
+                    }
+                });
+            }
         });
     }
 

@@ -204,7 +204,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
             return;
         }
 
-        const defines = subMesh!.materialDefines as unknown as MaterialSheenDefines;
+        const defines = subMesh.materialDefines as unknown as MaterialSheenDefines;
 
         const isFrozen = this._material.isFrozen;
 

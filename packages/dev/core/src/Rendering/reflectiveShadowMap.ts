@@ -127,9 +127,11 @@ export class ReflectiveShadowMap {
         this._disposeMultiRenderTarget();
         this._createMultiRenderTarget();
 
-        renderList?.forEach((mesh) => {
-            this._addMeshToMRT(mesh);
-        });
+        if (renderList) {
+            for (const mesh of renderList) {
+                this._addMeshToMRT(mesh);
+            }
+        }
     }
 
     /**
@@ -140,9 +142,9 @@ export class ReflectiveShadowMap {
         if (mesh) {
             this._addMeshToMRT(mesh);
         } else {
-            this._scene.meshes.forEach((mesh) => {
+            for (const mesh of this._scene.meshes) {
                 this._addMeshToMRT(mesh);
-            });
+            }
         }
         this._recomputeLightTransformationMatrix();
     }

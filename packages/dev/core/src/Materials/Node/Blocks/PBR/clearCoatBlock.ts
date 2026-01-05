@@ -8,7 +8,6 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { ReflectionBlock } from "./reflectionBlock";
 import type { Scene } from "../../../../scene";
 import type { Nullable } from "../../../../types";
@@ -186,9 +185,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        super.prepareDefines(mesh, nodeMaterial, defines);
-
+    public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue("CLEARCOAT", true);
         defines.setValue("CLEARCOAT_TEXTURE", false, true);
         defines.setValue("CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE", true, true);
@@ -243,11 +240,11 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
 
-        const TBN = this.TBN;
-        if (TBN.isConnected) {
+        const tbn = this.TBN;
+        if (tbn.isConnected) {
             state.compilationString += `
             #ifdef TBNBLOCK
-                ${isWebGPU ? "var TBN" : "mat3 TBN"} = ${TBN.associatedVariableName};
+                ${isWebGPU ? "var TBN" : "mat3 TBN"} = ${tbn.associatedVariableName};
             #endif
             `;
         } else if (worldTangent.isConnected) {
@@ -260,6 +257,25 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
             replaceStrings: [tangentReplaceString],
         });
+
+        return code;
+    }
+
+    /** @internal */
+    public static _GetInitializationCode(state: NodeMaterialBuildState, ccBlock: Nullable<ClearCoatBlock>): string {
+        let code = "";
+
+        const intensity = ccBlock?.intensity.isConnected ? ccBlock.intensity.associatedVariableName : "1.";
+        const roughness = ccBlock?.roughness.isConnected ? ccBlock.roughness.associatedVariableName : "0.";
+
+        const tintColor = ccBlock?.tintColor.isConnected ? ccBlock.tintColor.associatedVariableName : `vec3${state.fSuffix}(1.)`;
+        const tintThickness = ccBlock?.tintThickness.isConnected ? ccBlock.tintThickness.associatedVariableName : "1.";
+
+        code += `
+            #ifdef CLEARCOAT
+                ${state._declareLocalVar("vClearCoatParams", NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(${intensity}, ${roughness});
+                ${state._declareLocalVar("vClearCoatTintParams", NodeMaterialBlockConnectionPointTypes.Vector4)} = vec4${state.fSuffix}(${tintColor}, ${tintThickness});
+            #endif\n`;
 
         return code;
     }
@@ -286,13 +302,9 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     ): string {
         let code = "";
 
-        const intensity = ccBlock?.intensity.isConnected ? ccBlock.intensity.associatedVariableName : "1.";
-        const roughness = ccBlock?.roughness.isConnected ? ccBlock.roughness.associatedVariableName : "0.";
         const normalMapColor = ccBlock?.normalMapColor.isConnected ? ccBlock.normalMapColor.associatedVariableName : `vec3${state.fSuffix}(0.)`;
         const uv = ccBlock?.uv.isConnected ? ccBlock.uv.associatedVariableName : `vec2${state.fSuffix}(0.)`;
 
-        const tintColor = ccBlock?.tintColor.isConnected ? ccBlock.tintColor.associatedVariableName : `vec3${state.fSuffix}(1.)`;
-        const tintThickness = ccBlock?.tintThickness.isConnected ? ccBlock.tintThickness.associatedVariableName : "1.";
         const tintAtDistance = ccBlock?.tintAtDistance.isConnected ? ccBlock.tintAtDistance.associatedVariableName : "1.";
         const tintTexture = `vec4${state.fSuffix}(0.)`;
 
@@ -315,9 +327,6 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         code += `${isWebGPU ? "var clearcoatOut: clearcoatOutParams" : "clearcoatOutParams clearcoatOut"};
 
         #ifdef CLEARCOAT
-            ${state._declareLocalVar("vClearCoatParams", NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(${intensity}, ${roughness});
-            ${state._declareLocalVar("vClearCoatTintParams", NodeMaterialBlockConnectionPointTypes.Vector4)} = vec4${state.fSuffix}(${tintColor}, ${tintThickness});
-
             clearcoatOut = clearcoatBlock(
                 ${worldPosVarName}.xyz
                 , vGeometricNormaClearCoatW

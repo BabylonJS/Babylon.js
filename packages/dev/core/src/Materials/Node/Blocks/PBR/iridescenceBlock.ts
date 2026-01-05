@@ -7,8 +7,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { NodeMaterialDefines } from "../../nodeMaterial";
 import type { Scene } from "../../../../scene";
 import type { Nullable } from "../../../../types";
 import { PBRIridescenceConfiguration } from "../../../../Materials/PBR/pbrIridescenceConfiguration";
@@ -100,9 +99,7 @@ export class IridescenceBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        super.prepareDefines(mesh, nodeMaterial, defines);
-
+    public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue("IRIDESCENCE", true, true);
         defines.setValue("IRIDESCENCE_TEXTURE", false, true);
         defines.setValue("IRIDESCENCE_THICKNESS_TEXTURE", false, true);
@@ -134,10 +131,11 @@ export class IridescenceBlock extends NodeMaterialBlock {
                 , specularEnvironmentR0
                 #ifdef CLEARCOAT
                     , NdotVUnclamped
+                    , vClearCoatParams
                 #endif                
             );
 
-            float iridescenceIntensity = iridescenceOut.iridescenceIntensity;
+            ${isWebGPU ? "let" : "float"} iridescenceIntensity = iridescenceOut.iridescenceIntensity;
             specularEnvironmentR0 = iridescenceOut.specularEnvironmentR0;
         #endif\n`;
 

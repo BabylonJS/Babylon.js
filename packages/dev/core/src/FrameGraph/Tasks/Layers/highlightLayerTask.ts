@@ -1,9 +1,4 @@
-import type {
-    FrameGraph,
-    Scene,
-    IThinHighlightLayerOptions,
-    // eslint-disable-next-line import/no-internal-modules
-} from "core/index";
+import type { FrameGraph, Scene, IThinHighlightLayerOptions } from "core/index";
 import { ThinHighlightLayer } from "core/Layers/thinHighlightLayer";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphBaseLayerTask } from "./baseLayerTask";
@@ -31,13 +26,17 @@ export class FrameGraphHighlightLayerTask extends FrameGraphBaseLayerTask {
         super(name, frameGraph, scene, new ThinHighlightLayer(name, scene, options, true), 1, alphaBlendingMode === Constants.ALPHA_COMBINE, true, true);
     }
 
+    public override getClassName(): string {
+        return "FrameGraphHighlightLayerTask";
+    }
+
     public override record() {
         if (!this.objectRendererTask.depthTexture) {
             throw new Error(`FrameGraphHighlightLayerTask "${this.name}": objectRendererTask must have a depthTexture input`);
         }
 
         const depthTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.objectRendererTask.depthTexture);
-        if (!depthTextureCreationOptions.options.formats || !HasStencilAspect(depthTextureCreationOptions.options.formats![0])) {
+        if (!depthTextureCreationOptions.options.formats || !HasStencilAspect(depthTextureCreationOptions.options.formats[0])) {
             throw new Error(`FrameGraphHighlightLayerTask "${this.name}": objectRendererTask depthTexture must have a stencil aspect`);
         }
 

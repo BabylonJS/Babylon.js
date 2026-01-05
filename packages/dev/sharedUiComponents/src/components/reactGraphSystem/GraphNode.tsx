@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { FC, PropsWithChildren } from "react";
 import { useDrag } from "react-dnd";
 import { ClassNames } from "../classNames";
 import { GraphConnectorHandler } from "./GraphConnectorHandle";
@@ -17,7 +17,7 @@ export interface IGraphNodeProps {
     parentContainerId: string;
 }
 
-export const SingleGraphNode: FC<IGraphNodeProps> = (props) => {
+export const SingleGraphNode: FC<PropsWithChildren<IGraphNodeProps>> = (props) => {
     const { id, name, x, y, selected, width = 100, height = 40, highlighted, parentContainerId } = props;
     const { onNodeSelected } = useGraphContext();
 

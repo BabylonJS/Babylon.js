@@ -1,12 +1,4 @@
-import type {
-    Scene,
-    NodeRenderGraphBuildState,
-    FrameGraph,
-    FrameGraphTextureHandle,
-    NodeRenderGraphConnectionPoint,
-    FrameGraphObjectRendererTask,
-    // eslint-disable-next-line import/no-internal-modules
-} from "core/index";
+import type { Scene, NodeRenderGraphBuildState, FrameGraph, FrameGraphTextureHandle, NodeRenderGraphConnectionPoint, FrameGraphObjectRendererTask } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "../../Types/nodeRenderGraphTypes";
@@ -21,6 +13,8 @@ import { NodeRenderGraphBaseObjectRendererBlock } from "../Rendering/baseObjectR
  */
 export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphHighlightLayerTask;
+
+    public override _additionalConstructionParameters: [number, number | undefined, number, boolean, number];
 
     /**
      * Gets the frame graph task associated with this block
@@ -54,8 +48,8 @@ export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
 
         this._additionalConstructionParameters = [layerTextureRatio, layerTextureFixedSize, blurTextureSizeRatio, isStroke, layerTextureType];
 
-        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("layer", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+        this.registerInput("target", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("layer", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput(
             "objectRenderer",
             NodeRenderGraphBlockConnectionPointTypes.Object,
@@ -72,8 +66,8 @@ export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
 
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.target.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
-        this.layer.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
+        this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBufferDepthStencil);
+        this.layer.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
 
         this.output._typeConnectionSource = this.target;
 

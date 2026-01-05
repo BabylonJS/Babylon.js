@@ -83,6 +83,7 @@ export class MeshoptCompression implements IDisposable {
     constructor() {
         const decoder = MeshoptCompression.Configuration.decoder;
 
+        // eslint-disable-next-line github/no-then
         this._decoderModulePromise = Tools.LoadBabylonScriptAsync(decoder.url).then(() => {
             // Wait for WebAssembly compilation before resolving promise
             return MeshoptDecoder.ready;
@@ -106,23 +107,22 @@ export class MeshoptCompression implements IDisposable {
      * @param filter The compression filter.
      * @returns a Promise<Uint8Array> that resolves to the decoded data
      */
-    public decodeGltfBufferAsync(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Promise<Uint8Array> {
-        return this._decoderModulePromise!.then(async () => {
-            if (NumberOfWorkers === 0) {
-                MeshoptDecoder.useWorkers(1);
-                NumberOfWorkers = 1;
-            }
-            const result = await MeshoptDecoder.decodeGltfBufferAsync(count, stride, source, mode, filter);
-            // a simple debounce to avoid switching back and forth between workers and no workers while decoding
-            if (WorkerTimeout !== null) {
-                clearTimeout(WorkerTimeout);
-            }
-            WorkerTimeout = setTimeout(() => {
-                MeshoptDecoder.useWorkers(0);
-                NumberOfWorkers = 0;
-                WorkerTimeout = null;
-            }, 1000);
-            return result;
-        });
+    public async decodeGltfBufferAsync(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Promise<Uint8Array> {
+        await this._decoderModulePromise!;
+        if (NumberOfWorkers === 0) {
+            MeshoptDecoder.useWorkers(1);
+            NumberOfWorkers = 1;
+        }
+        const result = await MeshoptDecoder.decodeGltfBufferAsync(count, stride, source, mode, filter);
+        // a simple debounce to avoid switching back and forth between workers and no workers while decoding
+        if (WorkerTimeout !== null) {
+            clearTimeout(WorkerTimeout);
+        }
+        WorkerTimeout = setTimeout(() => {
+            MeshoptDecoder.useWorkers(0);
+            NumberOfWorkers = 0;
+            WorkerTimeout = null;
+        }, 1000);
+        return result;
     }
 }

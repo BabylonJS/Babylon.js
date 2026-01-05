@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./anaglyphPostProcess";
 export * from "./blackAndWhitePostProcess";
 export * from "./bloomEffect";
@@ -39,9 +39,19 @@ export * from "./thinBloomEffect";
 export * from "./thinBlurPostProcess";
 export * from "./thinChromaticAberrationPostProcess";
 export * from "./thinCircleOfConfusionPostProcess";
+export * from "./thinColorCorrectionPostProcess";
+export * from "./thinConvolutionPostProcess";
 export * from "./thinDepthOfFieldEffect";
 export * from "./thinExtractHighlightsPostProcess";
+export * from "./thinFilterPostProcess";
+export * from "./thinFXAAPostProcess";
+export * from "./thinGrainPostProcess";
+export * from "./thinImageProcessingPostProcess";
+export * from "./thinMotionBlurPostProcess";
 export * from "./thinPassPostProcess";
+export * from "./thinSharpenPostProcess";
+export * from "./thinScreenSpaceCurvaturePostProcess";
+export * from "./thinTonemapPostProcess";
 
 // Postprocess
 export * from "../Shaders/postprocess.vertex";

@@ -516,9 +516,9 @@ export class EnvironmentHelper {
                 skyboxSize = groundSize;
             }
 
-            const sceneDiagonalLenght = sceneDiagonal.length();
-            if (sceneDiagonalLenght > groundSize) {
-                groundSize = sceneDiagonalLenght * 2;
+            const sceneDiagonalLength = sceneDiagonal.length();
+            if (sceneDiagonalLength > groundSize) {
+                groundSize = sceneDiagonalLength * 2;
                 skyboxSize = groundSize;
             }
 

@@ -5,6 +5,7 @@ import { NodeListComponent } from "./components/NodeListComponent";
 import { StateViewNodeRenderer } from "./components/StateViewNodeRenderer";
 import { StateBehaviorNodeRenderer } from "./components/StateBehaviorNodeRenderer";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const initialLayout: Layout = {
     columns: [
         {

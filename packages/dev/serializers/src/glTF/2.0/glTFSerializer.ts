@@ -28,9 +28,10 @@ export interface IExportOptions {
     shouldExportAnimation?(animation: Animation): boolean;
 
     /**
-     * Function used to extract the part of node's metadata that will be exported into glTF node extras
+     * Function to extract the part of the scene or node's `metadata` that will populate the corresponding
+     * glTF object's `extras` field. If not defined, `node.metadata.gltf.extras` will be used.
      * @param metadata source metadata to read from
-     * @returns the data to store to glTF node extras
+     * @returns the data to store into the glTF extras field
      */
     metadataSelector?(metadata: any): any;
 

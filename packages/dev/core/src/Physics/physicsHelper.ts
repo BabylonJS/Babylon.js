@@ -132,9 +132,9 @@ export class PhysicsHelper {
         if (this._physicsEngine.getPluginVersion() === 1) {
             const affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
             const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
-            impostors.forEach((impostor: PhysicsImpostor) => {
+            for (const impostor of impostors) {
                 if (!event.getImpostorHitData(impostor, origin, hitData)) {
-                    return;
+                    continue;
                 }
 
                 impostor.applyImpulse(hitData.force, hitData.contactPoint);
@@ -145,7 +145,7 @@ export class PhysicsHelper {
                         hitData: this._copyPhysicsHitData(hitData),
                     });
                 }
-            });
+            }
 
             event.triggerAffectedImpostorsCallback(affectedImpostorsWithData);
         } else {
@@ -203,9 +203,9 @@ export class PhysicsHelper {
         if (this._physicsEngine.getPluginVersion() === 1) {
             const affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
             const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
-            impostors.forEach((impostor: PhysicsImpostor) => {
+            for (const impostor of impostors) {
                 if (!event.getImpostorHitData(impostor, origin, hitData)) {
-                    return;
+                    continue;
                 }
 
                 impostor.applyForce(hitData.force, hitData.contactPoint);
@@ -216,7 +216,7 @@ export class PhysicsHelper {
                         hitData: this._copyPhysicsHitData(hitData),
                     });
                 }
-            });
+            }
 
             event.triggerAffectedImpostorsCallback(affectedImpostorsWithData);
         } else {
@@ -632,7 +632,7 @@ class PhysicsGravitationalFieldEvent {
         } else {
             const radialExplosionEvent = this._physicsHelper.applyRadialExplosionForce(this._origin, this._options);
             if (radialExplosionEvent) {
-                this._sphere = <Mesh>radialExplosionEvent.getData().sphere?.clone("radialExplosionEventSphereClone");
+                this._sphere = radialExplosionEvent.getData().sphere?.clone("radialExplosionEventSphereClone");
             }
         }
     }
@@ -779,16 +779,18 @@ class PhysicsUpdraftEvent {
     private _tick() {
         const hitData = PhysicsUpdraftEvent._HitData;
         if (this._physicsEngine.getPluginVersion() === 1) {
-            (<PhysicsEngineV1>this._physicsEngine).getImpostors().forEach((impostor: PhysicsImpostor) => {
+            const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
+            for (const impostor of impostors) {
                 if (!this._getImpostorHitData(impostor, hitData)) {
-                    return;
+                    continue;
                 }
 
                 impostor.applyForce(hitData.force, hitData.contactPoint);
-            });
+            }
         } else {
             // V2
-            (<PhysicsEngineV2>this._physicsEngine).getBodies().forEach((body: PhysicsBody) => {
+            const bodies = (<PhysicsEngineV2>this._physicsEngine).getBodies();
+            for (const body of bodies) {
                 body.iterateOverAllInstances((body, instanceIndex) => {
                     if (!this._getBodyHitData(body, hitData, instanceIndex)) {
                         return;
@@ -796,7 +798,7 @@ class PhysicsUpdraftEvent {
 
                     body.applyForce(hitData.force, hitData.contactPoint, hitData.instanceIndex);
                 });
-            });
+            }
         }
     }
 
@@ -992,15 +994,17 @@ class PhysicsVortexEvent {
     private _tick() {
         const hitData = PhysicsVortexEvent._HitData;
         if (this._physicsEngine.getPluginVersion() === 1) {
-            (<PhysicsEngineV1>this._physicsEngine).getImpostors().forEach((impostor: PhysicsImpostor) => {
+            const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
+            for (const impostor of impostors) {
                 if (!this._getImpostorHitData(impostor, hitData)) {
-                    return;
+                    continue;
                 }
 
                 impostor.applyForce(hitData.force, hitData.contactPoint);
-            });
+            }
         } else {
-            (<PhysicsEngineV2>this._physicsEngine).getBodies().forEach((body: PhysicsBody) => {
+            const bodies = (<PhysicsEngineV2>this._physicsEngine).getBodies();
+            for (const body of bodies) {
                 body.iterateOverAllInstances((body: PhysicsBody, instanceIndex?: number) => {
                     if (!this._getBodyHitData(body, hitData, instanceIndex)) {
                         return;
@@ -1008,7 +1012,7 @@ class PhysicsVortexEvent {
 
                     body.applyForce(hitData.force, hitData.contactPoint, hitData.instanceIndex);
                 });
-            });
+            }
         }
     }
 
@@ -1164,6 +1168,7 @@ export const enum PhysicsUpdraftMode {
  * Interface for a physics hit data
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsHitData {
     /**
      * The force applied at the contact point
@@ -1187,6 +1192,7 @@ export interface PhysicsHitData {
  * Interface for radial explosion event data
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsRadialExplosionEventData {
     /**
      * A sphere used for the radial explosion event
@@ -1198,6 +1204,7 @@ export interface PhysicsRadialExplosionEventData {
  * Interface for gravitational field event data
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsGravitationalFieldEventData {
     /**
      * A sphere mesh used for the gravitational field event
@@ -1209,6 +1216,7 @@ export interface PhysicsGravitationalFieldEventData {
  * Interface for updraft event data
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsUpdraftEventData {
     /**
      * A cylinder used for the updraft event
@@ -1220,6 +1228,7 @@ export interface PhysicsUpdraftEventData {
  * Interface for vortex event data
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsVortexEventData {
     /**
      * A cylinder used for the vortex event
@@ -1231,6 +1240,7 @@ export interface PhysicsVortexEventData {
  * Interface for an affected physics impostor
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsAffectedImpostorWithData {
     /**
      * The impostor affected by the effect
@@ -1247,6 +1257,7 @@ export interface PhysicsAffectedImpostorWithData {
  * Interface for an affected physics body
  * @see
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PhysicsAffectedBodyWithData {
     /**
      * The impostor affected by the effect

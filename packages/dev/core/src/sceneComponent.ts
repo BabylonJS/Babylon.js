@@ -39,6 +39,7 @@ export class SceneComponentConstants {
     public static readonly NAME_AUDIO = "Audio";
     public static readonly NAME_FLUIDRENDERER = "FluidRenderer";
     public static readonly NAME_IBLCDFGENERATOR = "iblCDFGenerator";
+    public static readonly NAME_CLUSTEREDLIGHTING = "ClusteredLighting";
 
     public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 
@@ -96,6 +97,7 @@ export class SceneComponentConstants {
 
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER = 0;
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_FLUIDRENDERER = 1;
+    public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_CLUSTEREDLIGHTING = 2;
 
     public static readonly STEP_POINTERMOVE_SPRITE = 0;
     public static readonly STEP_POINTERDOWN_SPRITE = 0;
@@ -131,7 +133,7 @@ export interface ISceneComponent {
     rebuild(): void;
 
     /**
-     * Disposes the component and the associated ressources.
+     * Disposes the component and the associated resources.
      */
     dispose(): void;
 }
@@ -252,7 +254,7 @@ export class Stage<T extends Function> extends Array<{ index: number; component:
      * @returns A new instance of a Stage
      */
     static Create<T extends Function>(): Stage<T> {
-        return Object.create(Stage.prototype);
+        return Object.create(Stage.prototype) as Stage<T>;
     }
 
     /**

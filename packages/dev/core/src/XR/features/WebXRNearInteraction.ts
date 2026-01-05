@@ -142,7 +142,7 @@ export interface IWebXRNearInteractionOptions {
     motionControllerTouchMaterialSnippetUrl?: string;
 }
 
-const _tmpVectors = [new Vector3(), new Vector3(), new Vector3(), new Vector3()];
+const LocalTempVectors = [new Vector3(), new Vector3(), new Vector3(), new Vector3()];
 
 /**
  * A module that will enable near interaction near interaction for hands and motion controllers of XR Input Sources
@@ -283,7 +283,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             return false;
         }
 
-        this._options.xrInput.controllers.forEach(this._attachController);
+        for (const controller of this._options.xrInput.controllers) {
+            this._attachController(controller);
+        }
         this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
         this._addNewAttachObserver(this._options.xrInput.onControllerRemovedObservable, (controller) => {
             // REMOVE the controller
@@ -305,9 +307,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             return false;
         }
 
-        Object.keys(this._controllers).forEach((controllerId) => {
+        const keys = Object.keys(this._controllers);
+        for (const controllerId of keys) {
             this._detachController(controllerId);
-        });
+        }
 
         return true;
     }
@@ -464,7 +467,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     }
 
     protected _onXRFrame(_xrFrame: XRFrame) {
-        Object.keys(this._controllers).forEach((id) => {
+        const keys = Object.keys(this._controllers);
+        for (const id of keys) {
             // only do this for the selected pointer
             const controllerData = this._controllers[id];
             const handData = controllerData.xrController?.inputSource.hand;
@@ -620,7 +624,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 state = ControllerOrbAnimationState.HOVER;
             }
             this._handleTransitionAnimation(controllerData, state);
-        });
+        }
     }
 
     private get _utilityLayerScene() {
@@ -805,12 +809,13 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             this._xrSessionManager.onXRFrameObservable.remove(controllerData.onFrameObserver);
         }
         if (controllerData.eventListeners) {
-            Object.keys(controllerData.eventListeners).forEach((eventName: string) => {
+            const keys = Object.keys(controllerData.eventListeners);
+            for (const eventName of keys) {
                 const func = controllerData.eventListeners && controllerData.eventListeners[eventName as XREventType];
                 if (func) {
                     this._xrSessionManager.session.removeEventListener(eventName as XREventType, func as any);
                 }
-            });
+            }
         }
         controllerData.touchCollisionMesh.dispose();
         controllerData.pickedPointVisualCue.dispose();
@@ -864,9 +869,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 parsePromise = NodeMaterial.ParseFromSnippetAsync("8RUNKL#3", meshCreationScene);
             }
             parsePromise
+                // eslint-disable-next-line github/no-then
                 .then((mat) => {
                     touchCollisionMesh.material = mat;
                 })
+                // eslint-disable-next-line github/no-then
                 .catch((err) => {
                     Logger.Warn(`Error creating touch material in WebXRNearInteraction: ${err}`);
                 });
@@ -1001,12 +1008,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             return pi;
         }
 
-        const result = _tmpVectors[0];
-        const tmpVec = _tmpVectors[1];
-        _tmpVectors[2].setAll(0);
-        _tmpVectors[3].setAll(0);
+        const result = LocalTempVectors[0];
+        const tmpVec = LocalTempVectors[1];
+        LocalTempVectors[2].setAll(0);
+        LocalTempVectors[3].setAll(0);
 
-        const tmpRay = new Ray(_tmpVectors[2], _tmpVectors[3], 1);
+        const tmpRay = new Ray(LocalTempVectors[2], LocalTempVectors[3], 1);
 
         let distance = +Infinity;
         let tmp, tmpDistanceSphereToCenter, tmpDistanceSurfaceToCenter, intersectionInfo;

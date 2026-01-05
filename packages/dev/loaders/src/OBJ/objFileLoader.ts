@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/promise-function-async */
 import type { Nullable } from "core/types";
 import { Vector2 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult } from "core/Loading/sceneLoader";
+import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
@@ -15,12 +16,12 @@ import type { Mesh } from "core/Meshes/mesh";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
 declare module "core/Loading/sceneLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface SceneLoaderPluginOptions {
         /**
          * Defines options for the obj loader.
          */
-        [OBJFileLoaderMetadata.name]: {};
+        [OBJFileLoaderMetadata.name]: Partial<OBJLoadingOptions>;
     }
 }
 
@@ -100,8 +101,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      *
      * @param loadingOptions options for loading and parsing OBJ/MTL files.
      */
-    constructor(loadingOptions?: OBJLoadingOptions) {
-        this._loadingOptions = loadingOptions || OBJFileLoader._DefaultLoadingOptions;
+    constructor(loadingOptions?: Partial<Readonly<OBJLoadingOptions>>) {
+        this._loadingOptions = { ...OBJFileLoader._DefaultLoadingOptions, ...(loadingOptions ?? {}) };
     }
 
     private static get _DefaultLoadingOptions(): OBJLoadingOptions {
@@ -141,17 +142,14 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         const pathOfFile = rootUrl + url;
 
         // Loads through the babylon tools to allow fileInput search.
-        Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, (request?: WebRequest | undefined, exception?: any) => {
+        Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, (request?: WebRequest, exception?: any) => {
             onFailure(pathOfFile, exception);
         });
     }
 
-    /**
-     * Instantiates a OBJ file loader plugin.
-     * @returns the created plugin
-     */
-    createPlugin(): ISceneLoaderPluginAsync | ISceneLoaderPlugin {
-        return new OBJFileLoader(OBJFileLoader._DefaultLoadingOptions);
+    /** @internal */
+    createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPluginAsync | ISceneLoaderPlugin {
+        return new OBJFileLoader(options[OBJFileLoaderMetadata.name]);
     }
 
     /**
@@ -170,9 +168,11 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl root url to load from
      * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
         //get the meshes from OBJ file
-        return this._parseSolid(meshesNames, scene, data, rootUrl).then((meshes) => {
+        // eslint-disable-next-line github/no-then
+        return this._parseSolidAsync(meshesNames, scene, data, rootUrl).then((meshes) => {
             return {
                 meshes: meshes,
                 particleSystems: [],
@@ -193,8 +193,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl root url to load from
      * @returns a promise which completes when objects have been loaded to the scene
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadAsync(scene: Scene, data: string, rootUrl: string): Promise<void> {
         //Get the 3D model
+        // eslint-disable-next-line github/no-then
         return this.importMeshAsync(null, scene, data, rootUrl).then(() => {
             // return void
         });
@@ -207,37 +209,42 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl The root url for scene and resources
      * @returns The loaded asset container
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string): Promise<AssetContainer> {
         const container = new AssetContainer(scene);
         this._assetContainer = container;
 
-        return this.importMeshAsync(null, scene, data, rootUrl)
-            .then((result) => {
-                result.meshes.forEach((mesh) => container.meshes.push(mesh));
-                result.meshes.forEach((mesh) => {
-                    const material = mesh.material;
-                    if (material) {
-                        // Materials
-                        if (container.materials.indexOf(material) == -1) {
-                            container.materials.push(material);
+        return (
+            this.importMeshAsync(null, scene, data, rootUrl)
+                // eslint-disable-next-line github/no-then
+                .then((result) => {
+                    result.meshes.forEach((mesh) => container.meshes.push(mesh));
+                    result.meshes.forEach((mesh) => {
+                        const material = mesh.material;
+                        if (material) {
+                            // Materials
+                            if (container.materials.indexOf(material) == -1) {
+                                container.materials.push(material);
 
-                            // Textures
-                            const textures = material.getActiveTextures();
-                            textures.forEach((t) => {
-                                if (container.textures.indexOf(t) == -1) {
-                                    container.textures.push(t);
-                                }
-                            });
+                                // Textures
+                                const textures = material.getActiveTextures();
+                                textures.forEach((t) => {
+                                    if (container.textures.indexOf(t) == -1) {
+                                        container.textures.push(t);
+                                    }
+                                });
+                            }
                         }
-                    }
-                });
-                this._assetContainer = null;
-                return container;
-            })
-            .catch((ex) => {
-                this._assetContainer = null;
-                throw ex;
-            });
+                    });
+                    this._assetContainer = null;
+                    return container;
+                })
+                // eslint-disable-next-line github/no-then
+                .catch((ex) => {
+                    this._assetContainer = null;
+                    throw ex;
+                })
+        );
     }
 
     /**
@@ -250,7 +257,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl defines the path to the folder
      * @returns the list of loaded meshes
      */
-    private _parseSolid(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    private _parseSolidAsync(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
         let fileToLoad: string = ""; //The name of the mtlFile to load
         const materialsFromMTLFile: MTLFileLoader = new MTLFileLoader();
         const materialToUse: string[] = [];
@@ -318,6 +326,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                                 if (this._loadingOptions.materialLoadingFailsSilently) {
                                     resolve();
                                 } else {
+                                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                                     reject(e);
                                 }
                             }
@@ -327,6 +336,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                             if (this._loadingOptions.materialLoadingFailsSilently) {
                                 resolve();
                             } else {
+                                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                                 reject(exception);
                             }
                         }
@@ -335,6 +345,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             );
         }
         //Return an array with all Mesh
+        // eslint-disable-next-line github/no-then
         return Promise.all(mtlPromises).then(() => {
             const isLine = (mesh: AbstractMesh) => Boolean(mesh._internalMetadata?.["_isLine"] ?? false);
 

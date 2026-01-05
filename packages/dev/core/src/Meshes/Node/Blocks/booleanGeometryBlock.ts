@@ -62,6 +62,7 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
             return null;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         if (!this._csg2LoadingPromise) {
             this._csg2LoadingPromise = InitializeCSG2Async();
         }
@@ -144,31 +145,31 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
             let boolCSG: CSG | CSG2;
 
             if (this.useOldCSGEngine) {
-                const CSG0 = CSG.FromVertexData(vertexData0);
-                const CSG1 = CSG.FromVertexData(vertexData1);
+                const csg0 = CSG.FromVertexData(vertexData0);
+                const csg1 = CSG.FromVertexData(vertexData1);
                 switch (this.operation) {
                     case BooleanGeometryOperations.Intersect:
-                        boolCSG = CSG0.intersect(CSG1);
+                        boolCSG = csg0.intersect(csg1);
                         break;
                     case BooleanGeometryOperations.Subtract:
-                        boolCSG = CSG0.subtract(CSG1);
+                        boolCSG = csg0.subtract(csg1);
                         break;
                     case BooleanGeometryOperations.Union:
-                        boolCSG = CSG0.union(CSG1);
+                        boolCSG = csg0.union(csg1);
                         break;
                 }
             } else {
-                const CSG0 = CSG2.FromVertexData(vertexData0);
-                const CSG1 = CSG2.FromVertexData(vertexData1);
+                const csg0 = CSG2.FromVertexData(vertexData0);
+                const csg1 = CSG2.FromVertexData(vertexData1);
                 switch (this.operation) {
                     case BooleanGeometryOperations.Intersect:
-                        boolCSG = CSG0.intersect(CSG1);
+                        boolCSG = csg0.intersect(csg1);
                         break;
                     case BooleanGeometryOperations.Subtract:
-                        boolCSG = CSG0.subtract(CSG1);
+                        boolCSG = csg0.subtract(csg1);
                         break;
                     case BooleanGeometryOperations.Union:
-                        boolCSG = CSG0.add(CSG1);
+                        boolCSG = csg0.add(csg1);
                         break;
                 }
             }

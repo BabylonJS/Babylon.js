@@ -19,8 +19,11 @@ import { UniformBuffer } from "../Materials/uniformBuffer";
 import { CreateBoxVertexData } from "../Meshes/Builders/boxBuilder";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../Engines/constants";
+import { _RetryWithInterval } from "../Misc/timingTools";
+import { Logger } from "../Misc/logger";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal (Backing field) */
         _boundingBoxRenderer: BoundingBoxRenderer;
@@ -65,6 +68,7 @@ Scene.prototype.getBoundingBoxRenderer = function (): BoundingBoxRenderer {
 };
 
 declare module "../Meshes/abstractMesh" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractMesh {
         /** @internal (Backing field) */
         _showBoundingBox: boolean;
@@ -91,14 +95,14 @@ Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
     configurable: true,
 });
 
-const tempMatrix = Matrix.Identity();
-const tempVec1 = new Vector3(),
-    tempVec2 = new Vector3();
+const TempMatrix = Matrix.Identity();
+const TempVec1 = new Vector3();
+const TempVec2 = new Vector3();
 // `Matrix.asArray` returns its internal array, so it can be directly updated
-const tempMatrixArray = tempMatrix.asArray();
+const TempMatrixArray = TempMatrix.asArray();
 
 // BoundingBox copies from it, so it's safe to reuse vectors here
-const dummyBoundingBox = new BoundingBox(tempVec1, tempVec1);
+const DummyBoundingBox = new BoundingBox(TempVec1, TempVec1);
 
 /**
  * Component responsible of rendering the bounding box of the meshes in a scene.
@@ -236,7 +240,46 @@ export class BoundingBoxRenderer implements ISceneComponent {
         this.scene._afterRenderingGroupDrawStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERINGGROUPDRAW_BOUNDINGBOXRENDERER, this, this.render);
     }
 
-    private _evaluateSubMesh(mesh: AbstractMesh, subMesh: SubMesh): void {
+    /**
+     * Checks if the renderer is ready asynchronously.
+     * @param timeStep Time step in ms between retries (default is 16)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
+     * @returns The promise that resolves when the renderer is ready
+     */
+    public async whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
+        this._prepareResources();
+        return await new Promise((resolve) => {
+            _RetryWithInterval(
+                () => {
+                    return this._colorShader.isReady();
+                },
+                () => {
+                    resolve();
+                },
+                (err, isTimeout) => {
+                    if (!isTimeout) {
+                        Logger.Error("BoundingBoxRenderer: An unexpected error occurred while waiting for the renderer to be ready.");
+                        if (err) {
+                            Logger.Error(err);
+                            if (err.stack) {
+                                Logger.Error(err.stack);
+                            }
+                        }
+                    } else {
+                        Logger.Error(`BoundingBoxRenderer: Timeout while waiting for the renderer to be ready.`);
+                        if (err) {
+                            Logger.Error(err);
+                        }
+                    }
+                },
+                timeStep,
+                maxTimeout
+            );
+        });
+    }
+
+    /** @internal */
+    public _evaluateSubMesh(mesh: AbstractMesh, subMesh: SubMesh): void {
         if (mesh.showSubMeshesBoundingBox) {
             const boundingInfo = subMesh.getBoundingInfo();
             if (boundingInfo !== null && boundingInfo !== undefined) {
@@ -246,7 +289,8 @@ export class BoundingBoxRenderer implements ISceneComponent {
         }
     }
 
-    private _preActiveMesh(mesh: AbstractMesh): void {
+    /** @internal */
+    public _preActiveMesh(mesh: AbstractMesh): void {
         if (mesh.showBoundingBox || this.scene.forceShowBoundingBoxes) {
             const boundingInfo = mesh.getBoundingInfo();
             boundingInfo.boundingBox._tag = mesh.renderingGroupId;
@@ -397,7 +441,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
                 this._colorShader._preBind(drawWrapperBack);
 
-                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
+                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._colorShader.getEffect());
 
                 // Back
                 if (useReverseDepthBuffer) {
@@ -419,7 +463,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
             this._colorShader._preBind(drawWrapperFront);
 
-            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._colorShader.getEffect());
 
             // Front
             if (useReverseDepthBuffer) {
@@ -582,9 +626,10 @@ export class BoundingBoxRenderer implements ISceneComponent {
             this._matrices = matrices;
         }
 
-        this.onBeforeBoxRenderingObservable.notifyObservers(dummyBoundingBox);
+        this.onBeforeBoxRenderingObservable.notifyObservers(DummyBoundingBox);
 
         let instancesCount = 0;
+        const floatingOriginOffset = this.scene.floatingOriginOffset;
 
         for (let boundingBoxIndex = 0; boundingBoxIndex < this.renderList.length; boundingBoxIndex++) {
             const boundingBox = this.renderList.data[boundingBoxIndex];
@@ -595,10 +640,10 @@ export class BoundingBoxRenderer implements ISceneComponent {
             const min = boundingBox.minimum;
             const max = boundingBox.maximum;
 
-            const diff = max.subtractToRef(min, tempVec2);
-            const median = min.addToRef(diff.scaleToRef(0.5, tempVec1), tempVec1);
+            const diff = max.subtractToRef(min, TempVec2);
+            const median = min.addToRef(diff.scaleToRef(0.5, TempVec1), TempVec1);
 
-            const m = tempMatrixArray;
+            const m = TempMatrixArray;
 
             // Directly update the matrix values in column-major order
             m[0] = diff._x; // Scale X
@@ -609,8 +654,13 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
             m[10] = diff._z; // Scale Z
             m[11] = median._z; // Translate Z
-            tempMatrix.multiplyToArray(boundingBox.getWorldMatrix(), matrices, instancesCount * 16);
 
+            const offset = instancesCount * 16;
+            TempMatrix.multiplyToArray(boundingBox.getWorldMatrix(), matrices, offset);
+
+            matrices[offset + 12] -= floatingOriginOffset.x;
+            matrices[offset + 13] -= floatingOriginOffset.y;
+            matrices[offset + 14] -= floatingOriginOffset.z;
             instancesCount++;
         }
 
@@ -676,7 +726,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
         // Draw order
         engine.drawElementsType(Material.LineListDrawMode, 0, 24, instancesCount);
 
-        this.onAfterBoxRenderingObservable.notifyObservers(dummyBoundingBox);
+        this.onAfterBoxRenderingObservable.notifyObservers(DummyBoundingBox);
 
         colorShader.unbind();
         engine.setDepthFunction(depthFunction);

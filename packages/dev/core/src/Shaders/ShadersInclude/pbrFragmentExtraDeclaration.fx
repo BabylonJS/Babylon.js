@@ -17,3 +17,7 @@ varying vec3 vPositionW;
 #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
     varying vec4 vColor;
 #endif
+
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+    varying float vViewDepth;
+#endif

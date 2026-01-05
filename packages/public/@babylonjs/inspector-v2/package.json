@@ -1,0 +1,67 @@
+{
+    "name": "@babylonjs/inspector-v2",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "lib/index.js",
+    "module": "lib/index.js",
+    "esnext": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "files": [
+        "lib/**/*.js",
+        "lib/**/*.d.ts",
+        "lib/**/*.map",
+        "readme.md",
+        "license.md"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run bundle",
+        "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo -g",
+        "bundle": "npm run bundle:lib",
+        "bundle:lib": "rollup -c rollup.config.lib.mjs",
+        "pack": "npm run build && npm pack"
+    },
+    "peerDependencies": {
+        "@babylonjs/addons": "^8.0.0",
+        "@babylonjs/core": "^8.0.0",
+        "@babylonjs/gui": "^8.0.0",
+        "@babylonjs/loaders": "^8.0.0",
+        "@babylonjs/materials": "^8.0.0",
+        "@babylonjs/serializers": "^8.0.0",
+        "@fluentui-contrib/react-virtualizer": "^0.5.3",
+        "@fluentui/react-components": "^9.70.0",
+        "@fluentui/react-icons": "^2.0.310",
+        "react": ">=16.14.0 <20.0.0",
+        "react-dom": ">=16.14.0 <20.0.0",
+        "usehooks-ts": "^3.1.1"
+    },
+    "devDependencies": {
+        "@dev/build-tools": "^1.0.0",
+        "@dev/inspector-v2": "1.0.0",
+        "@rollup/plugin-alias": "^5.1.0",
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@rollup/plugin-typescript": "^11.1.6",
+        "chalk": "^5.3.0",
+        "rollup": "^4.18.0",
+        "rollup-plugin-dts": "^6.1.1"
+    },
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js",
+        "inspector",
+        "diagnostic",
+        "debug"
+    ],
+    "license": "Apache-2.0",
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
+}

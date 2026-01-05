@@ -13,7 +13,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "EXT_lights_image_based";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the EXT_lights_image_based extension.
@@ -76,8 +76,9 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, async (extensionContext, extension) => {
             this._loader._allMaterialsDirtyRequired = true;
 
             const promises = new Array<Promise<any>>();
@@ -88,6 +89,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
 
             const light = ArrayItem.Get(`${extensionContext}/light`, this._lights, extension.light);
             promises.push(
+                // eslint-disable-next-line github/no-then
                 this._loadLightAsync(`/extensions/${this.name}/lights/${extension.light}`, light).then((texture) => {
                     this._loader.babylonScene.environmentTexture = texture;
                 })
@@ -95,10 +97,12 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
 
             this._loader.logClose();
 
-            return Promise.all(promises).then(() => {});
+            // eslint-disable-next-line github/no-then
+            return await Promise.all(promises).then(() => {});
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadLightAsync(context: string, light: IEXTLightsImageBased_LightImageBased): Promise<BaseTexture> {
         if (!light._loaded) {
             const promises = new Array<Promise<any>>();
@@ -116,6 +120,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
                     const index = faces[face];
                     const image = ArrayItem.Get(specularImageContext, this._loader.gltf.images, index);
                     promises.push(
+                        // eslint-disable-next-line github/no-then
                         this._loader.loadImageAsync(`/images/${index}`, image).then((data) => {
                             imageData[mipmap][face] = data;
                         })
@@ -127,7 +132,8 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
 
             this._loader.logClose();
 
-            light._loaded = Promise.all(promises).then(() => {
+            // eslint-disable-next-line github/no-then
+            light._loaded = Promise.all(promises).then(async () => {
                 const babylonTexture = new RawCubeTexture(this._loader.babylonScene, null, light.specularImageSize);
                 babylonTexture.name = light.name || "environment";
                 light._babylonTexture = babylonTexture;
@@ -159,10 +165,11 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
 
                 // Compute the lod generation scale to fit exactly to the number of levels available.
                 const lodGenerationScale = (imageData.length - 1) / Math.log2(light.specularImageSize);
-                return babylonTexture.updateRGBDAsync(imageData, sphericalPolynomial, lodGenerationScale);
+                return await babylonTexture.updateRGBDAsync(imageData, sphericalPolynomial, lodGenerationScale);
             });
         }
 
+        // eslint-disable-next-line github/no-then
         return light._loaded.then(() => {
             return light._babylonTexture!;
         });

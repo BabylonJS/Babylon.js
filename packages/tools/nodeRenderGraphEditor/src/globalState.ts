@@ -17,12 +17,15 @@ import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { PreviewType } from "./components/preview/previewType";
 import type { Scene } from "core/scene";
 import { SerializationTools } from "./serializationTools";
+import type { INodeRenderGraphCustomBlockDescription } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
 export class GlobalState {
     hostElement: HTMLElement;
     hostDocument: Document;
     hostWindow: Window;
+    hostScene?: Scene;
     stateManager: StateManager;
+    onClearUndoStack = new Observable<void>();
     onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<boolean>();
     onZoomToFitRequiredObservable = new Observable<void>();
@@ -51,8 +54,10 @@ export class GlobalState {
     filesInput: FilesInput;
     scene: Scene;
     noAutoFillExternalInputs: boolean;
+    _engine: number;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
+    customBlockDescriptions?: INodeRenderGraphCustomBlockDescription[];
 
     private _nodeRenderGraph: NodeRenderGraph;
 
@@ -80,6 +85,21 @@ export class GlobalState {
         });
     }
 
+    /** Gets the engine */
+    public get engine(): number {
+        return this._engine;
+    }
+
+    /** Sets the engine */
+    public set engine(e: number) {
+        if (e === this._engine) {
+            return;
+        }
+        DataStorage.WriteNumber("Engine", e);
+        this._engine = e;
+        location.reload();
+    }
+
     public constructor(scene: Scene) {
         this.scene = scene;
         this.stateManager = new StateManager();
@@ -91,6 +111,7 @@ export class GlobalState {
         this.hemisphericLight = DataStorage.ReadBoolean("HemisphericLight", false);
         this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", false);
         this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
+        this._engine = DataStorage.ReadNumber("Engine", 0);
 
         RegisterElbowSupport(this.stateManager);
         RegisterDebugSupport(this.stateManager);

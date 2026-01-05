@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type AudioAnalyzerFFTSizeType = 32 | 64 | 128 | 256 | 512 | 1024 | 2048 | 4096 | 8192 | 16384 | 32768;
 
 export const _AudioAnalyzerDefaults = {
@@ -69,7 +70,7 @@ export abstract class AbstractAudioAnalyzer {
     /**
      * Whether the analyzer is enabled or not.
      * - The `getByteFrequencyData` and `getFloatFrequencyData` functions return `null` if the analyzer is not enabled.
-     * @see {@link enable}
+     * @see {@link enableAsync}
      */
     public abstract isEnabled: boolean;
 
@@ -96,7 +97,7 @@ export abstract class AbstractAudioAnalyzer {
     /**
      * Enables the analyzer
      */
-    public abstract enable(): Promise<void>;
+    public abstract enableAsync(): Promise<void>;
 
     /**
      * Gets the current frequency data as a byte array

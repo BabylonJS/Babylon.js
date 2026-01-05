@@ -15,6 +15,7 @@ import { CreatePlane } from "../../Meshes/Builders/planeBuilder";
 
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
 import { Epsilon } from "../../Maths/math.constants";
+import type { DragEvent, DragStartEndEvent } from "./pointerDragEvents";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
@@ -49,11 +50,13 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      * Get or set the currentDraggingPointerId
      * @deprecated Please use currentDraggingPointerId instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get currentDraggingPointerID(): number {
         return this.currentDraggingPointerId;
     }
-    public set currentDraggingPointerID(currentDraggingPointerID: number) {
-        this.currentDraggingPointerId = currentDraggingPointerID;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public set currentDraggingPointerID(currentDraggingPointerId: number) {
+        this.currentDraggingPointerId = currentDraggingPointerId;
     }
     /**
      * The id of the pointer that is currently interacting with the behavior (-1 when no pointer is active)
@@ -80,35 +83,16 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     private _moving = false;
     /**
      *  Fires each time the attached mesh is dragged with the pointer
-     *  * delta between last drag position and current drag position in world space
-     *  * dragDistance along the drag axis
-     *  * dragPlaneNormal normal of the current drag plane used during the drag
-     *  * dragPlanePoint in world space where the drag intersects the drag plane
-     *
-     *  (if validatedDrag is used, the position of the attached mesh might not equal dragPlanePoint)
      */
-    public onDragObservable = new Observable<{
-        delta: Vector3;
-        dragPlanePoint: Vector3;
-        dragPlaneNormal: Vector3;
-        dragDistance: number;
-        pointerId: number;
-        pointerInfo: Nullable<PointerInfo>;
-    }>();
+    public onDragObservable = new Observable<DragEvent>();
     /**
      *  Fires each time a drag begins (eg. mouse down on mesh)
-     *  * dragPlanePoint in world space where the drag intersects the drag plane
-     *
-     *  (if validatedDrag is used, the position of the attached mesh might not equal dragPlanePoint)
      */
-    public onDragStartObservable = new Observable<{ dragPlanePoint: Vector3; pointerId: number; pointerInfo: Nullable<PointerInfo> }>();
+    public onDragStartObservable = new Observable<DragStartEndEvent>();
     /**
      *  Fires each time a drag ends (eg. mouse release after drag)
-     *  * dragPlanePoint in world space where the drag intersects the drag plane
-     *
-     *  (if validatedDrag is used, the position of the attached mesh might not equal dragPlanePoint)
      */
-    public onDragEndObservable = new Observable<{ dragPlanePoint: Vector3; pointerId: number; pointerInfo: Nullable<PointerInfo> }>();
+    public onDragEndObservable = new Observable<DragStartEndEvent>();
     /**
      *  Fires each time behavior enabled state changes
      */
@@ -147,6 +131,12 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
      */
     public useObjectOrientationForDragging = true;
+
+    /**
+     * Normally a drag is canceled when the user presses another button on the same pointer. If this is set to true,
+     * the drag will continue even if another button is pressed on the same pointer.
+     */
+    public allowOtherButtonsDuringDrag = false;
 
     private _options: { dragAxis?: Vector3; dragPlaneNormal?: Vector3 };
 
@@ -259,6 +249,20 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                     this.releaseDrag();
                 }
 
+                return;
+            }
+
+            // If we are dragging and the user presses another button on the same pointer, end the drag. Otherwise,
+            // tracking when the drag should end becomes very complex.
+            // gizmo.ts has similar behavior.
+            if (
+                this.dragging &&
+                this.currentDraggingPointerId == (<IPointerEvent>pointerInfo.event).pointerId &&
+                pointerInfo.event.button !== -1 &&
+                pointerInfo.event.button !== this._activeDragButton &&
+                !this.allowOtherButtonsDuringDrag
+            ) {
+                this.releaseDrag();
                 return;
             }
 

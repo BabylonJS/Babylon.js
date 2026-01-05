@@ -15,6 +15,7 @@ export interface ICustomAnimationFrameRequester {
      * You can pass this value to cancelAnimationFrame() to cancel the refresh callback request
      * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame#Return_value
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     requestID?: number;
     /**
      * Called to cancel the next frame request

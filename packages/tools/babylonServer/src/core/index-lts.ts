@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 /* eslint-disable @typescript-eslint/naming-convention */
 // import * as BABYLON from "core/index";
 import * as BABYLON from "../../../../dev/core/src/index";
@@ -14,8 +14,8 @@ declare let global: any;
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    const BABYLONGLOBAL = (<any>globalObject).BABYLON;
+    globalObject.BABYLON = globalObject.BABYLON || {};
+    const BABYLONGLOBAL = globalObject.BABYLON;
     BABYLONGLOBAL.Debug = BABYLONGLOBAL.Debug || {};
 
     const keys = [];

@@ -2,6 +2,7 @@ const path = require("path");
 const webpackTools = require("@dev/build-tools").webpackTools;
 
 module.exports = (env) => {
+    const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
         entry: "./src/legacy/legacy.ts",
         ...webpackTools.commonDevWebpackConfiguration(
@@ -9,6 +10,7 @@ module.exports = (env) => {
                 ...env,
                 outputFilename: "babylon.sandbox.js",
                 dirName: __dirname,
+                enableHotReload: true,
             },
             {
                 static: ["public"],
@@ -38,6 +40,8 @@ module.exports = (env) => {
                     return callback(null, "BABYLON");
                 } else if (/^gui-editor\//.test(request)) {
                     return callback(null, "BABYLON.GUIEditor");
+                } else if (/^addons\//.test(request)) {
+                    return callback(null, "ADDONS");
                 }
 
                 // Continue without externalizing the import
@@ -47,9 +51,13 @@ module.exports = (env) => {
             // React, react dom etc'
         ],
         module: {
-            rules: webpackTools.getRules(),
+            rules: webpackTools.getRules({
+                includeAssets: true,
+                includeCSS: true,
+                sideEffects: true,
+                enableFastRefresh: !production,
+            }),
         },
-        plugins: [],
     };
     return commonConfig;
 };

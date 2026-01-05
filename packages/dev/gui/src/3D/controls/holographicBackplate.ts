@@ -79,6 +79,7 @@ export class HolographicBackplate extends Control3D {
         collisionMesh.isPickable = true;
         collisionMesh.visibility = 0;
         const baseUrl = Tools.GetAssetUrl(HolographicBackplate.MODEL_BASE_URL);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         SceneLoader.ImportMeshAsync(undefined, baseUrl, HolographicBackplate.MODEL_FILENAME, scene).then((result) => {
             const importedModel = result.meshes[1];
             importedModel.name = `${this.name}_frontPlate`;

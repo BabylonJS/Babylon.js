@@ -201,9 +201,11 @@ export class PointsGroup {
      * Get or set the groupId
      * @deprecated Please use groupId instead
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get groupID(): number {
         return this.groupId;
     }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public set groupID(groupID: number) {
         this.groupId = groupID;
     }

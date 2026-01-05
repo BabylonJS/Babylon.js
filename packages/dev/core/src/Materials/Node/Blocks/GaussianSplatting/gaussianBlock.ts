@@ -22,6 +22,8 @@ export class GaussianBlock extends NodeMaterialBlock {
         this.registerInput("splatColor", NodeMaterialBlockConnectionPointTypes.Color4, false, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("alpha", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
     }
 
     /**
@@ -47,6 +49,20 @@ export class GaussianBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the rgb output component
+     */
+    public get rgb(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
+     * Gets the alpha output component
+     */
+    public get alpha(): NodeMaterialConnectionPoint {
+        return this._outputs[2];
+    }
+
+    /**
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
@@ -68,14 +84,22 @@ export class GaussianBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("fogFragmentDeclaration", comments);
         state._emitFunctionFromInclude("gaussianSplattingFragmentDeclaration", comments);
         state._emitVaryingFromString("vPosition", NodeMaterialBlockConnectionPointTypes.Vector2);
+
+        const tempSplatColor = state._getFreeVariableName("tempSplatColor");
         const color = this.splatColor;
-        const output = this._outputs[0];
+        const rgba = this._outputs[0];
+        const rgb = this._outputs[1];
+        const alpha = this._outputs[2];
 
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            state.compilationString += `${state._declareOutput(output)} = gaussianColor(${color.associatedVariableName}, input.vPosition);\n`;
+            state.compilationString += `let ${tempSplatColor}:vec4f = gaussianColor(${color.associatedVariableName}, input.vPosition);\n`;
         } else {
-            state.compilationString += `${state._declareOutput(output)} = gaussianColor(${color.associatedVariableName});\n`;
+            state.compilationString += `vec4 ${tempSplatColor} = gaussianColor(${color.associatedVariableName});\n`;
         }
+
+        state.compilationString += `${state._declareOutput(rgba)} = ${tempSplatColor}.rgba;`;
+        state.compilationString += `${state._declareOutput(rgb)} = ${tempSplatColor}.rgb;`;
+        state.compilationString += `${state._declareOutput(alpha)} = ${tempSplatColor}.a;`;
 
         return this;
     }

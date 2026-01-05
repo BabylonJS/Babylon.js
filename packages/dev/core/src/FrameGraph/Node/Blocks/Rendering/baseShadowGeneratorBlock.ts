@@ -7,7 +7,6 @@ import type {
     FrameGraphObjectList,
     FrameGraphShadowGeneratorTask,
     Camera,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
@@ -39,8 +38,10 @@ export class NodeRenderGraphBaseShadowGeneratorBlock extends NodeRenderGraphBloc
         this.registerInput("light", NodeRenderGraphBlockConnectionPointTypes.ShadowLight);
         this.registerInput("objects", NodeRenderGraphBlockConnectionPointTypes.ObjectList);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
-        this._addDependenciesInput();
+    }
 
+    protected _finalizeInputOutputRegistering() {
+        this._addDependenciesInput();
         this.registerOutput("generator", NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator);
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.Texture);
     }

@@ -6,8 +6,7 @@ import type {} from "../abstractAudio/abstractSound";
 import type { IStreamingSoundOptions, IStreamingSoundPlayOptions, IStreamingSoundStoredOptions } from "../abstractAudio/streamingSound";
 import { StreamingSound } from "../abstractAudio/streamingSound";
 import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
-import { _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
-import type { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
+import { _HasSpatialAudioOptions, type AbstractSpatialAudio } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _CleanUrl } from "../audioUtils";
 import { SoundState } from "../soundState";
@@ -20,34 +19,23 @@ type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
 /** @internal */
 export class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNode {
-    private _spatial: Nullable<_SpatialAudio> = null;
-    private readonly _spatialAutoUpdate: boolean = true;
-    private readonly _spatialMinUpdateTime: number = 0;
     private _stereo: Nullable<_StereoAudio> = null;
 
     protected override readonly _options: IStreamingSoundStoredOptions;
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
 
     /** @internal */
-    public audioContext: AudioContext;
+    public _audioContext: AudioContext;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
     /** @internal */
-    public source: StreamingSoundSourceType;
+    public _source: StreamingSoundSourceType;
 
     /** @internal */
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStreamingSoundOptions>) {
-        super(name, engine);
-
-        if (typeof options.spatialAutoUpdate === "boolean") {
-            this._spatialAutoUpdate = options.spatialAutoUpdate;
-        }
-
-        if (typeof options.spatialMinUpdateTime === "number") {
-            this._spatialMinUpdateTime = options.spatialMinUpdateTime;
-        }
+        super(name, engine, options);
 
         this._options = {
             autoplay: options.autoplay ?? false,
@@ -61,56 +49,48 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
     }
 
     /** @internal */
-    public async init(source: StreamingSoundSourceType, options: Partial<IStreamingSoundOptions>): Promise<void> {
-        const audioContext = this.engine.audioContext;
+    public async _initAsync(source: StreamingSoundSourceType, options: Partial<IStreamingSoundOptions>): Promise<void> {
+        const audioContext = this.engine._audioContext;
 
         if (!(audioContext instanceof AudioContext)) {
             throw new Error("Unsupported audio context type.");
         }
 
-        this.audioContext = audioContext;
-        this.source = source;
+        this._audioContext = audioContext;
+        this._source = source;
 
         if (options.outBus) {
             this.outBus = options.outBus;
-        } else {
+        } else if (options.outBusAutoDefault !== false) {
             await this.engine.isReadyPromise;
             this.outBus = this.engine.defaultMainBus;
         }
 
-        await this._subGraph.init(options);
+        await this._subGraph.initAsync(options);
 
         if (_HasSpatialAudioOptions(options)) {
             this._initSpatialProperty();
         }
 
         if (this.preloadCount) {
-            await this.preloadInstances(this.preloadCount);
+            await this.preloadInstancesAsync(this.preloadCount);
         }
 
         if (options.autoplay) {
             this.play(options);
         }
 
-        this.engine.addNode(this);
+        this.engine._addSound(this);
     }
 
     /** @internal */
-    public get inNode() {
-        return this._subGraph.inNode;
+    public get _inNode() {
+        return this._subGraph._inNode;
     }
 
     /** @internal */
-    public get outNode() {
-        return this._subGraph.outNode;
-    }
-
-    /** @internal */
-    public override get spatial(): _SpatialAudio {
-        if (this._spatial) {
-            return this._spatial;
-        }
-        return this._initSpatialProperty();
+    public get _outNode() {
+        return this._subGraph._outNode;
     }
 
     /** @internal */
@@ -122,12 +102,11 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
     public override dispose(): void {
         super.dispose();
 
-        this._spatial = null;
         this._stereo = null;
 
         this._subGraph.dispose();
 
-        this.engine.removeNode(this);
+        this.engine._removeSound(this);
     }
 
     /** @internal */
@@ -147,8 +126,8 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
         }
 
         // If the wrapped node is not available now, it will be connected later by the subgraph.
-        if (node.inNode) {
-            this.outNode?.connect(node.inNode);
+        if (node._inNode) {
+            this._outNode?.connect(node._inNode);
         }
 
         return true;
@@ -161,19 +140,19 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
             return false;
         }
 
-        if (node.inNode) {
-            this.outNode?.disconnect(node.inNode);
+        if (node._inNode) {
+            this._outNode?.disconnect(node._inNode);
         }
 
         return true;
     }
 
-    private _initSpatialProperty(): _SpatialAudio {
-        if (!this._spatial) {
-            this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate, this._spatialMinUpdateTime);
-        }
+    protected override _createSpatialProperty(autoUpdate: boolean, minUpdateTime: number): AbstractSpatialAudio {
+        return new _SpatialWebAudio(this._subGraph, autoUpdate, minUpdateTime);
+    }
 
-        return this._spatial;
+    public _getOptions(): IStreamingSoundStoredOptions {
+        return this._options;
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {
@@ -213,14 +192,16 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         super(sound);
 
         this._options = options;
-        this._volumeNode = new GainNode(sound.audioContext);
+        this._volumeNode = new GainNode(sound._audioContext);
 
-        if (typeof sound.source === "string") {
-            this._initFromUrl(sound.source);
-        } else if (Array.isArray(sound.source)) {
-            this._initFromUrls(sound.source);
-        } else if (sound.source instanceof HTMLMediaElement) {
-            this._initFromMediaElement(sound.source);
+        if (typeof sound._source === "string") {
+            this._initFromUrl(sound._source);
+        } else if (Array.isArray(sound._source)) {
+            this._initFromUrls(sound._source);
+        } else if (sound._source instanceof HTMLMediaElement) {
+            this._initFromMediaElement(sound._source);
+        } else {
+            throw new Error(`Invalid streaming sound source (${sound._source}).`);
         }
     }
 
@@ -239,7 +220,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
         if (restart) {
             this._mediaElement.pause();
-            this._setState(SoundState.Stopped);
+            this._state = SoundState.Stopped;
         }
 
         this._options.startOffset = value;
@@ -251,7 +232,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         }
     }
 
-    public get outNode(): Nullable<AudioNode> {
+    public get _outNode(): Nullable<AudioNode> {
         return this._volumeNode;
     }
 
@@ -357,8 +338,8 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         }
 
         // If the wrapped node is not available now, it will be connected later by the sound's subgraph.
-        if (node instanceof _WebAudioStreamingSound && node.inNode) {
-            this.outNode?.connect(node.inNode);
+        if (node instanceof _WebAudioStreamingSound && node._inNode) {
+            this._outNode?.connect(node._inNode);
         }
 
         return true;
@@ -371,8 +352,8 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             return false;
         }
 
-        if (node instanceof _WebAudioStreamingSound && node.inNode) {
-            this.outNode?.disconnect(node.inNode);
+        if (node instanceof _WebAudioStreamingSound && node._inNode) {
+            this._outNode?.disconnect(node._inNode);
         }
 
         return true;
@@ -391,7 +372,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
         mediaElement.load();
 
-        this._sourceNode = new MediaElementAudioSourceNode(this._sound.audioContext, { mediaElement: mediaElement });
+        this._sourceNode = new MediaElementAudioSourceNode(this._sound._audioContext, { mediaElement: mediaElement });
         this._sourceNode.connect(this._volumeNode);
 
         if (!this._connect(this._sound)) {
@@ -473,6 +454,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             // It's possible that the play() method fails on Safari, even if the audio engine's state is "running".
             // This occurs when the audio context is paused by the system and resumed automatically by the audio engine
             // without a user interaction (e.g. when the Vision Pro exits and reenters immersive mode).
+            // eslint-disable-next-line github/no-then
             result.catch(() => {
                 this._setState(SoundState.FailedToStart);
 
@@ -490,9 +472,11 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
     private _playWhenReady(): void {
         this._isReadyPromise
+            // eslint-disable-next-line github/no-then
             .then(() => {
                 this._play();
             })
+            // eslint-disable-next-line github/no-then
             .catch(() => {
                 Logger.Error("Streaming sound instance failed to play");
                 this._setState(SoundState.FailedToStart);

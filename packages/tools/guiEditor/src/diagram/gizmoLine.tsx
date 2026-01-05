@@ -14,7 +14,7 @@ interface IGizmoLineProps {
     control: Line;
 }
 
-function getPivotToRef(x1: number, y1: number, x2: number, y2: number, centerX: number, centerY: number, ref: Vector2) {
+function GetPivotToRef(x1: number, y1: number, x2: number, y2: number, centerX: number, centerY: number, ref: Vector2) {
     const minX = Math.min(x1, x2);
     const minY = Math.min(y1, y2);
     const maxX = Math.max(x1, x2);
@@ -89,7 +89,7 @@ export function GizmoLine(props: IGizmoLineProps) {
     }, []);
 
     const update = () => {
-        const line = control as Line;
+        const line = control;
         const x1 = line._cachedParentMeasure.left + line._x1.getValue(line._host);
         const y1 = line._cachedParentMeasure.top + line._y1.getValue(line._host);
         const x2 = line._cachedParentMeasure.left + line._effectiveX2;
@@ -98,7 +98,7 @@ export function GizmoLine(props: IGizmoLineProps) {
         const v1 = TmpVectors[0].set(x1, y1);
         const v2 = TmpVectors[1].set(x2, y2);
         const vm = TmpVectors[2];
-        getPivotToRef(x1, y1, x2, y2, line.transformCenterX, line.transformCenterY, vm);
+        GetPivotToRef(x1, y1, x2, y2, line.transformCenterX, line.transformCenterY, vm);
 
         const matrix = line._transformMatrix;
 
@@ -229,7 +229,7 @@ export function GizmoLine(props: IGizmoLineProps) {
             // If the control has any rotation, reset the
             // rotation, modifying the so the scale behave as expected
             if (!scalePoint.isPivot && control.rotation) {
-                const line = control as Line;
+                const line = control;
                 const x1 = line._x1.getValue(line._host);
                 const y1 = line._y1.getValue(line._host);
                 const x2 = line._x2.getValue(line._host);
@@ -239,7 +239,7 @@ export function GizmoLine(props: IGizmoLineProps) {
                 const v2 = TmpVectors[1].set(x2, y2);
                 const vm = TmpVectors[2];
 
-                getPivotToRef(x1, y1, x2, y2, line.transformCenterX, line.transformCenterY, vm);
+                GetPivotToRef(x1, y1, x2, y2, line.transformCenterX, line.transformCenterY, vm);
 
                 const finalTransform = Matrix2D.Identity();
                 const currentTransform = Matrix2D.Identity();

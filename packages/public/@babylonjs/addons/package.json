@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/addons",
-    "version": "7.53.0",
+    "version": "8.44.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -9,7 +9,8 @@
         "**/*.d.ts",
         "**/*.map",
         "readme.md",
-        "license.md"
+        "license.md",
+        "NOTICE.md"
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
@@ -18,12 +19,12 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "^7.53.0",
+        "@babylonjs/core": "^8.44.0",
         "@dev/addons": "^1.0.0",
         "@dev/build-tools": "^1.0.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^7.0.0"
+        "@babylonjs/core": "^8.0.0"
     },
     "keywords": [
         "3D",

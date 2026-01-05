@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { GlobalState } from "./globalState";
 import { RenderingZone } from "./components/renderingZone";
 import { ReflectorZone } from "./components/reflectorZone";
@@ -17,7 +17,10 @@ import fullScreenLogo from "./img/logo-fullscreen.svg";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 
-interface ISandboxProps {}
+interface ISandboxProps {
+    version: string;
+    bundles: string[];
+}
 
 /**
  * Sandbox component
@@ -36,10 +39,6 @@ export class Sandbox extends React.Component<
     }
 > {
     private _globalState: GlobalState;
-    private _assetUrl?: string;
-    private _autoRotate?: boolean;
-    private _cameraPosition?: Vector3;
-    private _toneMapping?: number;
     private _logoRef: React.RefObject<HTMLImageElement>;
     private _dropTextRef: React.RefObject<HTMLDivElement>;
     private _clickInterceptorRef: React.RefObject<HTMLDivElement>;
@@ -49,7 +48,7 @@ export class Sandbox extends React.Component<
 
     public constructor(props: ISandboxProps) {
         super(props);
-        this._globalState = new GlobalState();
+        this._globalState = new GlobalState({ version: props.version, bundles: props.bundles });
         this._logoRef = React.createRef();
         this._dropTextRef = React.createRef();
         this._clickInterceptorRef = React.createRef();
@@ -175,11 +174,11 @@ export class Sandbox extends React.Component<
                     }
                     case "asset":
                     case "asseturl": {
-                        this._assetUrl = value;
+                        this._globalState.assetUrl = value;
                         break;
                     }
                     case "autorotate": {
-                        this._autoRotate = value.toLowerCase() === "true" ? true : false;
+                        this._globalState.autoRotate = value.toLowerCase() === "true" ? true : false;
                         break;
                     }
                     case "camera": {
@@ -187,7 +186,7 @@ export class Sandbox extends React.Component<
                         break;
                     }
                     case "cameraposition": {
-                        this._cameraPosition = Vector3.FromArray(
+                        this._globalState.cameraPosition = Vector3.FromArray(
                             value.split(",").map(function (component) {
                                 return +component;
                             })
@@ -213,13 +212,13 @@ export class Sandbox extends React.Component<
                     case "tonemapping": {
                         switch (value.toLowerCase()) {
                             case "standard":
-                                this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
+                                this._globalState.toneMapping = ImageProcessingConfiguration.TONEMAPPING_STANDARD;
                                 break;
                             case "aces":
-                                this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_ACES;
+                                this._globalState.toneMapping = ImageProcessingConfiguration.TONEMAPPING_ACES;
                                 break;
                             case "khr_pbr_neutral":
-                                this._toneMapping = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
+                                this._globalState.toneMapping = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
                                 break;
                         }
                         break;
@@ -249,11 +248,6 @@ export class Sandbox extends React.Component<
         }
     }
 
-    override componentDidUpdate() {
-        this._assetUrl = undefined;
-        this._cameraPosition = undefined;
-    }
-
     public override render() {
         return (
             <div id="root">
@@ -264,15 +258,7 @@ export class Sandbox extends React.Component<
                     {this._globalState.reflector ? (
                         <ReflectorZone globalState={this._globalState} expanded={!this.state.isFooterVisible} />
                     ) : (
-                        <RenderingZone
-                            globalState={this._globalState}
-                            assetUrl={this._assetUrl}
-                            autoRotate={this._autoRotate}
-                            cameraPosition={this._cameraPosition}
-                            toneMapping={this._toneMapping}
-                            expanded={!this.state.isFooterVisible}
-                            onEngineCreated={this.onEngineCreated}
-                        />
+                        <RenderingZone globalState={this._globalState} expanded={!this.state.isFooterVisible} onEngineCreated={this.onEngineCreated} />
                     )}
                 </span>
                 <div
@@ -302,14 +288,14 @@ export class Sandbox extends React.Component<
     // Use the promise of this deferred to do something after the scene is loaded.
     private static _SceneLoadedDeferred = new Deferred<Scene>();
 
-    public static Show(hostElement: HTMLElement): void {
-        const sandbox = React.createElement(Sandbox, {});
-        ReactDOM.render(sandbox, hostElement);
+    public static Show(hostElement: HTMLElement, { version, bundles }: { version: string; bundles: string[] }): void {
+        const sandbox = React.createElement(Sandbox, { version, bundles });
+        const root = createRoot(hostElement);
+        root.render(sandbox);
     }
 
-    public static CaptureScreenshotAsync(size: IScreenshotSize | number, mimeType?: string): Promise<string> {
-        return this._SceneLoadedDeferred.promise.then((scene) => {
-            return CreateScreenshotAsync(scene.getEngine(), scene.activeCamera!, size, mimeType);
-        });
+    public static async CaptureScreenshotAsync(size: IScreenshotSize | number, mimeType?: string): Promise<string> {
+        const scene = await this._SceneLoadedDeferred.promise;
+        return await CreateScreenshotAsync(scene.getEngine(), scene.activeCamera!, size, mimeType);
     }
 }

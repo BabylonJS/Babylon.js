@@ -130,19 +130,19 @@ export class LayerSceneComponent implements ISceneComponent {
 
     private _drawRenderTargetBackground(renderTarget: RenderTargetTexture): void {
         this._draw((layer: Layer) => {
-            return this._drawRenderTargetPredicate(layer, true, true, this.scene.activeCamera!.layerMask, renderTarget);
+            return this._drawRenderTargetPredicate(layer, true, true, this.scene.activeCamera ? this.scene.activeCamera.layerMask : 0, renderTarget);
         });
     }
 
     private _drawRenderTargetForegroundWithPostProcessing(renderTarget: RenderTargetTexture): void {
         this._draw((layer: Layer) => {
-            return this._drawRenderTargetPredicate(layer, false, true, this.scene.activeCamera!.layerMask, renderTarget);
+            return this._drawRenderTargetPredicate(layer, false, true, this.scene.activeCamera ? this.scene.activeCamera.layerMask : 0, renderTarget);
         });
     }
 
     private _drawRenderTargetForegroundWithoutPostProcessing(renderTarget: RenderTargetTexture): void {
         this._draw((layer: Layer) => {
-            return this._drawRenderTargetPredicate(layer, false, false, this.scene.activeCamera!.layerMask, renderTarget);
+            return this._drawRenderTargetPredicate(layer, false, false, this.scene.activeCamera ? this.scene.activeCamera.layerMask : 0, renderTarget);
         });
     }
 
@@ -154,9 +154,9 @@ export class LayerSceneComponent implements ISceneComponent {
         if (!container.layers) {
             return;
         }
-        container.layers.forEach((layer) => {
+        for (const layer of container.layers) {
             this.scene.layers.push(layer);
-        });
+        }
     }
 
     /**
@@ -168,7 +168,7 @@ export class LayerSceneComponent implements ISceneComponent {
         if (!container.layers) {
             return;
         }
-        container.layers.forEach((layer) => {
+        for (const layer of container.layers) {
             const index = this.scene.layers.indexOf(layer);
             if (index !== -1) {
                 this.scene.layers.splice(index, 1);
@@ -176,6 +176,6 @@ export class LayerSceneComponent implements ISceneComponent {
             if (dispose) {
                 layer.dispose();
             }
-        });
+        }
     }
 }

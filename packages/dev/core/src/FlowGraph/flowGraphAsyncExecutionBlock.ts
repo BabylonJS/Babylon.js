@@ -18,9 +18,11 @@ export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlo
     constructor(config?: IFlowGraphBlockConfiguration, events?: string[]) {
         super(config);
         this.done = this._registerSignalOutput("done");
-        events?.forEach((eventName) => {
-            this._eventsSignalOutputs[eventName] = this._registerSignalOutput(eventName + "Event");
-        });
+        if (events) {
+            for (const eventName of events) {
+                this._eventsSignalOutputs[eventName] = this._registerSignalOutput(eventName + "Event");
+            }
+        }
     }
     /**
      * @internal

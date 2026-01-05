@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
 import { ToGammaSpace } from "../Maths/math.constants";
@@ -53,8 +52,8 @@ export class ThinExtractHighlightsPostProcess extends EffectWrapper {
     /** @internal */
     public _exposure = 1;
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
 
         const effect = this._drawWrapper.effect!;
 

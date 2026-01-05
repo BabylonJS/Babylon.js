@@ -6,6 +6,12 @@ let nodeRenderGraph;
 
 const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
 
+if (window.location.search.indexOf("webgpu") !== -1) {
+    localStorage.setItem("Engine", 1);
+}
+
+let useWebGPU = localStorage.getItem("Engine") === "1";
+
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
         // eslint-disable-next-line no-undef
@@ -82,6 +88,18 @@ let checkBabylonVersionAsync = function () {
 
     return new Promise((resolve) => {
         loadInSequence(frameworkScripts, 0, resolve);
+    }).then(() => {
+        // if local, set the default base URL
+        if (snapshot) {
+            // eslint-disable-next-line no-undef
+            globalThis.BABYLON.Tools.ScriptBaseUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot;
+        } else if (version) {
+            // eslint-disable-next-line no-undef
+            globalThis.BABYLON.Tools.ScriptBaseUrl = "https://cdn.babylonjs.com/v" + version;
+        } else if (activeVersion === "local") {
+            // eslint-disable-next-line no-undef
+            globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
+        }
     });
 };
 
@@ -109,7 +127,7 @@ checkBabylonVersionAsync().then(() => {
 
                     try {
                         let xmlHttp = new XMLHttpRequest();
-                        xmlHttp.onreadystatechange = function () {
+                        xmlHttp.onreadystatechange = async function () {
                             if (xmlHttp.readyState == 4) {
                                 if (xmlHttp.status == 200) {
                                     let snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
@@ -120,7 +138,7 @@ checkBabylonVersionAsync().then(() => {
                                     } else {
                                         nodeRenderGraph.parseSerializedObject(serializationObject);
                                         try {
-                                            nodeRenderGraph.build();
+                                            await nodeRenderGraph.buildAsync();
                                         } catch (err) {
                                             // Swallow the error here
                                         }
@@ -190,26 +208,45 @@ checkBabylonVersionAsync().then(() => {
                 },
             });
         };
-        // Let's start
-        if (BABYLON.Engine.isSupported()) {
-            let canvas = document.createElement("canvas");
-            canvas.width = 1;
-            canvas.height = 1;
-            let engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
-            let scene = new BABYLON.Scene(engine);
-            new BABYLON.Camera("camera", new BABYLON.Vector3(0, 0, 0), scene);
-            new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
-            new BABYLON.DirectionalLight("light #1", new BABYLON.Vector3(0, 1, 0), scene);
 
-            nodeRenderGraph = new BABYLON.NodeRenderGraph("node", scene);
-            nodeRenderGraph.setToDefault();
-            nodeRenderGraph.build();
+        let startAsync = async function () {
+            if (BABYLON.Engine.isSupported()) {
+                let canvas = document.createElement("canvas");
+                canvas.width = 1;
+                canvas.height = 1;
 
-            showEditor();
-        } else {
-            alert("Babylon.js is not supported.");
-        }
+                let engine;
 
-        checkHash();
+                if (useWebGPU && (await BABYLON.WebGPUEngine.IsSupportedAsync)) {
+                    engine = new BABYLON.WebGPUEngine(canvas, {
+                        enableGPUDebugMarkers: true,
+                        enableAllFeatures: true,
+                        setMaximumLimits: true,
+                    });
+                    await engine.initAsync();
+                } else {
+                    localStorage.setItem("Engine", 0);
+                    useWebGPU = false;
+                    engine = new BABYLON.Engine(canvas, false, { disableWebGL2Support: false });
+                }
+
+                let scene = new BABYLON.Scene(engine);
+                new BABYLON.Camera("camera", new BABYLON.Vector3(0, 0, 0), scene);
+                new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
+                new BABYLON.DirectionalLight("light #1", new BABYLON.Vector3(0, 1, 0), scene);
+
+                nodeRenderGraph = new BABYLON.NodeRenderGraph("node", scene);
+                nodeRenderGraph.setToDefault();
+                await nodeRenderGraph.buildAsync();
+
+                showEditor();
+            } else {
+                alert("Babylon.js is not supported.");
+            }
+
+            checkHash();
+        };
+
+        startAsync();
     });
 });

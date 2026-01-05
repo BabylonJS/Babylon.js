@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphContext, FrameGraphPass } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 
@@ -17,12 +16,25 @@ export class FrameGraphExecuteTask extends FrameGraphTask {
     public funcDisabled?: (context: FrameGraphContext) => void;
 
     /**
+     * Custom readiness check (optional).
+     */
+    public customIsReady?: () => boolean;
+
+    public override isReady(): boolean {
+        return !this.customIsReady || this.customIsReady();
+    }
+
+    /**
      * Creates a new execute task.
      * @param name The name of the task.
      * @param frameGraph The frame graph the task belongs to.
      */
     constructor(name: string, frameGraph: FrameGraph) {
         super(name, frameGraph);
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphExecuteTask";
     }
 
     public record(): FrameGraphPass<FrameGraphContext> {

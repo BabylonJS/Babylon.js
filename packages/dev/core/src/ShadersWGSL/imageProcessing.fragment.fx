@@ -16,6 +16,8 @@ var textureSampler: texture_2d<f32>;
 fn main(input: FragmentInputs) -> FragmentOutputs {
 	var result: vec4f = textureSample(textureSampler, textureSamplerSampler, input.vUV);
 
+	result = vec4f(max(result.rgb, vec3f(0.)), result.a);
+
 #ifdef IMAGEPROCESSING
 	#ifndef FROMLINEARSPACE
 		// Need to move to linear space for subsequent operations.

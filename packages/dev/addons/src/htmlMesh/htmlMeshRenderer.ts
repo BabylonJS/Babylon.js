@@ -9,9 +9,10 @@ import { RenderingGroup } from "core/Rendering/renderingGroup";
 import type { Observer } from "core/Misc/observable";
 import { Logger } from "core/Misc/logger";
 import type { AbstractEngine } from "core/Engines";
+import { TransformNode } from "core/Meshes/transformNode";
 
-const _positionUpdateFailMessage = "Failed to update html mesh renderer position due to failure to get canvas rect.  HtmlMesh instances may not render correctly";
-const babylonUnitsToPixels = 100;
+const PositionUpdateFailMessage = "Failed to update html mesh renderer position due to failure to get canvas rect.  HtmlMesh instances may not render correctly";
+const BabylonUnitsToPixels = 100;
 
 /**
  * A function that compares two submeshes and returns a number indicating which
@@ -29,19 +30,19 @@ type RenderLayerElements = {
 // Note this will only be applied to group 0.
 // If neither mesh is an HtmlMesh, then the default render order is used
 // This prevents HtmlMeshes from appearing in front of other meshes when they are behind them
-const renderOrderFunc = (defaultRenderOrder: RenderOrderFunction): RenderOrderFunction => {
+const RenderOrderFunc = (defaultRenderOrder: RenderOrderFunction): RenderOrderFunction => {
     return (subMeshA: SubMesh, subMeshB: SubMesh) => {
         const meshA = subMeshA.getMesh();
         const meshB = subMeshB.getMesh();
 
         // Use property check instead of instanceof since it is less expensive and
         // this will be called many times per frame
-        const meshAIsHtmlMesh = (meshA as any)["isHtmlMesh"];
-        const meshBIsHtmlMesh = (meshB as any)["isHtmlMesh"];
-        if (meshAIsHtmlMesh) {
-            return meshBIsHtmlMesh ? (meshA.absolutePosition.z <= meshB.absolutePosition.z ? 1 : -1) : -1;
+        const meshIsHtmlMeshA = (meshA as any)["isHtmlMesh"];
+        const meshIsHtmlMeshB = (meshB as any)["isHtmlMesh"];
+        if (meshIsHtmlMeshA) {
+            return meshIsHtmlMeshB ? (meshA.absolutePosition.z <= meshB.absolutePosition.z ? 1 : -1) : -1;
         } else {
-            return meshBIsHtmlMesh ? 1 : defaultRenderOrder(subMeshA, subMeshB);
+            return meshIsHtmlMeshB ? 1 : defaultRenderOrder(subMeshA, subMeshB);
         }
     };
 };
@@ -57,6 +58,21 @@ const renderOrderFunc = (defaultRenderOrder: RenderOrderFunction): RenderOrderFu
  * created before.
  */
 export class HtmlMeshRenderer {
+    /**
+     * Global scale factor applied to the homogeneous `w` component (m[15]) of the
+     * transformation matrix when projecting 3D objects into pixel space.
+     *
+     * This value is used to balance Babylon units against screen pixels, ensuring
+     * that HTML-mapped or screen-space objects appear with the correct relative
+     * size. Adjust with care, as changing it affects the projection scale of all
+     * transformed objects.
+     *
+     *  The default value is `0.00001`, which works well when 1 Babylon unit
+     *  corresponds to 1 meter, and the typical screen resolution is around
+     * 100 pixels per meter (i.e., 1 pixel per centimeter).
+     */
+    public static PROJECTION_SCALE_FACTOR = 0.00001;
+
     private _containerId?: string;
     private _inSceneElements?: RenderLayerElements | null;
     private _overlayElements?: RenderLayerElements | null;
@@ -230,9 +246,9 @@ export class HtmlMeshRenderer {
         // Updating the render order isn't ideal, but it is the only way to acheive this
         // The implication is that an app using the HtmlMeshRendered must set the scene render order
         // via the HtmlMeshRendered constructor
-        const opaqueRenderOrder = renderOrderFunc(defaultOpaqueRenderOrder);
-        const alphaTestRenderOrder = renderOrderFunc(defaultAlphaTestRenderOrder);
-        const transparentRenderOrder = renderOrderFunc(defaultTransparentRenderOrder);
+        const opaqueRenderOrder = RenderOrderFunc(defaultOpaqueRenderOrder);
+        const alphaTestRenderOrder = RenderOrderFunc(defaultAlphaTestRenderOrder);
+        const transparentRenderOrder = RenderOrderFunc(defaultTransparentRenderOrder);
         scene.setRenderingOrder(0, opaqueRenderOrder, alphaTestRenderOrder, transparentRenderOrder);
 
         this._renderObserver = scene.onBeforeRenderObservable.add(() => {
@@ -287,17 +303,17 @@ export class HtmlMeshRenderer {
             return;
         }
 
-        const domElements = [this._inSceneElements!.domElement, this._overlayElements!.domElement, this._inSceneElements!.cameraElement, this._overlayElements!.cameraElement];
-        domElements.forEach((dom) => {
+        const domElements = [this._inSceneElements.domElement, this._overlayElements.domElement, this._inSceneElements.cameraElement, this._overlayElements.cameraElement];
+        for (const dom of domElements) {
             if (dom) {
                 dom.style.width = `${width}px`;
                 dom.style.height = `${height}px`;
             }
-        });
+        }
     }
 
     // prettier-ignore
-    protected _getCameraCSSMatrix(matrix: Matrix): string {
+    protected _getCameraCssMatrix(matrix: Matrix): string {
         const elements = matrix.m;
         return `matrix3d(${
             this._epsilon( elements[0] )
@@ -338,7 +354,7 @@ export class HtmlMeshRenderer {
     // This also handles conversion from BJS left handed coords
     // to CSS right handed coords
     // prettier-ignore
-    protected _getHtmlContentCSSMatrix(matrix: Matrix, useRightHandedSystem: boolean): string {
+    protected _getHtmlContentCssMatrix(matrix: Matrix, useRightHandedSystem: boolean): string {
         const elements = matrix.m;
         // In a right handed coordinate system, the elements 11 to 14 have to change their direction
         const direction = useRightHandedSystem ? -1 : 1;
@@ -396,8 +412,8 @@ export class HtmlMeshRenderer {
         let widthScaleFactor = 1;
         let heightScaleFactor = 1;
         if (htmlMesh.sourceWidth && htmlMesh.sourceHeight) {
-            widthScaleFactor = htmlMesh.width! / (htmlMesh.sourceWidth / babylonUnitsToPixels);
-            heightScaleFactor = htmlMesh.height! / (htmlMesh.sourceHeight / babylonUnitsToPixels);
+            widthScaleFactor = htmlMesh.width! / (htmlMesh.sourceWidth / BabylonUnitsToPixels);
+            heightScaleFactor = htmlMesh.height! / (htmlMesh.sourceHeight / BabylonUnitsToPixels);
         }
 
         // Apply the scale to the object's world matrix.  Note we aren't scaling
@@ -421,16 +437,16 @@ export class HtmlMeshRenderer {
         const position = htmlMesh.getAbsolutePosition();
         scaledAndTranslatedObjectMatrix.setRowFromFloats(
             3,
-            (-this._cameraWorldMatrix.m[12] + position.x) * babylonUnitsToPixels * direction,
-            (-this._cameraWorldMatrix.m[13] + position.y) * babylonUnitsToPixels * direction,
-            (this._cameraWorldMatrix.m[14] - position.z) * babylonUnitsToPixels,
-            this._cameraWorldMatrix.m[15] * 0.00001 * babylonUnitsToPixels
+            (-this._cameraWorldMatrix.m[12] + position.x) * BabylonUnitsToPixels * direction,
+            (-this._cameraWorldMatrix.m[13] + position.y) * BabylonUnitsToPixels * direction,
+            (this._cameraWorldMatrix.m[14] - position.z) * BabylonUnitsToPixels,
+            this._cameraWorldMatrix.m[15] * HtmlMeshRenderer.PROJECTION_SCALE_FACTOR * BabylonUnitsToPixels
         );
 
         // Adjust other values to be pixels vs Babylon units
-        scaledAndTranslatedObjectMatrix.multiplyAtIndex(3, babylonUnitsToPixels);
-        scaledAndTranslatedObjectMatrix.multiplyAtIndex(7, babylonUnitsToPixels);
-        scaledAndTranslatedObjectMatrix.multiplyAtIndex(11, babylonUnitsToPixels);
+        scaledAndTranslatedObjectMatrix.multiplyAtIndex(3, BabylonUnitsToPixels);
+        scaledAndTranslatedObjectMatrix.multiplyAtIndex(7, BabylonUnitsToPixels);
+        scaledAndTranslatedObjectMatrix.multiplyAtIndex(11, BabylonUnitsToPixels);
 
         return scaledAndTranslatedObjectMatrix;
     }
@@ -463,9 +479,10 @@ export class HtmlMeshRenderer {
         // Get the transformation matrix for the html mesh
         const scaledAndTranslatedObjectMatrix = this._getTransformationMatrix(htmlMesh, useRightHandedSystem);
 
-        let style = `translate(-50%, -50%) ${this._getHtmlContentCSSMatrix(scaledAndTranslatedObjectMatrix, useRightHandedSystem)}`;
+        let style = `translate(-50%, -50%) ${this._getHtmlContentCssMatrix(scaledAndTranslatedObjectMatrix, useRightHandedSystem)}`;
         // In a right handed system, screens are on the wrong side of the mesh, so we have to rotate by Math.PI which results in the matrix3d seen below
-        style += `${useRightHandedSystem ? "matrix3d(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1)" : ""}`;
+        // Also in RH + billboard mode, we cancel the handedness so we do not need to scale on x
+        style += `${useRightHandedSystem ? `matrix3d(${htmlMesh.billboardMode !== TransformNode.BILLBOARDMODE_NONE ? 1 : -1}, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1)` : ""}`;
 
         if (htmlMeshData.style !== style) {
             htmlMesh.element.style.webkitTransform = style;
@@ -519,20 +536,21 @@ export class HtmlMeshRenderer {
         const fov = projectionMatrix.m[5] * this._heightHalf;
 
         if (this._cache.cameraData.fov !== fov) {
+            const source = [this._overlayElements?.domElement, this._inSceneElements?.domElement];
             if (camera.mode == Camera.PERSPECTIVE_CAMERA) {
-                [this._overlayElements?.domElement, this._inSceneElements?.domElement].forEach((el) => {
+                for (const el of source) {
                     if (el) {
                         el.style.webkitPerspective = fov + "px";
                         el.style.perspective = fov + "px";
                     }
-                });
+                }
             } else {
-                [this._overlayElements?.domElement, this._inSceneElements?.domElement].forEach((el) => {
+                for (const el of source) {
                     if (el) {
                         el.style.webkitPerspective = "";
                         el.style.perspective = "";
                     }
-                });
+                }
             }
             this._cache.cameraData.fov = fov;
         }
@@ -562,23 +580,24 @@ export class HtmlMeshRenderer {
 
         Matrix.FromArrayToRef(cameraMatrixWorldAsArray, 0, cameraMatrixWorld);
 
-        const cameraCSSMatrix = this._getCameraCSSMatrix(cameraMatrixWorld);
+        const cameraCSSMatrix = this._getCameraCssMatrix(cameraMatrixWorld);
         const style = cameraCSSMatrix;
 
         if (this._cache.cameraData.style !== style) {
-            [this._inSceneElements?.cameraElement, this._overlayElements?.cameraElement].forEach((el) => {
+            const source = [this._inSceneElements?.cameraElement, this._overlayElements?.cameraElement];
+            for (const el of source) {
                 if (el) {
                     el.style.webkitTransform = style;
                     el.style.transform = style;
                 }
-            });
+            }
             this._cache.cameraData.style = style;
         }
 
         // _Render objects if necessary
-        meshesNeedingUpdate.forEach((mesh) => {
+        for (const mesh of meshesNeedingUpdate) {
             this._renderHtmlMesh(mesh as HtmlMesh, useRightHandedSystem);
-        });
+        }
     }
 
     protected _updateBaseScaleFactor(htmlMesh: HtmlMesh) {
@@ -609,7 +628,7 @@ export class HtmlMeshRenderer {
 
         // canvas rect may be null if layout not complete
         if (!canvasRect) {
-            Logger.Warn(_positionUpdateFailMessage);
+            Logger.Warn(PositionUpdateFailMessage);
             return;
         }
         const scrollTop = window.scrollY;
@@ -621,9 +640,10 @@ export class HtmlMeshRenderer {
             this._previousCanvasDocumentPosition.top = canvasDocumentTop;
             this._previousCanvasDocumentPosition.left = canvasDocumentLeft;
 
-            [this._inSceneElements?.container, this._overlayElements?.container].forEach((container) => {
+            const source = [this._inSceneElements?.container, this._overlayElements?.container];
+            for (const container of source) {
                 if (!container) {
-                    return;
+                    continue;
                 }
                 // set the top and left of the css container to match the canvas
                 const containerParent = container.offsetParent as HTMLElement;
@@ -642,7 +662,7 @@ export class HtmlMeshRenderer {
                 container.style.left = `${
                     canvasDocumentLeft - parentDocumentLeft - ancestorMarginsAndPadding.marginLeft + ancestorMarginsAndPadding.paddingLeft + bodyMarginLeft
                 }px`;
-            });
+            }
         }
     }
 

@@ -3,6 +3,7 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import type { InputBlock } from "../Input/inputBlock";
 import type { NodeMaterialTeleportOutBlock } from "./teleportOutBlock";
 
 /**
@@ -72,6 +73,13 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
      */
     public override isConnectedInFragmentShader() {
         return this.endpoints.some((e) => e.output.isConnectedInFragmentShader);
+    }
+
+    /**
+     * Checks if the input is connected to a uniform input block
+     */
+    public get isConnectedToUniform() {
+        return this.input.isConnected && this.input.connectedPoint!.ownerBlock.isInput && (this.input.connectedPoint!.ownerBlock as InputBlock).isUniform;
     }
 
     public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {

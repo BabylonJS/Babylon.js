@@ -91,7 +91,7 @@ export function CreateCylinderVertexData(options: {
     const ringFirstVertex: Vector3 = Vector3.Zero();
     const ringFirstNormal: Vector3 = Vector3.Zero();
     const quadNormal: Vector3 = Vector3.Zero();
-    const Y: Vector3 = Axis.Y;
+    const y: Vector3 = Axis.Y;
 
     // positions, normals, uvs
     let i: number;
@@ -159,10 +159,10 @@ export function CreateCylinderVertexData(options: {
                 positions.push(0, ringVertex.y, 0);
                 positions.push(0, ringVertex.y, 0);
                 positions.push(ringFirstVertex.x, ringFirstVertex.y, ringFirstVertex.z);
-                Vector3.CrossToRef(Y, ringNormal, quadNormal);
+                Vector3.CrossToRef(y, ringNormal, quadNormal);
                 quadNormal.normalize();
                 normals.push(quadNormal.x, quadNormal.y, quadNormal.z, quadNormal.x, quadNormal.y, quadNormal.z);
-                Vector3.CrossToRef(ringFirstNormal, Y, quadNormal);
+                Vector3.CrossToRef(ringFirstNormal, y, quadNormal);
                 quadNormal.normalize();
                 normals.push(quadNormal.x, quadNormal.y, quadNormal.z, quadNormal.x, quadNormal.y, quadNormal.z);
                 if (hasRings) {

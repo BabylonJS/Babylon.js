@@ -11,6 +11,7 @@ import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
+import { ThinConvolutionPostProcess } from "./thinConvolutionPostProcess";
 
 /**
  * The ConvolutionPostProcess applies a 3x3 kernel to every pixel of the
@@ -20,7 +21,13 @@ import type { Scene } from "../scene";
 export class ConvolutionPostProcess extends PostProcess {
     /** Array of 9 values corresponding to the 3x3 kernel to be applied */
     @serialize()
-    public kernel: number[];
+    public get kernel() {
+        return this._effectWrapper.kernel;
+    }
+
+    public set kernel(value: number[]) {
+        this._effectWrapper.kernel = value;
+    }
 
     /**
      * Gets a string identifying the name of the class
@@ -29,6 +36,8 @@ export class ConvolutionPostProcess extends PostProcess {
     public override getClassName(): string {
         return "ConvolutionPostProcess";
     }
+
+    protected override _effectWrapper: ThinConvolutionPostProcess;
 
     /**
      * Creates a new instance ConvolutionPostProcess
@@ -51,23 +60,26 @@ export class ConvolutionPostProcess extends PostProcess {
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE
     ) {
-        super(name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);
-        this.kernel = kernel;
-        this.onApply = (effect: Effect) => {
-            effect.setFloat2("screenSize", this.width, this.height);
-            effect.setArray("kernel", this.kernel);
+        const localOptions = {
+            uniforms: ThinConvolutionPostProcess.Uniforms,
+            size: typeof options === "number" ? options : undefined,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            textureType,
+            ...(options as PostProcessOptions),
         };
-    }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/convolution.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/convolution.fragment")]));
-        }
+        super(name, ThinConvolutionPostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinConvolutionPostProcess(name, engine, kernel, localOptions) : undefined,
+            ...localOptions,
+        });
 
-        super._gatherImports(useWebGPU, list);
+        this.onApply = (_effect: Effect) => {
+            this._effectWrapper.textureWidth = this.width;
+            this._effectWrapper.textureHeight = this.height;
+        };
     }
 
     /**
@@ -97,27 +109,27 @@ export class ConvolutionPostProcess extends PostProcess {
     /**
      * Edge detection 0 see https://en.wikipedia.org/wiki/Kernel_(image_processing)
      */
-    public static EdgeDetect0Kernel = [1, 0, -1, 0, 0, 0, -1, 0, 1];
+    public static EdgeDetect0Kernel = ThinConvolutionPostProcess.EdgeDetect0Kernel;
     /**
      * Edge detection 1 see https://en.wikipedia.org/wiki/Kernel_(image_processing)
      */
-    public static EdgeDetect1Kernel = [0, 1, 0, 1, -4, 1, 0, 1, 0];
+    public static EdgeDetect1Kernel = ThinConvolutionPostProcess.EdgeDetect1Kernel;
     /**
      * Edge detection 2 see https://en.wikipedia.org/wiki/Kernel_(image_processing)
      */
-    public static EdgeDetect2Kernel = [-1, -1, -1, -1, 8, -1, -1, -1, -1];
+    public static EdgeDetect2Kernel = ThinConvolutionPostProcess.EdgeDetect2Kernel;
     /**
      * Kernel to sharpen an image see https://en.wikipedia.org/wiki/Kernel_(image_processing)
      */
-    public static SharpenKernel = [0, -1, 0, -1, 5, -1, 0, -1, 0];
+    public static SharpenKernel = ThinConvolutionPostProcess.SharpenKernel;
     /**
      * Kernel to emboss an image see https://en.wikipedia.org/wiki/Kernel_(image_processing)
      */
-    public static EmbossKernel = [-2, -1, 0, -1, 1, 1, 0, 1, 2];
+    public static EmbossKernel = ThinConvolutionPostProcess.EmbossKernel;
     /**
      * Kernel to blur an image see https://en.wikipedia.org/wiki/Kernel_(image_processing)
      */
-    public static GaussianKernel = [0, 1, 0, 1, 1, 1, 0, 1, 0];
+    public static GaussianKernel = ThinConvolutionPostProcess.GaussianKernel;
 }
 
 RegisterClass("BABYLON.ConvolutionPostProcess", ConvolutionPostProcess);

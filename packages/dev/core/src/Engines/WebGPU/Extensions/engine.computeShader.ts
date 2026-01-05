@@ -13,6 +13,7 @@ import type { WebGPUPerfCounter } from "../webgpuPerfCounter";
 import type { DataBuffer } from "../../../Buffers/dataBuffer";
 
 declare module "../../webgpuEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface WebGPUEngine {
         /** @internal */
         _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>, entryPoint: string): GPUProgrammableStage;
@@ -34,7 +35,7 @@ declare module "../../webgpuEngine" {
     }
 }
 
-const computePassDescriptor: GPUComputePassDescriptor = {};
+const ComputePassDescriptor: GPUComputePassDescriptor = {};
 
 WebGPUEngine.prototype.createComputeContext = function (): IComputeContext | undefined {
     return new WebGPUComputeContext(this._device, this._cacheSampler);
@@ -45,7 +46,7 @@ WebGPUEngine.prototype.createComputeEffect = function (baseName: string | (IComp
 
     const name = compute + "@" + options.defines;
     if (this._compiledComputeEffects[name]) {
-        const compiledEffect = <ComputeEffect>this._compiledComputeEffects[name];
+        const compiledEffect = this._compiledComputeEffects[name];
         if (options.onCompiled && compiledEffect.isReady()) {
             options.onCompiled(compiledEffect);
         }
@@ -124,10 +125,10 @@ WebGPUEngine.prototype._computeDispatch = function (
     }
 
     if (gpuPerfCounter) {
-        this._timestampQuery.startPass(computePassDescriptor, this._timestampIndex);
+        this._timestampQuery.startPass(ComputePassDescriptor, this._timestampIndex);
     }
 
-    const computePass = this._renderEncoder.beginComputePass(computePassDescriptor);
+    const computePass = this._renderEncoder.beginComputePass(ComputePassDescriptor);
 
     computePass.setPipeline(contextPipeline.computePipeline);
 
@@ -208,6 +209,7 @@ WebGPUEngine.prototype._executeWhenComputeStateIsCompiled = function (
     pipelineContext: WebGPUComputePipelineContext,
     action: (messages: Nullable<ComputeCompilationMessages>) => void
 ): void {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
     pipelineContext.stage!.module.getCompilationInfo().then((info) => {
         const compilationMessages: ComputeCompilationMessages = {
             numErrors: 0,

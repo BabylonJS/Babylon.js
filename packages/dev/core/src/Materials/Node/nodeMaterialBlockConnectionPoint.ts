@@ -72,6 +72,16 @@ export class NodeMaterialConnectionPoint {
     }
 
     /** @internal */
+    public _isInactive: boolean = false;
+
+    /**
+     * Boolean used to provide visual clue to users when some ports are not active in the current block configuration
+     */
+    public get isInactive(): boolean {
+        return this._isInactive;
+    }
+
+    /** @internal */
     public _preventBubbleUp = false;
 
     /** @internal */
@@ -603,7 +613,7 @@ export class NodeMaterialConnectionPoint {
     public connectTo(connectionPoint: NodeMaterialConnectionPoint, ignoreConstraints = false): NodeMaterialConnectionPoint {
         if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
             // eslint-disable-next-line no-throw-literal
-            throw "Cannot connect these two connectors.";
+            throw `Cannot connect these two connectors. source: "${this.ownerBlock.name}".${this.name}, target: "${connectionPoint.ownerBlock.name}".${connectionPoint.name}`;
         }
 
         this._endpoints.push(connectionPoint);

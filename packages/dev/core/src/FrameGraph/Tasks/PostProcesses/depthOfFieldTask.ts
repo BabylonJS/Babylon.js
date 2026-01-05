@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphTextureCreationOptions, FrameGraphTextureHandle, AbstractEngine, Camera } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphTask } from "../../frameGraphTask";
@@ -127,20 +126,15 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
 
         this._merge = new FrameGraphDepthOfFieldMergeTask(`${name} Merge`, this._frameGraph, this.depthOfField._dofMerge);
 
-        this.onTexturesAllocatedObservable.add((context) => {
-            this._circleOfConfusion.onTexturesAllocatedObservable.notifyObservers(context);
-            for (let i = 0; i < blurCount; i++) {
-                this._blurX[i].onTexturesAllocatedObservable.notifyObservers(context);
-                this._blurY[i].onTexturesAllocatedObservable.notifyObservers(context);
-            }
-            this._merge.onTexturesAllocatedObservable.notifyObservers(context);
-        });
-
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     public override isReady() {
         return this.depthOfField.isReady();
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphDepthOfFieldTask";
     }
 
     public record(): void {
@@ -184,8 +178,8 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
         for (let i = 0; i < this._blurX.length; i++) {
             const ratio = this.depthOfField._depthOfFieldBlurX[i][1];
 
-            textureSize.width = Math.floor(sourceTextureDescription.size.width * ratio);
-            textureSize.height = Math.floor(sourceTextureDescription.size.height * ratio);
+            textureSize.width = Math.floor(sourceTextureDescription.size.width * ratio) || 1;
+            textureSize.height = Math.floor(sourceTextureDescription.size.height * ratio) || 1;
 
             textureCreationOptions.options.labels![0] = "step " + (i + 1);
 

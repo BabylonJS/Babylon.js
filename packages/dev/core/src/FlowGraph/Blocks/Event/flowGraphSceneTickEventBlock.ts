@@ -62,7 +62,7 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     /**
      * @internal
      */
-    public _cancelPendingTasks(_context: FlowGraphContext) {
+    public override _cancelPendingTasks(_context: FlowGraphContext) {
         // no-op
     }
 

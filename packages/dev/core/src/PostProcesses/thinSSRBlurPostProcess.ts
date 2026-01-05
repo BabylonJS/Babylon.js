@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
 import { Engine } from "../Engines/engine";
@@ -52,8 +51,8 @@ export class ThinSSRBlurPostProcess extends EffectWrapper {
 
     public blurStrength = 0.03;
 
-    public override bind() {
-        super.bind();
+    public override bind(noDefaultBindings = false) {
+        super.bind(noDefaultBindings);
 
         this._drawWrapper.effect!.setFloat2(
             "texelOffsetScale",

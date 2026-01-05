@@ -8,7 +8,7 @@ import type { BoundingInfo } from "../../Culling/boundingInfo";
 import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import { DecodeMesh, DecoderWorkerFunction } from "./dracoCompressionWorker";
-import type { AttributeData, MeshData, DecoderMessage } from "./dracoDecoder.types";
+import type { IAttributeData, MeshData, DecoderMessage } from "./dracoDecoder.types";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;
@@ -113,6 +113,7 @@ export class DracoDecoder extends DracoCodec {
      * @param gltfNormalizedOverride A map of attributes from vertex buffer kinds to normalized flags to override the Draco normalization
      * @returns A promise that resolves with the decoded mesh data
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public decodeMeshToMeshDataAsync(
         data: ArrayBuffer | ArrayBufferView,
         attributes?: { [kind: string]: number },
@@ -135,15 +136,17 @@ export class DracoDecoder extends DracoCodec {
         };
 
         if (this._workerPoolPromise) {
-            return this._workerPoolPromise.then((workerPool) => {
-                return new Promise<MeshData>((resolve, reject) => {
+            // eslint-disable-next-line github/no-then
+            return this._workerPoolPromise.then(async (workerPool) => {
+                return await new Promise<MeshData>((resolve, reject) => {
                     workerPool.push((worker, onComplete) => {
                         let resultIndices: Nullable<Uint16Array | Uint32Array> = null;
-                        const resultAttributes: Array<AttributeData> = [];
+                        const resultAttributes: Array<IAttributeData> = [];
 
                         const onError = (error: ErrorEvent) => {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
+                            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                             reject(error);
                             onComplete();
                         };
@@ -187,9 +190,10 @@ export class DracoDecoder extends DracoCodec {
         }
 
         if (this._modulePromise) {
+            // eslint-disable-next-line github/no-then
             return this._modulePromise.then((decoder) => {
                 let resultIndices: Nullable<Uint16Array | Uint32Array> = null;
-                const resultAttributes: Array<AttributeData> = [];
+                const resultAttributes: Array<IAttributeData> = [];
 
                 const numPoints = DecodeMesh(
                     decoder.module,

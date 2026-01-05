@@ -1,5 +1,6 @@
 import { Quaternion, Vector3 } from "../../../Maths/math.vector";
 import type { Node } from "../../../node";
+import type { Nullable } from "../../../types";
 import type { SpatialAudioAttachmentType } from "../../spatialAudioAttachmentType";
 
 export const _SpatialAudioListenerDefaults = {
@@ -86,20 +87,26 @@ export abstract class AbstractSpatialAudioListener {
     public abstract rotationQuaternion: Quaternion;
 
     /**
-     * Attaches the audio source to a scene object.
-     * @param sceneNode The scene node to attach the audio source to.
+     * Attaches to a scene node.
+     *
+     * Detaches automatically before attaching to the given scene node.
+     * If `sceneNode` is `null` it is the same as calling `detach()`.
+     *
+     * @param sceneNode The scene node to attach to, or `null` to detach.
      * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
-     * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
+     * @param attachmentType Whether to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
      */
-    public abstract attach(sceneNode: Node, useBoundingBox?: boolean, attachmentType?: SpatialAudioAttachmentType): void;
+    public abstract attach(sceneNode: Nullable<Node>, useBoundingBox?: boolean, attachmentType?: SpatialAudioAttachmentType): void;
 
     /**
-     * Detaches the audio source from the currently attached graphics node.
+     * Detaches from the scene node if attached.
      */
     public abstract detach(): void;
 
     /**
-     * Updates the position and rotation in the audio engine to the current values.
+     * Updates the position and rotation of the associated audio engine object in the audio rendering graph.
+     *
+     * This is called automatically by default and only needs to be called manually if automatic updates are disabled.
      */
     public abstract update(): void;
 }

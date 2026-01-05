@@ -5,12 +5,11 @@ import { getMappingForDeclaration, getMappingForFullOperationName } from "./decl
 import { Logger } from "core/Misc/logger";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc/guid";
-import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
-import type { GLTFLoader } from "../../glTFLoader";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface InteractivityEvent {
     eventId: string;
     eventData?: {
@@ -20,6 +19,7 @@ export interface InteractivityEvent {
         value?: any;
     }[];
 }
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const gltfTypeToBabylonType: {
     [key: string]: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" };
 } = {
@@ -49,7 +49,7 @@ export class InteractivityGraphToFlowGraphParser {
     constructor(
         private _interactivityGraph: IKHRInteractivity_Graph,
         private _gltf: IGLTF,
-        public _loader: GLTFLoader
+        public _animationTargetFps: number = 60
     ) {
         // start with types
         this._parseTypes();
@@ -154,6 +154,10 @@ export class InteractivityGraphToFlowGraphParser {
                     break;
             }
         }
+        // in case of NaN, Infinity, we need to parse the string to the object itself
+        if (type.elementType === "number" && typeof value[0] === "string") {
+            value[0] = parseFloat(value[0]);
+        }
         return { type: type.flowGraphType, value: dataTransform ? dataTransform(value, this) : value };
     }
 
@@ -206,8 +210,9 @@ export class InteractivityGraphToFlowGraphParser {
                 throw new Error("Error parsing nodes");
             }
             if (mapping.flowGraphMapping.validation) {
-                if (!mapping.flowGraphMapping.validation(node, this._interactivityGraph, this._gltf)) {
-                    throw new Error(`Error validating interactivity node ${node}`);
+                const validationResult = mapping.flowGraphMapping.validation(node, this._interactivityGraph, this._gltf);
+                if (!validationResult.valid) {
+                    throw new Error(`Error validating interactivity node ${this._interactivityGraph.declarations?.[node.declaration].op} - ${validationResult.error}`);
                 }
             }
             const blocks: ISerializedFlowGraphBlock[] = [];
@@ -222,59 +227,56 @@ export class InteractivityGraphToFlowGraphParser {
     }
 
     private _getEmptyBlock(className: string, type: string): ISerializedFlowGraphBlock {
-        const uniqueId = RandomGUID();
-        const dataInputs: ISerializedFlowGraphConnection[] = [];
-        const dataOutputs: ISerializedFlowGraphConnection[] = [];
-        const signalInputs: ISerializedFlowGraphConnection[] = [];
-        const signalOutputs: ISerializedFlowGraphConnection[] = [];
-        const config: IFlowGraphBlockConfiguration = {};
-        const metadata = {};
         return {
-            uniqueId,
+            uniqueId: RandomGUID(),
             className,
-            dataInputs,
-            dataOutputs,
-            signalInputs,
-            signalOutputs,
-            config,
+            dataInputs: [],
+            dataOutputs: [],
+            signalInputs: [],
+            signalOutputs: [],
+            config: {},
             type,
-            metadata,
+            metadata: {},
         };
     }
 
     private _parseNodeConfiguration(node: IKHRInteractivity_Node, block: ISerializedFlowGraphBlock, nodeMapping: IGLTFToFlowGraphMapping, blockType: FlowGraphBlockNames | string) {
-        const configuration = block.config;
-        if (node.configuration) {
-            Object.keys(node.configuration).forEach((key) => {
-                const value = node.configuration?.[key];
-                // value is always an array, never a number or string
-                if (!value) {
-                    Logger.Error(["No value found for node configuration", key]);
+        const gltfConfiguration = node.configuration;
+        if (gltfConfiguration) {
+            for (const key in gltfConfiguration) {
+                const gltfProperty = gltfConfiguration[key];
+                if (!gltfProperty) {
                     throw new Error("Error parsing node configuration");
                 }
-                const configMapping = nodeMapping.configuration?.[key];
-                const belongsToBlock = configMapping && configMapping.toBlock ? configMapping.toBlock === blockType : nodeMapping.blocks.indexOf(blockType) === 0;
+
+                const propertyMapping = nodeMapping.configuration?.[key];
+                const belongsToBlock = propertyMapping && propertyMapping.toBlock ? propertyMapping.toBlock === blockType : nodeMapping.blocks.indexOf(blockType) === 0;
                 if (belongsToBlock) {
-                    // get the right name for the configuration key
-                    const configKey = configMapping?.name || key;
-                    if ((!value || typeof value.value === "undefined") && typeof configMapping?.defaultValue !== "undefined") {
-                        configuration[configKey] = {
-                            value: configMapping.defaultValue,
-                        };
-                    } else if (value.value.length >= 1) {
-                        // supporting int[] and int/boolean/string
-                        configuration[configKey] = {
-                            value: value.value.length === 1 ? value.value[0] : value.value,
-                        };
-                    } else {
-                        Logger.Warn(["Invalid value for node configuration", value]);
+                    let value = propertyMapping?.defaultValue;
+                    if (gltfProperty?.value) {
+                        value = gltfProperty.value;
                     }
-                    // make sure we transform the data if needed
-                    if (configMapping && configMapping.dataTransformer) {
-                        configuration[configKey].value = configMapping.dataTransformer([configuration[configKey].value], this)[0];
+
+                    if (!propertyMapping?.isArray) {
+                        if (value.length !== 1) {
+                            Logger.Warn(`Invalid non-array value length: ${value.length}`);
+                        }
+
+                        value = value[0];
+                    }
+
+                    if (propertyMapping?.dataTransformer) {
+                        value = propertyMapping.dataTransformer(value, this);
+                    }
+
+                    if (value !== undefined) {
+                        // Update the flow graph block config.
+                        block.config[propertyMapping?.name || key] = {
+                            value: value,
+                        };
                     }
                 }
-            });
+            }
         }
     }
 
@@ -359,7 +361,7 @@ export class InteractivityGraphToFlowGraphParser {
                 const socketInName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", valueKey) : valueMapping.name) : valueKey;
                 // create a serialized socket
                 const socketIn = this._createNewSocketConnection(socketInName);
-                const block = (valueMapping && valueMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === valueMapping!.toBlock)) || flowGraphBlocks.blocks[0];
+                const block = (valueMapping && valueMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === valueMapping.toBlock)) || flowGraphBlocks.blocks[0];
                 block.dataInputs.push(socketIn);
                 if ((value as IKHRInteractivity_Variable).value !== undefined) {
                     const convertedValue = this._parseVariable(value as IKHRInteractivity_Variable, valueMapping && valueMapping.dataTransformer);
@@ -390,7 +392,7 @@ export class InteractivityGraphToFlowGraphParser {
                         }
                     }
                     const socketOutName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", nodeOutSocketName) : valueMapping?.name) : nodeOutSocketName;
-                    const outBlock = (valueMapping && valueMapping.toBlock && nodeOut.blocks.find((b) => b.className === valueMapping!.toBlock)) || nodeOut.blocks[0];
+                    const outBlock = (valueMapping && valueMapping.toBlock && nodeOut.blocks.find((b) => b.className === valueMapping.toBlock)) || nodeOut.blocks[0];
                     let socketOut = outBlock.dataOutputs.find((s) => s.name === socketOutName);
                     // if the socket doesn't exist, create it
                     if (!socketOut) {

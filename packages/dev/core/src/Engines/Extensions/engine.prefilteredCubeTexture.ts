@@ -9,6 +9,7 @@ import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { DDSInfo } from "core/Misc/dds";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
@@ -48,7 +49,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
     forcedExtension: any = null,
     createPolynomials: boolean = true
 ): InternalTexture {
-    const callback = async (loadData: any) => {
+    const callbackAsync = async (loadData: any) => {
         if (!loadData) {
             if (onLoad) {
                 onLoad(null);
@@ -58,7 +59,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
 
         const texture = loadData.texture as InternalTexture;
         if (!createPolynomials) {
-            texture._sphericalPolynomial = new SphericalPolynomial();
+            texture._sphericalPolynomial = texture._sphericalPolynomial ?? new SphericalPolynomial();
         } else if (loadData.info.sphericalPolynomial) {
             texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
         }
@@ -80,7 +81,6 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { DDSTools } = await import("core/Misc/dds");
 
         const textures: BaseTexture[] = [];
@@ -141,5 +141,6 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
         }
     };
 
-    return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    return this.createCubeTexture(rootUrl, scene, null, false, callbackAsync, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
 };

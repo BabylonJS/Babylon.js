@@ -11,8 +11,11 @@
 			vLightFalloff: vec4f,
 		#elif defined(HEMILIGHT{X})
 			vLightGround: vec3f,
+		#elif defined(CLUSTLIGHT{X})
+			vSliceData: vec2f,
+			vSliceRanges: array<vec4f, CLUSTLIGHT_SLICES>,
 		#endif
-		#if defined(AREALIGHT{X})
+		#if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 			vLightWidth: vec4f,
 			vLightHeight: vec4f,
 		#endif
@@ -37,6 +40,12 @@ var<uniform> light{X} : Light{X};
 	var projectionLightTexture{X}Sampler: sampler;
 	var projectionLightTexture{X}: texture_2d<f32>;
 #endif
+
+#ifdef CLUSTLIGHT{X}
+	var lightDataTexture{X}: texture_2d<f32>;
+	var<storage, read> tileMaskBuffer{X}: array<u32>;
+#endif
+
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}
 		uniform lightMatrix{X}:  array<mat4x4f, SHADOWCSMNUM_CASCADES{X}>;

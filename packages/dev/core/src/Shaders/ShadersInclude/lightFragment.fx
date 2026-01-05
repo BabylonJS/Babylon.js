@@ -6,7 +6,44 @@
         vec4 diffuse{X} = light{X}.vLightDiffuse;
         #define CUSTOM_LIGHT{X}_COLOR // Use to modify light color. Currently only supports diffuse.
 
-        #ifdef PBR
+        // WARNING: If any changes are made to the lighting equation be sure to also add them to the
+        //          `computeClusteredLighting` functions to ensure consistency when clustered lighting is used.
+
+        #if defined(PBR) && defined(CLUSTLIGHT{X}) && defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+        {
+            int sliceIndex = min(getClusteredSliceIndex(light{X}.vSliceData, vViewDepth), CLUSTLIGHT_SLICES - 1);
+            info = computeClusteredLighting(
+                lightDataTexture{X},
+                tileMaskTexture{X},
+                light{X}.vLightData,
+                ivec2(light{X}.vSliceRanges[sliceIndex]),
+                viewDirectionW,
+                normalW,
+                vPositionW,
+                surfaceAlbedo,
+                reflectivityOut
+                #ifdef IRIDESCENCE
+                    , iridescenceIntensity
+                #endif
+                #ifdef SS_TRANSLUCENCY
+                    , subSurfaceOut
+                #endif
+                #ifdef SPECULARTERM
+                    , AARoughnessFactors.x
+                #endif
+                #ifdef ANISOTROPIC
+                    , anisotropicOut
+                #endif
+                #ifdef SHEEN
+                    , sheenOut
+                #endif
+                #ifdef CLEARCOAT
+                    , clearcoatOut
+                #endif
+            );
+        }
+        #elif defined(PBR)
+
             // Compute Pre Lighting infos
             #ifdef SPOTLIGHT{X}
                 preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, vPositionW);
@@ -16,7 +53,7 @@
                 preInfo = computeHemisphericPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
             #elif defined(DIRLIGHT{X})
                 preInfo = computeDirectionalPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
-            #elif defined(AREALIGHT{X}) && defined(AREALIGHTSUPPORTED)
+            #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
                 preInfo = computeAreaPreLightingInfo(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, roughness);
             #endif
 
@@ -51,7 +88,7 @@
                         preInfo.attenuation *= computeDirectionalLightFalloff_IES(light{X}.vLightDirection.xyz, preInfo.L, iesLightTexture{X});
                     #else
                         preInfo.attenuation *= computeDirectionalLightFalloff(light{X}.vLightDirection.xyz, preInfo.L, light{X}.vLightDirection.w, light{X}.vLightData.w, light{X}.vLightFalloff.z, light{X}.vLightFalloff.w);
-                    #endif                        
+                    #endif
                 #endif
             #elif defined(POINTLIGHT{X})
                 #ifdef LIGHT_FALLOFF_GLTF{X}
@@ -69,36 +106,69 @@
 
             // Simulates Light radius for diffuse and spec term
             // clear coat is using a dedicated roughness
-            #if defined(HEMILIGHT{X}) || defined(AREALIGHT{X})
+            #if defined(HEMILIGHT{X})
+                preInfo.roughness = roughness;
+            #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
                 preInfo.roughness = roughness;
             #else
                 preInfo.roughness = adjustRoughnessFromLightProperties(roughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
             #endif
+            preInfo.diffuseRoughness = diffuseRoughness;
+            preInfo.surfaceAlbedo = surfaceAlbedo;
 
             #ifdef IRIDESCENCE
                 preInfo.iridescenceIntensity = iridescenceIntensity;
             #endif
 
             // Diffuse contribution
+            #ifdef SS_TRANSLUCENCY
+                info.diffuseTransmission = vec3(0.0);
+            #endif
+
             #ifdef HEMILIGHT{X}
                 info.diffuse = computeHemisphericDiffuseLighting(preInfo, diffuse{X}.rgb, light{X}.vLightGround);
-            #elif defined(AREALIGHT{X})
+            #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
                 info.diffuse = computeAreaDiffuseLighting(preInfo, diffuse{X}.rgb);
             #elif defined(SS_TRANSLUCENCY)
-                info.diffuse = computeDiffuseAndTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance, subSurfaceOut.translucencyIntensity, surfaceAlbedo.rgb);
+                #ifndef SS_TRANSLUCENCY_LEGACY
+                    info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb) * (1.0 - subSurfaceOut.translucencyIntensity);
+                    info.diffuseTransmission = computeDiffuseTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance); // note subSurfaceOut.translucencyIntensity is already factored in subSurfaceOut.transmittance
+                #else
+                    info.diffuse = computeDiffuseTransmittedLighting(preInfo, diffuse{X}.rgb, subSurfaceOut.transmittance);
+                #endif
             #else
                 info.diffuse = computeDiffuseLighting(preInfo, diffuse{X}.rgb);
             #endif
 
             // Specular contribution
             #ifdef SPECULARTERM
-                #if AREALIGHT{X}
-                    info.specular = computeAreaSpecularLighting(preInfo, light{X}.vLightSpecular.rgb);
+                #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+                    info.specular = computeAreaSpecularLighting(preInfo, light{X}.vLightSpecular.rgb, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90);
                 #else
+                    // For OpenPBR, we use the F82 specular model for metallic materials and mix with the
+                    // usual Schlick lobe.
+                    #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
+                        {
+                            vec3 metalFresnel = reflectivityOut.specularWeight * getF82Specular(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90, reflectivityOut.roughness);
+                            vec3 dielectricFresnel = fresnelSchlickGGX(preInfo.VdotH, reflectivityOut.dielectricColorF0, reflectivityOut.colorReflectanceF90);
+                            coloredFresnel = mix(dielectricFresnel, metalFresnel, reflectivityOut.metallic);
+                        }
+                    #else
+                        coloredFresnel = fresnelSchlickGGX(preInfo.VdotH, clearcoatOut.specularEnvironmentR0, reflectivityOut.colorReflectanceF90);
+                    #endif
+                    #ifndef LEGACY_SPECULAR_ENERGY_CONSERVATION
+                        {
+                            // The diffuse contribution needs to be decreased by the average Fresnel for the hemisphere.
+                            // We can approximate this with NdotH.
+                            float NdotH = dot(normalW, preInfo.H);
+                            vec3 fresnel = fresnelSchlickGGX(NdotH, vec3(reflectanceF0), specularEnvironmentR90);
+                            info.diffuse *= (vec3(1.0) - fresnel);
+                        }
+                    #endif
                     #ifdef ANISOTROPIC
                         info.specular = computeAnisotropicSpecularLighting(preInfo, viewDirectionW, normalW, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, diffuse{X}.rgb);
                     #else
-                        info.specular = computeSpecularLighting(preInfo, normalW, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, diffuse{X}.rgb);
+                        info.specular = computeSpecularLighting(preInfo, normalW, clearcoatOut.specularEnvironmentR0, coloredFresnel, AARoughnessFactors.x, diffuse{X}.rgb);
                     #endif
                 #endif
             #endif
@@ -129,11 +199,14 @@
                     #endif
 
                     info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, diffuse{X}.rgb);
-                    
+
                     #ifdef CLEARCOAT_TINT
                         // Absorption
                         absorption = computeClearCoatLightingAbsorption(clearcoatOut.clearCoatNdotVRefract, preInfo.L, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatColor, clearcoatOut.clearCoatThickness, clearcoatOut.clearCoatIntensity);
                         info.diffuse *= absorption;
+                        #ifdef SS_TRANSLUCENCY
+                            info.diffuseTransmission *= absorption;
+                        #endif
                         #ifdef SPECULARTERM
                             info.specular *= absorption;
                         #endif
@@ -141,6 +214,9 @@
 
                     // Apply energy conservation on diffuse and specular term.
                     info.diffuse *= info.clearCoat.w;
+                    #ifdef SS_TRANSLUCENCY
+                        info.diffuseTransmission *= info.clearCoat.w;
+                    #endif
                     #ifdef SPECULARTERM
                         info.specular *= info.clearCoat.w;
                     #endif
@@ -160,7 +236,7 @@
                 info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, light{X}.vLightGround, glossiness);
             #elif defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
                 info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness);
-            #elif defined(AREALIGHT{X}) && defined(AREALIGHTSUPPORTED)
+            #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
                 #if defined(RECTAREALIGHTEMISSIONTEXTURE{X})
                     info = computeAreaLightingWithTexture(areaLightsLTC1Sampler, areaLightsLTC2Sampler, rectAreaLightEmissionTexture{X}, viewDirectionW, normalW, vPositionW, light{X}.vLightData.xyz, light{X}.vLightWidth.rgb, light{X}.vLightHeight.rgb, diffuse{X}.rgb, light{X}.vLightSpecular.rgb,
                     #ifdef AREALIGHTNOROUGHTNESS
@@ -177,6 +253,11 @@
                     #endif
                 #endif
                 );
+            #elif defined(CLUSTLIGHT{X}) && CLUSTLIGHT_BATCH > 0
+            {
+                int sliceIndex = min(getClusteredSliceIndex(light{X}.vSliceData, vViewDepth), CLUSTLIGHT_SLICES - 1);
+                info = computeClusteredLighting(lightDataTexture{X}, tileMaskTexture{X}, viewDirectionW, normalW, light{X}.vLightData, ivec2(light{X}.vSliceRanges[sliceIndex]), glossiness);
+            }
             #endif
         #endif
 
@@ -187,7 +268,7 @@
 
     #ifdef SHADOW{X}
         #ifdef SHADOWCSM{X}
-            for (int i = 0; i < SHADOWCSMNUM_CASCADES{X}; i++) 
+            for (int i = 0; i < SHADOWCSMNUM_CASCADES{X}; i++)
             {
                 #ifdef SHADOWCSM_RIGHTHANDED{X}
                     diff{X} = viewFrustumZ{X}[i] + vPositionFromCamera{X}.z;
@@ -344,8 +425,11 @@
         #else
             #ifdef SHADOWCSMDEBUG{X}
                 diffuseBase += info.diffuse * shadowDebug{X};
-            #else        
+            #else
                 diffuseBase += info.diffuse * shadow;
+            #endif
+            #ifdef SS_TRANSLUCENCY
+                diffuseTransmissionBase += info.diffuseTransmission * shadow;
             #endif
             #ifdef SPECULARTERM
                 specularBase += info.specular * shadow;

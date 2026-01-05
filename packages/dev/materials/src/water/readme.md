@@ -45,5 +45,5 @@ waterMaterial.bumpHeight = 0.3; // According to the bump map, represents the per
 waterMaterial.windDirection = new BABYLON.Vector2(1.0, 1.0); // The wind direction on the water surface (on width and height)
 waterMaterial.waterColor = new BABYLON.Color3(0.1, 0.1, 0.6); // Represents the water color mixed with the reflected and refracted world
 waterMaterial.colorBlendFactor = 2.0; // Factor to determine how the water color is blended with the reflected and refracted world
-waterMaterial.waveLength = 0.1; // The lenght of waves. With smaller values, more waves are generated
+waterMaterial.waveLength = 0.1; // The length of waves. With smaller values, more waves are generated
 ```

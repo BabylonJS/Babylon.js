@@ -4,7 +4,7 @@ import type { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import type { FlowGraph, IFlowGraphParseOptions } from "./flowGraph";
 import type { FlowGraphBlock, IFlowGraphBlockParseOptions } from "./flowGraphBlock";
 import type { FlowGraphContext, IFlowGraphContextParseOptions } from "./flowGraphContext";
-import type { FlowGraphCoordinatorParseOptions } from "./flowGraphCoordinator";
+import type { IFlowGraphCoordinatorParseOptions } from "./flowGraphCoordinator";
 import { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
@@ -58,9 +58,13 @@ export function GetSignalInConnectionByUniqueId(blocks: FlowGraphBlock[], unique
  * @param options the options to use when parsing
  * @returns the parsed coordinator
  */
-export async function ParseCoordinatorAsync(serializedObject: any, options: FlowGraphCoordinatorParseOptions) {
+export async function ParseCoordinatorAsync(serializedObject: any, options: IFlowGraphCoordinatorParseOptions) {
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     const coordinator = new FlowGraphCoordinator({ scene: options.scene });
+
+    if (serializedObject.dispatchEventsSynchronously) {
+        coordinator.dispatchEventsSynchronously = serializedObject.dispatchEventsSynchronously;
+    }
 
     await options.scene.whenReadyAsync();
     // if custom default values are defined, set them in the global context
@@ -73,7 +77,9 @@ export async function ParseCoordinatorAsync(serializedObject: any, options: Flow
     }
     // async-parse the flow graphs. This can be done in parallel
     await Promise.all(
-        serializedObject._flowGraphs?.map((serializedGraph: any) => ParseFlowGraphAsync(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter }))
+        serializedObject._flowGraphs?.map(
+            async (serializedGraph: any) => await ParseFlowGraphAsync(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter })
+        )
     );
     return coordinator;
 }
@@ -89,7 +95,7 @@ export async function ParseFlowGraphAsync(serializationObject: ISerializedFlowGr
     const resolvedClasses = await Promise.all(
         serializationObject.allBlocks.map(async (serializedBlock) => {
             const classFactory = blockFactory(serializedBlock.className as FlowGraphBlockNames);
-            return classFactory();
+            return await classFactory();
         })
     );
     // async will be used when we start using the block async factory

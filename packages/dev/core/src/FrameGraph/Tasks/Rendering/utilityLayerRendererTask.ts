@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Camera, FrameGraph, FrameGraphTextureHandle, Scene } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
@@ -12,10 +11,20 @@ export class FrameGraphUtilityLayerRendererTask extends FrameGraphTask {
      */
     public targetTexture: FrameGraphTextureHandle;
 
+    private _camera: Camera;
     /**
      * The camera used to render the utility layer.
      */
-    public camera: Camera;
+    public get camera() {
+        return this._camera;
+    }
+
+    public set camera(value: Camera) {
+        this._camera = value;
+
+        this.layer.setRenderCamera(value);
+        this.layer.utilityLayerScene.activeCamera = value;
+    }
 
     /**
      * The output texture of the task.
@@ -44,9 +53,13 @@ export class FrameGraphUtilityLayerRendererTask extends FrameGraphTask {
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphUtilityLayerRendererTask";
+    }
+
     public record(): void {
         if (!this.targetTexture || !this.camera) {
-            throw new Error("FrameGraphUtilityLayerRendererTask: targetTexture and camera are required");
+            throw new Error(`FrameGraphUtilityLayerRendererTask "${this.name}": targetTexture and camera are required`);
         }
 
         this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture);
@@ -55,8 +68,6 @@ export class FrameGraphUtilityLayerRendererTask extends FrameGraphTask {
 
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
-            this.layer.setRenderCamera(this.camera);
-
             context.render(this.layer);
         });
 

@@ -36,6 +36,10 @@
                 }
             }
         }
+        .inspector-v2-button {
+            background-color: #ff9354;
+            color: #2e194d !important;
+        }
     }
 
     &.background-js {
@@ -55,6 +59,10 @@
                     filter: invert(17%) !important;
                 }
             }
+        }
+        .inspector-v2-button {
+            background-color: #9b85ff;
+            color: #040207 !important;
         }
     }
 
@@ -93,7 +101,6 @@
     .command-dropdown-root {
         position: relative;
         text-transform: uppercase;
-        z-index: 1;
     }
 
     .command-dropdown {
@@ -107,6 +114,11 @@
             display: grid;
             align-content: center;
             justify-content: center;
+
+            img {
+                width: 24px;
+                height: 24px;
+            }
         }
 
         .command-dropdown-active {
@@ -137,7 +149,7 @@
         width: 100%;
         height: 100%;
         transform: scale(1);
-        z-index: 1;
+        z-index: 3;
     }
 
     &.background-js {
@@ -220,7 +232,7 @@
                 position: absolute;
                 left: 200px;
                 top: 0;
-                width: 150px;
+                width: 220px;
                 display: none;
 
                 &.background-js {
@@ -256,6 +268,21 @@
                         color: black;
                     }
                 }
+            }
+        }
+    }
+
+    .inspector-v2-button {
+        width: 180px !important;
+        font-weight: bold;
+    }
+}
+
+@media screen and (max-width: 1360px) {
+    .commands {
+        .commands-right {
+            .inspector-v2-button {
+                display: none !important;
             }
         }
     }

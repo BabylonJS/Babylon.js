@@ -7,12 +7,13 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { NodeMaterialDefines } from "../../nodeMaterial";
 import type { ReflectionBlock } from "./reflectionBlock";
 import type { Nullable } from "../../../../types";
 import { RefractionBlock } from "./refractionBlock";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
+import { PBRSubSurfaceConfiguration } from "core/Materials/PBR/pbrSubSurfaceConfiguration";
 
 /**
  * Block used to implement the sub surface module of the PBR material
@@ -47,6 +48,12 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             new NodeMaterialConnectionPointCustomObject("subsurface", this, NodeMaterialConnectionPointDirection.Output, SubSurfaceBlock, "SubSurfaceBlock")
         );
     }
+
+    /**
+     * Set it to true if your rendering in 8.0+ is different from that in 7 when you use sub-surface properties (transmission, refraction, etc.)
+     */
+    @editableInPropertyPage("Apply albedo after sub-surface", PropertyTypeForEdition.Boolean, "ADVANCED")
+    public applyAlbedoAfterSubSurface: boolean = PBRSubSurfaceConfiguration.DEFAULT_APPLY_ALBEDO_AFTERSUBSURFACE;
 
     /**
      * Initialize the block and prepare the context for build
@@ -126,9 +133,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        super.prepareDefines(mesh, nodeMaterial, defines);
-
+    public override prepareDefines(defines: NodeMaterialDefines) {
         const translucencyEnabled = this.translucencyDiffusionDist.isConnected || this.translucencyIntensity.isConnected;
 
         defines.setValue("SUBSURFACE", translucencyEnabled || this.refraction.isConnected, true);
@@ -138,6 +143,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         defines.setValue("SS_TRANSLUCENCYINTENSITY_TEXTURE", false, true);
         defines.setValue("SS_USE_GLTF_TEXTURES", false, true);
         defines.setValue("SS_DISPERSION", this.dispersion.isConnected, true);
+        defines.setValue("SS_APPLY_ALBEDO_AFTER_SUBSURFACE", this.applyAlbedoAfterSubSurface, true);
     }
 
     /**
@@ -179,7 +185,16 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 , vThicknessParam
                 , vTintColor
                 , normalW
-                , specularEnvironmentReflectance
+            #ifdef LEGACY_SPECULAR_ENERGY_CONSERVATION
+        `;
+
+        code += isWebGPU
+            ? `, vec3f(max(colorSpecularEnvironmentReflectance.r, max(colorSpecularEnvironmentReflectance.g, colorSpecularEnvironmentReflectance.b)))/n`
+            : `, vec3(max(colorSpecularEnvironmentReflectance.r, max(colorSpecularEnvironmentReflectance.g, colorSpecularEnvironmentReflectance.b)))/n`;
+
+        code += `#else
+                , baseSpecularEnvironmentReflectance
+            #endif
             #ifdef SS_THICKNESSANDMASK_TEXTURE
                 , vec4${state.fSuffix}(0.)
             #endif
@@ -273,7 +288,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #endif
             #endif
         #else
-            subSurfaceOut.specularEnvironmentReflectance = specularEnvironmentReflectance;
+            subSurfaceOut.specularEnvironmentReflectance = colorSpecularEnvironmentReflectance;
         #endif\n`;
 
         return code;

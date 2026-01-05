@@ -16,6 +16,7 @@ const inputNameToAttributeValue: { [name: string]: string } = {
     particle_color: "color",
     particle_texturemask: "textureMask",
     particle_positionw: "positionW",
+    postprocess_uv: "uv",
 };
 
 const inputNameToAttributeName: { [name: string]: string } = {
@@ -24,6 +25,7 @@ const inputNameToAttributeName: { [name: string]: string } = {
     particle_color: "particle",
     particle_texturemask: "particle",
     particle_positionw: "particle",
+    postprocess_uv: "screen",
 };
 
 export class InputDisplayManager implements IDisplayManager {
@@ -108,6 +110,9 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 case NodeMaterialSystemValues.Projection:
                     value = "Projection";
+                    break;
+                case NodeMaterialSystemValues.ProjectionInverse:
+                    value = "Projection Inverse";
                     break;
                 case NodeMaterialSystemValues.CameraPosition:
                     value = "Camera position";

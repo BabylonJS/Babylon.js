@@ -139,6 +139,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("morphTargetInfluences");
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
@@ -222,7 +223,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
+        if (!mesh) {
+            return;
+        }
+
         if ((<Mesh>mesh).morphTargetManager) {
             const morphTargetManager = (<Mesh>mesh).morphTargetManager;
 
@@ -248,12 +253,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         }
     }
 
-    public override replaceRepeatableContent(
-        vertexShaderState: NodeMaterialBuildState,
-        fragmentShaderState: NodeMaterialBuildState,
-        mesh: AbstractMesh,
-        defines: NodeMaterialDefines
-    ) {
+    public override replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, defines: NodeMaterialDefines, mesh?: AbstractMesh) {
+        if (!mesh) {
+            return;
+        }
+
         const position = this.position;
         const normal = this.normal;
         const tangent = this.tangent;
@@ -267,7 +271,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const uv2Output = this.uv2Output;
         const colorOutput = this.colorOutput;
         const state = vertexShaderState;
-        const repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
+        const repeatCount = defines.NUM_MORPH_INFLUENCERS;
 
         const manager = (<Mesh>mesh).morphTargetManager;
         const supportPositions = manager && manager.supportsPositions;
@@ -288,7 +292,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const uniformsPrefix = isWebGPU ? "uniforms." : "";
         if (manager?.isUsingTextureForTargets) {
             injectionCode += `for (${isWebGPU ? "var" : "int"} i = 0; i < NUM_MORPH_INFLUENCERS; i++) {\n`;
-            injectionCode += `if (i >= ${uniformsPrefix}morphTargetCount) { break; }\n`;
+            injectionCode += `if (${isWebGPU ? "f32" : "float"}(i) >= ${uniformsPrefix}morphTargetCount) { break; }\n`;
 
             injectionCode += `vertexID = ${isWebGPU ? "f32(vertexInputs.vertexIndex" : "float(gl_VertexID"}) * ${uniformsPrefix}morphTargetTextureInfo.x;\n`;
             if (supportPositions) {

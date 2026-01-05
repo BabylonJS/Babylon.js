@@ -50,8 +50,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      */
     public SSRCombineRenderEffect: string = "SSRCombineRenderEffect";
 
-    /** @internal */
-    public _thinSSRRenderingPipeline: ThinSSRRenderingPipeline;
+    private _thinSSRRenderingPipeline: ThinSSRRenderingPipeline;
 
     private _samples = 1;
     /**
@@ -679,6 +678,8 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
 
+        this._scene.postProcessRenderPipelineManager.removePipeline(this._name);
+
         this._thinSSRRenderingPipeline.dispose();
 
         super.dispose();
@@ -745,9 +746,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                     !this._useScreenspaceDepth,
                     "SSRBackDepth"
                 );
-                if (!this._useScreenspaceDepth) {
-                    this._depthRenderer.clearColor.r = 1e8; // "infinity": put a big value because we use the storeCameraSpaceZ mode
-                }
                 this._depthRenderer.reverseCulling = true; // we generate depth for the back faces
                 this._depthRenderer.forceDepthWriteTransparentMeshes = this.backfaceForceDepthWriteTransparentMeshes;
 

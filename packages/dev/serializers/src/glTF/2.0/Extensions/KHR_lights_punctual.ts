@@ -9,7 +9,7 @@ import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import { Logger } from "core/Misc/logger";
-import { ConvertToRightHandedPosition, OmitDefaultValues, CollapseParentNode, IsParentAddedByImporter } from "../glTFUtilities";
+import { ConvertToRightHandedPosition, OmitDefaultValues, CollapseChildIntoParent, IsChildCollapsible } from "../glTFUtilities";
 
 const NAME = "KHR_lights_punctual";
 const DEFAULTS: Omit<IKHRLightsPunctual_Light, "type"> = {
@@ -62,7 +62,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
 
     /** @internal */
     public onExporting(): void {
-        this._exporter!._glTF.extensions![NAME] = this._lights;
+        this._exporter._glTF.extensions![NAME] = this._lights;
     }
     /**
      * Define this method to modify the default behavior when exporting a node
@@ -73,9 +73,9 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
      * @param convertToRightHanded Flag to convert the values to right-handed
      * @returns nullable INode promise
      */
-    public postExportNodeAsync(context: string, node: INode, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
-        return new Promise((resolve) => {
-            if (!(babylonNode instanceof ShadowLight)) {
+    public async postExportNodeAsync(context: string, node: INode, babylonNode: Node, nodeMap: Map<Node, number>, convertToRightHanded: boolean): Promise<Nullable<INode>> {
+        return await new Promise((resolve) => {
+            if (!(babylonNode instanceof Light)) {
                 resolve(node);
                 return;
             }
@@ -88,7 +88,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                       : babylonNode.getTypeID() == Light.LIGHTTYPEID_SPOTLIGHT
                         ? KHRLightsPunctual_LightType.SPOT
                         : null;
-            if (!lightType) {
+            if (!lightType || !(babylonNode instanceof ShadowLight)) {
                 Logger.Warn(`${context}: Light ${babylonNode.name} is not supported in ${NAME}`);
                 resolve(node);
                 return;
@@ -107,17 +107,15 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                 node.translation = translation.asArray();
             }
 
-            // Babylon lights have "constant" rotation and variable direction, while
-            // glTF lights have variable rotation and constant direction. Therefore,
-            // compute a quaternion that aligns the Babylon light's direction with glTF's constant one.
+            // Represent the Babylon light's direction as a quaternion
+            // relative to glTF lights' forward direction, (0, 0, -1).
             if (lightType !== KHRLightsPunctual_LightType.POINT) {
                 const direction = babylonNode.direction.normalizeToRef(TmpVectors.Vector3[0]);
                 if (convertToRightHanded) {
                     ConvertToRightHandedPosition(direction);
                 }
-                const angle = Math.acos(Vector3.Dot(LIGHTDIRECTION, direction));
-                const axis = Vector3.Cross(LIGHTDIRECTION, direction);
-                const lightRotationQuaternion = Quaternion.RotationAxisToRef(axis, angle, TmpVectors.Quaternion[0]);
+
+                const lightRotationQuaternion = Quaternion.FromUnitVectorsToRef(LIGHTDIRECTION, direction, TmpVectors.Quaternion[0]);
                 if (!Quaternion.IsIdentity(lightRotationQuaternion)) {
                     node.rotation = lightRotationQuaternion.asArray();
                 }
@@ -155,12 +153,12 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
             // Why and when: the glTF loader generates a new parent TransformNode for each light node, which we should undo on export
             const parentBabylonNode = babylonNode.parent;
 
-            if (parentBabylonNode && IsParentAddedByImporter(babylonNode, parentBabylonNode)) {
+            if (parentBabylonNode && IsChildCollapsible(babylonNode, parentBabylonNode)) {
                 const parentNodeIndex = nodeMap.get(parentBabylonNode);
                 if (parentNodeIndex) {
                     // Combine the light's transformation with the parent's
                     const parentNode = this._exporter._nodes[parentNodeIndex];
-                    CollapseParentNode(node, parentNode);
+                    CollapseChildIntoParent(node, parentNode);
                     parentNode.extensions ||= {};
                     parentNode.extensions[NAME] = lightReference;
 

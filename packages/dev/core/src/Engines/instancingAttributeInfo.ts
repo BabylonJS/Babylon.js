@@ -1,6 +1,7 @@
 /**
  * Interface for attribute information associated with buffer instantiation
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface InstancingAttributeInfo {
     /**
      * Name of the GLSL attribute

@@ -307,7 +307,10 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     ) {
         // initialize the components
         if (layout.components) {
-            Object.keys(layout.components).forEach(this._initComponent);
+            const keys = Object.keys(layout.components);
+            for (const key of keys) {
+                this._initComponent(key);
+            }
         }
         // Model is loaded in WebXRInput
     }
@@ -316,11 +319,15 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * Dispose this controller, the model mesh and all its components
      */
     public dispose(): void {
-        this.getComponentIds().forEach((id) => this.getComponent(id).dispose());
+        const ids = this.getComponentIds();
+        for (const id of ids) {
+            this.getComponent(id).dispose();
+        }
         if (this.rootMesh) {
-            this.rootMesh.getChildren(undefined, true).forEach((node) => {
+            const nodes = this.rootMesh.getChildren(undefined, true);
+            for (const node of nodes) {
                 node.setEnabled(false);
-            });
+            }
             this.rootMesh.dispose(!!this._controllerCache, !this._controllerCache);
         }
         this.onModelLoadedObservable.clear();
@@ -376,6 +383,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * When the mesh is loaded, the onModelLoadedObservable will be triggered
      * @returns A promise fulfilled with the result of the model loading
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async loadModel(): Promise<boolean> {
         const useGeneric = !this._getModelLoadingConstraints();
         let loadingParams = this._getGenericFilenameAndPath();
@@ -385,7 +393,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         } else {
             loadingParams = this._getFilenameAndPath();
         }
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const meshesLoaded = (meshes: AbstractMesh[]) => {
                 if (useGeneric) {
                     this._getGenericParentMesh(meshes);
@@ -403,7 +411,9 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
                     return c.filename === loadingParams.filename && c.path === loadingParams.path;
                 });
                 if (found[0]) {
-                    found[0].meshes.forEach((mesh) => mesh.setEnabled(true));
+                    for (const mesh of found[0].meshes) {
+                        mesh.setEnabled(true);
+                    }
                     meshesLoaded(found[0].meshes);
                     return;
                     // found, don't continue to load
@@ -427,6 +437,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
                 (_scene: Scene, message: string) => {
                     Logger.Log(message);
                     Logger.Warn(`Failed to retrieve controller model of type ${this.profileId} from the remote server: ${loadingParams.path}${loadingParams.filename}`);
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                     reject(message);
                 }
             );
@@ -438,7 +449,9 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @param xrFrame the current xr frame to use and update the model
      */
     public updateFromXRFrame(xrFrame: XRFrame): void {
-        this.getComponentIds().forEach((id) => this.getComponent(id).update(this.gamepadObject));
+        for (const id of this.getComponentIds()) {
+            this.getComponent(id).update(this.gamepadObject);
+        }
         this.updateModel(xrFrame);
     }
 
@@ -459,11 +472,12 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @param hapticActuatorIndex optional index of actuator (will usually be 0)
      * @returns a promise that will send true when the pulse has ended and false if the device doesn't support pulse or an error accrued
      */
-    public pulse(value: number, duration: number, hapticActuatorIndex: number = 0): Promise<boolean> {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public async pulse(value: number, duration: number, hapticActuatorIndex: number = 0): Promise<boolean> {
         if (this.gamepadObject.hapticActuators && this.gamepadObject.hapticActuators[hapticActuatorIndex]) {
-            return this.gamepadObject.hapticActuators[hapticActuatorIndex].pulse(value, duration);
+            return await this.gamepadObject.hapticActuators[hapticActuatorIndex].pulse(value, duration);
         } else {
-            return Promise.resolve(false);
+            return false;
         }
     }
 
@@ -549,12 +563,12 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     private _getGenericParentMesh(meshes: AbstractMesh[]): void {
         this.rootMesh = new Mesh(this.profileId + " " + this.handedness, this.scene);
 
-        meshes.forEach((mesh) => {
+        for (const mesh of meshes) {
             if (!mesh.parent) {
                 mesh.isPickable = false;
                 mesh.setParent(this.rootMesh);
             }
-        });
+        }
 
         this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
     }

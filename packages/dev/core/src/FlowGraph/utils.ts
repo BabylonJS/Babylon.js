@@ -11,8 +11,8 @@ import { FlowGraphTypes } from "./flowGraphRichTypes";
  * @param mesh2
  * @returns
  */
-export function _isADescendantOf(mesh1: Node, mesh2: Node): boolean {
-    return !!(mesh1.parent && (mesh1.parent === mesh2 || _isADescendantOf(mesh1.parent, mesh2)));
+export function _IsDescendantOf(mesh1: Node, mesh2: Node): boolean {
+    return !!(mesh1.parent && (mesh1.parent === mesh2 || _IsDescendantOf(mesh1.parent, mesh2)));
 }
 
 export type FlowGraphNumber = number | FlowGraphInteger;
@@ -23,7 +23,7 @@ export type FlowGraphMathOperationType = FlowGraphNumber | FlowGraphVector | Flo
 /**
  * @internal
  */
-export function _getClassNameOf(v: any) {
+export function _GetClassNameOf(v: any) {
     if (v.getClassName) {
         return v.getClassName();
     }
@@ -32,13 +32,16 @@ export function _getClassNameOf(v: any) {
 
 /**
  * @internal
- * Check if two classname are the same and are vector classes.
+ * Check if two classname are the same and are vector or quaternion classes.
  * @param className the first class name
  * @param className2 the second class name
- * @returns whether the two class names are the same and are vector classes.
+ * @returns whether the two class names are the same and are vector or quaternion classes.
  */
-export function _areSameVectorClass(className: string, className2: string) {
-    return className === className2 && (className === FlowGraphTypes.Vector2 || className === FlowGraphTypes.Vector3 || className === FlowGraphTypes.Vector4);
+export function _AreSameVectorOrQuaternionClass(className: string, className2: string) {
+    return (
+        className === className2 &&
+        (className === FlowGraphTypes.Vector2 || className === FlowGraphTypes.Vector3 || className === FlowGraphTypes.Vector4 || className === FlowGraphTypes.Quaternion)
+    );
 }
 
 /**
@@ -48,7 +51,7 @@ export function _areSameVectorClass(className: string, className2: string) {
  * @param className2 the second class name
  * @returns whether the two class names are the same and are matrix classes.
  */
-export function _areSameMatrixClass(className: string, className2: string) {
+export function _AreSameMatrixClass(className: string, className2: string) {
     return className === className2 && (className === FlowGraphTypes.Matrix || className === FlowGraphTypes.Matrix2D || className === FlowGraphTypes.Matrix3D);
 }
 
@@ -59,7 +62,7 @@ export function _areSameMatrixClass(className: string, className2: string) {
  * @param className2 the second class name
  * @returns whether the two class names are the same and are integer classes.
  */
-export function _areSameIntegerClass(className: string, className2: string) {
+export function _AreSameIntegerClass(className: string, className2: string) {
     return className === "FlowGraphInteger" && className2 === "FlowGraphInteger";
 }
 
@@ -69,6 +72,7 @@ export function _areSameIntegerClass(className: string, className2: string) {
  * @param validIfNaN whether to consider NaN as a valid number.
  * @returns whether a is a FlowGraphNumber (Integer or number).
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function isNumeric(a: FlowGraphMathOperationType, validIfNaN?: boolean): a is FlowGraphNumber {
     const isNumeric = typeof a === "number" || typeof (a as FlowGraphInteger)?.value === "number";
     if (isNumeric && !validIfNaN) {
@@ -82,6 +86,7 @@ export function isNumeric(a: FlowGraphMathOperationType, validIfNaN?: boolean): 
  * @param a the object to get the numeric value from.
  * @returns the numeric value.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getNumericValue(a: FlowGraphNumber): number {
     return typeof a === "number" ? a : a.value;
 }

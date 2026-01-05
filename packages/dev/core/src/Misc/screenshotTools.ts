@@ -12,12 +12,18 @@ import type { Nullable } from "../types";
 import { ApplyPostProcess } from "./textureTools";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { _retryWithInterval } from "./timingTools";
+import { _RetryWithInterval } from "./timingTools";
+import type { FrameGraph } from "../FrameGraph/frameGraph";
+import { backbufferColorTextureHandle } from "../FrameGraph/frameGraphTypes";
+import { FrameGraphFXAATask } from "../FrameGraph/Tasks/PostProcesses/fxaaTask";
+import { FrameGraphPassTask } from "../FrameGraph/Tasks/PostProcesses/passTask";
+import { FrameGraphUtils } from "../FrameGraph/frameGraphUtils";
 
 let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 
 /**
  * Captures a screenshot of the current rendering
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
@@ -34,6 +40,7 @@ let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
  * @param forceDownload force the system to download the image even if a successCallback is provided
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
+ * @param clearWithSceneColor If true, the screenshot canvas will be cleared with the scene clear color before copying the render.
  */
 export function CreateScreenshot(
     engine: AbstractEngine,
@@ -43,9 +50,10 @@ export function CreateScreenshot(
     mimeType = "image/png",
     forceDownload = false,
     quality?: number,
-    useFill = false
+    useFill = false,
+    clearWithSceneColor = false
 ): void {
-    const { height, width } = _GetScreenshotSize(engine, camera, size);
+    const { height, width } = GetScreenshotSize(engine, camera, size);
 
     if (!(height && width)) {
         Logger.Error("Invalid 'size' parameter !");
@@ -53,7 +61,16 @@ export function CreateScreenshot(
     }
 
     const scene = camera.getScene();
-    if (scene.activeCamera !== camera) {
+
+    let useRenderTarget = scene.activeCamera !== camera;
+    if (scene.frameGraph) {
+        const mainObjectRendererTask = FrameGraphUtils.FindMainObjectRenderer(scene.frameGraph);
+        if (mainObjectRendererTask) {
+            useRenderTarget = mainObjectRendererTask.camera !== camera;
+        }
+    }
+
+    if (useRenderTarget) {
         CreateScreenshotUsingRenderTarget(
             engine,
             camera,
@@ -112,6 +129,11 @@ export function CreateScreenshot(
         const offsetX = (destWidth - newWidth) / 2;
         const offsetY = (destHeight - newHeight) / 2;
 
+        renderContext.save();
+        renderContext.fillStyle = clearWithSceneColor ? scene.clearColor.toHexString() : "rgba(0, 0, 0, 0)";
+        renderContext.fillRect(0, 0, width, height);
+        renderContext.restore();
+
         renderContext.drawImage(renderingCanvas, 0, 0, srcWidth, srcHeight, offsetX, offsetY, newWidth, newHeight);
 
         if (forceDownload) {
@@ -127,6 +149,7 @@ export function CreateScreenshot(
 
 /**
  * Captures a screenshot of the current rendering
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
@@ -139,18 +162,22 @@ export function CreateScreenshot(
  * Check your browser for supported MIME types
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
+ * @param clearWithSceneColor If true, the screenshot canvas will be cleared with the scene clear color before copying the render.
+ * @param forceDownload force the system to download the image
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
-export function CreateScreenshotAsync(
+export async function CreateScreenshotAsync(
     engine: AbstractEngine,
     camera: Camera,
     size: IScreenshotSize | number,
     mimeType = "image/png",
     quality?: number,
-    useFill = false
+    useFill = false,
+    clearWithSceneColor = false,
+    forceDownload = false
 ): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         CreateScreenshot(
             engine,
             camera,
@@ -163,9 +190,10 @@ export function CreateScreenshotAsync(
                 }
             },
             mimeType,
-            undefined,
+            forceDownload,
             quality,
-            useFill
+            useFill,
+            clearWithSceneColor
         );
     });
 }
@@ -173,6 +201,7 @@ export function CreateScreenshotAsync(
 /**
  * Captures and automatically downloads a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
  * If screenshot image data is needed, use {@link CreateScreenshotAsync} instead.
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
@@ -184,7 +213,7 @@ export function CreateScreenshotAsync(
  * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
  * @returns promise that resolves once the screenshot is taken
  */
-export function CreateScreenshotWithResizeAsync(
+export async function CreateScreenshotWithResizeAsync(
     engine: AbstractEngine,
     camera: Camera,
     width: number,
@@ -193,7 +222,7 @@ export function CreateScreenshotWithResizeAsync(
     quality?: number,
     useFill = false
 ): Promise<void> {
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
         CreateScreenshot(
             engine,
             camera,
@@ -211,6 +240,7 @@ export function CreateScreenshotWithResizeAsync(
 
 /**
  * Generates an image screenshot from the specified camera.
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine The engine to use for rendering
  * @param camera The camera to use for rendering
@@ -260,7 +290,19 @@ export function CreateScreenshotUsingRenderTarget(
         quality?: number
     ) => void
 ): void {
-    const { height, width, finalWidth, finalHeight } = _GetScreenshotSize(engine, camera, size);
+    const scene = camera.getScene();
+
+    if (scene.frameGraph) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+        CreateScreenshotForFrameGraphAsync(scene.frameGraph, camera, size, mimeType, samples, antialiasing, fileName, quality, customDumpData, !successCallback).then((data) => {
+            if (successCallback) {
+                (successCallback as (data: string | ArrayBuffer) => void)(data!);
+            }
+        });
+        return;
+    }
+
+    const { height, width, finalWidth, finalHeight } = GetScreenshotSize(engine, camera, size);
     const targetTextureSize = { width, height };
 
     if (!(height && width)) {
@@ -298,8 +340,6 @@ export function CreateScreenshotUsingRenderTarget(
         engine.onResizeObservable.notifyObservers(engine);
     }
 
-    const scene = camera.getScene();
-
     // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
     const texture = new RenderTargetTexture(
         "screenShot",
@@ -327,34 +367,39 @@ export function CreateScreenshotUsingRenderTarget(
     const dumpDataFunc = customDumpData || DumpData;
 
     const renderWhenReady = () => {
-        _retryWithInterval(
+        _RetryWithInterval(
             () => texture.isReadyForRendering() && camera.isReady(true),
             () => {
                 engine.onEndFrameObservable.addOnce(() => {
                     if (finalWidth === width && finalHeight === height) {
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
                             dumpDataFunc(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
                             texture.dispose();
                         });
                     } else {
                         const importPromise = engine.isWebGPU ? import("../ShadersWGSL/pass.fragment") : import("../Shaders/pass.fragment");
-                        importPromise.then(() =>
-                            ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
-                                engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
-                                    dumpDataFunc(
-                                        finalWidth,
-                                        finalHeight,
-                                        data,
-                                        successCallback as (data: string | ArrayBuffer) => void,
-                                        mimeType,
-                                        fileName,
-                                        true,
-                                        undefined,
-                                        quality
-                                    );
-                                    texture.dispose();
-                                });
-                            })
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                        importPromise.then(
+                            async () =>
+                                // eslint-disable-next-line github/no-then
+                                await ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
+                                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                                    engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
+                                        dumpDataFunc(
+                                            finalWidth,
+                                            finalHeight,
+                                            data,
+                                            successCallback as (data: string | ArrayBuffer) => void,
+                                            mimeType,
+                                            fileName,
+                                            true,
+                                            undefined,
+                                            quality
+                                        );
+                                        texture.dispose();
+                                    });
+                                })
                         );
                     }
                 });
@@ -420,6 +465,9 @@ export function CreateScreenshotUsingRenderTarget(
     if (antialiasing) {
         const fxaaPostProcess = new FxaaPostProcess("antialiasing", 1.0, scene.activeCamera);
         texture.addPostProcess(fxaaPostProcess);
+        // Ensures the correct background color is used
+        fxaaPostProcess.autoClear = true;
+
         // Async Shader Compilation can lead to none ready effects in synchronous code
         fxaaPostProcess.onEffectCreatedObservable.addOnce((e) => {
             if (!e.isReady()) {
@@ -440,6 +488,7 @@ export function CreateScreenshotUsingRenderTarget(
 
 /**
  * Generates an image screenshot from the specified camera.
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine The engine to use for rendering
  * @param camera The camera to use for rendering
@@ -462,7 +511,7 @@ export function CreateScreenshotUsingRenderTarget(
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
-export function CreateScreenshotUsingRenderTargetAsync(
+export async function CreateScreenshotUsingRenderTargetAsync(
     engine: AbstractEngine,
     camera: Camera,
     size: IScreenshotSize | number,
@@ -487,7 +536,7 @@ export function CreateScreenshotUsingRenderTargetAsync(
         quality?: number
     ) => void
 ): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         CreateScreenshotUsingRenderTarget(
             engine,
             camera,
@@ -514,13 +563,225 @@ export function CreateScreenshotUsingRenderTargetAsync(
 }
 
 /**
+ * Generates an image screenshot from the specified frame graph and camera
+ * Please note:
+ *  - that the frame graph must write to the back buffer color for this to work! This is because the back buffer color is replaced by the texture of the screenshot during the operation.
+ *  - the camera is set as the camera for the main object renderer of the frame graph during the operation, and restored afterwards.
+ *    This will only work if the frame graph has a main object renderer (isMainObjectRenderer is true for one of its object renderers)
+ *  - that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
+ * @param frameGraph The frame graph to use for rendering
+ * @param camera The camera to use for rendering
+ * @param size This parameter can be set to a single number or to an object with the
+ * following (optional) properties: precision, width, height. If a single number is passed,
+ * it will be used for both width and height. If an object is passed, the screenshot size
+ * will be derived from the parameters. The precision property is a multiplier allowing
+ * rendering at a higher or lower resolution
+ * @param mimeType The MIME type of the screenshot image (default: image/png).
+ * Check your browser for supported MIME types
+ * @param samples Texture samples (default: 1)
+ * @param antialiasing Whether antialiasing should be turned on or not (default: false)
+ * @param fileName A name for for the downloaded file.
+ * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+ * @param customDumpData The function to use to dump the data. If not provided, the default DumpData function will be used.
+ * @param automaticDownload If true, the screenshot will be automatically downloaded as a file instead of being returned as a string: in this case, null is returned.
+ * @param numberOfFramesToRender If provided, the number of frames to render before taking the screenshot.
+ * If not provided, the screenshot will be taken after the next frame, or after 32 frames if the frame graph has at least one history texture.
+ * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+ * to the src parameter of an <img> to display it. If automaticDownload is true, null is returned instead
+ */
+export async function CreateScreenshotForFrameGraphAsync(
+    frameGraph: FrameGraph,
+    camera: Camera,
+    size: IScreenshotSize | number,
+    mimeType = "image/png",
+    samples = 1,
+    antialiasing = false,
+    fileName?: string,
+    quality?: number,
+    customDumpData?: (
+        width: number,
+        height: number,
+        data: ArrayBufferView,
+        successCallback?: (data: string | ArrayBuffer) => void,
+        mimeType?: string,
+        fileName?: string,
+        invertY?: boolean,
+        toArrayBuffer?: boolean,
+        quality?: number
+    ) => void,
+    automaticDownload = false,
+    numberOfFramesToRender?: number
+): Promise<string | ArrayBuffer | null> {
+    const engine = frameGraph.engine;
+    const textureManager = frameGraph.textureManager;
+
+    const { height, width, finalWidth, finalHeight } = GetScreenshotSize(engine, camera, size);
+    const targetTextureSize = { width, height };
+    const dumpDataFunc = customDumpData || DumpData;
+    const tasks = frameGraph.tasks;
+    const currentTaskListLength = tasks.length;
+    const pausedExecution = frameGraph.pausedExecution;
+    const currentParallelShaderCompile = engine.getCaps().parallelShaderCompile;
+
+    textureManager.setBackBufferTextures(
+        0,
+        0,
+        {
+            size: targetTextureSize,
+            options: {
+                createMipMaps: false,
+                samples,
+                types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
+                formats: [Constants.TEXTUREFORMAT_RGBA],
+                useSRGBBuffers: [false],
+                creationFlags: [0],
+                labels: ["screenshot color"],
+            },
+            sizeIsPercentage: false,
+        },
+        {
+            size: targetTextureSize,
+            options: {
+                createMipMaps: false,
+                samples,
+                types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
+                formats: [engine.isStencilEnable ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT],
+                useSRGBBuffers: [false],
+                creationFlags: [0],
+                labels: ["screenshot depth"],
+            },
+            sizeIsPercentage: false,
+        }
+    );
+
+    let outputTextureHandle = backbufferColorTextureHandle;
+
+    if (antialiasing) {
+        const task = new FrameGraphFXAATask("fxaa", frameGraph);
+
+        task.sourceTexture = outputTextureHandle;
+
+        outputTextureHandle = task.outputTexture;
+
+        frameGraph.addTask(task);
+    }
+
+    if (finalWidth !== width || finalHeight !== height) {
+        const task = new FrameGraphPassTask("pass", frameGraph);
+
+        task.sourceTexture = outputTextureHandle;
+        task.targetTexture = frameGraph.textureManager.createRenderTargetTexture("pass_output", {
+            size: { width: finalWidth, height: finalHeight },
+            options: {
+                createMipMaps: false,
+                types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
+                formats: [Constants.TEXTUREFORMAT_RGBA],
+                samples: 1,
+                labels: ["screenshot_final_texture"],
+                useSRGBBuffers: [false],
+            },
+            sizeIsPercentage: false,
+        });
+
+        outputTextureHandle = task.outputTexture;
+
+        frameGraph.addTask(task);
+    }
+
+    const mainObjectRendererTask = FrameGraphUtils.FindMainObjectRenderer(frameGraph);
+
+    let currentCamera: Nullable<Camera> = null;
+    if (mainObjectRendererTask) {
+        currentCamera = mainObjectRendererTask.camera;
+        mainObjectRendererTask.camera = camera;
+    }
+
+    /**
+     * We need to disable parallel shader compile before running frameGraph.whenReadyAsync because of WebGL.
+     * In some cases, when whenReadyAsync is not ready the first time readiness is checked, the execute call will
+     * not render correctly. Disabling parallel shader compile fixes the problem. This does not happen with WebGPU.
+     *
+     * That's what happens in this PG: http://playground.babylonjs.com/#GAGVQO#16
+     *
+     * The FXAA task is injected in the frame graph (because antialiasing==true), and whenReadyAsync checks the readiness
+     * of the FXAA task for the first time, it returns false because the shader is not yet imported/compiled.
+     * If you uncomment line 2 in the PG, the FXAA shader will be preloaded/compiled before the screenshot is taken and
+     * whenReadyAsync won't have to check readiness twice. In that case, disabling parallel shader compile won't be necessary to have a correct screenshot.
+     *
+     * Same problem in: http://playground.babylonjs.com/#Z6C5EF#3
+     *
+     * TODO: find a better solution for this problem?
+     */
+    engine.getCaps().parallelShaderCompile = undefined;
+
+    await frameGraph.buildAsync();
+
+    const numberOfFrames = numberOfFramesToRender ?? (textureManager.hasHistoryTextures ? 32 : 1);
+
+    for (let i = 0; i < numberOfFrames; ++i) {
+        frameGraph.execute();
+    }
+
+    // eslint-disable-next-line require-atomic-updates
+    frameGraph.pausedExecution = true;
+
+    engine.getCaps().parallelShaderCompile = currentParallelShaderCompile;
+
+    for (let i = currentTaskListLength; i < tasks.length; ++i) {
+        frameGraph.tasks[i].dispose();
+    }
+
+    // eslint-disable-next-line require-atomic-updates
+    frameGraph.tasks.length = currentTaskListLength;
+
+    if (mainObjectRendererTask && currentCamera) {
+        mainObjectRendererTask.camera = currentCamera;
+    }
+
+    const texture = frameGraph.textureManager.getTextureFromHandle(outputTextureHandle)!;
+
+    texture.incrementReferences();
+
+    textureManager.resetBackBufferTextures();
+
+    await frameGraph.buildAsync();
+
+    // eslint-disable-next-line require-atomic-updates
+    frameGraph.pausedExecution = pausedExecution;
+
+    // eslint-disable-next-line @typescript-eslint/return-await
+    return new Promise((resolve) => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+        engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then(async (data) => {
+            texture.dispose();
+
+            dumpDataFunc(
+                finalWidth,
+                finalHeight,
+                data,
+                automaticDownload ? undefined : (data: string | ArrayBuffer) => resolve(data),
+                mimeType,
+                fileName,
+                true,
+                undefined,
+                quality
+            );
+
+            if (automaticDownload) {
+                resolve(null);
+            }
+        });
+    });
+}
+
+/**
  * Gets height and width for screenshot size
  * @param engine The engine to use for rendering
  * @param camera The camera to use for rendering
  * @param size This size of the screenshot. can be a number or an object implementing IScreenshotSize
  * @returns height and width for screenshot size
  */
-function _GetScreenshotSize(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number; finalWidth: number; finalHeight: number } {
+function GetScreenshotSize(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number; finalWidth: number; finalHeight: number } {
     let height = 0;
     let width = 0;
     let finalWidth = 0;
@@ -604,6 +865,7 @@ function _GetScreenshotSize(engine: AbstractEngine, camera: Camera, size: IScree
 export const ScreenshotTools = {
     /**
      * Captures a screenshot of the current rendering
+     * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
      * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
@@ -625,6 +887,7 @@ export const ScreenshotTools = {
 
     /**
      * Captures a screenshot of the current rendering
+     * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
      * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
@@ -637,6 +900,7 @@ export const ScreenshotTools = {
      * Check your browser for supported MIME types
      * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
+     * @param forceDownload force the system to download the image
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
@@ -645,6 +909,7 @@ export const ScreenshotTools = {
     /**
      * Captures and automatically downloads a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
      * If screenshot image data is needed, use {@link CreateScreenshotAsync} instead.
+     * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
      * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
@@ -660,6 +925,7 @@ export const ScreenshotTools = {
 
     /**
      * Generates an image screenshot from the specified camera.
+     * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
@@ -684,6 +950,7 @@ export const ScreenshotTools = {
 
     /**
      * Generates an image screenshot from the specified camera.
+     * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
@@ -703,6 +970,33 @@ export const ScreenshotTools = {
      * to the src parameter of an <img> to display it
      */
     CreateScreenshotUsingRenderTargetAsync,
+
+    /**
+     * Generates an image screenshot from the specified frame graph and camera
+     * Please note:
+     *  - that the frame graph must write to the back buffer color for this to work! This is because the back buffer color is replaced by the texture of the screenshot during the operation.
+     *  - the camera is set as the camera for the main object renderer of the frame graph during the operation, and restored afterwards.
+     *    This will only work if the frame graph has a main object renderer (isMainObjectRenderer is true for one of its object renderers)
+     *  - that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
+     * @param frameGraph The frame graph to use for rendering
+     * @param camera The camera to use for rendering
+     * @param size This parameter can be set to a single number or to an object with the
+     * following (optional) properties: precision, width, height. If a single number is passed,
+     * it will be used for both width and height. If an object is passed, the screenshot size
+     * will be derived from the parameters. The precision property is a multiplier allowing
+     * rendering at a higher or lower resolution
+     * @param mimeType The MIME type of the screenshot image (default: image/png).
+     * Check your browser for supported MIME types
+     * @param samples Texture samples (default: 1)
+     * @param antialiasing Whether antialiasing should be turned on or not (default: false)
+     * @param fileName A name for for the downloaded file.
+     * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+     * @param customDumpData The function to use to dump the data. If not provided, the default DumpData function will be used.
+     * @param automaticDownload If true, the screenshot will be automatically downloaded as a file instead of being returned as a string: in this case, null is returned.
+     * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+     * to the src parameter of an <img> to display it. If automaticDownload is true, null is returned instead
+     */
+    CreateScreenshotForFrameGraphAsync,
 };
 
 /**

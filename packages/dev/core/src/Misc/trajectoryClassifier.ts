@@ -308,9 +308,9 @@ export class Trajectory {
      */
     public resampleAtTargetResolution(targetResolution: number): Trajectory {
         const resampled = new Trajectory(this.getLength() / targetResolution);
-        this._points.forEach((pt) => {
+        for (const pt of this._points) {
             resampled.add(pt);
-        });
+        }
         return resampled;
     }
 
@@ -353,14 +353,14 @@ export class Trajectory {
      * @returns whether or not transformation was successful
      */
     private static _TransformSegmentDirToRef(priorVec: DeepImmutable<Vector3>, fromVec: DeepImmutable<Vector3>, toVec: DeepImmutable<Vector3>, result: Vector3): boolean {
-        const DOT_PRODUCT_SAMPLE_REJECTION_THRESHOLD = 0.98;
+        const dotProductSampleRejectionThreshold = 0.98;
 
         fromVec.subtractToRef(priorVec, Trajectory._ForwardDir);
         Trajectory._ForwardDir.normalize();
         fromVec.scaleToRef(-1, Trajectory._InverseFromVec);
         Trajectory._InverseFromVec.normalize();
 
-        if (Math.abs(Vector3.Dot(Trajectory._ForwardDir, Trajectory._InverseFromVec)) > DOT_PRODUCT_SAMPLE_REJECTION_THRESHOLD) {
+        if (Math.abs(Vector3.Dot(Trajectory._ForwardDir, Trajectory._InverseFromVec)) > dotProductSampleRejectionThreshold) {
             return false;
         }
 
@@ -434,8 +434,8 @@ class Vector3Alphabet {
         endingStepSize: number = 0.001,
         fixedValues: DeepImmutable<Vector3[]> = []
     ): Vector3Alphabet {
-        const EPSILON = 0.001;
-        const EPSILON_SQUARED = EPSILON * EPSILON;
+        const epsilon = 0.001;
+        const epsilonSquared = epsilon * epsilon;
 
         const alphabet = new Vector3Alphabet(alphabetSize);
         for (let idx = 0; idx < alphabetSize; ++idx) {
@@ -456,13 +456,13 @@ class Vector3Alphabet {
             stepSize = lerp(startingStepSize, endingStepSize, iteration / (iterations - 1));
             for (let idx = fixedValues.length; idx < alphabet.chars.length; ++idx) {
                 force.copyFromFloats(0, 0, 0);
-                alphabet.chars.forEach((pt) => {
+                for (const pt of alphabet.chars) {
                     alphabet.chars[idx].subtractToRef(pt, scratch);
                     distSq = scratch.lengthSquared();
-                    if (distSq > EPSILON_SQUARED) {
+                    if (distSq > epsilonSquared) {
                         scratch.scaleAndAddToRef(1 / (scratch.lengthSquared() * distSq), force);
                     }
-                });
+                }
                 force.scaleInPlace(stepSize);
                 alphabet.chars[idx].addInPlace(force);
                 alphabet.chars[idx].normalize();
@@ -691,9 +691,9 @@ class TrajectoryClass {
         let sum: number;
         const distances = this._descriptors.map((a) => {
             sum = 0;
-            this._descriptors.forEach((b) => {
+            for (const b of this._descriptors) {
                 sum += a.distance(b);
-            });
+            }
             return sum;
         });
         for (let idx = 0; idx < distances.length; ++idx) {
@@ -703,9 +703,9 @@ class TrajectoryClass {
         }
 
         this._averageDistance = 0;
-        this._descriptors.forEach((desc) => {
+        for (const desc of this._descriptors) {
             this._averageDistance += desc.distance(this._descriptors[this._centroidIdx]);
-        });
+        }
         if (this._descriptors.length > 0) {
             this._averageDistance = Math.max(this._averageDistance / this._descriptors.length, TrajectoryClass._MIN_AVERAGE_DISTANCE);
         }

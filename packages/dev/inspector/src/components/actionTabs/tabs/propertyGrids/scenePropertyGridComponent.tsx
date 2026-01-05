@@ -122,10 +122,10 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
     normalizeScene() {
         const scene = this.props.scene;
 
-        scene.meshes.forEach((mesh) => {
+        for (const mesh of scene.meshes) {
             mesh.normalizeToUnitCube(true);
             mesh.computeWorldMatrix(true);
-        });
+        }
     }
 
     override render() {
@@ -209,7 +209,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         step={0.01}
                         label="IBL Intensity"
                         target={scene}
-                        propertyName="environmentIntensity"
+                        propertyName="iblIntensity"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <FogPropertyGridComponent

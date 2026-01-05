@@ -20,7 +20,7 @@ import type { IAnimatable } from "core/Animations/animatable.interface";
 import "./cell.fragment";
 import "./cell.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -154,7 +154,19 @@ export class CellMaterial extends PushMaterial {
         defines.CELLBASIC = !this.computeHighLevel;
 
         // Misc.
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this.needAlphaTestingForMesh(mesh), defines);
+        PrepareDefinesForMisc(
+            mesh,
+            scene,
+            this._useLogarithmicDepth,
+            this.pointsCloud,
+            this.fogEnabled,
+            this.needAlphaTestingForMesh(mesh),
+            defines,
+            undefined,
+            undefined,
+            undefined,
+            this._isVertexOutputInvariant
+        );
 
         // Lights
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
@@ -226,7 +238,7 @@ export class CellMaterial extends PushMaterial {
             const samplers = ["diffuseSampler", "areaLightsLTC1Sampler", "areaLightsLTC2Sampler"];
             const uniformBuffers: string[] = [];
 
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
             PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
@@ -306,7 +318,7 @@ export class CellMaterial extends PushMaterial {
             }
 
             // Clip plane
-            bindClipPlane(this._activeEffect, this, scene);
+            BindClipPlane(this._activeEffect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

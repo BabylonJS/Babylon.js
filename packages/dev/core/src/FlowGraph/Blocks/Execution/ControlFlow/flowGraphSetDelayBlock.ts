@@ -2,12 +2,13 @@ import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBl
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { RichTypeNumber } from "../../../flowGraphRichTypes";
+import { RichTypeFlowGraphInteger, RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { AdvancedTimer } from "../../../../Misc/timer";
 import { Logger } from "../../../../Misc/logger";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "core/Misc/typeStore";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 
 /**
  * Block that sets a delay in seconds before activating the output signal.
@@ -30,16 +31,16 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
     /**
      * Output connection: The last delay index that was set.
      */
-    public readonly lastDelayIndex: FlowGraphDataConnection<number>;
+    public readonly lastDelayIndex: FlowGraphDataConnection<FlowGraphInteger>;
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.cancel = this._registerSignalInput("cancel");
         this.duration = this.registerDataInput("duration", RichTypeNumber);
-        this.lastDelayIndex = this.registerDataOutput("lastDelayIndex", RichTypeNumber, -1);
+        this.lastDelayIndex = this.registerDataOutput("lastDelayIndex", RichTypeFlowGraphInteger, new FlowGraphInteger(-1));
     }
 
-    public _preparePendingTasks(context: FlowGraphContext): void {
+    public override _preparePendingTasks(context: FlowGraphContext): void {
         const duration = this.duration.getValue(context);
         if (duration < 0 || isNaN(duration) || !isFinite(duration)) {
             return this._reportError(context, "Invalid duration in SetDelay block");
@@ -63,20 +64,22 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         });
         timer.start();
         const newIndex = lastDelayIndex + 1;
-        this.lastDelayIndex.setValue(newIndex, context);
+        this.lastDelayIndex.setValue(new FlowGraphInteger(newIndex), context);
         context._setGlobalContextVariable("lastDelayIndex", newIndex);
 
         timers[newIndex] = timer;
         context._setExecutionVariable(this, "pendingDelays", timers);
+        this._updateGlobalTimers(context);
     }
 
-    public _cancelPendingTasks(context: FlowGraphContext): void {
+    public override _cancelPendingTasks(context: FlowGraphContext): void {
         const timers = context._getExecutionVariable(this, "pendingDelays", [] as AdvancedTimer[]);
         for (const timer of timers) {
             timer?.dispose();
         }
         context._deleteExecutionVariable(this, "pendingDelays");
-        this.lastDelayIndex.setValue(-1, context);
+        this.lastDelayIndex.setValue(new FlowGraphInteger(-1), context);
+        this._updateGlobalTimers(context);
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
@@ -103,6 +106,26 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         }
         context._removePendingBlock(this);
         this.done._activateSignal(context);
+
+        this._updateGlobalTimers(context);
+    }
+
+    private _updateGlobalTimers(context: FlowGraphContext) {
+        const timers = context._getExecutionVariable(this, "pendingDelays", [] as AdvancedTimer[]);
+        const globalTimers = context._getGlobalContextVariable("pendingDelays", [] as AdvancedTimer[]);
+        // there should NEVER be the same index in the global and local timers, unless they are equal
+        for (let i = 0; i < timers.length; i++) {
+            if (!timers[i]) {
+                continue;
+            }
+            const timer = timers[i];
+            if (globalTimers[i] && globalTimers[i] !== timer) {
+                Logger.Warn("FlowGraphTimerBlock: Timer ended but was not found in the running timers list");
+            } else {
+                globalTimers[i] = timer;
+            }
+        }
+        context._setGlobalContextVariable("pendingDelays", globalTimers);
     }
 }
 

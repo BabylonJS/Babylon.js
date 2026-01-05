@@ -10,6 +10,7 @@ import { Scene } from "core/scene";
 export * from "./animatable.core";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * Sort active animatables based on their playOrder property
@@ -183,6 +184,7 @@ declare module "../scene" {
 }
 
 declare module "../Bones/bone" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Bone {
         /**
          * Copy an animation range from another bone

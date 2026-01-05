@@ -34,6 +34,11 @@ export class DebugDisplayManager implements IDisplayManager {
         const block = data.data as NodeMaterialDebugBlock;
 
         const globalState = manager.data as GlobalState;
+
+        if (globalState.forcedDebugBlock !== null) {
+            return;
+        }
+
         if (selectedData === data && !this._onPreviewSceneAfterRenderObserver) {
             globalState.onPreviewUpdatedObservable.addOnce(() => {
                 this._onPreviewSceneAfterRenderObserver = globalState.onPreviewSceneAfterRenderObservable.add(async () => {
@@ -73,8 +78,8 @@ export class DebugDisplayManager implements IDisplayManager {
 
     public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
         if (!this._previewCanvas) {
-            this._previewCanvas = contentArea.ownerDocument!.createElement("canvas");
-            this._previewImage = contentArea.ownerDocument!.createElement("img");
+            this._previewCanvas = contentArea.ownerDocument.createElement("canvas");
+            this._previewImage = contentArea.ownerDocument.createElement("img");
             this._previewImage.style.width = "100%";
             this._previewImage.style.height = "100%";
             this._previewImage.style.transform = "scaleY(-1)";

@@ -1,6 +1,8 @@
+import type { Nullable } from "../../types";
 import { SoundState } from "../soundState";
 import type { IAbstractSoundOptions, IAbstractSoundPlayOptions, IAbstractSoundStoredOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
+import type { PrimaryAudioBus } from "./audioBus";
 import type { AudioEngineV2 } from "./audioEngineV2";
 import type { IStaticSoundBufferOptions, StaticSoundBuffer } from "./staticSoundBuffer";
 import type { _StaticSoundInstance } from "./staticSoundInstance";
@@ -25,6 +27,13 @@ export interface IStaticSoundOptionsBase {
      *
      */
     loopStart: number;
+}
+
+/**
+ * Options stored in a static sound.
+ * @internal
+ */
+export interface IStaticSoundStoredOptions extends IAbstractSoundStoredOptions, IStaticSoundOptionsBase {
     /**
      * The pitch of the sound, in cents. Defaults to `0`.
      * - Can be combined with {@link playbackRate}.
@@ -37,14 +46,6 @@ export interface IStaticSoundOptionsBase {
     playbackRate: number;
 }
 
-/** @internal */
-export interface IStaticSoundPlayOptionsBase {
-    /**
-     * The time to wait before playing the sound, in seconds. Defaults to `0`.
-     */
-    waitTime: number;
-}
-
 /**
  * Options for creating a static sound.
  */
@@ -53,7 +54,12 @@ export interface IStaticSoundOptions extends IAbstractSoundOptions, IStaticSound
 /**
  * Options for playing a static sound.
  */
-export interface IStaticSoundPlayOptions extends IAbstractSoundPlayOptions, IStaticSoundOptionsBase, IStaticSoundPlayOptionsBase {}
+export interface IStaticSoundPlayOptions extends IAbstractSoundPlayOptions, IStaticSoundOptionsBase {
+    /**
+     * The time to wait before playing the sound, in seconds. Defaults to `0`.
+     */
+    waitTime: number;
+}
 
 /**
  * Options for stopping a static sound.
@@ -66,10 +72,24 @@ export interface IStaticSoundStopOptions {
 }
 
 /**
- * Options stored in a static sound.
- * @internal
+ * Options for cloning a static sound.
+ * - @see {@link StaticSound.clone}.
  */
-export interface IStaticSoundStoredOptions extends IAbstractSoundStoredOptions, IStaticSoundOptionsBase {}
+export interface IStaticSoundCloneOptions {
+    /**
+     * Whether to clone the sound buffer when cloning the sound. Defaults to `false`.
+     * - If `true`, the original sound's buffer is cloned, and the cloned sound will use its own copy.
+     * - If `false`, the sound buffer is shared with the original sound.
+     */
+    cloneBuffer: boolean;
+
+    /**
+     * The output bus for the cloned sound. Defaults to `null`.
+     * - If not set or `null`, the cloned sound uses the original sound's `outBus`.
+     * @see {@link AudioEngineV2.defaultMainBus}
+     */
+    outBus: Nullable<PrimaryAudioBus>;
+}
 
 /**
  * Abstract class representing a static sound.
@@ -94,8 +114,8 @@ export abstract class StaticSound extends AbstractSound {
      */
     public abstract readonly buffer: StaticSoundBuffer;
 
-    protected constructor(name: string, engine: AudioEngineV2) {
-        super(name, engine);
+    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStaticSoundOptions>) {
+        super(name, engine, options);
     }
 
     /**
@@ -144,6 +164,11 @@ export abstract class StaticSound extends AbstractSound {
 
     public set pitch(value: number) {
         this._options.pitch = value;
+
+        const it = this._instances.values();
+        for (let instance = it.next(); !instance.done; instance = it.next()) {
+            instance.value.pitch = value;
+        }
     }
 
     /**
@@ -156,9 +181,18 @@ export abstract class StaticSound extends AbstractSound {
 
     public set playbackRate(value: number) {
         this._options.playbackRate = value;
+
+        const it = this._instances.values();
+        for (let instance = it.next(); !instance.done; instance = it.next()) {
+            instance.value.playbackRate = value;
+        }
     }
 
-    protected abstract override _createInstance(): _StaticSoundInstance;
+    /**
+     * Clones the sound.
+     * @param options Options for cloning the sound.
+     */
+    public abstract cloneAsync(options?: Partial<IStaticSoundCloneOptions>): Promise<StaticSound>;
 
     /**
      * Plays the sound.
@@ -175,8 +209,6 @@ export abstract class StaticSound extends AbstractSound {
         options.loop ??= this.loop;
         options.loopStart ??= this.loopStart;
         options.loopEnd ??= this.loopEnd;
-        options.pitch ??= this.pitch;
-        options.playbackRate ??= this.playbackRate;
         options.startOffset ??= this.startOffset;
         options.volume ??= 1;
         options.waitTime ??= 0;
@@ -209,4 +241,6 @@ export abstract class StaticSound extends AbstractSound {
             instance.stop(options);
         }
     }
+
+    protected abstract override _createInstance(): _StaticSoundInstance;
 }

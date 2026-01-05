@@ -4,7 +4,7 @@ import * as WebGPUConstants from "./webgpuConstants";
 import { ILog2 } from "../../Maths/math.scalar.functions";
 import { Constants } from "../constants";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
+import type { IHardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 
 /** @internal */
 export class WebGPUTextureHelper {
@@ -154,11 +154,7 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.R16Uint:
             case WebGPUConstants.TextureFormat.R16Sint:
             case WebGPUConstants.TextureFormat.R16Unorm:
-            case WebGPUConstants.TextureFormat.RG16Unorm:
-            case WebGPUConstants.TextureFormat.RGBA16Unorm:
             case WebGPUConstants.TextureFormat.R16Snorm:
-            case WebGPUConstants.TextureFormat.RG16Snorm:
-            case WebGPUConstants.TextureFormat.RGBA16Snorm:
             case WebGPUConstants.TextureFormat.R16Float:
             case WebGPUConstants.TextureFormat.RG8Unorm:
             case WebGPUConstants.TextureFormat.RG8Snorm:
@@ -173,6 +169,8 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RG16Uint:
             case WebGPUConstants.TextureFormat.RG16Sint:
             case WebGPUConstants.TextureFormat.RG16Float:
+            case WebGPUConstants.TextureFormat.RG16Unorm:
+            case WebGPUConstants.TextureFormat.RG16Snorm:
             case WebGPUConstants.TextureFormat.RGBA8Unorm:
             case WebGPUConstants.TextureFormat.RGBA8UnormSRGB:
             case WebGPUConstants.TextureFormat.RGBA8Snorm:
@@ -193,6 +191,8 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RGBA16Uint:
             case WebGPUConstants.TextureFormat.RGBA16Sint:
             case WebGPUConstants.TextureFormat.RGBA16Float:
+            case WebGPUConstants.TextureFormat.RGBA16Unorm:
+            case WebGPUConstants.TextureFormat.RGBA16Snorm:
                 return { width: 1, height: 1, length: 8 };
 
             // 128 bits formats
@@ -303,8 +303,8 @@ export class WebGPUTextureHelper {
         return { width: 1, height: 1, length: 4 };
     }
 
-    public static IsHardwareTexture(texture: HardwareTextureWrapper | GPUTexture): texture is HardwareTextureWrapper {
-        return !!(texture as HardwareTextureWrapper).release;
+    public static IsHardwareTexture(texture: IHardwareTextureWrapper | GPUTexture): texture is IHardwareTextureWrapper {
+        return !!(texture as IHardwareTextureWrapper).release;
     }
 
     public static IsInternalTexture(texture: InternalTexture | GPUTexture): texture is InternalTexture {
@@ -720,6 +720,19 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.Stencil8:
             case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
             case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
+                return true;
+        }
+
+        return false;
+    }
+
+    public static HasDepthAspect(format: GPUTextureFormat): boolean {
+        switch (format) {
+            case WebGPUConstants.TextureFormat.Depth16Unorm:
+            case WebGPUConstants.TextureFormat.Depth24Plus:
+            case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
+            case WebGPUConstants.TextureFormat.Depth32Float:
+            case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
                 return true;
         }
 

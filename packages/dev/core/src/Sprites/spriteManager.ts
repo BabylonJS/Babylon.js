@@ -5,6 +5,7 @@ import { Observable } from "../Misc/observable";
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import { Sprite } from "./sprite";
 import { SpriteSceneComponent } from "./spriteSceneComponent";
+import type { InternalSpriteAugmentedScene } from "./spriteSceneComponent";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
@@ -28,6 +29,11 @@ declare const Reflect: any;
  * Defines the minimum interface to fulfill in order to be a sprite manager.
  */
 export interface ISpriteManager extends IDisposable {
+    /**
+     * Gets or sets the unique id of the sprite manager
+     */
+    uniqueId: number;
+
     /**
      * Gets manager's name
      */
@@ -74,6 +80,11 @@ export interface ISpriteManager extends IDisposable {
     _wasDispatched: boolean;
 
     /**
+     * Specifies if the sprite manager should be serialized
+     */
+    doNotSerialize?: boolean;
+
+    /**
      * Tests the intersection of a sprite with a specific ray.
      * @param ray The ray we are sending to test the collision
      * @param camera The camera space we are sending rays in
@@ -111,6 +122,7 @@ export interface ISpriteManager extends IDisposable {
 /**
  * Options for the SpriteManager
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface SpriteManagerOptions {
     /** Options for the sprite renderer */
     spriteRendererOptions: SpriteRendererOptions;
@@ -163,6 +175,11 @@ export class SpriteManager implements ISpriteManager {
      * Gets or sets the unique id of the sprite
      */
     public uniqueId: number;
+
+    /**
+     * Specifies if the sprite manager should be serialized
+     */
+    public doNotSerialize = false;
 
     /**
      * Gets the array of sprites
@@ -272,6 +289,13 @@ export class SpriteManager implements ISpriteManager {
         }
     }
 
+    /**
+     * Gets the sprite renderer associated with this manager
+     */
+    public get spriteRenderer() {
+        return this._spriteRenderer;
+    }
+
     private _spriteRenderer: SpriteRenderer;
     /** Associative array from JSON sprite data file */
     private _cellData: any;
@@ -282,7 +306,7 @@ export class SpriteManager implements ISpriteManager {
     private _textureContent: Nullable<Uint8Array>;
     private _onDisposeObserver: Nullable<Observer<SpriteManager>>;
     private _fromPacked: boolean;
-    private _scene: Scene;
+    private _scene: InternalSpriteAugmentedScene;
 
     /**
      * Creates a new sprite manager
@@ -307,7 +331,7 @@ export class SpriteManager implements ISpriteManager {
         epsilon: number = 0.01,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         fromPacked: boolean = false,
-        spriteJSON: any | null = null,
+        spriteJSON: null | string = null,
         options?: SpriteManagerOptions
     ) {
         if (!scene) {
@@ -319,7 +343,7 @@ export class SpriteManager implements ISpriteManager {
         }
         this._fromPacked = fromPacked;
 
-        this._scene = scene;
+        this._scene = scene as InternalSpriteAugmentedScene;
         const engine = this._scene.getEngine();
         this._spriteRenderer = new SpriteRenderer(engine, capacity, epsilon, scene, options?.spriteRendererOptions);
 
@@ -344,6 +368,8 @@ export class SpriteManager implements ISpriteManager {
         if (this._fromPacked) {
             this._makePacked(imgUrl, spriteJSON);
         }
+
+        this._scene._onNewSpriteManagerAddedObservable?.notifyObservers(this);
     }
 
     /**
@@ -420,13 +446,14 @@ export class SpriteManager implements ISpriteManager {
     }
 
     private _checkTextureAlpha(sprite: Sprite, ray: Ray, distance: number, min: Vector3, max: Vector3) {
-        if (!sprite.useAlphaForPicking || !this.texture) {
+        if (!sprite.useAlphaForPicking || !this.texture?.isReady()) {
             return true;
         }
 
         const textureSize = this.texture.getSize();
         if (!this._textureContent) {
             this._textureContent = new Uint8Array(textureSize.width * textureSize.height * 4);
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.texture.readPixels(0, 0, this._textureContent);
         }
 
@@ -444,7 +471,7 @@ export class SpriteManager implements ISpriteManager {
         const u = (sprite._xOffset * textureSize.width + contactPointU * sprite._xSize) | 0;
         const v = (sprite._yOffset * textureSize.height + contactPointV * sprite._ySize) | 0;
 
-        const alpha = this._textureContent![(u + v * textureSize.width) * 4 + 3];
+        const alpha = this._textureContent[(u + v * textureSize.width) * 4 + 3];
 
         return alpha > 0.5;
     }
@@ -666,6 +693,7 @@ export class SpriteManager implements ISpriteManager {
         if (this._scene.spriteManagers) {
             const index = this._scene.spriteManagers.indexOf(this);
             this._scene.spriteManagers.splice(index, 1);
+            this._scene._onSpriteManagerRemovedObservable?.notifyObservers(this);
         }
 
         // Callback
@@ -773,8 +801,8 @@ export class SpriteManager implements ISpriteManager {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new sprite manager
      */
-    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
-        return new Promise((resolve, reject) => {
+    public static async ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
+        return await new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
@@ -788,6 +816,7 @@ export class SpriteManager implements ISpriteManager {
 
                         resolve(output);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the sprite manager");
                     }
                 }
@@ -805,6 +834,7 @@ export class SpriteManager implements ISpriteManager {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new sprite manager
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene));
@@ -823,6 +853,7 @@ export class SpriteManager implements ISpriteManager {
 
                         resolve(output);
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         reject("Unable to load the snippet " + snippetId);
                     }
                 }

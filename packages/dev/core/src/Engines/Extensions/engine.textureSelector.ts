@@ -2,6 +2,7 @@ import type { Nullable } from "../../types";
 import { Engine } from "../engine";
 
 declare module "../../Engines/engine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Engine {
         /** @internal */
         _excludedCompressedTextures: string[];
@@ -51,7 +52,7 @@ declare module "../../Engines/engine" {
     }
 }
 
-function transformTextureUrl(this: Engine, url: string): string {
+function TransformTextureUrl(this: Engine, url: string): string {
     const excludeFn = (entry: string) => {
         const strRegExPattern: string = "\\b" + entry + "\\b";
         return url && (url === entry || url.match(new RegExp(strRegExPattern, "g")));
@@ -113,7 +114,7 @@ Engine.prototype.setTextureFormatToUse = function (formatsAvailable: Array<strin
     for (let i = 0, len1 = texturesSupported.length; i < len1; i++) {
         for (let j = 0, len2 = formatsAvailable.length; j < len2; j++) {
             if (texturesSupported[i] === formatsAvailable[j].toLowerCase()) {
-                this._transformTextureUrl = transformTextureUrl.bind(this);
+                this._transformTextureUrl = TransformTextureUrl.bind(this);
                 return (this._textureFormatInUse = texturesSupported[i]);
             }
         }

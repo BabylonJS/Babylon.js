@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./Inputs/index";
 export * from "./cameraInputsManager";
 export * from "./camera";
@@ -19,3 +19,4 @@ export * from "./universalCamera";
 export * from "./virtualJoysticksCamera";
 export * from "./VR/index";
 export * from "./RigModes/index";
+export * from "./geospatialCamera";

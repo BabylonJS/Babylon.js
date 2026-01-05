@@ -152,6 +152,7 @@ export class PointerInfo extends PointerInfoBase {
 /**
  * Data relating to a touch event on the screen.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface PointerTouch {
     /**
      * X coordinate of touch.
@@ -169,4 +170,8 @@ export interface PointerTouch {
      * Event type passed from DOM.
      */
     type: any;
+    /**
+     * The touch event's associated button ID (0: left, 1: middle, 2: right, etc.)
+     */
+    button?: number;
 }

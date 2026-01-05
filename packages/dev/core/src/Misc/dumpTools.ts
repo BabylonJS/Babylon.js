@@ -5,89 +5,136 @@ import type { ThinEngine } from "../Engines/thinEngine";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import { Tools } from "./tools";
-import type { Nullable } from "../types";
 import { Clamp } from "../Maths/math.scalar.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
+import { Logger } from "./logger";
+import { EncodeArrayBufferToBase64 } from "./stringTools";
+import { nativeOverride } from "./decorators";
 
-type DumpToolsEngine = {
+type DumpResources = {
     canvas: HTMLCanvasElement | OffscreenCanvas;
-    engine: ThinEngine;
-    renderer: EffectRenderer;
-    wrapper: EffectWrapper;
+    dumpEngine: {
+        engine: ThinEngine;
+        renderer: EffectRenderer;
+        wrapper: EffectWrapper;
+    };
 };
 
-let _dumpToolsEngine: Nullable<DumpToolsEngine>;
+let ResourcesPromise: Promise<DumpResources> | null = null;
 
-let _enginePromise: Promise<DumpToolsEngine> | null = null;
+async function _CreateDumpResourcesAsync(): Promise<DumpResources> {
+    // Create a compatible canvas. Prefer an HTMLCanvasElement if possible to avoid alpha issues with OffscreenCanvas + WebGL in many browsers.
+    const canvas = (EngineStore.LastCreatedEngine?.createCanvas(100, 100) ?? new OffscreenCanvas(100, 100)) as HTMLCanvasElement | OffscreenCanvas; // will be resized later
+    if (canvas instanceof OffscreenCanvas) {
+        Logger.Warn("DumpData: OffscreenCanvas will be used for dumping data. This may result in lossy alpha values.");
+    }
 
-async function _CreateDumpRenderer(): Promise<DumpToolsEngine> {
-    if (!_enginePromise) {
-        _enginePromise = new Promise((resolve, reject) => {
-            let canvas: HTMLCanvasElement | OffscreenCanvas;
-            let engine: Nullable<ThinEngine> = null;
-            const options = {
-                preserveDrawingBuffer: true,
-                depth: false,
-                stencil: false,
-                alpha: true,
-                premultipliedAlpha: false,
-                antialias: false,
-                failIfMajorPerformanceCaveat: false,
-            };
-            import("../Engines/thinEngine")
-                .then(({ ThinEngine: thinEngineClass }) => {
-                    const engineInstanceCount = EngineStore.Instances.length;
-                    try {
-                        canvas = new OffscreenCanvas(100, 100); // will be resized later
-                        engine = new thinEngineClass(canvas, false, options);
-                    } catch (e) {
-                        if (engineInstanceCount < EngineStore.Instances.length) {
-                            // The engine was created by another instance, let's use it
-                            EngineStore.Instances.pop()?.dispose();
-                        }
-                        // The browser either does not support OffscreenCanvas or WebGL context in OffscreenCanvas, fallback on a regular canvas
-                        canvas = document.createElement("canvas");
-                        engine = new thinEngineClass(canvas, false, options);
+    // If WebGL via ThinEngine is not available, we cannot encode the data.
+    // If https://github.com/whatwg/html/issues/10142 is resolved, we can migrate to just BitmapRenderer and avoid an engine dependency altogether.
+    const { ThinEngine: thinEngineClass } = await import("../Engines/thinEngine");
+    if (!thinEngineClass.IsSupported) {
+        throw new Error("DumpData: No WebGL context available. Cannot dump data.");
+    }
+
+    const options = {
+        preserveDrawingBuffer: true,
+        depth: false,
+        stencil: false,
+        alpha: true,
+        premultipliedAlpha: false,
+        antialias: false,
+        failIfMajorPerformanceCaveat: false,
+    };
+    const engine = new thinEngineClass(canvas, false, options);
+
+    // remove this engine from the list of instances to avoid using it for other purposes
+    EngineStore.Instances.pop();
+    // However, make sure to dispose it when no other engines are left
+    EngineStore.OnEnginesDisposedObservable.add((e) => {
+        // guaranteed to run when no other instances are left
+        // only dispose if it's not the current engine
+        if (engine && e !== engine && !engine.isDisposed && EngineStore.Instances.length === 0) {
+            // Dump the engine and the associated resources
+            Dispose();
+        }
+    });
+
+    engine.getCaps().parallelShaderCompile = undefined;
+
+    const renderer = new EffectRenderer(engine);
+    const { passPixelShader } = await import("../Shaders/pass.fragment");
+    const wrapper = new EffectWrapper({
+        engine,
+        name: passPixelShader.name,
+        fragmentShader: passPixelShader.shader,
+        samplerNames: ["textureSampler"],
+    });
+
+    return {
+        canvas: canvas,
+        dumpEngine: { engine, renderer, wrapper },
+    };
+}
+
+async function _GetDumpResourcesAsync() {
+    if (!ResourcesPromise) {
+        ResourcesPromise = _CreateDumpResourcesAsync();
+    }
+    return await ResourcesPromise;
+}
+
+class EncodingHelper {
+    /**
+     * Encodes image data to the given mime type.
+     * This is put into a helper class so we can apply the nativeOverride decorator to it.
+     * @internal
+     */
+    @nativeOverride
+    public static async EncodeImageAsync(pixelData: ArrayBufferView, width: number, height: number, mimeType?: string, invertY?: boolean, quality?: number): Promise<Blob> {
+        const resources = await _GetDumpResourcesAsync();
+
+        const dumpEngine = resources.dumpEngine;
+        dumpEngine.engine.setSize(width, height, true);
+
+        // Create the image
+        const texture = dumpEngine.engine.createRawTexture(pixelData, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
+
+        dumpEngine.renderer.setViewport();
+        dumpEngine.renderer.applyEffectWrapper(dumpEngine.wrapper);
+        dumpEngine.wrapper.effect._bindTexture("textureSampler", texture);
+        dumpEngine.renderer.draw();
+
+        texture.dispose();
+
+        return await new Promise<Blob>((resolve, reject) => {
+            Tools.ToBlob(
+                resources.canvas,
+                (blob) => {
+                    if (!blob) {
+                        reject(new Error("EncodeImageAsync: Failed to convert canvas to blob."));
+                    } else {
+                        resolve(blob);
                     }
-                    // remove this engine from the list of instances to avoid using it for other purposes
-                    EngineStore.Instances.pop();
-                    // However, make sure to dispose it when no other engines are left
-                    EngineStore.OnEnginesDisposedObservable.add((e) => {
-                        // guaranteed to run when no other instances are left
-                        // only dispose if it's not the current engine
-                        if (engine && e !== engine && !engine.isDisposed && EngineStore.Instances.length === 0) {
-                            // Dump the engine and the associated resources
-                            Dispose();
-                        }
-                    });
-                    engine.getCaps().parallelShaderCompile = undefined;
-                    const renderer = new EffectRenderer(engine);
-                    import("../Shaders/pass.fragment").then(({ passPixelShader }) => {
-                        if (!engine) {
-                            reject("Engine is not defined");
-                            return;
-                        }
-                        const wrapper = new EffectWrapper({
-                            engine,
-                            name: passPixelShader.name,
-                            fragmentShader: passPixelShader.shader,
-                            samplerNames: ["textureSampler"],
-                        });
-                        _dumpToolsEngine = {
-                            canvas,
-                            engine,
-                            renderer,
-                            wrapper,
-                        };
-                        resolve(_dumpToolsEngine);
-                    });
-                })
-                .catch(reject);
+                },
+                mimeType,
+                quality
+            );
         });
     }
-    return await _enginePromise;
 }
+
+/**
+ * Encodes pixel data to an image
+ * @param pixelData 8-bit RGBA pixel data
+ * @param width the width of the image
+ * @param height the height of the image
+ * @param mimeType the requested MIME type
+ * @param invertY true to invert the image in the Y direction
+ * @param quality the quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+ * @returns a promise that resolves to the encoded image data. Note that the `blob.type` may differ from `mimeType` if it was not supported.
+ */
+export const EncodeImageAsync = EncodingHelper.EncodeImageAsync;
 
 /**
  * Dumps the current bound framebuffer
@@ -100,6 +147,8 @@ async function _CreateDumpRenderer(): Promise<DumpToolsEngine> {
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @returns a void promise
  */
+// Should have "Async" in the name but this is a public API and we can't break it now
+// eslint-disable-next-line no-restricted-syntax
 export async function DumpFramebuffer(
     width: number,
     height: number,
@@ -117,6 +166,26 @@ export async function DumpFramebuffer(
     DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
 }
 
+export async function DumpDataAsync(
+    width: number,
+    height: number,
+    data: ArrayBufferView,
+    mimeType: string | undefined,
+    fileName: string | undefined,
+    invertY: boolean | undefined,
+    toArrayBuffer: true,
+    quality?: number
+): Promise<ArrayBuffer>;
+export async function DumpDataAsync(
+    width: number,
+    height: number,
+    data: ArrayBufferView,
+    mimeType?: string,
+    fileName?: string,
+    invertY?: boolean,
+    toArrayBuffer?: boolean,
+    quality?: number
+): Promise<string>;
 /**
  * Dumps an array buffer
  * @param width defines the rendering width
@@ -129,7 +198,7 @@ export async function DumpFramebuffer(
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @returns a promise that resolve to the final data
  */
-export function DumpDataAsync(
+export async function DumpDataAsync(
     width: number,
     height: number,
     data: ArrayBufferView,
@@ -139,9 +208,34 @@ export function DumpDataAsync(
     toArrayBuffer = false,
     quality?: number
 ): Promise<string | ArrayBuffer> {
-    return new Promise((resolve) => {
-        DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer, quality);
-    });
+    // Convert if data are float32
+    if (data instanceof Float32Array) {
+        const data2 = new Uint8Array(data.length);
+        let n = data.length;
+        while (n--) {
+            const v = data[n];
+            data2[n] = Math.round(Clamp(v) * 255);
+        }
+        data = data2;
+    }
+
+    const blob = await EncodingHelper.EncodeImageAsync(data, width, height, mimeType, invertY, quality);
+
+    if (fileName !== undefined) {
+        Tools.DownloadBlob(blob, fileName);
+    }
+
+    if (blob.type !== mimeType) {
+        Logger.Warn(`DumpData: The requested mimeType '${mimeType}' is not supported. The result has mimeType '${blob.type}' instead.`);
+    }
+
+    const buffer = await blob.arrayBuffer();
+
+    if (toArrayBuffer) {
+        return buffer;
+    }
+
+    return `data:${mimeType};base64,${EncodeArrayBufferToBase64(buffer)}`;
 }
 
 /**
@@ -151,7 +245,7 @@ export function DumpDataAsync(
  * @param data the data array
  * @param successCallback defines the callback triggered once the data are available
  * @param mimeType defines the mime type of the result
- * @param fileName defines the filename to download. If present, the result will automatically be downloaded
+ * @param fileName The name of the file to download. If present, the result will automatically be downloaded. If not defined, and `successCallback` is also not defined, the result will automatically be downloaded with an auto-generated file name.
  * @param invertY true to invert the picture in the Y dimension
  * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
@@ -167,70 +261,43 @@ export function DumpData(
     toArrayBuffer = false,
     quality?: number
 ): void {
-    _CreateDumpRenderer().then((renderer) => {
-        renderer.engine.setSize(width, height, true);
+    // For back-compat: if no fileName and no callback, force download the result
+    if (fileName === undefined && !successCallback) {
+        fileName = "";
+    }
 
-        // Convert if data are float32
-        if (data instanceof Float32Array) {
-            const data2 = new Uint8Array(data.length);
-            let n = data.length;
-            while (n--) {
-                const v = data[n];
-                data2[n] = Math.round(Clamp(v) * 255);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    DumpDataAsync(width, height, data, mimeType, fileName, invertY, toArrayBuffer, quality)
+        // eslint-disable-next-line github/no-then
+        .then((result) => {
+            if (successCallback) {
+                successCallback(result);
             }
-            data = data2;
-        }
-
-        // Create the image
-        const texture = renderer.engine.createRawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
-
-        renderer.renderer.setViewport();
-        renderer.renderer.applyEffectWrapper(renderer.wrapper);
-        renderer.wrapper.effect._bindTexture("textureSampler", texture);
-        renderer.renderer.draw();
-
-        if (toArrayBuffer) {
-            Tools.ToBlob(
-                renderer.canvas,
-                (blob) => {
-                    const fileReader = new FileReader();
-                    fileReader.onload = (event: any) => {
-                        const arrayBuffer = event.target!.result as ArrayBuffer;
-                        if (successCallback) {
-                            successCallback(arrayBuffer);
-                        }
-                    };
-                    fileReader.readAsArrayBuffer(blob!);
-                },
-                mimeType,
-                quality
-            );
-        } else {
-            Tools.EncodeScreenshotCanvasData(renderer.canvas, successCallback, mimeType, fileName, quality);
-        }
-
-        texture.dispose();
-    });
+        });
 }
 
 /**
  * Dispose the dump tools associated resources
  */
 export function Dispose() {
-    if (_dumpToolsEngine) {
-        _dumpToolsEngine.wrapper.dispose();
-        _dumpToolsEngine.renderer.dispose();
-        _dumpToolsEngine.engine.dispose();
-    } else {
-        // in cases where the engine is not yet created, we need to wait for it to dispose it
-        _enginePromise?.then((dumpToolsEngine) => {
-            dumpToolsEngine.wrapper.dispose();
-            dumpToolsEngine.renderer.dispose();
-            dumpToolsEngine.engine.dispose();
-        });
+    if (!ResourcesPromise) {
+        return;
     }
-    _enginePromise = null;
-    _dumpToolsEngine = null;
+
+    // in cases where the engine is not yet created, we need to wait for it to dispose it
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+    ResourcesPromise?.then((resources) => {
+        if (resources.canvas instanceof HTMLCanvasElement) {
+            resources.canvas.remove();
+        }
+        if (resources.dumpEngine) {
+            resources.dumpEngine.engine.dispose();
+            resources.dumpEngine.renderer.dispose();
+            resources.dumpEngine.wrapper.dispose();
+        }
+    });
+
+    ResourcesPromise = null;
 }
 
 /**
@@ -254,11 +321,11 @@ export const DumpTools = {
  * Once we build native modules those need to be exported.
  * @internal
  */
-const initSideEffects = () => {
+const InitSideEffects = () => {
     // References the dependencies.
     Tools.DumpData = DumpData;
     Tools.DumpDataAsync = DumpDataAsync;
     Tools.DumpFramebuffer = DumpFramebuffer;
 };
 
-initSideEffects();
+InitSideEffects();

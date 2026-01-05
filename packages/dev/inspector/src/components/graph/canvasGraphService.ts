@@ -18,82 +18,82 @@ import { Scalar } from "core/Maths/math.scalar";
 import { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
 import type { Observable } from "core/Misc/observable";
 
-const defaultColor = "#000";
-const axisColor = "#c0c4c8";
-const futureBoxColor = "#dfe9ed";
-const dividerColor = "#0a3066";
-const playheadColor = "#b9dbef";
+const DefaultColor = "#000";
+const AxisColor = "#c0c4c8";
+const FutureBoxColor = "#dfe9ed";
+const DividerColor = "#0a3066";
+const PlayheadColor = "#b9dbef";
 
-const positionIndicatorColor = "#4d5960";
-const tooltipBackgroundColor = "#566268";
-const tooltipForegroundColor = "#fbfbfb";
+const PositionIndicatorColor = "#4d5960";
+const TooltipBackgroundColor = "#566268";
+const TooltipForegroundColor = "#fbfbfb";
 
-const topOfGraphY = 0;
+const TopOfGraphY = 0;
 
-const defaultAlpha = 1;
-const tooltipBackgroundAlpha = 0.8;
-const backgroundLineAlpha = 0.2;
+const DefaultAlpha = 1;
+const TooltipBackgroundAlpha = 0.8;
+const BackgroundLineAlpha = 0.2;
 
-const maxDistanceForHover = 10;
+const MaxDistanceForHover = 10;
 
-const tooltipHorizontalPadding = 10;
-const spaceBetweenTextAndBox = 5;
-const tooltipPaddingFromBottom = 20;
+const TooltipHorizontalPadding = 10;
+const SpaceBetweenTextAndBox = 5;
+const TooltipPaddingFromBottom = 20;
 
 // height of indicator triangle
-const triangleHeight = 10;
+const TriangleHeight = 10;
 // width of indicator triangle
-const triangleWidth = 20;
+const TriangleWidth = 20;
 // padding to indicate how far below the axis line the triangle should be.
-const trianglePaddingFromAxisLine = 3;
+const TrianglePaddingFromAxisLine = 3;
 
-const tickerHorizontalPadding = 10;
+const TickerHorizontalPadding = 10;
 
 // pixels to pad the top and bottom of data so that it doesn't get cut off by the margins.
-const dataPadding = 2;
+const DataPadding = 2;
 
-const playheadSize = 8;
-const dividerSize = 2;
+const PlayheadSize = 8;
+const DividerSize = 2;
 
-const axisLineLength = 10;
-const axisPadding = 10;
+const AxisLineLength = 10;
+const AxisPadding = 10;
 
 // Currently the scale factor is a constant but when we add panning this may become formula based.
-const scaleFactor = 0.8;
+const ScaleFactor = 0.8;
 
 // This controls the scale factor at which we stop drawing the playhead. Below this value there tends to be flickering of the playhead as data comes in.
-const stopDrawingPlayheadThreshold = 0.95;
+const StopDrawingPlayheadThreshold = 0.95;
 
 // Threshold for the ratio at which we go from panning mode to live mode.
-const returnToLiveThreshold = 0.998;
+const ReturnToLiveThreshold = 0.998;
 
 // Font to use on the addons such as tooltips and tickers!
-const graphAddonFont = "12px Arial";
+const GraphAddonFont = "12px Arial";
 
 // A string containing the alphabet, used in line height calculation for the font.
-const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 // Arbitrary maximum used to make some GC optimizations.
-const maximumDatasetsAllowed = 64;
+const MaximumDatasetsAllowed = 64;
 
-const msInSecond = 1000;
-const msInMinute = msInSecond * 60;
-const msInHour = msInMinute * 60;
+const MsInSecond = 1000;
+const MsInMinute = MsInSecond * 60;
+const MsInHour = MsInMinute * 60;
 
 // time in ms to wait between tooltip draws inside the mouse move.
-const tooltipDebounceTime = 32;
+const TooltipDebounceTime = 32;
 
 // time in ms to wait between draws
-const drawThrottleTime = 15;
+const DrawThrottleTime = 15;
 
 // What distance percentage in the x axis between two points makes us break the line and draw a "no data" box instead
-const maxXDistancePercBetweenLinePoints = 0.1;
+const MaxXDistancePercBetweenLinePoints = 0.1;
 
 // Color used to draw the rectangle that indicates no collection of data
-const noDataRectangleColor = "#aaaaaa";
+const NoDataRectangleColor = "#aaaaaa";
 
-const smoothingFactor = 0.2; // factor to smooth the graph with
-const rangeMargin = 0.1; // extra margin to expand the min/max range on the graph
+const SmoothingFactor = 0.2; // factor to smooth the graph with
+const RangeMargin = 0.1; // extra margin to expand the min/max range on the graph
 
 /**
  * This function will debounce calls to functions.
@@ -102,7 +102,7 @@ const rangeMargin = 0.1; // extra margin to expand the min/max range on the grap
  * @param time time to wait between calls in ms.
  * @returns a function that will call the callback after the time has passed.
  */
-function debounce(callback: (...args: any[]) => void, time: number) {
+function Debounce(callback: (...args: any[]) => void, time: number) {
     let timerId: any;
     return function (...args: any[]) {
         clearTimeout(timerId);
@@ -117,7 +117,7 @@ function debounce(callback: (...args: any[]) => void, time: number) {
  * @param time time to wait between calls in ms.
  * @returns a function that will call the callback after the time has passed.
  */
-function throttle(callback: (...args: any[]) => void, time: number) {
+function Throttle(callback: (...args: any[]) => void, time: number) {
     let lastCalledTime: number = 0;
     return function (...args: any[]) {
         const now = Date.now();
@@ -185,7 +185,7 @@ export class CanvasGraphService {
         this._numberOfTickers = 0;
         this._onVisibleRangeChangedObservable = settings.onVisibleRangeChangedObservable;
 
-        for (let i = 0; i < maximumDatasetsAllowed; i++) {
+        for (let i = 0; i < MaximumDatasetsAllowed; i++) {
             this._tooltipItems.push({ text: "", color: "" });
             this._tickerItems.push({ text: "", id: "", max: 0, min: 0 });
         }
@@ -194,13 +194,13 @@ export class CanvasGraphService {
             throw Error("No canvas context accessible");
         }
 
-        const defaultMetrics = this._ctx.measureText(alphabet);
+        const defaultMetrics = this._ctx.measureText(Alphabet);
         this._defaultLineHeight = defaultMetrics.actualBoundingBoxAscent + defaultMetrics.actualBoundingBoxDescent;
-        this._axisHeight = axisLineLength + axisPadding + this._defaultLineHeight + axisPadding;
+        this._axisHeight = AxisLineLength + AxisPadding + this._defaultLineHeight + AxisPadding;
 
         this._ctx.save();
-        this._ctx.font = graphAddonFont;
-        const fontMetrics = this._ctx.measureText(alphabet);
+        this._ctx.font = GraphAddonFont;
+        const fontMetrics = this._ctx.measureText(Alphabet);
         this._addonFontLineHeight = fontMetrics.actualBoundingBoxAscent + fontMetrics.actualBoundingBoxDescent;
         this._ctx.restore();
 
@@ -213,7 +213,7 @@ export class CanvasGraphService {
     /**
      * This method lets the service know it should get ready to update what it is displaying.
      */
-    public update = throttle(() => this._draw(), drawThrottleTime);
+    public update = Throttle(() => this._draw(), DrawThrottleTime);
 
     /**
      * Update the canvas graph service with the new height and width of the canvas.
@@ -270,7 +270,7 @@ export class CanvasGraphService {
 
         // First we must get the end positions of our view port.
         const pos = this._position ?? numSlices - 1;
-        let start = pos - Math.ceil(this._sizeOfWindow * scaleFactor);
+        let start = pos - Math.ceil(this._sizeOfWindow * ScaleFactor);
         let startOverflow = 0;
 
         // account for overflow from start.
@@ -279,7 +279,7 @@ export class CanvasGraphService {
             start = 0;
         }
 
-        let end = Math.ceil(pos + this._sizeOfWindow * (1 - scaleFactor) + startOverflow);
+        let end = Math.ceil(pos + this._sizeOfWindow * (1 - ScaleFactor) + startOverflow);
 
         // account for overflow from end.
         if (end > numSlices) {
@@ -298,7 +298,7 @@ export class CanvasGraphService {
         this._globalTimeMinMax.max = this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1));
 
         // set the buffer region maximum by rescaling the max timestamp in bounds.
-        const bufferMaximum = Math.ceil((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / scaleFactor + this._globalTimeMinMax.min);
+        const bufferMaximum = Math.ceil((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / ScaleFactor + this._globalTimeMinMax.min);
 
         // we then need to update the end position based on the maximum for the buffer region
         // binary search to get closest point to the buffer maximum.
@@ -307,7 +307,7 @@ export class CanvasGraphService {
         // keep track of largest timestamp value in view!
         this._globalTimeMinMax.max = Math.max(this.datasets.data.at(this.datasets.startingIndices.at(this._datasetBounds.end - 1)), this._globalTimeMinMax.max);
 
-        const updatedScaleFactor = Scalar.Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), scaleFactor, 1);
+        const updatedScaleFactor = Scalar.Clamp((this._globalTimeMinMax.max - this._globalTimeMinMax.min) / (bufferMaximum - this._globalTimeMinMax.min), ScaleFactor, 1);
 
         // we will now set the global maximum to the maximum of the buffer.
         this._globalTimeMinMax.max = bufferMaximum;
@@ -320,15 +320,17 @@ export class CanvasGraphService {
         this._drawTickers(this._drawableArea, this._datasetBounds);
         this._drawTimeAxis(this._globalTimeMinMax, this._drawableArea);
         this._drawPlayheadRegion(this._drawableArea, updatedScaleFactor);
-        this._drawableArea.top += dataPadding;
-        this._drawableArea.bottom -= dataPadding;
+        this._drawableArea.top += DataPadding;
+        this._drawableArea.bottom -= DataPadding;
 
         // pre-process tooltip info so we can use it in determining opacity of lines.
         this._preprocessTooltip(this._hoverPosition, this._drawableArea);
 
         const { left, right, bottom, top } = this._drawableArea;
         // process, and then draw our points
-        this.datasets.ids.forEach((id, idOffset) => {
+        for (let idOffset = 0; idOffset < this.datasets.ids.length; idOffset++) {
+            const id = this.datasets.ids[idOffset];
+
             let valueMinMax: IPerfMinMax | undefined;
             let prevPoint = this._prevPointById.get(id);
             let prevValue = this._prevValueById.get(id);
@@ -344,12 +346,12 @@ export class CanvasGraphService {
             }
 
             ctx.beginPath();
-            ctx.strokeStyle = this.metadata.get(id)?.color ?? defaultColor;
+            ctx.strokeStyle = this.metadata.get(id)?.color ?? DefaultColor;
             // if we are focused on a line and not in live mode handle the opacities appropriately.
             if (this._preprocessedTooltipInfo.focusedId === id) {
-                ctx.globalAlpha = defaultAlpha;
+                ctx.globalAlpha = DefaultAlpha;
             } else if (this._preprocessedTooltipInfo.focusedId !== "") {
-                ctx.globalAlpha = backgroundLineAlpha;
+                ctx.globalAlpha = BackgroundLineAlpha;
             }
 
             const values = new Array(this._datasetBounds.end - this._datasetBounds.start);
@@ -370,7 +372,7 @@ export class CanvasGraphService {
                 }
 
                 // perform smoothing
-                const smoothedValue = smoothingFactor * value + (1 - smoothingFactor) * prevValue;
+                const smoothedValue = SmoothingFactor * value + (1 - SmoothingFactor) * prevValue;
                 values[pointIndex - this._datasetBounds.start] = smoothedValue;
 
                 if (!valueMinMax) {
@@ -386,8 +388,8 @@ export class CanvasGraphService {
             }
 
             const delta = valueMinMax!.max - valueMinMax!.min;
-            valueMinMax!.min -= rangeMargin * delta;
-            valueMinMax!.max += rangeMargin * delta;
+            valueMinMax!.min -= RangeMargin * delta;
+            valueMinMax!.max += RangeMargin * delta;
 
             for (let pointIndex = this._datasetBounds.start; pointIndex < this._datasetBounds.end; pointIndex++) {
                 const timestamp = this.datasets.data.at(this.datasets.startingIndices.at(pointIndex));
@@ -402,9 +404,9 @@ export class CanvasGraphService {
                 }
 
                 const xDifference = drawableTime - prevPoint[0];
-                const skipLine = xDifference > maxXDistancePercBetweenLinePoints * (right - left);
+                const skipLine = xDifference > MaxXDistancePercBetweenLinePoints * (right - left);
                 if (skipLine) {
-                    ctx.fillStyle = noDataRectangleColor;
+                    ctx.fillStyle = NoDataRectangleColor;
                     ctx.fillRect(prevPoint[0], top, xDifference, bottom - top);
                 } else {
                     if (prevPoint[0] < drawableTime) {
@@ -417,9 +419,9 @@ export class CanvasGraphService {
             }
 
             ctx.stroke();
-        });
+        }
 
-        ctx.globalAlpha = defaultAlpha;
+        ctx.globalAlpha = DefaultAlpha;
 
         // then draw the tooltip.
         this._drawTooltip(this._hoverPosition, this._drawableArea);
@@ -436,9 +438,10 @@ export class CanvasGraphService {
         let longestText: string = "";
         this._numberOfTickers = 0;
         const valueMap = new Map<string, IPerfMinMax>();
-        this.datasets.ids.forEach((id, idOffset) => {
+        for (let idOffset = 0; idOffset < this.datasets.ids.length; idOffset++) {
+            const id = this.datasets.ids[idOffset];
             if (this.metadata.get(id)?.hidden) {
-                return;
+                continue;
             }
 
             const valueMinMax = this._getMinMax(bounds, idOffset);
@@ -457,11 +460,11 @@ export class CanvasGraphService {
             this._tickerItems[this._numberOfTickers].min = valueMinMax.min;
             this._tickerItems[this._numberOfTickers].text = text;
             this._numberOfTickers++;
-        });
+        }
         this._onVisibleRangeChangedObservable?.notifyObservers({ valueMap });
 
         ctx.save();
-        ctx.font = graphAddonFont;
+        ctx.font = GraphAddonFont;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
 
@@ -470,7 +473,7 @@ export class CanvasGraphService {
         if (this._tickerTextCache.text.length === longestText.length) {
             width = this._tickerTextCache.width;
         } else {
-            width = ctx.measureText(longestText).width + 2 * tickerHorizontalPadding;
+            width = ctx.measureText(longestText).width + 2 * TickerHorizontalPadding;
             this._tickerTextCache.text = longestText;
             this._tickerTextCache.width = width;
         }
@@ -539,22 +542,22 @@ export class CanvasGraphService {
 
         // draw axis box.
         ctx.save();
-        ctx.fillStyle = axisColor;
+        ctx.fillStyle = AxisColor;
         ctx.fillRect(drawableArea.left, drawableArea.bottom, spaceAvailable, this._axisHeight);
         // draw time axis line
         ctx.beginPath();
-        ctx.strokeStyle = defaultColor;
+        ctx.strokeStyle = DefaultColor;
         ctx.moveTo(drawableArea.left, drawableArea.bottom);
         ctx.lineTo(drawableArea.right, drawableArea.bottom);
 
         // draw ticks and text.
-        ctx.fillStyle = defaultColor;
+        ctx.fillStyle = DefaultColor;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
         const timestampUnit: TimestampUnit = this._getTimestampUnit(this._ticks[this._ticks.length - 1]);
 
-        this._ticks.forEach((tick: number) => {
+        for (const tick of this._ticks) {
             let position = this._getPixelForNumber(tick, timeMinMax, drawableArea.left, spaceAvailable, false);
             if (position > spaceAvailable) {
                 position = spaceAvailable;
@@ -562,7 +565,7 @@ export class CanvasGraphService {
             ctx.moveTo(position, drawableArea.bottom);
             ctx.lineTo(position, drawableArea.bottom + 10);
             ctx.fillText(this._parseTimestamp(tick, timestampUnit), position, drawableArea.bottom + 20);
-        });
+        }
         ctx.stroke();
         ctx.restore();
     }
@@ -574,11 +577,11 @@ export class CanvasGraphService {
      * @returns The maximum unit the timestamp has.
      */
     private _getTimestampUnit(timestamp: number): TimestampUnit {
-        if (timestamp / msInHour > 1) {
+        if (timestamp / MsInHour > 1) {
             return TimestampUnit.Hours;
-        } else if (timestamp / msInMinute > 1) {
+        } else if (timestamp / MsInMinute > 1) {
             return TimestampUnit.Minutes;
-        } else if (timestamp / msInSecond > 1) {
+        } else if (timestamp / MsInSecond > 1) {
             return TimestampUnit.Seconds;
         } else {
             return TimestampUnit.Milliseconds;
@@ -595,19 +598,19 @@ export class CanvasGraphService {
         let parsedTimestamp = "";
 
         if (intervalUnit >= TimestampUnit.Hours) {
-            const numHours = Math.floor(timestamp / msInHour);
-            timestamp -= numHours * msInHour;
+            const numHours = Math.floor(timestamp / MsInHour);
+            timestamp -= numHours * MsInHour;
             parsedTimestamp += `${numHours.toString().padStart(intervalUnit > TimestampUnit.Hours ? 2 : 1, "0")}:`;
         }
 
         if (intervalUnit >= TimestampUnit.Minutes) {
-            const numMinutes = Math.floor(timestamp / msInMinute);
-            timestamp -= numMinutes * msInMinute;
+            const numMinutes = Math.floor(timestamp / MsInMinute);
+            timestamp -= numMinutes * MsInMinute;
             parsedTimestamp += `${numMinutes.toString().padStart(intervalUnit > TimestampUnit.Minutes ? 2 : 1, "0")}:`;
         }
 
-        const numSeconds = Math.floor(timestamp / msInSecond);
-        timestamp -= numSeconds * msInSecond;
+        const numSeconds = Math.floor(timestamp / MsInSecond);
+        timestamp -= numSeconds * MsInSecond;
         parsedTimestamp += numSeconds.toString().padStart(intervalUnit > TimestampUnit.Seconds ? 2 : 1, "0");
 
         if (timestamp > 0) {
@@ -785,10 +788,10 @@ export class CanvasGraphService {
     /**
      * Debounced processing and drawing of tooltip.
      */
-    private _debouncedTooltip = debounce((pos: IPerfTooltipHoverPosition | null, drawableArea: IGraphDrawableArea) => {
+    private _debouncedTooltip = Debounce((pos: IPerfTooltipHoverPosition | null, drawableArea: IGraphDrawableArea) => {
         this._preprocessTooltip(pos, drawableArea);
         this._drawTooltip(pos, drawableArea);
-    }, tooltipDebounceTime);
+    }, TooltipDebounceTime);
 
     /**
      * Handles what to do when we stop hovering over the canvas.
@@ -877,15 +880,16 @@ export class CanvasGraphService {
         let closestLineValueMinMax: IPerfMinMax = { min: 0, max: 0 };
         let closestLineDistance: number = Number.POSITIVE_INFINITY;
 
-        this.datasets.ids.forEach((id, idOffset) => {
+        for (let idOffset = 0; idOffset < this.datasets.ids.length; idOffset++) {
+            const id = this.datasets.ids[idOffset];
             if (this.metadata.get(id)?.hidden) {
-                return;
+                continue;
             }
 
             const numPoints = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.NumberOfPointsOffset);
 
             if (idOffset >= numPoints) {
-                return;
+                continue;
             }
 
             const valueAtClosestPointIndex = this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
@@ -901,7 +905,7 @@ export class CanvasGraphService {
             }
 
             if (!valueMinMax) {
-                return;
+                continue;
             }
 
             actualTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(closestIndex));
@@ -915,11 +919,11 @@ export class CanvasGraphService {
             }
 
             this._tooltipItems[numberOfTooltipItems].text = text;
-            this._tooltipItems[numberOfTooltipItems].color = this.metadata.get(id)?.color ?? defaultColor;
+            this._tooltipItems[numberOfTooltipItems].color = this.metadata.get(id)?.color ?? DefaultColor;
             numberOfTooltipItems++;
             // don't process rest if we aren't panned.
             if (!this._position) {
-                return;
+                continue;
             }
 
             // initially distance between closest data point and mouse point.
@@ -957,20 +961,20 @@ export class CanvasGraphService {
                 closestLineDistance = distance;
                 closestLineValueMinMax = valueMinMax;
             }
-        });
+        }
 
         const xForActualTimestamp = this._getPixelForNumber(actualTimestamp, this._globalTimeMinMax, drawableArea.left, drawableArea.right - drawableArea.left, false);
 
         this._preprocessedTooltipInfo.xForActualTimestamp = xForActualTimestamp;
         // check if hover is within a certain distance, if so it is our only item in our tooltip.
-        if (closestLineDistance <= maxDistanceForHover && this._position) {
+        if (closestLineDistance <= MaxDistanceForHover && this._position) {
             this._preprocessedTooltipInfo.focusedId = closestLineId;
             const inferredValue = this._getNumberFromPixel(adjustedYPos, closestLineValueMinMax, drawableArea.top, drawableArea.bottom, true);
             const closestLineText = `${closestLineId}: ${inferredValue.toFixed(2)}`;
             this._preprocessedTooltipInfo.longestText = closestLineText;
             this._preprocessedTooltipInfo.numberOfTooltipItems = 1;
             this._tooltipItems[0].text = closestLineText;
-            this._tooltipItems[0].color = this.metadata.get(closestLineId)?.color ?? defaultColor;
+            this._tooltipItems[0].color = this.metadata.get(closestLineId)?.color ?? DefaultColor;
         } else {
             this._preprocessedTooltipInfo.focusedId = "";
             this._preprocessedTooltipInfo.longestText = longestText;
@@ -996,21 +1000,21 @@ export class CanvasGraphService {
         ctx.save();
 
         // draw pointer triangle
-        ctx.fillStyle = positionIndicatorColor;
-        const yTriangle = drawableArea.bottom + trianglePaddingFromAxisLine;
+        ctx.fillStyle = PositionIndicatorColor;
+        const yTriangle = drawableArea.bottom + TrianglePaddingFromAxisLine;
         ctx.beginPath();
         ctx.moveTo(xForActualTimestamp, yTriangle);
-        ctx.lineTo(xForActualTimestamp + triangleWidth / 2, yTriangle + triangleHeight);
-        ctx.lineTo(xForActualTimestamp - triangleWidth / 2, yTriangle + triangleHeight);
+        ctx.lineTo(xForActualTimestamp + TriangleWidth / 2, yTriangle + TriangleHeight);
+        ctx.lineTo(xForActualTimestamp - TriangleWidth / 2, yTriangle + TriangleHeight);
         ctx.closePath();
         ctx.fill();
 
-        ctx.strokeStyle = positionIndicatorColor;
+        ctx.strokeStyle = PositionIndicatorColor;
         ctx.beginPath();
         // draw vertical or horizontal line depending on if focused on a point on the line.
         if (this._preprocessedTooltipInfo.focusedId === "") {
             ctx.moveTo(xForActualTimestamp, drawableArea.bottom);
-            ctx.lineTo(xForActualTimestamp, topOfGraphY);
+            ctx.lineTo(xForActualTimestamp, TopOfGraphY);
         } else {
             const lineY = pos.yPos - top;
             ctx.moveTo(drawableArea.left, lineY);
@@ -1019,40 +1023,40 @@ export class CanvasGraphService {
         ctx.stroke();
 
         // draw the actual tooltip
-        ctx.font = graphAddonFont;
+        ctx.font = GraphAddonFont;
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
 
         const boxLength = this._addonFontLineHeight;
-        const textHeight = this._addonFontLineHeight + Math.floor(tooltipHorizontalPadding / 2);
+        const textHeight = this._addonFontLineHeight + Math.floor(TooltipHorizontalPadding / 2);
 
         // initialize width with cached value or measure width of longest text and update cache.
         let width: number;
         if (longestText === this._tooltipTextCache.text) {
             width = this._tooltipTextCache.width;
         } else {
-            width = ctx.measureText(longestText).width + boxLength + 2 * tooltipHorizontalPadding + spaceBetweenTextAndBox;
+            width = ctx.measureText(longestText).width + boxLength + 2 * TooltipHorizontalPadding + SpaceBetweenTextAndBox;
             this._tooltipTextCache.text = longestText;
             this._tooltipTextCache.width = width;
         }
 
         const tooltipHeight = textHeight * (numberOfTooltipItems + 1);
         let x = pos.xPos - left;
-        let y = drawableArea.bottom - tooltipPaddingFromBottom - tooltipHeight;
+        let y = drawableArea.bottom - TooltipPaddingFromBottom - tooltipHeight;
 
         // We want the tool tip to always be inside the canvas so we adjust which way it is drawn.
         if (x + width > this._width) {
             x -= width;
         }
 
-        ctx.globalAlpha = tooltipBackgroundAlpha;
-        ctx.fillStyle = tooltipBackgroundColor;
+        ctx.globalAlpha = TooltipBackgroundAlpha;
+        ctx.fillStyle = TooltipBackgroundColor;
 
         ctx.fillRect(x, y, width, tooltipHeight);
 
-        ctx.globalAlpha = defaultAlpha;
+        ctx.globalAlpha = DefaultAlpha;
 
-        x += tooltipHorizontalPadding;
+        x += TooltipHorizontalPadding;
         y += textHeight;
 
         for (let i = 0; i < numberOfTooltipItems; i++) {
@@ -1060,8 +1064,8 @@ export class CanvasGraphService {
 
             ctx.fillStyle = tooltipItem.color;
             ctx.fillRect(x, y - Math.floor(boxLength / 2), boxLength, boxLength);
-            ctx.fillStyle = tooltipForegroundColor;
-            ctx.fillText(tooltipItem.text, x + boxLength + spaceBetweenTextAndBox, y);
+            ctx.fillStyle = TooltipForegroundColor;
+            ctx.fillText(tooltipItem.text, x + boxLength + SpaceBetweenTextAndBox, y);
             y += textHeight;
         }
 
@@ -1153,8 +1157,8 @@ export class CanvasGraphService {
         // update our position without allowing the user to pan more than they need to (approximation)
         this._position = Scalar.Clamp(
             pos - itemsDelta,
-            Math.floor(this._sizeOfWindow * scaleFactor),
-            this._getNumberOfSlices() - Math.floor(this._sizeOfWindow * (1 - scaleFactor))
+            Math.floor(this._sizeOfWindow * ScaleFactor),
+            this._getNumberOfSlices() - Math.floor(this._sizeOfWindow * (1 - ScaleFactor))
         );
 
         if (itemsDelta === 0) {
@@ -1206,11 +1210,11 @@ export class CanvasGraphService {
         }
 
         // account for overflow on the left side only as it will be the one determining if we have sufficiently caught up to the realtime data.
-        const overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * scaleFactor)), 0);
-        const rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - scaleFactor)), latestSlicePos);
+        const overflow = Math.max(0 - (pos - Math.ceil(this._sizeOfWindow * ScaleFactor)), 0);
+        const rightmostPos = Math.min(overflow + pos + Math.ceil(this._sizeOfWindow * (1 - ScaleFactor)), latestSlicePos);
 
         return (
-            this.datasets.data.at(this.datasets.startingIndices.at(rightmostPos)) / this.datasets.data.at(this.datasets.startingIndices.at(latestSlicePos)) > returnToLiveThreshold
+            this.datasets.data.at(this.datasets.startingIndices.at(rightmostPos)) / this.datasets.data.at(this.datasets.startingIndices.at(latestSlicePos)) > ReturnToLiveThreshold
         );
     }
 
@@ -1223,26 +1227,26 @@ export class CanvasGraphService {
     private _drawPlayheadRegion(drawableArea: IGraphDrawableArea, scaleFactor: number) {
         const { _ctx: ctx } = this;
 
-        if (!ctx || scaleFactor >= stopDrawingPlayheadThreshold) {
+        if (!ctx || scaleFactor >= StopDrawingPlayheadThreshold) {
             return;
         }
 
         const dividerXPos = Math.ceil(drawableArea.right * scaleFactor);
-        const playheadPos = dividerXPos - playheadSize;
-        const futureBoxPos = dividerXPos + dividerSize;
+        const playheadPos = dividerXPos - PlayheadSize;
+        const futureBoxPos = dividerXPos + DividerSize;
 
         const rectangleHeight = drawableArea.bottom - drawableArea.top - 1;
 
         ctx.save();
 
-        ctx.fillStyle = futureBoxColor;
+        ctx.fillStyle = FutureBoxColor;
         ctx.fillRect(futureBoxPos, drawableArea.top, drawableArea.right - futureBoxPos, rectangleHeight);
 
-        ctx.fillStyle = dividerColor;
-        ctx.fillRect(dividerXPos, drawableArea.top, dividerSize, rectangleHeight);
+        ctx.fillStyle = DividerColor;
+        ctx.fillRect(dividerXPos, drawableArea.top, DividerSize, rectangleHeight);
 
-        ctx.fillStyle = playheadColor;
-        ctx.fillRect(playheadPos, drawableArea.top, playheadSize, rectangleHeight);
+        ctx.fillStyle = PlayheadColor;
+        ctx.fillRect(playheadPos, drawableArea.top, PlayheadSize, rectangleHeight);
 
         ctx.restore();
     }

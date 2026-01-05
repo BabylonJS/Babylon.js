@@ -19,6 +19,18 @@ export function WithinEpsilon(a: number, b: number, epsilon: number = 1.401298e-
 }
 
 /**
+ * Boolean : true if the number is outside a range
+ * @param num number
+ * @param min min value
+ * @param max max value
+ * @param epsilon (default = Number.EPSILON)
+ * @returns true if the number is between min and max values
+ */
+export function OutsideRange(num: number, min: number, max: number, epsilon: number = 1.401298e-45): boolean {
+    return num < min - epsilon || num > max + epsilon;
+}
+
+/**
  * Returns a random float number between and min and max values
  * @param min min value of random
  * @param max max value of random
@@ -162,6 +174,7 @@ export function ToHex(i: number): string {
  * @param value the value to compute log2 of
  * @returns the log2 of value.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ILog2(value: number): number {
     if (Math.log2) {
         return Math.floor(Math.log2(value));

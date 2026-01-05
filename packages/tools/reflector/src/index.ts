@@ -4,9 +4,9 @@ import { readFileSync } from "fs";
 import { createServer } from "https";
 import { resolve } from "path";
 
-interface WebSocketInfo extends WebSocket {
+interface IWebSocketInfo extends WebSocket {
     _id?: number;
-    _other?: WebSocketInfo;
+    _other?: IWebSocketInfo;
 }
 
 class Server {
@@ -25,7 +25,7 @@ class Server {
 
         this._server = ssl ? new WebSocketServer({ server }) : new WebSocketServer({ port });
 
-        this._server.on("connection", (client: WebSocketInfo) => {
+        this._server.on("connection", (client: IWebSocketInfo) => {
             client._id = this._nextClientId++;
             console.log(`Client ${client._id} connected`);
 
@@ -57,7 +57,7 @@ class Server {
 
     private _checkClients(): void {
         if (this._server.clients.size == 2) {
-            const clients = Array.from(this._server.clients.values()) as any as Array<WebSocketInfo>;
+            const clients = Array.from(this._server.clients.values()) as any as Array<IWebSocketInfo>;
             clients[0]._other = clients[1];
             clients[1]._other = clients[0];
             this._broadcast("connected");
@@ -65,7 +65,7 @@ class Server {
     }
 
     private _broadcast(message: string): void {
-        const clients = this._server.clients.values() as Iterable<WebSocketInfo>;
+        const clients = this._server.clients.values() as Iterable<IWebSocketInfo>;
         for (const client of clients) {
             console.log(`Sending broadcast message to client ${client._id}: ${message}`);
             client.send(`$$${message}`);
@@ -73,7 +73,7 @@ class Server {
     }
 }
 
-const server = new Server();
-const port = process.env.npm_config_port ? +process.env.npm_config_port : 1234;
-const ssl = process.env.reflector_ssl || process.argv[2] === "--ssl" ? true : false;
-server.start(port, ssl);
+const ServerInstance = new Server();
+const Port = process.env.npm_config_port ? +process.env.npm_config_port : 1234;
+const Ssl = process.env.reflector_ssl || process.argv[2] === "--ssl" ? true : false;
+ServerInstance.start(Port, Ssl);

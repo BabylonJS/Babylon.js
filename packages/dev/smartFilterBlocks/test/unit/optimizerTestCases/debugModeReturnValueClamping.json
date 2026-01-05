@@ -1,0 +1,162 @@
+{
+    "format": "smartFilter",
+    "formatVersion": 1,
+    "name": "Optimizer.Clamp.Test",
+    "namespace": null,
+    "comments": null,
+    "editorData": {
+        "locations": [
+            {
+                "blockId": 2,
+                "x": 740,
+                "y": 240,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 4,
+                "x": 0,
+                "y": 40,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 9,
+                "x": 0,
+                "y": 280,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 39,
+                "x": 240,
+                "y": 320,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 8,
+                "x": 240,
+                "y": 140,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 38,
+                "x": 500,
+                "y": 220,
+                "isCollapsed": false
+            }
+        ],
+        "x": 542.9299999999998,
+        "y": 158.06,
+        "zoom": 0.81
+    },
+    "blocks": [
+        {
+            "name": "output",
+            "uniqueId": 2,
+            "blockType": "OutputBlock",
+            "namespace": null,
+            "comments": null
+        },
+        {
+            "name": "Texture",
+            "uniqueId": 4,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 2,
+                "url": "/assets/logo.png",
+                "urlTypeHint": "image",
+                "flipY": true,
+                "anisotropicFilteringLevel": 4,
+                "forcedExtension": null,
+                "appMetadata": null
+            }
+        },
+        {
+            "name": "Amount",
+            "uniqueId": 9,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 1,
+                "value": 1.32,
+                "animationType": null,
+                "valueDeltaPerMs": null,
+                "min": 0,
+                "max": 2
+            }
+        },
+        {
+            "name": "amount",
+            "uniqueId": 39,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 1,
+                "value": 0.25,
+                "animationType": null,
+                "valueDeltaPerMs": null,
+                "min": null,
+                "max": null,
+                "appMetadata": null
+            }
+        },
+        {
+            "name": "Exposure",
+            "uniqueId": 8,
+            "blockType": "ExposureBlock",
+            "namespace": "Babylon.Demo.Effects",
+            "comments": null,
+            "outputTextureOptions": {
+                "ratio": 1,
+                "format": 5,
+                "type": 0
+            }
+        },
+        {
+            "name": "Tint",
+            "uniqueId": 38,
+            "blockType": "TintBlock",
+            "namespace": "Babylon.Demo.Effects",
+            "comments": null,
+            "outputTextureOptions": {
+                "ratio": 1,
+                "format": 5,
+                "type": 0
+            }
+        }
+    ],
+    "connections": [
+        {
+            "inputBlock": 2,
+            "inputConnectionPoint": "input",
+            "outputBlock": 38,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 8,
+            "inputConnectionPoint": "input",
+            "outputBlock": 4,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 8,
+            "inputConnectionPoint": "amount",
+            "outputBlock": 9,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 38,
+            "inputConnectionPoint": "amount",
+            "outputBlock": 39,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 38,
+            "inputConnectionPoint": "input",
+            "outputBlock": 8,
+            "outputConnectionPoint": "output"
+        }
+    ]
+}

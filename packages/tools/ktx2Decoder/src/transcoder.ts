@@ -18,8 +18,11 @@ export class Transcoder {
     public static WasmBaseUrl = "";
 
     public static GetWasmUrl(wasmUrl: string) {
-        if (Transcoder.WasmBaseUrl && wasmUrl.startsWith("https://cdn.babylonjs.com/")) {
-            wasmUrl = wasmUrl.replace("https://cdn.babylonjs.com/", Transcoder.WasmBaseUrl);
+        if (Transcoder.WasmBaseUrl && wasmUrl.startsWith("https://cdn.babylonjs.com")) {
+            // Normalize the base url
+            const baseUrl =
+                Transcoder.WasmBaseUrl[Transcoder.WasmBaseUrl.length - 1] === "/" ? Transcoder.WasmBaseUrl.substring(0, Transcoder.WasmBaseUrl.length - 1) : Transcoder.WasmBaseUrl;
+            wasmUrl = wasmUrl.replace("https://cdn.babylonjs.com", baseUrl);
         }
         return wasmUrl;
     }
@@ -36,7 +39,7 @@ export class Transcoder {
 
     public setMemoryManager(memoryMgr: WASMMemoryManager): void {}
 
-    public transcode(
+    public async transcode(
         src: KTX2.SourceTextureFormat,
         dst: KTX2.TranscodeTarget,
         level: number,
@@ -47,6 +50,6 @@ export class Transcoder {
         imageDesc: IKTX2_ImageDesc | null,
         encodedData: Uint8Array
     ): Promise<Uint8Array | null> {
-        return Promise.resolve(null);
+        return null;
     }
 }

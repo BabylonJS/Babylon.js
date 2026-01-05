@@ -1,5 +1,8 @@
 import type { Nullable } from "../../types";
+import type { IAudioParameterRampOptions } from "../audioParameter";
 import type { AbstractAudioNode, AbstractNamedAudioNode } from "./abstractAudioNode";
+import type { AbstractSound } from "./abstractSound";
+import type { AbstractSoundSource, ISoundSourceOptions } from "./abstractSoundSource";
 import type { AudioBus, IAudioBusOptions } from "./audioBus";
 import type { IMainAudioBusOptions, MainAudioBus } from "./mainAudioBus";
 import type { IStaticSoundOptions, StaticSound } from "./staticSound";
@@ -26,6 +29,10 @@ export function LastCreatedAudioEngine(): Nullable<AudioEngineV2> {
  */
 export interface IAudioEngineV2Options extends ISpatialAudioListenerOptions {
     /**
+     * The smoothing duration to use when changing audio parameters, in seconds. Defaults to `0.01` (10 milliseconds).
+     */
+    parameterRampDuration: number;
+    /**
      * The initial output volume of the audio engine. Defaults to `1`.
      */
     volume: number;
@@ -45,14 +52,22 @@ export type AudioEngineV2State = "closed" | "interrupted" | "running" | "suspend
 export abstract class AudioEngineV2 {
     /** Not owned, but all items should be in `_nodes` container, too, which is owned. */
     private readonly _mainBuses = new Set<MainAudioBus>();
+    private readonly _sounds = new Set<AbstractSound>();
+    private _soundsArray: Nullable<Array<AbstractSound>> = null;
 
     /** Owned top-level sound and bus nodes. */
     private readonly _nodes = new Set<AbstractNamedAudioNode>();
 
     private _defaultMainBus: Nullable<MainAudioBus> = null;
 
-    protected constructor() {
+    private _parameterRampDuration: number = 0.01;
+
+    protected constructor(options: Partial<IAudioEngineV2Options>) {
         Instances.push(this);
+
+        if (typeof options.parameterRampDuration === "number") {
+            this.parameterRampDuration = options.parameterRampDuration;
+        }
     }
 
     /**
@@ -106,10 +121,30 @@ export abstract class AudioEngineV2 {
     public abstract volume: number;
 
     /**
+     * The smoothing duration to use when changing audio parameters, in seconds. Defaults to `0.01` (10 milliseconds).
+     */
+    public get parameterRampDuration(): number {
+        return this._parameterRampDuration;
+    }
+
+    public set parameterRampDuration(value: number) {
+        this._parameterRampDuration = Math.max(0, value);
+    }
+
+    /**
+     * The list of static and streaming sounds created by the audio engine.
+     */
+    public get sounds(): ReadonlyArray<AbstractSound> {
+        if (!this._soundsArray) {
+            this._soundsArray = Array.from(this._sounds);
+        }
+        return this._soundsArray;
+    }
+
+    /**
      * Creates a new audio bus.
      * @param name - The name of the audio bus.
      * @param options - The options to use when creating the audio bus.
-     * @param engine - The audio engine.
      * @returns A promise that resolves with the created audio bus.
      */
     public abstract createBusAsync(name: string, options?: Partial<IAudioBusOptions>): Promise<AudioBus>;
@@ -121,6 +156,15 @@ export abstract class AudioEngineV2 {
      * @returns A promise that resolves with the created main audio bus.
      */
     public abstract createMainBusAsync(name: string, options?: Partial<IMainAudioBusOptions>): Promise<MainAudioBus>;
+
+    /**
+     * Creates a new microphone sound source.
+     * @param name - The name of the sound.
+     * @param options - The options for the sound source.
+     * @returns A promise that resolves to the created sound source.
+     */
+    public abstract createMicrophoneSoundSourceAsync(name: string, options?: Partial<ISoundSourceOptions>): Promise<AbstractSoundSource>;
+
     /**
      * Creates a new static sound.
      * @param name - The name of the sound.
@@ -138,13 +182,21 @@ export abstract class AudioEngineV2 {
      * Creates a new static sound buffer.
      * @param source - The source of the sound buffer.
      * @param options - The options for the static sound buffer.
-     * @param engine - The audio engine.
      * @returns A promise that resolves to the created static sound buffer.
      */
     public abstract createSoundBufferAsync(
         source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
         options?: Partial<IStaticSoundBufferOptions>
     ): Promise<StaticSoundBuffer>;
+
+    /**
+     * Creates a new sound source.
+     * @param name - The name of the sound.
+     * @param source - The source of the sound.
+     * @param options - The options for the sound source.
+     * @returns A promise that resolves to the created sound source.
+     */
+    public abstract createSoundSourceAsync(name: string, source: AudioNode, options?: Partial<ISoundSourceOptions>): Promise<AbstractSoundSource>;
 
     /**
      * Creates a new streaming sound.
@@ -170,6 +222,9 @@ export abstract class AudioEngineV2 {
 
         this._mainBuses.clear();
         this._nodes.clear();
+        this._sounds.clear();
+
+        this._disposeSoundsArray();
 
         this._defaultMainBus = null;
     }
@@ -185,21 +240,31 @@ export abstract class AudioEngineV2 {
      * Pauses the audio engine if it is running.
      * @returns A promise that resolves when the audio engine is paused.
      */
-    public abstract pause(): Promise<void>;
+    public abstract pauseAsync(): Promise<void>;
 
     /**
      * Resumes the audio engine if it is not running.
      * @returns A promise that resolves when the audio engine is running.
      */
-    public abstract resume(): Promise<void>;
+    public abstract resumeAsync(): Promise<void>;
+
+    /**
+     * Sets the audio output volume with optional ramping.
+     * If the duration is 0 then the volume is set immediately, otherwise it is ramped to the new value over the given duration using the given shape.
+     * If a ramp is already in progress then the volume is not set and an error is thrown.
+     * @param value The value to set the volume to.
+     * @param options The options to use for ramping the volume change.
+     */
+    public abstract setVolume(value: number, options?: Partial<IAudioParameterRampOptions>): void;
 
     /**
      * Unlocks the audio engine if it is locked.
      * - Note that the returned promise may already be resolved if the audio engine is already unlocked.
      * @returns A promise that is resolved when the audio engine is unlocked.
      */
-    public unlock(): Promise<void> {
-        return this.resume();
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    public unlockAsync(): Promise<void> {
+        return this.resumeAsync();
     }
 
     protected _addMainBus(mainBus: MainAudioBus): void {
@@ -221,6 +286,25 @@ export abstract class AudioEngineV2 {
 
     protected _removeNode(node: AbstractNamedAudioNode): void {
         this._nodes.delete(node);
+    }
+
+    protected _addSound(sound: AbstractSound): void {
+        this._disposeSoundsArray();
+        this._sounds.add(sound);
+        this._addNode(sound);
+    }
+
+    protected _removeSound(sound: AbstractSound): void {
+        this._disposeSoundsArray();
+        this._sounds.delete(sound);
+        this._removeNode(sound);
+    }
+
+    private _disposeSoundsArray(): void {
+        if (this._soundsArray) {
+            this._soundsArray.length = 0;
+            this._soundsArray = null;
+        }
     }
 }
 
@@ -249,6 +333,7 @@ export function _GetAudioEngine(engine: Nullable<AudioEngineV2>): AudioEngineV2 
  * @param engine - The audio engine.
  * @returns A promise that resolves with the created audio bus.
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
 export function CreateAudioBusAsync(name: string, options: Partial<IAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<AudioBus> {
     engine = _GetAudioEngine(engine);
     return engine.createBusAsync(name, options);
@@ -261,9 +346,23 @@ export function CreateAudioBusAsync(name: string, options: Partial<IAudioBusOpti
  * @param engine - The audio engine.
  * @returns A promise that resolves with the created main audio bus.
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
 export function CreateMainAudioBusAsync(name: string, options: Partial<IMainAudioBusOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<MainAudioBus> {
     engine = _GetAudioEngine(engine);
     return engine.createMainBusAsync(name, options);
+}
+
+/**
+ * Creates a new microphone sound source.
+ * @param name - The name of the sound.
+ * @param options - The options for the sound source.
+ * @param engine - The audio engine.
+ * @returns A promise that resolves to the created sound source.
+ */
+// eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+export function CreateMicrophoneSoundSourceAsync(name: string, options: Partial<ISoundSourceOptions> = {}, engine: Nullable<AudioEngineV2> = null): Promise<AbstractSoundSource> {
+    engine = _GetAudioEngine(engine);
+    return engine.createMicrophoneSoundSourceAsync(name, options);
 }
 
 /**
@@ -274,6 +373,7 @@ export function CreateMainAudioBusAsync(name: string, options: Partial<IMainAudi
  * @param engine - The audio engine.
  * @returns A promise that resolves to the created static sound.
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
 export function CreateSoundAsync(
     name: string,
     source: ArrayBuffer | AudioBuffer | StaticSoundBuffer | string | string[],
@@ -297,7 +397,26 @@ export async function CreateSoundBufferAsync(
     engine: Nullable<AudioEngineV2> = null
 ): Promise<StaticSoundBuffer> {
     engine = _GetAudioEngine(engine);
-    return engine.createSoundBufferAsync(source, options);
+    return await engine.createSoundBufferAsync(source, options);
+}
+
+/**
+ * Creates a new sound source.
+ * @param name - The name of the sound.
+ * @param source - The source of the sound.
+ * @param options - The options for the sound source.
+ * @param engine - The audio engine.
+ * @returns A promise that resolves to the created sound source.
+ */
+// eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+export function CreateSoundSourceAsync(
+    name: string,
+    source: AudioNode,
+    options: Partial<ISoundSourceOptions> = {},
+    engine: Nullable<AudioEngineV2> = null
+): Promise<AbstractSoundSource> {
+    engine = _GetAudioEngine(engine);
+    return engine.createSoundSourceAsync(name, source, options);
 }
 
 /**
@@ -308,6 +427,7 @@ export async function CreateSoundBufferAsync(
  * @param engine - The audio engine.
  * @returns A promise that resolves to the created streaming sound.
  */
+// eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
 export function CreateStreamingSoundAsync(
     name: string,
     source: HTMLMediaElement | string | string[],

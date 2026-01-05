@@ -59,7 +59,9 @@ export class RawCubeTexture extends CubeTexture {
      * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
      * @returns a promise that resolves when the operation is complete
      */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public updateRGBDAsync(data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial> = null, lodScale: number = 0.8, lodOffset: number = 0): Promise<void> {
+        // eslint-disable-next-line github/no-then
         return UpdateRGBDAsyncEnvTools(this._texture!, data, sphericalPolynomial, lodScale, lodOffset).then(() => {});
     }
 
@@ -74,7 +76,7 @@ export class RawCubeTexture extends CubeTexture {
 
             const texture = new RawCubeTexture(
                 scene,
-                internalTexture._bufferViewArray!,
+                internalTexture._bufferViewArray,
                 internalTexture.width,
                 internalTexture.format,
                 internalTexture.type,
@@ -85,6 +87,7 @@ export class RawCubeTexture extends CubeTexture {
             );
 
             if (internalTexture.source === InternalTextureSource.CubeRawRGBD) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 texture.updateRGBDAsync(
                     internalTexture._bufferViewArrayArray!,
                     internalTexture._sphericalPolynomial,

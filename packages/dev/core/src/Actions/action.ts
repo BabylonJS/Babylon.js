@@ -65,6 +65,12 @@ export interface IAction {
      * @see https://www.babylonjs-playground.com/#1T30HR#0
      */
     then(action: IAction): IAction;
+
+    /**
+     * Internal only - Returns if the current condition allows to run the action
+     * @internal
+     */
+    _evaluateConditionForCurrentFrame(): boolean;
 }
 
 /**
@@ -298,7 +304,7 @@ export class Action implements IAction {
             return value.r + ", " + value.g + ", " + value.b + ", " + value.a;
         }
 
-        return value; // string
+        return value as string; // string
     };
 
     /**

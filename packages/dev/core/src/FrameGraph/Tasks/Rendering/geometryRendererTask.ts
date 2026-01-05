@@ -1,21 +1,8 @@
-import type {
-    FrameGraphTextureHandle,
-    Scene,
-    Camera,
-    AbstractEngine,
-    FrameGraph,
-    GeometryRenderingTextureClearType,
-    FrameGraphObjectList,
-    AbstractMesh,
-    ObjectRendererOptions,
-    // eslint-disable-next-line import/no-internal-modules
-} from "core/index";
-import { backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
+import type { FrameGraphTextureHandle, Scene, FrameGraph, AbstractMesh, ObjectRendererOptions, FrameGraphRenderContext, FrameGraphRenderPass, ObjectRenderer } from "core/index";
 import { Color4 } from "core/Maths/math.color";
-import { MaterialHelperGeometryRendering } from "core/Materials/materialHelper.geometryrendering";
+import { MaterialHelperGeometryRendering, GeometryRenderingTextureClearType } from "core/Materials/materialHelper.geometryrendering";
 import { Constants } from "core/Engines/constants";
-import { FrameGraphTask } from "../../frameGraphTask";
-import { ObjectRenderer } from "../../../Rendering/objectRenderer";
+import { FrameGraphObjectRendererTask } from "./objectRendererTask";
 
 /**
  * Description of a texture used by the geometry renderer task.
@@ -38,46 +25,12 @@ export interface IFrameGraphGeometryRendererTextureDescription {
     textureFormat: number;
 }
 
-const clearColors: Color4[] = [new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 1), new Color4(1e8, 1e8, 1e8, 1e8)];
+const ClearColors: Color4[] = [new Color4(0, 0, 0, 0), new Color4(1, 1, 1, 1), new Color4(0, 0, 0, 0)];
 
 /**
  * Task used to render geometry to a set of textures.
  */
-export class FrameGraphGeometryRendererTask extends FrameGraphTask {
-    /**
-     * The depth texture attachment to use for rendering (optional).
-     */
-    public depthTexture?: FrameGraphTextureHandle;
-
-    private _camera: Camera;
-
-    /**
-     * Gets or sets the camera used for rendering.
-     */
-    public get camera() {
-        return this._camera;
-    }
-
-    public set camera(camera: Camera) {
-        this._camera = camera;
-        this._renderer.activeCamera = this.camera;
-    }
-
-    /**
-     * The object list used for rendering.
-     */
-    public objectList: FrameGraphObjectList;
-
-    /**
-     * Whether depth testing is enabled (default is true).
-     */
-    public depthTest = true;
-
-    /**
-     * Whether depth writing is enabled (default is true).
-     */
-    public depthWrite = true;
-
+export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask {
     /**
      * The size of the output textures (default is 100% of the back buffer texture size).
      */
@@ -116,22 +69,36 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
      */
     public dontRenderWhenMaterialDepthWriteIsDisabled = true;
 
+    private _disableDepthPrePass = true;
+    /**
+     * Indicates whether the depth pre-pass is disabled (default is true).
+     * Materials that require depth pre-pass (Material.needDepthPrePass == true) don't work with the geometry renderer, that's why this setting is true by default.
+     * However, if the geometry renderer doesn't generate any geometry textures but only renders to the main target texture, then depth pre-pass can be enabled.
+     */
+    public get disableDepthPrePass() {
+        return this._disableDepthPrePass;
+    }
+
+    public set disableDepthPrePass(value: boolean) {
+        this._disableDepthPrePass = value;
+        this._renderer.disableDepthPrePass = value;
+    }
+
     /**
      * The list of texture descriptions used by the geometry renderer task.
      */
     public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
 
     /**
-     * The output depth texture attachment texture.
-     * This texture will point to the same texture than the depthTexture property if it is set.
-     * Note, however, that the handle itself will be different!
-     */
-    public readonly outputDepthTexture: FrameGraphTextureHandle;
-
-    /**
      * The depth (in view space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
      */
     public readonly geometryViewDepthTexture: FrameGraphTextureHandle;
+
+    /**
+     * The normalized depth (in view space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     * The normalization is (d - near) / (far - near), where d is the depth value in view space and near and far are the near and far planes of the camera.
+     */
+    public readonly geometryNormViewDepthTexture: FrameGraphTextureHandle;
 
     /**
      * The depth (in screen space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
@@ -179,13 +146,6 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
     public readonly geometryLinearVelocityTexture: FrameGraphTextureHandle;
 
     /**
-     * The object renderer used by the geometry renderer task.
-     */
-    public get objectRenderer() {
-        return this._renderer;
-    }
-
-    /**
      * Gets or sets the name of the task.
      */
     public override get name() {
@@ -199,11 +159,6 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
         }
     }
 
-    private readonly _engine: AbstractEngine;
-    private readonly _scene: Scene;
-    private readonly _renderer: ObjectRenderer;
-    private _textureWidth: number;
-    private _textureHeight: number;
     private _clearAttachmentsLayout: Map<GeometryRenderingTextureClearType, number[]>;
     private _allAttachmentsLayout: number[];
 
@@ -213,16 +168,16 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
      * @param frameGraph The frame graph the task belongs to.
      * @param scene The scene the frame graph is associated with.
      * @param options The options of the object renderer.
+     * @param existingObjectRenderer An existing object renderer to use (optional). If provided, the options parameter will be ignored.
      */
-    constructor(name: string, frameGraph: FrameGraph, scene: Scene, options?: ObjectRendererOptions) {
-        super(name, frameGraph);
+    constructor(name: string, frameGraph: FrameGraph, scene: Scene, options?: ObjectRendererOptions, existingObjectRenderer?: ObjectRenderer) {
+        super(name, frameGraph, scene, options, existingObjectRenderer);
 
-        this._scene = scene;
-        this._engine = this._scene.getEngine();
-
-        this._renderer = new ObjectRenderer(name, scene, options);
-        this._renderer.renderSprites = false;
-        this._renderer.renderParticles = false;
+        this.renderSprites = false;
+        this.renderParticles = false;
+        this.enableBoundingBoxRendering = false;
+        this.enableOutlineRendering = false;
+        this._renderer.disableDepthPrePass = true;
 
         this._renderer.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => {
             if (this.dontRenderWhenMaterialDepthWriteIsDisabled && mesh.material && mesh.material.disableDepthWrite) {
@@ -238,12 +193,11 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
             }
         });
 
-        this.name = name;
         this._clearAttachmentsLayout = new Map();
         this._allAttachmentsLayout = [];
 
-        this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryViewDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
+        this.geometryNormViewDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryScreenDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryViewNormalTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryWorldNormalTexture = this._frameGraph.textureManager.createDanglingHandle();
@@ -262,48 +216,62 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
         return MaterialHelperGeometryRendering.GetConfiguration(this._renderer.renderPassId).excludedSkinnedMesh;
     }
 
-    public override isReady() {
-        return this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
+    /**
+     * Excludes the given skinned mesh from computing bones velocities.
+     * Computing bones velocities can have a cost. The cost can be saved by calling this function and by passing the skinned mesh to ignore.
+     * @param skinnedMesh The mesh containing the skeleton to ignore when computing the velocity map.
+     */
+    public excludeSkinnedMeshFromVelocityTexture(skinnedMesh: AbstractMesh): void {
+        if (skinnedMesh.skeleton) {
+            const list = this.excludedSkinnedMeshFromVelocityTexture;
+            if (list.indexOf(skinnedMesh) === -1) {
+                list.push(skinnedMesh);
+            }
+        }
     }
 
-    public record() {
-        if (this.textureDescriptions.length === 0 || this.objectList === undefined) {
-            throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object list and at least one geometry texture description must be provided`);
+    /**
+     * Removes the given skinned mesh from the excluded meshes to integrate bones velocities while rendering the velocity map.
+     * @param skinnedMesh The mesh containing the skeleton that has been ignored previously.
+     * @see excludeSkinnedMesh to exclude a skinned mesh from bones velocity computation.
+     */
+    public removeExcludedSkinnedMeshFromVelocityTexture(skinnedMesh: AbstractMesh): void {
+        const list = this.excludedSkinnedMeshFromVelocityTexture;
+        const index = list.indexOf(skinnedMesh);
+        if (index !== -1) {
+            list.splice(index, 1);
         }
+    }
 
-        // Make sure the renderList / particleSystemList are set when FrameGraphGeometryRendererTask.isReady() is called!
-        this._renderer.renderList = this.objectList.meshes;
-        this._renderer.particleSystemList = this.objectList.particleSystems;
+    public override getClassName(): string {
+        return "FrameGraphGeometryRendererTask";
+    }
 
-        const outputTextureHandle = this._createMultiRenderTargetTexture();
-
-        const depthEnabled = this._checkDepthTextureCompatibility();
-
+    public override record(skipCreationOfDisabledPasses = false, additionalExecute?: (context: FrameGraphRenderContext) => void): FrameGraphRenderPass {
         this._buildClearAttachmentsLayout();
 
         this._registerForRenderPassId(this._renderer.renderPassId);
 
-        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(outputTextureHandle[0]);
-
-        this._textureWidth = outputTextureDescription.size.width;
-        this._textureHeight = outputTextureDescription.size.height;
-
-        // Create pass
         MaterialHelperGeometryRendering.MarkAsDirty(this._renderer.renderPassId, this.objectList.meshes || this._scene.meshes);
 
-        const pass = this._frameGraph.addRenderPass(this.name);
+        const pass = super.record(skipCreationOfDisabledPasses, additionalExecute) as FrameGraphRenderPass;
 
-        pass.setRenderTarget(outputTextureHandle);
+        const outputTextureHandles = pass.renderTarget as FrameGraphTextureHandle[];
+
+        let needPreviousWorldMatrices = false;
 
         for (let i = 0; i < this.textureDescriptions.length; i++) {
             const description = this.textureDescriptions[i];
-            const handle = outputTextureHandle[i];
+            const handle = outputTextureHandles[i];
             const index = MaterialHelperGeometryRendering.GeometryTextureDescriptions.findIndex((f) => f.type === description.type);
             const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
 
             switch (geometryDescription.type) {
                 case Constants.PREPASS_DEPTH_TEXTURE_TYPE:
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryViewDepthTexture, handle);
+                    break;
+                case Constants.PREPASS_NORMALIZED_VIEW_DEPTH_TEXTURE_TYPE:
+                    this._frameGraph.textureManager.resolveDanglingHandle(this.geometryNormViewDepthTexture, handle);
                     break;
                 case Constants.PREPASS_SCREENSPACE_DEPTH_TEXTURE_TYPE:
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryScreenDepthTexture, handle);
@@ -328,35 +296,18 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
                     break;
                 case Constants.PREPASS_VELOCITY_TEXTURE_TYPE:
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryVelocityTexture, handle);
+                    needPreviousWorldMatrices = true;
                     break;
                 case Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE:
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryLinearVelocityTexture, handle);
+                    needPreviousWorldMatrices = true;
                     break;
             }
         }
 
-        pass.setRenderTargetDepth(this.depthTexture);
+        this._scene.needsPreviousWorldMatrices = needPreviousWorldMatrices;
 
-        pass.setExecuteFunc((context) => {
-            this._renderer.renderList = this.objectList.meshes;
-            this._renderer.particleSystemList = this.objectList.particleSystems;
-
-            context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
-
-            this._clearAttachmentsLayout.forEach((layout, clearType) => {
-                context.clearColorAttachments(clearColors[clearType], layout);
-            });
-
-            context.bindAttachments(this._allAttachmentsLayout);
-
-            context.render(this._renderer, this._textureWidth, this._textureHeight);
-        });
-
-        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
-
-        passDisabled.setRenderTarget(outputTextureHandle);
-        passDisabled.setRenderTargetDepth(this.depthTexture);
-        passDisabled.setExecuteFunc((_context) => {});
+        return pass;
     }
 
     public override dispose(): void {
@@ -365,7 +316,62 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
         super.dispose();
     }
 
-    private _createMultiRenderTargetTexture(): FrameGraphTextureHandle[] {
+    protected override _resolveDanglingHandles(_targetTextures: FrameGraphTextureHandle[]) {
+        if (this.targetTexture !== undefined) {
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, Array.isArray(this.targetTexture) ? this.targetTexture[0] : this.targetTexture);
+        }
+
+        if (this.depthTexture !== undefined) {
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
+        }
+    }
+
+    protected override _checkParameters() {
+        if (this.objectList === undefined || this.camera === undefined) {
+            throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object list and camera must be provided`);
+        }
+    }
+
+    protected override _checkTextureCompatibility(targetTextures: FrameGraphTextureHandle[]): boolean {
+        let depthEnabled = false;
+
+        let dimensions: { width: number; height: number } | null = null;
+
+        if (this.targetTexture !== undefined) {
+            const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(Array.isArray(this.targetTexture) ? this.targetTexture[0] : this.targetTexture);
+            if (this.samples !== outputTextureDescription.options.samples) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: the target texture and the output geometry textures  must have the same number of samples`);
+            }
+            dimensions = outputTextureDescription.size;
+        }
+
+        if (this.depthTexture !== undefined) {
+            const depthTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.depthTexture);
+            if (depthTextureDescription.options.samples !== this.samples && this.textureDescriptions.length > 0) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: the depth texture and the output geometry textures must have the same number of samples`);
+            }
+
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
+
+            depthEnabled = true;
+            dimensions = depthTextureDescription.size;
+        }
+
+        const geomTextureDimensions = this.sizeIsPercentage ? this._frameGraph.textureManager.getAbsoluteDimensions(this.size) : this.size;
+        if (dimensions !== null) {
+            if (geomTextureDimensions.width !== dimensions.width || geomTextureDimensions.height !== dimensions.height) {
+                throw new Error(
+                    `FrameGraphGeometryRendererTask ${this.name}: the geometry textures (size: ${geomTextureDimensions.width}x${geomTextureDimensions.height}) and the target/depth texture (size: ${dimensions.width}x${dimensions.height}) must have the same dimensions.`
+                );
+            }
+        }
+
+        depthEnabled = depthEnabled || super._checkTextureCompatibility(targetTextures);
+
+        return depthEnabled;
+    }
+
+    protected override _getTargetHandles(): FrameGraphTextureHandle[] {
         const types: number[] = [];
         const formats: number[] = [];
         const labels: string[] = [];
@@ -385,46 +391,46 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
             useSRGBBuffers[i] = false;
         }
 
-        const baseHandle = this._frameGraph.textureManager.createRenderTargetTexture(this.name, {
-            size: this.size,
-            sizeIsPercentage: this.sizeIsPercentage,
-            options: {
-                createMipMaps: false,
-                samples: this.samples,
-                types,
-                formats,
-                useSRGBBuffers,
-                labels,
-            },
-        });
-
         const handles: FrameGraphTextureHandle[] = [];
-        for (let i = 0; i < this.textureDescriptions.length; i++) {
-            handles.push(baseHandle + i);
+
+        if (this.textureDescriptions.length > 0) {
+            const baseHandle = this._frameGraph.textureManager.createRenderTargetTexture(this.name, {
+                size: this.size,
+                sizeIsPercentage: this.sizeIsPercentage,
+                options: {
+                    createMipMaps: false,
+                    samples: this.samples,
+                    types,
+                    formats,
+                    useSRGBBuffers,
+                    labels,
+                },
+            });
+
+            for (let i = 0; i < this.textureDescriptions.length; i++) {
+                handles.push(baseHandle + i);
+            }
+        }
+
+        if (this.targetTexture !== undefined) {
+            if (Array.isArray(this.targetTexture)) {
+                handles.push(...this.targetTexture);
+            } else {
+                handles.push(this.targetTexture);
+            }
         }
 
         return handles;
     }
 
-    private _checkDepthTextureCompatibility(): boolean {
-        let depthEnabled = false;
+    protected override _prepareRendering(context: FrameGraphRenderContext, depthEnabled: boolean) {
+        context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
 
-        if (this.depthTexture !== undefined) {
-            if (this.depthTexture === backbufferDepthStencilTextureHandle) {
-                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: the depth/stencil back buffer is not allowed as a depth texture`);
-            }
+        this._clearAttachmentsLayout.forEach((layout, clearType) => {
+            context.clearColorAttachments(ClearColors[clearType], layout);
+        });
 
-            const depthTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.depthTexture);
-            if (depthTextureDescription.options.samples !== this.samples) {
-                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: the depth texture and the output texture must have the same number of samples`);
-            }
-
-            this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
-
-            depthEnabled = true;
-        }
-
-        return depthEnabled;
+        context.bindAttachments(this._allAttachmentsLayout);
     }
 
     private _buildClearAttachmentsLayout() {
@@ -452,6 +458,23 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
             allAttachmentsLayout.push(true);
         }
 
+        if (this.targetTexture !== undefined) {
+            let layout = clearAttachmentsLayout.get(GeometryRenderingTextureClearType.Zero);
+            if (layout === undefined) {
+                layout = [];
+                clearAttachmentsLayout.set(GeometryRenderingTextureClearType.Zero, layout);
+                for (let j = 0; j < this.textureDescriptions.length - 1; j++) {
+                    layout[j] = false;
+                }
+            }
+
+            clearAttachmentsLayout.forEach((layout) => {
+                layout.push(false);
+            });
+
+            allAttachmentsLayout.push(true);
+        }
+
         this._clearAttachmentsLayout = new Map();
 
         clearAttachmentsLayout.forEach((layout, clearType) => {
@@ -470,6 +493,10 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
             const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
 
             configuration.defines[geometryDescription.defineIndex] = i;
+        }
+
+        if (this.targetTexture !== undefined) {
+            configuration.defines["PREPASS_COLOR_INDEX"] = this.textureDescriptions.length;
         }
 
         configuration.reverseCulling = this.reverseCulling;

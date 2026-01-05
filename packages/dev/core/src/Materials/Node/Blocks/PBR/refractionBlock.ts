@@ -7,7 +7,6 @@ import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { Nullable } from "../../../../types";
 import type { BaseTexture } from "../../../Textures/baseTexture";
 import type { Mesh } from "../../../../Meshes/mesh";
@@ -189,9 +188,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        super.prepareDefines(mesh, nodeMaterial, defines);
-
+    public override prepareDefines(defines: NodeMaterialDefines) {
         const refractionTexture = this._getTexture();
         const refraction = refractionTexture && refractionTexture.getTextureMatrix;
 
@@ -201,14 +198,14 @@ export class RefractionBlock extends NodeMaterialBlock {
             return;
         }
 
-        defines.setValue(this._define3DName, refractionTexture!.isCube, true);
-        defines.setValue(this._defineLODRefractionAlpha, refractionTexture!.lodLevelInAlpha, true);
-        defines.setValue(this._defineLinearSpecularRefraction, refractionTexture!.linearSpecularLOD, true);
-        defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem && refractionTexture.isCube ? !refractionTexture!.invertZ : refractionTexture!.invertZ, true);
+        defines.setValue(this._define3DName, refractionTexture.isCube, true);
+        defines.setValue(this._defineLODRefractionAlpha, refractionTexture.lodLevelInAlpha, true);
+        defines.setValue(this._defineLinearSpecularRefraction, refractionTexture.linearSpecularLOD, true);
+        defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem && refractionTexture.isCube ? !refractionTexture.invertZ : refractionTexture.invertZ, true);
 
         defines.setValue("SS_LINKREFRACTIONTOTRANSPARENCY", this.linkRefractionWithTransparency, true);
-        defines.setValue("SS_GAMMAREFRACTION", refractionTexture!.gammaSpace, true);
-        defines.setValue("SS_RGBDREFRACTION", refractionTexture!.isRGBD, true);
+        defines.setValue("SS_GAMMAREFRACTION", refractionTexture.gammaSpace, true);
+        defines.setValue("SS_RGBDREFRACTION", refractionTexture.isRGBD, true);
         defines.setValue("SS_USE_LOCAL_REFRACTIONMAP_CUBIC", (<any>refractionTexture).boundingBoxSize ? true : false, true);
         defines.setValue("SS_USE_THICKNESS_AS_DEPTH", this.useThicknessAsDepth, true);
     }

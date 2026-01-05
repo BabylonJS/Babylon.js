@@ -47,6 +47,15 @@ export class StorageBuffer {
     }
 
     /**
+     * Clears the storage buffer to zeros
+     * @param byteOffset the byte offset to start clearing (optional)
+     * @param byteLength the byte length to clear (optional)
+     */
+    public clear(byteOffset?: number, byteLength?: number): void {
+        this._engine.clearStorageBuffer(this._buffer, byteOffset, byteLength);
+    }
+
+    /**
      * Updates the storage buffer
      * @param data the data used to update the storage buffer
      * @param byteOffset the byte offset of the data (optional)
@@ -68,8 +77,9 @@ export class StorageBuffer {
      * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
      * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
      */
-    public read(offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
-        return this._engine.readFromStorageBuffer(this._buffer, offset, size, buffer, noDelay);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public async read(offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
+        return await this._engine.readFromStorageBuffer(this._buffer, offset, size, buffer, noDelay);
     }
 
     /**

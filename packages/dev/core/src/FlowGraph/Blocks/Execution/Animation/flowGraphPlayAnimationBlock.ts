@@ -87,7 +87,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @internal
      * @param context
      */
-    public _preparePendingTasks(context: FlowGraphContext): void {
+    public override _preparePendingTasks(context: FlowGraphContext): void {
         const ag = this.animationGroup.getValue(context);
         const animation = this.animation.getValue(context);
         if (!ag && !animation) {
@@ -126,7 +126,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             const from = this.from.getValue(context) ?? 0;
             // not accepting 0
             const to = this.to.getValue(context) || animationGroupToUse.to;
-            const loop = this.loop.getValue(context);
+            const loop = !isFinite(to) || this.loop.getValue(context);
             this.currentAnimationGroup.setValue(animationGroupToUse, context);
 
             const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
@@ -217,7 +217,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @internal
      * Stop any currently running animations.
      */
-    public _cancelPendingTasks(context: FlowGraphContext): void {
+    public override _cancelPendingTasks(context: FlowGraphContext): void {
         const ag = this.currentAnimationGroup.getValue(context);
         if (ag) {
             this._stopAnimationGroup(context, ag);

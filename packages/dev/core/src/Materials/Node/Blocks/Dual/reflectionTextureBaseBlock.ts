@@ -3,7 +3,6 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { BaseTexture } from "../../../Textures/baseTexture";
-import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterial } from "../../nodeMaterial";
 import type { Effect } from "../../../effect";
@@ -61,7 +60,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     public _reflectionSizeName: string;
 
     protected _positionUVWName: string;
-    protected _directionWName: string;
+    protected _directionWname: string;
     protected _reflectionVectorName: string;
     /** @internal */
     public _reflectionCoordsName: string;
@@ -171,6 +170,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     }
 
     public override initialize(state: NodeMaterialBuildState) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
@@ -224,7 +224,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         }
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }
@@ -323,7 +323,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         }
 
         this._positionUVWName = state._getFreeVariableName("positionUVW");
-        this._directionWName = state._getFreeVariableName("directionW");
+        this._directionWname = state._getFreeVariableName("directionW");
 
         if (this.generateOnlyFragmentCode || state._emitVaryingFromString(this._positionUVWName, NodeMaterialBlockConnectionPointTypes.Vector3, this._defineSkyboxName)) {
             code += `#ifdef ${this._defineSkyboxName}\n`;
@@ -338,18 +338,18 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         if (
             this.generateOnlyFragmentCode ||
             state._emitVaryingFromString(
-                this._directionWName,
+                this._directionWname,
                 NodeMaterialBlockConnectionPointTypes.Vector3,
                 `defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})`
             )
         ) {
             code += `#if defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})\n`;
             if (this.generateOnlyFragmentCode) {
-                code += `${state._declareLocalVar(this._directionWName, NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(vec3${state.fSuffix}(${this.world.associatedVariableName} * vec4${state.fSuffix}(${
+                code += `${state._declareLocalVar(this._directionWname, NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(vec3${state.fSuffix}(${this.world.associatedVariableName} * vec4${state.fSuffix}(${
                     this.position.associatedVariableName
                 }.xyz, 0.0)));\n`;
             } else {
-                code += `${isWebGPU ? "vertexOutputs." : ""}${this._directionWName} = normalize(vec3${state.fSuffix}(${this.world.associatedVariableName} * vec4${state.fSuffix}(${
+                code += `${isWebGPU ? "vertexOutputs." : ""}${this._directionWname} = normalize(vec3${state.fSuffix}(${this.world.associatedVariableName} * vec4${state.fSuffix}(${
                     this.position.associatedVariableName
                 }.xyz, 0.0)));\n`;
             }
@@ -420,15 +420,17 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         onlyReflectionVector = false,
         doNotEmitInvertZ = false
     ): string {
-        if (!worldPos) {
-            worldPos = this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : `v_${this.worldPosition.associatedVariableName}`;
-        }
         const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
         const reflectionMatrix = (isWebGPU ? "uniforms." : "") + this._reflectionMatrixName;
-        const direction = `normalize(${this._directionWName})`;
+        const direction = `normalize(${this._directionWname})`;
         const positionUVW = `${this._positionUVWName}`;
         const vEyePosition = `${this.cameraPosition.associatedVariableName}`;
         const view = `${this.view.associatedVariableName}`;
+        const fragmentInputsPrefix = isWebGPU ? "fragmentInputs." : "";
+
+        if (!worldPos) {
+            worldPos = this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : `${fragmentInputsPrefix}v_${this.worldPosition.associatedVariableName}`;
+        }
 
         worldNormalVarName += ".xyz";
 

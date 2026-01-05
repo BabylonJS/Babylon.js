@@ -20,6 +20,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     /**
      * Reference to the Recast library
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public bjsRECAST: any = {};
 
     /**
@@ -167,7 +168,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                 const worldMatrix = mesh.computeWorldMatrix(true);
 
                 if (mesh.hasThinInstances) {
-                    const thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
+                    const thinMatrices = mesh.thinInstanceGetWorldMatrices();
                     for (let instanceIndex = 0; instanceIndex < thinMatrices.length; instanceIndex++) {
                         const tmpMatrix = new Matrix();
                         const thinMatrix = thinMatrices[instanceIndex];
@@ -484,7 +485,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param height cylinder height
      * @returns the obstacle freshly created
      */
-    addCylinderObstacle(position: Vector3, radius: number, height: number): IObstacle {
+    addCylinderObstacle(position: Vector3, radius: number, height: number): Nullable<IObstacle> {
         this._tempVec1.x = position.x;
         this._tempVec1.y = position.y;
         this._tempVec1.z = position.z;
@@ -498,7 +499,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param angle angle in radians of the box orientation on Y axis
      * @returns the obstacle freshly created
      */
-    addBoxObstacle(position: Vector3, extent: Vector3, angle: number): IObstacle {
+    addBoxObstacle(position: Vector3, extent: Vector3, angle: number): Nullable<IObstacle> {
         this._tempVec1.x = position.x;
         this._tempVec1.y = position.y;
         this._tempVec1.z = position.z;
@@ -548,6 +549,7 @@ export class RecastJSCrowd implements ICrowd {
     /**
      * Recast/detour plugin
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public bjsRECASTPlugin: RecastJSPlugin;
     /**
      * Link to the detour crowd

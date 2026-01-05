@@ -11,7 +11,7 @@ import type { IAnimatable } from "../Animations/animatable.interface";
 import type { RenderTargetTexture } from "./Textures/renderTargetTexture";
 
 /** @internal */
-export type MaterialPluginCreated = {};
+export type MaterialPluginCreated = object;
 
 /** @internal */
 export type MaterialPluginDisposed = {

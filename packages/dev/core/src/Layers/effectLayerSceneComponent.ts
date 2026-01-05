@@ -1,5 +1,5 @@
 import { Camera } from "../Cameras/camera";
-import { Scene } from "../scene";
+import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -24,36 +24,6 @@ AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Sce
         }
     }
 });
-
-declare module "../scene" {
-    export interface Scene {
-        /**
-         * Removes the given effect layer from this scene.
-         * @param toRemove defines the effect layer to remove
-         * @returns the index of the removed effect layer
-         */
-        removeEffectLayer(toRemove: EffectLayer): number;
-
-        /**
-         * Adds the given effect layer to this scene
-         * @param newEffectLayer defines the effect layer to add
-         */
-        addEffectLayer(newEffectLayer: EffectLayer): void;
-    }
-}
-
-Scene.prototype.removeEffectLayer = function (toRemove: EffectLayer): number {
-    const index = this.effectLayers.indexOf(toRemove);
-    if (index !== -1) {
-        this.effectLayers.splice(index, 1);
-    }
-
-    return index;
-};
-
-Scene.prototype.addEffectLayer = function (newEffectLayer: EffectLayer): void {
-    this.effectLayers.push(newEffectLayer);
-};
 
 /**
  * Defines the layer scene component responsible to manage any effect layers
@@ -138,9 +108,9 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         if (!container.effectLayers) {
             return;
         }
-        container.effectLayers.forEach((o) => {
+        for (const o of container.effectLayers) {
             this.scene.addEffectLayer(o);
-        });
+        }
     }
 
     /**
@@ -152,12 +122,12 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
         if (!container.effectLayers) {
             return;
         }
-        container.effectLayers.forEach((o) => {
+        for (const o of container.effectLayers) {
             this.scene.removeEffectLayer(o);
             if (dispose) {
                 o.dispose();
             }
-        });
+        }
     }
 
     /**

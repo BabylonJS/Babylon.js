@@ -21,6 +21,7 @@ import { MaterialPropertyGridComponent } from "./propertyGrids/materials/materia
 import { StandardMaterialPropertyGridComponent } from "./propertyGrids/materials/standardMaterialPropertyGridComponent";
 import { TexturePropertyGridComponent } from "./propertyGrids/materials/texturePropertyGridComponent";
 import { PBRMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrMaterialPropertyGridComponent";
+import { OpenPBRMaterialPropertyGridComponent } from "./propertyGrids/materials/openpbrMaterialPropertyGridComponent";
 import { ScenePropertyGridComponent } from "./propertyGrids/scenePropertyGridComponent";
 import { HemisphericLightPropertyGridComponent } from "./propertyGrids/lights/hemisphericLightPropertyGridComponent";
 import { PointLightPropertyGridComponent } from "./propertyGrids/lights/pointLightPropertyGridComponent";
@@ -107,6 +108,8 @@ import type { Sound } from "core/Audio/sound";
 import { SoundPropertyGridComponent } from "./propertyGrids/sounds/soundPropertyGridComponent";
 import { LayerPropertyGridComponent } from "./propertyGrids/layers/layerPropertyGridComponent";
 import type { EffectLayer } from "core/Layers/effectLayer";
+import { FrameGraphPropertyGridComponent } from "./propertyGrids/frameGraphs/frameGraphPropertyGridComponent";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
 import { EmptyPropertyGridComponent } from "./propertyGrids/emptyPropertyGridComponent";
 import { MetadataGridComponent } from "inspector/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent";
 import type { SkyMaterial } from "materials/sky/skyMaterial";
@@ -114,10 +117,9 @@ import { SkyMaterialPropertyGridComponent } from "./propertyGrids/materials/skyM
 import { Tags } from "core/Misc/tags";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { RectAreaLight } from "core/Lights/rectAreaLight";
+import { FluentToolWrapper } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
-/**
- *
- */
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
     private _lockObject = new LockObject();
@@ -297,11 +299,11 @@ export class PropertyGridTabComponent extends PaneComponent {
             }
 
             if (className === "DirectionalLight") {
-                const pointLight = entity as DirectionalLight;
+                const directionalLight = entity as DirectionalLight;
                 return (
                     <DirectionalLightPropertyGridComponent
                         globalState={this.props.globalState}
-                        light={pointLight}
+                        light={directionalLight}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -309,11 +311,11 @@ export class PropertyGridTabComponent extends PaneComponent {
             }
 
             if (className === "SpotLight") {
-                const pointLight = entity as SpotLight;
+                const spotLight = entity as SpotLight;
                 return (
                     <SpotLightPropertyGridComponent
                         globalState={this.props.globalState}
-                        light={pointLight}
+                        light={spotLight}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onSelectionChangedObservable={this.props.onSelectionChangedObservable}
@@ -322,11 +324,11 @@ export class PropertyGridTabComponent extends PaneComponent {
             }
 
             if (className === "RectAreaLight") {
-                const pointLight = entity as RectAreaLight;
+                const rectAreaLight = entity as RectAreaLight;
                 return (
                     <RectAreaLightPropertyGridComponent
                         globalState={this.props.globalState}
-                        light={pointLight}
+                        light={rectAreaLight}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onSelectionChangedObservable={this.props.onSelectionChangedObservable}
@@ -389,6 +391,19 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const material = entity as PBRMaterial;
                 return (
                     <PBRMaterialPropertyGridComponent
+                        globalState={this.props.globalState}
+                        material={material}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "OpenPBRMaterial") {
+                const material = entity as OpenPBRMaterial;
+                return (
+                    <OpenPBRMaterialPropertyGridComponent
                         globalState={this.props.globalState}
                         material={material}
                         lockObject={this._lockObject}
@@ -597,6 +612,18 @@ export class PropertyGridTabComponent extends PaneComponent {
                 );
             }
 
+            if (className.indexOf("FrameGraph") !== -1) {
+                const frameGraph = entity as FrameGraph;
+                return (
+                    <FrameGraphPropertyGridComponent
+                        frameGraph={frameGraph}
+                        globalState={this.props.globalState}
+                        lockObject={this._lockObject}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
             if (className.indexOf("Texture") !== -1) {
                 const texture = entity as Texture;
                 return (
@@ -763,15 +790,17 @@ export class PropertyGridTabComponent extends PaneComponent {
         const entity = this.props.selectedEntity || {};
         const entityHasMetadataProp = Object.prototype.hasOwnProperty.call(entity, "metadata");
         return (
-            <div className="pane">
-                {this.renderContent()}
-                {Tags.HasTags(entity) && (
-                    <LineContainerComponent title="TAGS" selection={this.props.globalState}>
-                        <div className="tagContainer">{this.renderTags()}</div>
-                    </LineContainerComponent>
-                )}
-                {entityHasMetadataProp && <MetadataGridComponent globalState={this.props.globalState} entity={entity} />}
-            </div>
+            <FluentToolWrapper toolName="INSPECTOR">
+                <div className="pane">
+                    {this.renderContent()}
+                    {Tags.HasTags(entity) && (
+                        <LineContainerComponent title="TAGS" selection={this.props.globalState}>
+                            <div className="tagContainer">{this.renderTags()}</div>
+                        </LineContainerComponent>
+                    )}
+                    {entityHasMetadataProp && <MetadataGridComponent globalState={this.props.globalState} entity={entity} />}
+                </div>
+            </FluentToolWrapper>
         );
     }
 }

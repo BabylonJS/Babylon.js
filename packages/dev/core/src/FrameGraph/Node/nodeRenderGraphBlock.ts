@@ -8,7 +8,6 @@ import type {
     FrameGraph,
     NodeRenderGraphResourceContainerBlock,
     FrameGraphTextureHandle,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
@@ -283,15 +282,28 @@ export class NodeRenderGraphBlock {
         return this;
     }
 
-    protected _addDependenciesInput() {
-        this.registerInput("dependencies", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
+    protected _addDependenciesInput(additionalAllowedTypes = 0) {
+        this.registerInput("dependencies", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
 
         const dependencies = this.getInputByName("dependencies")!;
 
-        dependencies.addAcceptedConnectionPointTypes(
+        Object.defineProperty(this, "dependencies", {
+            get: function (this: FrameGraphTask) {
+                return dependencies;
+            },
+            enumerable: true,
+            configurable: true,
+        });
+
+        dependencies.addExcludedConnectionPointFromAllowedTypes(
             NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer |
                 NodeRenderGraphBlockConnectionPointTypes.ResourceContainer |
-                NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator
+                NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator |
+                NodeRenderGraphBlockConnectionPointTypes.ObjectList |
+                NodeRenderGraphBlockConnectionPointTypes.ShadowLight |
+                NodeRenderGraphBlockConnectionPointTypes.Camera |
+                NodeRenderGraphBlockConnectionPointTypes.Object |
+                additionalAllowedTypes
         );
 
         return dependencies;
@@ -379,6 +391,26 @@ export class NodeRenderGraphBlock {
         return false;
     }
 
+    protected _getConnectedTextures(targetConnectedPoint: Nullable<NodeRenderGraphConnectionPoint>) {
+        let textureHandles: FrameGraphTextureHandle | FrameGraphTextureHandle[] | undefined;
+        if (targetConnectedPoint) {
+            if (targetConnectedPoint.type === NodeRenderGraphBlockConnectionPointTypes.ResourceContainer) {
+                const container = targetConnectedPoint.ownerBlock as NodeRenderGraphResourceContainerBlock;
+                textureHandles = [];
+                for (let i = 0; i < container.inputs.length; i++) {
+                    const input = container.inputs[i];
+                    if (input.connectedPoint && input.connectedPoint.value !== undefined && NodeRenderGraphConnectionPoint.IsTextureHandle(input.connectedPoint.value)) {
+                        textureHandles.push(input.connectedPoint.value as FrameGraphTextureHandle);
+                    }
+                }
+            } else {
+                textureHandles = targetConnectedPoint.value as FrameGraphTextureHandle;
+            }
+        }
+
+        return textureHandles;
+    }
+
     protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling = false) {
         if (looseCoupling) {
             this._inputs[inputIndex1]._acceptedConnectionPointType = this._inputs[inputIndex0];
@@ -444,6 +476,7 @@ export class NodeRenderGraphBlock {
         serializationObject.customType = "BABYLON." + this.getClassName();
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
+        serializationObject.comments = this.comments;
         serializationObject.visibleOnFrame = this.visibleOnFrame;
         serializationObject.disabled = this.disabled;
         if (this._additionalConstructionParameters) {
@@ -480,10 +513,10 @@ export class NodeRenderGraphBlock {
         const serializedOutputs = serializationObject.outputs;
 
         if (serializedInputs) {
-            serializedInputs.forEach((port: any) => {
+            for (const port of serializedInputs) {
                 const input = this.inputs.find((i) => i.name === port.name);
                 if (!input) {
-                    return;
+                    continue;
                 }
                 if (port.displayName) {
                     input.displayName = port.displayName;
@@ -492,11 +525,12 @@ export class NodeRenderGraphBlock {
                     input.isExposedOnFrame = port.isExposedOnFrame;
                     input.exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
 
         if (serializedOutputs) {
-            serializedOutputs.forEach((port: any, i: number) => {
+            for (let i = 0; i < serializedOutputs.length; i++) {
+                const port = serializedOutputs[i];
                 if (port.displayName) {
                     this.outputs[i].displayName = port.displayName;
                 }
@@ -504,7 +538,7 @@ export class NodeRenderGraphBlock {
                     this.outputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.outputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
-            });
+            }
         }
     }
 
@@ -568,7 +602,7 @@ export class NodeRenderGraphBlock {
             codeString += `// ${this.comments}\n`;
         }
         const className = this.getClassName();
-        if (className === "RenderGraphInputBlock") {
+        if (className === "NodeRenderGraphInputBlock") {
             const block = this as unknown as NodeRenderGraphInputBlock;
             const blockType = block.type;
 

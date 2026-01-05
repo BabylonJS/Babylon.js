@@ -25,19 +25,17 @@ layout(std140, column_major) uniform;
 uniform Material {
     vec2 vAlbedoInfos;
     vec2 vBaseWeightInfos;
+    vec2 vBaseDiffuseRoughnessInfos;
     vec4 vAmbientInfos;
     vec2 vOpacityInfos;
     vec2 vEmissiveInfos;
     vec2 vLightmapInfos;
     vec3 vReflectivityInfos;
     vec2 vMicroSurfaceSamplerInfos;
-    vec2 vReflectionInfos;
-    vec2 vReflectionFilteringInfo;
-    vec3 vReflectionPosition;
-    vec3 vReflectionSize;
     vec3 vBumpInfos;
     mat4 albedoMatrix;
     mat4 baseWeightMatrix;
+    mat4 baseDiffuseRoughnessMatrix;
     mat4 ambientMatrix;
     mat4 opacityMatrix;
     mat4 emissiveMatrix;
@@ -46,12 +44,10 @@ uniform Material {
     mat4 microSurfaceSamplerMatrix;
     mat4 bumpMatrix;
     vec2 vTangentSpaceParams;
-    mat4 reflectionMatrix;
-    vec3 vReflectionColor;
     vec4 vAlbedoColor;
     float baseWeight;
+    float baseDiffuseRoughness;
     vec4 vLightingIntensity;
-    vec3 vReflectionMicrosurfaceInfos;
     float pointSize;
     vec4 vReflectivityColor;
     vec3 vEmissiveColor;
@@ -64,7 +60,17 @@ uniform Material {
     mat4 metallicReflectanceMatrix;
     vec2 vReflectanceInfos;
     mat4 reflectanceMatrix;
+    vec4 cameraInfo;
 
+    vec2 vReflectionInfos;
+    mat4 reflectionMatrix;
+    vec3 vReflectionMicrosurfaceInfos;
+    vec3 vReflectionPosition;
+    vec3 vReflectionSize;
+    vec2 vReflectionFilteringInfo;
+    vec3 vReflectionDominantDirection;
+    vec3 vReflectionColor;
+    
     vec3 vSphericalL00;
     vec3 vSphericalL1_1;
     vec3 vSphericalL10;

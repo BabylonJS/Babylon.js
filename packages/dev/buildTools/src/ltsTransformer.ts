@@ -9,10 +9,10 @@ import { removeDir, checkDirectorySync, checkArgs, copyFile } from "./utils.js";
 import { transformPackageLocation } from "./pathTransform.js";
 import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping.js";
 
-const printer = ts.createPrinter();
+const Printer = ts.createPrinter();
 
 // the function that processes the file
-const processSourceFile = (packageName: string, relativeLTSFile: any, program: { getSourceFile: (arg0: any) => any }, checker: { getSymbolAtLocation: (arg0: any) => any }) => {
+const ProcessSourceFile = (packageName: string, relativeLTSFile: any, program: { getSourceFile: (arg0: any) => any }, checker: { getSymbolAtLocation: (arg0: any) => any }) => {
     console.log(`Processing ${relativeLTSFile}...`);
     const ltsFile = path.resolve(relativeLTSFile);
     const sourceFile = path.resolve(ltsFile.replace("lts", "dev"));
@@ -42,7 +42,7 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
                     } else {
                         // check for declarations
                         const found3 = node.getChildren().find((c: { kind: any }) => c.kind === ts.SyntaxKind.VariableDeclarationList) as ts.VariableDeclarationList;
-                        if (found3 && (found3 as ts.VariableDeclarationList).declarations) {
+                        if (found3 && found3.declarations) {
                             const foundIdentifier = found3.declarations[0].getChildren().find((c: { kind: any }) => c.kind === ts.SyntaxKind.Identifier) as ts.Identifier;
                             importedSource.push(foundIdentifier.getText());
                         }
@@ -172,12 +172,12 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
         const resultLTS = ts.transform(sourceLTS, [ltsTransformer]);
 
         // generate the LTS source that will be added to the original source
-        const ltsVersion = printer.printFile(resultLTS.transformed[0]);
+        const ltsVersion = Printer.printFile(resultLTS.transformed[0]);
         // save the LTS source to the generated folder
         checkDirectorySync(path.dirname(newLocation));
         fs.writeFileSync(
             path.resolve(newLocation),
-            `${printer.printFile(result.transformed[0])}
+            `${Printer.printFile(result.transformed[0])}
     ${ltsVersion}`
         );
     } else {
@@ -187,7 +187,7 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
         const resultLTS = ts.transform(sourceLTS, [ltsTransformer]);
 
         // generate the LTS source that will be added to the original source
-        const ltsVersion = printer.printFile(resultLTS.transformed[0]);
+        const ltsVersion = Printer.printFile(resultLTS.transformed[0]);
         // save the LTS source to the generated folder
         checkDirectorySync(path.dirname(newLocation));
         fs.writeFileSync(path.resolve(newLocation), `${ltsVersion}`);
@@ -195,6 +195,7 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
     console.log(`LTS source saved to ${newLocation}`);
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const transformLtsCommand = () => {
     const baseDir = path.basename(path.resolve("."));
     const sourceBaseDir = `./../../dev/${baseDir}/src`;
@@ -233,7 +234,7 @@ export const transformLtsCommand = () => {
     baseSources.forEach((src) => sourceToGenerated(src, true));
     // run the LTS transforming
     sourceFiles.forEach((file: string) => {
-        processSourceFile(packageName, file, program, checker);
+        ProcessSourceFile(packageName, file, program, checker);
     });
 
     if (checkArgs("--watch")) {
@@ -243,12 +244,12 @@ export const transformLtsCommand = () => {
             if (!copied && _event !== "add") {
                 const relative = path.relative(sourceBaseDir, filePath);
                 const srcLocation = path.relative("./", path.resolve("./src", relative));
-                processSourceFile(packageName, srcLocation, program, checker);
+                ProcessSourceFile(packageName, srcLocation, program, checker);
             }
         });
         // TODO: check why this is executed 3 times
         chokidar.watch(sourceFiles, { ignoreInitial: true, awaitWriteFinish: true }).on("all", (_event: any, filePath: any) => {
-            processSourceFile(packageName, filePath, program, checker);
+            ProcessSourceFile(packageName, filePath, program, checker);
         });
     }
 };

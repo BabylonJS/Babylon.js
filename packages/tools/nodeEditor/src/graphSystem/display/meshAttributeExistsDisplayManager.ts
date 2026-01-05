@@ -4,9 +4,6 @@ import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import type { MeshAttributeExistsBlock } from "core/Materials/Node/Blocks/meshAttributeExistsBlock";
 import { MeshAttributeExistsBlockTypes } from "core/Materials/Node/Blocks/meshAttributeExistsBlock";
 
-/**
- *
- */
 export class MeshAttributeExistsDisplayManager implements IDisplayManager {
     public getHeaderClass(nodeData: INodeData) {
         return "";

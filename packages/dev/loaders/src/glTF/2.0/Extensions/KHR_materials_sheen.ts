@@ -1,7 +1,5 @@
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
-
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
@@ -12,7 +10,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "KHR_materials_sheen";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_materials_sheen extension.
@@ -61,44 +59,40 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsSheen>(context, material, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsSheen>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSheenPropertiesAsync(extensionContext, extension, babylonMaterial));
-            return Promise.all(promises).then(() => {});
+            // eslint-disable-next-line github/no-then
+            return await Promise.all(promises).then(() => {});
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadSheenPropertiesAsync(context: string, properties: IKHRMaterialsSheen, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
-            throw new Error(`${context}: Material type not supported`);
-        }
-
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         const promises = new Array<Promise<any>>();
 
-        babylonMaterial.sheen.isEnabled = true;
-        babylonMaterial.sheen.intensity = 1;
+        adapter.configureFuzz();
 
-        if (properties.sheenColorFactor != undefined) {
-            babylonMaterial.sheen.color = Color3.FromArray(properties.sheenColorFactor);
-        } else {
-            babylonMaterial.sheen.color = Color3.Black();
-        }
+        // Set non-texture properties immediately
+        const sheenColor = properties.sheenColorFactor !== undefined ? Color3.FromArray(properties.sheenColorFactor) : Color3.Black();
+        const sheenRoughness = properties.sheenRoughnessFactor !== undefined ? properties.sheenRoughnessFactor : 0.0;
 
+        adapter.fuzzWeight = 1; // KHR_materials_sheen assumes intensity of 1
+        adapter.fuzzColor = sheenColor;
+        adapter.fuzzRoughness = sheenRoughness;
+
+        // Load textures
         if (properties.sheenColorTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/sheenColorTexture`, properties.sheenColorTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Sheen Color)`;
-                    babylonMaterial.sheen.texture = texture;
+                    adapter.fuzzColorTexture = texture;
                 })
             );
-        }
-
-        if (properties.sheenRoughnessFactor !== undefined) {
-            babylonMaterial.sheen.roughness = properties.sheenRoughnessFactor;
-        } else {
-            babylonMaterial.sheen.roughness = 0;
         }
 
         if (properties.sheenRoughnessTexture) {
@@ -106,14 +100,12 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/sheenRoughnessTexture`, properties.sheenRoughnessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Sheen Roughness)`;
-                    babylonMaterial.sheen.textureRoughness = texture;
+                    adapter.fuzzRoughnessTexture = texture;
                 })
             );
         }
 
-        babylonMaterial.sheen.albedoScaling = true;
-        babylonMaterial.sheen.useRoughnessFromMainTexture = false;
-
+        // eslint-disable-next-line github/no-then
         return Promise.all(promises).then(() => {});
     }
 }

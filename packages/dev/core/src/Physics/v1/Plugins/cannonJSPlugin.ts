@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable, FloatArray } from "../../../types";
 import { Logger } from "../../../Misc/logger";
 import { Vector3, Matrix, Quaternion } from "../../../Maths/math.vector";
@@ -20,7 +22,7 @@ declare let CANNON: any;
 export class CannonJSPlugin implements IPhysicsEnginePlugin {
     public world: any;
     public name: string = "CannonJSPlugin";
-    private _physicsMaterials = new Array();
+    private _physicsMaterials: any[] = [];
     private _fixedTimeStep: number = 1 / 60;
     private _cannonRaycastResult: any;
     private _raycastResult: PhysicsRaycastResult;
@@ -87,13 +89,13 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
     private _removeMarkedPhysicsBodiesFromWorld(): void {
         if (this._physicsBodiesToRemoveAfterStep.length > 0) {
-            this._physicsBodiesToRemoveAfterStep.forEach((physicsBody) => {
+            for (const physicsBody of this._physicsBodiesToRemoveAfterStep) {
                 if (typeof this.world.removeBody === "function") {
                     this.world.removeBody(physicsBody);
                 } else {
                     this.world.remove(physicsBody);
                 }
-            });
+            }
             this._physicsBodiesToRemoveAfterStep.length = 0;
         }
     }
@@ -168,10 +170,11 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             //try to keep the body moving in the right direction by taking old properties.
             //Should be tested!
             if (oldBody) {
-                ["force", "torque", "velocity", "angularVelocity"].forEach(function (param) {
+                const props = ["force", "torque", "velocity", "angularVelocity"];
+                for (const param of props) {
                     const vec = oldBody[param];
                     impostor.physicsBody[param].set(vec.x, vec.y, vec.z);
-                });
+                }
             }
             this._processChildMeshes(impostor);
         }
@@ -217,11 +220,17 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                         mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                     }
                 }
-                mesh.getChildMeshes(true)
-                    .filter((m) => !!m.physicsImpostor)
-                    .forEach(processMesh);
+                const meshes = mesh.getChildMeshes(true).filter((m) => !!m.physicsImpostor);
+
+                for (const mesh of meshes) {
+                    processMesh(mesh);
+                }
             };
-            meshChildren.filter((m) => !!m.physicsImpostor).forEach(processMesh);
+            const meshes = meshChildren.filter((m) => !!m.physicsImpostor);
+
+            for (const mesh of meshes) {
+                processMesh(mesh);
+            }
         }
     }
 

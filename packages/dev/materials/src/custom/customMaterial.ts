@@ -314,8 +314,8 @@ export class CustomMaterial extends StandardMaterial {
      */
     public AddUniform(name: string, kind: string, param: any): CustomMaterial {
         if (!this._customUniform) {
-            this._customUniform = new Array();
-            this._newUniforms = new Array();
+            this._customUniform = [];
+            this._newUniforms = [];
             this._newSamplerInstances = {};
             this._newUniformInstances = {};
         }

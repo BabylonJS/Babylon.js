@@ -103,7 +103,7 @@ void main()
     // Get color and reflectivity
     vec4 colorFull = TEXTUREFUNC(textureSampler, vUV, 0.0);
     vec3 color = colorFull.rgb;
-    vec4 reflectivity = TEXTUREFUNC(reflectivitySampler, vUV, 0.0);
+    vec4 reflectivity = max(TEXTUREFUNC(reflectivitySampler, vUV, 0.0), vec4(0.));
 #ifndef SSR_DISABLE_REFLECTIVITY_TEST
     if (max(reflectivity.r, max(reflectivity.g, reflectivity.b)) <= reflectivityThreshold) {
         #ifdef SSR_USE_BLUR

@@ -8,7 +8,7 @@ import { ShaderDefineOrOperator } from "./Expressions/Operators/shaderDefineOrOp
 import { ShaderDefineAndOperator } from "./Expressions/Operators/shaderDefineAndOperator";
 import { ShaderDefineExpression } from "./Expressions/shaderDefineExpression";
 import { ShaderDefineArithmeticOperator } from "./Expressions/Operators/shaderDefineArithmeticOperator";
-import type { ProcessingOptions } from "./shaderProcessingOptions";
+import type { _IProcessingOptions } from "./shaderProcessingOptions";
 import { _WarnImport } from "../../Misc/devTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
@@ -16,56 +16,56 @@ import type { WebRequest } from "../../Misc/webRequest";
 import type { LoadFileError } from "../../Misc/fileTools";
 import type { IOfflineProvider } from "../../Offline/IOfflineProvider";
 import type { IFileRequest } from "../../Misc/fileRequest";
-import { _getGlobalDefines } from "../abstractEngine.functions";
+import { _GetGlobalDefines } from "../abstractEngine.functions";
 import type { AbstractEngine } from "../abstractEngine";
 
-const regexSE = /defined\s*?\((.+?)\)/g;
-const regexSERevert = /defined\s*?\[(.+?)\]/g;
-const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
-const regexShaderDecl = /__decl__/;
-const regexLightX = /light\{X\}.(\w*)/g;
-const regexX = /\{X\}/g;
-const reusableMatches: RegExpMatchArray[] = [];
+const RegexSe = /defined\s*?\((.+?)\)/g;
+const RegexSeRevert = /defined\s*?\[(.+?)\]/g;
+const RegexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+const RegexShaderDecl = /__decl__/;
+const RegexLightX = /light\{X\}.(\w*)/g;
+const RegexX = /\{X\}/g;
+const ReusableMatches: RegExpMatchArray[] = [];
 
-const _MoveCursorRegex = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
+const MoveCursorRegex = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
 
 /** @internal */
-export function Initialize(options: ProcessingOptions): void {
+export function Initialize(options: _IProcessingOptions): void {
     if (options.processor && options.processor.initializeShaders) {
         options.processor.initializeShaders(options.processingContext);
     }
 }
 
 /** @internal */
-export function Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine?: AbstractEngine) {
+export function Process(sourceCode: string, options: _IProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine?: AbstractEngine) {
     if (options.processor?.preProcessShaderCode) {
         sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
     }
-    _ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
+    ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
         if (options.processCodeAfterIncludes) {
             codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes, options.defines);
         }
-        const migratedCode = _ProcessShaderConversion(codeWithIncludes, options, engine);
+        const migratedCode = ProcessShaderConversion(codeWithIncludes, options, engine);
         callback(migratedCode, codeWithIncludes);
     });
 }
 
 /** @internal */
-export function PreProcess(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine: AbstractEngine) {
+export function PreProcess(sourceCode: string, options: _IProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine: AbstractEngine) {
     if (options.processor?.preProcessShaderCode) {
         sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
     }
-    _ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
+    ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
         if (options.processCodeAfterIncludes) {
             codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes, options.defines);
         }
-        const migratedCode = _ApplyPreProcessing(codeWithIncludes, options, engine);
+        const migratedCode = ApplyPreProcessing(codeWithIncludes, options, engine);
         callback(migratedCode, codeWithIncludes);
     });
 }
 
 /** @internal */
-export function Finalize(vertexCode: string, fragmentCode: string, options: ProcessingOptions): { vertexCode: string; fragmentCode: string } {
+export function Finalize(vertexCode: string, fragmentCode: string, options: _IProcessingOptions): { vertexCode: string; fragmentCode: string } {
     if (!options.processor || !options.processor.finalizeShaders) {
         return { vertexCode, fragmentCode };
     }
@@ -73,7 +73,7 @@ export function Finalize(vertexCode: string, fragmentCode: string, options: Proc
     return options.processor.finalizeShaders(vertexCode, fragmentCode, options.processingContext);
 }
 
-function _ProcessPrecision(source: string, options: ProcessingOptions): string {
+function ProcessPrecision(source: string, options: _IProcessingOptions): string {
     if (options.processor?.noPrecision) {
         return source;
     }
@@ -96,7 +96,7 @@ function _ProcessPrecision(source: string, options: ProcessingOptions): string {
     return source;
 }
 
-function _ExtractOperation(expression: string) {
+function ExtractOperation(expression: string) {
     const regex = /defined\((.+)\)/;
 
     const match = regex.exec(expression);
@@ -127,8 +127,8 @@ function _ExtractOperation(expression: string) {
     return new ShaderDefineArithmeticOperator(define, operator, value);
 }
 
-function _BuildSubExpression(expression: string): ShaderDefineExpression {
-    expression = expression.replace(regexSE, "defined[$1]");
+function BuildSubExpression(expression: string): ShaderDefineExpression {
+    expression = expression.replace(RegexSe, "defined[$1]");
 
     const postfix = ShaderDefineExpression.infixToPostfix(expression);
 
@@ -146,15 +146,15 @@ function _BuildSubExpression(expression: string): ShaderDefineExpression {
             const operator = c == "&&" ? new ShaderDefineAndOperator() : new ShaderDefineOrOperator();
 
             if (typeof v1 === "string") {
-                v1 = v1.replace(regexSERevert, "defined($1)");
+                v1 = v1.replace(RegexSeRevert, "defined($1)");
             }
 
             if (typeof v2 === "string") {
-                v2 = v2.replace(regexSERevert, "defined($1)");
+                v2 = v2.replace(RegexSeRevert, "defined($1)");
             }
 
-            operator.leftOperand = typeof v2 === "string" ? _ExtractOperation(v2) : v2;
-            operator.rightOperand = typeof v1 === "string" ? _ExtractOperation(v1) : v1;
+            operator.leftOperand = typeof v2 === "string" ? ExtractOperation(v2) : v2;
+            operator.rightOperand = typeof v1 === "string" ? ExtractOperation(v1) : v1;
 
             stack.push(operator);
         }
@@ -163,15 +163,15 @@ function _BuildSubExpression(expression: string): ShaderDefineExpression {
     let result = stack[stack.length - 1];
 
     if (typeof result === "string") {
-        result = result.replace(regexSERevert, "defined($1)");
+        result = result.replace(RegexSeRevert, "defined($1)");
     }
 
     // note: stack.length !== 1 if there was an error in the parsing
 
-    return typeof result === "string" ? _ExtractOperation(result) : result;
+    return typeof result === "string" ? ExtractOperation(result) : result;
 }
 
-function _BuildExpression(line: string, start: number): ShaderCodeTestNode {
+function BuildExpression(line: string, start: number): ShaderCodeTestNode {
     const node = new ShaderCodeTestNode();
     const command = line.substring(0, start);
     let expression = line.substring(start);
@@ -183,25 +183,25 @@ function _BuildExpression(line: string, start: number): ShaderCodeTestNode {
     } else if (command === "#ifndef") {
         node.testExpression = new ShaderDefineIsDefinedOperator(expression, true);
     } else {
-        node.testExpression = _BuildSubExpression(expression);
+        node.testExpression = BuildSubExpression(expression);
     }
 
     return node;
 }
 
-function _MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeConditionNode, ifNode: ShaderCodeNode) {
+function MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeConditionNode, ifNode: ShaderCodeNode, preProcessorsFromCode: { [key: string]: string }) {
     let line = cursor.currentLine;
-    while (_MoveCursor(cursor, ifNode)) {
+    while (MoveCursor(cursor, ifNode, preProcessorsFromCode)) {
         line = cursor.currentLine;
         const first5 = line.substring(0, 5).toLowerCase();
 
         if (first5 === "#else") {
             const elseNode = new ShaderCodeNode();
             rootNode.children.push(elseNode);
-            _MoveCursor(cursor, elseNode);
+            MoveCursor(cursor, elseNode, preProcessorsFromCode);
             return;
         } else if (first5 === "#elif") {
-            const elifNode = _BuildExpression(line, 5);
+            const elifNode = BuildExpression(line, 5);
 
             rootNode.children.push(elifNode);
             ifNode = elifNode;
@@ -209,13 +209,13 @@ function _MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeCondi
     }
 }
 
-function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolean {
+function MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode, preProcessorsFromCode: { [key: string]: string }): boolean {
     while (cursor.canRead) {
         cursor.lineIndex++;
         const line = cursor.currentLine;
 
         if (line.indexOf("#") >= 0) {
-            const matches = _MoveCursorRegex.exec(line);
+            const matches = MoveCursorRegex.exec(line);
 
             if (matches && matches.length) {
                 const keyword = matches[0];
@@ -225,9 +225,9 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
                         const newRootNode = new ShaderCodeConditionNode();
                         rootNode.children.push(newRootNode);
 
-                        const ifNode = _BuildExpression(line, 6);
+                        const ifNode = BuildExpression(line, 6);
                         newRootNode.children.push(ifNode);
-                        _MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        MoveCursorWithinIf(cursor, newRootNode, ifNode, preProcessorsFromCode);
                         break;
                     }
                     case "#else":
@@ -239,18 +239,18 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
                         const newRootNode = new ShaderCodeConditionNode();
                         rootNode.children.push(newRootNode);
 
-                        const ifNode = _BuildExpression(line, 7);
+                        const ifNode = BuildExpression(line, 7);
                         newRootNode.children.push(ifNode);
-                        _MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        MoveCursorWithinIf(cursor, newRootNode, ifNode, preProcessorsFromCode);
                         break;
                     }
                     case "#if": {
                         const newRootNode = new ShaderCodeConditionNode();
-                        const ifNode = _BuildExpression(line, 3);
+                        const ifNode = BuildExpression(line, 3);
                         rootNode.children.push(newRootNode);
 
                         newRootNode.children.push(ifNode);
-                        _MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                        MoveCursorWithinIf(cursor, newRootNode, ifNode, preProcessorsFromCode);
                         break;
                     }
                 }
@@ -275,7 +275,12 @@ function _MoveCursor(cursor: ShaderCodeCursor, rootNode: ShaderCodeNode): boolea
     return false;
 }
 
-function _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: string]: string }, options: ProcessingOptions): string {
+function EvaluatePreProcessors(
+    sourceCode: string,
+    preprocessors: { [key: string]: string },
+    options: _IProcessingOptions,
+    preProcessorsFromCode: { [key: string]: string }
+): string {
     const rootNode = new ShaderCodeNode();
     const cursor = new ShaderCodeCursor();
 
@@ -283,13 +288,13 @@ function _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: strin
     cursor.lines = sourceCode.split("\n");
 
     // Decompose (We keep it in 2 steps so it is easier to maintain and perf hit is insignificant)
-    _MoveCursor(cursor, rootNode);
+    MoveCursor(cursor, rootNode, preProcessorsFromCode);
 
     // Recompose
-    return rootNode.process(preprocessors, options);
+    return rootNode.process(preprocessors, options, preProcessorsFromCode);
 }
 
-function _PreparePreProcessors(options: ProcessingOptions, engine?: AbstractEngine): { [key: string]: string } {
+function PreparePreProcessors(options: _IProcessingOptions, engine?: AbstractEngine): { [key: string]: string } {
     const defines = options.defines;
     const preprocessors: { [key: string]: string } = {};
 
@@ -305,13 +310,13 @@ function _PreparePreProcessors(options: ProcessingOptions, engine?: AbstractEngi
     preprocessors["__VERSION__"] = options.version;
     preprocessors[options.platformName] = "true";
 
-    _getGlobalDefines(preprocessors, engine?.isNDCHalfZRange, engine?.useReverseDepthBuffer, engine?.useExactSrgbConversions);
+    _GetGlobalDefines(preprocessors, engine?.isNDCHalfZRange, engine?.useReverseDepthBuffer, engine?.useExactSrgbConversions);
 
     return preprocessors;
 }
 
-function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions, engine?: AbstractEngine): string {
-    let preparedSourceCode = _ProcessPrecision(sourceCode, options);
+function ProcessShaderConversion(sourceCode: string, options: _IProcessingOptions, engine?: AbstractEngine): string {
+    let preparedSourceCode = ProcessPrecision(sourceCode, options);
 
     if (!options.processor) {
         return preparedSourceCode;
@@ -327,14 +332,16 @@ function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions
 
     const defines = options.defines;
 
-    const preprocessors = _PreparePreProcessors(options, engine);
+    const preprocessors = PreparePreProcessors(options, engine);
 
     // General pre processing
     if (options.processor.preProcessor) {
         preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, preprocessors, options.isFragment, options.processingContext);
     }
 
-    preparedSourceCode = _EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
+    const preProcessorsFromCode: { [key: string]: string } = {};
+
+    preparedSourceCode = EvaluatePreProcessors(preparedSourceCode, preprocessors, options, preProcessorsFromCode);
 
     // Post processing
     if (options.processor.postProcessor) {
@@ -347,7 +354,9 @@ function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions
                 ? {
                       drawBuffersExtensionDisabled: engine.getCaps().drawBuffersExtension ? false : true,
                   }
-                : {}
+                : {},
+            preprocessors,
+            preProcessorsFromCode
         );
     }
 
@@ -359,19 +368,21 @@ function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions
     return preparedSourceCode;
 }
 
-function _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, engine: AbstractEngine): string {
+function ApplyPreProcessing(sourceCode: string, options: _IProcessingOptions, engine: AbstractEngine): string {
     let preparedSourceCode = sourceCode;
 
     const defines = options.defines;
 
-    const preprocessors = _PreparePreProcessors(options, engine);
+    const preprocessors = PreparePreProcessors(options, engine);
 
     // General pre processing
     if (options.processor?.preProcessor) {
         preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, preprocessors, options.isFragment, options.processingContext);
     }
 
-    preparedSourceCode = _EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
+    const preProcessorsFromCode: { [key: string]: string } = {};
+
+    preparedSourceCode = EvaluatePreProcessors(preparedSourceCode, preprocessors, options, preProcessorsFromCode);
 
     // Post processing
     if (options.processor?.postProcessor) {
@@ -384,7 +395,9 @@ function _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, eng
                 ? {
                       drawBuffersExtensionDisabled: engine.getCaps().drawBuffersExtension ? false : true,
                   }
-                : {}
+                : {},
+            preprocessors,
+            preProcessorsFromCode
         );
     }
 
@@ -397,12 +410,12 @@ function _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, eng
 }
 
 /** @internal */
-export function _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
-    reusableMatches.length = 0;
+export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions, callback: (data: any) => void): void {
+    ReusableMatches.length = 0;
     let match: RegExpMatchArray | null;
     // stay back-compat to the old matchAll syntax
-    while ((match = regexShaderInclude.exec(sourceCode)) !== null) {
-        reusableMatches.push(match);
+    while ((match = RegexShaderInclude.exec(sourceCode)) !== null) {
+        ReusableMatches.push(match);
     }
 
     let returnValue = String(sourceCode);
@@ -410,12 +423,12 @@ export function _ProcessIncludes(sourceCode: string, options: ProcessingOptions,
 
     let keepProcessing = false;
 
-    for (const match of reusableMatches) {
+    for (const match of ReusableMatches) {
         let includeFile = match[1];
 
         // Uniform declaration
         if (includeFile.indexOf("__decl__") !== -1) {
-            includeFile = includeFile.replace(regexShaderDecl, "");
+            includeFile = includeFile.replace(RegexShaderDecl, "");
             if (options.supportsUniformBuffers) {
                 includeFile = includeFile.replace("Vertex", "Ubo").replace("Fragment", "Ubo");
             }
@@ -453,20 +466,20 @@ export function _ProcessIncludes(sourceCode: string, options: ProcessingOptions,
                     for (let i = minIndex; i < maxIndex; i++) {
                         if (!options.supportsUniformBuffers) {
                             // Ubo replacement
-                            sourceIncludeContent = sourceIncludeContent.replace(regexLightX, (str: string, p1: string) => {
+                            sourceIncludeContent = sourceIncludeContent.replace(RegexLightX, (str: string, p1: string) => {
                                 return p1 + "{X}";
                             });
                         }
-                        includeContent += sourceIncludeContent.replace(regexX, i.toString()) + "\n";
+                        includeContent += sourceIncludeContent.replace(RegexX, i.toString()) + "\n";
                     }
                 } else {
                     if (!options.supportsUniformBuffers) {
                         // Ubo replacement
-                        includeContent = includeContent.replace(regexLightX, (str: string, p1: string) => {
+                        includeContent = includeContent.replace(RegexLightX, (str: string, p1: string) => {
                             return p1 + "{X}";
                         });
                     }
-                    includeContent = includeContent.replace(regexX, indexString);
+                    includeContent = includeContent.replace(RegexX, indexString);
                 }
             }
 
@@ -487,26 +500,26 @@ export function _ProcessIncludes(sourceCode: string, options: ProcessingOptions,
         } else {
             const includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
-            _functionContainer.loadFile(includeShaderUrl, (fileContent) => {
+            _FunctionContainer.loadFile(includeShaderUrl, (fileContent) => {
                 options.includesShadersStore[includeFile] = fileContent as string;
-                _ProcessIncludes(parts.join(""), options, callback);
+                ProcessIncludes(parts.join(""), options, callback);
             });
             return;
         }
     }
-    reusableMatches.length = 0;
+    ReusableMatches.length = 0;
 
     returnValue = parts.join("");
 
     if (keepProcessing) {
-        _ProcessIncludes(returnValue.toString(), options, callback);
+        ProcessIncludes(returnValue.toString(), options, callback);
     } else {
         callback(returnValue);
     }
 }
 
 /** @internal */
-export const _functionContainer = {
+export const _FunctionContainer = {
     /**
      * Loads a file from a url
      * @param url url to load

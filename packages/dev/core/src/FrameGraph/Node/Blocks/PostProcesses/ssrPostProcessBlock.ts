@@ -6,7 +6,6 @@ import type {
     FrameGraphTextureHandle,
     Camera,
     NodeRenderGraphGeometryRendererBlock,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -20,6 +19,8 @@ import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
  */
 export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
     protected override _frameGraphTask: FrameGraphSSRRenderingPipelineTask;
+
+    public override _additionalConstructionParameters: [number];
 
     /**
      * Gets the frame graph task associated with this block
@@ -41,14 +42,20 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
         this._additionalConstructionParameters = [textureType];
 
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
-        this.registerInput("geomDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth);
-        this.registerInput("geomNormal", NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal);
+        this.registerInput("geomDepth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("geomNormal", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
         this.registerInput("geomReflectivity", NodeRenderGraphBlockConnectionPointTypes.TextureReflectivity);
-        this.registerInput("geomBackDepth", NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth, true);
+        this.registerInput("geomBackDepth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
 
-        this.geomNormal.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal);
-        this.geomDepth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth);
-        this.geomBackDepth.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth);
+        this.geomNormal.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal | NodeRenderGraphBlockConnectionPointTypes.TextureViewNormal
+        );
+        this.geomDepth.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth | NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth
+        );
+        this.geomBackDepth.addExcludedConnectionPointFromAllowedTypes(
+            NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth | NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth
+        );
 
         this._finalizeInputOutputRegistering();
 
@@ -295,7 +302,7 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
     }
 
     /** Gets or sets a boolean indicating if the reflections should be attenuated at the screen borders */
-    @editableInPropertyPage("Screen borders", PropertyTypeForEdition.Boolean, "ATTENUATIONS")
+    @editableInPropertyPage("Screen borders", PropertyTypeForEdition.Boolean, "Attenuations")
     public get attenuateScreenBorders() {
         return this._frameGraphTask.ssr.attenuateScreenBorders;
     }
@@ -305,7 +312,7 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
     }
 
     /** Gets or sets a boolean indicating if the reflections should be attenuated according to the distance of the intersection */
-    @editableInPropertyPage("Distance", PropertyTypeForEdition.Boolean, "ATTENUATIONS")
+    @editableInPropertyPage("Distance", PropertyTypeForEdition.Boolean, "Attenuations")
     public get attenuateIntersectionDistance() {
         return this._frameGraphTask.ssr.attenuateIntersectionDistance;
     }
@@ -315,7 +322,7 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
     }
 
     /** Gets or sets a boolean indicating if the reflections should be attenuated according to the number of iterations performed to find the intersection */
-    @editableInPropertyPage("Step iterations", PropertyTypeForEdition.Boolean, "ATTENUATIONS")
+    @editableInPropertyPage("Step iterations", PropertyTypeForEdition.Boolean, "Attenuations")
     public get attenuateIntersectionIterations() {
         return this._frameGraphTask.ssr.attenuateIntersectionIterations;
     }
@@ -325,7 +332,7 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
     }
 
     /** Gets or sets a boolean indicating if the reflections should be attenuated when the reflection ray is facing the camera (the view direction) */
-    @editableInPropertyPage("Facing camera", PropertyTypeForEdition.Boolean, "ATTENUATIONS")
+    @editableInPropertyPage("Facing camera", PropertyTypeForEdition.Boolean, "Attenuations")
     public get attenuateFacingCamera() {
         return this._frameGraphTask.ssr.attenuateFacingCamera;
     }
@@ -335,7 +342,7 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
     }
 
     /** Gets or sets a boolean indicating if the backface reflections should be attenuated */
-    @editableInPropertyPage("Backface reflections", PropertyTypeForEdition.Boolean, "ATTENUATIONS")
+    @editableInPropertyPage("Backface reflections", PropertyTypeForEdition.Boolean, "Attenuations")
     public get attenuateBackfaceReflection() {
         return this._frameGraphTask.ssr.attenuateBackfaceReflection;
     }
@@ -421,13 +428,27 @@ export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostP
                 throw new Error(`SSR post process "${this.name}": Automatic thickness computation requires a back depth texture to be connected!`);
             }
 
-            const ownerBlock = this.geomBackDepth.connectedPoint!.ownerBlock!;
-            if (ownerBlock.getClassName() === "NodeRenderGraphGeometryRendererBlock") {
-                const geometryRendererBlock = ownerBlock as NodeRenderGraphGeometryRendererBlock;
-                if (!geometryRendererBlock.reverseCulling) {
+            const geomBackDepthOwnerBlock = this.geomBackDepth.connectedPoint!.ownerBlock;
+            if (geomBackDepthOwnerBlock.getClassName() === "NodeRenderGraphGeometryRendererBlock") {
+                const geometryBackFaceRendererBlock = geomBackDepthOwnerBlock as NodeRenderGraphGeometryRendererBlock;
+                if (!geometryBackFaceRendererBlock.reverseCulling) {
                     throw new Error(
                         `SSR post process "${this.name}": Automatic thickness computation requires the geometry renderer block for the back depth texture to have reverse culling enabled!`
                     );
+                }
+
+                if (this._frameGraphTask.depthTexture) {
+                    const geomDepthOwnerBlock = this.geomDepth.connectedPoint!.ownerBlock;
+                    if (geomDepthOwnerBlock.getClassName() === "NodeRenderGraphGeometryRendererBlock") {
+                        const geomDepthConnectionPointType = this.geomDepth.connectedPoint!.type;
+                        const geomBackDepthConnectionPointType = this.geomBackDepth.connectedPoint!.type;
+
+                        if (geomDepthConnectionPointType !== geomBackDepthConnectionPointType) {
+                            throw new Error(
+                                `SSR post process "${this.name}": Automatic thickness computation requires that geomDepth and geomBackDepth have the same type (view or screen space depth)!`
+                            );
+                        }
+                    }
                 }
             }
         }

@@ -938,7 +938,7 @@ interface IGLTFValidationOptions {
     /** Ignored issues */
     ignoredIssues?: Array<string>;
     /** Value to override severy settings */
-    severityOverrides?: Object;
+    severityOverrides?: object;
 }
 
 /**
@@ -1003,6 +1003,59 @@ export const enum KHRLightsPunctual_LightType {
     DIRECTIONAL = "directional",
     POINT = "point",
     SPOT = "spot",
+}
+
+/** @internal */
+interface IKHRLightsPunctual_LightReference {
+    light: number;
+}
+
+/** @internal */
+interface IKHRLightsPunctual_Light extends IChildRootProperty {
+    type: KHRLightsPunctual_LightType;
+    color?: number[];
+    intensity?: number;
+    range?: number;
+    spot?: {
+        innerConeAngle?: number;
+        outerConeAngle?: number;
+    };
+}
+
+/** @internal */
+interface IKHRLightsPunctual {
+    lights: IKHRLightsPunctual_Light[];
+}
+
+/**
+ * Interfaces from the EXT_lights_area extension
+ */
+
+/** @internal */
+export const enum EXT_lights_area_LightType {
+    RECT = "rect",
+    DISK = "disk",
+}
+
+/** @internal */
+interface IEXT_lights_area_LightReference {
+    light: number;
+}
+
+/** @internal */
+interface IEXT_lights_area_Light extends IChildRootProperty {
+    type: EXT_lights_area_LightType;
+    color?: number[];
+    intensity?: number;
+    size?: number;
+    rect?: {
+        aspect?: number;
+    };
+}
+
+/** @internal */
+interface IEXT_lights_area {
+    lights: IEXT_lights_area_Light[];
 }
 
 /** @internal */

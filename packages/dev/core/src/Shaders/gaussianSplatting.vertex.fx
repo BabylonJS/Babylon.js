@@ -10,13 +10,13 @@
 
 #include<helperFunctions>
 
-// Attributes
-attribute float splatIndex;
-
 // Uniforms
 uniform vec2 invViewport;
 uniform vec2 dataTextureSize;
 uniform vec2 focal;
+uniform float kernelSize;
+uniform vec3 eyePosition;
+uniform float alpha;
 
 uniform sampler2D covariancesATexture;
 uniform sampler2D covariancesBTexture;
@@ -40,6 +40,7 @@ varying vec2 vPosition;
 #include<gaussianSplatting>
 
 void main () {
+    float splatIndex = getSplatIndex(int(position.z + 0.5));
     Splat splat = readSplat(splatIndex);
     vec3 covA = splat.covA.xyz;
     vec3 covB = vec3(splat.covA.w, splat.covB.xy);
@@ -47,18 +48,18 @@ void main () {
     vec4 worldPos = world * vec4(splat.center.xyz, 1.0);
 
     vColor = splat.color;
-    vPosition = position;
+    vPosition = position.xy;
 
 #if SH_DEGREE > 0
     mat3 worldRot = mat3(world);
     mat3 normWorldRot = inverseMat3(worldRot);
 
-    vec3 dir = normalize(normWorldRot * (worldPos.xyz - vEyePosition.xyz));
-    dir.y *= -1.; // Up is inverted. This corresponds to change in _makeSplat method
-    vColor.xyz = computeSH(splat, splat.color.xyz, dir);
+    vec3 eyeToSplatLocalSpace = normalize(normWorldRot * (worldPos.xyz - eyePosition));
+    vColor.xyz = splat.color.xyz + computeSH(splat, eyeToSplatLocalSpace);
 #endif
+    vColor.w *= alpha;
 
-    gl_Position = gaussianSplatting(position, worldPos.xyz, vec2(1.,1.), covA, covB, world, view, projection);
+    gl_Position = gaussianSplatting(position.xy, worldPos.xyz, vec2(1.,1.), covA, covB, world, view, projection);
 
 #include<clipPlaneVertex>
 #include<fogVertex>

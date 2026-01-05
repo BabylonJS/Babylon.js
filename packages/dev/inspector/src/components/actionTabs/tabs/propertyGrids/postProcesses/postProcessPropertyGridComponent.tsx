@@ -24,6 +24,7 @@ export class PostProcessPropertyGridComponent extends React.Component<IPostProce
 
     edit() {
         const postProcess = this.props.postProcess;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         postProcess.nodeMaterialSource!.edit();
     }
 

@@ -65,7 +65,7 @@ export function ExtrudeShape(
     const closePath = options.closePath || false;
     const capFunction = options.capFunction || null;
 
-    return _ExtrudeShapeGeneric(
+    return ExtrudeShapeGeneric(
         name,
         shape,
         path,
@@ -166,7 +166,7 @@ export function ExtrudeShapeCustom(
     const instance = options.instance;
     const invertUV = options.invertUV || false;
     const capFunction = options.capFunction || null;
-    return _ExtrudeShapeGeneric(
+    return ExtrudeShapeGeneric(
         name,
         shape,
         path,
@@ -191,7 +191,7 @@ export function ExtrudeShapeCustom(
     );
 }
 
-function _ExtrudeShapeGeneric(
+function ExtrudeShapeGeneric(
     name: string,
     shape: Vector3[],
     curve: Vector3[],

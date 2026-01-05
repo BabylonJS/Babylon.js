@@ -42,7 +42,7 @@ export class InputText extends Control {
     protected _currentKey = "";
     protected _isTextHighlightOn = false;
     protected _textHighlightColor = "#d5e0ff";
-    protected _highligherOpacity = 0.4;
+    protected _highlighterOpacity = 0.4;
     protected _highlightedText = "";
     private _startHighlightIndex = 0;
     private _endHighlightIndex = 0;
@@ -128,19 +128,35 @@ export class InputText extends Control {
         }
     }
 
-    /** Gets or sets the text highlighter transparency; default: 0.4 */
+    /**
+     * Gets or sets the text highlighter transparency; default: 0.4
+     * @deprecated Please use highlighterOpacity instead
+     */
     @serialize()
     public get highligherOpacity(): number {
-        return this._highligherOpacity;
+        return this.highlighterOpacity;
     }
 
     public set highligherOpacity(value: number) {
-        if (this._highligherOpacity === value) {
+        this.highlighterOpacity = value;
+    }
+
+    /**
+     * Gets or sets the text highlighter transparency; default: 0.4
+     */
+    @serialize()
+    public get highlighterOpacity(): number {
+        return this._highlighterOpacity;
+    }
+
+    public set highlighterOpacity(value: number) {
+        if (this._highlighterOpacity === value) {
             return;
         }
-        this._highligherOpacity = value;
+        this._highlighterOpacity = value;
         this._markAsDirty();
     }
+
     /** Gets or sets a boolean indicating whether to select complete text by default on input focus */
     @serialize()
     public get onFocusSelectAll(): boolean {
@@ -879,8 +895,8 @@ export class InputText extends Control {
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
             context.shadowBlur = this.shadowBlur;
-            context.shadowOffsetX = this.shadowOffsetX;
-            context.shadowOffsetY = this.shadowOffsetY;
+            context.shadowOffsetX = this.shadowOffsetX * this._host.idealRatio;
+            context.shadowOffsetY = this.shadowOffsetY * this._host.idealRatio;
         }
 
         // Background
@@ -1022,7 +1038,7 @@ export class InputText extends Control {
                     highlightCursorLeft = clipTextLeft;
                 }
                 //for transparancy
-                context.globalAlpha = this._highligherOpacity;
+                context.globalAlpha = this._highlighterOpacity;
                 context.fillStyle = this._textHighlightColor;
                 context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, width, this._fontOffset.height);
                 context.globalAlpha = 1.0;

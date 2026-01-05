@@ -67,7 +67,10 @@ class WebXRProjectionLayerRenderTargetTextureProvider extends WebXRCompositionLa
     }
 }
 
-export const defaultXRProjectionLayerInit: XRProjectionLayerInit = {
+/**
+ * @internal
+ */
+export const DefaultXRProjectionLayerInit: XRProjectionLayerInit = {
     textureType: "texture",
     colorFormat: 0x1908 /* WebGLRenderingContext.RGBA */,
     depthFormat: 0x88f0 /* WebGLRenderingContext.DEPTH24_STENCIL8 */,

@@ -16,6 +16,13 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
     private _scene: Scene;
 
     /**
+     * Name of the variable in the shader that holds the screen size
+     */
+    public get associatedVariableName(): string {
+        return this._varName;
+    }
+
+    /**
      * Creates a new ScreenSizeBlock
      * @param name defines the block name
      */
@@ -81,8 +88,8 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
         this._scene = state.sharedData.scene;
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
-            // eslint-disable-next-line no-throw-literal
-            throw "ScreenSizeBlock must only be used in a fragment shader";
+            state.sharedData.raiseBuildError("ScreenSizeBlock must only be used in a fragment shader");
+            return this;
         }
 
         state.sharedData.bindableBlocks.push(this);

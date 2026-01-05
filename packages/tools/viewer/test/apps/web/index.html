@@ -42,6 +42,10 @@
                 background-image: url("https://raw.githubusercontent.com/BabylonJS/Assets/master/textures/Checker_albedo.png");
             }
 
+            babylon-viewer-annotation[hotspot="thruster"]::part(annotation) {
+                background-color: orange;
+            }
+
             /* babylon-viewer-annotation:state(back-facing) {
                 display: none;
              } */
@@ -123,19 +127,15 @@
                         </svg>
                     </div>
                 </babylon-viewer-annotation>
-                <babylon-viewer-annotation hotspot="thruster">
-                    <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px">Thruster</div>
-                </babylon-viewer-annotation>
-                <babylon-viewer-annotation hotspot="poi">
-                    <div style="background-color: aliceblue; border-radius: 8px; padding: 3px 6px">World Space POI</div>
-                </babylon-viewer-annotation>
+                <babylon-viewer-annotation hotspot="thruster"> </babylon-viewer-annotation>
+                <babylon-viewer-annotation hotspot="poi"></babylon-viewer-annotation>
             </babylon-viewer>
         </div>
         <div id="moreLowerPageContent" style="width: 100%; height: 200vh; display: none"></div>
         <div class="button-container">
             <button onclick="onOpenFile()">Open File</button>
             <button onclick="onToggleDOM()">Toggle DOM</button>
-            <button onclick="onToggleEngine()">Toggle Engine</button>
+            <button id="engine-button" onclick="onToggleEngine()">Toggle Engine</button>
             <button id="anchor-button" onclick="onToggleHotSpot()">Toggle Hot Spot</button>
             <button id="inspector-button" onclick="onToggleInspector()">Toggle Inspector</button>
             <button onClick="onToggleTopContent()">Toggle Top Content ⬆️</button>
@@ -146,11 +146,11 @@
             <button onClick="resetModel()">Reset Model</button>
             <div>
                 <span>Environment Intensity</span>
-                <input type="range" id="environmentIntensityInput" min="0" max="2" step="0.01" oninput="onEnvironmentIntensity()" />
+                <input type="range" id="environmentIntensityInput" min="0" max="2" step="0.01" value="1" oninput="onEnvironmentIntensity()" />
             </div>
             <div>
                 <span>Rotate Environment</span>
-                <input type="range" id="environmentRotationInput" min="0" max="6.28" step="0.1" oninput="onEnvironmentRotation()" />
+                <input type="range" id="environmentRotationInput" min="0" max="6.28" step="0.1" value="0" oninput="onEnvironmentRotation()" />
             </div>
             <div>
                 <span>Environment Blur</span>
@@ -158,7 +158,23 @@
             </div>
             <div>
                 <span>Environment Visibility</span>
-                <input type="checkbox" id="environmentVisibilityInput" checked oninput="onEnvironmentVisibility()" />
+                <input type="checkbox" id="environmentVisibilityInput" oninput="onEnvironmentVisibility()" />
+            </div>
+            <div>
+                <span>SSAO</span>
+                <select id="ssaoSelect" oninput="onSSAO()">
+                    <option value="disabled">Disabled</option>
+                    <option value="enabled">Enabled</option>
+                    <option selected value="auto">Auto</option>
+                </select>
+            </div>
+            <div>
+                <span>Shadows Quality</span>
+                <select id="shadowQualityInput" oninput="onShadowQuality()">
+                    <option value="none">None</option>
+                    <option value="normal">Normal (shadow map)</option>
+                    <option value="high">High (environment shadow)</option>
+                </select>
             </div>
         </div>
         <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
@@ -181,6 +197,9 @@
             viewerElement.addEventListener("viewerready", (event) => {
                 viewerDetails = viewerElement.viewerDetails;
                 viewerDetails.viewer.showDebugLogs = true;
+
+                document.querySelector("#engine-button").innerText = `Switch to ${viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL"} engine`;
+
                 console.log(`Viewer ready.`, viewerDetails);
             });
             viewerElement.addEventListener("modelchange", (event) => {
@@ -283,6 +302,7 @@
             };
 
             globalThis.onToggleEngine = () => {
+                document.querySelector("#engine-button").innerText = `Switch to ${viewerElement.engine} engine`;
                 viewerElement.engine = viewerElement.engine === "WebGL" ? "WebGPU" : "WebGL";
             };
 
@@ -360,7 +380,17 @@
             globalThis.onEnvironmentVisibility = () => {
                 const checked = document.querySelector("#environmentVisibilityInput").checked;
                 const viewer = viewerElement.viewerDetails.viewer;
-                viewer.environmentConfig = { visible: checked };
+                checked ? viewer.loadEnvironment("auto", { skybox: true }) : viewer.resetEnvironment({ skybox: true });
+            };
+            globalThis.onSSAO = () => {
+                const value = document.querySelector("#ssaoSelect").value;
+                const viewer = viewerElement.viewerDetails.viewer;
+                viewer.postProcessing = { ssao: value };
+            };
+            globalThis.onShadowQuality = () => {
+                const value = document.querySelector("#shadowQualityInput").value;
+                const viewer = viewerElement.viewerDetails.viewer;
+                viewer.updateShadows({ quality: value });
             };
         </script>
     </body>

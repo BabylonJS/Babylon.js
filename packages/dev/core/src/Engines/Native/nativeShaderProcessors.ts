@@ -3,11 +3,11 @@
 import type { Nullable } from "core/types";
 import type { IShaderProcessor } from "../Processors/iShaderProcessor";
 import type { NativeShaderProcessingContext } from "./nativeShaderProcessingContext";
-import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
 
-const varyingRegex = /(flat\s)?\s*varying\s*.*/;
+const VaryingRegex = /(flat\s)?\s*varying\s*.*/;
 
 /** @internal */
 export class NativeShaderProcessor implements IShaderProcessor {
@@ -15,7 +15,7 @@ export class NativeShaderProcessor implements IShaderProcessor {
 
     protected _nativeProcessingContext: Nullable<NativeShaderProcessingContext>;
 
-    public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
+    public initializeShaders(processingContext: Nullable<_IShaderProcessingContext>): void {
         this._nativeProcessingContext = processingContext as Nullable<NativeShaderProcessingContext>;
         if (this._nativeProcessingContext) {
             this._nativeProcessingContext.remappedAttributeNames = {};
@@ -52,7 +52,7 @@ export class NativeShaderProcessor implements IShaderProcessor {
     }
 
     public varyingCheck(varying: string, _isFragment: boolean) {
-        return varyingRegex.test(varying);
+        return VaryingRegex.test(varying);
     }
 
     public varyingProcessor(varying: string, isFragment: boolean) {
@@ -79,6 +79,9 @@ export class NativeShaderProcessor implements IShaderProcessor {
             code = code.replace(/gl_FragData/g, "glFragData");
             code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension || hasOutput ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
         } else {
+            if (defines.indexOf("#define VERTEXOUTPUT_INVARIANT") >= 0) {
+                code = "invariant gl_Position;\n" + code;
+            }
             if (this._nativeProcessingContext?.injectInVertexMain) {
                 code = InjectStartingAndEndingCode(code, "void main", this._nativeProcessingContext.injectInVertexMain);
             }

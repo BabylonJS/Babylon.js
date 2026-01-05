@@ -8,6 +8,7 @@ module.exports = (env) => {
         devPackageAliasPath: `../../../tools/nodeRenderGraphEditor/dist`,
         namespace: "NODERENDERGRAPHEDITOR",
         maxMode: true,
+        minToMax: true,
         outputPath: path.resolve(__dirname),
         alias: {
             "shared-ui-components": path.resolve("../../../dev/sharedUiComponents/dist"),

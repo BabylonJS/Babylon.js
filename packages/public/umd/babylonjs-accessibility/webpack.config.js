@@ -9,6 +9,7 @@ module.exports = (env) => {
         namespace: "ACCESSIBILITY",
         outputPath: path.resolve(__dirname),
         maxMode: true,
+        minToMax: true,
     });
     return commonConfig;
 };

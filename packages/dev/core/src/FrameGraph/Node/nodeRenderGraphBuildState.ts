@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, NodeRenderGraphConnectionPoint, Observable } from "core/index";
 import { Logger } from "../../Misc/logger";
 

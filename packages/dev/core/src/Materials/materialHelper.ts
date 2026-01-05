@@ -191,6 +191,7 @@ export class MaterialHelper {
      * @param defines The defines to update
      * @param needAlphaBlending Determines if the material needs alpha blending
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static PrepareDefinesForOIT: (scene: Scene, defines: any, needAlphaBlending: boolean) => void = PrepareDefinesForOIT;
 
     /**

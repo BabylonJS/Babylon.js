@@ -14,5 +14,6 @@ export class ExrLoaderGlobalConfiguration {
     /**
      * Url to use to load the fflate library (for zip decompression)
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public static FFLATEUrl = "https://unpkg.com/fflate@0.8.2";
 }

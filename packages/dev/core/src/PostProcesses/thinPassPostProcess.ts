@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, EffectWrapperCreationOptions, AbstractEngine } from "core/index";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import { Engine } from "../Engines/engine";
@@ -30,14 +29,20 @@ export class ThinPassPostProcess extends EffectWrapper {
      * @param options Options to configure the effect
      */
     constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {
-        super({
-            ...options,
+        const localOptions: EffectWrapperCreationOptions = {
             name,
             engine: engine || Engine.LastCreatedEngine!,
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinPassPostProcess.FragmentUrl,
-        });
+            ...options,
+        };
+
+        if (!localOptions.engine) {
+            localOptions.engine = Engine.LastCreatedEngine!;
+        }
+
+        super(localOptions);
     }
 }
 

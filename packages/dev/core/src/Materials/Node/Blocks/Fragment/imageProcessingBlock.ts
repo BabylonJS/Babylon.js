@@ -87,6 +87,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state._excludeVariableName("txColorTransform");
         state._excludeVariableName("colorTransformSettings");
         state._excludeVariableName("ditherIntensity");
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
@@ -120,7 +121,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         return true;
     }
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial) {
         if (defines._areImageProcessingDirty && nodeMaterial.imageProcessingConfiguration) {
             nodeMaterial.imageProcessingConfiguration.prepareDefines(defines);
         }
@@ -174,7 +175,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
         if (color.connectedPoint?.isConnected) {
-            if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+            if (color.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
                 state.compilationString += `${state._declareOutput(output)} = ${color.associatedVariableName};\n`;
             } else {
                 state.compilationString += `${state._declareOutput(output)} = vec4${state.fSuffix}(${color.associatedVariableName}, 1.0);\n`;

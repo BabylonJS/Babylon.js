@@ -253,8 +253,8 @@ export function CreateDashedLines(
                 lg += curvect.length();
             }
             shft = lg / nbSeg;
-            const dashSize = instance!._creationDataStorage!.dashSize;
-            const gapSize = instance!._creationDataStorage!.gapSize;
+            const dashSize = instance._creationDataStorage!.dashSize;
+            const gapSize = instance._creationDataStorage!.gapSize;
             dashshft = (dashSize * shft) / (dashSize + gapSize);
             for (i = 0; i < points.length - 1; i++) {
                 points[i + 1].subtractToRef(points[i], curvect);

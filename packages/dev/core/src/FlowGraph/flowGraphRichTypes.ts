@@ -88,12 +88,14 @@ export const RichTypeColor4: RichType<Color4> = new RichType(FlowGraphTypes.Colo
 
 export const RichTypeQuaternion: RichType<Quaternion> = new RichType(FlowGraphTypes.Quaternion, Quaternion.Identity(), Constants.ANIMATIONTYPE_QUATERNION);
 RichTypeQuaternion.typeTransformer = (value: any) => {
-    if (value.getClassName && value.getClassName() === FlowGraphTypes.Vector4) {
-        return Quaternion.FromArray(value.asArray());
-    } else if (value.getClassName && value.getClassName() === FlowGraphTypes.Vector3) {
-        return Quaternion.FromEulerVector(value);
-    } else if (value.getClassName && value.getClassName() === FlowGraphTypes.Matrix) {
-        return Quaternion.FromRotationMatrix(value);
+    if (value.getClassName) {
+        if (value.getClassName() === FlowGraphTypes.Vector4) {
+            return Quaternion.FromArray(value.asArray());
+        } else if (value.getClassName() === FlowGraphTypes.Vector3) {
+            return Quaternion.FromEulerVector(value);
+        } else if (value.getClassName() === FlowGraphTypes.Matrix) {
+            return Quaternion.FromRotationMatrix(value);
+        }
     }
     return value;
 };
@@ -104,6 +106,7 @@ export const RichTypeFlowGraphInteger: RichType<FlowGraphInteger> = new RichType
  * @param value the value to deduce the rich type from
  * @returns the value's rich type, or RichTypeAny if the type could not be deduced.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getRichTypeFromValue<T>(value: T): RichType<T> {
     const anyValue = value as any;
     switch (typeof value) {
@@ -149,6 +152,7 @@ export function getRichTypeFromValue<T>(value: T): RichType<T> {
  * @param flowGraphType the flow graph type
  * @returns the rich type that corresponds to the flow graph type
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getRichTypeByFlowGraphType(flowGraphType?: string): RichType<any> {
     switch (flowGraphType) {
         case FlowGraphTypes.String:
@@ -187,6 +191,7 @@ export function getRichTypeByFlowGraphType(flowGraphType?: string): RichType<any
  * @param flowGraphType the flow graph type
  * @returns the animation type for this flow graph type
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getAnimationTypeByFlowGraphType(flowGraphType: FlowGraphTypes): number {
     switch (flowGraphType) {
         case FlowGraphTypes.Number:
@@ -213,6 +218,7 @@ export function getAnimationTypeByFlowGraphType(flowGraphType: FlowGraphTypes): 
  * @param animationType the animation type
  * @returns the rich type that corresponds to the animation type
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function getRichTypeByAnimationType(animationType: number): RichType<any> {
     switch (animationType) {
         case Constants.ANIMATIONTYPE_FLOAT:

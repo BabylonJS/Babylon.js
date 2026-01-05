@@ -1,0 +1,25 @@
+{
+    "name": "@dev/smart-filters-blocks",
+    "private": true,
+    "version": "1.0.0",
+    "readme": "README.md",
+    "main": "dist/index",
+    "module": "dist/index",
+    "types": "dist/index",
+    "type": "module",
+    "sideEffects": false,
+    "files": [
+        "dist",
+        "src"
+    ],
+    "scripts": {
+        "build": "tsc -b tsconfig.build.json",
+        "test": "jest -c ../../../jest.config.ts --passWithNoTests",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf --glob ./src/blocks/**/*.block.ts && rimraf --glob ./src/blocks/**/*.fragment.ts",
+        "watch": "build-tools -c dev-watch --packages \"smart-filters-blocks\" -wa"
+    },
+    "devDependencies": {
+        "@dev/core": "^1.0.0",
+        "@dev/smart-filters": "^1.0.0"
+    }
+}

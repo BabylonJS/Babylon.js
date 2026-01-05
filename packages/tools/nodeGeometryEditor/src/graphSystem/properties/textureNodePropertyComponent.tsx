@@ -12,6 +12,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         super(props);
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     async loadTextureData(file: File) {
         const block = this.props.nodeData.data as GeometryTextureBlock;
         await block.loadTextureFromFileAsync(file);
@@ -34,7 +35,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
-                    <FileButtonLine label="Load" onClick={(file) => this.loadTextureData(file)} accept=".jpg, .png, .tga, .exr" />
+                    <FileButtonLine label="Load" onClick={async (file) => await this.loadTextureData(file)} accept=".jpg, .png, .tga, .exr" />
                     {block.textureData && <ButtonLineComponent label="Remove" onClick={() => this.removeData()} />}
                 </LineContainerComponent>
                 <LineContainerComponent title="ADVANCED">

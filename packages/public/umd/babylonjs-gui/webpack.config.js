@@ -11,6 +11,7 @@ module.exports = (env) => {
             gui: path.resolve(__dirname, "../../../dev/gui/src"),
             "@lts/gui": path.resolve(__dirname, "../../../lts/gui/src"),
         },
+        minToMax: true,
     });
     return commonConfig;
 };

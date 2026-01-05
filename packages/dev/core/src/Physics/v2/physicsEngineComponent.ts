@@ -8,10 +8,7 @@ import type { PhysicsBody } from "./physicsBody";
 import "../joinedPhysicsEngineComponent";
 
 declare module "../../Meshes/transformNode" {
-    /**
-     *
-     */
-    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface TransformNode {
         /** @internal */
         _physicsBody: Nullable<PhysicsBody>;

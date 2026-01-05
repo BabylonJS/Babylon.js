@@ -13,14 +13,15 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
 import { _WarnImport } from "../Misc/devTools";
-import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 import type { Material } from "../Materials/material";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import type { IEffectCreationOptions } from "core/Materials";
+import type { IEffectCreationOptions } from "core/Materials/effect";
+import type { GaussianSplattingMaterial } from "../Materials/GaussianSplatting/gaussianSplattingMaterial";
 
 /**
  * This represents a depth renderer in Babylon.
@@ -99,6 +100,7 @@ export class DepthRenderer {
      * @param samplingMode The sampling mode to be used with the render target (Linear, Nearest...) (default: TRILINEAR_SAMPLINGMODE)
      * @param storeCameraSpaceZ Defines whether the depth stored is the Z coordinate in camera space. If true, storeNonLinearDepth has no effect. (Default: false)
      * @param name Name of the render target (default: DepthRenderer)
+     * @param existingRenderTargetTexture An existing render target texture to use (default: undefined). If not provided, a new render target texture will be created.
      */
     constructor(
         scene: Scene,
@@ -107,7 +109,8 @@ export class DepthRenderer {
         storeNonLinearDepth = false,
         samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
         storeCameraSpaceZ = false,
-        name?: string
+        name?: string,
+        existingRenderTargetTexture?: RenderTargetTexture
     ) {
         this._scene = scene;
         this._storeNonLinearDepth = storeNonLinearDepth;
@@ -116,9 +119,10 @@ export class DepthRenderer {
         if (this.isPacked) {
             this.clearColor = new Color4(1.0, 1.0, 1.0, 1.0);
         } else {
-            this.clearColor = new Color4(storeCameraSpaceZ ? 1e8 : 1.0, 0.0, 0.0, 1.0);
+            this.clearColor = new Color4(storeCameraSpaceZ ? 0.0 : 1.0, 0.0, 0.0, 1.0);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync();
 
         DepthRenderer._SceneComponentInitialization(this._scene);
@@ -138,20 +142,22 @@ export class DepthRenderer {
 
         // Render target
         const format = this.isPacked || !engine._features.supportExtendedTextureFormats ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
-        this._depthMap = new RenderTargetTexture(
-            name ?? "DepthRenderer",
-            { width: engine.getRenderWidth(), height: engine.getRenderHeight() },
-            this._scene,
-            false,
-            true,
-            type,
-            false,
-            samplingMode,
-            undefined,
-            undefined,
-            undefined,
-            format
-        );
+        this._depthMap =
+            existingRenderTargetTexture ??
+            new RenderTargetTexture(
+                name ?? "DepthRenderer",
+                { width: engine.getRenderWidth(), height: engine.getRenderHeight() },
+                this._scene,
+                false,
+                true,
+                type,
+                false,
+                samplingMode,
+                undefined,
+                undefined,
+                undefined,
+                format
+            );
         this._depthMap.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._depthMap.wrapV = Texture.CLAMP_ADDRESSMODE;
         this._depthMap.refreshRate = 1;
@@ -240,7 +246,15 @@ export class DepthRenderer {
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 subMesh._renderId = scene.getRenderId();
 
-                const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
+                let renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
+                if (renderingMaterial === undefined && effectiveMesh.getClassName() === "GaussianSplattingMesh") {
+                    const gsMaterial = effectiveMesh.material! as GaussianSplattingMaterial;
+                    renderingMaterial = gsMaterial.makeDepthRenderingMaterial(this._scene, this._shaderLanguage);
+                    this.setMaterialForRendering(effectiveMesh, renderingMaterial);
+                    if (!renderingMaterial.isReady()) {
+                        return;
+                    }
+                }
 
                 let drawWrapper = subMesh._getDrawWrapper();
                 if (!drawWrapper && renderingMaterial) {
@@ -297,7 +311,7 @@ export class DepthRenderer {
                     BindBonesParameters(renderingMesh, effect);
 
                     // Clip planes
-                    bindClipPlane(effect, material, scene);
+                    BindClipPlane(effect, material, scene);
 
                     // Morph targets
                     BindMorphTargetParameters(renderingMesh, effect);
@@ -501,7 +515,7 @@ export class DepthRenderer {
         }
 
         // Clip planes
-        prepareStringDefinesForClipPlanes(material, scene, defines);
+        PrepareStringDefinesForClipPlanes(material, scene, defines);
 
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
@@ -528,7 +542,7 @@ export class DepthRenderer {
             ];
             const samplers = ["diffuseSampler", "morphTargets", "boneSampler", "bakedVertexAnimationTexture"];
 
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
             drawWrapper.setEffect(
                 engine.createEffect(

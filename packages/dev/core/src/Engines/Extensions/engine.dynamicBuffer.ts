@@ -3,6 +3,7 @@ import type { DataBuffer } from "../../Buffers/dataBuffer";
 import type { IndicesArray, DataArray } from "../../types";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Update a dynamic index buffer

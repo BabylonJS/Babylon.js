@@ -24,7 +24,12 @@ const runScene = async () => {
         engine.dispose();
         engine = undefined;
     }
-    engine = createEngine(); // Generate the BABYLON 3D engine
+    const createdEngine = createEngine(); // Generate the BABYLON 3D engine
+    if (createdEngine.then) {
+        engine = await createdEngine;
+    } else {
+        engine = createdEngine;
+    }
     if (playgroundId) {
         window.engine = engine;
         window.canvas = canvas;

@@ -1,32 +1,45 @@
 import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
 import { _SpatialAudioSubNode } from "../../abstractAudio/subNodes/spatialAudioSubNode";
 import { _SpatialAudioDefaults } from "../../abstractAudio/subProperties/abstractSpatialAudio";
+import { _WebAudioParameterComponent } from "../components/webAudioParameterComponent";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode } from "../webAudioNode";
 
 const TmpMatrix = Matrix.Zero();
 const TmpQuaternion = new Quaternion();
-const TmpVector = Vector3.Zero();
 
-function d2r(degrees: number): number {
+function D2r(degrees: number): number {
     return (degrees * Math.PI) / 180;
 }
 
-function r2d(radians: number): number {
+function R2d(radians: number): number {
     return (radians * 180) / Math.PI;
 }
 
 /** @internal */
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): Promise<_SpatialAudioSubNode> {
     return new _SpatialWebAudioSubNode(engine);
 }
 
 /** @internal */
 export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
+    private _lastOrientation: Vector3 = Vector3.Zero();
     private _lastPosition: Vector3 = Vector3.Zero();
     private _lastRotation: Vector3 = Vector3.Zero();
     private _lastRotationQuaternion: Quaternion = new Quaternion();
+    private _orientationX: _WebAudioParameterComponent;
+    private _orientationY: _WebAudioParameterComponent;
+    private _orientationZ: _WebAudioParameterComponent;
+    private _positionX: _WebAudioParameterComponent;
+    private _positionY: _WebAudioParameterComponent;
+    private _positionZ: _WebAudioParameterComponent;
 
+    /** @internal */
+    public override readonly engine: _WebAudioEngine;
+
+    /** @internal */
+    public readonly orientation: Vector3 = _SpatialAudioDefaults.orientation.clone();
     /** @internal */
     public readonly position = _SpatialAudioDefaults.position.clone();
     /** @internal */
@@ -41,25 +54,47 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     public constructor(engine: _WebAudioEngine) {
         super(engine);
 
-        this.node = new PannerNode(engine.audioContext);
+        this.node = new PannerNode(engine._audioContext);
+
+        this._orientationX = new _WebAudioParameterComponent(engine, this.node.orientationX);
+        this._orientationY = new _WebAudioParameterComponent(engine, this.node.orientationY);
+        this._orientationZ = new _WebAudioParameterComponent(engine, this.node.orientationZ);
+
+        this._positionX = new _WebAudioParameterComponent(engine, this.node.positionX);
+        this._positionY = new _WebAudioParameterComponent(engine, this.node.positionY);
+        this._positionZ = new _WebAudioParameterComponent(engine, this.node.positionZ);
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._orientationX.dispose();
+        this._orientationY.dispose();
+        this._orientationZ.dispose();
+        this._positionX.dispose();
+        this._positionY.dispose();
+        this._positionZ.dispose();
+
+        this.node.disconnect();
     }
 
     /** @internal */
     public get coneInnerAngle(): number {
-        return d2r(this.node.coneInnerAngle);
+        return D2r(this.node.coneInnerAngle);
     }
 
     public set coneInnerAngle(value: number) {
-        this.node.coneInnerAngle = r2d(value);
+        this.node.coneInnerAngle = R2d(value);
     }
 
     /** @internal */
     public get coneOuterAngle(): number {
-        return d2r(this.node.coneOuterAngle);
+        return D2r(this.node.coneOuterAngle);
     }
 
     public set coneOuterAngle(value: number) {
-        this.node.coneOuterAngle = r2d(value);
+        this.node.coneOuterAngle = R2d(value);
     }
 
     /** @internal */
@@ -86,6 +121,15 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     }
 
     /** @internal */
+    public get minDistance(): number {
+        return this.node.refDistance;
+    }
+
+    public set minDistance(value: number) {
+        this.node.refDistance = value;
+    }
+
+    /** @internal */
     public get maxDistance(): number {
         return this.node.maxDistance;
     }
@@ -104,15 +148,6 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     }
 
     /** @internal */
-    public get referenceDistance(): number {
-        return this.node.refDistance;
-    }
-
-    public set referenceDistance(value: number) {
-        this.node.refDistance = value;
-    }
-
-    /** @internal */
     public get rolloffFactor(): number {
         return this.node.rolloffFactor;
     }
@@ -122,46 +157,51 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     }
 
     /** @internal */
-    public get inNode(): AudioNode {
+    public get _inNode(): AudioNode {
         return this.node;
     }
 
     /** @internal */
-    public get outNode(): AudioNode {
+    public get _outNode(): AudioNode {
         return this.node;
     }
 
     /** @internal */
-    public updatePosition(): void {
+    public _updatePosition(): void {
         if (this._lastPosition.equalsWithEpsilon(this.position)) {
             return;
         }
 
-        this.node.positionX.value = this.position.x;
-        this.node.positionY.value = this.position.y;
-        this.node.positionZ.value = this.position.z;
+        this._positionX.targetValue = this.position.x;
+        this._positionY.targetValue = this.position.y;
+        this._positionZ.targetValue = this.position.z;
 
         this._lastPosition.copyFrom(this.position);
     }
 
     /** @internal */
-    public updateRotation(): void {
+    public _updateRotation(): void {
+        let rotated = false;
         if (!this._lastRotationQuaternion.equalsWithEpsilon(this.rotationQuaternion)) {
             TmpQuaternion.copyFrom(this.rotationQuaternion);
             this._lastRotationQuaternion.copyFrom(this.rotationQuaternion);
+            rotated = true;
         } else if (!this._lastRotation.equalsWithEpsilon(this.rotation)) {
             Quaternion.FromEulerAnglesToRef(this.rotation.x, this.rotation.y, this.rotation.z, TmpQuaternion);
             this._lastRotation.copyFrom(this.rotation);
-        } else {
+            rotated = true;
+        } else if (this._lastOrientation.equalsWithEpsilon(this.orientation)) {
             return;
         }
 
-        Matrix.FromQuaternionToRef(TmpQuaternion, TmpMatrix);
-        Vector3.TransformNormalToRef(Vector3.RightReadOnly, TmpMatrix, TmpVector);
+        if (rotated) {
+            Matrix.FromQuaternionToRef(TmpQuaternion, TmpMatrix);
+            Vector3.TransformNormalToRef(Vector3.RightReadOnly, TmpMatrix, this.orientation);
+        }
 
-        this.node.orientationX.value = TmpVector.x;
-        this.node.orientationY.value = TmpVector.y;
-        this.node.orientationZ.value = TmpVector.z;
+        this._orientationX.targetValue = this.orientation.x;
+        this._orientationY.targetValue = this.orientation.y;
+        this._orientationZ.targetValue = this.orientation.z;
     }
 
     protected override _connect(node: IWebAudioInNode): boolean {
@@ -172,8 +212,8 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
         }
 
         // If the wrapped node is not available now, it will be connected later by the subgraph.
-        if (node.inNode) {
-            this.node.connect(node.inNode);
+        if (node._inNode) {
+            this.node.connect(node._inNode);
         }
 
         return true;
@@ -186,8 +226,8 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
             return false;
         }
 
-        if (node.inNode) {
-            this.node.disconnect(node.inNode);
+        if (node._inNode) {
+            this.node.disconnect(node._inNode);
         }
 
         return true;

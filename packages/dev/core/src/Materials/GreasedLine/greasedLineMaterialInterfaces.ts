@@ -170,6 +170,7 @@ export const enum GreasedLineMeshColorDistributionType {
 /**
  * Options for GreasedLineMaterial
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface GreasedLineMaterialOptions {
     /**
      * Force the greased lines to compile to glsl even on WebGPU engines.

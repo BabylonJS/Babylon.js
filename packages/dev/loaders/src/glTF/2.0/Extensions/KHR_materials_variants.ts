@@ -32,13 +32,18 @@ declare module "../../glTFFileLoader" {
         selectedVariant: string;
     };
 
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_materials_variants extension.
          */
         // NOTE: Don't use NAME here as it will break the UMD type declarations.
         ["KHR_materials_variants"]: Partial<{
+            /**
+             * Specifies the name of the variant that should be selected by default.
+             */
+            defaultVariant: string;
+
             /**
              * Defines a callback that will be called if material variants are loaded.
              * @experimental
@@ -82,7 +87,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
-        this.enabled = this._loader.isExtensionUsed(NAME);
+        this.enabled = this._loader.isExtensionUsed(NAME) && !this._loader.parent.skipMaterials;
     }
 
     /** @internal */
@@ -218,7 +223,12 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     public onReady(): void {
         const rootNode = this._loader.rootBabylonMesh;
         if (rootNode) {
-            this._loader.parent.extensionOptions[NAME]?.onLoaded?.({
+            const options = this._loader.parent.extensionOptions[NAME];
+            if (options?.defaultVariant) {
+                KHR_materials_variants.SelectVariant(rootNode, options.defaultVariant);
+            }
+
+            options?.onLoaded?.({
                 get variants() {
                     return KHR_materials_variants.GetAvailableVariants(rootNode);
                 },
@@ -242,6 +252,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public _loadMeshPrimitiveAsync(
         context: string,
         name: string,
@@ -250,7 +261,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         primitive: IMeshPrimitive,
         assign: (babylonMesh: AbstractMesh) => void
     ): Nullable<Promise<AbstractMesh>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants_Mapping, AbstractMesh>(context, primitive, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants_Mapping, AbstractMesh>(context, primitive, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(
                 this._loader._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, (babylonMesh) => {
@@ -290,7 +301,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
                                             // Find root to get medata
                                             do {
-                                                newRoot = newRoot!.parent;
+                                                newRoot = newRoot.parent;
                                                 if (!newRoot) {
                                                     return;
                                                 }
@@ -353,7 +364,8 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                     }
                 })
             );
-            return Promise.all(promises).then(([babylonMesh]) => {
+            // eslint-disable-next-line github/no-then
+            return await Promise.all(promises).then(([babylonMesh]) => {
                 return babylonMesh;
             });
         });

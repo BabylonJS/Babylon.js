@@ -6,6 +6,10 @@ import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionP
 import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
 import { Constants } from "../../Engines/constants";
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
+import { Process } from "core/Engines/Processors/shaderProcessor";
+import type { _IProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
+import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Class used to store node based material build state
@@ -74,7 +78,11 @@ export class NodeMaterialBuildState {
     public _varyingTransfer = "";
     /** @internal */
     public _injectAtEnd = "";
-
+    /** @internal */
+    public _injectAtTop = "";
+    /** @internal */
+    public _customEntryHeader = "";
+    /** @internal */
     private _repeatableContentAnchorIndex = 0;
     /** @internal */
     public _builtCompilationString = "";
@@ -97,6 +105,51 @@ export class NodeMaterialBuildState {
     }
 
     /**
+     * Returns the processed, compiled shader code
+     * @param defines defines to use for the shader processing
+     * @returns the raw shader code used by the engine
+     */
+    public async getProcessedShaderAsync(defines: string): Promise<string> {
+        if (!this._builtCompilationString) {
+            Logger.Error("getProcessedShaderAsync: Shader not built yet.");
+            return "";
+        }
+
+        const engine = this.sharedData.nodeMaterial.getScene().getEngine();
+        const options: _IProcessingOptions = {
+            defines: defines.split("\n"),
+            indexParameters: undefined,
+            isFragment: this.target === NodeMaterialBlockTargets.Fragment,
+            shouldUseHighPrecisionShader: engine._shouldUseHighPrecisionShader,
+            processor: engine._getShaderProcessor(this.shaderLanguage),
+            supportsUniformBuffers: engine.supportsUniformBuffers,
+            shadersRepository: EngineShaderStore.GetShadersRepository(this.shaderLanguage),
+            includesShadersStore: EngineShaderStore.GetIncludesShadersStore(this.shaderLanguage),
+            version: (engine.version * 100).toString(),
+            platformName: engine.shaderPlatformName,
+            processingContext: null,
+            isNDCHalfZRange: engine.isNDCHalfZRange,
+            useReverseDepthBuffer: engine.useReverseDepthBuffer,
+        };
+
+        // Export WebGL2 shaders with WebGL1 syntax for max compatibility
+        if (!engine.isWebGPU && engine.version > 1.0) {
+            options.processor = new WebGLShaderProcessor();
+        }
+
+        return await new Promise((resolve) => {
+            Process(
+                this._builtCompilationString,
+                options,
+                (migratedCode, _) => {
+                    resolve(migratedCode);
+                },
+                engine
+            );
+        });
+    }
+
+    /**
      * Finalize the compilation strings
      * @param state defines the current compilation state
      */
@@ -104,15 +157,20 @@ export class NodeMaterialBuildState {
         const emitComments = state.sharedData.emitComments;
         const isFragmentMode = this.target === NodeMaterialBlockTargets.Fragment;
 
-        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+        let entryPointString = `\n${emitComments ? "//Entry point\n" : ""}`;
+        if (this._customEntryHeader) {
+            entryPointString += this._customEntryHeader;
+        } else if (this.shaderLanguage === ShaderLanguage.WGSL) {
             if (isFragmentMode) {
-                this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}@fragment\nfn main(input: FragmentInputs) -> FragmentOutputs {\n${this.compilationString}`;
+                entryPointString += `@fragment\nfn main(input: FragmentInputs) -> FragmentOutputs {\n${this.sharedData.varyingInitializationsFragment}`;
             } else {
-                this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}@vertex\nfn main(input: VertexInputs) -> FragmentInputs{\n${this.compilationString}`;
+                entryPointString += `@vertex\nfn main(input: VertexInputs) -> FragmentInputs{\n`;
             }
         } else {
-            this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}void main(void) {\n${this.compilationString}`;
+            entryPointString += `void main(void) {\n`;
         }
+
+        this.compilationString = entryPointString + this.compilationString;
 
         if (this._constantDeclaration) {
             this.compilationString = `\n${emitComments ? "//Constants\n" : ""}${this._constantDeclaration}\n${this.compilationString}`;
@@ -135,7 +193,7 @@ export class NodeMaterialBuildState {
         this.compilationString = `${this.compilationString}\n}`;
 
         if (this.sharedData.varyingDeclaration) {
-            this.compilationString = `\n${emitComments ? "//Varyings\n" : ""}${this.sharedData.varyingDeclaration}\n${this.compilationString}`;
+            this.compilationString = `\n${emitComments ? "//Varyings\n" : ""}${isFragmentMode ? this.sharedData.varyingDeclarationFragment : this.sharedData.varyingDeclaration}\n${this.compilationString}`;
         }
 
         if (this._samplerDeclaration) {
@@ -166,6 +224,10 @@ export class NodeMaterialBuildState {
             }
         }
 
+        if (this._injectAtTop) {
+            this.compilationString = `${this._injectAtTop}\n${this.compilationString}`;
+        }
+
         this._builtCompilationString = this.compilationString;
     }
 
@@ -178,7 +240,7 @@ export class NodeMaterialBuildState {
      * @internal
      */
     public _getFreeVariableName(prefix: string): string {
-        prefix = prefix.replace(/[^a-zA-Z_]+/g, "");
+        prefix = this.sharedData.formatConfig.formatVariablename(prefix);
 
         if (this.sharedData.variableNames[prefix] === undefined) {
             this.sharedData.variableNames[prefix] = 0;
@@ -219,17 +281,20 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emit2DSampler(name: string, define = "", force = false) {
+    public _emit2DSampler(name: string, define = "", force = false, annotation?: string, unsignedSampler?: boolean, precision?: string) {
         if (this.samplers.indexOf(name) < 0 || force) {
             if (define) {
                 this._samplerDeclaration += `#if ${define}\n`;
             }
 
             if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                const unsignedSamplerPrefix = unsignedSampler ? "u" : "f";
                 this._samplerDeclaration += `var ${name + Constants.AUTOSAMPLERSUFFIX}: sampler;\n`;
-                this._samplerDeclaration += `var ${name}: texture_2d<f32>;\n`;
+                this._samplerDeclaration += `var ${name}: texture_2d<${unsignedSamplerPrefix}32>;\n`;
             } else {
-                this._samplerDeclaration += `uniform sampler2D ${name};\n`;
+                const unsignedSamplerPrefix = unsignedSampler ? "u" : "";
+                const precisionDecl = precision ?? "";
+                this._samplerDeclaration += `uniform ${precisionDecl} ${unsignedSamplerPrefix}sampler2D ${name}; ${annotation ? annotation : ""}\n`;
             }
 
             if (define) {
@@ -273,7 +338,12 @@ export class NodeMaterialBuildState {
      */
     public _emit2DArraySampler(name: string) {
         if (this.samplers.indexOf(name) < 0) {
-            this._samplerDeclaration += `uniform sampler2DArray ${name};\n`;
+            if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                this._samplerDeclaration += `var ${name + Constants.AUTOSAMPLERSUFFIX}: sampler;\n`;
+                this._samplerDeclaration += `var ${name}: texture_2d_array<f32>;\n`;
+            } else {
+                this._samplerDeclaration += `uniform sampler2DArray ${name};\n`;
+            }
             this.samplers.push(name);
         }
     }
@@ -477,6 +547,23 @@ export class NodeMaterialBuildState {
         return true;
     }
 
+    private _emitDefineStart(define?: string, notDefine = false) {
+        let code = "";
+        if (define) {
+            if (define.startsWith("defined(")) {
+                code = `#if ${define}\n`;
+            } else {
+                code = `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
+            }
+        }
+
+        return code;
+    }
+
+    private _emitDefineEnd(define?: string) {
+        return define ? `#endif\n` : "";
+    }
+
     /**
      * @internal
      */
@@ -487,21 +574,58 @@ export class NodeMaterialBuildState {
 
         this.sharedData.varyings.push(name);
 
-        if (define) {
-            if (define.startsWith("defined(")) {
-                this.sharedData.varyingDeclaration += `#if ${define}\n`;
-            } else {
-                this.sharedData.varyingDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
-            }
-        }
         const shaderType = this._getShaderType(type);
+
+        const emitCode = (forFragment = false) => {
+            let code = this._emitDefineStart(define, notDefine);
+            if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                switch (shaderType) {
+                    case "i32":
+                    case "f32":
+                    case "vec2f":
+                    case "vec3f":
+                    case "vec4f":
+                        code += `varying ${name}: ${shaderType};\n`;
+
+                        if (forFragment) {
+                            code += `var<private> ${name}: ${shaderType};\n`;
+                            this.sharedData.varyingInitializationsFragment +=
+                                this._emitDefineStart(define, notDefine) + `${name} = fragmentInputs.${name};\n` + this._emitDefineEnd(define);
+                        }
+                        break;
+                    case "mat4x4f":
+                        // We can't pass a matrix as a varying in WGSL, so we need to split it into 4 vectors
+                        code += `varying ${name}_r0: vec4f;\n`;
+                        code += `varying ${name}_r1: vec4f;\n`;
+                        code += `varying ${name}_r2: vec4f;\n`;
+                        code += `varying ${name}_r3: vec4f;\n`;
+
+                        if (forFragment) {
+                            code += `var<private> ${name}: mat4x4f;\n`;
+                            this.sharedData.varyingInitializationsFragment +=
+                                this._emitDefineStart(define, notDefine) +
+                                `${name} = mat4x4f(fragmentInputs.${name}_r0, fragmentInputs.${name}_r1, fragmentInputs.${name}_r2, fragmentInputs.${name}_r3);\n` +
+                                this._emitDefineEnd(define);
+                        }
+                        break;
+                    default:
+                        code += `varying ${name}: ${shaderType};\n`;
+                        break;
+                }
+            } else {
+                code += `varying ${shaderType} ${name};\n`;
+            }
+            code += this._emitDefineEnd(define);
+            return code;
+        };
+
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
-            this.sharedData.varyingDeclaration += `varying ${name}: ${shaderType};\n`;
+            this.sharedData.varyingDeclaration += emitCode(false);
+            this.sharedData.varyingDeclarationFragment += emitCode(true);
         } else {
-            this.sharedData.varyingDeclaration += `varying ${shaderType} ${name};\n`;
-        }
-        if (define) {
-            this.sharedData.varyingDeclaration += `#endif\n`;
+            const code = emitCode();
+            this.sharedData.varyingDeclaration += code;
+            this.sharedData.varyingDeclarationFragment += code;
         }
 
         return true;
@@ -534,6 +658,9 @@ export class NodeMaterialBuildState {
             } else {
                 this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
             }
+        }
+        if (this.sharedData.formatConfig.getUniformAnnotation) {
+            this._uniformDeclaration += this.sharedData.formatConfig.getUniformAnnotation(name);
         }
         const shaderType = this._getShaderType(type);
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
@@ -578,11 +705,11 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _declareLocalVar(name: string, type: NodeMaterialBlockConnectionPointTypes, isConst?: boolean): string {
+    public _declareLocalVar(name: string, type: NodeMaterialBlockConnectionPointTypes, isConst?: boolean, isVarPrivate?: boolean): string {
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
-            return `${isConst ? "const" : "var"} ${name}: ${this._getShaderType(type)}`;
+            return `${isConst ? "const" : "var" + (isVarPrivate ? "<private>" : "")} ${name}: ${this._getShaderType(type)}`;
         } else {
-            return `${this._getShaderType(type)} ${name}`;
+            return `${isConst ? "const " : ""}${this._getShaderType(type)} ${name}`;
         }
     }
 

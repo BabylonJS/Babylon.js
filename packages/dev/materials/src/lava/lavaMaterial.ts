@@ -20,7 +20,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import "./lava.fragment";
 import "./lava.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
     BindBonesParameters,
     BindFogParameters,
@@ -212,7 +212,19 @@ export class LavaMaterial extends PushMaterial {
         }
 
         // Misc.
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this.needAlphaTestingForMesh(mesh), defines);
+        PrepareDefinesForMisc(
+            mesh,
+            scene,
+            this._useLogarithmicDepth,
+            this.pointsCloud,
+            this.fogEnabled,
+            this.needAlphaTestingForMesh(mesh),
+            defines,
+            undefined,
+            undefined,
+            undefined,
+            this._isVertexOutputInvariant
+        );
 
         // Lights
         defines._needNormals = true;
@@ -291,7 +303,7 @@ export class LavaMaterial extends PushMaterial {
                 "fogDensity",
                 "lowFrequencySpeed",
             ];
-            addClipPlaneUniforms(uniforms);
+            AddClipPlaneUniforms(uniforms);
 
             const samplers = ["diffuseSampler", "noiseTexture", "areaLightsLTC1Sampler", "areaLightsLTC2Sampler"];
             const uniformBuffers: string[] = [];
@@ -383,7 +395,7 @@ export class LavaMaterial extends PushMaterial {
             }
 
             // Clip plane
-            bindClipPlane(effect, this, scene);
+            BindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

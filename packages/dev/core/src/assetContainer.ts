@@ -186,7 +186,9 @@ export class AbstractAssetContainer implements IAssetContainer {
         nodes = nodes.concat(this.lights);
         nodes = nodes.concat(this.cameras);
         nodes = nodes.concat(this.transformNodes); // dummies
-        this.skeletons.forEach((skeleton) => (nodes = nodes.concat(skeleton.bones)));
+        for (const skeleton of this.skeletons) {
+            nodes = nodes.concat(skeleton.bones);
+        }
         return nodes;
     }
 }
@@ -219,20 +221,23 @@ export class InstantiatedEntries {
      * Disposes the instantiated entries from the scene
      */
     public dispose() {
-        this.rootNodes.slice(0).forEach((o) => {
-            o.dispose();
-        });
-        this.rootNodes.length = 0;
+        const rootNodes = this.rootNodes;
+        for (const rootNode of rootNodes) {
+            rootNode.dispose();
+        }
+        rootNodes.length = 0;
 
-        this.skeletons.slice(0).forEach((o) => {
-            o.dispose();
-        });
-        this.skeletons.length = 0;
+        const skeletons = this.skeletons;
+        for (const skeleton of skeletons) {
+            skeleton.dispose();
+        }
+        skeletons.length = 0;
 
-        this.animationGroups.slice(0).forEach((o) => {
-            o.dispose();
-        });
-        this.animationGroups.length = 0;
+        const animationGroups = this.animationGroups;
+        for (const animationGroup of animationGroups) {
+            animationGroup.dispose();
+        }
+        animationGroups.length = 0;
     }
 }
 
@@ -377,7 +382,9 @@ export class AssetContainer extends AbstractAssetContainer {
 
         if (nodesUidMap.size > 0) {
             Logger.Error("SceneSerializer._topologicalSort: There were unvisited nodes:");
-            nodesUidMap.forEach((node) => Logger.Error(node.name));
+            nodesUidMap.forEach((node) => {
+                Logger.Error(node.name);
+            });
         }
 
         return sortedNodes;
@@ -487,7 +494,7 @@ export class AssetContainer extends AbstractAssetContainer {
             }
 
             if (clone instanceof Mesh) {
-                const clonedMesh = clone as Mesh;
+                const clonedMesh = clone;
 
                 if (clonedMesh.morphTargetManager) {
                     const oldMorphTargetManager = (source as Mesh).morphTargetManager!;
@@ -602,7 +609,7 @@ export class AssetContainer extends AbstractAssetContainer {
             }
         };
 
-        sortedNodes.forEach((node) => {
+        for (const node of sortedNodes) {
             if (node.getClassName() === "InstancedMesh") {
                 const instancedNode = node as InstancedMesh;
                 const sourceMesh = instancedNode.sourceMesh;
@@ -635,11 +642,11 @@ export class AssetContainer extends AbstractAssetContainer {
                 }
                 onNewCreated(node, replicatedNode);
             }
-        });
+        }
 
-        this.skeletons.forEach((s) => {
+        for (const s of this.skeletons) {
             if (localOptions.predicate && !localOptions.predicate(s)) {
-                return;
+                continue;
             }
 
             const clone = s.clone(nameFunction ? nameFunction(s.name) : "Clone of " + s.name);
@@ -668,11 +675,11 @@ export class AssetContainer extends AbstractAssetContainer {
             }
 
             result.skeletons.push(clone);
-        });
+        }
 
-        this.animationGroups.forEach((o) => {
+        for (const o of this.animationGroups) {
             if (localOptions.predicate && !localOptions.predicate(o)) {
-                return;
+                continue;
             }
 
             const clone = o.clone(nameFunction ? nameFunction(o.name) : "Clone of " + o.name, (oldTarget) => {
@@ -682,7 +689,7 @@ export class AssetContainer extends AbstractAssetContainer {
             });
 
             result.animationGroups.push(clone);
-        });
+        }
 
         return result;
     }
@@ -720,103 +727,124 @@ export class AssetContainer extends AbstractAssetContainer {
      */
     public addToScene(predicate: Nullable<(entity: any) => boolean> = null) {
         const addedNodes: Node[] = [];
-        this.cameras.forEach((o) => {
+        for (const o of this.cameras) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addCamera(o);
             addedNodes.push(o);
-        });
-        this.lights.forEach((o) => {
+        }
+        for (const o of this.lights) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addLight(o);
             addedNodes.push(o);
-        });
-        this.meshes.forEach((o) => {
+        }
+        for (const o of this.meshes) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addMesh(o);
             addedNodes.push(o);
-        });
-        this.skeletons.forEach((o) => {
+        }
+        for (const o of this.skeletons) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addSkeleton(o);
-        });
-        this.animations.forEach((o) => {
+        }
+        for (const o of this.animations) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addAnimation(o);
-        });
-        this.animationGroups.forEach((o) => {
+        }
+        for (const o of this.animationGroups) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addAnimationGroup(o);
-        });
-        this.multiMaterials.forEach((o) => {
+        }
+        for (const o of this.multiMaterials) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addMultiMaterial(o);
-        });
-        this.materials.forEach((o) => {
+        }
+        for (const o of this.materials) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addMaterial(o);
-        });
-        this.morphTargetManagers.forEach((o) => {
+        }
+        for (const o of this.morphTargetManagers) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addMorphTargetManager(o);
-        });
-        this.geometries.forEach((o) => {
+        }
+        for (const o of this.geometries) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addGeometry(o);
-        });
-        this.transformNodes.forEach((o) => {
+        }
+        for (const o of this.transformNodes) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addTransformNode(o);
             addedNodes.push(o);
-        });
-        this.actionManagers.forEach((o) => {
+        }
+        for (const o of this.actionManagers) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addActionManager(o);
-        });
-        this.textures.forEach((o) => {
+        }
+        for (const o of this.textures) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addTexture(o);
-        });
-        this.reflectionProbes.forEach((o) => {
+        }
+        for (const o of this.reflectionProbes) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.addReflectionProbe(o);
-        });
+        }
 
-        for (const addedNode of addedNodes) {
-            // If node was added to the scene, but parent is not in the scene, break the relationship
-            if (addedNode.parent && this.scene.getNodes().indexOf(addedNode.parent) === -1) {
-                // Use setParent to keep transform if possible
-                if ((addedNode as TransformNode).setParent) {
-                    (addedNode as TransformNode).setParent(null);
-                } else {
-                    addedNode.parent = null;
+        // No more nodes added to scene after this line, so it's safe to make a "snapshot" of nodes
+        if (addedNodes.length) {
+            // build the nodeSet only if needed
+            const nodeSet = new Set<Node>(this.scene.meshes);
+            // benchmark shows Set constructor and Set.add have similar performance,
+            // but using Set.add here avoids another allocate in scene.getNodes().
+            for (const light of this.scene.lights) {
+                nodeSet.add(light);
+            }
+            for (const camera of this.scene.cameras) {
+                nodeSet.add(camera);
+            }
+            for (const transformNode of this.scene.transformNodes) {
+                nodeSet.add(transformNode);
+            }
+            for (const skeleton of this.skeletons) {
+                for (const bone of skeleton.bones) {
+                    nodeSet.add(bone);
+                }
+            }
+            for (const addedNode of addedNodes) {
+                // If node was added to the scene, but parent is not in the scene, break the relationship
+                if (addedNode.parent && !nodeSet.has(addedNode.parent)) {
+                    // Use setParent to keep transform if possible
+                    if ((addedNode as TransformNode).setParent) {
+                        (addedNode as TransformNode).setParent(null);
+                    } else {
+                        addedNode.parent = null;
+                    }
                 }
             }
         }
@@ -848,159 +876,172 @@ export class AssetContainer extends AbstractAssetContainer {
      * @param predicate defines a predicate used to select which entity will be added (can be null)
      */
     public removeFromScene(predicate: Nullable<(entity: any) => boolean> = null) {
-        this.cameras.forEach((o) => {
+        for (const o of this.cameras) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeCamera(o);
-        });
-        this.lights.forEach((o) => {
+        }
+        for (const o of this.lights) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeLight(o);
-        });
-        this.meshes.forEach((o) => {
+        }
+        for (const o of this.meshes) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeMesh(o, true);
-        });
-        this.skeletons.forEach((o) => {
+        }
+        for (const o of this.skeletons) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeSkeleton(o);
-        });
-        this.animations.forEach((o) => {
+        }
+        for (const o of this.animations) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeAnimation(o);
-        });
-        this.animationGroups.forEach((o) => {
+        }
+        for (const o of this.animationGroups) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeAnimationGroup(o);
-        });
-        this.multiMaterials.forEach((o) => {
+        }
+        for (const o of this.multiMaterials) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeMultiMaterial(o);
-        });
-        this.materials.forEach((o) => {
+        }
+        for (const o of this.materials) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeMaterial(o);
-        });
-        this.morphTargetManagers.forEach((o) => {
+        }
+        for (const o of this.morphTargetManagers) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeMorphTargetManager(o);
-        });
-        this.geometries.forEach((o) => {
+        }
+        for (const o of this.geometries) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeGeometry(o);
-        });
-        this.transformNodes.forEach((o) => {
+        }
+        for (const o of this.transformNodes) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeTransformNode(o);
-        });
-        this.actionManagers.forEach((o) => {
+        }
+        for (const o of this.actionManagers) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeActionManager(o);
-        });
-        this.textures.forEach((o) => {
+        }
+        for (const o of this.textures) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeTexture(o);
-        });
-        this.reflectionProbes.forEach((o) => {
+        }
+        for (const o of this.reflectionProbes) {
             if (predicate && !predicate(o)) {
-                return;
+                continue;
             }
             this.scene.removeReflectionProbe(o);
-        });
+        }
     }
 
     /**
      * Disposes all the assets in the container
      */
     public dispose() {
-        this.cameras.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const cameras = this.cameras.slice(0);
+        for (const camera of cameras) {
+            camera.dispose();
+        }
         this.cameras.length = 0;
 
-        this.lights.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const lights = this.lights.slice(0);
+        for (const light of lights) {
+            light.dispose();
+        }
         this.lights.length = 0;
 
-        this.meshes.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const meshes = this.meshes.slice(0);
+        for (const mesh of meshes) {
+            mesh.dispose();
+        }
         this.meshes.length = 0;
 
-        this.skeletons.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const skeletons = this.skeletons.slice(0);
+        for (const skeleton of skeletons) {
+            skeleton.dispose();
+        }
         this.skeletons.length = 0;
 
-        this.animationGroups.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const animationGroups = this.animationGroups.slice(0);
+        for (const animationGroup of animationGroups) {
+            animationGroup.dispose();
+        }
         this.animationGroups.length = 0;
 
-        this.multiMaterials.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const multiMaterials = this.multiMaterials.slice(0);
+        for (const multiMaterial of multiMaterials) {
+            multiMaterial.dispose();
+        }
         this.multiMaterials.length = 0;
 
-        this.materials.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const materials = this.materials.slice(0);
+        for (const material of materials) {
+            material.dispose();
+        }
         this.materials.length = 0;
 
-        this.geometries.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const geometries = this.geometries.slice(0);
+        for (const geometry of geometries) {
+            geometry.dispose();
+        }
         this.geometries.length = 0;
 
-        this.transformNodes.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const transformNodes = this.transformNodes.slice(0);
+        for (const transformNode of transformNodes) {
+            transformNode.dispose();
+        }
         this.transformNodes.length = 0;
 
-        this.actionManagers.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const actionManagers = this.actionManagers.slice(0);
+        for (const actionManager of actionManagers) {
+            actionManager.dispose();
+        }
         this.actionManagers.length = 0;
 
-        this.textures.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const textures = this.textures.slice(0);
+        for (const texture of textures) {
+            texture.dispose();
+        }
         this.textures.length = 0;
 
-        this.reflectionProbes.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const reflectionProbes = this.reflectionProbes.slice(0);
+        for (const reflectionProbe of reflectionProbes) {
+            reflectionProbe.dispose();
+        }
         this.reflectionProbes.length = 0;
 
-        this.morphTargetManagers.slice(0).forEach((o) => {
-            o.dispose();
-        });
+        const morphTargetManagers = this.morphTargetManagers.slice(0);
+        for (const morphTargetManager of morphTargetManagers) {
+            morphTargetManager.dispose();
+        }
         this.morphTargetManagers.length = 0;
 
         if (this.environmentTexture) {
@@ -1070,11 +1111,11 @@ export class AssetContainer extends AbstractAssetContainer {
      */
     public createRootMesh() {
         const rootMesh = new Mesh("assetContainerRootMesh", this.scene);
-        this.meshes.forEach((m) => {
+        for (const m of this.meshes) {
             if (!m.parent) {
                 rootMesh.addChild(m);
             }
-        });
+        }
         this.meshes.unshift(rootMesh);
         return rootMesh;
     }
@@ -1129,7 +1170,7 @@ export class AssetContainer extends AbstractAssetContainer {
 
         // Copy new node animations
         const nodesInAC = this.getNodes();
-        nodesInAC.forEach((nodeInAC) => {
+        for (const nodeInAC of nodesInAC) {
             const nodeInScene = _targetConverter(nodeInAC);
             if (nodeInScene !== null) {
                 // Remove old animations with same target property as a new one
@@ -1149,23 +1190,24 @@ export class AssetContainer extends AbstractAssetContainer {
                 // Append new animations
                 nodeInScene.animations = nodeInScene.animations.concat(nodeInAC.animations);
             }
-        });
+        }
 
         const newAnimationGroups: AnimationGroup[] = [];
 
         // Copy new animation groups
-        this.animationGroups.slice().forEach((animationGroupInAC) => {
+        const animationGroups = this.animationGroups.slice();
+        for (const animationGroupInAC of animationGroups) {
             // Clone the animation group and all its animatables
             newAnimationGroups.push(animationGroupInAC.clone(animationGroupInAC.name, _targetConverter));
 
             // Remove animatables related to the asset container
-            animationGroupInAC.animatables.forEach((animatable) => {
+            for (const animatable of animationGroupInAC.animatables) {
                 animatable.stop();
-            });
-        });
+            }
+        }
 
         // Retarget animatables
-        animatables.forEach((animatable) => {
+        for (const animatable of animatables) {
             const target = _targetConverter(animatable.target);
 
             if (target) {
@@ -1186,7 +1228,7 @@ export class AssetContainer extends AbstractAssetContainer {
                 // Stop animation for the target in the asset container
                 scene.stopAnimation(animatable.target);
             }
-        });
+        }
 
         return newAnimationGroups;
     }
@@ -1199,31 +1241,31 @@ export class AssetContainer extends AbstractAssetContainer {
      */
     public populateRootNodes() {
         this.rootNodes.length = 0;
-        this.meshes.forEach((m) => {
+        for (const m of this.meshes) {
             if (!m.parent && this.rootNodes.indexOf(m) === -1) {
                 this.rootNodes.push(m);
             }
-        });
-        this.transformNodes.forEach((t) => {
+        }
+        for (const t of this.transformNodes) {
             if (!t.parent && this.rootNodes.indexOf(t) === -1) {
                 this.rootNodes.push(t);
             }
-        });
-        this.lights.forEach((l) => {
+        }
+        for (const l of this.lights) {
             if (!l.parent && this.rootNodes.indexOf(l) === -1) {
                 this.rootNodes.push(l);
             }
-        });
-        this.cameras.forEach((c) => {
+        }
+        for (const c of this.cameras) {
             if (!c.parent && this.rootNodes.indexOf(c) === -1) {
                 this.rootNodes.push(c);
             }
-        });
+        }
     }
 
     /**
      * @since 6.26.0
-     * Given a root asset, this method will traverse its hierarchy and add it, its children and any materials/skeletons/animation groups to the container.
+     * Given a root asset, this method will traverse its hierarchy and add it, its children and any materials/skeletons to the container.
      * @param root root node
      */
     public addAllAssetsToContainer(root: Node) {
@@ -1243,6 +1285,8 @@ export class AssetContainer extends AbstractAssetContainer {
                 if (nodeToVisit.geometry && this.geometries.indexOf(nodeToVisit.geometry) === -1) {
                     this.geometries.push(nodeToVisit.geometry);
                 }
+                this.meshes.push(nodeToVisit);
+            } else if (nodeToVisit instanceof InstancedMesh) {
                 this.meshes.push(nodeToVisit);
             } else if (nodeToVisit instanceof TransformNode) {
                 this.transformNodes.push(nodeToVisit);

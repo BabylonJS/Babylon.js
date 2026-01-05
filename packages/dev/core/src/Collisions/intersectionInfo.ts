@@ -6,6 +6,7 @@ import type { Nullable } from "../types";
 export class IntersectionInfo {
     public faceId = 0;
     public subMeshId = 0;
+    public _internalSubMeshId = 0;
 
     constructor(
         public bu: Nullable<number>,

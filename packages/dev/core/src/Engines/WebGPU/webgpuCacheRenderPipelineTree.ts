@@ -16,7 +16,7 @@ class NodeState {
             countPipeline = this.pipeline ? 1 : 0;
         for (const value in this.values) {
             const node = this.values[value];
-            const [childCountNodes, childCoundPipeline] = node!.count();
+            const [childCountNodes, childCoundPipeline] = node.count();
             countNode += childCountNodes;
             countPipeline += childCoundPipeline;
             countNode++;
@@ -69,10 +69,10 @@ export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
     protected _getRenderPipeline(param: { token: any; pipeline: Nullable<GPURenderPipeline> }): void {
         let node = this._nodeStack[this._stateDirtyLowestIndex];
         for (let i = this._stateDirtyLowestIndex; i < this._statesLength; ++i) {
-            let nn: NodeState | undefined = node!.values[this._states[i]];
+            let nn: NodeState | undefined = node.values[this._states[i]];
             if (!nn) {
                 nn = new NodeState();
-                node!.values[this._states[i]] = nn;
+                node.values[this._states[i]] = nn;
             }
             node = nn;
             this._nodeStack[i + 1] = node;

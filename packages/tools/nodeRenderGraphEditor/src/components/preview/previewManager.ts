@@ -1,10 +1,12 @@
+/* eslint-disable github/no-then */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import type { GlobalState } from "../../globalState";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { IShadowLight } from "core/Lights/shadowLight";
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
-import { Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
@@ -29,10 +31,10 @@ import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/ex
 import type { Mesh } from "core/Meshes";
 import type { NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
+import { Texture } from "core/Materials/Textures/texture";
 
-const useWebGPU = false;
-const debugTextures = false;
-const logErrorTrace = true;
+const DebugTextures = false;
+const LogErrorTrace = true;
 
 export class PreviewManager {
     private _nodeRenderGraph: NodeRenderGraph;
@@ -50,6 +52,7 @@ export class PreviewManager {
     private _currentType: number;
     private _lightParent: TransformNode;
     private _hdrTexture: CubeTexture;
+    private _dummyExternalTexture: Texture;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._globalState = globalState;
@@ -83,17 +86,18 @@ export class PreviewManager {
             this._createNodeRenderGraph();
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initAsync(targetCanvas);
     }
 
     private async _initAsync(targetCanvas: HTMLCanvasElement) {
-        if (useWebGPU) {
+        if (this._globalState.engine === 1) {
             this._engine = new WebGPUEngine(targetCanvas, {
                 enableGPUDebugMarkers: true,
                 enableAllFeatures: true,
                 setMaximumLimits: true,
             });
-            await (this._engine as WebGPUEngine).initAsync();
+            await this._engine.initAsync();
         } else {
             this._engine = new Engine(targetCanvas, true, { forceSRGBBufferSupportState: true });
             this._engine.getCaps().parallelShaderCompile = undefined;
@@ -116,59 +120,89 @@ export class PreviewManager {
             canvas.addEventListener("drop", onDrop, false);
         }
 
-        this._initScene(new Scene(this._engine));
+        await this._initSceneAsync(new Scene(this._engine));
 
         this._refreshPreviewMesh();
     }
 
-    private _initScene(scene: Scene) {
+    private async _initSceneAsync(scene: Scene): Promise<void> {
         (window as any).scenePreview = scene;
+
+        const oldScene = this._scene;
+        if (oldScene) {
+            // We must wait for a while before disposing the old scene because the HDR texture could be in loading state (and maybe other resources too?).
+            // Disposing the scene will dispose the HDR texture too, which will generate an error when the texture is loaded and it tries to set some rendering parameters (sampler info, ...).
+            setTimeout(() => {
+                oldScene.dispose();
+            }, 10000);
+        }
 
         this._scene = scene;
 
-        this._prepareBackgroundHDR();
+        const dummyTexture = this._dummyExternalTexture;
 
-        this._globalState.filesInput?.dispose();
-        this._globalState.filesInput = new FilesInput(
-            this._engine,
-            null,
-            (_, scene) => {
-                this._scene.dispose();
-                this._initScene(scene);
-            },
-            null,
-            null,
-            null,
-            null,
-            null,
-            () => {
-                this._reset();
-            },
-            false,
-            true
-        );
+        // The texture could be used by the command buffer that will be processed at the end of the frame, so we can't dispose it immediately
+        // We must call setTimeout(0) two times to make sure we dispose the texture at the right time (the first setTimeout(0) executes just after _initSceneAsync has been processed because it is async, which is too soon)
+        setTimeout(() => {
+            setTimeout(() => {
+                dummyTexture?.dispose();
+            }, 0);
+        }, 0);
 
-        this._lightParent = new TransformNode("LightParent", this._scene);
+        this._dummyExternalTexture = new Texture("https://assets.babylonjs.com/textures/Checker_albedo.png", this._scene, true);
+        this._dummyExternalTexture.name = "Dummy external texture for preview NRGE";
 
-        this._engine.stopRenderLoop();
+        return await new Promise((resolve) => {
+            this._dummyExternalTexture.onLoadObservable.add(() => {
+                this._prepareBackgroundHDR();
 
-        this._engine.runRenderLoop(() => {
-            this._engine.resize();
-            if (this._scene.frameGraph) {
-                this._scene.render();
-            }
+                this._globalState.filesInput?.dispose();
+                this._globalState.filesInput = new FilesInput(
+                    this._engine,
+                    null,
+                    async (_, scene) => {
+                        this._scene.dispose();
+                        await this._initSceneAsync(scene);
+                    },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    () => {
+                        this._reset();
+                    },
+                    false,
+                    true
+                );
+
+                this._lightParent = new TransformNode("LightParent", this._scene);
+
+                this._engine.stopRenderLoop();
+
+                this._engine.runRenderLoop(() => {
+                    this._engine.resize();
+                    if (this._scene.frameGraph) {
+                        this._scene.render();
+                    }
+                });
+
+                this._prepareScene();
+
+                this._createNodeRenderGraph();
+
+                resolve();
+            });
         });
-
-        this._prepareScene();
-
-        this._createNodeRenderGraph();
     }
 
     private _reset() {
         this._globalState.envType = PreviewType.Room;
         this._globalState.previewType = PreviewType.Box;
         this._globalState.listOfCustomPreviewFiles = [];
-        this._scene.meshes.forEach((m) => m.dispose());
+        for (const m of this._scene.meshes) {
+            m.dispose();
+        }
         this._globalState.onRefreshPreviewMeshControlComponentRequiredObservable.notifyObservers();
         this._refreshPreviewMesh(true);
     }
@@ -180,10 +214,6 @@ export class PreviewManager {
         for (const light of currentLights) {
             light.dispose();
         }
-
-        // Create a dummy light, which will be used for a ShadowLight input in case no directional light is selected in the UI
-        const dummyLight = new DirectionalLight("dummy", new Vector3(0, 1, 0), this._scene);
-        dummyLight.intensity = 0.0;
 
         // Create new lights based on settings
         if (this._globalState.hemisphericLight) {
@@ -207,6 +237,8 @@ export class PreviewManager {
             dir0.shadowMinZ = 0;
             dir0.shadowMaxZ = diag;
             dir0.position = findLightPosition(dir0.direction);
+            // Forces the calculation of the orthoXXX properties of dir0
+            dir0.setShadowProjectionMatrix(new Matrix(), dir0.getViewMatrix()!, this._scene.meshes);
         }
 
         if (this._globalState.directionalLight1) {
@@ -218,11 +250,13 @@ export class PreviewManager {
             dir1.shadowMinZ = 0;
             dir1.shadowMaxZ = diag;
             dir1.position = findLightPosition(dir1.direction);
+            // Forces the calculation of the orthoXXX properties of dir1
+            dir1.setShadowProjectionMatrix(new Matrix(), dir1.getViewMatrix()!, this._scene.meshes);
         }
 
-        this._scene.meshes.forEach((m) => {
+        for (const m of this._scene.meshes) {
             m.receiveShadows = true;
-        });
+        }
     }
 
     private _createNodeRenderGraph() {
@@ -238,10 +272,11 @@ export class PreviewManager {
         this._nodeRenderGraph = NodeRenderGraph.Parse(serialized, this._scene, {
             rebuildGraphOnEngineResize: true,
             autoFillExternalInputs: false,
-            debugTextures,
+            debugTextures: DebugTextures,
         });
 
-        this._buildGraph();
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._buildGraphAsync();
 
         (window as any).nrgPreview = this._nodeRenderGraph;
     }
@@ -256,7 +291,7 @@ export class PreviewManager {
         return null;
     }
 
-    private async _buildGraph() {
+    private async _buildGraphAsync() {
         if (!this._scene) {
             // The initialization is not done yet
             return;
@@ -279,7 +314,12 @@ export class PreviewManager {
         this._scene.cameras.length = 0;
         this._scene.cameraToUseForPointers = null;
 
-        const dummyLight = this._scene.getLightByName("dummy") as IShadowLight;
+        let dummyLight = this._scene.getLightByName("dummy") as IShadowLight;
+        if (!dummyLight) {
+            // Create a dummy light, which will be used for a ShadowLight input in case no directional light is selected in the UI
+            dummyLight = new DirectionalLight("dummy", new Vector3(0, 1, 0), this._scene);
+            dummyLight.intensity = 0.0;
+        }
 
         const directionalLights: DirectionalLight[] = [];
         for (const light of this._scene.lights) {
@@ -300,7 +340,7 @@ export class PreviewManager {
                 continue;
             }
             if ((input.type & NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer) !== 0) {
-                // TODO: Implement this?
+                input.value = this._dummyExternalTexture.getInternalTexture();
             } else if (input.isCamera()) {
                 const camera = new ArcRotateCamera("PreviewCamera", 0, 0.8, 4, Vector3.Zero(), this._scene);
 
@@ -374,7 +414,8 @@ export class PreviewManager {
         // Set a default control in GUI blocks
         const guiBlocks = this._nodeRenderGraph.getBlocksByPredicate<NodeRenderGraphGUIBlock>((block) => block.getClassName() === "GUI.NodeRenderGraphGUIBlock");
         let guiIndex = 0;
-        guiBlocks.forEach((block, i) => {
+        for (let i = 0; i < guiBlocks.length; ++i) {
+            const block = guiBlocks[i];
             const gui = block.gui;
 
             if (!block.isAnAncestorOfType("NodeRenderGraphOutputBlock")) {
@@ -400,14 +441,13 @@ export class PreviewManager {
             }
 
             gui.addControl(button);
-        });
+        }
 
         try {
-            this._nodeRenderGraph.build();
-            await this._nodeRenderGraph.whenReadyAsync(16, 5000);
             this._scene.frameGraph = this._nodeRenderGraph.frameGraph;
+            await this._nodeRenderGraph.buildAsync();
         } catch (err) {
-            if (logErrorTrace) {
+            if (LogErrorTrace) {
                 (console as any).log(err);
             }
             this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("From preview manager: " + err, true));
@@ -502,28 +542,28 @@ export class PreviewManager {
         switch (this._globalState.previewType) {
             case PreviewType.Box:
                 SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "roundedCube.glb").then((scene) => {
-                    this._initScene(scene);
+                    this._initSceneAsync(scene);
                 });
                 return;
             case PreviewType.Sphere:
                 SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "previewSphere.glb").then((scene) => {
-                    this._initScene(scene);
+                    this._initSceneAsync(scene);
                 });
                 break;
             case PreviewType.Cylinder:
                 SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "roundedCylinder.glb").then((scene) => {
-                    this._initScene(scene);
+                    this._initSceneAsync(scene);
                 });
                 return;
             case PreviewType.Plane: {
                 SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "highPolyPlane.glb").then((scene) => {
-                    this._initScene(scene);
+                    this._initSceneAsync(scene);
                 });
                 break;
             }
             case PreviewType.ShaderBall:
                 SceneLoader.LoadAsync("https://assets.babylonjs.com/meshes/", "shaderBall.glb").then((scene) => {
-                    this._initScene(scene);
+                    this._initSceneAsync(scene);
                 });
                 return;
             case PreviewType.Custom:
@@ -533,6 +573,8 @@ export class PreviewManager {
     }
 
     public dispose() {
+        this._dummyExternalTexture?.dispose();
+
         this._globalState.onFrame.remove(this._onFrameObserver);
         this._globalState.stateManager.onPreviewCommandActivated.remove(this._onPreviewCommandActivatedObserver);
         this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);

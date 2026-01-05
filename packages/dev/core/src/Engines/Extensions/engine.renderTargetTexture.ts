@@ -3,6 +3,7 @@ import { ThinEngine } from "../../Engines/thinEngine";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
 declare module "../../Engines/abstractEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractEngine {
         /**
          * Sets a depth stencil texture from a render target to the according uniform.

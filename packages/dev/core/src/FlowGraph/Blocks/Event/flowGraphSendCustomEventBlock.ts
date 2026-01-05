@@ -42,9 +42,9 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
         const eventId = this.config.eventId;
         // eventData is a map with the key being the data input's name, and value being the data input's value
         const eventData: any = {};
-        this.dataInputs.forEach((port) => {
+        for (const port of this.dataInputs) {
             eventData[port.name] = port.getValue(context);
-        });
+        }
 
         context.configuration.coordinator.notifyCustomEvent(eventId, eventData);
 

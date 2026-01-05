@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "../types";
 import type { IPipelineContext } from "./IPipelineContext";
-import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import type { _IShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
-import type { _loadFile } from "./abstractEngine.functions";
+import type { _LoadFile } from "./abstractEngine.functions";
 import { _ConcatenateShader } from "./abstractEngine.functions";
 
 /**
@@ -18,18 +19,16 @@ export interface IThinEngineStateObject {
     _createShaderProgramInjection?: typeof _createShaderProgram;
     createRawShaderProgramInjection?: typeof createRawShaderProgram;
     createShaderProgramInjection?: typeof createShaderProgram;
-    loadFileInjection?: typeof _loadFile;
+    loadFileInjection?: typeof _LoadFile;
     cachedPipelines: { [name: string]: IPipelineContext };
 }
-/**
- * @internal
- */
-const _stateObject: WeakMap<WebGLContext, IThinEngineStateObject> = new WeakMap();
+
+const StateObject: WeakMap<WebGLContext, IThinEngineStateObject> = new WeakMap();
 
 /**
  * This will be used in cases where the engine doesn't have a context (like the nullengine)
  */
-const singleStateObject: IThinEngineStateObject = {
+const SingleStateObject: IThinEngineStateObject = {
     _webGLVersion: 2,
     cachedPipelines: {},
 };
@@ -42,10 +41,10 @@ const singleStateObject: IThinEngineStateObject = {
  * @internal
  */
 export function getStateObject(context: WebGLContext): IThinEngineStateObject {
-    let state = _stateObject.get(context);
+    let state = StateObject.get(context);
     if (!state) {
         if (!context) {
-            return singleStateObject;
+            return SingleStateObject;
         }
         state = {
             // use feature detection. instanceof returns false. This only exists on WebGL2 context
@@ -55,7 +54,7 @@ export function getStateObject(context: WebGLContext): IThinEngineStateObject {
             parallelShaderCompile: context.getExtension("KHR_parallel_shader_compile") || undefined,
             cachedPipelines: {},
         };
-        _stateObject.set(context, state);
+        StateObject.set(context, state);
     }
     return state;
 }
@@ -64,7 +63,7 @@ export function getStateObject(context: WebGLContext): IThinEngineStateObject {
  * @param context the context that is being
  */
 export function deleteStateObject(context: WebGLContext): void {
-    _stateObject.delete(context);
+    StateObject.delete(context);
 }
 
 export type WebGLContext = WebGLRenderingContext | WebGL2RenderingContext;
@@ -91,8 +90,8 @@ export function createRawShaderProgram(
         _createShaderProgramInjection = stateObject._createShaderProgramInjection ?? _createShaderProgram;
     }
 
-    const vertexShader = _compileRawShader(vertexCode, "vertex", context, stateObject._contextWasLost);
-    const fragmentShader = _compileRawShader(fragmentCode, "fragment", context, stateObject._contextWasLost);
+    const vertexShader = CompileRawShader(vertexCode, "vertex", context, stateObject._contextWasLost);
+    const fragmentShader = CompileRawShader(fragmentCode, "fragment", context, stateObject._contextWasLost);
 
     return _createShaderProgramInjection(
         pipelineContext as WebGLPipelineContext,
@@ -129,8 +128,8 @@ export function createShaderProgram(
         _createShaderProgramInjection = stateObject._createShaderProgramInjection ?? _createShaderProgram;
     }
     const shaderVersion = stateObject._webGLVersion > 1 ? "#version 300 es\n#define WEBGL2 \n" : "";
-    const vertexShader = _compileShader(vertexCode, "vertex", defines, shaderVersion, context, stateObject._contextWasLost);
-    const fragmentShader = _compileShader(fragmentCode, "fragment", defines, shaderVersion, context, stateObject._contextWasLost);
+    const vertexShader = CompileShader(vertexCode, "vertex", defines, shaderVersion, context, stateObject._contextWasLost);
+    const fragmentShader = CompileShader(fragmentCode, "fragment", defines, shaderVersion, context, stateObject._contextWasLost);
 
     return _createShaderProgramInjection(
         pipelineContext as WebGLPipelineContext,
@@ -148,7 +147,7 @@ export function createShaderProgram(
  * @param _shaderProcessingContext defines the shader processing context used during the processing if available
  * @returns the new pipeline
  */
-export function createPipelineContext(context: WebGLContext, _shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
+export function createPipelineContext(context: WebGLContext, _shaderProcessingContext: Nullable<_IShaderProcessingContext>): IPipelineContext {
     const pipelineContext = new WebGLPipelineContext();
     const stateObject = getStateObject(context);
     if (stateObject.parallelShaderCompile && !stateObject.disableParallelShaderCompile) {
@@ -323,11 +322,11 @@ export function _preparePipelineContext(
     onReady();
 }
 
-function _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string, gl: WebGLContext, _contextWasLost?: boolean): WebGLShader {
-    return _compileRawShader(_ConcatenateShader(source, defines, shaderVersion), type, gl, _contextWasLost);
+function CompileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string, gl: WebGLContext, _contextWasLost?: boolean): WebGLShader {
+    return CompileRawShader(_ConcatenateShader(source, defines, shaderVersion), type, gl, _contextWasLost);
 }
 
-function _compileRawShader(source: string, type: string, gl: WebGLContext, _contextWasLost?: boolean): WebGLShader {
+function CompileRawShader(source: string, type: string, gl: WebGLContext, _contextWasLost?: boolean): WebGLShader {
     const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
     if (!shader) {
@@ -351,7 +350,7 @@ function _compileRawShader(source: string, type: string, gl: WebGLContext, _cont
 /**
  * @internal
  */
-export function _setProgram(program: WebGLProgram, gl: WebGLContext): void {
+export function _setProgram(program: Nullable<WebGLProgram>, gl: WebGLContext): void {
     gl.useProgram(program);
 }
 

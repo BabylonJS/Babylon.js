@@ -4,7 +4,7 @@ import { FlowGraphBlockNames } from "./flowGraphBlockNames";
 /**
  * Any external module that wishes to add a new block to the flow graph can add to this object using the helper function.
  */
-const customBlocks: Record<string, () => Promise<typeof FlowGraphBlock>> = {};
+const CustomBlocks: Record<string, () => Promise<typeof FlowGraphBlock>> = {};
 
 /**
  * If you want to add a new block to the block factory, you should use this function.
@@ -13,8 +13,9 @@ const customBlocks: Record<string, () => Promise<typeof FlowGraphBlock>> = {};
  * @param blockName the name of the block. This should be unique.
  * @param factory an async factory function to generate the block
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function addToBlockFactory(module: string, blockName: string, factory: () => Promise<typeof FlowGraphBlock>): void {
-    customBlocks[`${module}/${blockName}`] = factory;
+    CustomBlocks[`${module}/${blockName}`] = factory;
 }
 
 /**
@@ -22,6 +23,7 @@ export function addToBlockFactory(module: string, blockName: string, factory: ()
  * @param blockName the block name to initialize. If the block comes from an external module, the name should be in the format "module/blockName"
  * @returns an async factory function that will return the block class when called.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function blockFactory(blockName: FlowGraphBlockNames | string): () => Promise<typeof FlowGraphBlock> {
     switch (blockName) {
         case FlowGraphBlockNames.PlayAnimation:
@@ -252,6 +254,16 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphTransformBlock;
         case FlowGraphBlockNames.TransformCoordinates:
             return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphTransformCoordinatesBlock;
+        case FlowGraphBlockNames.Conjugate:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphConjugateBlock;
+        case FlowGraphBlockNames.AngleBetween:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphAngleBetweenBlock;
+        case FlowGraphBlockNames.QuaternionFromAxisAngle:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphQuaternionFromAxisAngleBlock;
+        case FlowGraphBlockNames.AxisAngleFromQuaternion:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphAxisAngleFromQuaternionBlock;
+        case FlowGraphBlockNames.QuaternionFromDirections:
+            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphQuaternionFromDirectionsBlock;
         case FlowGraphBlockNames.MatrixDecompose:
             return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphMatrixDecomposeBlock;
         case FlowGraphBlockNames.MatrixCompose:
@@ -290,8 +302,8 @@ export function blockFactory(blockName: FlowGraphBlockNames | string): () => Pro
             return async () => (await import("./Data/flowGraphDataSwitchBlock")).FlowGraphDataSwitchBlock;
         default:
             // check if the block is a custom block
-            if (customBlocks[blockName]) {
-                return customBlocks[blockName];
+            if (CustomBlocks[blockName]) {
+                return CustomBlocks[blockName];
             }
             throw new Error(`Unknown block name ${blockName}`);
     }

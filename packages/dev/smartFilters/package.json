@@ -1,0 +1,32 @@
+{
+    "name": "@dev/smart-filters",
+    "private": true,
+    "version": "1.0.0",
+    "types": "dist/index",
+    "main": "dist/index",
+    "module": "dist/index",
+    "type": "module",
+    "files": [
+        "dist",
+        "src"
+    ],
+    "scripts": {
+        "build": "npm run compile",
+        "test": "jest -c ../../../jest.config.ts",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
+        "precompile": "",
+        "compile": "npm run compile:source",
+        "compile:source": "tsc -b tsconfig.build.json",
+        "watch:source": "tsc -b tsconfig.build.json -w",
+        "watch": "build-tools -c dev-watch --packages \"smart-filters\" -wa",
+        "update-version": "node src/utils/buildTools/recordVersionNumber.js ../../public/@babylonjs/smart-filters"
+    },
+    "sideEffects": [
+        "./dist/utils/buildTools/**"
+    ],
+    "devDependencies": {
+        "@dev/core": "^1.0.0",
+        "@dev/build-tools": "^1.0.0",
+        "@dev/shared-ui-components": "^1.0.0"
+    }
+}

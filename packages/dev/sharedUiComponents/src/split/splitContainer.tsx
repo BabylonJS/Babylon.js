@@ -1,6 +1,8 @@
-import { useEffect, useRef } from "react";
+import type { PropsWithChildren } from "react";
+import { useContext, useEffect, useRef } from "react";
 import * as styles from "./splitContainer.module.scss";
 import { ControlledSize, SplitDirection, SplitContext } from "./splitContext";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 /**
  * Split container properties
@@ -67,7 +69,7 @@ export interface ISplitContainerProps {
  * @param props defines the split container properties
  * @returns the split container component
  */
-export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
+export const SplitContainer: React.FC<PropsWithChildren<ISplitContainerProps>> = (props) => {
     const elementRef: React.RefObject<HTMLDivElement> = props.containerRef || useRef(null);
     const sizes: number[] = [];
     const floatingCells: boolean[] = [];
@@ -76,6 +78,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
     const controllers: number[][] = [];
     const minSizes: number[] = [];
     const maxSizes: number[] = [];
+    const useFluent = useContext(ToolContext).useFluent;
 
     const buildGridDefinition = () => {
         if (!elementRef.current) {
@@ -318,6 +321,7 @@ export const SplitContainer: React.FC<ISplitContainerProps> = (props) => {
             <div
                 id={props.id}
                 className={styles["split-container"] + " " + props.className}
+                style={useFluent ? { height: "100vh" } : undefined} // temporary until splitContainer is fluentized
                 ref={elementRef}
                 onPointerDown={(evt) => props.onPointerDown && props.onPointerDown(evt)}
                 onPointerMove={(evt) => props.onPointerMove && props.onPointerMove(evt)}

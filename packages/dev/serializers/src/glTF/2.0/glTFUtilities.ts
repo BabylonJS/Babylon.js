@@ -1,28 +1,45 @@
 /* eslint-disable jsdoc/require-jsdoc */
-
 import type { INode } from "babylonjs-gltf2interface";
 import { AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import type { FloatArray, DataArray, IndicesArray } from "core/types";
+import type { FloatArray, DataArray, IndicesArray, DeepImmutable } from "core/types";
 import type { Vector4 } from "core/Maths/math.vector";
 import { Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Material } from "core/Materials/material";
 import { TransformNode } from "core/Meshes/transformNode";
-import { Mesh } from "core/Meshes/mesh";
-import { InstancedMesh } from "core/Meshes/instancedMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
-
-// Matrix that converts handedness on the X-axis.
-const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
-
-// 180 degrees rotation in Y.
-const rotation180Y = new Quaternion(0, 1, 0, 0);
+import { Logger } from "core/Misc/logger";
+import { TargetCamera } from "core/Cameras/targetCamera";
+import type { ShadowLight } from "core/Lights/shadowLight";
+import { Epsilon } from "core/Maths/math.constants";
+import { ConvertHandednessMatrix } from "../../exportUtils";
+import type { AreaLight } from "core/Lights/areaLight";
 
 // Default values for comparison.
-const epsilon = 1e-6;
-const defaultTranslation = Vector3.Zero();
-const defaultScale = Vector3.One();
+export const DefaultTranslation = Vector3.ZeroReadOnly;
+export const DefaultRotation = Quaternion.Identity() as DeepImmutable<Quaternion>;
+export const DefaultScale = Vector3.OneReadOnly;
+const DefaultLoaderCameraParentScaleLh = new Vector3(-1, 1, 1) as DeepImmutable<Vector3>;
+
+/**
+ * Get the information necessary for enumerating a vertex buffer.
+ * @param vertexBuffer the vertex buffer to enumerate
+ * @param meshes the meshes that use the vertex buffer
+ * @returns the information necessary to enumerate the vertex buffer
+ */
+export function GetVertexBufferInfo(vertexBuffer: VertexBuffer, meshes: AbstractMesh[]) {
+    const { byteOffset, byteStride, type, normalized } = vertexBuffer;
+    const componentCount = vertexBuffer.getSize();
+    const totalVertices = meshes.reduce((max, current) => {
+        return current.getTotalVertices() > max ? current.getTotalVertices() : max;
+    }, -Number.MAX_VALUE); // Get the max total vertices count, to ensure we capture the full range of vertex data used by the meshes.
+    const count = totalVertices * componentCount;
+    const kind = vertexBuffer.getKind();
+
+    return { byteOffset, byteStride, componentCount, type, count, normalized, totalVertices, kind };
+}
 
 export function GetAccessorElementCount(accessorType: AccessorType): number {
     switch (accessorType) {
@@ -177,115 +194,131 @@ export function ConvertToRightHandedPosition(value: Vector3): Vector3 {
     return value;
 }
 
+/** @internal */
+export function ConvertToRightHandedTransformMatrix(matrix: Matrix): Matrix {
+    ConvertHandednessMatrix.invertToRef(TmpVectors.Matrix[0]).multiplyToRef(matrix, matrix).multiplyToRef(ConvertHandednessMatrix, matrix);
+    return matrix;
+}
+
+/**
+ * Converts, in-place, a left-handed quaternion to a right-handed quaternion via a change of basis.
+ * @param value the unit quaternion to convert
+ * @returns the converted quaternion
+ */
 export function ConvertToRightHandedRotation(value: Quaternion): Quaternion {
-    value.x *= -1;
-    value.y *= -1;
+    /**
+     * This is the simplified version of the following equation:
+     *    q' = to_quaternion(M * to_matrix(q) * M^-1)
+     * where M is the conversion matrix `convertHandednessMatrix`,
+     * q is the input quaternion, and q' is the converted quaternion.
+     * Reference: https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
+     */
+    if (value.x * value.x + value.y * value.y > 0.5) {
+        const absX = Math.abs(value.x);
+        const absY = Math.abs(value.y);
+        if (absX > absY) {
+            const sign = Math.sign(value.x);
+            value.x = absX;
+            value.y *= -sign;
+            value.z *= -sign;
+            value.w *= sign;
+        } else {
+            const sign = Math.sign(value.y);
+            value.x *= -sign;
+            value.y = absY;
+            value.z *= sign;
+            value.w *= -sign;
+        }
+    } else {
+        const absZ = Math.abs(value.z);
+        const absW = Math.abs(value.w);
+        if (absZ > absW) {
+            const sign = Math.sign(value.z);
+            value.x *= -sign;
+            value.y *= sign;
+            value.z = absZ;
+            value.w *= -sign;
+        } else {
+            const sign = Math.sign(value.w);
+            value.x *= sign;
+            value.y *= -sign;
+            value.z *= -sign;
+            value.w = absW;
+        }
+    }
+
     return value;
 }
 
-export function ConvertToRightHandedNode(value: INode) {
-    let translation = Vector3.FromArrayToRef(value.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
-    let rotation = Quaternion.FromArrayToRef(value.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
-
-    translation = ConvertToRightHandedPosition(translation);
-    rotation = ConvertToRightHandedRotation(rotation);
-
-    if (translation.equalsWithEpsilon(defaultTranslation, epsilon)) {
-        delete value.translation;
-    } else {
-        value.translation = translation.asArray();
-    }
-
-    if (Quaternion.IsIdentity(rotation)) {
-        delete value.rotation;
-    } else {
-        value.rotation = rotation.asArray();
-    }
-}
-
 /**
- * Rotation by 180 as glTF has a different convention than Babylon.
+ * Pre-multiplies a 180-degree Y rotation to the quaternion, in order to match glTF's flipped forward direction for cameras.
  * @param rotation Target camera rotation.
- * @returns Ref to camera rotation.
  */
-export function ConvertCameraRotationToGLTF(rotation: Quaternion): Quaternion {
-    return rotation.multiplyInPlace(rotation180Y);
-}
-
-export function RotateNode180Y(node: INode) {
-    const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-    rotation180Y.multiplyToRef(rotation, rotation);
-    node.rotation = rotation.asArray();
+export function Rotate180Y(rotation: Quaternion): void {
+    // Simplified from: rotation * (0, 1, 0, 0).
+    rotation.copyFromFloats(-rotation.z, rotation.w, rotation.x, -rotation.y);
 }
 
 /**
- * Collapses GLTF parent and node into a single node. This is useful for removing nodes that were added by the GLTF importer.
- * @param node Target parent node.
- * @param parentNode Original GLTF node (Light or Camera).
+ * Collapses GLTF parent and node into a single node, ignoring scaling.
+ * This is useful for removing nodes that were added by the GLTF importer.
+ * @param node Original GLTF node (Light or Camera).
+ * @param parentNode Target parent node.
  */
-export function CollapseParentNode(node: INode, parentNode: INode) {
+export function CollapseChildIntoParent(node: INode, parentNode: INode): void {
     const parentTranslation = Vector3.FromArrayToRef(parentNode.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
     const parentRotation = Quaternion.FromArrayToRef(parentNode.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
-    const parentScale = Vector3.FromArrayToRef(parentNode.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
-    const parentMatrix = Matrix.ComposeToRef(parentScale, parentRotation, parentTranslation, TmpVectors.Matrix[0]);
+    const parentMatrix = Matrix.ComposeToRef(DefaultScale, parentRotation, parentTranslation, TmpVectors.Matrix[0]);
 
     const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[2]);
     const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-    const scale = Vector3.FromArrayToRef(node.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
-    const matrix = Matrix.ComposeToRef(scale, rotation, translation, TmpVectors.Matrix[1]);
+    const matrix = Matrix.ComposeToRef(DefaultScale, rotation, translation, TmpVectors.Matrix[1]);
 
     parentMatrix.multiplyToRef(matrix, matrix);
-    matrix.decompose(parentScale, parentRotation, parentTranslation);
+    matrix.decompose(undefined, parentRotation, parentTranslation);
 
-    if (parentTranslation.equalsWithEpsilon(defaultTranslation, epsilon)) {
+    if (parentTranslation.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
         delete parentNode.translation;
     } else {
         parentNode.translation = parentTranslation.asArray();
     }
 
-    if (Quaternion.IsIdentity(parentRotation)) {
+    if (parentRotation.equalsWithEpsilon(DefaultRotation, Epsilon)) {
         delete parentNode.rotation;
     } else {
         parentNode.rotation = parentRotation.asArray();
     }
 
-    if (parentScale.equalsWithEpsilon(defaultScale, epsilon)) {
+    if (parentNode.scale) {
         delete parentNode.scale;
-    } else {
-        parentNode.scale = parentScale.asArray();
     }
 }
 
 /**
- * Sometimes the GLTF Importer can add extra transform nodes (for lights and cameras). This checks if a parent node was added by the GLTF Importer. If so, it should be removed during serialization.
- * @param babylonNode Original GLTF node (Light or Camera).
- * @param parentBabylonNode Target parent node.
- * @returns True if the parent node was added by the GLTF importer.
+ * Checks whether a camera or light node is candidate for collapsing with its parent node.
+ * This is useful for roundtrips, as the glTF Importer parents a new node to
+ * lights and cameras to store their original transformation information.
+ * @param babylonNode Babylon light or camera node.
+ * @param parentBabylonNode Target Babylon parent node.
+ * @returns True if the two nodes can be merged, false otherwise.
  */
-export function IsParentAddedByImporter(babylonNode: Node, parentBabylonNode: Node): boolean {
-    return parentBabylonNode instanceof TransformNode && parentBabylonNode.getChildren().length == 1 && babylonNode.getChildren().length == 0;
-}
-
-export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
-    if (!(node instanceof TransformNode)) {
+export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera | AreaLight, parentBabylonNode: Node): boolean {
+    if (!(parentBabylonNode instanceof TransformNode)) {
         return false;
     }
 
-    // Transform
-    if (useRightHandedSystem) {
-        const matrix = node.getWorldMatrix();
-        if (!matrix.isIdentity()) {
-            return false;
-        }
-    } else {
-        const matrix = node.getWorldMatrix().multiplyToRef(convertHandednessMatrix, TmpVectors.Matrix[0]);
-        if (!matrix.isIdentity()) {
-            return false;
-        }
+    // Verify child is the only descendant
+    const isOnlyDescendant = parentBabylonNode.getChildren().length === 1 && babylonNode.getChildren().length === 0 && babylonNode.parent === parentBabylonNode;
+    if (!isOnlyDescendant) {
+        return false;
     }
 
-    // Geometry
-    if ((node instanceof Mesh && node.geometry) || (node instanceof InstancedMesh && node.sourceMesh.geometry)) {
+    // Verify parent has the expected scaling, determined by the node type and scene's coordinate system.
+    const scene = babylonNode.getScene();
+    const expectedScale = babylonNode instanceof TargetCamera && !scene.useRightHandedSystem ? DefaultLoaderCameraParentScaleLh : DefaultScale;
+
+    if (!parentBabylonNode.scaling.equalsWithEpsilon(expectedScale, Epsilon)) {
+        Logger.Warn(`Cannot collapse node ${babylonNode.name} into parent node ${parentBabylonNode.name} with modified scaling.`);
         return false;
     }
 
@@ -293,25 +326,32 @@ export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
 }
 
 /**
- * Converts an IndicesArray into either Uint32Array or Uint16Array, only copying if the data is number[].
+ * Converts an IndicesArray into either a Uint32Array or Uint16Array.
+ * If the `start` and `count` parameters specify a subset of the array, a new view is created.
+ * If the input is a number[], the data is copied into a new buffer.
  * @param indices input array to be converted
- * @param start starting index to copy from
- * @param count number of indices to copy
+ * @param start starting index
+ * @param count number of indices
+ * @param is32Bits whether the output should be Uint32Array (true) or Uint16Array (false) when indices is an `Array`
  * @returns a Uint32Array or Uint16Array
  * @internal
  */
-export function IndicesArrayToTypedArray(indices: IndicesArray, start: number, count: number, is32Bits: boolean): Uint32Array | Uint16Array {
-    if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
-        return indices;
+export function IndicesArrayToTypedSubarray(indices: IndicesArray, start: number, count: number, is32Bits: boolean): Uint32Array | Uint16Array {
+    let processedIndices = indices;
+    if (start !== 0 || count !== indices.length) {
+        processedIndices = Array.isArray(indices) ? indices.slice(start, start + count) : indices.subarray(start, start + count);
     }
 
-    // If Int32Array, cast the indices (which are all positive) to Uint32Array
-    if (indices instanceof Int32Array) {
-        return new Uint32Array(indices.buffer, indices.byteOffset, indices.length);
+    // If Int32Array, cast the indices (which should all be positive) to Uint32Array
+    if (processedIndices instanceof Int32Array) {
+        return new Uint32Array(processedIndices.buffer, processedIndices.byteOffset, processedIndices.length);
     }
 
-    const subarray = indices.slice(start, start + count);
-    return is32Bits ? new Uint32Array(subarray) : new Uint16Array(subarray);
+    if (Array.isArray(processedIndices)) {
+        return is32Bits ? new Uint32Array(processedIndices) : new Uint16Array(processedIndices);
+    }
+
+    return processedIndices;
 }
 
 export function DataArrayToUint8Array(data: DataArray): Uint8Array {
@@ -345,7 +385,7 @@ export function GetMinMax(data: DataArray, vertexBuffer: VertexBuffer, start: nu
  * @param defaultValues a partial object with default values
  * @returns object with default values omitted
  */
-export function OmitDefaultValues<T extends Object>(object: T, defaultValues: Partial<T>): T {
+export function OmitDefaultValues<T extends object>(object: T, defaultValues: Partial<T>): T {
     for (const [key, value] of Object.entries(object)) {
         const defaultValue = defaultValues[key as keyof T];
         if ((Array.isArray(value) && Array.isArray(defaultValue) && AreArraysEqual(value, defaultValue)) || value === defaultValue) {

@@ -450,7 +450,7 @@ export class Texture extends BaseTexture {
         this._creationFlags = creationFlags;
         this._useSRGBBuffer = useSRGBBuffer;
         this._forcedExtension = forcedExtension;
-        if (format) {
+        if (format !== undefined) {
             this._format = format;
         }
 
@@ -587,9 +587,19 @@ export class Texture extends BaseTexture {
         this._forcedExtension = forcedExtension;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
-        if (onLoad) {
-            this._delayedOnLoad = onLoad;
-        }
+        const existingOnLoad = this._delayedOnLoad;
+        const load = () => {
+            if (existingOnLoad) {
+                existingOnLoad();
+            } else if (this.onLoadObservable.hasObservers()) {
+                this.onLoadObservable.notifyObservers(this);
+            }
+            if (onLoad) {
+                onLoad();
+            }
+        };
+
+        this._delayedOnLoad = load;
         this.delayLoad();
     }
 
@@ -607,14 +617,23 @@ export class Texture extends BaseTexture {
             return;
         }
 
+        let url = this.url;
+
+        if (!url && (this.name.indexOf("://") > 0 || this.name.startsWith("data:"))) {
+            // Some textures are serialized with an empty url and use name instead for storing the url.
+            // When created without delayed load, the url is set properly because it is passed to the constructor and the texture is created right away.
+            // But when created with delayed load, the url property is overwritten to "" (because it is the value in the serialized data) when the properties are parsed (see SerializationHelper.Parse).
+            url = this.name;
+        }
+
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-        this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY, this._useSRGBBuffer, this.isCube);
+        this._texture = this._getFromCache(url, this._noMipmap, this.samplingMode, this._invertY, this._useSRGBBuffer, this.isCube);
 
         if (!this._texture) {
             this._texture = scene
                 .getEngine()
                 .createTexture(
-                    this.url,
+                    url,
                     this._noMipmap,
                     this._invertY,
                     scene,
@@ -704,7 +723,7 @@ export class Texture extends BaseTexture {
             this._t2 = Vector3.Zero();
         }
 
-        Matrix.RotationYawPitchRollToRef(this.vAng, this.uAng, this.wAng, this._rowGenerationMatrix!);
+        Matrix.RotationYawPitchRollToRef(this.vAng, this.uAng, this.wAng, this._rowGenerationMatrix);
 
         if (this.homogeneousRotationInUVTransform) {
             Matrix.TranslationToRef(-this._cachedURotationCenter, -this._cachedVRotationCenter, -this._cachedWRotationCenter, TmpVectors.Matrix[0]);
@@ -712,7 +731,7 @@ export class Texture extends BaseTexture {
             Matrix.ScalingToRef(this._cachedUScale, this._cachedVScale, 0, TmpVectors.Matrix[2]);
             Matrix.TranslationToRef(this._cachedUOffset, this._cachedVOffset, 0, TmpVectors.Matrix[3]);
 
-            TmpVectors.Matrix[0].multiplyToRef(this._rowGenerationMatrix!, this._cachedTextureMatrix);
+            TmpVectors.Matrix[0].multiplyToRef(this._rowGenerationMatrix, this._cachedTextureMatrix);
             this._cachedTextureMatrix.multiplyToRef(TmpVectors.Matrix[1], this._cachedTextureMatrix);
             this._cachedTextureMatrix.multiplyToRef(TmpVectors.Matrix[2], this._cachedTextureMatrix);
             this._cachedTextureMatrix.multiplyToRef(TmpVectors.Matrix[3], this._cachedTextureMatrix);
@@ -893,11 +912,12 @@ export class Texture extends BaseTexture {
         }
 
         if (Texture.SerializeBuffers || Texture.ForceSerializeBuffers) {
-            if (typeof this._buffer === "string" && (this._buffer as string).substring(0, 5) === "data:") {
+            if (typeof this._buffer === "string" && this._buffer.startsWith("data:")) {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
             } else if (this.url && this.url.startsWith("data:") && this._buffer instanceof Uint8Array) {
-                serializationObject.base64String = "data:image/png;base64," + EncodeArrayBufferToBase64(this._buffer);
+                const mimeType = this.mimeType || "image/png";
+                serializationObject.base64String = `data:${mimeType};base64,${EncodeArrayBufferToBase64(this._buffer)}`;
             } else if (Texture.ForceSerializeBuffers || (this.url && this.url.startsWith("blob:")) || this._forceSerialize) {
                 serializationObject.base64String =
                     !this._engine || this._engine._features.supportSyncTextureRead ? GenerateBase64StringFromTexture(this) : GenerateBase64StringFromTextureAsync(this);
@@ -1029,7 +1049,8 @@ export class Texture extends BaseTexture {
                     mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
                     onLoaded(mirrorTexture);
                     return mirrorTexture;
-                } else if (parsedTexture.isRenderTarget) {
+                } else if (parsedTexture.isRenderTarget && !parsedTexture.base64String) {
+                    // if base64string is set it means the original RTT was baked
                     let renderTargetTexture: Nullable<RenderTargetTexture> = null;
                     if (parsedTexture.isCube) {
                         // Search for an existing reflection probe (which contains a cube render target texture)

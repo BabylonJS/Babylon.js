@@ -24,8 +24,11 @@ module.exports = (env) => {
             "@lts/procedural-textures": path.resolve(__dirname, "../../../lts/proceduralTextures/src"),
         },
         overrideFilename: (pathData) => {
-            return pathData.chunk.name === "proceduralTextures" ? `babylonjs.[name]${env.production ? ".min" : ""}.js` : `babylon.[name]ProceduralTexture${env.production ? ".min" : ""}.js`;
+            return pathData.chunk.name === "proceduralTextures"
+                ? `babylonjs.[name]${env.production ? ".min" : ""}.js`
+                : `babylon.[name]ProceduralTexture${env.production ? ".min" : ""}.js`;
         },
+        minToMax: true,
     });
     return commonConfig;
 };

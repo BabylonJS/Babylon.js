@@ -9,7 +9,7 @@ import { AddObjectAccessorToKey } from "./objectModelMapping";
 const NAME = "KHR_node_hoverability";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the KHR_node_hoverability extension.
@@ -20,7 +20,7 @@ declare module "../../glTFFileLoader" {
 }
 
 // interactivity
-const meshPointerOverPrefix = "targetMeshPointerOver_";
+const MeshPointerOverPrefix = "targetMeshPointerOver_";
 addNewInteractivityFlowGraphMapping("event/onHoverIn", NAME, {
     // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
     blocks: [FlowGraphBlockNames.PointerOverEvent, FlowGraphBlockNames.GetVariable, FlowGraphBlockNames.IndexOf, "KHR_interactivity/FlowGraphGLTFDataProvider"],
@@ -30,7 +30,7 @@ addNewInteractivityFlowGraphMapping("event/onHoverIn", NAME, {
             name: "variable",
             toBlock: FlowGraphBlockNames.GetVariable,
             dataTransformer(data) {
-                return [meshPointerOverPrefix + data[0]];
+                return MeshPointerOverPrefix + data;
             },
         },
     },
@@ -72,11 +72,11 @@ addNewInteractivityFlowGraphMapping("event/onHoverIn", NAME, {
         serializedObject.config = serializedObject.config || {};
         serializedObject.config.glTF = globalGLTF;
         // find the listener nodeIndex value
-        const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value[0];
+        const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value?.[0];
         if (nodeIndex === undefined || typeof nodeIndex !== "number") {
             throw new Error("nodeIndex not found in configuration");
         }
-        const variableName = meshPointerOverPrefix + nodeIndex;
+        const variableName = MeshPointerOverPrefix + nodeIndex;
         // find the nodeIndex value
         serializedObjects[1].config.variable = variableName;
         context._userVariables[variableName] = {
@@ -88,7 +88,7 @@ addNewInteractivityFlowGraphMapping("event/onHoverIn", NAME, {
     },
 });
 
-const meshPointerOutPrefix = "targetMeshPointerOut_";
+const MeshPointerOutPrefix = "targetMeshPointerOut_";
 addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
     // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
     blocks: [FlowGraphBlockNames.PointerOutEvent, FlowGraphBlockNames.GetVariable, FlowGraphBlockNames.IndexOf, "KHR_interactivity/FlowGraphGLTFDataProvider"],
@@ -98,7 +98,7 @@ addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
             name: "variable",
             toBlock: FlowGraphBlockNames.GetVariable,
             dataTransformer(data) {
-                return [meshPointerOutPrefix + data[0]];
+                return MeshPointerOutPrefix + data;
             },
         },
     },
@@ -140,11 +140,11 @@ addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
         serializedObject.config = serializedObject.config || {};
         serializedObject.config.glTF = globalGLTF;
 
-        const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value[0];
+        const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value?.[0];
         if (nodeIndex === undefined || typeof nodeIndex !== "number") {
             throw new Error("nodeIndex not found in configuration");
         }
-        const variableName = meshPointerOutPrefix + nodeIndex;
+        const variableName = MeshPointerOutPrefix + nodeIndex;
         // find the nodeIndex value
         serializedObjects[1].config.variable = variableName;
         context._userVariables[variableName] = {
@@ -199,6 +199,7 @@ export class KHR_node_hoverability implements IGLTFLoaderExtension {
         this.enabled = loader.isExtensionUsed(NAME);
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
     public async onReady(): Promise<void> {
         this._loader.gltf.nodes?.forEach((node) => {
             // default is true, so only apply if false

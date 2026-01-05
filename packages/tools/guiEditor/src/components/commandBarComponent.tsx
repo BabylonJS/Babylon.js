@@ -30,7 +30,7 @@ interface ICommandBarComponentProps {
     globalState: GlobalState;
 }
 
-const _sizeValues = [
+const SizeValues = [
     { width: 1920, height: 1080 },
     { width: 1366, height: 768 },
     { width: 1280, height: 800 },
@@ -45,7 +45,7 @@ const _sizeValues = [
     { width: 2048, height: 2048 },
 ];
 
-const _sizeOptions = [
+const SizeOptions = [
     { label: "Web (1920)", value: 0 },
     { label: "Web (1366)", value: 1 },
     { label: "Web (1280)", value: 2 },
@@ -101,7 +101,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
 
         const responsiveUI = this.props.globalState.fromPG ? DataStorage.ReadBoolean("responsiveUI", true) : DataStorage.ReadBoolean("Responsive", true);
 
-        this._sizeOption = _sizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
+        this._sizeOption = SizeValues.findIndex((value) => value.width == size.width && value.height == size.height);
         if (this._sizeOption < 0) {
             this.props.globalState.onResponsiveChangeObservable.notifyObservers(false);
             DataStorage.WriteBoolean("Responsive", false);
@@ -154,7 +154,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 {
                                     label: "Help",
                                     onClick: () => {
-                                        window.open("https://doc.babylonjs.com/toolsAndResources/tools/guiEditor", "_blank");
+                                        window.open("https://doc.babylonjs.com/toolsAndResources/guiEditor", "_blank");
                                     },
                                 },
                                 {
@@ -201,7 +201,10 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             isActive={false}
                             copyDeleteDisabled={this.props.globalState.selectedControls.length === 0} //disabled when nothing is selected
                             onClick={() => {
-                                this.props.globalState.onCopyObservable.notifyObservers((content) => this.props.globalState.hostWindow.navigator.clipboard.writeText(content));
+                                this.props.globalState.onCopyObservable.notifyObservers(
+                                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                                    async (content) => await this.props.globalState.hostWindow.navigator.clipboard.writeText(content)
+                                );
                                 this.forceUpdate();
                             }}
                         />
@@ -211,6 +214,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             icon={pasteeIcon}
                             isActive={false}
                             pasteDisabled={isPasteDisabled}
+                            // eslint-disable-next-line @typescript-eslint/no-misused-promises
                             onClick={async () => {
                                 this.props.globalState.onPasteObservable.notifyObservers(await this.props.globalState.hostWindow.navigator.clipboard.readText());
                             }}
@@ -222,13 +226,13 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             isActive={false}
                             copyDeleteDisabled={this.props.globalState.selectedControls.length === 0} //disabled when nothing is selected
                             onClick={() => {
-                                this.props.globalState.selectedControls.forEach((guiNode) => {
+                                for (const guiNode of this.props.globalState.selectedControls) {
                                     if (guiNode != this.props.globalState.guiTexture.getChildren()[0]) {
                                         this.props.globalState.guiTexture.removeControl(guiNode);
                                         this.props.globalState.liveGuiTexture?.removeControl(guiNode);
                                         guiNode.dispose();
                                     }
-                                });
+                                }
                                 this.props.globalState.setSelection([]);
                             }}
                         />
@@ -263,10 +267,10 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 this.props.globalState.onResponsiveChangeObservable.notifyObservers(value);
                                 DataStorage.WriteBoolean("Responsive", value);
                                 DataStorage.WriteBoolean("responsiveUI", value);
-                                this._sizeOption = _sizeOptions.length;
+                                this._sizeOption = SizeOptions.length;
                                 if (value) {
                                     this._sizeOption = 0;
-                                    this.props.globalState.workbench.guiSize = _sizeValues[this._sizeOption];
+                                    this.props.globalState.workbench.guiSize = SizeValues[this._sizeOption];
                                     DataStorage.WriteNumber("width", this.props.globalState.workbench.guiSize.width);
                                     DataStorage.WriteNumber("height", this.props.globalState.workbench.guiSize.height);
                                 }
@@ -278,14 +282,14 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             <OptionsLine
                                 label=""
                                 iconLabel="Size"
-                                options={_sizeOptions}
+                                options={SizeOptions}
                                 target={this}
                                 propertyName={"_sizeOption"}
                                 noDirectUpdate={true}
                                 onSelect={(value: any) => {
                                     this._sizeOption = value;
-                                    if (this._sizeOption !== _sizeOptions.length) {
-                                        const newSize = _sizeValues[this._sizeOption];
+                                    if (this._sizeOption !== SizeOptions.length) {
+                                        const newSize = SizeValues[this._sizeOption];
                                         this.props.globalState.workbench.guiSize = newSize;
                                         DataStorage.WriteNumber("width", this.props.globalState.workbench.guiSize.width);
                                         DataStorage.WriteNumber("height", this.props.globalState.workbench.guiSize.height);

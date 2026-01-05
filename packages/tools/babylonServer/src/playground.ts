@@ -1,14 +1,15 @@
-const snippetUrl = "https://snippet.babylonjs.com/";
-const pgRoot = "https://playground.babylonjs.com";
+const SnippetUrl = "https://snippet.babylonjs.com/";
+const PgRoot = "https://playground.babylonjs.com";
+// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
 export const loadPlayground = async (playgroundId: string) => {
-    const data = await fetch(snippetUrl + playgroundId.replace(/#/g, "/"));
+    const data = await fetch(SnippetUrl + playgroundId.replace(/#/g, "/"));
     const snippet = await data.json();
     let code = JSON.parse(snippet.jsonPayload).code.toString();
     code = code
-        .replace(/\/textures\//g, pgRoot + "/textures/")
-        .replace(/"textures\//g, '"' + pgRoot + "/textures/")
-        .replace(/\/scenes\//g, pgRoot + "/scenes/")
-        .replace(/"scenes\//g, '"' + pgRoot + "/scenes/")
+        .replace(/\/textures\//g, PgRoot + "/textures/")
+        .replace(/"textures\//g, '"' + PgRoot + "/textures/")
+        .replace(/\/scenes\//g, PgRoot + "/scenes/")
+        .replace(/"scenes\//g, '"' + PgRoot + "/scenes/")
         .replace(/"\.\.\/\.\.https/g, '"' + "https")
         .replace("http://", "https://");
 
@@ -16,6 +17,7 @@ export const loadPlayground = async (playgroundId: string) => {
 
     const loadedScene = eval(`${code};${createSceneFunction}(engine);`);
 
+    // eslint-disable-next-line github/no-then
     if (loadedScene.then) {
         // Handle if createScene returns a promise
         return await loadedScene;
@@ -24,6 +26,7 @@ export const loadPlayground = async (playgroundId: string) => {
     }
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const getPlaygroundId = () => {
     if (location.hash) {
         return location.hash.substring(1);

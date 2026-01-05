@@ -10,6 +10,7 @@ import "../AbstractEngine/abstractEngine.timeQuery";
 import "../AbstractEngine/abstractEngine.query";
 
 declare module "../../Engines/thinEngine" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface ThinEngine {
         /**
          * @internal

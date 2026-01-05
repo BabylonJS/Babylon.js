@@ -9,7 +9,7 @@ import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExt
 const NAME = "EXT_meshopt_compression";
 
 declare module "../../glTFFileLoader" {
-    // eslint-disable-next-line jsdoc/require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the EXT_meshopt_compression extension.
@@ -59,19 +59,23 @@ export class EXT_meshopt_compression implements IGLTFLoaderExtension {
     /**
      * @internal
      */
+    // eslint-disable-next-line no-restricted-syntax
     public loadBufferViewAsync(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>> {
-        return GLTFLoader.LoadExtensionAsync<IEXTMeshoptCompression, ArrayBufferView>(context, bufferView, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IEXTMeshoptCompression, ArrayBufferView>(context, bufferView, this.name, async (extensionContext, extension) => {
             const bufferViewMeshopt = bufferView as IBufferViewMeshopt;
             if (bufferViewMeshopt._meshOptData) {
-                return bufferViewMeshopt._meshOptData;
+                return await bufferViewMeshopt._meshOptData;
             }
 
             const buffer = ArrayItem.Get(`${context}/buffer`, this._loader.gltf.buffers, extension.buffer);
-            bufferViewMeshopt._meshOptData = this._loader.loadBufferAsync(`/buffers/${buffer.index}`, buffer, extension.byteOffset || 0, extension.byteLength).then((buffer) => {
-                return MeshoptCompression.Default.decodeGltfBufferAsync(buffer as Uint8Array, extension.count, extension.byteStride, extension.mode, extension.filter);
-            });
+            bufferViewMeshopt._meshOptData = this._loader
+                .loadBufferAsync(`/buffers/${buffer.index}`, buffer, extension.byteOffset || 0, extension.byteLength)
+                // eslint-disable-next-line github/no-then
+                .then(async (buffer) => {
+                    return await MeshoptCompression.Default.decodeGltfBufferAsync(buffer as Uint8Array, extension.count, extension.byteStride, extension.mode, extension.filter);
+                });
 
-            return bufferViewMeshopt._meshOptData;
+            return await bufferViewMeshopt._meshOptData;
         });
     }
 }

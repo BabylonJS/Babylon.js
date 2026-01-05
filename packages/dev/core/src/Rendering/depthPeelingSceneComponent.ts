@@ -4,15 +4,17 @@ import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { Nullable } from "../types";
 import { DepthPeelingRenderer } from "./depthPeelingRenderer";
+import type { ThinDepthPeelingRenderer } from "./thinDepthPeelingRenderer";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * The depth peeling renderer
          */
-        depthPeelingRenderer: Nullable<DepthPeelingRenderer>;
+        depthPeelingRenderer: Nullable<ThinDepthPeelingRenderer>;
         /** @internal (Backing field) */
-        _depthPeelingRenderer: Nullable<DepthPeelingRenderer>;
+        _depthPeelingRenderer: Nullable<ThinDepthPeelingRenderer>;
 
         /**
          * Flag to indicate if we want to use order independent transparency, despite the performance hit
@@ -35,7 +37,7 @@ Object.defineProperty(Scene.prototype, "depthPeelingRenderer", {
 
         return this._depthPeelingRenderer;
     },
-    set: function (this: Scene, value: DepthPeelingRenderer) {
+    set: function (this: Scene, value: ThinDepthPeelingRenderer) {
         this._depthPeelingRenderer = value;
     },
     enumerable: true,

@@ -33,6 +33,7 @@ import { ThinHighlightLayer } from "./thinHighlightLayer";
 import { ThinGlowBlurPostProcess } from "./thinEffectLayer";
 
 declare module "../scene" {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /**
          * Return a the first highlight layer of the scene with a given name.
@@ -390,6 +391,9 @@ export class HighlightLayer extends EffectLayer {
         this._postProcesses.map((pp) => {
             pp.autoClear = false;
         });
+
+        this._mainTextureCreatedSize.width = this._mainTextureDesiredSize.width;
+        this._mainTextureCreatedSize.height = this._mainTextureDesiredSize.height;
     }
 
     /**

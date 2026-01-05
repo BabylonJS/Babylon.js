@@ -5,7 +5,10 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { VertexBuffer } from "core/Meshes/buffer";
+import type { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 
 /**
  * Block used for the Gaussian Splatting
@@ -27,6 +30,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         this.registerInput("projection", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
 
         this.registerOutput("splatVertex", NodeMaterialBlockConnectionPointTypes.Vector4, NodeMaterialBlockTargets.Vertex);
+        this.registerOutput("SH", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Vertex);
     }
 
     /**
@@ -80,12 +84,36 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the SH output contribution
+     */
+    public get SH(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("focal");
         state._excludeVariableName("invViewport");
+        state._excludeVariableName("kernelSize");
+        state._excludeVariableName("eyePosition");
+    }
+    /**
+     * Update defines for shader compilation
+     * @param defines defines the material defines to update
+     * @param nodeMaterial defines the node material requesting the update
+     * @param mesh defines the mesh to be rendered
+     */
+    public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
+        if (!mesh) {
+            return;
+        }
+
+        if (mesh.getClassName() == "GaussianSplattingMesh") {
+            defines.setValue("SH_DEGREE", (<GaussianSplattingMesh>mesh).shDegree, true);
+        }
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {
@@ -95,12 +123,21 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
             return;
         }
 
+        state.sharedData.blocksWithDefines.push(this);
+
         const comments = `//${this.name}`;
         state._emitFunctionFromInclude("gaussianSplattingVertexDeclaration", comments);
         state._emitFunctionFromInclude("gaussianSplatting", comments);
+        state._emitFunctionFromInclude("helperFunctions", comments);
         state._emitUniformFromString("focal", NodeMaterialBlockConnectionPointTypes.Vector2);
         state._emitUniformFromString("invViewport", NodeMaterialBlockConnectionPointTypes.Vector2);
+        state._emitUniformFromString("kernelSize", NodeMaterialBlockConnectionPointTypes.Float);
+        state._emitUniformFromString("eyePosition", NodeMaterialBlockConnectionPointTypes.Vector3);
         state.attributes.push(VertexBuffer.PositionKind);
+        state.attributes.push("splatIndex0");
+        state.attributes.push("splatIndex1");
+        state.attributes.push("splatIndex2");
+        state.attributes.push("splatIndex3");
         state.sharedData.nodeMaterial.backFaceCulling = false;
 
         const splatPosition = this.splatPosition;
@@ -109,6 +146,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         const view = this.view;
         const projection = this.projection;
         const output = this.splatVertex;
+        const sh = this.SH;
 
         const addF = state.fSuffix;
         let splatScaleParameter = `vec2${addF}(1.,1.)`;
@@ -120,9 +158,30 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         let uniforms = "";
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             input = "input.position";
-            uniforms = ", uniforms.focal, uniforms.invViewport";
+            uniforms = ", uniforms.focal, uniforms.invViewport, uniforms.kernelSize";
         }
-        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${input}, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${world.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName}${uniforms});\n`;
+        if (this.SH.isConnected) {
+            state.compilationString += `#if SH_DEGREE > 0\n`;
+
+            if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                state.compilationString += `let worldRot: mat3x3f =  mat3x3f(${world.associatedVariableName}[0].xyz, ${world.associatedVariableName}[1].xyz, ${world.associatedVariableName}[2].xyz);`;
+                state.compilationString += `let normWorldRot: mat3x3f = inverseMat3(worldRot);`;
+                state.compilationString += `var eyeToSplatLocalSpace: vec3f = normalize(normWorldRot * (${splatPosition.associatedVariableName}.xyz - uniforms.eyePosition));\n`;
+            } else {
+                state.compilationString += `mat3 worldRot = mat3(${world.associatedVariableName});`;
+                state.compilationString += `mat3 normWorldRot = inverseMat3(worldRot);`;
+                state.compilationString += `vec3 eyeToSplatLocalSpace = normalize(normWorldRot * (${splatPosition.associatedVariableName}.xyz - eyePosition));\n`;
+            }
+
+            state.compilationString += `${state._declareOutput(sh)} = computeSH(splat, eyeToSplatLocalSpace);\n`;
+            state.compilationString += `#else\n`;
+            state.compilationString += `${state._declareOutput(sh)} = vec3${addF}(0.,0.,0.);\n`;
+            state.compilationString += `#endif;\n`;
+        } else {
+            state.compilationString += `${state._declareOutput(sh)} = vec3${addF}(0.,0.,0.);`;
+        }
+
+        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${input}.xy, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${world.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName}${uniforms});\n`;
         return this;
     }
 }

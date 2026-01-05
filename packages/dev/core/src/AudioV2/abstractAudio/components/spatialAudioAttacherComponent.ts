@@ -26,20 +26,32 @@ export class _SpatialAudioAttacherComponent {
     }
 
     /**
-     * Returns `true` if the audio listener or source is attached to an entity; otherwise returns `false`.
+     * Returns `true` if attached to a scene node; otherwise returns `false`.
      */
     public get isAttached(): boolean {
         return this._sceneNode !== null;
     }
 
     /**
-     * Attaches a scene object.
-     * @param sceneNode The scene node to attach to.
-     * @param useBoundingBox Whether to use the bounding box of the node for positioning. Defaults to `false`.
-     * @param attachmentType Whather to attach to the node's position and/or rotation. Defaults to `PositionAndRotation`.
+     * Attaches to a scene node.
+     *
+     * Detaches automatically before attaching to the given scene node.
+     * If `sceneNode` is `null` it is the same as calling `detach()`.
+     *
+     * @param sceneNode The scene node to attach to, or `null` to detach.
+     * @param useBoundingBox Whether to use the scene node's bounding box for positioning. Defaults to `false`.
+     * @param attachmentType Whether to attach to the scene node's position and/or rotation. Defaults to `PositionAndRotation`.
      */
-    public attach(sceneNode: Node, useBoundingBox: boolean, attachmentType: SpatialAudioAttachmentType): void {
+    public attach(sceneNode: Nullable<Node>, useBoundingBox: boolean, attachmentType: SpatialAudioAttachmentType): void {
+        if (this._sceneNode === sceneNode) {
+            return;
+        }
+
         this.detach();
+
+        if (!sceneNode) {
+            return;
+        }
 
         this._attachmentType = attachmentType;
 
@@ -50,7 +62,7 @@ export class _SpatialAudioAttacherComponent {
     }
 
     /**
-     * Detaches the attached entity.
+     * Detaches from the scene node if attached.
      */
     public detach() {
         this._sceneNode?.onDisposeObservable.removeCallback(this.dispose);
@@ -65,25 +77,27 @@ export class _SpatialAudioAttacherComponent {
     };
 
     /**
-     * Updates the audio listener or source.
+     * Updates the position and rotation of the associated audio engine object in the audio rendering graph.
+     *
+     * This is called automatically by default and only needs to be called manually if automatic updates are disabled.
      */
     public update() {
         if (this._attachmentType & SpatialAudioAttachmentType.Position) {
             if (this._useBoundingBox && (this._sceneNode as AbstractMesh).getBoundingInfo) {
                 this._position.copyFrom((this._sceneNode as AbstractMesh).getBoundingInfo().boundingBox.centerWorld);
             } else {
-                this._position.copyFrom((this._sceneNode as any).position);
+                this._sceneNode?.getWorldMatrix().getTranslationToRef(this._position);
             }
 
             this._spatialAudioNode.position.copyFrom(this._position);
-            this._spatialAudioNode.updatePosition();
+            this._spatialAudioNode._updatePosition();
         }
 
         if (this._attachmentType & SpatialAudioAttachmentType.Rotation) {
-            this._sceneNode?.getWorldMatrix().decompose(undefined, this._rotationQuaternion, undefined);
+            this._sceneNode?.getWorldMatrix().decompose(undefined, this._rotationQuaternion);
 
             this._spatialAudioNode.rotationQuaternion.copyFrom(this._rotationQuaternion);
-            this._spatialAudioNode.updateRotation();
+            this._spatialAudioNode._updateRotation();
         }
     }
 }
