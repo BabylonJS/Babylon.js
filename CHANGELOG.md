@@ -1,5 +1,19 @@
 # Changelog
 
+## 8.44.0
+
+### Core
+
+- Voxel shadow fixes for interleaved buffers - by [sebavan](https://github.com/sebavan) ([#17598](https://github.com/BabylonJS/Babylon.js/pull/17598))
+- Fixed defines where area lights and hemi lights need to checked together - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#17597](https://github.com/BabylonJS/Babylon.js/pull/17597))
+- Added extra guards to Area Lights defines to avoid shader compilation. - [_Bug Fix_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#17596](https://github.com/BabylonJS/Babylon.js/pull/17596))
+- Meshes: Fix wrong normals after calling updateFacetData - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17593](https://github.com/BabylonJS/Babylon.js/pull/17593))
+- FrameGraph: Support multi-RTT in clear texture and object renderer tasks - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17582](https://github.com/BabylonJS/Babylon.js/pull/17582))
+- SolidParticleSystem: Allow AbstractMesh in the addShape signature - by [Popov72](https://github.com/Popov72) ([#17591](https://github.com/BabylonJS/Babylon.js/pull/17591))
+- Shadows: Fix artifacts when using PCF and PCSS - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17594](https://github.com/BabylonJS/Babylon.js/pull/17594))
+- Meshes: Fix crash when calling clearCachedData for a transparent mesh - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17595](https://github.com/BabylonJS/Babylon.js/pull/17595))
+- GPUPicker: Added support for bones, morph targets, and VAT - [_Bug Fix_] by [noname0310](https://github.com/noname0310) ([#17592](https://github.com/BabylonJS/Babylon.js/pull/17592))
+
 ## 8.43.0
 
 ### Core
