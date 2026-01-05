@@ -98,8 +98,6 @@ export const ToolBar: FunctionComponent<ToolBarProps> = (props) => {
             <Divider />
             <div className={classes.toolsSection}>
                 {tools.map((tool, index) => {
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
-                    const IconComponent = tool.icon;
                     return (
                         <Tooltip key={index} content={tool.name} relationship="label" positioning="after">
                             <ToggleButton
@@ -107,7 +105,7 @@ export const ToolBar: FunctionComponent<ToolBarProps> = (props) => {
                                 appearance="subtle"
                                 checked={index === activeToolIndex}
                                 onClick={() => handleToolClick(index)}
-                                icon={<IconComponent />}
+                                icon={<tool.icon />}
                             />
                         </Tooltip>
                     );
