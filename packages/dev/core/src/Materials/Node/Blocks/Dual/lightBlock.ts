@@ -254,7 +254,7 @@ export class LightBlock extends NodeMaterialBlock {
                 uniformBuffers,
                 onlyUpdateBuffersList,
                 defines["IESLIGHTTEXTURE" + lightIndex],
-                defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex]
+                defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex],
                 defines["CLUSTLIGHT" + lightIndex]
             );
         }
