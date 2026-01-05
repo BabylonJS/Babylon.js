@@ -32,7 +32,7 @@
 	#elif defined(HEMILIGHT{X})
 		uniform vec3 vLightGround{X};
 	#endif
-	#if defined(AREALIGHT{X})
+	#if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 		uniform vec4 vLightWidth{X};
 		uniform vec4 vLightHeight{X};
 	#endif

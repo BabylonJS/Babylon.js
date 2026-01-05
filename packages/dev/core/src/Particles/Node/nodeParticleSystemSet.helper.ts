@@ -852,10 +852,12 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
 
     _SystemEmitRateValue(oldSystem.getEmitRateGradients(), oldSystem.targetStopDuration, oldSystem.emitRate, newSystem, context);
-    const clonedParticleTexture = oldSystem.particleTexture?.clone();
-    if (clonedParticleTexture) {
-        _CreateTextureBlock(clonedParticleTexture).connectTo(newSystem.texture);
+
+    const texture = oldSystem.particleTexture;
+    if (texture) {
+        _CreateTextureBlock(texture).connectTo(newSystem.texture);
     }
+
     _SystemTargetStopDuration(oldSystem.targetStopDuration, newSystem, context);
 
     const rampGradients = oldSystem.getRampGradients();
@@ -1109,7 +1111,8 @@ function _CreateGradientValueBlockGroup(
     return gradientValueBlock.output;
 }
 
-function _CreateTextureBlock(texture: BaseTexture): NodeParticleConnectionPoint {
+function _CreateTextureBlock(texture: Nullable<BaseTexture>): NodeParticleConnectionPoint {
+    // Texture - always use sourceTexture to preserve all texture options
     const textureBlock = new ParticleTextureSourceBlock("Texture");
     textureBlock.sourceTexture = texture;
     return textureBlock.texture;

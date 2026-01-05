@@ -21,7 +21,7 @@ describe("smartFilterOptimizer", () => {
             it(`${testCase.name}`, async () => {
                 // Arrange
                 const smartFilter = await smartFilterDeserializer.deserialize({} as ThinEngine, testCase.serializedSmartFilter);
-                const optimizer = new SmartFilterOptimizer(smartFilter);
+                const optimizer = new SmartFilterOptimizer(smartFilter, { debugMode: testCase.debugMode });
 
                 // Act
                 const optimizedSmartFilter = optimizer.optimize()!;

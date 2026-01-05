@@ -362,45 +362,43 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         if (this._setRenderTargetDepth) {
             pass.setRenderTargetDepth(this.objectRendererTask.depthTexture);
         }
+        pass.setInitializeFunc((context) => {
+            this.layer.bindTexturesForCompose = (effect: Effect) => {
+                for (let i = 0; i < this._blurY.length; i++) {
+                    context.bindTextureHandle(effect, `textureSampler${i > 0 ? i + 1 : ""}`, this._blurY[i].outputTexture);
+                }
+            };
+
+            if (this.layer._options.renderingGroupId === -1) {
+                return;
+            }
+
+            this._onAfterRenderingGroupObserver = this._scene.onAfterRenderingGroupObservable.add((info) => {
+                if (
+                    !this.layer.shouldRender() ||
+                    info.renderingGroupId !== this.layer._options.renderingGroupId ||
+                    info.renderingManager !== this.objectRendererTask.objectRenderer.renderingManager
+                ) {
+                    return;
+                }
+                this._objectRendererForLayer.objectList = this.objectRendererTask.objectList;
+                context.saveDepthStates();
+                context.setDepthStates(false, false);
+                context._applyRenderTarget();
+                this.layer.compose();
+                context.restoreDepthStates();
+            });
+        });
         pass.setExecuteFunc((context) => {
             context.setTextureSamplingMode(this._blurY[this._blurY.length - 1].targetTexture!, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
 
-            if (!this.layer.bindTexturesForCompose) {
-                this.layer.bindTexturesForCompose = (effect: Effect) => {
-                    for (let i = 0; i < this._blurY.length; i++) {
-                        context.bindTextureHandle(effect, `textureSampler${i > 0 ? i + 1 : ""}`, this._blurY[i].outputTexture);
-                    }
-                };
-            }
+            if (this.layer._options.renderingGroupId === -1 && this.layer.shouldRender()) {
+                this._objectRendererForLayer.objectList = this.objectRendererTask.objectList; // in case the object list has changed in objectRendererTask
 
-            if (this.layer._options.renderingGroupId !== -1) {
-                if (!this._onAfterRenderingGroupObserver) {
-                    this._onAfterRenderingGroupObserver = this._scene.onAfterRenderingGroupObservable.add((info) => {
-                        if (
-                            !this.layer.shouldRender() ||
-                            info.renderingGroupId !== this.layer._options.renderingGroupId ||
-                            info.renderingManager !== this.objectRendererTask.objectRenderer.renderingManager
-                        ) {
-                            return;
-                        }
-                        this._objectRendererForLayer.objectList = this.objectRendererTask.objectList;
-                        context.saveDepthStates();
-                        context.setDepthStates(false, false);
-                        context._applyRenderTarget();
-                        this.layer.compose();
-                        context.restoreDepthStates();
-                    });
-                }
-            } else {
-                this._clearAfterRenderingGroupObserver();
-                if (this.layer.shouldRender()) {
-                    this._objectRendererForLayer.objectList = this.objectRendererTask.objectList; // in case the object list has changed in objectRendererTask
+                context.setDepthStates(false, false);
+                context._applyRenderTarget();
 
-                    context.setDepthStates(false, false);
-                    context._applyRenderTarget();
-
-                    this.layer.compose();
-                }
+                this.layer.compose();
             }
         });
 

@@ -22,12 +22,13 @@ flat varying vMeshID: f32;
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
     
+    var positionUpdated: vec3f = input.position;
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 #include<instancesVertex>
 #include<bonesVertex>
 #include<bakedVertexAnimation>
-    var worldPos: vec4f = finalWorld * vec4f(input.position, 1.0);
+    var worldPos: vec4f = finalWorld * vec4f(positionUpdated, 1.0);
 	vertexOutputs.position = uniforms.viewProjection * worldPos;
 
 #if defined(INSTANCES)

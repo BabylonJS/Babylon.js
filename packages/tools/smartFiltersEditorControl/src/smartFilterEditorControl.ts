@@ -6,7 +6,7 @@ import { GraphEditor } from "./graphEditor.js";
 import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger.js";
 import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyLedger.js";
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger.js";
-import type { SmartFilter } from "smart-filters";
+import type { OptimizerDebugMode, SmartFilter } from "smart-filters";
 import type { Nullable } from "core/types.js";
 import type { Observable } from "core/Misc/observable.js";
 import { CreatePopup } from "shared-ui-components/popupHelper.js";
@@ -42,6 +42,12 @@ export type SmartFilterEditorOptions = {
      * If supplied, the editor will display a toggle to enable or disable the optimizer, and update this property when it changes.
      */
     optimizerEnabled?: ObservableProperty<boolean>;
+
+    /**
+     * The debug mode to use for the optimizer.
+     *
+     */
+    optimizerDebugMode?: ObservableProperty<OptimizerDebugMode | null>;
 
     /**
      * A BlockEditorRegistration object which is responsible for providing the information
@@ -195,6 +201,7 @@ export class SmartFilterEditorControl {
             options.onNewEngine ?? null,
             options.onSmartFilterLoadedObservable ?? null,
             options.optimizerEnabled ?? null,
+            options.optimizerDebugMode ?? null,
             options.filter ?? null,
             options.blockEditorRegistration ?? null,
             hostElement,

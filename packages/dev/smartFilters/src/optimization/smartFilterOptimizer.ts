@@ -85,6 +85,19 @@ export type StackItem = {
     outputConnectionPoint: ConnectionPoint;
 };
 
+export enum OptimizerDebugMode {
+    /**
+     * Clamps the values returned by fragment shaders to the 0-1 range.
+     * Fragment shader output is often clamped by the target texture, but in an optimized Smart Filter, multiple
+     * fragment shaders can get combined into one, and the output of one simply returned to the next as-is. In this case,
+     * the clamping would not happen, and so you could get different results when the optimizer is enabled if your blocks
+     * can return values outside of the 0-1 range.
+     * If you see different results when using this debug mode, you may need to clamp the output of one of your blocks
+     * to prevent the results from changing when the block is used in an optimized Smart Filter.
+     */
+    ClampReturnValues = 1,
+}
+
 /**
  * Options for the smart filter optimizer.
  */
@@ -99,6 +112,11 @@ export interface ISmartFilterOptimizerOptions {
      * It allows more aggressive optimizations, but removed blocks will no longer be available in the optimized smart filter.
      */
     removeDisabledBlocks?: boolean;
+
+    /**
+     * The optional debug mode to use.
+     */
+    debugMode?: OptimizerDebugMode;
 }
 
 /**
@@ -665,8 +683,13 @@ export class SmartFilterOptimizer {
         let match = rx.exec(code);
         while (match !== null) {
             const uv = match[1];
-
-            code = code.substring(0, match.index) + `${functionName}(${uv})` + code.substring(match.index + match[0]!.length);
+            let functionCall: string;
+            if (this._options.debugMode === OptimizerDebugMode.ClampReturnValues) {
+                functionCall = `clamp(${functionName}(${uv}), 0.0, 1.0)`;
+            } else {
+                functionCall = `${functionName}(${uv})`;
+            }
+            code = code.substring(0, match.index) + functionCall + code.substring(match.index + match[0]!.length);
             match = rx.exec(code);
         }
 

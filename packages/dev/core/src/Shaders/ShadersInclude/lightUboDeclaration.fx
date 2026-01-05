@@ -16,7 +16,7 @@
 			vec2 vSliceData;
 			vec2 vSliceRanges[CLUSTLIGHT_SLICES];
 		#endif
-		#if defined(AREALIGHT{X})
+		#if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 			vec4 vLightWidth;
 			vec4 vLightHeight;
 		#endif
