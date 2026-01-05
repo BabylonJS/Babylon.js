@@ -210,6 +210,7 @@ export class StandardMaterialDefines extends ImageProcessingDefinesMixin(Standar
     public CAMERA_PERSPECTIVE = false;
     public AREALIGHTSUPPORTED = true;
     public USE_VERTEX_PULLING = false;
+    public RIGHT_HANDED = false;
 
     public CLUSTLIGHT_SLICES = 0;
     public CLUSTLIGHT_BATCH = 0;

@@ -99,7 +99,7 @@ import type { Sound } from "./Audio/sound";
 import type { Layer } from "./Layers/layer";
 import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
-import { FrameGraphObjectRendererTask } from "./FrameGraph/Tasks/Rendering/objectRendererTask";
+import type { FrameGraphObjectRendererTask } from "./FrameGraph/Tasks/Rendering/objectRendererTask";
 import { _RetryWithInterval } from "./Misc/timingTools";
 import type { ObjectRenderer } from "./Rendering/objectRenderer";
 import type { BoundingBoxRenderer } from "./Rendering/boundingBoxRenderer";
@@ -4470,7 +4470,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             this._renderWithFrameGraph(true, false, true);
 
             // Freeze all active meshes of all object renderers in the graph
-            const objectRendererTasks = this.frameGraph.getTasksByType(FrameGraphObjectRendererTask);
+            const objectRendererTasks = this.frameGraph.getTasksByClassName<FrameGraphObjectRendererTask>(["FrameGraphObjectRendererTask", "FrameGraphGeometryRendererTask"]);
             for (const task of objectRendererTasks) {
                 task.objectRenderer._freezeActiveMeshes(freezeMeshes);
             }
@@ -4582,7 +4582,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._freezeActiveMeshesCancel = null;
 
         if (this.frameGraph) {
-            const objectRendererTasks = this.frameGraph.getTasksByType(FrameGraphObjectRendererTask);
+            const objectRendererTasks = this.frameGraph.getTasksByClassName<FrameGraphObjectRendererTask>(["FrameGraphObjectRendererTask", "FrameGraphGeometryRendererTask"]);
             for (const task of objectRendererTasks) {
                 task.objectRenderer._unfreezeActiveMeshes();
             }

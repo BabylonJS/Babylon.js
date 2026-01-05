@@ -1,7 +1,6 @@
 import type { Nullable } from "core/types";
 import type { Color4 } from "core/Maths/math.color";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Texture } from "core/Materials/Textures/texture";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Mesh } from "core/Meshes/mesh";
 import type { ColorGradient, FactorGradient } from "core/Misc";
@@ -41,8 +40,10 @@ import { CylinderShapeBlock } from "./Blocks/Emitters/cylinderShapeBlock";
 import { CustomShapeBlock } from "./Blocks/Emitters/customShapeBlock";
 import { MeshShapeBlock } from "./Blocks/Emitters/meshShapeBlock";
 import { PointShapeBlock } from "./Blocks/Emitters/pointShapeBlock";
+import { SetupSpriteSheetBlock } from "./Blocks/Emitters/setupSpriteSheetBlock";
 import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
 import { UpdateAngleBlock } from "./Blocks/Update/updateAngleBlock";
+import { BasicSpriteUpdateBlock } from "./Blocks/Update/basicSpriteUpdateBlock";
 import { UpdateColorBlock } from "./Blocks/Update/updateColorBlock";
 import { UpdateDirectionBlock } from "./Blocks/Update/updateDirectionBlock";
 import { UpdateNoiseBlock } from "./Blocks/Update/updateNoiseBlock";
@@ -90,16 +91,11 @@ async function _ExtractDatafromParticleSystemAsync(newSet: NodeParticleSystemSet
     // CreateParticle block group
     const createParticleOutput = _CreateParticleBlockGroup(oldSystem, context);
 
-    // Emitter Shape block
-    const shapeOutput = _EmitterShapeBlock(oldSystem);
-    createParticleOutput.particle.connectTo(shapeOutput.particle);
-
     // UpdateParticle block group
-    const updateParticleOutput = _UpdateParticleBlockGroup(shapeOutput.output, oldSystem, context);
+    const updateParticleOutput = _UpdateParticleBlockGroup(createParticleOutput, oldSystem, context);
 
     // System block
-    const newSystem = _SystemBlockGroup(oldSystem, context);
-    updateParticleOutput.connectTo(newSystem.particle);
+    const newSystem = _SystemBlockGroup(updateParticleOutput, oldSystem, context);
 
     // Register
     newSet.systemBlocks.push(newSystem);
@@ -109,9 +105,10 @@ async function _ExtractDatafromParticleSystemAsync(newSet: NodeParticleSystemSet
 
 // The creation of the different properties follows the order they are added to the CreationQueue in ThinParticleSystem:
 // Lifetime, Emit Power, Size, Scale/StartSize, Angle, Color, Noise, ColorDead, Ramp, Sheet
-function _CreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): CreateParticleBlock {
+function _CreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     // Create particle block
     const createParticleBlock = new CreateParticleBlock("Create Particle");
+    let createdParticle = createParticleBlock.particle;
 
     _CreateParticleLifetimeBlockGroup(oldSystem, context).connectTo(createParticleBlock.lifeTime);
     _CreateParticleEmitPowerBlockGroup(oldSystem).connectTo(createParticleBlock.emitPower);
@@ -123,7 +120,15 @@ function _CreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeCo
     // Dead color
     _CreateAndConnectInput("Dead Color", oldSystem.colorDead, createParticleBlock.colorDead);
 
-    return createParticleBlock;
+    // Emitter shape
+    createdParticle = _EmitterShapeBlock(createdParticle, oldSystem);
+
+    // Sprite sheet setup
+    if (oldSystem.isAnimationSheetEnabled) {
+        createdParticle = _SpriteSheetBlock(createdParticle, oldSystem);
+    }
+
+    return createdParticle;
 }
 
 /**
@@ -268,9 +273,7 @@ function _CreateParticleInitialValueFromGradient(gradients: Array<FactorGradient
     }
 }
 
-// ------------- EMITTER SHAPE FUNCTIONS -------------
-
-function _EmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
+function _EmitterShapeBlock(particle: NodeParticleConnectionPoint, oldSystem: IParticleSystem): NodeParticleConnectionPoint {
     const emitter = oldSystem.particleEmitterType;
     if (!emitter) {
         throw new Error("Particle system has no emitter type.");
@@ -408,7 +411,22 @@ function _EmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
         throw new Error(`Unsupported particle emitter type: ${emitter.getClassName()}`);
     }
 
-    return shapeBlock;
+    particle.connectTo(shapeBlock.particle);
+    return shapeBlock.output;
+}
+
+function _SpriteSheetBlock(particle: NodeParticleConnectionPoint, oldSystem: ParticleSystem): NodeParticleConnectionPoint {
+    const spriteSheetBlock = new SetupSpriteSheetBlock("Sprite Sheet Setup");
+    particle.connectTo(spriteSheetBlock.particle);
+
+    spriteSheetBlock.start = oldSystem.startSpriteCellID;
+    spriteSheetBlock.end = oldSystem.endSpriteCellID;
+    spriteSheetBlock.width = oldSystem.spriteCellWidth;
+    spriteSheetBlock.height = oldSystem.spriteCellHeight;
+    spriteSheetBlock.loop = oldSystem.spriteCellLoop;
+    spriteSheetBlock.randomStartCell = oldSystem.spriteRandomStartCell;
+
+    return spriteSheetBlock.output;
 }
 
 // ------------- UPDATE PARTICLE FUNCTIONS -------------
@@ -452,6 +470,10 @@ function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, o
 
     if (oldSystem.gravity.equalsToFloats(0, 0, 0) === false) {
         updatedParticle = _UpdateParticleGravityBlockGroup(updatedParticle, oldSystem.gravity);
+    }
+
+    if (oldSystem.isAnimationSheetEnabled) {
+        updatedParticle = _UpdateParticleSpriteCellBlockGroup(updatedParticle);
     }
 
     return updatedParticle;
@@ -743,6 +765,17 @@ function _UpdateParticleGravityBlockGroup(inputParticle: NodeParticleConnectionP
     return updateDirection.output;
 }
 
+/**
+ * Creates the group of blocks that represent the particle sprite cell update
+ * @param inputParticle The input particle to update
+ * @returns The output of the group of blocks that represent the particle sprite cell update #2MI0A1#3
+ */
+function _UpdateParticleSpriteCellBlockGroup(inputParticle: NodeParticleConnectionPoint): NodeParticleConnectionPoint {
+    const updateSpriteCell = new BasicSpriteUpdateBlock("Sprite Cell Update");
+    inputParticle.connectTo(updateSpriteCell.particle);
+    return updateSpriteCell.output;
+}
+
 function _UpdateParticleAngularSpeedGradientBlockGroup(angularSpeedGradients: Array<FactorGradient>, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
 
@@ -794,7 +827,7 @@ function _ClampUpdateColorAlpha(colorCalculationOutput: NodeParticleConnectionPo
 
 // ------------- SYSTEM FUNCTIONS -------------
 
-function _SystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): SystemBlock {
+function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, oldSystem: ParticleSystem, context: RuntimeConversionContext): SystemBlock {
     const newSystem = new SystemBlock(oldSystem.name);
 
     newSystem.translationPivot.value = oldSystem.translationPivot;
@@ -811,8 +844,13 @@ function _SystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversion
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
 
     _SystemEmitRateValue(oldSystem, newSystem, context);
-    _CreateTextureBlock(oldSystem.particleTexture).connectTo(newSystem.texture);
+    const texture = oldSystem.particleTexture;
+    if (texture) {
+        _CreateTextureBlock(texture).connectTo(newSystem.texture);
+    }
     _SystemTargetStopDuration(oldSystem, newSystem, context);
+
+    updateParticleOutput.connectTo(newSystem.particle);
 
     return newSystem;
 }
@@ -1037,14 +1075,8 @@ function _CreateGradientValueBlockGroup(
 }
 
 function _CreateTextureBlock(texture: Nullable<BaseTexture>): NodeParticleConnectionPoint {
-    // Texture
+    // Texture - always use sourceTexture to preserve all texture options
     const textureBlock = new ParticleTextureSourceBlock("Texture");
-    const url = (texture as Texture).url || "";
-    if (url) {
-        textureBlock.url = url;
-    } else {
-        textureBlock.sourceTexture = texture;
-    }
-
+    textureBlock.sourceTexture = texture;
     return textureBlock.texture;
 }

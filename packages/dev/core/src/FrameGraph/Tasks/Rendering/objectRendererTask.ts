@@ -18,9 +18,8 @@ import type {
     SubMesh,
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
-import { FrameGraphTask } from "../../frameGraphTask";
+import { FrameGraphTaskMultiRenderTarget } from "../../frameGraphTaskMultiRenderTarget";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
-import { FrameGraphCascadedShadowGeneratorTask } from "./csmShadowGeneratorTask";
 import { Constants } from "../../../Engines/constants";
 import { ThinDepthPeelingRenderer } from "../../../Rendering/thinDepthPeelingRenderer";
 import { RenderingManager } from "../../../Rendering/renderingManager";
@@ -29,9 +28,9 @@ import { FrameGraphRenderTarget } from "../../frameGraphRenderTarget";
 /**
  * Task used to render objects to a texture.
  */
-export class FrameGraphObjectRendererTask extends FrameGraphTask {
+export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarget {
     /**
-     * The target texture where the objects will be rendered.
+     * The target texture(s) where the objects will be rendered.
      */
     public targetTexture: FrameGraphTextureHandle | FrameGraphTextureHandle[];
 
@@ -432,6 +431,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
 
+            this._updateLayerAndFaceIndices(pass);
+
             const renderTargetWrapper = pass.frameGraphRenderTarget!.renderTargetWrapper;
             if (renderTargetWrapper) {
                 renderTargetWrapper.resolveMSAAColors = this.resolveMSAAColors;
@@ -575,7 +576,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
                 const light = shadowGenerator.getLight();
                 if (light.isEnabled() && light.shadowEnabled) {
                     lightsForShadow.add(light);
-                    if (FrameGraphCascadedShadowGeneratorTask.IsCascadedShadowGenerator(shadowGeneratorTask)) {
+                    if (shadowGeneratorTask.getClassName() === "FrameGraphCascadedShadowGeneratorTask") {
                         light._shadowGenerators!.set(shadowGeneratorTask.camera, shadowGenerator);
                     } else {
                         light._shadowGenerators!.set(null, shadowGenerator);

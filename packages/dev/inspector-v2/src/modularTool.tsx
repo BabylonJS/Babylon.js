@@ -36,13 +36,13 @@ import { ServiceContainer } from "./modularity/serviceContainer";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     app: {
         colorScheme: "light dark",
         flexGrow: 1,
         display: "flex",
         flexDirection: "column",
+        backgroundColor: tokens.colorTransparentBackground,
     },
     spinner: {
         flexGrow: 1,

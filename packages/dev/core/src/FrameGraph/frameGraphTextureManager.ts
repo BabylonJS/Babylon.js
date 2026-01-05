@@ -660,8 +660,12 @@ export class FrameGraphTextureManager {
                         entry.texture.incrementReferences();
                     } else {
                         const creationOptions = entry.creationOptions;
-                        const size = creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size;
+                        const size = getDimensionsFromTextureSize(creationOptions.sizeIsPercentage ? this.getAbsoluteDimensions(creationOptions.size) : creationOptions.size);
                         const textureIndex = entry.textureIndex || 0;
+                        const targetType = creationOptions.options.targetTypes?.[textureIndex] ?? Constants.TEXTURE_2D;
+                        const is3D = targetType === Constants.TEXTURE_3D;
+                        const isArray = targetType === Constants.TEXTURE_2D_ARRAY || targetType === Constants.TEXTURE_CUBE_MAP_ARRAY;
+                        const layerCount = creationOptions.options.layerCounts?.[textureIndex] ?? 0;
 
                         const internalTextureCreationOptions: InternalTextureCreationOptions = {
                             createMipMaps: creationOptions.options.createMipMaps,
@@ -673,6 +677,7 @@ export class FrameGraphTextureManager {
                             label: creationOptions.options.labels?.[textureIndex] ?? `${entry.name}${textureIndex > 0 ? "#" + textureIndex : ""}`,
                             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                             createMSAATexture: creationOptions.options.samples! > 1,
+                            isCube: targetType === Constants.TEXTURE_CUBE_MAP || targetType === Constants.TEXTURE_CUBE_MAP_ARRAY,
                         };
 
                         const isDepthTexture = IsDepthTexture(internalTextureCreationOptions.format!);
@@ -684,7 +689,12 @@ export class FrameGraphTextureManager {
                                   ? InternalTextureSource.Depth
                                   : InternalTextureSource.RenderTarget;
 
-                        const internalTexture = this.engine._createInternalTexture(size, internalTextureCreationOptions, false, source);
+                        const internalTexture = this.engine._createInternalTexture(
+                            { width: size.width, height: size.height, depth: is3D ? layerCount : undefined, layers: isArray ? layerCount : undefined },
+                            internalTextureCreationOptions,
+                            false,
+                            source
+                        );
 
                         if (isDepthTexture) {
                             internalTexture.type = GetTypeForDepthTexture(internalTexture.format);
@@ -920,8 +930,10 @@ export class FrameGraphTextureManager {
         hash.push(options.sizeIsPercentage ? "%" : "A");
         hash.push(options.options.createMipMaps ? "M" : "N");
         hash.push(options.options.samples ? `${options.options.samples}` : "S1");
+        hash.push(options.options.targetTypes ? options.options.targetTypes.join("_") : `${Constants.TEXTURE_2D}`);
         hash.push(options.options.types ? options.options.types.join("_") : `${Constants.TEXTURETYPE_UNSIGNED_BYTE}`);
         hash.push(options.options.formats ? options.options.formats.join("_") : `${Constants.TEXTUREFORMAT_RGBA}`);
+        hash.push(options.options.layerCounts ? options.options.layerCounts.join("_") : `0`);
         hash.push(options.options.useSRGBBuffers ? options.options.useSRGBBuffers.join("_") : "false");
         hash.push(options.options.creationFlags ? options.options.creationFlags.join("_") : "0");
 
@@ -1090,8 +1102,10 @@ export class FrameGraphTextureManager {
             ? {
                   createMipMaps: options.createMipMaps,
                   samples: options.samples,
+                  targetTypes: options.targetTypes ? [options.targetTypes[textureIndex]] : undefined,
                   types: options.types ? [options.types[textureIndex]] : undefined,
                   formats: options.formats ? [options.formats[textureIndex]] : undefined,
+                  layerCounts: options.layerCounts ? [options.layerCounts[textureIndex]] : undefined,
                   useSRGBBuffers: options.useSRGBBuffers ? [options.useSRGBBuffers[textureIndex]] : undefined,
                   creationFlags: options.creationFlags ? [options.creationFlags[textureIndex]] : undefined,
                   labels: options.labels ? [options.labels[textureIndex]] : undefined,
@@ -1099,8 +1113,10 @@ export class FrameGraphTextureManager {
             : {
                   createMipMaps: options.createMipMaps,
                   samples: options.samples,
+                  targetTypes: options.targetTypes ? [...options.targetTypes] : undefined,
                   types: options.types ? [...options.types] : undefined,
                   formats: options.formats ? [...options.formats] : undefined,
+                  layerCounts: options.layerCounts ? [...options.layerCounts] : undefined,
                   useSRGBBuffers: options.useSRGBBuffers ? [...options.useSRGBBuffers] : undefined,
                   creationFlags: options.creationFlags ? [...options.creationFlags] : undefined,
                   labels: options.labels && preserveLabels ? [...options.labels] : undefined,
