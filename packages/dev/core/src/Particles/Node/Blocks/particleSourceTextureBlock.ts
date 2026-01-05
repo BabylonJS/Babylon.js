@@ -170,7 +170,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                             height: size.height,
                             data: new Uint8ClampedArray(data),
                         };
-                        //texture.dispose();
+                        texture.dispose();
                         resolve(this._cachedData);
                     })
                     // eslint-disable-next-line github/no-then
