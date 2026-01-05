@@ -874,6 +874,7 @@ export class GaussianSplattingMesh extends Mesh {
             Vertex = 0,
             Chunk = 1,
             SH = 2,
+            Unused = 3,
         }
         let chunkMode = ElementMode.Chunk;
         const vertexProperties: PlyProperty[] = [];
@@ -918,6 +919,8 @@ export class GaussianSplattingMesh extends Mesh {
                     chunkMode = ElementMode.Vertex;
                 } else if (type == "sh") {
                     chunkMode = ElementMode.SH;
+                } else {
+                    chunkMode = ElementMode.Unused;
                 }
             }
         }

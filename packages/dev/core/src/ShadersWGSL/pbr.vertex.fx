@@ -217,7 +217,11 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #endif
 
 #if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
-    vertexOutputs.vViewDepth = (scene.view * worldPos).z;
+    #ifdef RIGHT_HANDED
+        vertexOutputs.vViewDepth = -(scene.view * worldPos).z;
+    #else
+        vertexOutputs.vViewDepth = (scene.view * worldPos).z;
+    #endif
 #endif
 
     // Texture coordinates

@@ -633,6 +633,7 @@ export function PrepareDefinesForMisc(
         defines["ALPHATEST"] = alphaTest;
         defines["DECAL_AFTER_DETAIL"] = applyDecalAfterDetail;
         defines["USE_VERTEX_PULLING"] = useVertexPulling;
+        defines["RIGHT_HANDED"] = scene.useRightHandedSystem;
 
         const indexBuffer = renderingMesh?.geometry?.getIndexBuffer();
 

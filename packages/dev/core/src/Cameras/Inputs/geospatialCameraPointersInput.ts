@@ -1,5 +1,4 @@
 import type { GeospatialCamera } from "../../Cameras/geospatialCamera";
-import type { PickingInfo } from "../../Collisions/pickingInfo";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
 import type { PointerTouch } from "../../Events/pointerEvents";
 import type { Nullable } from "../../types";
@@ -14,8 +13,8 @@ import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
  * As this is experimental, it is possible we move that correction step to live within the input class (to enable non-corrected translations in the future), say if we want to allow the camera to move outside of the globe's orbit
  *
  * Left mouse button: drag globe
- * Middle mouse button: tilt globe around cursor location
- * Right mouse button: tilt globe around center of screen
+ * Middle mouse button: tilt globe
+ * Right mouse button: tilt globe
  *
  */
 export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
@@ -28,20 +27,12 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     public override onButtonDown(evt: IPointerEvent): void {
         this.camera.movement.activeInput = true;
         const scene = this.camera.getScene();
-        let pickResult: Nullable<PickingInfo>;
         switch (evt.button) {
             case 0: // Left button - drag/pan globe under cursor
                 this.camera.movement.startDrag(scene.pointerX, scene.pointerY);
                 break;
-            case 1: // Middle button - tilt camera around cursor
-                pickResult = scene.pick(scene.pointerX, scene.pointerY, this.camera.pickPredicate);
-                pickResult.pickedPoint && (this.camera.movement.alternateRotationPt = pickResult.pickedPoint);
-                break;
-            case 2: // Right button - tilt camera around center of screen, already the default
-                this.camera.movement.alternateRotationPt = this.camera.center;
-                break;
             default:
-                return;
+                break;
         }
     }
 
@@ -105,7 +96,6 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
 
     public override onButtonUp(_evt: IPointerEvent): void {
         this.camera.movement.stopDrag();
-        this.camera.movement.alternateRotationPt = undefined;
         this.camera.movement.activeInput = false;
         super.onButtonUp(_evt);
     }

@@ -43,6 +43,7 @@ export * from "./materialHelper.geometryrendering";
 export * from "./materialStencilState";
 export * from "./uv.defines";
 export * from "./floatingOriginMatrixOverrides";
+export * from "./vertexPullingHelper.functions";
 import "./material.decalMap";
 
 // async-loaded shaders

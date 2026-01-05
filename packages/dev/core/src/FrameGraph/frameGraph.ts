@@ -138,6 +138,17 @@ export class FrameGraph implements IDisposable {
     }
 
     /**
+     * Gets all tasks of a specific type, based on their class name
+     * @param taskClassName Class name(s) of the task(s) to get
+     * @returns The list of tasks of the specified type
+     */
+    public getTasksByClassName<T extends FrameGraphTask>(taskClassName: string | string[]): T[] {
+        return Array.isArray(taskClassName)
+            ? (this._tasks.filter((t) => taskClassName.includes(t.getClassName())) as T[])
+            : (this._tasks.filter((t) => t.getClassName() === taskClassName) as T[]);
+    }
+
+    /**
      * Adds a task to the frame graph
      * @param task Task to add
      */

@@ -1,12 +1,16 @@
-import type { FunctionComponent } from "react";
+import type { ComponentType, FunctionComponent } from "react";
 
 import type { BaseTexture } from "core/index";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import type { TextureEditorProps } from "../../textureEditor/textureEditor";
+import type { TexturePreviewImperativeRef } from "./texturePreview";
+
+import { useRef } from "react";
 
 import { Constants } from "core/Engines/constants";
 import { Texture } from "core/Materials/Textures/texture";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { TextureUpload } from "shared-ui-components/fluent/hoc/textureUpload";
+import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
@@ -14,19 +18,28 @@ import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propert
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { TextureUpload } from "shared-ui-components/fluent/hoc/textureUpload";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { FindTextureFormat, FindTextureType } from "./textureFormatUtils";
 import { TexturePreview } from "./texturePreview";
 
-export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseTexture }> = (props) => {
-    const { texture } = props;
+export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseTexture; textureEditor: ComponentType<TextureEditorProps> }> = (props) => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { texture, textureEditor: TextureEditor } = props;
+
+    const texturePreviewImperativeRef = useRef<TexturePreviewImperativeRef>(null);
+
+    const childWindow = useRef<ChildWindow>(null);
 
     return (
         <>
-            <TexturePreview texture={texture} />
+            <TexturePreview imperativeRef={texturePreviewImperativeRef} texture={texture} />
             <TextureUpload texture={texture} />
-            <ButtonLine label="Edit Texture (coming soon!)" onClick={() => {}} />
+            <ButtonLine label="Edit Texture" onClick={() => childWindow.current?.open()} />
+            <ChildWindow id="Texture Editor" imperativeRef={childWindow}>
+                <TextureEditor texture={texture} onUpdate={async () => await texturePreviewImperativeRef.current?.refresh()} />
+            </ChildWindow>
         </>
     );
 };
