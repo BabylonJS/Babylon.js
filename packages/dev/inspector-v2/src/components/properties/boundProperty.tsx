@@ -33,18 +33,26 @@ export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyo
     ComponentT
 > &
     (IsNullable<TargetT[PropertyKeyT]> extends true
-        ? ComponentProps<ComponentT> extends { nullable?: boolean }
-            ? // Component supports nullable UI and thus requires a defaultValue to be sent with nullable = {true}
-              | {
-                        nullable: true;
-                        defaultValue: NonNullable<TargetT[PropertyKeyT]>;
-                    }
-                  | {
-                        ignoreNullable: true;
-                        defaultValue: NonNullable<TargetT[PropertyKeyT]>;
-                    }
-            : // Component doesn't support nullable UI - prevent usage entirely with nullable properties
-              never
+        ? // Pass null explicitly to skip nullable handling entirely - value passes through as-is
+          | {
+                    defaultValue: null;
+                    nullable?: never;
+                    ignoreNullable?: never;
+                }
+              | (ComponentProps<ComponentT> extends { nullable?: boolean }
+                    ? // Component supports nullable UI and thus requires a defaultValue to be sent with nullable = {true}
+                      | {
+                                nullable: true;
+                                defaultValue: NonNullable<TargetT[PropertyKeyT]>;
+                                ignoreNullable?: never;
+                            }
+                          | {
+                                ignoreNullable: true;
+                                defaultValue: NonNullable<TargetT[PropertyKeyT]>;
+                                nullable?: never;
+                            }
+                    : // Component doesn't support nullable UI - only allow defaultValue: null
+                      never)
         : {});
 
 function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>>(
@@ -120,7 +128,10 @@ function CreateGenericForwardRef<T extends (...args: any[]) => any>(render: T) {
  *
  * NOTE: BoundProperty has strict nullable enforcement!
  *
- * If Target[PropertyKey] is Nullable, caller can only bind to a component that explicitly handles nullable (and caller must send nullable/defaultValue props)
+ * If Target[PropertyKey] is Nullable, caller has three options:
+ * 1. `nullable: true` + `defaultValue: NonNullable<T>` - Shows enable/disable checkbox UI
+ * 2. `ignoreNullable: true` + `defaultValue: NonNullable<T>` - Shows disabled state when null
+ * 3. `defaultValue: null` - Skips nullable handling entirely, passes value through as-is
  *
  * @param props BoundPropertyProps with strict nullable validation
  * @returns JSX element

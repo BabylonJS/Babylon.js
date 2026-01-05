@@ -518,7 +518,7 @@ function _UpdateParticleColorBlockGroup(
  * @param inputParticle The input particle to update
  * @param angularSpeedGradients The angular speed gradients (if any)
  * @param minAngularSpeed The minimum angular speed
- * @paramparamAngularSpeed The maximum angular speed
+ * @param maxAngularSpeed The maximum angular speed
  * @param context The context of the current conversion
  * @returns The output of the group of blocks that represent the particle color update
  */
@@ -852,10 +852,12 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
 
     _SystemEmitRateValue(oldSystem.getEmitRateGradients(), oldSystem.targetStopDuration, oldSystem.emitRate, newSystem, context);
-    const clonedParticleTexture = oldSystem.particleTexture?.clone();
-    if (clonedParticleTexture) {
-        _CreateTextureBlock(clonedParticleTexture).connectTo(newSystem.texture);
+
+    const texture = oldSystem.particleTexture;
+    if (texture) {
+        _CreateTextureBlock(texture).connectTo(newSystem.texture);
     }
+
     _SystemTargetStopDuration(oldSystem.targetStopDuration, newSystem, context);
 
     updateParticleOutput.connectTo(newSystem.particle);
@@ -1087,7 +1089,8 @@ function _CreateGradientValueBlockGroup(
     return gradientValueBlock.output;
 }
 
-function _CreateTextureBlock(texture: BaseTexture): NodeParticleConnectionPoint {
+function _CreateTextureBlock(texture: Nullable<BaseTexture>): NodeParticleConnectionPoint {
+    // Texture - always use sourceTexture to preserve all texture options
     const textureBlock = new ParticleTextureSourceBlock("Texture");
     textureBlock.sourceTexture = texture;
     return textureBlock.texture;

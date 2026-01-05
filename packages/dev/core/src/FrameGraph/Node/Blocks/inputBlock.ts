@@ -86,8 +86,10 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                     size: { width: 100, height: 100 },
                     options: {
                         createMipMaps: false,
+                        targetTypes: [Constants.TEXTURE_2D],
                         types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
                         formats: [Constants.TEXTUREFORMAT_RGBA],
+                        layerCounts: [0],
                         samples: 1,
                         useSRGBBuffers: [false],
                         creationFlags: [0],
@@ -103,8 +105,10 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                     size: { width: 100, height: 100 },
                     options: {
                         createMipMaps: false,
+                        targetTypes: [Constants.TEXTURE_2D],
                         types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
                         formats: [Constants.TEXTUREFORMAT_DEPTH24_STENCIL8],
+                        layerCounts: [0],
                         useSRGBBuffers: [false],
                         creationFlags: [0],
                         labels: [this.name],

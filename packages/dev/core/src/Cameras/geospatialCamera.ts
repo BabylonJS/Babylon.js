@@ -8,7 +8,7 @@ import type { DeepImmutable } from "../types";
 import { GeospatialLimits } from "./Limits/geospatialLimits";
 import { ClampCenterFromPolesInPlace, ComputeLocalBasisToRefs, GeospatialCameraMovement } from "./geospatialCameraMovement";
 import type { IVector3Like } from "../Maths/math.like";
-import { Vector3CopyToRef, Vector3Distance } from "../Maths/math.vector.functions";
+import { Vector3CopyToRef, Vector3Distance, Vector3Dot } from "../Maths/math.vector.functions";
 import { Clamp, NormalizeRadians } from "../Maths/math.scalar.functions";
 import type { AllowedAnimValue } from "../Behaviors/Cameras/interpolatingBehavior";
 import { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
@@ -132,7 +132,7 @@ export class GeospatialCamera extends Camera {
         this._yaw = Clamp(this._yaw, limits.yawMin, limits.yawMax);
         this._pitch = Clamp(this._pitch, limits.pitchMin, limits.pitchMax);
         this._radius = Clamp(this._radius, limits.radiusMin, limits.radiusMax);
-        this._center = ClampCenterFromPolesInPlace(this._center);
+        ClampCenterFromPolesInPlace(this._center);
     }
 
     private _tempVect = new Vector3();
@@ -189,11 +189,6 @@ export class GeospatialCamera extends Camera {
         this._isViewMatrixDirty = true;
     }
 
-    /** The point around which the camera will geocentrically rotate. Uses center (pt we are anchored to) if no alternateRotationPt is defined */
-    private get _geocentricRotationPt(): Vector3 {
-        return this.movement.alternateRotationPt ?? this.center;
-    }
-
     /**
      * If camera is actively in flight, will update the target properties and use up the remaining duration from original flyTo call
      *
@@ -206,7 +201,9 @@ export class GeospatialCamera extends Camera {
     public updateFlyToDestination(targetYaw?: number, targetPitch?: number, targetRadius?: number, targetCenter?: Vector3): void {
         this._flyToTargets.clear();
 
-        this._flyToTargets.set("yaw", targetYaw != undefined ? NormalizeRadians(targetYaw) : undefined);
+        // For yaw, use shortest path to target.
+        const deltaYaw = targetYaw !== undefined ? NormalizeRadians(NormalizeRadians(targetYaw) - this._yaw) : 0;
+        this._flyToTargets.set("yaw", deltaYaw === 0 ? undefined : this._yaw + deltaYaw);
         this._flyToTargets.set("pitch", targetPitch != undefined ? NormalizeRadians(targetPitch) : undefined);
         this._flyToTargets.set("radius", targetRadius);
         this._flyToTargets.set("center", targetCenter);
@@ -236,7 +233,9 @@ export class GeospatialCamera extends Camera {
     ): Promise<void> {
         this._flyToTargets.clear();
 
-        this._flyToTargets.set("yaw", targetYaw !== undefined ? NormalizeRadians(targetYaw) : undefined);
+        // For yaw, use shortest path to target.
+        const deltaYaw = targetYaw !== undefined ? NormalizeRadians(NormalizeRadians(targetYaw) - this._yaw) : 0;
+        this._flyToTargets.set("yaw", deltaYaw === 0 ? undefined : this._yaw + deltaYaw);
         this._flyToTargets.set("pitch", targetPitch !== undefined ? NormalizeRadians(targetPitch) : undefined);
         this._flyToTargets.set("radius", targetRadius);
         this._flyToTargets.set("center", targetCenter);
@@ -365,8 +364,7 @@ export class GeospatialCamera extends Camera {
             const pitch = rotationDeltaCurrentFrame.x !== 0 ? Clamp(this._pitch + rotationDeltaCurrentFrame.x, 0, 0.5 * Math.PI - Epsilon) : this._pitch;
             const yaw = rotationDeltaCurrentFrame.y !== 0 ? this._yaw + rotationDeltaCurrentFrame.y : this._yaw;
 
-            // TODO: If _geocentricRotationPt is not the center, this will need to be adjusted.
-            this._setOrientation(yaw, pitch, this._radius, this._geocentricRotationPt);
+            this._setOrientation(yaw, pitch, this._radius, this._center);
         }
     }
 
@@ -435,10 +433,11 @@ export class GeospatialCamera extends Camera {
         // Let movement class handle all per-frame logic
         this.movement.computeCurrentFrameDeltas();
 
-        let recalculateCenter = false;
+        let isCenterMoving = false;
         if (this.movement.panDeltaCurrentFrame.lengthSquared() > 0) {
             this._applyGeocentricTranslation();
-            recalculateCenter = true;
+            // After a drag, recalculate the center point to ensure it's still on the surface.
+            isCenterMoving = true;
         }
         if (this.movement.rotationDeltaCurrentFrame.lengthSquared() > 0) {
             this._applyGeocentricRotation();
@@ -446,18 +445,23 @@ export class GeospatialCamera extends Camera {
 
         if (Math.abs(this.movement.zoomDeltaCurrentFrame) > Epsilon) {
             this._applyZoom();
-            recalculateCenter = true;
+            isCenterMoving = true;
         }
 
         // After a movement impacting center or radius, recalculate the center point to ensure it's still on the surface.
-        recalculateCenter && this._recalculateCenter();
+        this._recalculateCenter(isCenterMoving);
 
         super._checkInputs();
     }
 
-    private _recalculateCenter() {
-        // Wait until dragging is complete to avoid wasted raycasting
-        if (!this.movement.isDragging) {
+    private _wasCenterMovingLastFrame = false;
+
+    private _recalculateCenter(isCenterMoving: boolean) {
+        const shouldRecalculateCenterAfterMove = this._wasCenterMovingLastFrame && !isCenterMoving;
+        this._wasCenterMovingLastFrame = isCenterMoving;
+
+        // Wait until movement impacting center is complete to avoid wasted raycasting
+        if (shouldRecalculateCenterAfterMove) {
             const newCenter = this.movement.pickAlongVector(this._lookAtVector);
             if (newCenter?.pickedPoint) {
                 // Direction from new center to origin
@@ -465,16 +469,17 @@ export class GeospatialCamera extends Camera {
                 centerToOrigin.copyFrom(newCenter.pickedPoint).negateInPlace().normalize();
 
                 // Check if this direction aligns with camera's lookAt vector
-                const dotProduct = Vector3.Dot(this._lookAtVector, centerToOrigin);
+                const dotProduct = Vector3Dot(this._lookAtVector, centerToOrigin);
 
                 // Only update if the center is looking toward the origin (dot product > 0) to avoid a center on the opposite side of globe
                 if (dotProduct > 0) {
-                    const newRadius = Vector3.Distance(this.position, newCenter.pickedPoint);
+                    const newRadius = Vector3Distance(this.position, newCenter.pickedPoint);
                     this._setOrientation(this._yaw, this._pitch, newRadius, newCenter.pickedPoint);
                 }
             }
         }
     }
+
     override attachControl(noPreventDefault?: boolean): void {
         this.inputs.attachElement(noPreventDefault);
     }

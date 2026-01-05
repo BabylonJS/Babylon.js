@@ -72,8 +72,8 @@ export const evaluateDevHostVisTests = async (testFileName = "config", logToCons
             if (testCase.readySelector) {
                 await page.waitForSelector(testCase.readySelector, { state: "visible", timeout: 30000 });
             } else {
-                // Fallback: network idle is a good general heuristic for pages that bootstrap themselves
-                await page.waitForLoadState("networkidle", { timeout: 30000 });
+                // Fallback: load is a good general heuristic for pages that bootstrap themselves
+                await page.waitForLoadState("load", { timeout: 30000 });
             }
 
             // Optional small delay to allow last paints/animations to settle
