@@ -27,12 +27,11 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
-import { MaterialSelectorPropertyLine, SkeletonSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
+import { MaterialSelectorPropertyLine, NodeSelectorPropertyLine, SkeletonSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 
 // Ensures that the outlineRenderer and edgesRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/edgesRenderer";
 import "core/Rendering/outlineRenderer";
-import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import { HexPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
@@ -72,11 +71,14 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
             )}
             <BoundProperty component={SwitchPropertyLine} label="Is Pickable" target={mesh} propertyKey={"isPickable"} />
             {isAnInstance && mesh instanceof InstancedMesh && (
-                <LinkToEntityPropertyLine
+                <BoundProperty
+                    component={NodeSelectorPropertyLine}
                     label="Source"
                     description="The source mesh from which this instance was created."
-                    entity={mesh.sourceMesh}
-                    selectionService={selectionService}
+                    target={mesh}
+                    propertyKey="sourceMesh"
+                    scene={mesh.getScene()}
+                    onLink={(node) => (selectionService.selectedEntity = node)}
                 />
             )}
         </>

@@ -1,5 +1,5 @@
 import type { Nullable } from "core/types";
-import type { PrimitiveProps } from "./primitive";
+import type { ImmutablePrimitiveProps, PrimitiveProps } from "./primitive";
 
 import { useMemo } from "react";
 import { LinkDismissRegular } from "@fluentui/react-icons";
@@ -13,7 +13,7 @@ type Entity = { uniqueId: number };
 /**
  * Props for the EntitySelector component
  */
-export type EntitySelectorProps<T extends Entity> = PrimitiveProps<Nullable<T>> & {
+export type EntitySelectorProps<T extends Entity> = (PrimitiveProps<Nullable<T>> | ImmutablePrimitiveProps<Nullable<T>>) & {
     /**
      * Function to get the list of entities to choose from
      */
@@ -47,7 +47,9 @@ const useStyles = makeStyles({
  * @returns EntitySelector component
  */
 export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>): JSX.Element {
-    const { value, onChange, onLink, getEntities, getName, filter } = props;
+    const { value, onLink, getEntities, getName, filter } = props;
+
+    const onChange = (props as PrimitiveProps<Nullable<T>>).onChange as PrimitiveProps<Nullable<T>>["onChange"] | undefined;
 
     const classes = useStyles();
 
@@ -64,7 +66,7 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
 
     const handleEntitySelect = (key: string) => {
         const entity = getEntities().find((e) => e.uniqueId.toString() === key);
-        onChange(entity ?? null);
+        onChange?.(entity ?? null);
     };
 
     // Get current entity key for display
@@ -74,7 +76,14 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
         return (
             <div className={classes.linkDiv}>
                 <Link value={getName(value)} onLink={() => onLink(value)} />
-                <Button icon={LinkDismissRegular} onClick={() => onChange(null)} />
+                {onChange && (
+                    <Button
+                        icon={LinkDismissRegular}
+                        onClick={() => {
+                            onChange(null);
+                        }}
+                    />
+                )}
             </div>
         );
     } else {
