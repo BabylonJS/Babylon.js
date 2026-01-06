@@ -29,6 +29,9 @@ uniform particlesInfos: vec3f; // x (number of rows) y(number of columns) z(rowS
 // Output
 varying vUV: vec2f;
 varying vColor: vec4f;
+#ifdef POSITIONW_AS_VARYING
+varying vPositionW: vec3f;
+#endif
 
 #ifdef RAMPGRADIENT
 varying remapRanges: vec4f;
@@ -162,6 +165,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
 	// Clip plane
 #if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4) || defined(CLIPPLANE5) || defined(CLIPPLANE6) || defined(FOG)
     var worldPos: vec4f =  vec4f(vPositionW, 1.0);
+#endif
+#ifdef POSITIONW_AS_VARYING
+	vertexOutputs.vPositionW = vPositionW;
 #endif
 	#include<clipPlaneVertex>
 	#include<fogVertex>
