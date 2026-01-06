@@ -26,9 +26,8 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
-import { MaterialSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
+import { MaterialSelectorPropertyLine, SkeletonSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 
 // Ensures that the outlineRenderer and edgesRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/edgesRenderer";
@@ -40,8 +39,6 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
     const { mesh, selectionService } = props;
 
     // Use the observable to keep keep state up-to-date and re-render the component when it changes.
-    const material = useObservableState(() => mesh.material, mesh.onMaterialChangedObservable);
-    const skeleton = useProperty(mesh, "skeleton");
     const isAnInstance = useProperty(mesh, "isAnInstance");
     // TODO: Handle case where array is mutated
     const subMeshes = useProperty(mesh, "subMeshes");
@@ -51,10 +48,27 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
             <StringifiedPropertyLine label="Vertices" value={mesh.getTotalVertices()} />
             <StringifiedPropertyLine label="Faces" value={mesh.getTotalIndices() / 3} />
             <StringifiedPropertyLine label="Sub-Meshes" value={subMeshes.length} />
-            <LinkToEntityPropertyLine label="Skeleton" description="The skeleton associated with the mesh." entity={skeleton} selectionService={selectionService} />
-            <LinkToEntityPropertyLine label="Material" description="The material used by the mesh." entity={material} selectionService={selectionService} />
+            <BoundProperty
+                defaultValue={null}
+                component={SkeletonSelectorPropertyLine}
+                label="Skeleton"
+                description="The skeleton associated with the mesh."
+                target={mesh}
+                propertyKey="skeleton"
+                scene={mesh.getScene()}
+                onLink={(skeleton) => (selectionService.selectedEntity = skeleton)}
+            />
             {!mesh.isAnInstance && (
-                <BoundProperty defaultValue={null} component={MaterialSelectorPropertyLine} label="Active Material" target={mesh} propertyKey="material" scene={mesh.getScene()} />
+                <BoundProperty
+                    defaultValue={null}
+                    component={MaterialSelectorPropertyLine}
+                    label="Material"
+                    description="The material used by the mesh."
+                    target={mesh}
+                    propertyKey="material"
+                    scene={mesh.getScene()}
+                    onLink={(material) => (selectionService.selectedEntity = material)}
+                />
             )}
             <BoundProperty component={SwitchPropertyLine} label="Is Pickable" target={mesh} propertyKey={"isPickable"} />
             {isAnInstance && mesh instanceof InstancedMesh && (

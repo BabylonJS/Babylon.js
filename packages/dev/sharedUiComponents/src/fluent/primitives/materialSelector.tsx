@@ -3,6 +3,7 @@ import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import type { Material } from "core/Materials/material";
 import type { PrimitiveProps } from "./primitive";
+import type { EntitySelectorProps } from "./entitySelector";
 
 import { useCallback } from "react";
 import { EntitySelector } from "./entitySelector";
@@ -16,7 +17,7 @@ export type MaterialSelectorProps = PrimitiveProps<Nullable<Material>> & {
      * Optional filter function to filter which materials are shown
      */
     filter?: (material: Material) => boolean;
-};
+} & Pick<EntitySelectorProps<Material>, "onLink">;
 
 /**
  * A primitive component with a ComboBox for selecting from existing scene materials.

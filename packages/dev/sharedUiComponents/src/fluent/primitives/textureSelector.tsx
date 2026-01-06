@@ -3,6 +3,7 @@ import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import type { FunctionComponent } from "react";
 import type { PrimitiveProps } from "./primitive";
+import type { EntitySelectorProps } from "./entitySelector";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback } from "react";
@@ -31,7 +32,7 @@ export type TextureSelectorProps = PrimitiveProps<Nullable<BaseTexture>> & {
      * Whether to only allow cube textures
      */
     cubeOnly?: boolean;
-};
+} & Pick<EntitySelectorProps<BaseTexture>, "onLink">;
 
 /**
  * A primitive component with a ComboBox for selecting from existing scene textures
@@ -41,17 +42,17 @@ export type TextureSelectorProps = PrimitiveProps<Nullable<BaseTexture>> & {
  */
 export const TextureSelector: FunctionComponent<TextureSelectorProps> = (props) => {
     TextureSelector.displayName = "TextureSelector";
-    const { scene, cubeOnly, value, onChange } = props;
+    const { scene, cubeOnly, value, onChange, onLink } = props;
     const classes = useStyles();
 
     const getTextures = useCallback(() => scene.textures, [scene.textures]);
-    const getName = useCallback((texture: BaseTexture) => texture.displayName || texture.name, []);
+    const getName = useCallback((texture: BaseTexture) => texture.displayName || texture.name || `${texture.getClassName() || "Unnamed Texture"} (${texture.uniqueId})`, []);
     const filter = useCallback((texture: BaseTexture) => !cubeOnly || texture.isCube, [cubeOnly]);
 
     return (
         <div className={classes.container}>
-            <EntitySelector value={value} onChange={onChange} getEntities={getTextures} getName={getName} filter={filter} />
-            <TextureUpload scene={scene} onChange={onChange} cubeOnly={cubeOnly} />
+            <EntitySelector value={value} onChange={onChange} onLink={onLink} getEntities={getTextures} getName={getName} filter={filter} />
+            {!value && <TextureUpload scene={scene} onChange={onChange} cubeOnly={cubeOnly} />}
         </div>
     );
 };

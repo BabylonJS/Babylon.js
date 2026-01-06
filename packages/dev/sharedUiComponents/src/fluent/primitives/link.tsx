@@ -22,7 +22,9 @@ export const Link: FunctionComponent<PropsWithChildren<LinkProps>> = (props) => 
     return (
         <FluentLink inline target={target === "current" ? "_self" : "_blank"} rel="noopener noreferrer" href={url} onClick={onLink ?? undefined} {...rest}>
             {props.children}
-            <Body1>{props.value}</Body1>
+            <Body1 wrap={false} truncate>
+                {props.value}
+            </Body1>
         </FluentLink>
     );
 };

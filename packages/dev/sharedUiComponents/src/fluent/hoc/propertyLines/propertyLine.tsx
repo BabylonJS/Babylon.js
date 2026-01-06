@@ -42,6 +42,7 @@ const usePropertyLineStyles = makeStyles({
     },
     rightContent: {
         flex: "0 1 auto",
+        overflow: "hidden",
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-end",

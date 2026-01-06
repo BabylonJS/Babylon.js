@@ -2,9 +2,14 @@ import type { Nullable } from "core/types";
 import type { PrimitiveProps } from "./primitive";
 
 import { useMemo } from "react";
+import { LinkDismissRegular } from "@fluentui/react-icons";
 import { ComboBox } from "./comboBox";
+import { Link } from "./link";
+import { Button } from "./button";
+import { makeStyles, tokens } from "@fluentui/react-components";
 
 type Entity = { uniqueId: number };
+
 /**
  * Props for the EntitySelector component
  */
@@ -21,7 +26,19 @@ export type EntitySelectorProps<T extends Entity> = PrimitiveProps<Nullable<T>> 
      * Optional filter function to filter which entities are shown
      */
     filter?: (entity: T) => boolean;
+    /**
+     * Callback when the entity link is clicked
+     */
+    onLink: (entity: T) => void;
 };
+
+const useStyles = makeStyles({
+    linkDiv: {
+        display: "flex",
+        flexDirection: "row",
+        gap: tokens.spacingHorizontalS,
+    },
+});
 
 /**
  * A generic primitive component with a ComboBox for selecting from a list of entities.
@@ -30,7 +47,9 @@ export type EntitySelectorProps<T extends Entity> = PrimitiveProps<Nullable<T>> 
  * @returns EntitySelector component
  */
 export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>): JSX.Element {
-    const { value, onChange, getEntities, getName, filter } = props;
+    const { value, onChange, onLink, getEntities, getName, filter } = props;
+
+    const classes = useStyles();
 
     // Build options with uniqueId as key
     const options = useMemo(() => {
@@ -51,6 +70,15 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
     // Get current entity key for display
     const currentKey = value ? value.uniqueId.toString() : "";
 
-    return <ComboBox label="" options={options} value={currentKey} onChange={handleEntitySelect} />;
+    if (value) {
+        return (
+            <div className={classes.linkDiv}>
+                <Link value={getName(value)} onLink={() => onLink(value)} />
+                <Button icon={LinkDismissRegular} onClick={() => onChange(null)} />
+            </div>
+        );
+    } else {
+        return <ComboBox label="" options={options} value={currentKey} onChange={handleEntitySelect} />;
+    }
 }
 EntitySelector.displayName = "EntitySelector";
