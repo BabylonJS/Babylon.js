@@ -175,7 +175,7 @@ function GetModuleDeclaration(
         // TODO - make a list of dependencies that are accepted by each package
         if (!devPackageName) {
             if (externalName) {
-                if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui" || externalName === "@recast-navigation") {
+                if (externalName === "@fortawesome" || externalName === "@fluentui" || externalName === "@recast-navigation") {
                     // replace with any
                     const matchRegex = new RegExp(`([ <])(${alias}[^,;\n>) ]*)([^\\w])`, "g");
                     processedLines = processedLines.replace(matchRegex, `$1any$3`);
@@ -411,7 +411,7 @@ function GetPackageDeclaration(
             // TODO - make a list of dependencies that are accepted by each package
             if (!localDevPackageMap) {
                 if (externalName) {
-                    if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui" || externalName === "@recast-navigation") {
+                    if (externalName === "@fortawesome" || externalName === "@fluentui" || externalName === "@recast-navigation") {
                         // replace with any
                         const matchRegex = new RegExp(`([ <])(${alias}[^,;\n>) ]*)([^\\w])`, "g");
                         processedSource = processedSource.replace(matchRegex, `$1any$3`);
