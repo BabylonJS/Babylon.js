@@ -206,7 +206,7 @@ export class GeospatialCamera extends Camera {
         this._flyToTargets.set("yaw", deltaYaw === 0 ? undefined : this._yaw + deltaYaw);
         this._flyToTargets.set("pitch", targetPitch != undefined ? NormalizeRadians(targetPitch) : undefined);
         this._flyToTargets.set("radius", targetRadius);
-        this._flyToTargets.set("center", targetCenter);
+        this._flyToTargets.set("center", targetCenter?.clone());
 
         this._flyingBehavior.updateProperties(this._flyToTargets);
     }
@@ -238,14 +238,11 @@ export class GeospatialCamera extends Camera {
         this._flyToTargets.set("yaw", deltaYaw === 0 ? undefined : this._yaw + deltaYaw);
         this._flyToTargets.set("pitch", targetPitch !== undefined ? NormalizeRadians(targetPitch) : undefined);
         this._flyToTargets.set("radius", targetRadius);
-        this._flyToTargets.set("center", targetCenter);
+        this._flyToTargets.set("center", targetCenter?.clone());
 
         let overrideAnimationFunction;
         if (targetCenter !== undefined && !targetCenter.equals(this.center)) {
             // Animate center directly with custom interpolation
-            const start = this.center.clone();
-            const end = targetCenter.clone();
-
             overrideAnimationFunction = (key: string, animation: Animation): void => {
                 if (key === "center") {
                     // Override the Vector3 interpolation to use SLERP + hop
@@ -253,13 +250,13 @@ export class GeospatialCamera extends Camera {
                         // gradient is the eased value (0 to 1) after easing function is applied
 
                         // Slerp between start and end
-                        const newCenter = Vector3.SlerpToRef(start, end, gradient, this._tempCenter);
+                        const newCenter = Vector3.SlerpToRef(startValue, endValue, gradient, this._tempCenter);
 
                         // Apply parabolic hop if requested
                         if (centerHopScale && centerHopScale > 0) {
                             // Parabolic formula: peaks at t=0.5, returns to 0 at gradient=0 and gradient=1
                             // if hopPeakT = .5 the denominator would be hopPeakT * hopPeakT - hopPeakT, which = -.25
-                            const hopPeakOffset = centerHopScale * Vector3Distance(start, end);
+                            const hopPeakOffset = centerHopScale * Vector3Distance(startValue, endValue);
                             const hopOffset = hopPeakOffset * Clamp((gradient * gradient - gradient) / -0.25);
                             // Scale the center outward (away from origin)
                             newCenter.scaleInPlace(1 + hopOffset / newCenter.length());
