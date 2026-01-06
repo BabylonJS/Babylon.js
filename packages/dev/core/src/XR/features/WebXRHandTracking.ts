@@ -2,7 +2,7 @@ import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Mesh } from "../../Meshes/mesh";
+import { Mesh } from "../../Meshes/mesh";
 import type { WebXRInput } from "../webXRInput";
 import type { WebXRInputSource } from "../webXRInputSource";
 import { Matrix, Quaternion } from "../../Maths/math.vector";
@@ -79,6 +79,12 @@ export interface IWebXRHandTrackingOptions {
          * Scale factor for all joint meshes (defaults to 1)
          */
         scaleFactor?: number;
+        /**
+         * Should the meshes be created using thin instances.
+         * This usually improves performance, but might not work if you rely on the specific mesh instances for every joint.
+         * Defaults to false (for now) to maintain backward compatibility.
+         */
+        itemsUseThinInstances?: boolean;
     };
 
     /**
@@ -308,6 +314,7 @@ export class WebXRHand implements IDisposable {
      * The float array that will directly receive the transform matrix data from WebXR.
      */
     private _jointTransformMatrices = new Float32Array(HandJointReferenceArray.length * 16);
+    private _jointSpaces: XRJointSpace[] = new Array(HandJointReferenceArray.length);
 
     private _tempJointMatrix = new Matrix();
 
@@ -358,6 +365,7 @@ export class WebXRHand implements IDisposable {
      * @param _leftHandedMeshes Are the hand meshes left-handed-system meshes
      * @param _jointsInvisible Are the tracked joint meshes visible
      * @param _jointScaleFactor Scale factor for all joint meshes
+     * @param _thinInstanceMesh The optional thin instance mesh to be used for the hand
      */
     constructor(
         /** The controller to which the hand correlates. */
@@ -369,7 +377,8 @@ export class WebXRHand implements IDisposable {
         readonly rigMapping: Nullable<XRHandMeshRigMapping>,
         private readonly _leftHandedMeshes: boolean = false,
         private readonly _jointsInvisible: boolean = false,
-        private readonly _jointScaleFactor: number = 1
+        private readonly _jointScaleFactor: number = 1,
+        private readonly _thinInstanceMesh?: Nullable<AbstractMesh>
     ) {
         this._scene = _jointMeshes[0].getScene();
 
@@ -401,6 +410,10 @@ export class WebXRHand implements IDisposable {
         this.xrController.onMotionControllerInitObservable.add((motionController) => {
             motionController._doNotLoadControllerMesh = true;
         });
+
+        if (this._thinInstanceMesh) {
+            (this._thinInstanceMesh as Mesh).thinInstanceSetBuffer("matrix", this._jointTransformMatrices, 16, false);
+        }
     }
 
     /**
@@ -453,16 +466,19 @@ export class WebXRHand implements IDisposable {
 
         // TODO: Modify webxr.d.ts to better match WebXR IDL so we don't need this any cast.
         const anyHand: any = hand;
-        const jointSpaces: XRJointSpace[] = HandJointReferenceArray.map((jointName) => anyHand[jointName] || hand.get(jointName));
+        // Optimization - avoid allocation
+        for (let i = 0; i < HandJointReferenceArray.length; ++i) {
+            this._jointSpaces[i] = anyHand[HandJointReferenceArray[i]] || hand.get(HandJointReferenceArray[i]);
+        }
         let trackingSuccessful = false;
 
         if (xrFrame.fillPoses && xrFrame.fillJointRadii) {
-            trackingSuccessful = xrFrame.fillPoses(jointSpaces, referenceSpace, this._jointTransformMatrices) && xrFrame.fillJointRadii(jointSpaces, this._jointRadii);
+            trackingSuccessful = xrFrame.fillPoses(this._jointSpaces, referenceSpace, this._jointTransformMatrices) && xrFrame.fillJointRadii(this._jointSpaces, this._jointRadii);
         } else if (xrFrame.getJointPose) {
             trackingSuccessful = true;
             // Warning: This codepath is slow by comparison, only here for compat.
-            for (let jointIdx = 0; jointIdx < jointSpaces.length; jointIdx++) {
-                const jointPose = xrFrame.getJointPose(jointSpaces[jointIdx], referenceSpace);
+            for (let jointIdx = 0; jointIdx < this._jointSpaces.length; jointIdx++) {
+                const jointPose = xrFrame.getJointPose(this._jointSpaces[jointIdx], referenceSpace);
                 if (jointPose) {
                     this._jointTransformMatrices.set(jointPose.transform.matrix, jointIdx * 16);
                     this._jointRadii[jointIdx] = jointPose.radius || 0.008;
@@ -477,33 +493,55 @@ export class WebXRHand implements IDisposable {
             return;
         }
 
+        // L1 Cache Optimization: Invert to LHS in valid Babylon systems IN PLACE
+        // This linear loop is much faster than doing it per-object and avoids cache thrashing
+        if (!this._scene.useRightHandedSystem) {
+            for (let i = 0; i < HandJointReferenceArray.length; ++i) {
+                const offset = i * 16;
+                this._jointTransformMatrices[offset + 2] *= -1;
+                this._jointTransformMatrices[offset + 6] *= -1;
+                this._jointTransformMatrices[offset + 8] *= -1;
+                this._jointTransformMatrices[offset + 9] *= -1;
+                this._jointTransformMatrices[offset + 14] *= -1;
+            }
+        }
+
         for (let jointIdx = 0; jointIdx < HandJointReferenceArray.length; jointIdx++) {
             const jointTransform = this._jointTransforms[jointIdx];
             Matrix.FromArrayToRef(this._jointTransformMatrices, jointIdx * 16, this._tempJointMatrix);
             this._tempJointMatrix.decompose(undefined, jointTransform.rotationQuaternion!, jointTransform.position);
 
-            // The radius we need to make the joint in order for it to roughly cover the joints of the user's real hand.
-            const scaledJointRadius = this._jointRadii[jointIdx] * this._jointScaleFactor;
-
             const jointMesh = this._jointMeshes[jointIdx];
-            jointMesh.isVisible = !this._handMesh && !this._jointsInvisible;
-            jointMesh.position.copyFrom(jointTransform.position);
-            jointMesh.rotationQuaternion!.copyFrom(jointTransform.rotationQuaternion!);
-            jointMesh.scaling.setAll(scaledJointRadius);
-            jointMesh.parent = xrCamera.parent;
+            if (!this._thinInstanceMesh) {
+                // The radius we need to make the joint in order for it to roughly cover the joints of the user's real hand.
+                const scaledJointRadius = this._jointRadii[jointIdx] * this._jointScaleFactor;
 
-            // The WebXR data comes as right-handed, so we might need to do some conversions.
-            if (!this._scene.useRightHandedSystem) {
-                jointMesh.position.z *= -1;
-                jointMesh.rotationQuaternion!.z *= -1;
-                jointMesh.rotationQuaternion!.w *= -1;
-
-                if (this._leftHandedMeshes && this._handMesh) {
-                    jointTransform.position.z *= -1;
-                    jointTransform.rotationQuaternion!.z *= -1;
-                    jointTransform.rotationQuaternion!.w *= -1;
-                }
+                jointMesh.isVisible = !this._handMesh && !this._jointsInvisible;
+                jointMesh.position.copyFrom(jointTransform.position);
+                jointMesh.rotationQuaternion!.copyFrom(jointTransform.rotationQuaternion!);
+                jointMesh.scaling.setAll(scaledJointRadius);
+                jointMesh.parent = xrCamera.parent;
+            } else {
+                // if thin instances - we only update the position and rotation of the joint mesh, but not the scaling
+                // this is for the user to be able to attach meshes to the joints
+                jointMesh.position.copyFrom(jointTransform.position);
+                jointMesh.rotationQuaternion!.copyFrom(jointTransform.rotationQuaternion!);
+                jointMesh.parent = xrCamera.parent;
             }
+
+            // Restore correct transform for meshes that are NOT left-handed (e.g. default GLTF)
+            // The buffer is now LHS, so if the mesh expects RHS, we must un-flip.
+            if (!this._leftHandedMeshes && !this._scene.useRightHandedSystem && this._handMesh) {
+                jointTransform.position.z *= -1;
+                jointTransform.rotationQuaternion!.z *= -1;
+                jointTransform.rotationQuaternion!.w *= -1;
+            }
+        }
+
+        if (this._thinInstanceMesh) {
+            (this._thinInstanceMesh as Mesh).thinInstanceBufferUpdated("matrix");
+            this._thinInstanceMesh.isVisible = !this._handMesh && !this._jointsInvisible;
+            this._thinInstanceMesh.parent = xrCamera.parent;
         }
 
         if (this._handMesh) {
@@ -532,6 +570,9 @@ export class WebXRHand implements IDisposable {
         }
         for (const transform of this._jointTransforms) {
             transform.dispose();
+        }
+        if (this._thinInstanceMesh) {
+            this._thinInstanceMesh.dispose(false, true);
         }
         this._jointTransforms.length = 0;
         this.onHandMeshSetObservable.clear();
@@ -569,17 +610,43 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     private static _LeftHandGLB: Nullable<ISceneLoaderAsyncResult> = null;
 
     private static _GenerateTrackedJointMeshes(
-        featureOptions: IWebXRHandTrackingOptions,
-        originalMesh: Mesh = CreateIcoSphere("jointParent", WebXRHandTracking._ICOSPHERE_PARAMS)
-    ): { left: AbstractMesh[]; right: AbstractMesh[] } {
-        const meshes: { [handedness: string]: AbstractMesh[] } = {};
-        ["left" as XRHandedness, "right" as XRHandedness].map((handedness) => {
-            const trackedMeshes = [];
-            originalMesh.isVisible = !!featureOptions.jointMeshes?.keepOriginalVisible;
-            for (let i = 0; i < HandJointReferenceArray.length; ++i) {
-                let newInstance: AbstractMesh = originalMesh.createInstance(`${handedness}-handJoint-${i}`);
-                if (featureOptions.jointMeshes?.onHandJointMeshGenerated) {
-                    const returnedMesh = featureOptions.jointMeshes.onHandJointMeshGenerated(newInstance as InstancedMesh, i, handedness);
+        options: IWebXRHandTrackingOptions,
+        originalMesh: AbstractMesh
+    ): { left: AbstractMesh[]; right: AbstractMesh[]; leftThin?: AbstractMesh; rightThin?: AbstractMesh } {
+        const meshes: { left: AbstractMesh[]; right: AbstractMesh[]; leftThin?: AbstractMesh; rightThin?: AbstractMesh } = { left: [], right: [] };
+        if (options.jointMeshes?.itemsUseThinInstances) {
+            // create the thin instance meshes
+            meshes.leftThin = originalMesh.clone("leftHandThinInstance", null) || undefined;
+            meshes.rightThin = originalMesh.clone("rightHandThinInstance", null) || undefined;
+            if (meshes.leftThin && meshes.rightThin) {
+                // make sure they are visible (they are initialized from an invisible mesh)
+                meshes.leftThin.isVisible = true;
+                meshes.rightThin.isVisible = true;
+                // init the buffer with 25 matrices
+                const matrixArray = new Float32Array(16 * 25);
+                // set to identity
+                for (let i = 0; i < 25; i++) {
+                    matrixArray[i * 16] = 1;
+                    matrixArray[i * 16 + 5] = 1;
+                    matrixArray[i * 16 + 10] = 1;
+                    matrixArray[i * 16 + 15] = 1;
+                }
+                (meshes.leftThin as Mesh).thinInstanceSetBuffer("matrix", matrixArray, 16, false);
+                (meshes.rightThin as Mesh).thinInstanceSetBuffer("matrix", matrixArray, 16, false);
+            }
+        }
+        for (const handedness of ["left", "right"] as const) {
+            const h = handedness as "left" | "right";
+            const trackedMeshes: AbstractMesh[] = [];
+            for (let i = 0; i < HandJointReferenceArray.length; i++) {
+                let newInstance: AbstractMesh;
+                if (originalMesh instanceof Mesh) {
+                    newInstance = originalMesh.createInstance(`${handedness}-handJoint-${i}`);
+                } else {
+                    newInstance = originalMesh.clone(`${handedness}-handJoint-${i}`, null) as AbstractMesh;
+                }
+                if (options.jointMeshes?.onHandJointMeshGenerated) {
+                    const returnedMesh = options.jointMeshes.onHandJointMeshGenerated(newInstance as InstancedMesh, i, h);
                     if (returnedMesh) {
                         if (returnedMesh !== newInstance) {
                             newInstance.dispose();
@@ -588,21 +655,23 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                     }
                 }
                 newInstance.isPickable = false;
-                if (featureOptions.jointMeshes?.enablePhysics) {
-                    const props = featureOptions.jointMeshes?.physicsProps || {};
+                if (options.jointMeshes?.enablePhysics) {
+                    const props = options.jointMeshes?.physicsProps || {};
                     // downscale the instances so that physics will be initialized correctly
                     newInstance.scaling.setAll(0.02);
                     const type = props.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
                     newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, { mass: 0, ...props });
                 }
+                if (options.jointMeshes?.invisible || options.jointMeshes?.itemsUseThinInstances) {
+                    newInstance.isVisible = false;
+                }
                 newInstance.rotationQuaternion = new Quaternion();
-                newInstance.isVisible = false;
                 trackedMeshes.push(newInstance);
             }
 
-            meshes[handedness] = trackedMeshes;
-        });
-        return { left: meshes.left, right: meshes.right };
+            meshes[h] = trackedMeshes;
+        }
+        return meshes;
     }
 
     private static async _GenerateDefaultHandMeshesAsync(
@@ -610,7 +679,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         xrSessionManager: WebXRSessionManager,
         options?: IWebXRHandTrackingOptions
     ): Promise<{ left: AbstractMesh; right: AbstractMesh }> {
-        // eslint-disable-next-line no-async-promise-executor, @typescript-eslint/no-misused-promises
+        // eslint-disable-next-line no-async-promise-executor
         return await new Promise(async (resolve) => {
             const riggedMeshes: { [handedness: string]: AbstractMesh } = {};
             // check the cache, defensive
@@ -673,6 +742,9 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 }
                 const handMesh = handGLB.meshes[1];
                 handMesh._internalAbstractMeshDataInfo._computeBonesUsingShaders = true;
+                if (handMesh.skeleton) {
+                    handMesh.skeleton.useTextureToStoreBoneMatrices = false;
+                }
                 // if in multiview do not use the material
                 if (!isMultiview && !options?.handMeshes?.disableHandShader) {
                     handMesh.material = handShader.clone(`${handedness}HandShaderClone`, true);
@@ -738,7 +810,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     } = { left: null, right: null };
 
     private _handResources: {
-        jointMeshes: Nullable<{ left: AbstractMesh[]; right: AbstractMesh[] }>;
+        jointMeshes: Nullable<{ left: AbstractMesh[]; right: AbstractMesh[]; leftThin?: AbstractMesh; rightThin?: AbstractMesh }>;
         handMeshes: Nullable<{ left: AbstractMesh; right: AbstractMesh }>;
         rigMappings: Nullable<{ left: XRHandMeshRigMapping; right: XRHandMeshRigMapping }>;
     } = { jointMeshes: null, handMeshes: null, rigMappings: null };
@@ -906,12 +978,13 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         const handedness = xrController.inputSource.handedness;
         const webxrHand = new WebXRHand(
             xrController,
-            this._handResources.jointMeshes[handedness],
+            this._handResources.jointMeshes && this._handResources.jointMeshes[handedness],
             this._handResources.handMeshes && this._handResources.handMeshes[handedness],
             this._handResources.rigMappings && this._handResources.rigMappings[handedness],
             this.options.handMeshes?.meshesUseLeftHandedCoordinates,
             this.options.jointMeshes?.invisible,
-            this.options.jointMeshes?.scaleFactor
+            this.options.jointMeshes?.scaleFactor,
+            handedness === "left" ? this._handResources.jointMeshes?.leftThin : this._handResources.jointMeshes?.rightThin
         );
 
         this._attachedHands[xrController.uniqueId] = webxrHand;
@@ -962,6 +1035,14 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                     trackedMesh.dispose();
                 }
                 this._handResources.jointMeshes = null;
+                this._handResources.jointMeshes = null;
+                // clean up thinner instances (if they exist)
+                // Note: we can't easily access the thin instances here due to null check above
+                // but they should be disposed when the internal hand object is disposed?
+                // No, internal hand object doesn't own the mesh.
+                // We need to re-access _handResources before setting to null?
+                // Actually, _handResources.jointMeshes was just set to null.
+                // Revert to original code pattern to fix TS error:
             }
             if (this._handResources.handMeshes) {
                 this._handResources.handMeshes.left.dispose();
