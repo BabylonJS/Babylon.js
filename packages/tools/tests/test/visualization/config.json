@@ -3260,6 +3260,11 @@
         {
             "title": "Lighting Volume",
             "playgroundId": "#MU9P6L#1"
+        },
+        {
+            "title": "NME Particles with PositionW",
+            "playgroundId": "#RA18GJ#17",
+            "renderCount": 120
         }
     ]
 }
