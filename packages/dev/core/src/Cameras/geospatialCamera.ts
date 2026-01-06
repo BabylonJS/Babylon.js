@@ -206,7 +206,7 @@ export class GeospatialCamera extends Camera {
         this._flyToTargets.set("yaw", deltaYaw === 0 ? undefined : this._yaw + deltaYaw);
         this._flyToTargets.set("pitch", targetPitch != undefined ? NormalizeRadians(targetPitch) : undefined);
         this._flyToTargets.set("radius", targetRadius);
-        this._flyToTargets.set("center", targetCenter?.clone());
+        this._flyToTargets.set("center", targetCenter);
 
         this._flyingBehavior.updateProperties(this._flyToTargets);
     }
@@ -238,11 +238,14 @@ export class GeospatialCamera extends Camera {
         this._flyToTargets.set("yaw", deltaYaw === 0 ? undefined : this._yaw + deltaYaw);
         this._flyToTargets.set("pitch", targetPitch !== undefined ? NormalizeRadians(targetPitch) : undefined);
         this._flyToTargets.set("radius", targetRadius);
-        this._flyToTargets.set("center", targetCenter?.clone());
+        this._flyToTargets.set("center", targetCenter);
 
         let overrideAnimationFunction;
         if (targetCenter !== undefined && !targetCenter.equals(this.center)) {
             // Animate center directly with custom interpolation
+            const start = this.center.clone();
+            const end = targetCenter.clone();
+
             overrideAnimationFunction = (key: string, animation: Animation): void => {
                 if (key === "center") {
                     // Override the Vector3 interpolation to use SLERP + hop
@@ -250,13 +253,13 @@ export class GeospatialCamera extends Camera {
                         // gradient is the eased value (0 to 1) after easing function is applied
 
                         // Slerp between start and end
-                        const newCenter = Vector3.SlerpToRef(startValue, endValue, gradient, this._tempCenter);
+                        const newCenter = Vector3.SlerpToRef(start, end, gradient, this._tempCenter);
 
                         // Apply parabolic hop if requested
                         if (centerHopScale && centerHopScale > 0) {
                             // Parabolic formula: peaks at t=0.5, returns to 0 at gradient=0 and gradient=1
                             // if hopPeakT = .5 the denominator would be hopPeakT * hopPeakT - hopPeakT, which = -.25
-                            const hopPeakOffset = centerHopScale * Vector3Distance(startValue, endValue);
+                            const hopPeakOffset = centerHopScale * Vector3Distance(start, end);
                             const hopOffset = hopPeakOffset * Clamp((gradient * gradient - gradient) / -0.25);
                             // Scale the center outward (away from origin)
                             newCenter.scaleInPlace(1 + hopOffset / newCenter.length());
@@ -272,18 +275,18 @@ export class GeospatialCamera extends Camera {
     }
 
     /**
-     * Helper function to move camera towards a given point by `distanceScale` of the current camera-to-destination distance (by default 50%).
+     * Helper function to move camera towards a given point by radiusScale% of radius (by default 50%)
      * @param destination point to move towards
-     * @param distanceScale value between 0 and 1, % of distance to move
+     * @param radiusScale value between 0 and 1, % of radius to move
      * @param durationMs duration of flight, default 1s
      * @param easingFn optional easing function for flight interpolation of properties
-     * @param centerHopScale If supplied, will define the parabolic hop height scale for center animation to create a "bounce" effect
+     * @param overshootRadiusScale optional scale to apply to the current radius to achieve a 'hop' animation
      */
-    public async flyToPointAsync(destination: Vector3, distanceScale: number = 0.5, durationMs: number = 1000, easingFn?: EasingFunction, centerHopScale?: number) {
-        // Move by a fraction of the camera-to-destination distance
-        const zoomDistance = Vector3Distance(this.position, destination) * distanceScale;
+    public async flyToPointAsync(destination: Vector3, radiusScale: number = 0.5, durationMs: number = 1000, easingFn?: EasingFunction, overshootRadiusScale?: number) {
+        // Zoom to radiusScale% of radius towards the given destination point
+        const zoomDistance = this.radius * radiusScale;
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(destination, zoomDistance, this._tempCenter);
-        await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn, centerHopScale);
+        await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn, overshootRadiusScale);
     }
 
     private _limits: GeospatialLimits;
