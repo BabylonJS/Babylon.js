@@ -296,8 +296,7 @@ export class GeospatialCamera extends Camera {
 
     private _resetToDefault(limits: GeospatialLimits): void {
         // Camera configuration vars
-        const maxCameraRadius = limits.altitudeMax !== undefined ? limits.planetRadius + limits.altitudeMax : undefined;
-        const restingAltitude = maxCameraRadius ?? limits.planetRadius * 4;
+        const restingAltitude = limits.radiusMax !== Infinity ? limits.radiusMax : limits.planetRadius * 4;
         this.position.copyFromFloats(restingAltitude, 0, 0);
         this._center.copyFromFloats(limits.planetRadius, 0, 0);
         this._radius = Vector3.Distance(this.position, this.center);
@@ -400,15 +399,45 @@ export class GeospatialCamera extends Camera {
      * Apply zoom by moving the camera toward/away from a target point.
      */
     private _applyZoom() {
-        const zoomDelta = this.movement.zoomDeltaCurrentFrame;
+        let zoomDelta = this.movement.zoomDeltaCurrentFrame;
         const pickedPoint = this.movement.computedPerFrameZoomPickPoint;
 
+        // Clamp zoom delta to limits before applying
+        zoomDelta = this._clampZoomDelta(zoomDelta, pickedPoint);
+
+        if (Math.abs(zoomDelta) < Epsilon) {
+            return;
+        }
         if (pickedPoint) {
             // Zoom toward the picked point under cursor
             this._zoomToPoint(pickedPoint, zoomDelta);
         } else {
             // Zoom along lookAt vector (fallback when no surface under cursor)
             this._zoomAlongLookAt(zoomDelta);
+        }
+    }
+
+    private _clampZoomDelta(zoomDelta: number, pickedPoint?: Vector3): number {
+        if (Math.abs(zoomDelta) < Epsilon) {
+            return 0;
+        }
+
+        if (zoomDelta > 0) {
+            // Zooming IN - respect radiusMin as distance to surface
+            let maxZoomIn = this._radius - this.limits.radiusMin;
+
+            if (pickedPoint) {
+                const pickDistance = Vector3Distance(this._position, pickedPoint);
+                // Don't zoom past the picked surface point + radiusMin
+                const maxZoomToSurface = pickDistance - this.limits.radiusMin;
+                maxZoomIn = Math.min(maxZoomIn, Math.max(0, maxZoomToSurface));
+            }
+
+            return Math.min(zoomDelta, Math.max(0, maxZoomIn));
+        } else {
+            // Zooming OUT - respect radiusMax
+            const maxZoomOut = this.limits.radiusMax - this._radius;
+            return Math.max(zoomDelta, -Math.max(0, maxZoomOut));
         }
     }
 
