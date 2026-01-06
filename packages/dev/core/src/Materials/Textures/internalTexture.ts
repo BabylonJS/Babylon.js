@@ -109,15 +109,18 @@ export class InternalTexture extends TextureSampler {
      * Gets a boolean indicating if the texture needs mipmaps generation
      */
     public generateMipMaps: boolean = false;
+
+    protected override _useMipMaps: Nullable<boolean> = null;
     /**
-     * Gets a boolean indicating if the texture uses mipmaps
-     * TODO implements useMipMaps as a separate setting from generateMipMaps
+     * Indicates to use the mip maps (if available on the texture).
+     * Thanks to this flag, you can instruct the sampler to not sample the mipmaps even if they exist (and if the sampling mode is set to a value that normally samples the mipmaps!)
+     * If useMipMaps is null, the value of generateMipMaps is returned by the getter (for backward compatibility)
      */
     public override get useMipMaps() {
-        return this.generateMipMaps;
+        return this._useMipMaps === null ? this.generateMipMaps : this._useMipMaps;
     }
-    public override set useMipMaps(value: boolean) {
-        this.generateMipMaps = value;
+    public override set useMipMaps(value: Nullable<boolean>) {
+        this._useMipMaps = value;
     }
     /**
      * Gets the number of samples used by the texture (WebGL2+ only)
