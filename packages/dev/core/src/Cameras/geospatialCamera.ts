@@ -206,7 +206,7 @@ export class GeospatialCamera extends Camera {
         this._flyToTargets.set("yaw", deltaYaw === 0 ? undefined : this._yaw + deltaYaw);
         this._flyToTargets.set("pitch", targetPitch != undefined ? NormalizeRadians(targetPitch) : undefined);
         this._flyToTargets.set("radius", targetRadius);
-        this._flyToTargets.set("center", targetCenter);
+        this._flyToTargets.set("center", targetCenter?.clone());
 
         this._flyingBehavior.updateProperties(this._flyToTargets);
     }
@@ -238,7 +238,7 @@ export class GeospatialCamera extends Camera {
         this._flyToTargets.set("yaw", deltaYaw === 0 ? undefined : this._yaw + deltaYaw);
         this._flyToTargets.set("pitch", targetPitch !== undefined ? NormalizeRadians(targetPitch) : undefined);
         this._flyToTargets.set("radius", targetRadius);
-        this._flyToTargets.set("center", targetCenter);
+        this._flyToTargets.set("center", targetCenter?.clone());
 
         let overrideAnimationFunction;
         if (targetCenter !== undefined && !targetCenter.equals(this.center)) {
@@ -283,7 +283,7 @@ export class GeospatialCamera extends Camera {
         // Move by a fraction of the camera-to-destination distance
         const zoomDistance = Vector3Distance(this.position, destination) * distanceScale;
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(destination, zoomDistance, this._tempCenter);
-        await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter.clone(), durationMs, easingFn, centerHopScale);
+        await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn, centerHopScale);
     }
 
     private _limits: GeospatialLimits;
@@ -293,8 +293,7 @@ export class GeospatialCamera extends Camera {
 
     private _resetToDefault(limits: GeospatialLimits): void {
         // Camera configuration vars
-        const maxCameraRadius = limits.altitudeMax !== undefined ? limits.planetRadius + limits.altitudeMax : undefined;
-        const restingAltitude = maxCameraRadius ?? limits.planetRadius * 4;
+        const restingAltitude = limits.radiusMax !== Infinity ? limits.radiusMax : limits.planetRadius * 4;
         this.position.copyFromFloats(restingAltitude, 0, 0);
         this._center.copyFromFloats(limits.planetRadius, 0, 0);
         this._radius = Vector3.Distance(this.position, this.center);
@@ -421,12 +420,13 @@ export class GeospatialCamera extends Camera {
         }
 
         if (zoomDelta > 0) {
-            // Zooming IN - respect radiusMin and surface distance
+            // Zooming IN - respect radiusMin as distance to surface
             let maxZoomIn = this._radius - this.limits.radiusMin;
 
             if (pickedPoint) {
                 const pickDistance = Vector3Distance(this._position, pickedPoint);
-                const maxZoomToSurface = pickDistance - this.limits.altitudeMin;
+                // Don't zoom past the picked surface point + radiusMin
+                const maxZoomToSurface = pickDistance - this.limits.radiusMin;
                 maxZoomIn = Math.min(maxZoomIn, Math.max(0, maxZoomToSurface));
             }
 
