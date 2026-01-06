@@ -332,7 +332,8 @@ function GetPackageDeclaration(
         let line = lines[i];
 
         if (/import\("\.([^)]*)\)./g.test(line) && !/^declare type (.*) import/g.test(line)) {
-            line = line.replace(/import\(([^)]*)\)./g, "");
+            // Only remove relative imports (starting with "."), not external imports like "react"
+            line = line.replace(/import\("\.([^)]*)\)\./g, "");
         }
 
         if (!line.includes("const enum") && !line.includes("=")) {
