@@ -275,18 +275,18 @@ export class GeospatialCamera extends Camera {
     }
 
     /**
-     * Helper function to move camera towards a given point by radiusScale% of radius (by default 50%)
+     * Helper function to move camera towards a given point by `distanceScale` of the current camera-to-destination distance (by default 50%).
      * @param destination point to move towards
-     * @param radiusScale value between 0 and 1, % of radius to move
+     * @param distanceScale value between 0 and 1, % of distance to move
      * @param durationMs duration of flight, default 1s
      * @param easingFn optional easing function for flight interpolation of properties
-     * @param overshootRadiusScale optional scale to apply to the current radius to achieve a 'hop' animation
+     * @param centerHopScale If supplied, will define the parabolic hop height scale for center animation to create a "bounce" effect
      */
-    public async flyToPointAsync(destination: Vector3, radiusScale: number = 0.5, durationMs: number = 1000, easingFn?: EasingFunction, overshootRadiusScale?: number) {
-        // Zoom to radiusScale% of radius towards the given destination point
-        const zoomDistance = this.radius * radiusScale;
+    public async flyToPointAsync(destination: Vector3, distanceScale: number = 0.5, durationMs: number = 1000, easingFn?: EasingFunction, centerHopScale?: number) {
+        // Move by a fraction of the camera-to-destination distance
+        const zoomDistance = Vector3Distance(this.position, destination) * distanceScale;
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(destination, zoomDistance, this._tempCenter);
-        await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn, overshootRadiusScale);
+        await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn, centerHopScale);
     }
 
     private _limits: GeospatialLimits;
