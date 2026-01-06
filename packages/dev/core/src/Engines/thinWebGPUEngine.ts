@@ -56,9 +56,6 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     /** @internal */
     public _timestampIndex = 0;
 
-    /** @internal */
-    public _debugStackRenderPass: string[] = [];
-
     /**
      * Gets the GPU time spent in the main render pass for the last frame rendered (in nanoseconds).
      * You have to enable the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
@@ -98,12 +95,6 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
             return 0;
         }
 
-        if (this._debugStackRenderPass.length !== 0) {
-            for (let i = 0; i < this._debugStackRenderPass.length; ++i) {
-                this._currentRenderPass.popDebugGroup();
-            }
-        }
-
         const currentPassIndex = this._currentPassIsMainPass() ? 2 : 1;
 
         if (!this._snapshotRendering.endRenderPass(this._currentRenderPass) && !this.compatibilityMode) {
@@ -135,7 +126,6 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
                 );
             }
         }
-        this._debugPopGroup?.(0);
         this._currentRenderPass = null;
 
         return currentPassIndex;
