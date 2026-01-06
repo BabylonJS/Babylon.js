@@ -12,6 +12,7 @@ import { Vector3CopyToRef, Vector3Distance, Vector3Dot } from "../Maths/math.vec
 import { Clamp, NormalizeRadians } from "../Maths/math.scalar.functions";
 import type { AllowedAnimValue } from "../Behaviors/Cameras/interpolatingBehavior";
 import { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
+import type { Collider } from "../Collisions/collider";
 import type { EasingFunction } from "../Animations/easing";
 import type { Animation } from "../Animations/animation";
 
@@ -45,6 +46,12 @@ export class GeospatialCamera extends Camera {
     /** Behavior used for smooth flying animations */
     private _flyingBehavior: InterpolatingBehavior<GeospatialCamera>;
     private _flyToTargets: Map<keyof GeospatialCamera, AllowedAnimValue> = new Map();
+
+    // Collision properties
+    private _collider?: Collider;
+    private _collisionVelocity: Vector3 = new Vector3();
+    /** Public option to customize the collision offset applied each frame - vs the one calculated using internal CollisionCoordinator */
+    public perFrameCollisionOffset: Vector3 = new Vector3();
 
     constructor(name: string, scene: Scene, options: CameraOptions, pickPredicate?: MeshPredicate) {
         super(name, new Vector3(), scene);
@@ -183,6 +190,9 @@ export class GeospatialCamera extends Camera {
         // Position = center - look * radius  (preserve unit look)
         this._tempVect.copyFrom(this._lookAtVector).scaleInPlace(-this._radius);
         this._tempPosition.copyFrom(this._center).addInPlace(this._tempVect);
+
+        // Recalculate collisionOffset to be applied later when viewMatrix is calculated (allowing camera users to modify the value in afterCheckInputsObservable)
+        this.perFrameCollisionOffset = this._getCollisionOffset(this._tempPosition);
 
         this._position.copyFrom(this._tempPosition);
 
@@ -325,6 +335,11 @@ export class GeospatialCamera extends Camera {
         this.upVector.normalize();
         this._lookAtVector.normalize();
 
+        // Apply the same offset to both position and center to preserve orbital relationship
+        // This keeps yaw/pitch/radius intact - just lifts the whole "rig"
+        this._position.addInPlace(this.perFrameCollisionOffset);
+        this._center.addInPlace(this.perFrameCollisionOffset);
+
         // Calculate view matrix with camera position and center
         if (this.getScene().useRightHandedSystem) {
             Matrix.LookAtRHToRef(this.position, this._center, this.upVector, this._viewMatrix);
@@ -429,6 +444,7 @@ export class GeospatialCamera extends Camera {
 
     override _checkInputs(): void {
         this.inputs.checkInputs();
+        this.perFrameCollisionOffset.setAll(0);
 
         // Let movement class handle all per-frame logic
         this.movement.computeCurrentFrameDeltas();
@@ -478,6 +494,35 @@ export class GeospatialCamera extends Camera {
                 }
             }
         }
+    }
+
+    /**
+     * Allows extended classes to override how collision offset is calculated
+     * @param newPosition
+     * @returns
+     */
+    protected _getCollisionOffset(newPosition: Vector3): Vector3 {
+        const coordinator = this.getScene().collisionCoordinator;
+        const collisionOffset = TmpVectors.Vector3[6].setAll(0);
+        if (!coordinator || !this._scene.collisionsEnabled) {
+            return collisionOffset;
+        }
+
+        if (!this._collider) {
+            this._collider = coordinator.createCollider();
+        }
+        this._collider._radius.setAll(this.limits.radiusMin);
+
+        // Calculate velocity from old position to new position
+        newPosition.subtractToRef(this._position, this._collisionVelocity);
+
+        // Get the collision-adjusted position
+        const adjustedPosition = coordinator.getNewPosition(this._position, this._collisionVelocity, this._collider, 3, null, () => {}, this.uniqueId);
+
+        // Calculate the collision offset (how much the position was pushed)
+        adjustedPosition.subtractToRef(newPosition, collisionOffset);
+
+        return collisionOffset;
     }
 
     override attachControl(noPreventDefault?: boolean): void {
