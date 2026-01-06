@@ -17,7 +17,7 @@ export type SkeletonSelectorProps = PrimitiveProps<Nullable<Skeleton>> & {
      * Optional filter function to filter which skeletons are shown
      */
     filter?: (skeleton: Skeleton) => boolean;
-} & Pick<EntitySelectorProps<Skeleton>, "onLink" | "defaultValue">;
+} & Omit<EntitySelectorProps<Skeleton>, "getEntities" | "getName">;
 
 /**
  * A primitive component with a ComboBox for selecting from existing scene skeletons.
