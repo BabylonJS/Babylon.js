@@ -42,7 +42,7 @@ export type TextureSelectorProps = PrimitiveProps<Nullable<BaseTexture>> & {
  */
 export const TextureSelector: FunctionComponent<TextureSelectorProps> = (props) => {
     TextureSelector.displayName = "TextureSelector";
-    const { scene, cubeOnly, value, onChange, onLink } = props;
+    const { scene, cubeOnly, value, onChange, onLink, defaultValue } = props;
     const classes = useStyles();
 
     const getTextures = useCallback(() => scene.textures, [scene.textures]);
@@ -51,7 +51,7 @@ export const TextureSelector: FunctionComponent<TextureSelectorProps> = (props) 
 
     return (
         <div className={classes.container}>
-            <EntitySelector value={value} onChange={onChange} onLink={onLink} getEntities={getTextures} getName={getName} filter={filter} />
+            <EntitySelector value={value} onChange={onChange} onLink={onLink} defaultValue={defaultValue} getEntities={getTextures} getName={getName} filter={filter} />
             {!value && <TextureUpload scene={scene} onChange={onChange} cubeOnly={cubeOnly} />}
         </div>
     );
