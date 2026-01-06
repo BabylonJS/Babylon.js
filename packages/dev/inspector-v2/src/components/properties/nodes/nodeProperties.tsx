@@ -1,23 +1,29 @@
-import type { Node } from "core/index";
-
 import type { FunctionComponent } from "react";
 
-import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import type { Node } from "core/index";
 import type { ISelectionService } from "../../../services/selectionService";
-import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
+
+import { NodeSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
 
 export const NodeGeneralProperties: FunctionComponent<{ node: Node; selectionService: ISelectionService }> = (props) => {
     const { node, selectionService } = props;
 
-    const parent = useProperty(node, "parent");
     const isEnabled = useObservableState(() => node.isEnabled(false), node.onEnabledStateChangedObservable);
 
     return (
         <>
-            <LinkToEntityPropertyLine label="Parent" description="The parent of this node" entity={parent} selectionService={selectionService} />
+            <BoundProperty
+                component={NodeSelectorPropertyLine}
+                label="Parent"
+                target={node}
+                propertyKey="parent"
+                scene={node.getScene()}
+                defaultValue={null}
+                onLink={(parentNode) => (selectionService.selectedEntity = parentNode)}
+            />
             <SwitchPropertyLine label="Is Enabled" description="Whether the node is enabled or not." value={isEnabled} onChange={(checked) => node.setEnabled(checked)} />
             <BoundProperty
                 component={SwitchPropertyLine}
