@@ -6,7 +6,7 @@ import { LinkDismissRegular, LinkEditRegular } from "@fluentui/react-icons";
 import { ComboBox } from "./comboBox";
 import { Link } from "./link";
 import { Button } from "./button";
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { makeStyles, tokens, Tooltip } from "@fluentui/react-components";
 
 type Entity = { uniqueId: number };
 
@@ -40,7 +40,16 @@ const useStyles = makeStyles({
     linkDiv: {
         display: "flex",
         flexDirection: "row",
+        alignItems: "center",
         gap: tokens.spacingHorizontalS,
+        minWidth: 0,
+        overflow: "hidden",
+    },
+    link: {
+        minWidth: 0,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
     },
 });
 
@@ -83,7 +92,9 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
         // If there is a value and we are not editing, show the link view
         return (
             <div className={classes.linkDiv}>
-                <Link value={getName(value)} onLink={() => onLink(value)} />
+                <Tooltip content={getName(value)} relationship="label">
+                    <Link className={classes.link} value={getName(value)} onLink={() => onLink(value)} />
+                </Tooltip>
                 {/* Only allow changing the linked entity if an onChange handler is provided */}
                 {onChange &&
                     (defaultValue !== undefined ? (
