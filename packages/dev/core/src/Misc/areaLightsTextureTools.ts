@@ -4,7 +4,9 @@ import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { Nullable } from "core/types";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Vector2 } from "core/Maths";
+import { Vector2 } from "core/Maths/math.vector";
+import { WhenTextureReadyAsync } from "./textureTools";
+import { BaseTexture } from "../Materials";
 
 /**
  * Class used for fast copy from one texture to another
@@ -98,7 +100,7 @@ export class AreaLightTextureTools {
         return this._shadersLoaded && !!this._effectWrapper?.effect?.isReady();
     }
 
-    public async processAsync(source: ThinTexture): Promise<Nullable<ThinTexture>> {
+    public async processAsync(source: BaseTexture): Promise<Nullable<ThinTexture>> {
         if (!this._shadersLoaded) {
             this._effectWrapper = this._createEffect();
             await this._effectWrapper.effect.whenCompiledAsync();
@@ -106,7 +108,7 @@ export class AreaLightTextureTools {
         }
 
         if (!source.isReady()) {
-            return null;
+            await WhenTextureReadyAsync(source);
         }
 
         this._rangeFilter.x = 0.125;
