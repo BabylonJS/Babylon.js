@@ -23,7 +23,6 @@
         "@typescript-eslint/parser": "^8.29.0",
         "ajv": "~8.12.0",
         "chokidar": "~3.6.0",
-        "concurrently": "~8.0.1",
         "dotenv": "~16.0.0",
         "es-check": "^7.1.1",
         "eslint": "^9.39.1",
