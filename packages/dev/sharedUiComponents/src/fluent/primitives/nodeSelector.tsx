@@ -17,7 +17,7 @@ export type NodeSelectorProps = PrimitiveProps<Nullable<Node>> & {
      * Optional filter function to filter which nodes are shown
      */
     filter?: (node: Node) => boolean;
-} & Pick<EntitySelectorProps<Node>, "onLink">;
+} & Pick<EntitySelectorProps<Node>, "onLink" | "defaultValue">;
 
 /**
  * A primitive component with a ComboBox for selecting from existing scene nodes.

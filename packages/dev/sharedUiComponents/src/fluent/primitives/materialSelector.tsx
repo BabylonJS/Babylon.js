@@ -17,7 +17,7 @@ export type MaterialSelectorProps = PrimitiveProps<Nullable<Material>> & {
      * Optional filter function to filter which materials are shown
      */
     filter?: (material: Material) => boolean;
-} & Pick<EntitySelectorProps<Material>, "onLink">;
+} & Pick<EntitySelectorProps<Material>, "onLink" | "defaultValue">;
 
 /**
  * A primitive component with a ComboBox for selecting from existing scene materials.

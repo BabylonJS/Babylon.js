@@ -32,7 +32,7 @@ export type TextureSelectorProps = PrimitiveProps<Nullable<BaseTexture>> & {
      * Whether to only allow cube textures
      */
     cubeOnly?: boolean;
-} & Pick<EntitySelectorProps<BaseTexture>, "onLink">;
+} & Pick<EntitySelectorProps<BaseTexture>, "onLink" | "defaultValue">;
 
 /**
  * A primitive component with a ComboBox for selecting from existing scene textures

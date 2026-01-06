@@ -1,8 +1,8 @@
 import type { Nullable } from "core/types";
 import type { ImmutablePrimitiveProps, PrimitiveProps } from "./primitive";
 
-import { useMemo } from "react";
-import { LinkDismissRegular } from "@fluentui/react-icons";
+import { useMemo, useState } from "react";
+import { LinkDismissRegular, LinkEditRegular } from "@fluentui/react-icons";
 import { ComboBox } from "./comboBox";
 import { Link } from "./link";
 import { Button } from "./button";
@@ -30,6 +30,10 @@ export type EntitySelectorProps<T extends Entity> = (PrimitiveProps<Nullable<T>>
      * Callback when the entity link is clicked
      */
     onLink: (entity: T) => void;
+    /**
+     * Optional default value that enables clearing the current linked entity
+     */
+    defaultValue?: T;
 };
 
 const useStyles = makeStyles({
@@ -47,7 +51,7 @@ const useStyles = makeStyles({
  * @returns EntitySelector component
  */
 export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>): JSX.Element {
-    const { value, onLink, getEntities, getName, filter } = props;
+    const { value, onLink, getEntities, getName, filter, defaultValue } = props;
 
     const onChange = (props as PrimitiveProps<Nullable<T>>).onChange as PrimitiveProps<Nullable<T>>["onChange"] | undefined;
 
@@ -64,29 +68,35 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
             .sort((a, b) => a.label.localeCompare(b.label));
     }, [getEntities, getName, filter]);
 
+    const [isEditing, setIsEditing] = useState(false);
+
     const handleEntitySelect = (key: string) => {
         const entity = getEntities().find((e) => e.uniqueId.toString() === key);
         onChange?.(entity ?? null);
+        setIsEditing(false);
     };
 
     // Get current entity key for display
     const currentKey = value ? value.uniqueId.toString() : "";
 
-    if (value) {
+    if (value && !isEditing) {
+        // If there is a value and we are not editing, show the link view
         return (
             <div className={classes.linkDiv}>
                 <Link value={getName(value)} onLink={() => onLink(value)} />
-                {onChange && (
-                    <Button
-                        icon={LinkDismissRegular}
-                        onClick={() => {
-                            onChange(null);
-                        }}
-                    />
-                )}
+                {/* Only allow changing the linked entity if an onChange handler is provided */}
+                {onChange &&
+                    (defaultValue !== undefined ? (
+                        // If the defaultValue is specified, then allow resetting to the default
+                        <Button icon={LinkDismissRegular} onClick={() => onChange(defaultValue)} />
+                    ) : (
+                        // Otherwise, just allow editing to a new value
+                        <Button icon={LinkEditRegular} onClick={() => setIsEditing(true)} />
+                    ))}
             </div>
         );
     } else {
+        // Otherwise, show the ComboBox for selection
         return <ComboBox label="" options={options} value={currentKey} onChange={handleEntitySelect} />;
     }
 }
