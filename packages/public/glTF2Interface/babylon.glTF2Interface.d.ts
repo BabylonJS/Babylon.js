@@ -1524,8 +1524,6 @@ declare module BABYLON.GLTF2 {
 
     type ValueSignature = "bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "custom";
 
-    type ConfigurationValueSignature = "bool" | "int" | "int[]" | "string";
-
     type ConfigurationValueType = (boolean | number | string)[];
 
     interface IKHRInteractivity_Event {
@@ -1641,6 +1639,6 @@ declare module BABYLON.GLTF2 {
         /**
          * Array size depends on the type. primitives have array size 1, rest depending on the object type (2,3,4,16)
          */
-        value: ConfigurationValueType;
+        value?: ConfigurationValueType;
     }
 }

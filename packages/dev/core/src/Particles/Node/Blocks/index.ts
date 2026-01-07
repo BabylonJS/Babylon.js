@@ -35,3 +35,4 @@ export * from "./Triggers/particleTriggerBlock";
 export * from "./particleLocalVariableBlock";
 export * from "./particleVectorLengthBlock";
 export * from "./particleFresnelBlock";
+export * from "./particleModuloBlock";

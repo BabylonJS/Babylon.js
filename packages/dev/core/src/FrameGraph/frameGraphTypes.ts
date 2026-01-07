@@ -27,7 +27,17 @@ export type FrameGraphTextureOptions = {
     /** Defines sample count (default: 1) */
     samples?: number;
 
-    /** Defines the types of the textures */
+    /**
+     * Define the type of the textures (of Constants.TEXTURE_2D, .TEXTURE_2D_ARRAY, .TEXTURE_CUBE_MAP, .TEXTURE_CUBE_MAP_ARRAY, .TEXTURE_3D).
+     */
+    targetTypes?: number[];
+
+    /**
+     * Define the number of layers of the textures (if applicable, given the corresponding targetType) (for Constants.TEXTURE_3D, .TEXTURE_2D_ARRAY, and .TEXTURE_CUBE_MAP_ARRAY)
+     */
+    layerCounts?: number[];
+
+    /** Defines the type of the texture channels (UNSIGNED_BYTE, FLOAT, etc.) */
     types?: number[];
 
     /** Defines the format of the textures (RED, RG, RGB, RGBA, ALPHA...) */
@@ -87,10 +97,20 @@ export interface IFrameGraphPass {
     disabled: boolean;
 
     /**
+     * Initializes the pass.
+     * This function is called once before the first execution of the pass.
+     * @param func The function to initialize the pass.
+     */
+    setInitializeFunc(func: (context: FrameGraphContext) => void): void;
+
+    /**
      * Sets the function to execute when the pass is executed
      * @param func The function to execute when the pass is executed
      */
     setExecuteFunc(func: (context: FrameGraphContext) => void): void;
+
+    /** @internal */
+    _initialize(): void;
 
     /** @internal */
     _execute(): void;

@@ -3,7 +3,7 @@
 import * as react from "react";
 import * as reactDOM from "react-dom";
 
-import { PreviewAspectRatioKey, PreviewFillContainerKey, type GlobalState } from "./globalState.js";
+import { type GlobalState } from "./globalState.js";
 import "./assets/styles/main.scss";
 
 import { Portal } from "./portal.js";
@@ -38,6 +38,7 @@ import { OnlyShowCustomBlocksDefaultValue } from "./constants.js";
 import { ThinEngine } from "core/Engines/thinEngine.js";
 import { HistoryStack } from "shared-ui-components/historyStack.js";
 import { WebCamInputBlockName } from "./configuration/editorBlocks/blockNames.js";
+import { FixedMode } from "./previewSizeManager.js";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -66,7 +67,6 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
     private _diagramContainerRef: react.RefObject<HTMLDivElement>;
     private _graphCanvas!: GraphCanvasComponent;
     private _diagramContainer!: HTMLDivElement;
-    private _canvasResizeObserver: Nullable<ResizeObserver> = null;
     private _historyStack: Nullable<HistoryStack> = null;
 
     private _mouseLocationX = 0;
@@ -148,14 +148,6 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
     override componentDidMount() {
         window.addEventListener("wheel", this.onWheel, { passive: false });
 
-        this._canvasResizeObserver = new ResizeObserver(() => {
-            if (this.props.globalState.engine) {
-                setTimeout(() => {
-                    this.props.globalState.engine?.resize();
-                }, 0);
-            }
-        });
-
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
             this.prepareHistoryStack();
@@ -167,7 +159,6 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 Logger.Log(versionToLog);
                 this.props.globalState.engine = engine;
                 this.props.globalState.onNewEngine(engine);
-                this._canvasResizeObserver.observe(canvas);
             }
         }
 
@@ -197,13 +188,6 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         });
 
         this.props.globalState.onlyShowCustomBlocksObservable.notifyObservers(DataStorage.ReadBoolean("OnlyShowCustomBlocks", OnlyShowCustomBlocksDefaultValue));
-        this.props.globalState.previewAspectRatio.onChangedObservable.add((newValue: string) => {
-            localStorage.setItem(PreviewAspectRatioKey, newValue);
-        });
-        this.props.globalState.previewFillContainer.onChangedObservable.add((newValue: boolean) => {
-            localStorage.setItem(PreviewFillContainerKey, newValue ? "true" : "");
-        });
-
         this.props.globalState.onClearUndoStack.notifyObservers();
 
         this.build();
@@ -211,8 +195,6 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
 
     override componentWillUnmount() {
         window.removeEventListener("wheel", this.onWheel);
-
-        this._canvasResizeObserver?.disconnect();
 
         if (this.props.globalState.hostDocument) {
             this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
@@ -580,9 +562,18 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
             ...userOptions,
         };
         let popUpWindow: Nullable<Window> = null;
+
+        let width = 500;
+        let height = 500;
+
+        if (this.props.globalState.previewSizeManager.mode.value === FixedMode) {
+            width = Math.max(width, this.props.globalState.previewSizeManager.fixedWidth.value);
+            height = this.props.globalState.previewSizeManager.fixedHeight.value + 40; // For the control bar
+        }
+
         CreatePopup("PREVIEW AREA", {
-            width: 500,
-            height: 500,
+            width,
+            height,
             onParentControlCreateCallback: (parentControl) => {
                 if (parentControl) {
                     parentControl.style.display = "grid";
@@ -595,9 +586,6 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 popUpWindow = w;
                 if (popUpWindow) {
                     popUpWindow.addEventListener("beforeunload", this.handleClosingPopUp);
-                    popUpWindow.addEventListener("resize", () => {
-                        this.props.globalState.engine?.resize();
-                    });
                     const parentControl = popUpWindow.document.getElementById("filter-editor-graph-root");
                     this.createPreviewAreaControlHost(options, parentControl);
                     this.createPreviewHost(options, parentControl);

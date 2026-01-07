@@ -10,6 +10,11 @@ import { optimizedSmartFilterBlocks as doubleTintAndWipeOptimizedBlocks } from "
 import * as contrastTintAndBlurSmartFilter from "./optimizerTestCases/contrastTintAndBlur.json";
 import { optimizedSmartFilterBlocks as contrastTintAndBlurOptimizedBlocks } from "./optimizerTestCases/contrastTintAndBlur.optimized.js";
 
+import * as debugModeReturnValueClamping from "./optimizerTestCases/debugModeReturnValueClamping.json";
+import { optimizedSmartFilterBlocks as debugModeReturnValueClampingOff } from "./optimizerTestCases/debugModeReturnValueClampingOff.optimized.js";
+import { optimizedSmartFilterBlocks as debugModeReturnValueClampingOn } from "./optimizerTestCases/debugModeReturnValueClampingOn.optimized.js";
+import { OptimizerDebugMode } from "smart-filters";
+
 /**
  * To add test cases you need to store the serialized Smart Filter to optimize as well as the
  * expected output of the optimizer.
@@ -56,10 +61,22 @@ export const testCases: OptimizationTestCase[] = [
         serializedSmartFilter: contrastTintAndBlurSmartFilter,
         expectedOptimizedBlocks: contrastTintAndBlurOptimizedBlocks,
     },
+    {
+        name: "Debug Mode: Return Value Clamping Off",
+        serializedSmartFilter: debugModeReturnValueClamping,
+        expectedOptimizedBlocks: debugModeReturnValueClampingOff,
+    },
+    {
+        name: "Debug Mode: Return Value Clamping On",
+        serializedSmartFilter: debugModeReturnValueClamping,
+        expectedOptimizedBlocks: debugModeReturnValueClampingOn,
+        debugMode: OptimizerDebugMode.ClampReturnValues,
+    },
 ];
 
 export type OptimizationTestCase = {
     name: string;
     serializedSmartFilter: any;
     expectedOptimizedBlocks: any;
+    debugMode?: OptimizerDebugMode;
 };

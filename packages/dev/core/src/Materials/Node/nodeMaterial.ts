@@ -178,6 +178,8 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
 
     public AREALIGHTNOROUGHTNESS = true;
 
+    public POSITIONW_AS_VARYING = false;
+
     /**
      * Creates a new NodeMaterialDefines
      */
@@ -1537,6 +1539,10 @@ export class NodeMaterial extends NodeMaterialBase {
             b.prepareDefines(defines, this, mesh, useInstances, subMesh);
         }
 
+        for (const d in this._sharedData.defines) {
+            defines[d] = this._sharedData.defines[d];
+        }
+
         // Need to recompile?
         if (defines.isDirty) {
             const lightDisposed = defines._areLightsDisposed;
@@ -1700,8 +1706,8 @@ export class NodeMaterial extends NodeMaterialBase {
             }
         }
 
-        // Check if Area Lights have LTC texture.
-        if (defines["AREALIGHTUSED"]) {
+        // Check if lights are ready
+        if (defines["AREALIGHTUSED"] || defines["CLUSTLIGHT_BATCH"]) {
             for (let index = 0; index < mesh.lightSources.length; index++) {
                 if (!mesh.lightSources[index]._isReady()) {
                     return false;

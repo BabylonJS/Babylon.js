@@ -21,7 +21,7 @@ import {
     PBRBaseMaterialIridescenceProperties,
     PBRBaseMaterialSheenProperties,
 } from "../../../components/properties/materials/pbrBaseMaterialProperties";
-import { PBRMaterialLightingAndColorProperties } from "../../../components/properties/materials/pbrMaterialProperties";
+import { PBRMaterialLightingAndColorProperties, PBRMaterialTextureProperties } from "../../../components/properties/materials/pbrMaterialProperties";
 import {
     OpenPBRMaterialBaseProperties,
     OpenPBRMaterialCoatProperties,
@@ -114,6 +114,10 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             key: "PBR Material Properties",
             predicate: (entity: unknown) => entity instanceof PBRMaterial,
             content: [
+                {
+                    section: "Textures",
+                    component: ({ context }) => <PBRMaterialTextureProperties material={context} selectionService={selectionService} />,
+                },
                 {
                     section: "Lighting & Colors",
                     component: ({ context }) => <PBRMaterialLightingAndColorProperties material={context} />,

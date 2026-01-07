@@ -10,9 +10,6 @@ import { _RetryWithInterval } from "core/Misc/timingTools";
 import { Logger } from "core/Misc/logger";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
-import "core/Engines/Extensions/engine.multiRender";
-import "core/Engines/WebGPU/Extensions/engine.multiRender";
-
 enum FrameGraphPassType {
     Normal = 0,
     Render = 1,
@@ -34,9 +31,10 @@ export class FrameGraph implements IDisposable {
     private readonly _tasks: FrameGraphTask[] = [];
     private readonly _passContext: FrameGraphContext;
     private readonly _renderContext: FrameGraphRenderContext;
-    private readonly _initAsyncPromises: Promise<void>[] = [];
+    private readonly _initAsyncPromises: Promise<unknown>[] = [];
     private _currentProcessedTask: FrameGraphTask | null = null;
     private _whenReadyAsyncCancel: Nullable<() => void> = null;
+    private _importPromise: Promise<any>;
 
     /**
      * Name of the frame graph
@@ -105,6 +103,7 @@ export class FrameGraph implements IDisposable {
     ) {
         this._scene = scene;
         this._engine = scene.getEngine();
+        this._importPromise = this._engine.isWebGPU ? import("../Engines/WebGPU/Extensions/engine.multiRender") : import("../Engines/Extensions/engine.multiRender");
         this.textureManager = new FrameGraphTextureManager(this._engine, debugTextures, scene);
         this._passContext = new FrameGraphContext(this._engine, this.textureManager, scene);
         this._renderContext = new FrameGraphRenderContext(this._engine, this.textureManager, scene);
@@ -136,6 +135,17 @@ export class FrameGraph implements IDisposable {
      */
     public getTasksByType<T extends FrameGraphTask>(taskType: new (...args: any[]) => T): T[] {
         return this._tasks.filter((t) => t instanceof taskType) as T[];
+    }
+
+    /**
+     * Gets all tasks of a specific type, based on their class name
+     * @param taskClassName Class name(s) of the task(s) to get
+     * @returns The list of tasks of the specified type
+     */
+    public getTasksByClassName<T extends FrameGraphTask>(taskClassName: string | string[]): T[] {
+        return Array.isArray(taskClassName)
+            ? (this._tasks.filter((t) => taskClassName.includes(t.getClassName())) as T[])
+            : (this._tasks.filter((t) => t.getClassName() === taskClassName) as T[]);
     }
 
     /**
@@ -234,6 +244,8 @@ export class FrameGraph implements IDisposable {
         this._built = false;
 
         try {
+            await this._importPromise;
+
             await this._whenAsynchronousInitializationDoneAsync();
 
             for (const task of this._tasks) {
@@ -256,6 +268,10 @@ export class FrameGraph implements IDisposable {
 
             for (const task of this._tasks) {
                 task.onTexturesAllocatedObservable.notifyObservers(this._renderContext);
+            }
+
+            for (const task of this._tasks) {
+                task._initializePasses();
             }
 
             this._built = true;
@@ -363,7 +379,7 @@ export class FrameGraph implements IDisposable {
             return;
         }
 
-        this._renderContext.bindRenderTarget();
+        this._renderContext.restoreDefaultFramebuffer();
 
         this.textureManager._updateHistoryTextures();
 
@@ -371,7 +387,7 @@ export class FrameGraph implements IDisposable {
             task._execute();
         }
 
-        this._renderContext.bindRenderTarget(undefined, undefined, true); // restore default framebuffer
+        this._renderContext.restoreDefaultFramebuffer();
     }
 
     /**

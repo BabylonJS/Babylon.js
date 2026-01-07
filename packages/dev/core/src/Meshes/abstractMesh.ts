@@ -2391,7 +2391,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         }
         const positions = this.getVerticesData(VertexBuffer.PositionKind);
         const indices = this.getIndices();
-        const normals = this.getVerticesData(VertexBuffer.NormalKind);
+        const normals = this.getVerticesData(VertexBuffer.NormalKind)?.slice();
         const bInfo = this.getBoundingInfo();
 
         if (data.facetDepthSort && !data.facetDepthSortEnabled) {
