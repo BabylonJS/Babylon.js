@@ -3008,8 +3008,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             if (!toRemove.parent) {
                 toRemove._removeFromSceneRootNodes();
             }
+
+            this.onLightRemovedObservable.notifyObservers(toRemove);
         }
-        this.onLightRemovedObservable.notifyObservers(toRemove);
         return index;
     }
 

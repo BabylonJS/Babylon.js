@@ -39,9 +39,10 @@ export class HemisphericLight extends Light {
      * @param name The friendly name of the light
      * @param direction The direction of the light reflection
      * @param scene The scene the light belongs to
+     * @param dontAddToScene True to not add the light to the scene
      */
-    constructor(name: string, direction: Vector3, scene?: Scene) {
-        super(name, scene);
+    constructor(name: string, direction: Vector3, scene?: Scene, dontAddToScene?: boolean) {
+        super(name, scene, dontAddToScene);
         this.direction = direction || Vector3.Up();
     }
 
