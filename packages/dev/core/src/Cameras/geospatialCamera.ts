@@ -436,16 +436,14 @@ export class GeospatialCamera extends Camera {
 
         if (zoomDelta > 0) {
             // Zooming IN - respect radiusMin as distance to surface
-            let maxZoomIn = this._radius - this.limits.radiusMin;
-
             if (pickedPoint) {
                 const pickDistance = Vector3Distance(this._position, pickedPoint);
                 // Don't zoom past the picked surface point + radiusMin
                 const maxZoomToSurface = pickDistance - this.limits.radiusMin;
-                maxZoomIn = Math.min(maxZoomIn, Math.max(0, maxZoomToSurface));
+                return Math.min(zoomDelta, Math.max(0, maxZoomToSurface));
             }
 
-            return Math.min(zoomDelta, Math.max(0, maxZoomIn));
+            return zoomDelta;
         } else {
             // Zooming OUT - respect radiusMax
             const maxZoomOut = this.limits.radiusMax - this._radius;
