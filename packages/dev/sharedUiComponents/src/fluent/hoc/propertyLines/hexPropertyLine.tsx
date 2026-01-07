@@ -59,7 +59,7 @@ export const HexPropertyLine: FunctionComponent<HexPropertyLineProps> = (props) 
 
     useEffect(() => {
         setHexVal(GetHexValFromNumber(props.value, props.numBits));
-    }); // we don't set [props.value] as dependency because several string representations can map to the same number (e.g., 0x0, 0x00, 0x0000, etc.)
+    }, []);
 
     return (
         <PropertyLine {...props}>

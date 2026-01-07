@@ -136,27 +136,27 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 },
                 {
                     section: "Metallic Workflow",
-                    component: ({ context }) => <PBRBaseMaterialMetallicWorkflowProperties material={context} />,
+                    component: ({ context }) => <PBRBaseMaterialMetallicWorkflowProperties material={context} selectionService={selectionService} />,
                 },
                 {
                     section: "Clear Coat",
-                    component: ({ context }) => <PBRBaseMaterialClearCoatProperties material={context} />,
+                    component: ({ context }) => <PBRBaseMaterialClearCoatProperties material={context} selectionService={selectionService} />,
                 },
                 {
                     section: "Iridescence",
-                    component: ({ context }) => <PBRBaseMaterialIridescenceProperties material={context} />,
+                    component: ({ context }) => <PBRBaseMaterialIridescenceProperties material={context} selectionService={selectionService} />,
                 },
                 {
                     section: "Anisotropic",
-                    component: ({ context }) => <PBRBaseMaterialAnisotropicProperties material={context} />,
+                    component: ({ context }) => <PBRBaseMaterialAnisotropicProperties material={context} selectionService={selectionService} />,
                 },
                 {
                     section: "Sheen",
-                    component: ({ context }) => <PBRBaseMaterialSheenProperties material={context} />,
+                    component: ({ context }) => <PBRBaseMaterialSheenProperties material={context} selectionService={selectionService} />,
                 },
                 {
                     section: "SubSurface",
-                    component: ({ context }) => <PBRBaseMaterialSubSurfaceProperties material={context} />,
+                    component: ({ context }) => <PBRBaseMaterialSubSurfaceProperties material={context} selectionService={selectionService} />,
                 },
                 {
                     section: "Levels",
