@@ -33,6 +33,7 @@ import { Tools } from "../../Misc/tools";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { SpriteManager } from "core/Sprites/spriteManager";
 import { GetIndividualParser, Parse } from "./babylonFileParser.function";
+import { Observable } from "../../Misc/observable";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
@@ -372,7 +373,20 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
             if (vertexData !== undefined && vertexData !== null) {
                 for (index = 0, cache = vertexData.length; index < cache; index++) {
                     const parsedVertexData = vertexData[index];
+
+                    // Geometies are found by loadedUniqueId when imported
+                    // So we need to temporarily unblock the entity collection to add them to the scene
+                    scene._blockEntityCollection = false;
+                    // Temporarily replace the onNewGeometryAddedObservable to avoid multiple notifications
+                    const onNewGeometryAddedObservable = scene.onNewGeometryAddedObservable;
+                    scene.onNewGeometryAddedObservable = new Observable<Geometry>();
+
                     addedGeometry.push(Geometry.Parse(parsedVertexData, scene, rootUrl));
+
+                    // Restore the onNewGeometryAddedObservable
+                    scene.onNewGeometryAddedObservable = onNewGeometryAddedObservable;
+                    // Restore the previous state of entity collection blocking
+                    scene._blockEntityCollection = !addToScene;
                 }
             }
 
@@ -651,7 +665,9 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         TempMorphTargetManagerIndexContainer = {};
 
         if (!addToScene) {
+            // Removes any breadcrumb left during the loading like geometries
             container.removeAllFromScene();
+            // Unblock entity collection
             scene._blockEntityCollection = false;
         }
         if (log !== null && SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_NO_LOGGING) {
