@@ -14,15 +14,10 @@
 }
 
 .context-menu {
-    background: #222222;
-
-    .react-contextmenu-item {
-        padding: 10px;
-        cursor: pointer;
-
-        &:hover {
-            background: #555555;
-        }
+    background: #333333 !important;
+    font-family: "Arial" !important;
+    &:hover {
+        background: #444444 !important;
     }
 }
 

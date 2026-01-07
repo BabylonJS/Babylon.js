@@ -9,7 +9,6 @@ import { FormNewRegular } from "@fluentui/react-icons";
 import { SceneContextIdentity } from "./sceneContext";
 import { useObservableState } from "../hooks/observableHooks";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     section: {
         display: "flex",

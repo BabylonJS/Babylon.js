@@ -7,7 +7,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBan } from "@fortawesome/free-solid-svg-icons";
 import { TreeItemSelectableComponent } from "./treeItemSelectableComponent";
 import { Tools } from "../../tools";
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import type { ContextMenuItem } from "shared-ui-components/fluent/primitives/contextMenu";
+import { ContextMenu } from "shared-ui-components/fluent/primitives/contextMenu";
+import { FluentToolWrapper } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import type { GlobalState } from "../../globalState";
 
 import expandedIcon from "../../imgs/expandedIcon.svg";
@@ -84,6 +86,17 @@ export interface ITreeItemComponentProps {
     contextMenuItems?: { label: string; action: () => void }[];
 }
 
+const ConvertToContextMenuItems = (items?: { label: string; action: () => void }[]): ContextMenuItem[] => {
+    if (!items) {
+        return [];
+    }
+    return items.map((item) => ({
+        key: item.label,
+        label: item.label,
+        onClick: item.action,
+    }));
+};
+
 export class TreeItemComponent extends React.Component<ITreeItemComponentProps, { isExpanded: boolean; mustExpand: boolean }> {
     static _ContextMenuUniqueIdGenerator = 0;
 
@@ -120,25 +133,6 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
         this.setState({ isExpanded: expand, mustExpand: expand });
     }
 
-    renderContextMenu() {
-        if (!this.props.contextMenuItems) {
-            TreeItemComponent._ContextMenuUniqueIdGenerator++;
-            return null;
-        }
-
-        return (
-            <ContextMenu id={"contextmenu#" + TreeItemComponent._ContextMenuUniqueIdGenerator++} className="context-menu">
-                {this.props.contextMenuItems.map((c) => {
-                    return (
-                        <MenuItem onClick={() => c.action()} key={c.label}>
-                            {c.label}
-                        </MenuItem>
-                    );
-                })}
-            </ContextMenu>
-        );
-    }
-
     override render() {
         let items = this.props.items;
 
@@ -159,28 +153,46 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
         }
 
         if (!items.length) {
+            const contextMenuItems = ConvertToContextMenuItems(this.props.contextMenuItems);
+            const header = (
+                <div className="context-menu" id={"tree-item-context-menu-" + TreeItemComponent._ContextMenuUniqueIdGenerator++}>
+                    <TreeItemRootHeaderComponent label={this.props.label} />
+                </div>
+            );
             return (
                 <div className="groupContainer" style={marginStyle}>
-                    <ContextMenuTrigger id={"contextmenu#" + TreeItemComponent._ContextMenuUniqueIdGenerator}>
-                        {this.renderContextMenu()}
-                        <TreeItemRootHeaderComponent label={this.props.label} />
-                    </ContextMenuTrigger>
+                    {contextMenuItems.length > 0 ? (
+                        <FluentToolWrapper toolName="GUI Editor" useFluent>
+                            <ContextMenu trigger={header} items={contextMenuItems} />
+                        </FluentToolWrapper>
+                    ) : (
+                        header
+                    )}
                 </div>
             );
         }
 
         if (!this.state.isExpanded) {
+            const contextMenuItems = ConvertToContextMenuItems(this.props.contextMenuItems);
+            const header = (
+                <div className="context-menu" id={"tree-item-context-menu-" + TreeItemComponent._ContextMenuUniqueIdGenerator++}>
+                    <TreeItemExpandableHeaderComponent
+                        isExpanded={false}
+                        label={this.props.label}
+                        onClick={() => this.switchExpandedState()}
+                        onExpandAll={(expand) => this.expandAll(expand)}
+                    />
+                </div>
+            );
             return (
                 <div className="groupContainer" style={marginStyle}>
-                    <ContextMenuTrigger id={"contextmenu#" + TreeItemComponent._ContextMenuUniqueIdGenerator}>
-                        {this.renderContextMenu()}
-                        <TreeItemExpandableHeaderComponent
-                            isExpanded={false}
-                            label={this.props.label}
-                            onClick={() => this.switchExpandedState()}
-                            onExpandAll={(expand) => this.expandAll(expand)}
-                        />
-                    </ContextMenuTrigger>
+                    {contextMenuItems.length > 0 ? (
+                        <FluentToolWrapper toolName="GUI Editor" useFluent>
+                            <ContextMenu trigger={header} items={contextMenuItems} />
+                        </FluentToolWrapper>
+                    ) : (
+                        header
+                    )}
                 </div>
             );
         }

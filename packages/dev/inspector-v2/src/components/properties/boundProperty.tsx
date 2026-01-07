@@ -4,6 +4,7 @@ import { forwardRef, useMemo } from "react";
 
 import { usePropertyChangedNotifier } from "../../contexts/propertyContext";
 import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
+import { GetPropertyDescriptor } from "../../instrumentation/propertyInstrumentation";
 
 /**
  * Helper type to check if a type includes null or undefined
@@ -81,21 +82,29 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
             const value = useSpecificProperty(target, propertyKey);
             const convertedValue = convertTo ? convertTo(value) : value;
 
+            const onChange = useMemo(() => {
+                const propertyDescriptor = GetPropertyDescriptor(target, propertyKey)?.[1];
+                if (propertyDescriptor && (propertyDescriptor.set || propertyDescriptor.writable)) {
+                    return (val: TargetT[PropertyKeyT]) => {
+                        const oldValue = target[propertyKey];
+                        const newValue = convertFrom ? convertFrom(val) : val;
+                        target[propertyKey] = newValue;
+                        notifyPropertyChanged(target, propertyKey, oldValue, newValue);
+                    };
+                }
+                return undefined;
+            }, [target, propertyKey, convertFrom, notifyPropertyChanged]);
+
             const propsToSend = {
                 ...rest,
                 ref,
                 value: convertedValue as TargetT[PropertyKeyT],
-                onChange: (val: TargetT[PropertyKeyT]) => {
-                    const oldValue = target[propertyKey];
-                    const newValue = convertFrom ? convertFrom(val) : val;
-                    target[propertyKey] = newValue;
-                    notifyPropertyChanged(target, propertyKey, oldValue, newValue);
-                },
+                onChange,
             };
 
             return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;
         };
-    }, [useSpecificProperty]);
+    }, [useSpecificProperty, notifyPropertyChanged]);
 
     return <SpecificComponent {...(props as ComponentProps<ComponentT>)} />;
 }

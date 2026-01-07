@@ -728,7 +728,10 @@ export class ProceduralTexture extends Texture {
             return;
         }
 
-        engine._debugPushGroup?.(`procedural texture generation for ${this.name}`, 1);
+        if (engine._enableGPUDebugMarkers) {
+            engine.restoreDefaultFramebuffer();
+            engine._debugPushGroup(`procedural texture generation for ${this.name}`);
+        }
 
         const viewPort = engine.currentViewport;
         if (this.isCube) {
@@ -792,7 +795,9 @@ export class ProceduralTexture extends Texture {
             engine.generateMipMapsForCubemap(this._texture, true);
         }
 
-        engine._debugPopGroup?.(1);
+        if (engine._enableGPUDebugMarkers) {
+            engine._debugPopGroup();
+        }
 
         if (this.onGenerated) {
             this.onGenerated();

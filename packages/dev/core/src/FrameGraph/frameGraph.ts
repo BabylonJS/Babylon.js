@@ -379,7 +379,7 @@ export class FrameGraph implements IDisposable {
             return;
         }
 
-        this._renderContext.bindRenderTarget();
+        this._renderContext.restoreDefaultFramebuffer();
 
         this.textureManager._updateHistoryTextures();
 
@@ -387,7 +387,7 @@ export class FrameGraph implements IDisposable {
             task._execute();
         }
 
-        this._renderContext.bindRenderTarget(undefined, undefined, true); // restore default framebuffer
+        this._renderContext.restoreDefaultFramebuffer();
     }
 
     /**

@@ -160,13 +160,9 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
      */
     public detachControl(): void {
         if (this._scene) {
-            if (this._onKeyboardObserver) {
-                this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);
-            }
-            if (this._onCanvasBlurObserver) {
-                this._engine.onCanvasBlurObservable.remove(this._onCanvasBlurObserver);
-            }
+            this._onKeyboardObserver?.remove();
             this._onKeyboardObserver = null;
+            this._onCanvasBlurObserver?.remove();
             this._onCanvasBlurObserver = null;
         }
 
@@ -197,18 +193,18 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
                 } else {
                     // Zoom
                     if (this.keysZoomIn.indexOf(keyCode) !== -1) {
-                        camera.movement.zoomAccumulatedPixels += this.zoomSensitivity;
+                        camera.movement.handleZoom(this.zoomSensitivity, false);
                     } else if (this.keysZoomOut.indexOf(keyCode) !== -1) {
-                        camera.movement.zoomAccumulatedPixels -= this.zoomSensitivity;
+                        camera.movement.handleZoom(-this.zoomSensitivity, false);
                     } else {
                         // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen
                         const centerX = this._engine.getRenderWidth() / 2;
                         const centerY = this._engine.getRenderHeight() / 2;
                         camera.movement.startDrag(centerX, centerY);
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
-                            camera.movement.handleDrag(centerX - this.panSensitivity, centerY);
-                        } else if (this.keysRight.indexOf(keyCode) !== -1) {
                             camera.movement.handleDrag(centerX + this.panSensitivity, centerY);
+                        } else if (this.keysRight.indexOf(keyCode) !== -1) {
+                            camera.movement.handleDrag(centerX - this.panSensitivity, centerY);
                         } else if (this.keysUp.indexOf(keyCode) !== -1) {
                             camera.movement.handleDrag(centerX, centerY + this.panSensitivity);
                         } else if (this.keysDown.indexOf(keyCode) !== -1) {

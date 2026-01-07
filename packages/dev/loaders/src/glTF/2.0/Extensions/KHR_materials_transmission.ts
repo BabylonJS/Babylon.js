@@ -387,7 +387,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         adapter.transmissionWeight = transmissionWeight;
 
         // Handle transmission helper setup (only needed for PBR materials)
-        if (transmissionWeight > 0) {
+        if (transmissionWeight > 0 && !this._loader.parent.dontUseTransmissionHelper) {
             const scene = babylonMaterial.getScene() as unknown as ITransmissionHelperHolder;
             if (!scene._transmissionHelper) {
                 new TransmissionHelper({}, babylonMaterial.getScene());
