@@ -42,4 +42,12 @@ export const DefaultInspectorExtensionFeed = new BuiltInsExtensionFeed("Inspecto
         author: { name: "Alex Chuber", forumUserName: "alexchuber" },
         getExtensionModuleAsync: async () => await import("../services/panes/tools/importService"),
     },
+    {
+        name: "Quick Creation Tools (Preview)",
+        description: "Adds a new panel for easy creation of various Babylon assets. This is a WIP extension...expect changes!",
+        keywords: ["creation", "tools"],
+        ...BabylonWebResources,
+        author: { name: "Babylon.js", forumUserName: "" },
+        getExtensionModuleAsync: async () => await import("../extensions/quickCreate/quickCreateToolsService"),
+    },
 ]);

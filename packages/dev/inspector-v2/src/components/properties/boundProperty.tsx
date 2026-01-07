@@ -4,6 +4,7 @@ import { forwardRef, useMemo } from "react";
 
 import { usePropertyChangedNotifier } from "../../contexts/propertyContext";
 import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
+import { GetPropertyDescriptor } from "../../instrumentation/propertyInstrumentation";
 
 /**
  * Helper type to check if a type includes null or undefined
@@ -33,18 +34,26 @@ export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyo
     ComponentT
 > &
     (IsNullable<TargetT[PropertyKeyT]> extends true
-        ? ComponentProps<ComponentT> extends { nullable?: boolean }
-            ? // Component supports nullable UI and thus requires a defaultValue to be sent with nullable = {true}
-              | {
-                        nullable: true;
-                        defaultValue: NonNullable<TargetT[PropertyKeyT]>;
-                    }
-                  | {
-                        ignoreNullable: true;
-                        defaultValue: NonNullable<TargetT[PropertyKeyT]>;
-                    }
-            : // Component doesn't support nullable UI - prevent usage entirely with nullable properties
-              never
+        ? // Pass null explicitly to skip nullable handling entirely - value passes through as-is
+          | {
+                    defaultValue: null;
+                    nullable?: never;
+                    ignoreNullable?: never;
+                }
+              | (ComponentProps<ComponentT> extends { nullable?: boolean }
+                    ? // Component supports nullable UI and thus requires a defaultValue to be sent with nullable = {true}
+                      | {
+                                nullable: true;
+                                defaultValue: NonNullable<TargetT[PropertyKeyT]>;
+                                ignoreNullable?: never;
+                            }
+                          | {
+                                ignoreNullable: true;
+                                defaultValue: NonNullable<TargetT[PropertyKeyT]>;
+                                nullable?: never;
+                            }
+                    : // Component doesn't support nullable UI - only allow defaultValue: null
+                      never)
         : {});
 
 function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>>(
@@ -73,21 +82,29 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
             const value = useSpecificProperty(target, propertyKey);
             const convertedValue = convertTo ? convertTo(value) : value;
 
+            const onChange = useMemo(() => {
+                const propertyDescriptor = GetPropertyDescriptor(target, propertyKey)?.[1];
+                if (propertyDescriptor && (propertyDescriptor.set || propertyDescriptor.writable)) {
+                    return (val: TargetT[PropertyKeyT]) => {
+                        const oldValue = target[propertyKey];
+                        const newValue = convertFrom ? convertFrom(val) : val;
+                        target[propertyKey] = newValue;
+                        notifyPropertyChanged(target, propertyKey, oldValue, newValue);
+                    };
+                }
+                return undefined;
+            }, [target, propertyKey, convertFrom, notifyPropertyChanged]);
+
             const propsToSend = {
                 ...rest,
                 ref,
                 value: convertedValue as TargetT[PropertyKeyT],
-                onChange: (val: TargetT[PropertyKeyT]) => {
-                    const oldValue = target[propertyKey];
-                    const newValue = convertFrom ? convertFrom(val) : val;
-                    target[propertyKey] = newValue;
-                    notifyPropertyChanged(target, propertyKey, oldValue, newValue);
-                },
+                onChange,
             };
 
             return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;
         };
-    }, [useSpecificProperty]);
+    }, [useSpecificProperty, notifyPropertyChanged]);
 
     return <SpecificComponent {...(props as ComponentProps<ComponentT>)} />;
 }
@@ -120,7 +137,10 @@ function CreateGenericForwardRef<T extends (...args: any[]) => any>(render: T) {
  *
  * NOTE: BoundProperty has strict nullable enforcement!
  *
- * If Target[PropertyKey] is Nullable, caller can only bind to a component that explicitly handles nullable (and caller must send nullable/defaultValue props)
+ * If Target[PropertyKey] is Nullable, caller has three options:
+ * 1. `nullable: true` + `defaultValue: NonNullable<T>` - Shows enable/disable checkbox UI
+ * 2. `ignoreNullable: true` + `defaultValue: NonNullable<T>` - Shows disabled state when null
+ * 3. `defaultValue: null` - Skips nullable handling entirely, passes value through as-is
  *
  * @param props BoundPropertyProps with strict nullable validation
  * @returns JSX element

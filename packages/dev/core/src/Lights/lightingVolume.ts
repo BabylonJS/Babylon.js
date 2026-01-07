@@ -65,11 +65,7 @@ export class LightingVolume {
             this._createFallbackTextures();
         }
 
-        const depthTexture = this._shadowGenerator.getShadowMap()?.depthStencilTexture;
-        if (this._engine.isWebGPU && depthTexture) {
-            this._cs!.setInternalTexture("shadowMap", depthTexture);
-            this._cs2!.setInternalTexture("shadowMap", depthTexture);
-        }
+        this._setComputeShaderInputs();
     }
 
     private _tesselation = 0;
@@ -222,27 +218,32 @@ export class LightingVolume {
         if (this._engine.isWebGPU) {
             this._uBuffer!.updateMatrix("invViewProjMatrix", this._shadowGenerator.getTransformMatrix().invertToRef(TmpVectors.Matrix[0]));
 
-            this._engine._debugPushGroup?.(`Update lighting volume (${this._name})`, 1);
+            if (this._engine._enableGPUDebugMarkers) {
+                this._engine.restoreDefaultFramebuffer();
+                this._engine._debugPushGroup(`Update lighting volume (${this._name})`);
+            }
 
             if (this._needUpdateGeometry()) {
                 this._fullUpdateUBO(true);
 
                 const dispatchSize = Math.ceil((this._tesselation + 1) / 32);
 
-                this._engine._debugPushGroup?.(`Update vertices of other planes`, 1);
+                this._engine._debugPushGroup(`Update vertices of other planes`);
                 this._cs2!.dispatch(dispatchSize, 1, 1);
-                this._engine._debugPopGroup?.(1);
+                this._engine._debugPopGroup();
             } else {
                 this._fullUpdateUBO();
             }
 
             const dispatchSize = Math.ceil((this._tesselation + 1) / 8);
 
-            this._engine._debugPushGroup?.(`Update vertices of far plane`, 1);
+            this._engine._debugPushGroup(`Update vertices of far plane`);
             this._cs!.dispatch(dispatchSize, dispatchSize, 1);
-            this._engine._debugPopGroup?.(1);
+            this._engine._debugPopGroup();
 
-            this._engine._debugPopGroup?.(1);
+            if (this._engine._enableGPUDebugMarkers) {
+                this._engine._debugPopGroup();
+            }
 
             this._firstUpdate = false;
         } else {
@@ -300,21 +301,29 @@ export class LightingVolume {
             entryPoint: "updatePlaneVertices",
         });
 
+        this._setComputeShaderInputs();
+    }
+
+    private _setComputeShaderInputs() {
+        if (!this._engine.isWebGPU) {
+            return;
+        }
+
         if (this._shadowGenerator) {
             const depthTexture = this._shadowGenerator.getShadowMap()?.depthStencilTexture;
             if (depthTexture) {
-                this._cs.setInternalTexture("shadowMap", depthTexture);
-                this._cs2.setInternalTexture("shadowMap", depthTexture);
+                this._cs?.setInternalTexture("shadowMap", depthTexture);
+                this._cs2?.setInternalTexture("shadowMap", depthTexture);
             }
         }
 
         if (this._uBuffer) {
-            this._cs.setUniformBuffer("params", this._uBuffer);
-            this._cs2.setUniformBuffer("params", this._uBuffer);
+            this._cs?.setUniformBuffer("params", this._uBuffer);
+            this._cs2?.setUniformBuffer("params", this._uBuffer);
         }
         if (this._storageBuffer) {
-            this._cs.setStorageBuffer("positions", this._storageBuffer);
-            this._cs2.setStorageBuffer("positions", this._storageBuffer);
+            this._cs?.setStorageBuffer("positions", this._storageBuffer);
+            this._cs2?.setStorageBuffer("positions", this._storageBuffer);
         }
     }
 
@@ -490,8 +499,7 @@ export class LightingVolume {
 
             this._mesh.setVerticesBuffer(new VertexBuffer(webGPUEngine, this._storageBuffer.getBuffer(), "position", { takeBufferOwnership: false }), true, vertexNumber);
 
-            this._cs!.setStorageBuffer("positions", this._storageBuffer);
-            this._cs2!.setStorageBuffer("positions", this._storageBuffer);
+            this._setComputeShaderInputs();
 
             this._cs!.triggerContextRebuild = true;
             this._cs2!.triggerContextRebuild = true;

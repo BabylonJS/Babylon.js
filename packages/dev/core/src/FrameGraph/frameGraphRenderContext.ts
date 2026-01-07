@@ -45,8 +45,6 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     private readonly _effectRenderer: EffectRenderer;
     private readonly _effectRendererBack: EffectRenderer;
     private _currentRenderTarget: FrameGraphRenderTarget | undefined;
-    private _debugMessageWhenTargetBound: string | undefined;
-    private _debugMessageHasBeenPushed = false;
     private _renderTargetIsBound = true;
     private readonly _copyTexture: CopyTextureToTexture;
     private readonly _copyDepthTexture: CopyTextureToTexture;
@@ -164,8 +162,16 @@ export class FrameGraphRenderContext extends FrameGraphContext {
 
     /**
      * Generates mipmaps for the current render target
+     * @param handle Optional handle of the texture to generate mipmaps for (if not provided, will generate mipmaps for all textures in the current render target)
      */
-    public generateMipMaps(): void {
+    public generateMipMaps(handle?: FrameGraphTextureHandle): void {
+        if (handle !== undefined) {
+            const internalTexture = this._textureManager.getTextureFromHandle(handle);
+            if (internalTexture) {
+                this._engine.generateMipmaps(internalTexture);
+            }
+            return;
+        }
         if (this._currentRenderTarget?.renderTargetWrapper === undefined) {
             return;
         }
@@ -173,7 +179,6 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         if (this._engine._currentRenderTarget && (!this._engine.isWebGPU || this._renderTargetIsBound)) {
             // we can't generate the mipmaps if the render target (which is the texture we want to generate mipmaps for) is bound
             // Also, for some reasons, on WebGL2, generating mipmaps doesn't work if a render target is bound, even if it's not the texture we want to generate mipmaps for...
-            this._flushDebugMessages();
             this._engine.unBindFramebuffer(this._engine._currentRenderTarget);
             this._renderTargetIsBound = false;
         }
@@ -322,23 +327,28 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param object The RenderTargetTexture/Layer to render
      * @param viewportWidth The width of the viewport (optional for Layer, but mandatory for ObjectRenderer)
      * @param viewportHeight The height of the viewport (optional for Layer, but mandatory for ObjectRenderer)
+     * @param restoreDefaultFramebuffer If true, the default framebuffer will be restored after rendering (default: false)
      */
-    public render(object: Layer | ObjectRenderer | UtilityLayerRenderer, viewportWidth?: number, viewportHeight?: number): void {
+    public render(object: Layer | ObjectRenderer | UtilityLayerRenderer, viewportWidth?: number, viewportHeight?: number, restoreDefaultFramebuffer = false): void {
         if (FrameGraphRenderContext._IsObjectRenderer(object)) {
             this._scene._intermediateRendering = true;
             if (object.shouldRender()) {
                 this._scene.incrementRenderId();
                 this._scene.resetCachedMaterial();
 
-                this._applyRenderTarget();
-
                 object.prepareRenderList();
 
                 object.initRender(viewportWidth!, viewportHeight!);
 
+                this._applyRenderTarget();
+
                 object.render();
 
                 object.finishRender();
+
+                if (restoreDefaultFramebuffer) {
+                    this.restoreDefaultFramebuffer();
+                }
             }
             this._scene._intermediateRendering = false;
         } else {
@@ -352,39 +362,23 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * Note: it is a lazy operation, so the render target will only be bound when needed. This way, it is possible to call
      *   this method several times with different render targets without incurring the cost of binding if no draw calls are made
      * @param renderTarget The handle of the render target texture to bind (default: undefined, meaning "back buffer"). Pass an array for MRT rendering.
-     * @param debugMessage Optional debug message to display when the render target is bound (visible in PIX, for example)
      * @param applyImmediately If true, the render target will be applied immediately (otherwise it will be applied at first use). Default is false (delayed application).
      */
-    public bindRenderTarget(renderTarget?: FrameGraphRenderTarget, debugMessage?: string, applyImmediately = false): void {
-        if (
-            (renderTarget?.renderTargetWrapper === undefined && this._currentRenderTarget === undefined) ||
-            (renderTarget && this._currentRenderTarget && renderTarget.equals(this._currentRenderTarget))
-        ) {
-            this._flushDebugMessages();
-            if (debugMessage !== undefined) {
-                this._engine._debugPushGroup?.(debugMessage, 2);
-                this._debugMessageWhenTargetBound = undefined;
-                this._debugMessageHasBeenPushed = true;
-            }
-            if (applyImmediately) {
-                this._applyRenderTarget();
-            }
-            return;
-        }
+    public bindRenderTarget(renderTarget?: FrameGraphRenderTarget, applyImmediately = false): void {
         this._currentRenderTarget = renderTarget?.renderTargetWrapper === undefined ? undefined : renderTarget;
-        this._debugMessageWhenTargetBound = debugMessage;
         this._renderTargetIsBound = false;
         if (applyImmediately) {
             this._applyRenderTarget();
         }
     }
 
-    /** @internal */
-    public _flushDebugMessages() {
-        if (this._debugMessageHasBeenPushed) {
-            this._engine._debugPopGroup?.(2);
-            this._debugMessageHasBeenPushed = false;
-        }
+    /**
+     * Restores the default framebuffer (back buffer) as the current render target
+     */
+    public restoreDefaultFramebuffer(): void {
+        this._engine.restoreDefaultFramebuffer();
+        this._renderTargetIsBound = false;
+        this._currentRenderTarget = undefined;
     }
 
     /** @internal */
@@ -393,23 +387,17 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             return;
         }
 
-        this._flushDebugMessages();
-
         const renderTargetWrapper = this._currentRenderTarget?.renderTargetWrapper;
 
         if (renderTargetWrapper === undefined) {
-            this._engine.restoreDefaultFramebuffer();
-        } else {
+            if (this._engine._currentRenderTarget) {
+                this._engine.restoreDefaultFramebuffer();
+            }
+        } else if (this._engine._currentRenderTarget !== renderTargetWrapper) {
             if (this._engine._currentRenderTarget) {
                 this._engine.unBindFramebuffer(this._engine._currentRenderTarget);
             }
             this._engine.bindFramebuffer(renderTargetWrapper);
-        }
-
-        if (this._debugMessageWhenTargetBound !== undefined) {
-            this._engine._debugPushGroup?.(this._debugMessageWhenTargetBound, 2);
-            this._debugMessageWhenTargetBound = undefined;
-            this._debugMessageHasBeenPushed = true;
         }
 
         this._renderTargetIsBound = true;

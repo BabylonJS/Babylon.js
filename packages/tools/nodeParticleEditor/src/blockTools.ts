@@ -6,6 +6,7 @@ import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "core/Particles/Node/Blocks/particleMathBlock";
+import { ParticleModuloBlock } from "core/Particles/Node/Blocks/particleModuloBlock";
 import { UpdateColorBlock } from "core/Particles/Node/Blocks/Update/updateColorBlock";
 import { ParticleLerpBlock } from "core/Particles/Node/Blocks/particleLerpBlock";
 import { UpdateScaleBlock } from "core/Particles/Node/Blocks/Update/updateScaleBlock";
@@ -368,6 +369,10 @@ export class BlockTools {
             case "MaxBlock": {
                 const block = new ParticleMathBlock("Max");
                 block.operation = ParticleMathBlockOperations.Max;
+                return block;
+            }
+            case "ModuloBlock": {
+                const block = new ParticleModuloBlock("Modulo");
                 return block;
             }
             case "ToDegreesBlock": {

@@ -99,7 +99,7 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
         await page.setViewport({ width: 600, height: 400 });
         page.setDefaultTimeout(0);
         await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
-            // waitUntil: "load", // for chrome should be "networkidle0"
+            // waitUntil: "load",
             timeout: 0,
         });
         await page.waitForSelector("#babylon-canvas", { timeout: 20000 });

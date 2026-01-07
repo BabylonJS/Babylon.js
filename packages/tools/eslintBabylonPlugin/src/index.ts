@@ -242,7 +242,7 @@ const plugin: IPlugin = {
                 },
             },
             create: (context: eslint.Rule.RuleContext) => {
-                const sourceFilePath: string = context.getFilename();
+                const sourceFilePath: string = context.filename;
 
                 const tsdocConfiguration: TSDocConfiguration = new TSDocConfiguration();
 
@@ -283,7 +283,7 @@ const plugin: IPlugin = {
 
                 const tsdocParser: TSDocParser = new TSDocParser(tsdocConfiguration);
 
-                const sourceCode: eslint.SourceCode = context.getSourceCode();
+                const sourceCode: eslint.SourceCode = context.sourceCode;
                 const checkCommentBlocks: (node: ESTree.Node) => void = function (_node: ESTree.Node) {
                     for (const comment of sourceCode.getAllComments()) {
                         if (comment.type !== "Block") {
@@ -351,9 +351,21 @@ const plugin: IPlugin = {
                     recommended: false,
                     url: "https://tsdoc.org/pages/packages/eslint-plugin-tsdoc",
                 },
+                schema: [
+                    {
+                        type: "object",
+                        properties: {
+                            contexts: {
+                                type: "array",
+                                items: { type: "string" },
+                            },
+                        },
+                        additionalProperties: false,
+                    },
+                ],
             },
             create: (context: eslint.Rule.RuleContext) => {
-                const sourceCode: eslint.SourceCode = context.getSourceCode();
+                const sourceCode: eslint.SourceCode = context.sourceCode;
                 const checkCommentBlocks: (node: (ESTree.PropertyDefinition | ESTree.MethodDefinition) & eslint.Rule.NodeParentExtension) => void = function (
                     node: (ESTree.PropertyDefinition | ESTree.MethodDefinition) & eslint.Rule.NodeParentExtension
                 ) {
@@ -418,7 +430,7 @@ const plugin: IPlugin = {
                 },
             },
             create: (context: eslint.Rule.RuleContext) => {
-                const sourceFilePath: string = context.getFilename();
+                const sourceFilePath: string = context.filename;
                 const program: ts.Program = ts.createProgram([sourceFilePath], {
                     checkJs: false,
                     resolveJsonModule: false,
@@ -435,7 +447,7 @@ const plugin: IPlugin = {
                     inlineSourceMap: false,
                 });
 
-                const sourceCode: eslint.SourceCode = context.getSourceCode();
+                const sourceCode: eslint.SourceCode = context.sourceCode;
                 const sourceFile: ts.SourceFile | undefined = program.getSourceFile(sourceFilePath);
                 if (!sourceFile) {
                     throw new Error("Error retrieving source file");

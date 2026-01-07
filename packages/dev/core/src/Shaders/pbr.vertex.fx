@@ -221,7 +221,11 @@ void main(void) {
 #endif
 
 #if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
-    vViewDepth = (view * worldPos).z;
+    #ifdef RIGHT_HANDED
+        vViewDepth = -(view * worldPos).z;
+    #else
+        vViewDepth = (view * worldPos).z;
+    #endif
 #endif
 
     // Texture coordinates
