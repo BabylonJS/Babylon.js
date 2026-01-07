@@ -153,22 +153,15 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
 
     /** @internal */
     public override _execute() {
+        const currentDebugMarkers = this._context.enableDebugMarkers;
+
+        this._context.enableDebugMarkers = !this._parentTask._disableDebugMarkers;
         this._context.bindRenderTarget(this._frameGraphRenderTarget);
 
         super._execute();
 
-        this._context._flushDebugMessages();
-
-        const renderTargetWrapper = this._frameGraphRenderTarget.renderTargetWrapper;
-        if (
-            renderTargetWrapper &&
-            renderTargetWrapper.samples > 1 &&
-            (renderTargetWrapper.resolveMSAAColors || renderTargetWrapper.resolveMSAADepth || renderTargetWrapper.resolveMSAAStencil)
-        ) {
-            // Unbinding the render target will trigger resolving MSAA textures.
-            this._context.bindRenderTarget(undefined, `Resolve MSAA${this.name ? " (" + this.name + ")" : ""}`, true);
-            this._context._flushDebugMessages();
-        }
+        this._context.restoreDefaultFramebuffer();
+        this._context.enableDebugMarkers = currentDebugMarkers;
     }
 
     /** @internal */

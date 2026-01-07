@@ -2748,6 +2748,10 @@
             "playgroundId": "#XSNYAU#160"
         },
         {
+            "title": "FrameGraph nrge transmission",
+            "playgroundId": "#ZNTBN2#10"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#3",
             "errorRatio": 2

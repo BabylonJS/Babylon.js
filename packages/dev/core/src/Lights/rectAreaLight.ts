@@ -58,9 +58,10 @@ export class RectAreaLight extends AreaLight {
      * @param width The width of the area light.
      * @param height The height of the area light.
      * @param scene The scene the light belongs to
+     * @param dontAddToScene True to not add the light to the scene
      */
-    constructor(name: string, position: Vector3, width: number, height: number, scene?: Scene) {
-        super(name, position, scene);
+    constructor(name: string, position: Vector3, width: number, height: number, scene?: Scene, dontAddToScene?: boolean) {
+        super(name, position, scene, dontAddToScene);
         this._width = new Vector3(width, 0, 0);
         this._height = new Vector3(0, height, 0);
         this._pointTransformedPosition = Vector3.Zero();

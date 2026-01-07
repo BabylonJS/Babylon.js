@@ -312,6 +312,11 @@ class GLTFLoaderBaseOptions {
      * @experimental
      */
     public useOpenPBR = false;
+
+    /**
+     * If true, the loader will not use the transmission helper when loading materials with transmission.
+     */
+    public dontUseTransmissionHelper = false;
 }
 
 /**
@@ -358,6 +363,7 @@ abstract class GLTFLoaderOptions extends GLTFLoaderBaseOptions {
             this.useRangeRequests = options.useRangeRequests ?? this.useRangeRequests;
             this.useSRGBBuffers = options.useSRGBBuffers ?? this.useSRGBBuffers;
             this.validate = options.validate ?? this.validate;
+            this.dontUseTransmissionHelper = options.dontUseTransmissionHelper ?? this.dontUseTransmissionHelper;
         }
     }
 
