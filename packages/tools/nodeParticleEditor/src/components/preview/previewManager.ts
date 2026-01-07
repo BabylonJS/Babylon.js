@@ -77,6 +77,7 @@ export class PreviewManager {
             this._engine.resize();
             this._scene.render();
             let totalParticleCount = 0;
+            let hasSPS = false;
             (this._scene.particleSystems as ThinParticleSystem[]).forEach((ps) => {
                 totalParticleCount += ps.particles.length;
             });
@@ -84,14 +85,13 @@ export class PreviewManager {
                 this._particleSystemSet.systems.forEach((system) => {
                     if (system instanceof SolidParticleSystem) {
                         totalParticleCount += system.nbParticles;
+                        hasSPS = true;
                     }
                 });
             }
             if (globalState.updateState) {
-                globalState.updateState(
-                    "Update loop: " + sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage.toFixed(2) + " ms",
-                    "Total particles: " + totalParticleCount
-                );
+                const updateLoopString = hasSPS ? "" : "Update loop: " + sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage.toFixed(2) + " ms";
+                globalState.updateState(updateLoopString, "Total particles: " + totalParticleCount);
             }
         });
 
