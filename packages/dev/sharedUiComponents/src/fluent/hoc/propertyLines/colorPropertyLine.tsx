@@ -35,7 +35,7 @@ const ColorPropertyLine = forwardRef<HTMLDivElement, ColorPropertyLineProps>((pr
             newColor[key] = value / 255;
         }
 
-        setColor(newColor);
+        setColor(newColor); // Create a new object to trigger re-render
         props.onChange(newColor);
     };
 
