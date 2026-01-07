@@ -169,6 +169,10 @@ export function LoadAssetContainerFromSerializedScene(scene: Scene, serializedSc
 const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     const container = new AssetContainer(scene);
 
+    if (!addToScene) {
+        scene._blockEntityCollection = true;
+    }
+
     // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
     // when SceneLoader.debugLogging = true (default), or exception encountered.
     // Everything stored in var log instead of writing separate lines to support only writing in exception,
@@ -648,6 +652,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
 
         if (!addToScene) {
             container.removeAllFromScene();
+            scene._blockEntityCollection = false;
         }
         if (log !== null && SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_NO_LOGGING) {
             Logger.Log(
