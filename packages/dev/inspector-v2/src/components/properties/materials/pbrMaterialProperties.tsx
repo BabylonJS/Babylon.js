@@ -8,7 +8,6 @@ import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/pro
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { BoundProperty } from "../boundProperty";
-import { Color3 } from "core/Maths/math.color";
 
 /**
  * Displays the lighting and color properties of a PBR material.
