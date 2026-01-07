@@ -127,8 +127,8 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                     component: ({ context }) => <PBRBaseMaterialTransparencyProperties material={context} />,
                 },
                 {
-                    section: "Channels",
-                    component: ({ context }) => <PBRBaseMaterialChannelsProperties material={context} />,
+                    section: "Textures",
+                    component: ({ context }) => <PBRBaseMaterialChannelsProperties material={context} selectionService={selectionService} />,
                 },
                 {
                     section: "Lighting & Colors",

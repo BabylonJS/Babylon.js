@@ -276,6 +276,9 @@ export abstract class AbstractEngine {
     /** @internal */
     protected _isWebGPU: boolean = false;
 
+    /** @internal */
+    public _enableGPUDebugMarkers: boolean = false;
+
     // Focus
     /** @internal */
     public _onFocus: () => void;
@@ -1919,14 +1922,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.42.0";
+        return "babylonjs@8.44.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.42.0";
+        return "8.44.1";
     }
 
     /**

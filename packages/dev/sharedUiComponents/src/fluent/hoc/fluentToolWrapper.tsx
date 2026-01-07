@@ -24,6 +24,11 @@ export type ToolHostProps = {
      * Name of the tool displayed in the UX
      */
     toolName: string;
+
+    /**
+     * Override the qsp detection for fluent
+     */
+    useFluent?: boolean;
 };
 
 export const ToolContext = createContext({ useFluent: false as boolean, disableCopy: false as boolean, toolName: "" as string, size: undefined as UiSize | undefined } as const);
@@ -36,7 +41,8 @@ export const ToolContext = createContext({ useFluent: false as boolean, disableC
  */
 export const FluentToolWrapper: FunctionComponent<PropsWithChildren<ToolHostProps>> = (props) => {
     const url = new URL(window.location.href);
-    const useFluent = url.searchParams.has("newUX") || url.hash.includes("newUX");
+    const useFluentFromUrl = url.searchParams.has("newUX") || url.hash.includes("newUX");
+    const useFluent = props.useFluent ?? useFluentFromUrl;
     const contextValue = {
         useFluent,
         disableCopy: !!props.disableCopy,

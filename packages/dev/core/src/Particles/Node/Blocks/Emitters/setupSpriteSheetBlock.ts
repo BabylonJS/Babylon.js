@@ -90,6 +90,7 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
         system.spriteCellHeight = this.height;
         system.startSpriteCellID = this.start;
         system.endSpriteCellID = this.end;
+        system.spriteCellLoop = this.loop;
         system.spriteRandomStartCell = this.randomStartCell;
 
         this.output._storedValue = system;
@@ -102,6 +103,7 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
         serializationObject.height = this.height;
         serializationObject.start = this.start;
         serializationObject.end = this.end;
+        serializationObject.loop = this.loop;
         serializationObject.randomStartCell = this.randomStartCell;
 
         return serializationObject;
@@ -114,6 +116,7 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
         this.height = serializationObject.height;
         this.start = serializationObject.start;
         this.end = serializationObject.end;
+        this.loop = serializationObject.loop;
         this.randomStartCell = serializationObject.randomStartCell;
     }
 }

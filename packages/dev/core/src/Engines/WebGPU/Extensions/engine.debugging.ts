@@ -1,93 +1,49 @@
 import { WebGPUEngine } from "../../webgpuEngine";
 
-WebGPUEngine.prototype._debugPushGroup = function (groupName: string, targetObject?: number): void {
+WebGPUEngine.prototype._debugPushGroup = function (groupName: string): void {
     if (!this._options.enableGPUDebugMarkers) {
         return;
     }
 
-    if (targetObject === 0 || targetObject === 1) {
-        if (targetObject === 1) {
-            if (this._currentRenderTarget) {
-                this.unBindFramebuffer(this._currentRenderTarget);
-            } else {
-                this._endCurrentRenderPass();
-            }
-        }
-        this._renderEncoder.pushDebugGroup(groupName);
-    } else if (this._currentRenderPass) {
+    if (this._currentRenderTarget && !this._currentRenderPass) {
+        this._startRenderTargetRenderPass(this._currentRenderTarget, false, null, false, false);
+    }
+
+    if (this._currentRenderPass) {
         this._currentRenderPass.pushDebugGroup(groupName);
-        this._debugStackRenderPass.push(groupName);
     } else {
-        this._pendingDebugCommands.push(["push", groupName, targetObject]);
+        this._renderEncoder.pushDebugGroup(groupName);
     }
 };
 
-WebGPUEngine.prototype._debugPopGroup = function (targetObject?: number): void {
+WebGPUEngine.prototype._debugPopGroup = function (): void {
     if (!this._options.enableGPUDebugMarkers) {
         return;
     }
 
-    if (targetObject === 0 || targetObject === 1) {
-        if (targetObject === 1) {
-            if (this._currentRenderTarget) {
-                this.unBindFramebuffer(this._currentRenderTarget);
-            } else {
-                this._endCurrentRenderPass();
-            }
-        }
-        this._renderEncoder.popDebugGroup();
-    } else if (this._currentRenderPass) {
+    if (this._currentRenderTarget && !this._currentRenderPass) {
+        this._startRenderTargetRenderPass(this._currentRenderTarget, false, null, false, false);
+    }
+
+    if (this._currentRenderPass) {
         this._currentRenderPass.popDebugGroup();
-        this._debugStackRenderPass.pop();
     } else {
-        this._pendingDebugCommands.push(["pop", null, targetObject]);
+        this._renderEncoder.popDebugGroup();
     }
 };
 
-WebGPUEngine.prototype._debugInsertMarker = function (text: string, targetObject?: number): void {
+WebGPUEngine.prototype._debugInsertMarker = function (text: string): void {
     if (!this._options.enableGPUDebugMarkers) {
         return;
     }
 
-    if (targetObject === 0 || targetObject === 1) {
-        if (targetObject === 1) {
-            if (this._currentRenderTarget) {
-                this.unBindFramebuffer(this._currentRenderTarget);
-            } else {
-                this._endCurrentRenderPass();
-            }
-        }
-        this._renderEncoder.insertDebugMarker(text);
-    } else if (this._currentRenderPass) {
+    if (this._currentRenderTarget && !this._currentRenderPass) {
+        this._startRenderTargetRenderPass(this._currentRenderTarget, false, null, false, false);
+    }
+
+    if (this._currentRenderPass) {
         this._currentRenderPass.insertDebugMarker(text);
     } else {
-        this._pendingDebugCommands.push(["insert", text, targetObject]);
+        this._renderEncoder.insertDebugMarker(text);
     }
-};
-
-WebGPUEngine.prototype._debugFlushPendingCommands = function (): void {
-    if (this._debugStackRenderPass.length !== 0) {
-        const currentDebugStack = this._debugStackRenderPass.slice();
-        this._debugStackRenderPass.length = 0;
-        for (let i = 0; i < currentDebugStack.length; ++i) {
-            this._debugPushGroup(currentDebugStack[i], 2);
-        }
-    }
-
-    for (let i = 0; i < this._pendingDebugCommands.length; ++i) {
-        const [name, param, targetObject] = this._pendingDebugCommands[i];
-
-        switch (name) {
-            case "push":
-                this._debugPushGroup(param!, targetObject);
-                break;
-            case "pop":
-                this._debugPopGroup(targetObject);
-                break;
-            case "insert":
-                this._debugInsertMarker(param!, targetObject);
-                break;
-        }
-    }
-    this._pendingDebugCommands.length = 0;
 };

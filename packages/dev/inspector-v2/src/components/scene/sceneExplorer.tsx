@@ -274,7 +274,6 @@ function useCommandContextMenuState(commands: readonly SceneExplorerCommand<"con
     return [checkedContextMenuItems, onContextMenuCheckedValueChange, contextMenuItems] as const;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     rootDiv: {
         flex: 1,

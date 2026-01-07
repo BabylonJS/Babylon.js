@@ -1,5 +1,5 @@
-import type { FunctionComponent, PropsWithChildren, ReactElement } from "react";
-import { useState } from "react";
+import type { PropsWithChildren, ReactElement } from "react";
+import { forwardRef, useState } from "react";
 import { Popover as FluentPopover, PopoverTrigger, PopoverSurface, makeStyles, tokens } from "@fluentui/react-components";
 import type { FluentIcon } from "@fluentui/react-icons";
 import { Button } from "shared-ui-components/fluent/primitives/button";
@@ -29,7 +29,7 @@ type PopoverWithTriggerProps = {
 
 type PopoverProps = PopoverWithIconProps | PopoverWithTriggerProps;
 
-export const Popover: FunctionComponent<PropsWithChildren<PopoverProps>> = (props) => {
+export const Popover = forwardRef<HTMLButtonElement, PropsWithChildren<PopoverProps>>((props, ref) => {
     const { children } = props;
     const [popoverOpen, setPopoverOpen] = useState(false);
     const classes = useStyles();
@@ -45,10 +45,10 @@ export const Popover: FunctionComponent<PropsWithChildren<PopoverProps>> = (prop
             }}
             trapFocus
         >
-            <PopoverTrigger disableButtonEnhancement>{props.trigger ?? <Button icon={props.icon} onClick={() => setPopoverOpen(true)} />}</PopoverTrigger>
+            <PopoverTrigger disableButtonEnhancement>{props.trigger ?? <Button ref={ref} icon={props.icon} onClick={() => setPopoverOpen(true)} />}</PopoverTrigger>
             <PopoverSurface className={classes.surface}>
                 <div className={classes.content}>{children}</div>
             </PopoverSurface>
         </FluentPopover>
     );
-};
+});

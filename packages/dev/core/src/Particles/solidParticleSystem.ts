@@ -18,6 +18,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { MultiMaterial } from "../Materials/multiMaterial";
 import type { PickingInfo } from "../Collisions/pickingInfo";
 import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces of this big mesh.
@@ -779,7 +780,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param options.storage
      * @returns the number of shapes in the system
      */
-    public addShape(mesh: Mesh, nb: number, options?: { positionFunction?: any; vertexFunction?: any; storage?: [] }): number {
+    public addShape(mesh: AbstractMesh, nb: number, options?: { positionFunction?: any; vertexFunction?: any; storage?: [] }): number {
         const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         const meshInd = <IndicesArray>mesh.getIndices();
         const meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);

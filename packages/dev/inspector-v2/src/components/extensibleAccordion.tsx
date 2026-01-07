@@ -54,7 +54,6 @@ export type DynamicAccordionSectionContent<ContextT> = Readonly<{
     component: ComponentType<{ context: ContextT }>;
 }>;
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     rootDiv: {
         flex: 1,
