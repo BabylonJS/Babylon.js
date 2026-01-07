@@ -116,7 +116,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             content: [
                 {
                     section: "Textures",
-                    component: ({ context }) => <PBRMaterialTextureProperties material={context} />,
+                    component: ({ context }) => <PBRMaterialTextureProperties material={context} selectionService={selectionService} />,
                 },
                 {
                     section: "Lighting & Colors",

@@ -42,9 +42,17 @@ const usePropertyLineStyles = makeStyles({
     },
     rightContent: {
         flex: "0 1 auto",
+        minWidth: 0,
+        overflow: "hidden",
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-end",
+    },
+    childWrapper: {
+        minWidth: 0,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
     },
     infoPopup: {
         whiteSpace: "normal",
@@ -191,7 +199,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                             title="Toggle null state"
                         />
                     )}
-                    {processedChildren}
+                    <div className={classes.childWrapper}>{processedChildren}</div>
                     {onCopy && !disableCopy && (
                         <Button
                             className={classes.copy}

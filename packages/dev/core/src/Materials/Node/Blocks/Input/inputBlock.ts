@@ -564,6 +564,9 @@ export class InputBlock extends NodeMaterialBlock {
         if (this.isAttribute) {
             this.associatedVariableName = remapAttributeName[this.name] ?? this.name;
 
+            if (this.name === "particle_positionw") {
+                state.sharedData.defines["POSITIONW_AS_VARYING"] = "true";
+            }
             if (this.target === NodeMaterialBlockTargets.Vertex && state._vertexState) {
                 // Attribute for fragment need to be carried over by varyings
                 if (attributeInFragmentOnly[this.name]) {

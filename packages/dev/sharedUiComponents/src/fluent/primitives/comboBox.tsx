@@ -22,6 +22,11 @@ const useStyles = makeStyles({
     input: {
         minWidth: 0,
     },
+    listbox: {
+        width: "fit-content",
+        minWidth: "fit-content",
+        maxWidth: "350px",
+    },
 });
 
 /**
@@ -95,6 +100,7 @@ export const ComboBox: FunctionComponent<ComboBoxProps> = (props) => {
                 size={size}
                 root={{ className: styles.comboBox }}
                 input={{ className: styles.input }}
+                listbox={{ className: styles.listbox }}
                 onOptionSelect={onOptionSelect}
                 aria-labelledby={comboId}
                 placeholder="Search.."

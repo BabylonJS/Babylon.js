@@ -1,6 +1,9 @@
-import type { FunctionComponent, PropsWithChildren } from "react";
-import { Body1, Link as FluentLink } from "@fluentui/react-components";
+import type { PropsWithChildren } from "react";
+
 import type { ImmutablePrimitiveProps } from "./primitive";
+
+import { forwardRef } from "react";
+import { Body1, Link as FluentLink } from "@fluentui/react-components";
 
 export type LinkProps = ImmutablePrimitiveProps<string> & {
     /**
@@ -17,12 +20,15 @@ export type LinkProps = ImmutablePrimitiveProps<string> & {
     target?: "current" | "new";
 };
 
-export const Link: FunctionComponent<PropsWithChildren<LinkProps>> = (props) => {
+export const Link = forwardRef<HTMLAnchorElement, PropsWithChildren<LinkProps>>((props, ref) => {
     const { target, url, onLink, ...rest } = props;
     return (
-        <FluentLink inline target={target === "current" ? "_self" : "_blank"} rel="noopener noreferrer" href={url} onClick={onLink ?? undefined} {...rest}>
+        <FluentLink ref={ref} inline target={target === "current" ? "_self" : "_blank"} rel="noopener noreferrer" href={url} onClick={onLink ?? undefined} {...rest}>
             {props.children}
-            <Body1>{props.value}</Body1>
+            <Body1 wrap={false} truncate>
+                {props.value}
+            </Body1>
         </FluentLink>
     );
-};
+});
+Link.displayName = "Link";
