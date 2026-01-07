@@ -27,16 +27,6 @@ export const PBRMaterialLightingAndColorProperties: FunctionComponent<{ material
             <BoundProperty component={Color3PropertyLine} label="Emissive" target={material} propertyKey="emissiveColor" isLinearMode />
             <BoundProperty component={Color3PropertyLine} label="Ambient" target={material} propertyKey="ambientColor" isLinearMode />
             <BoundProperty component={SwitchPropertyLine} label="Use Physical Light Falloff" target={material} propertyKey="usePhysicalLightFalloff" />
-            {/* TODO below is just for testing, move into pbrBaseMaterialProperties in Alexis' PR */}
-            <BoundProperty
-                component={Color3PropertyLine}
-                label="Translucency Tint"
-                target={material.subSurface}
-                propertyKey="translucencyColor"
-                isLinearMode={true}
-                nullable
-                defaultValue={Color3.White()}
-            />
         </>
     );
 };
