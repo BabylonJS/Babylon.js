@@ -168,23 +168,23 @@ export class BlockTools {
             case "SystemBlock":
                 return new SystemBlock("System");
             case "MeshSourceBlock":
-                return new MeshSourceBlock("Mesh Source for SPS");
+                return new MeshSourceBlock("Mesh Source for Solid Particle");
             case "SolidParticleSystemBlock":
-                return new SolidParticleSystemBlock("SPS System");
+                return new SolidParticleSystemBlock("Solid Particle System");
             case "CreateSolidParticleBlock":
                 return new CreateSolidParticleBlock("Create Solid Particle");
             case "MergeSolidParticlesBlock":
                 return new MergeSolidParticlesBlock("Merge Solid Particles");
             case "UpdateSolidParticlePositionBlock":
-                return new UpdateSolidParticlePositionBlock("Update SPS Position");
+                return new UpdateSolidParticlePositionBlock("Update Solid Particle Position");
             case "UpdateSolidParticleVelocityBlock":
-                return new UpdateSolidParticleVelocityBlock("Update SPS Velocity");
+                return new UpdateSolidParticleVelocityBlock("Update Solid Particle Velocity");
             case "UpdateSolidParticleColorBlock":
-                return new UpdateSolidParticleColorBlock("Update SPS Color");
+                return new UpdateSolidParticleColorBlock("Update Solid Particle Color");
             case "UpdateSolidParticleScalingBlock":
-                return new UpdateSolidParticleScalingBlock("Update SPS Scaling");
+                return new UpdateSolidParticleScalingBlock("Update Solid Particle Scaling");
             case "UpdateSolidParticleRotationBlock":
-                return new UpdateSolidParticleRotationBlock("Update SPS Rotation");
+                return new UpdateSolidParticleRotationBlock("Update Solid Particle Rotation");
             case "TextureBlock":
                 return new ParticleTextureSourceBlock("Texture");
             case "BoxShapeBlock":
