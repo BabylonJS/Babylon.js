@@ -149,9 +149,9 @@ export class GeospatialCameraMovement extends CameraMovement {
             this._panSpeedMultiplier = 1;
         }
 
-        // If a pan drag is occurring, stop zooming.
+        // If a pan drag or rotate is occurring, stop zooming.
         let zoomTargetDistance: number | undefined;
-        if (this.isDragging) {
+        if (this.isDragging || this.rotationAccumulatedPixels.lengthSquared() > Epsilon) {
             this._zoomSpeedMultiplier = 0;
             this._zoomVelocity = 0;
         } else {
