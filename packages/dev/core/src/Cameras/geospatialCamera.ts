@@ -391,7 +391,7 @@ export class GeospatialCamera extends Camera {
             return newRadius;
         }
 
-        // Move the camera position along the center->target ray by the raw zoom delta
+        // Move the camera position towards targetPoint by distanceToTarget
         directionToTarget.scaleInPlace(distance / distanceToTarget);
         const newPosition = this._position.addToRef(directionToTarget, TmpVectors.Vector3[1]);
 
