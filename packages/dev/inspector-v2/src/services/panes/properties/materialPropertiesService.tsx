@@ -86,7 +86,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 },
                 {
                     section: "Textures",
-                    component: ({ context }) => <StandardMaterialTexturesProperties material={context} />,
+                    component: ({ context }) => <StandardMaterialTexturesProperties material={context} selectionService={selectionService} />,
                 },
                 {
                     section: "Lighting & Colors",
