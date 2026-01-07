@@ -8,6 +8,7 @@ import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/pro
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { BoundProperty } from "../boundProperty";
+import { Color3 } from "core/Maths/math.color";
 
 /**
  * Displays the lighting and color properties of a PBR material.
@@ -26,6 +27,16 @@ export const PBRMaterialLightingAndColorProperties: FunctionComponent<{ material
             <BoundProperty component={Color3PropertyLine} label="Emissive" target={material} propertyKey="emissiveColor" isLinearMode />
             <BoundProperty component={Color3PropertyLine} label="Ambient" target={material} propertyKey="ambientColor" isLinearMode />
             <BoundProperty component={SwitchPropertyLine} label="Use Physical Light Falloff" target={material} propertyKey="usePhysicalLightFalloff" />
+            {/* TODO below is just for testing, move into pbrBaseMaterialProperties in Alexis' PR */}
+            <BoundProperty
+                component={Color3PropertyLine}
+                label="Translucency Tint"
+                target={material.subSurface}
+                propertyKey="translucencyColor"
+                isLinearMode={true}
+                nullable
+                defaultValue={Color3.White()}
+            />
         </>
     );
 };

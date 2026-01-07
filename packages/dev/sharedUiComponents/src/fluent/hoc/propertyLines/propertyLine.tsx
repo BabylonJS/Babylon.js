@@ -1,4 +1,4 @@
-import { Body1, InfoLabel, Checkbox, makeStyles, Body1Strong, tokens, mergeClasses } from "@fluentui/react-components";
+import { Body1, InfoLabel, Checkbox, makeStyles, Body1Strong, tokens, mergeClasses, Tooltip } from "@fluentui/react-components";
 import {
     ChevronCircleDown20Regular,
     ChevronCircleDown16Regular,
@@ -63,6 +63,10 @@ const usePropertyLineStyles = makeStyles({
     },
     expandedContentDiv: {
         overflow: "hidden",
+    },
+    checkbox: {
+        display: "flex",
+        alignItems: "center",
     },
 });
 
@@ -184,20 +188,23 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
 
                     {nullable && !ignoreNullable && (
                         // If this is a nullableProperty and ignoreNullable was not sent, display a checkbox used to toggle null ('checked' means 'non null')
-                        <Checkbox
-                            checked={!(props.value == null)}
-                            onChange={(_, data) => {
-                                if (data.checked) {
-                                    // if checked this means we are returning to non-null, use cached value if exists. If no cached value, use default value
-                                    cachedVal.current != null ? props.onChange(cachedVal.current) : props.onChange(props.defaultValue);
-                                } else {
-                                    // if moving to un-checked state, this means moving to null value. Cache the old value and tell props.onChange(null)
-                                    cachedVal.current = props.value;
-                                    props.onChange(null);
-                                }
-                            }}
-                            title="Toggle null state"
-                        />
+                        <Tooltip relationship="label" content={props.value == null ? "Enable property" : "Disable property (set to null)"}>
+                            <Checkbox
+                                className={classes.checkbox}
+                                checked={!(props.value == null)}
+                                onChange={(_, data) => {
+                                    if (data.checked) {
+                                        // if checked this means we are returning to non-null, use cached value if exists. If no cached value, use default value
+                                        cachedVal.current != null ? props.onChange(cachedVal.current) : props.onChange(props.defaultValue);
+                                    } else {
+                                        // if moving to un-checked state, this means moving to null value. Cache the old value and tell props.onChange(null)
+                                        cachedVal.current = props.value;
+                                        props.onChange(null);
+                                    }
+                                }}
+                                title="Toggle null state"
+                            />
+                        </Tooltip>
                     )}
                     <div className={classes.childWrapper}>{processedChildren}</div>
                     {onCopy && !disableCopy && (
