@@ -30,6 +30,7 @@ module.exports = (env) => {
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
                 "inspector-v2": path.resolve("./src"),
                 serializers: path.resolve("../../dev/serializers/dist"),
+                "node-particle-editor": path.resolve("../../tools/nodeParticleEditor/dist"),
             },
         },
 

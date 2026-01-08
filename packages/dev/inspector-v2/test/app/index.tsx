@@ -28,6 +28,8 @@ import { MultiMaterial } from "core/Materials/multiMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { ShowInspector } from "../../src";
 
+import "node-particle-editor/legacy/legacy"; // Ensure node particle editor legacy code is imported
+
 // Register scene loader plugins.
 registerBuiltInLoaders();
 
