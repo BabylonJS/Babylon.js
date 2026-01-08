@@ -8,7 +8,6 @@ import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { Effect } from "../Materials/effect";
 import { DataBuffer } from "../Buffers/dataBuffer";
-import { Tools } from "../Misc/tools";
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions, InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
@@ -64,6 +63,7 @@ import type { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import "../Buffers/buffer.align";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { PerfCounter } from "../Misc/perfCounter";
+import { DecodeBase64UrlToBinary } from "../Misc/fileTools";
 
 // REVIEW: add a flag to effect to prevent multiple compilations of the same shader.
 declare module "../Materials/effect" {
@@ -360,27 +360,7 @@ export class ThinNativeEngine extends ThinEngine {
             _collectUbosUpdatedInFrame: false,
         };
 
-        Tools.Log("Babylon Native (v" + AbstractEngine.Version + ") launched");
-
-        Tools.LoadScript = function (scriptUrl, onSuccess, onError, scriptId) {
-            Tools.LoadFile(
-                scriptUrl,
-                (data) => {
-                    Function(data as string).apply(null);
-                    if (onSuccess) {
-                        onSuccess();
-                    }
-                },
-                undefined,
-                undefined,
-                false,
-                (request, exception) => {
-                    if (onError) {
-                        onError("LoadScript Error", exception);
-                    }
-                }
-            );
-        };
+        Logger.Log("Babylon Native (v" + AbstractEngine.Version + ") launched");
 
         // Wrappers
         if (typeof URL === "undefined") {
@@ -975,7 +955,7 @@ export class ThinNativeEngine extends ThinEngine {
         this._zOffset = zOffset;
         this._zOffsetUnits = zOffsetUnits;
         if (this._zOffset !== 0) {
-            Tools.Warn("zOffset is not supported in Native engine.");
+            Logger.Warn("zOffset is not supported in Native engine.");
         }
 
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSTATE);
@@ -1955,13 +1935,13 @@ export class ThinNativeEngine extends ThinEngine {
                 } else if (ArrayBuffer.isView(buffer)) {
                     onload(buffer);
                 } else if (typeof buffer === "string") {
-                    onload(new Uint8Array(Tools.DecodeBase64(buffer)));
+                    onload(new Uint8Array(DecodeBase64UrlToBinary(buffer)));
                 } else {
                     throw new Error("Unsupported buffer type");
                 }
             } else {
                 if (isBase64) {
-                    onload(new Uint8Array(Tools.DecodeBase64(url)));
+                    onload(new Uint8Array(DecodeBase64UrlToBinary(url)));
                 } else {
                     this._loadFile(
                         url,
