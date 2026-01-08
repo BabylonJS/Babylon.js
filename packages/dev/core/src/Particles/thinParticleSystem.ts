@@ -317,12 +317,17 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 nextItem: null,
             };
             _ConnectAfter(this._rampCreation, this._colorDeadCreation);
-            this._remapGradientProcessing = {
-                process: _ProcessRemapGradients,
-                previousItem: null,
-                nextItem: null,
-            };
-            _ConnectAfter(this._remapGradientProcessing, this._gravityProcessing);
+
+            // NPE based particles system do not have an update queue as that's represented by update blocks
+            // So even if there is ramp/remap, do not try to add it to the queue unless it exists already (if it exists, gravityProcessing will be defined)
+            if (this._gravityProcessing) {
+                this._remapGradientProcessing = {
+                    process: _ProcessRemapGradients,
+                    previousItem: null,
+                    nextItem: null,
+                };
+                _ConnectAfter(this._remapGradientProcessing, this._gravityProcessing);
+            }
         } else {
             _RemoveFromQueue(this._rampCreation);
             _RemoveFromQueue(this._remapGradientProcessing);
