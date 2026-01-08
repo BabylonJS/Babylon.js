@@ -1,6 +1,6 @@
 import type { Observable } from "core/index";
 
-import { createContext, useContext } from "react";
+import { createContext, useCallback, useContext } from "react";
 
 export type PropertyChangeInfo = {
     readonly entity: unknown;
@@ -17,7 +17,10 @@ export const PropertyContext = createContext<PropertyContext | undefined>(undefi
 
 export function usePropertyChangedNotifier() {
     const propertyContext = useContext(PropertyContext);
-    return <ObjectT, PropertyT extends keyof ObjectT>(entity: ObjectT, propertyKey: PropertyT, oldValue: ObjectT[PropertyT], newValue: ObjectT[PropertyT]) => {
-        propertyContext?.onPropertyChanged.notifyObservers({ entity, propertyKey, oldValue, newValue });
-    };
+    return useCallback(
+        <ObjectT, PropertyT extends keyof ObjectT>(entity: ObjectT, propertyKey: PropertyT, oldValue: ObjectT[PropertyT], newValue: ObjectT[PropertyT]) => {
+            propertyContext?.onPropertyChanged.notifyObservers({ entity, propertyKey, oldValue, newValue });
+        },
+        [propertyContext]
+    );
 }

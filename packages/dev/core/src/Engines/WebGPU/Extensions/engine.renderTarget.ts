@@ -8,6 +8,7 @@ import { GetTypeForDepthTexture, HasStencilAspect } from "core/Materials/Texture
 
 import "../../AbstractEngine/abstractEngine.texture";
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
+import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
 declare module "../../abstractEngine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -174,10 +175,13 @@ ThinWebGPUEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWr
 
     samples = Math.min(samples, this.getCaps().maxMSAASamples);
 
-    this._textureHelper.createMSAATexture(rtWrapper.texture, samples);
+    // Releases existing MSAA textures. New ones will be created on demand.
+    const gpuTexture = rtWrapper.texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
+
+    gpuTexture?.releaseMSAATextures();
 
     if (rtWrapper._depthStencilTexture) {
-        this._textureHelper.createMSAATexture(rtWrapper._depthStencilTexture, samples);
+        (rtWrapper._depthStencilTexture._hardwareTexture as Nullable<WebGPUHardwareTexture>)?.releaseMSAATextures();
         rtWrapper._depthStencilTexture.samples = samples;
     }
 

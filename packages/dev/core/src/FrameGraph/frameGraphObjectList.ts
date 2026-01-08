@@ -8,10 +8,10 @@ export class FrameGraphObjectList {
     /**
      * The meshes in the object list.
      */
-    meshes: Nullable<AbstractMesh[]>;
+    public meshes: Nullable<AbstractMesh[]>;
     /**
      * The particle systems in the object list.
      */
-    particleSystems: Nullable<IParticleSystem[]>;
+    public particleSystems: Nullable<IParticleSystem[]>;
     // todo: sprites?
 }

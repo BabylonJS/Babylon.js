@@ -1,8 +1,8 @@
-import type { Color3Gradient, ColorGradient } from "core/Misc";
 import type { Nullable } from "core/types";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Mesh } from "core/Meshes/mesh";
+import type { Color3Gradient, ColorGradient } from "core/Misc";
 import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
@@ -32,7 +32,7 @@ import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particl
 import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 import { ParticleVectorLengthBlock } from "./Blocks/particleVectorLengthBlock";
-import { RampValue0Index, SystemBlock } from "./Blocks/systemBlock";
+import { SystemBlock } from "./Blocks/systemBlock";
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "./Blocks/Conditions/particleConditionBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
@@ -972,10 +972,12 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
 
     _SystemEmitRateValue(oldSystem.getEmitRateGradients(), oldSystem.targetStopDuration, oldSystem.emitRate, newSystem, context);
-    const clonedParticleTexture = oldSystem.particleTexture?.clone();
-    if (clonedParticleTexture) {
-        _CreateTextureBlock(clonedParticleTexture).connectTo(newSystem.texture);
+
+    const texture = oldSystem.particleTexture;
+    if (texture) {
+        _CreateTextureBlock(texture).connectTo(newSystem.texture);
     }
+
     _SystemTargetStopDuration(oldSystem.targetStopDuration, newSystem, context);
 
     const rampGradients = oldSystem.getRampGradients();
@@ -1022,20 +1024,24 @@ function _SystemTargetStopDuration(targetStopDuration: number, newSystem: System
 }
 
 function _SystemRampGradientsBlockGroup(rampGradients: Color3Gradient[], newSystem: SystemBlock): void {
+    const gradientBlock = new ParticleGradientBlock("Ramp Gradient Block");
+
     for (let i = 0; i < rampGradients.length; i++) {
         const rampGradient = rampGradients[i];
 
-        const gradientBlock = new ParticleGradientValueBlock(`Ramp Gradient ${i}`);
-        gradientBlock.reference = rampGradient.gradient;
+        const gradientValueBlock = new ParticleGradientValueBlock(`Ramp Gradient ${i}`);
+        gradientValueBlock.reference = rampGradient.gradient;
         _CreateAndConnectInput(
             `Color ${i}`,
             new Color4(rampGradient.color.r, rampGradient.color.g, rampGradient.color.b),
-            gradientBlock.value,
+            gradientValueBlock.value,
             NodeParticleBlockConnectionPointTypes.Color4
         );
 
-        gradientBlock.output.connectTo(newSystem.inputs[RampValue0Index + i]);
+        gradientValueBlock.output.connectTo(gradientBlock.inputs[i + 1]);
     }
+
+    gradientBlock.output.connectTo(newSystem.rampGradient);
 }
 
 // ------------- UTILITY FUNCTIONS -------------
@@ -1229,7 +1235,8 @@ function _CreateGradientValueBlockGroup(
     return gradientValueBlock.output;
 }
 
-function _CreateTextureBlock(texture: BaseTexture): NodeParticleConnectionPoint {
+function _CreateTextureBlock(texture: Nullable<BaseTexture>): NodeParticleConnectionPoint {
+    // Texture - always use sourceTexture to preserve all texture options
     const textureBlock = new ParticleTextureSourceBlock("Texture");
     textureBlock.sourceTexture = texture;
     return textureBlock.texture;

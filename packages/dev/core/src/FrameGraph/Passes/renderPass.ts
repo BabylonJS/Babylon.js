@@ -2,13 +2,27 @@ import type { Nullable, FrameGraphRenderContext, AbstractEngine, IFrameGraphPass
 import { FrameGraphPass } from "./pass";
 
 /**
+ * Type used to define layer and face indices for multi-render target rendering scenarios.
+ */
+export type LayerAndFaceIndex = {
+    /** Index of the texture to update */
+    targetIndex: number;
+
+    /** Index of the layer to set (optional - not used if the texture is not an array or a 3D texture) */
+    layerIndex?: number;
+
+    /** Index of the cube face to set (optional - not used if the texture is not a cube texture) */
+    faceIndex?: number;
+};
+
+/**
  * Render pass used to render objects.
  */
 export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext> {
     protected readonly _engine: AbstractEngine;
     protected _renderTarget: FrameGraphTextureHandle | FrameGraphTextureHandle[] | undefined;
     protected _renderTargetDepth: FrameGraphTextureHandle | undefined;
-    protected _frameGraphRenderTarget: FrameGraphRenderTarget | undefined;
+    protected _frameGraphRenderTarget: FrameGraphRenderTarget;
     protected _dependencies: Set<FrameGraphTextureHandle> = new Set();
 
     /**
@@ -37,7 +51,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     /**
      * Gets the frame graph render target used by the render pass.
      */
-    public get frameGraphRenderTarget(): FrameGraphRenderTarget | undefined {
+    public get frameGraphRenderTarget(): FrameGraphRenderTarget {
         return this._frameGraphRenderTarget;
     }
 
@@ -118,27 +132,36 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
         }
     }
 
+    /**
+     * Sets the output layer and face indices for multi-render target rendering.
+     * @param indices The array of layer and face indices.
+     */
+    public setOutputLayerAndFaceIndices(indices: LayerAndFaceIndex[]): void {
+        const renderTargetWrapper = this.frameGraphRenderTarget.renderTargetWrapper;
+        if (renderTargetWrapper) {
+            for (const index of indices) {
+                renderTargetWrapper.setLayerAndFaceIndex(index.targetIndex, index.layerIndex, index.faceIndex);
+            }
+        }
+    }
+
+    /** @internal */
+    public override _initialize() {
+        this._frameGraphRenderTarget = this._context.createRenderTarget(this.name, this._renderTarget, this._renderTargetDepth, this.depthReadOnly, this.stencilReadOnly);
+        super._initialize();
+    }
+
     /** @internal */
     public override _execute() {
-        this._frameGraphRenderTarget =
-            this._frameGraphRenderTarget || this._context.createRenderTarget(this.name, this._renderTarget, this._renderTargetDepth, this.depthReadOnly, this.stencilReadOnly);
+        const currentDebugMarkers = this._context.enableDebugMarkers;
 
+        this._context.enableDebugMarkers = !this._parentTask._disableDebugMarkers;
         this._context.bindRenderTarget(this._frameGraphRenderTarget);
 
         super._execute();
 
-        this._context._flushDebugMessages();
-
-        const renderTargetWrapper = this._frameGraphRenderTarget.renderTargetWrapper;
-        if (
-            renderTargetWrapper &&
-            renderTargetWrapper.samples > 1 &&
-            (renderTargetWrapper.resolveMSAAColors || renderTargetWrapper.resolveMSAADepth || renderTargetWrapper.resolveMSAAStencil)
-        ) {
-            // Unbinding the render target will trigger resolving MSAA textures.
-            this._context.bindRenderTarget(undefined, `Resolve MSAA${this.name ? " (" + this.name + ")" : ""}`, true);
-            this._context._flushDebugMessages();
-        }
+        this._context.restoreDefaultFramebuffer();
+        this._context.enableDebugMarkers = currentDebugMarkers;
     }
 
     /** @internal */

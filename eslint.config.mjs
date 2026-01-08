@@ -472,6 +472,15 @@ export default tseslint.config(
                     format: ["strictCamelCase", "snake_case", "UPPER_CASE"],
                     leadingUnderscore: "allow",
                 },
+                // Allow CSS selector patterns in object literals (e.g., "> *", "&:hover", ":first-child")
+                {
+                    selector: "objectLiteralProperty",
+                    format: null,
+                    filter: {
+                        regex: "^[>&:.*#\\[]",
+                        match: true,
+                    },
+                },
                 {
                     selector: "enumMember",
                     format: ["StrictPascalCase", "UPPER_CASE"],

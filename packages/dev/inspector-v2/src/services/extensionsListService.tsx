@@ -61,7 +61,6 @@ import { useExtensionManager } from "../contexts/extensionManagerContext";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { ShellServiceIdentity } from "./shellService";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     extensionButton: {},
     extensionsDialogSurface: {
@@ -183,7 +182,6 @@ function usePeopleMetadata(people?: readonly (string | PersonMetadata | undefine
     return peopleMetadataEx.filter(Boolean);
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useTeachingMoment = MakePopoverTeachingMoment("Extensions");
 
 const WebResource: FunctionComponent<{ url: string; urlDisplay?: string; icon: JSX.Element; label: string }> = (props) => {

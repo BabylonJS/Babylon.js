@@ -10,19 +10,23 @@ import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/property
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
-import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
-import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
+import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 
 export const SpriteManagerGeneralProperties: FunctionComponent<{ spriteManager: SpriteManager; selectionService: ISelectionService }> = (props) => {
     const { spriteManager, selectionService } = props;
 
-    const texture = useProperty(spriteManager, "texture");
-
     return (
         <>
             <TextPropertyLine label="Capacity" value={spriteManager.capacity.toString()} />
-            <LinkToEntityPropertyLine label="Texture" entity={texture} selectionService={selectionService} />
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
+                label="Texture"
+                target={spriteManager}
+                propertyKey="texture"
+                scene={spriteManager.scene}
+                onLink={(texture) => (selectionService.selectedEntity = texture)}
+            />
         </>
     );
 };

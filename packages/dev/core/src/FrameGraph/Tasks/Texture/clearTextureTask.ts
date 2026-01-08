@@ -1,12 +1,12 @@
 import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
 import { Color4, TmpColors } from "../../../Maths/math.color";
-import { FrameGraphTask } from "../../frameGraphTask";
+import { FrameGraphTaskMultiRenderTarget } from "../../frameGraphTaskMultiRenderTarget";
 import { backbufferColorTextureHandle } from "../../frameGraphTypes";
 
 /**
  * Task used to clear a texture.
  */
-export class FrameGraphClearTextureTask extends FrameGraphTask {
+export class FrameGraphClearTextureTask extends FrameGraphTaskMultiRenderTarget {
     /**
      * The color to clear the texture with.
      */
@@ -118,15 +118,18 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
 
         pass.setRenderTarget(targetTextures);
         pass.setRenderTargetDepth(this.depthTexture);
+        pass.setInitializeFunc(() => {
+            const renderTargetWrapper = pass.frameGraphRenderTarget.renderTargetWrapper;
+            if (renderTargetWrapper) {
+                renderTargetWrapper.disableAutomaticMSAAResolve = true;
+            }
+        });
         pass.setExecuteFunc((context) => {
+            this._updateLayerAndFaceIndices(pass);
+
             color.copyFrom(this.color);
             if (this.convertColorToLinearSpace) {
                 color.toLinearSpaceToRef(color);
-            }
-
-            const renderTargetWrapper = pass.frameGraphRenderTarget!.renderTargetWrapper;
-            if (renderTargetWrapper) {
-                renderTargetWrapper.disableAutomaticMSAAResolve = true;
             }
 
             context.clearAttachments(color, attachments, !!this.clearColor, !!this.clearDepth, !!this.clearStencil, this.stencilValue);
