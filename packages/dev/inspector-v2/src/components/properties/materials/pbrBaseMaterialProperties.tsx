@@ -16,6 +16,7 @@ import type { DropdownOption } from "shared-ui-components/fluent/primitives/drop
 import { Constants } from "core/Engines/constants";
 import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 import type { ISelectionService } from "../../../services/selectionService";
+import { Color3 } from "core/Maths/math.color";
 
 declare module "core/Materials/PBR/pbrSheenConfiguration" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -736,7 +737,7 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
                     target={material.subSurface}
                     propertyKey="useAlbedoToTintTranslucency"
                 />
-                {/* TODO: fix it <BoundProperty
+                <BoundProperty
                     component={Color3PropertyLine}
                     label="Translucency Tint"
                     target={material.subSurface}
@@ -744,7 +745,7 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
                     isLinearMode={true}
                     nullable
                     defaultValue={Color3.White()}
-                /> */}
+                />
                 <BoundProperty
                     component={TextureSelectorPropertyLine}
                     label="Translucency Tint Texture"
