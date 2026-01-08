@@ -2,7 +2,6 @@ import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 import type { ParticleGradientValueBlock } from "./particleGradientValueBlock";
-import type { ParticleInputBlock } from "./particleInputBlock";
 
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { RegisterClass } from "core/Misc/typeStore";
