@@ -1,5 +1,13 @@
 # Changelog
 
+## 8.45.1
+
+### Core
+
+- Adding sprite cell change speed - by [VicenteCartas](https://github.com/VicenteCartas) ([#17630](https://github.com/BabylonJS/Babylon.js/pull/17630))
+- Add support for migrating ramp - by [VicenteCartas](https://github.com/VicenteCartas) ([#17608](https://github.com/BabylonJS/Babylon.js/pull/17608))
+- Prevent scene events during babylon file container loading - by [sebavan](https://github.com/sebavan) ([#17623](https://github.com/BabylonJS/Babylon.js/pull/17623))
+
 ## 8.45.0
 
 ### Core
