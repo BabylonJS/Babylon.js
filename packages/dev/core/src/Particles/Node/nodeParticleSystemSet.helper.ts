@@ -31,7 +31,7 @@ import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particl
 import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 import { ParticleVectorLengthBlock } from "./Blocks/particleVectorLengthBlock";
-import { RampValue0Index, SystemBlock } from "./Blocks/systemBlock";
+import { SystemBlock } from "./Blocks/systemBlock";
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "./Blocks/Conditions/particleConditionBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
@@ -904,20 +904,24 @@ function _SystemTargetStopDuration(targetStopDuration: number, newSystem: System
 }
 
 function _SystemRampGradientsBlockGroup(rampGradients: Color3Gradient[], newSystem: SystemBlock): void {
+    const gradientBlock = new ParticleGradientBlock("Ramp Gradient Block");
+
     for (let i = 0; i < rampGradients.length; i++) {
         const rampGradient = rampGradients[i];
 
-        const gradientBlock = new ParticleGradientValueBlock(`Ramp Gradient ${i}`);
-        gradientBlock.reference = rampGradient.gradient;
+        const gradientValueBlock = new ParticleGradientValueBlock(`Ramp Gradient ${i}`);
+        gradientValueBlock.reference = rampGradient.gradient;
         _CreateAndConnectInput(
             `Color ${i}`,
             new Color4(rampGradient.color.r, rampGradient.color.g, rampGradient.color.b),
-            gradientBlock.value,
+            gradientValueBlock.value,
             NodeParticleBlockConnectionPointTypes.Color4
         );
 
-        gradientBlock.output.connectTo(newSystem.inputs[RampValue0Index + i]);
+        gradientValueBlock.output.connectTo(gradientBlock.inputs[i + 1]);
     }
+
+    gradientBlock.output.connectTo(newSystem.rampGradient);
 }
 
 // ------------- UTILITY FUNCTIONS -------------
