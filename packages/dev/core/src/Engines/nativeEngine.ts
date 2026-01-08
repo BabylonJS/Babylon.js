@@ -11,6 +11,7 @@ import type { INative } from "./Native/nativeInterfaces";
 import { ThinNativeEngine, type ThinNativeEngineOptions } from "./thinNativeEngine";
 
 import "./AbstractEngine/abstractEngine.loadFile";
+import "./AbstractEngine/abstractEngine.textureLoaders";
 
 /**
  * Options to create the Native engine

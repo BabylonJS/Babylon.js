@@ -34,6 +34,7 @@ import "./AbstractEngine/abstractEngine.stencil";
 import "./AbstractEngine/abstractEngine.renderPass";
 import "./AbstractEngine/abstractEngine.texture";
 import "./AbstractEngine/abstractEngine.loadFile";
+import "./AbstractEngine/abstractEngine.textureLoaders";
 
 import type { PostProcess } from "../PostProcesses/postProcess";
 import { AbstractEngine } from "./abstractEngine";
