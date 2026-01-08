@@ -2,7 +2,7 @@ import type { Nullable } from "core/types";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Mesh } from "core/Meshes/mesh";
-import type { Color3Gradient, ColorGradient, FactorGradient } from "core/Misc";
+import type { Color3Gradient, ColorGradient } from "core/Misc";
 import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
@@ -18,6 +18,7 @@ import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBloc
 
 import { Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { FactorGradient } from "core/Misc/gradients";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
@@ -49,6 +50,7 @@ import { UpdateDirectionBlock } from "./Blocks/Update/updateDirectionBlock";
 import { UpdateNoiseBlock } from "./Blocks/Update/updateNoiseBlock";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { UpdateSizeBlock } from "./Blocks/Update/updateSizeBlock";
+import { UpdateRemapBlock } from "./Blocks/Update/updateRemapBlock";
 
 /** Represents blocks or groups of blocks that can be used in multiple places in the graph, so they are stored in this context to be reused */
 type ConversionContext = {
@@ -473,6 +475,10 @@ function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, o
         updatedParticle = _UpdateParticleGravityBlockGroup(updatedParticle, oldSystem.gravity);
     }
 
+    if (oldSystem.useRampGradients) {
+        updatedParticle = _UpdateParticleRemapGradientBlockGroup(updatedParticle, oldSystem.getColorRemapGradients(), oldSystem.getAlphaRemapGradients(), context);
+    }
+
     if (oldSystem.isAnimationSheetEnabled) {
         updatedParticle = _UpdateParticleSpriteCellBlockGroup(updatedParticle);
     }
@@ -772,6 +778,120 @@ function _UpdateParticleGravityBlockGroup(inputParticle: NodeParticleConnectionP
     addDirectionBlock.output.connectTo(updateDirection.direction);
 
     return updateDirection.output;
+}
+
+/**
+ * Creates the group of blocks that represent the color and alpha remap update
+ * @param inputParticle The input particle to update
+ * @param colorRemapGradients The color remap gradients
+ * @param alphaRemapGradients The alpha remap gradients
+ * @param context The context of the current conversion
+ * @returns The ouput of the group of blocks that represent the particle remap update
+ */
+function _UpdateParticleRemapGradientBlockGroup(
+    inputParticle: NodeParticleConnectionPoint,
+    colorRemapGradients: Nullable<Array<FactorGradient>>,
+    alphaRemapGradients: Nullable<Array<FactorGradient>>,
+    context: RuntimeConversionContext
+): NodeParticleConnectionPoint {
+    let hasUpdate = false;
+
+    const remapUpdateBlock = new UpdateRemapBlock("Remap Update");
+
+    if (colorRemapGradients && colorRemapGradients.length > 0) {
+        context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
+
+        // Split the color gradient into factor1 and factor2 gradients
+        const colorFactor1Gradients: Array<FactorGradient> = [];
+        const colorFactor2Gradients: Array<FactorGradient> = [];
+
+        for (let i = 0; i < colorRemapGradients.length; i++) {
+            const gradientValue = colorRemapGradients[i];
+
+            colorFactor1Gradients.push(new FactorGradient(gradientValue.gradient, gradientValue.factor1));
+            colorFactor2Gradients.push(new FactorGradient(gradientValue.gradient, gradientValue.factor2!));
+        }
+
+        // Generate the gradient
+        const colorFactor1BlockGroup = _CreateGradientBlockGroup(
+            context.ageToLifeTimeRatioBlockGroupOutput,
+            colorFactor1Gradients,
+            ParticleRandomBlockLocks.OncePerParticle,
+            "Color Min"
+        );
+
+        // Generate the gradient
+        const colorFactor2BlockGroup = _CreateGradientBlockGroup(
+            context.ageToLifeTimeRatioBlockGroupOutput,
+            colorFactor2Gradients,
+            ParticleRandomBlockLocks.OncePerParticle,
+            "Color Max"
+        );
+
+        const substractBlock = new ParticleMathBlock("Color Max - Min");
+        substractBlock.operation = ParticleMathBlockOperations.Subtract;
+        colorFactor2BlockGroup.connectTo(substractBlock.left);
+        colorFactor1BlockGroup.connectTo(substractBlock.right);
+
+        const colorConverterBlock = new ParticleConverterBlock("Color Remap Converter");
+        colorFactor1BlockGroup.connectTo(colorConverterBlock.xIn);
+        substractBlock.output.connectTo(colorConverterBlock.yIn);
+
+        colorConverterBlock.xyOut.connectTo(remapUpdateBlock.remapColor);
+
+        hasUpdate = true;
+    }
+
+    if (alphaRemapGradients && alphaRemapGradients.length > 0) {
+        context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
+
+        // Split the color gradient into factor1 and factor2 gradients
+        const alphaFactor1Gradients: Array<FactorGradient> = [];
+        const alphaFactor2Gradients: Array<FactorGradient> = [];
+
+        for (let i = 0; i < alphaRemapGradients.length; i++) {
+            const gradientValue = alphaRemapGradients[i];
+
+            alphaFactor1Gradients.push(new FactorGradient(gradientValue.gradient, gradientValue.factor1));
+            alphaFactor2Gradients.push(new FactorGradient(gradientValue.gradient, gradientValue.factor2!));
+        }
+
+        // Generate the gradient
+        const alphaFactor1BlockGroup = _CreateGradientBlockGroup(
+            context.ageToLifeTimeRatioBlockGroupOutput,
+            alphaFactor1Gradients,
+            ParticleRandomBlockLocks.OncePerParticle,
+            "Alpha Min"
+        );
+
+        // Generate the gradient
+        const alphaFactor2BlockGroup = _CreateGradientBlockGroup(
+            context.ageToLifeTimeRatioBlockGroupOutput,
+            alphaFactor2Gradients,
+            ParticleRandomBlockLocks.OncePerParticle,
+            "Alpha Max"
+        );
+
+        const substractBlock = new ParticleMathBlock("Alpha Max - Min");
+        substractBlock.operation = ParticleMathBlockOperations.Subtract;
+        alphaFactor2BlockGroup.connectTo(substractBlock.left);
+        alphaFactor1BlockGroup.connectTo(substractBlock.right);
+
+        const alphaConverterBlock = new ParticleConverterBlock("Alpha Remap Converter");
+        alphaFactor1BlockGroup.connectTo(alphaConverterBlock.xIn);
+        substractBlock.output.connectTo(alphaConverterBlock.yIn);
+
+        alphaConverterBlock.xyOut.connectTo(remapUpdateBlock.remapAlpha);
+
+        hasUpdate = true;
+    }
+
+    if (hasUpdate) {
+        inputParticle.connectTo(remapUpdateBlock.particle);
+        return remapUpdateBlock.output;
+    }
+
+    return inputParticle;
 }
 
 /**
