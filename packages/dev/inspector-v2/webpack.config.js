@@ -20,7 +20,7 @@ module.exports = (env) => {
         ),
 
         resolve: {
-            extensions: [".ts", ".tsx", ".js", ".jsx"],
+            extensions: [".ts", ".tsx", ".js", ".jsx", ".svg", ".scss"],
             alias: {
                 addons: path.resolve("../../dev/addons/dist"),
                 core: path.resolve("../../dev/core/dist"),
@@ -36,7 +36,13 @@ module.exports = (env) => {
         module: {
             rules: webpackTools.getRules({
                 sideEffects: true,
-                includeCSS: false,
+                includeCSS: true,
+                extraRules: [
+                    {
+                        test: /\.svg$/,
+                        type: "asset/inline",
+                    },
+                ],
                 enableFastRefresh: !production,
                 tsOptions: {
                     configFile: "tsconfig.build.json",
