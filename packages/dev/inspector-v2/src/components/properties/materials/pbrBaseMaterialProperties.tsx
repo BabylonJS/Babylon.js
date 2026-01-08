@@ -222,7 +222,7 @@ export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PB
             />
             <BoundProperty
                 component={TextureSelectorPropertyLine}
-                label="Micro-surface"
+                label="Micro Surface"
                 target={material}
                 propertyKey="_microSurfaceTexture"
                 scene={scene}
@@ -283,9 +283,9 @@ export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PB
                 onLink={selectEntity}
                 defaultValue={null}
             />
-            <BoundProperty component={SwitchPropertyLine} label="Use lightmap as shadowmap" target={material} propertyKey="_useLightmapAsShadowmap" />
-            <BoundProperty component={SwitchPropertyLine} label="Use detailmap" target={material.detailMap} propertyKey="isEnabled" />
-            <BoundProperty component={SwitchPropertyLine} label="Use decalmap" target={material.decalMap} propertyKey="isEnabled" />
+            <BoundProperty component={SwitchPropertyLine} label="Use Lightmap as Shadowmap" target={material} propertyKey="_useLightmapAsShadowmap" />
+            <BoundProperty component={SwitchPropertyLine} label="Use Detailmap" target={material.detailMap} propertyKey="isEnabled" />
+            <BoundProperty component={SwitchPropertyLine} label="Use Decalmap" target={material.decalMap} propertyKey="isEnabled" />
         </>
     );
 };
@@ -298,10 +298,10 @@ export const PBRBaseMaterialLightingAndColorProperties: FunctionComponent<{ mate
             <BoundProperty component={Color3PropertyLine} label="Albedo" target={material} propertyKey="_albedoColor" isLinearMode />
             <BoundProperty component={SyncedSliderPropertyLine} label="Base Weight" target={material} propertyKey="_baseWeight" min={0} max={1} step={0.01} />
             <BoundProperty component={Color3PropertyLine} label="Reflectivity" target={material} propertyKey="_reflectivityColor" isLinearMode />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Micro-Surface" target={material} propertyKey="_microSurface" min={0} max={1} step={0.01} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Micro Surface" target={material} propertyKey="_microSurface" min={0} max={1} step={0.01} />
             <BoundProperty component={Color3PropertyLine} label="Emissive" target={material} propertyKey="_emissiveColor" isLinearMode />
             <BoundProperty component={Color3PropertyLine} label="Ambient" target={material} propertyKey="_ambientColor" isLinearMode />
-            <BoundProperty component={NumberDropdownPropertyLine} label="Light falloff" target={material} propertyKey="_lightFalloff" options={LightFalloffOptions} />
+            <BoundProperty component={NumberDropdownPropertyLine} label="Light Falloff" target={material} propertyKey="_lightFalloff" options={LightFalloffOptions} />
         </>
     );
 };
@@ -350,14 +350,14 @@ export const PBRBaseMaterialMetallicWorkflowProperties: FunctionComponent<{ mate
             <BoundProperty component={Color3PropertyLine} label="Reflectance Color" target={material} propertyKey="_metallicReflectanceColor" isLinearMode />
             <BoundProperty
                 component={SwitchPropertyLine}
-                label="Metallic only"
+                label="Metallic Only"
                 description="Use only metallic from MetallicReflectance texture"
                 target={material}
                 propertyKey="_useOnlyMetallicFromMetallicReflectanceTexture"
             />
             <BoundProperty
                 component={TextureSelectorPropertyLine}
-                label="MetallicReflectance Texture"
+                label="Metallic Reflectance"
                 target={material}
                 propertyKey="_metallicReflectanceTexture"
                 scene={scene}
@@ -366,7 +366,7 @@ export const PBRBaseMaterialMetallicWorkflowProperties: FunctionComponent<{ mate
             />
             <BoundProperty
                 component={TextureSelectorPropertyLine}
-                label="Reflectance Texture"
+                label="Reflectance"
                 target={material}
                 propertyKey="_reflectanceTexture"
                 scene={scene}
@@ -406,7 +406,7 @@ export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: P
                 <BoundProperty component={SwitchPropertyLine} label="Remap F0" target={material.clearCoat} propertyKey="remapF0OnInterfaceChange" />
                 <BoundProperty
                     component={TextureSelectorPropertyLine}
-                    label="Clear coat"
+                    label="Clear Coat"
                     target={material.clearCoat}
                     propertyKey="texture"
                     scene={scene}
@@ -496,7 +496,7 @@ export const PBRBaseMaterialIridescenceProperties: FunctionComponent<{ material:
                 />
                 <BoundProperty
                     component={SyncedSliderPropertyLine}
-                    label="Minimum Thickness"
+                    label="Min Thickness"
                     target={material.iridescence}
                     propertyKey="minimumThickness"
                     min={0}
@@ -505,7 +505,7 @@ export const PBRBaseMaterialIridescenceProperties: FunctionComponent<{ material:
                 />
                 <BoundProperty
                     component={SyncedSliderPropertyLine}
-                    label="Maxium Thickness"
+                    label="Max Thickness"
                     target={material.iridescence}
                     propertyKey="maximumThickness"
                     min={0}
@@ -651,7 +651,7 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
             <Collapse visible={useScattering}>
                 <BoundProperty
                     component={SyncedSliderPropertyLine}
-                    label="Meters per unit"
+                    label="Meters Per Unit"
                     target={material.getScene().subSurfaceConfiguration}
                     propertyKey="metersPerUnit"
                     min={0.01}
@@ -698,10 +698,10 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
                     max={10}
                     step={0.1}
                 />
-                <BoundProperty component={SwitchPropertyLine} label="Link refraction with transparency" target={material.subSurface} propertyKey="linkRefractionWithTransparency" />
+                <BoundProperty component={SwitchPropertyLine} label="Link Refraction with Transparency" target={material.subSurface} propertyKey="linkRefractionWithTransparency" />
                 <BoundProperty
                     component={SwitchPropertyLine}
-                    label="Use albedo to tint surface transparency"
+                    label="Use Albedo to Tint Surface Transparency"
                     target={material.subSurface}
                     propertyKey="useAlbedoToTintRefraction"
                 />
@@ -733,7 +733,7 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
                 <BoundProperty component={Color3PropertyLine} label="Diffusion Distance" target={material.subSurface} propertyKey="diffusionDistance" isLinearMode={true} />
                 <BoundProperty
                     component={SwitchPropertyLine}
-                    label="Use albedo to tint surface translucency"
+                    label="Use Albedo to Tint Surface Translucency"
                     target={material.subSurface}
                     propertyKey="useAlbedoToTintTranslucency"
                 />
@@ -769,13 +769,13 @@ export const PBRBaseMaterialLevelProperties: FunctionComponent<{ material: PBRBa
             <BoundProperty component={SyncedSliderPropertyLine} label="Specular" target={material} propertyKey="_specularIntensity" min={0} max={1} step={0.01} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Emissive" target={material} propertyKey="_emissiveIntensity" min={0} max={1} step={0.01} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Direct" target={material} propertyKey="_directIntensity" min={0} max={1} step={0.01} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Bump strength" target={material._bumpTexture} propertyKey="level" min={0} max={2} step={0.01} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Bump Strength" target={material._bumpTexture} propertyKey="level" min={0} max={2} step={0.01} />
             <Collapse visible={!!material._ambientTexture}>
-                <BoundProperty component={SyncedSliderPropertyLine} label="Ambient strength" target={material} propertyKey="_ambientTextureStrength" min={0} max={1} step={0.01} />
+                <BoundProperty component={SyncedSliderPropertyLine} label="Ambient Strength" target={material} propertyKey="_ambientTextureStrength" min={0} max={1} step={0.01} />
             </Collapse>
-            <BoundProperty component={SyncedSliderPropertyLine} label="Reflection strength" target={material._reflectionTexture} propertyKey="level" min={0} max={1} step={0.01} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Clear coat" target={material.clearCoat.texture} propertyKey="level" min={0} max={1} step={0.01} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Clear coat bump" target={material.clearCoat.bumpTexture} propertyKey="level" min={0} max={2} step={0.01} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Reflection Strength" target={material._reflectionTexture} propertyKey="level" min={0} max={1} step={0.01} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Clear Coat" target={material.clearCoat.texture} propertyKey="level" min={0} max={1} step={0.01} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Clear Coat Bump" target={material.clearCoat.bumpTexture} propertyKey="level" min={0} max={2} step={0.01} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Anisotropic" target={material.anisotropy.texture} propertyKey="level" min={0} max={1} step={0.01} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Sheen" target={material.sheen.texture} propertyKey="level" min={0} max={1} step={0.01} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Thickness" target={material.subSurface.thicknessTexture} propertyKey="level" min={0} max={1} step={0.01} />
@@ -783,17 +783,17 @@ export const PBRBaseMaterialLevelProperties: FunctionComponent<{ material: PBRBa
             <Collapse visible={material.detailMap.isEnabled}>
                 <BoundProperty
                     component={SyncedSliderPropertyLine}
-                    label="Detailmap diffuse"
+                    label="Detailmap Diffuse"
                     target={material.detailMap}
                     propertyKey="diffuseBlendLevel"
                     min={0}
                     max={1}
                     step={0.01}
                 />
-                <BoundProperty component={SyncedSliderPropertyLine} label="Detailmap bump" target={material.detailMap} propertyKey="bumpLevel" min={0} max={1} step={0.01} />
+                <BoundProperty component={SyncedSliderPropertyLine} label="Detailmap Bump" target={material.detailMap} propertyKey="bumpLevel" min={0} max={1} step={0.01} />
                 <BoundProperty
                     component={SyncedSliderPropertyLine}
-                    label="Detailmap roughness"
+                    label="Detailmap Roughness"
                     target={material.detailMap}
                     propertyKey="roughnessBlendLevel"
                     min={0}
@@ -810,16 +810,16 @@ export const PBRBaseMaterialRenderingProperties: FunctionComponent<{ material: P
 
     return (
         <>
-            <BoundProperty component={SwitchPropertyLine} label="Alpha from albedo" target={material} propertyKey="_useAlphaFromAlbedoTexture" />
-            <BoundProperty component={SwitchPropertyLine} label="Ambient in grayscale" target={material} propertyKey="_useAmbientInGrayScale" />
-            <BoundProperty component={SwitchPropertyLine} label="Radiance over alpha" target={material} propertyKey="_useRadianceOverAlpha" />
-            <BoundProperty component={SwitchPropertyLine} label="Micro-surface from ref. map alpha" target={material} propertyKey="_useMicroSurfaceFromReflectivityMapAlpha" />
-            <BoundProperty component={SwitchPropertyLine} label="Specular over alpha" target={material} propertyKey="_useSpecularOverAlpha" />
-            <BoundProperty component={SwitchPropertyLine} label="Specular anti-aliasing" target={material} propertyKey="_enableSpecularAntiAliasing" />
+            <BoundProperty component={SwitchPropertyLine} label="Alpha from Albedo" target={material} propertyKey="_useAlphaFromAlbedoTexture" />
+            <BoundProperty component={SwitchPropertyLine} label="Ambient in Grayscale" target={material} propertyKey="_useAmbientInGrayScale" />
+            <BoundProperty component={SwitchPropertyLine} label="Radiance over Alpha" target={material} propertyKey="_useRadianceOverAlpha" />
+            <BoundProperty component={SwitchPropertyLine} label="Micro-surface from Ref. Map Alpha" target={material} propertyKey="_useMicroSurfaceFromReflectivityMapAlpha" />
+            <BoundProperty component={SwitchPropertyLine} label="Specular over Alpha" target={material} propertyKey="_useSpecularOverAlpha" />
+            <BoundProperty component={SwitchPropertyLine} label="Specular Anti-aliasing" target={material} propertyKey="_enableSpecularAntiAliasing" />
             <BoundProperty component={SwitchPropertyLine} label="Realtime Filtering" target={material} propertyKey="realTimeFiltering" />
             <BoundProperty
                 component={NumberDropdownPropertyLine}
-                label="Realtime Filtering quality"
+                label="Realtime Filtering Quality"
                 target={material}
                 propertyKey="realTimeFilteringQuality"
                 options={RealTimeFilteringQualityOptions}
@@ -856,12 +856,12 @@ export const PBRBaseMaterialAdvancedProperties: FunctionComponent<{ material: PB
         <>
             <BoundProperty component={SwitchPropertyLine} label="Energy Conservation" target={material.brdf} propertyKey="useEnergyConservation" />
             <BoundProperty component={SwitchPropertyLine} label="Spherical Harmonics" target={material.brdf} propertyKey="useSphericalHarmonics" />
-            <BoundProperty component={SwitchPropertyLine} label="Radiance occlusion" target={material} propertyKey="_useRadianceOcclusion" />
-            <BoundProperty component={SwitchPropertyLine} label="Horizon occlusion" target={material} propertyKey="_useHorizonOcclusion" />
-            <BoundProperty component={SwitchPropertyLine} label="Mix irradiance with rough radiance" target={material.brdf} propertyKey="mixIblRadianceWithIrradiance" />
+            <BoundProperty component={SwitchPropertyLine} label="Radiance Occlusion" target={material} propertyKey="_useRadianceOcclusion" />
+            <BoundProperty component={SwitchPropertyLine} label="Horizon Occlusion" target={material} propertyKey="_useHorizonOcclusion" />
+            <BoundProperty component={SwitchPropertyLine} label="Mix Irradiance with Rough Radiance" target={material.brdf} propertyKey="mixIblRadianceWithIrradiance" />
             <BoundProperty
                 component={SwitchPropertyLine}
-                label="Use legacy specular energy conservation"
+                label="Use Legacy Specular Energy Conservation"
                 target={material.brdf}
                 propertyKey="useLegacySpecularEnergyConservation"
             />
@@ -875,9 +875,9 @@ export const PBRBaseMaterialDebugProperties: FunctionComponent<{ material: PBRBa
 
     return (
         <>
-            <BoundProperty component={NumberDropdownPropertyLine} label="Debug mode" target={material} propertyKey="debugMode" options={DebugMode} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Split position" target={material} propertyKey="debugLimit" min={-1} max={1} step={0.01} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Output factor" target={material} propertyKey="debugFactor" min={0} max={5} step={0.01} />
+            <BoundProperty component={NumberDropdownPropertyLine} label="Debug Mode" target={material} propertyKey="debugMode" options={DebugMode} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Split Position" target={material} propertyKey="debugLimit" min={-1} max={1} step={0.01} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Output Factor" target={material} propertyKey="debugFactor" min={0} max={5} step={0.01} />
         </>
     );
 };

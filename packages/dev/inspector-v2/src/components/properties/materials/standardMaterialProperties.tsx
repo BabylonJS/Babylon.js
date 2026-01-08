@@ -28,10 +28,10 @@ export const StandardMaterialTransparencyProperties: FunctionComponent<{ materia
         <>
             {material.diffuseTexture && (
                 <>
-                    <BoundProperty component={SwitchPropertyLine} label="Diffuse texture has alpha" target={material.diffuseTexture} propertyKey="hasAlpha" />
+                    <BoundProperty component={SwitchPropertyLine} label="Diffuse Texture has Alpha" target={material.diffuseTexture} propertyKey="hasAlpha" />
                 </>
             )}
-            <BoundProperty component={SwitchPropertyLine} label="Use alpha from diffuse texture" target={material} propertyKey="useAlphaFromDiffuseTexture" />
+            <BoundProperty component={SwitchPropertyLine} label="Use Alpha from Diffuse Texture" target={material} propertyKey="useAlphaFromDiffuseTexture" />
         </>
     );
 };
@@ -134,9 +134,9 @@ export const StandardMaterialTexturesProperties: FunctionComponent<{ material: S
                 onLink={selectEntity}
                 defaultValue={null}
             />
-            <BoundProperty component={SwitchPropertyLine} label="Use lightmap as shadowmap" target={material} propertyKey="useLightmapAsShadowmap" />
-            <BoundProperty component={SwitchPropertyLine} label="Use detailmap" target={material.detailMap} propertyKey="isEnabled" />
-            <BoundProperty component={SwitchPropertyLine} label="Use decalmap" target={material.decalMap} propertyKey="isEnabled" />
+            <BoundProperty component={SwitchPropertyLine} label="Use Lightmap as Shadowmap" target={material} propertyKey="useLightmapAsShadowmap" />
+            <BoundProperty component={SwitchPropertyLine} label="Use Detailmap" target={material.detailMap} propertyKey="isEnabled" />
+            <BoundProperty component={SwitchPropertyLine} label="Use Decalmap" target={material.decalMap} propertyKey="isEnabled" />
         </>
     );
 };
