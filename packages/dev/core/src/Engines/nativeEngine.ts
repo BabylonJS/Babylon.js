@@ -36,26 +36,6 @@ export class NativeEngine extends ThinNativeEngine {
         super.dispose();
     }
 
-    ///////////// OVERRIDES of engine /////////////
-
-    public enableScissor(x: number, y: number, width: number, height: number): void {
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSCISSOR);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(width);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(height);
-        this._commandBufferEncoder.finishEncodingCommand();
-    }
-
-    public disableScissor() {
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSCISSOR);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
-        this._commandBufferEncoder.finishEncodingCommand();
-    }
-
     /**
      * Creates a cube texture
      * @param rootUrl defines the url where the files to load is located

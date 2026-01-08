@@ -458,6 +458,34 @@ export class ThinNativeEngine extends ThinEngine {
         this._engine.dispose();
     }
 
+    /**
+     * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
+     * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
+     * @param y defines the y-coordinate of the corner of the clear rectangle
+     * @param width defines the width of the clear rectangle
+     * @param height defines the height of the clear rectangle
+     */
+    public enableScissor(x: number, y: number, width: number, height: number): void {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSCISSOR);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(width);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(height);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    /**
+     * Disable previously set scissor test rectangle
+     */
+    public disableScissor() {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSCISSOR);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
     /** @internal */
     public static _createNativeDataStream(): NativeDataStream {
         return new NativeDataStream();
