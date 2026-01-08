@@ -18,6 +18,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Tools } from "core/Misc/tools";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { ParticleSystem } from "core/Particles/particleSystem";
+import { ConvertToNodeParticleSystemSetAsync } from "core/Particles/Node/nodeParticleSystemSet.helper";
 import { BlendModeOptions, ParticleBillboardModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
@@ -246,10 +247,22 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             <BoundProperty component={NumberInputPropertyLine} label="Update Speed" target={system} propertyKey="updateSpeed" min={0} step={0.01} />
 
             <ButtonLine
-                label={system.isNodeGenerated ? "Edit in Node Particle Editor (coming soon)" : "View in Node Particle Editor (coming soon)"}
-                disabled={true}
-                onClick={() => {
-                    // Hook up once Node Particle Editor UX is wired.
+                label={system.isNodeGenerated ? "Edit in Node Particle Editor" : "View in Node Particle Editor"}
+                onClick={async () => {
+                    const scene = system.getScene();
+                    if (!scene) {
+                        return;
+                    }
+
+                    if (system.isNodeGenerated && system.source) {
+                        await system.source.editAsync({ nodeEditorConfig: { backgroundColor: scene.clearColor, disposeOnClose: false } });
+                    } else {
+                        // View: Convert the particle system to a NodeParticleSystemSet and open editor
+                        const systemSet = await ConvertToNodeParticleSystemSetAsync("source", [system]);
+                        if (systemSet) {
+                            await systemSet.editAsync({ nodeEditorConfig: { backgroundColor: scene.clearColor } });
+                        }
+                    }
                 }}
             />
 

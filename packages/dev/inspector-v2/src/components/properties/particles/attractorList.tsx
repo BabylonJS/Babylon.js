@@ -9,6 +9,7 @@ import type { Nullable } from "core/types";
 import type { ListItem } from "shared-ui-components/fluent/primitives/list";
 
 import { GizmoManager } from "core/Gizmos/gizmoManager";
+import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3 } from "core/Maths/math.color";
 import { Attractor } from "core/Particles/attractor";
@@ -38,7 +39,12 @@ function AttractorsToListItems(attractors: Nullable<Array<Attractor>>) {
 }
 
 const CreateGizmoManager = (scene: Scene) => {
-    const gizmoManager = new GizmoManager(scene);
+    const gizmoManager = new GizmoManager(
+        scene,
+        1,
+        UtilityLayerRenderer._CreateDefaultUtilityLayerFromScene(scene),
+        UtilityLayerRenderer._CreateDefaultKeepUtilityLayerFromScene(scene)
+    );
     gizmoManager.positionGizmoEnabled = true;
     gizmoManager.attachableMeshes = [];
     return gizmoManager;
