@@ -423,6 +423,7 @@ function _SpriteSheetBlock(particle: NodeParticleConnectionPoint, oldSystem: Par
     spriteSheetBlock.end = oldSystem.endSpriteCellID;
     spriteSheetBlock.width = oldSystem.spriteCellWidth;
     spriteSheetBlock.height = oldSystem.spriteCellHeight;
+    spriteSheetBlock.spriteCellChangeSpeed = oldSystem.spriteCellChangeSpeed;
     spriteSheetBlock.loop = oldSystem.spriteCellLoop;
     spriteSheetBlock.randomStartCell = oldSystem.spriteRandomStartCell;
 
