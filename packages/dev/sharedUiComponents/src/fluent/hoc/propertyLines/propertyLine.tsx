@@ -202,7 +202,6 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                                         props.onChange(null);
                                     }
                                 }}
-                                title="Toggle null state"
                             />
                         </Tooltip>
                     )}
