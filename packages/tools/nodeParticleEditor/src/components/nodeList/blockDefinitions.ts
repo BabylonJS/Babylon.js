@@ -65,6 +65,12 @@ export const BlockDefinitions: IBlockDefinition[] = [
         modes: [NodeParticleModes.Particle],
         tooltip: "Block used to update the sprite index of a particle with a basic update (eg. incrementing the index by 1)",
     },
+    {
+        name: "BasicUpdateSpriteBlock",
+        category: "Updates",
+        modes: [NodeParticleModes.Particle],
+        tooltip: "Block used to update the sprite index of a particle with a basic update (eg. incrementing the index by 1)",
+    },
     { name: "UpdateSpriteCellIndexBlock", category: "Updates", modes: [NodeParticleModes.Particle], tooltip: "Block used to update the sprite cell index of a particle" },
 
     // Triggers (Particle only)
@@ -93,6 +99,7 @@ export const BlockDefinitions: IBlockDefinition[] = [
     { name: "MinBlock", category: "Math__Standard", modes: [NodeParticleModes.Particle, NodeParticleModes.SolidParticle], tooltip: "Math block set to Min" },
     { name: "MultiplyBlock", category: "Math__Standard", modes: [NodeParticleModes.Particle, NodeParticleModes.SolidParticle], tooltip: "Math block set to Multiply" },
     { name: "SubtractBlock", category: "Math__Standard", modes: [NodeParticleModes.Particle, NodeParticleModes.SolidParticle], tooltip: "Math block set to Subtract" },
+    { name: "ModuloBlock", category: "Math__Standard", modes: [NodeParticleModes.Particle, NodeParticleModes.SolidParticle], tooltip: "Block to calculate the Modulo" },
     { name: "NegateBlock", category: "Math__Standard", modes: [NodeParticleModes.Particle, NodeParticleModes.SolidParticle], tooltip: "Math block set to Negate" },
     { name: "OneMinusBlock", category: "Math__Standard", modes: [NodeParticleModes.Particle, NodeParticleModes.SolidParticle], tooltip: "Trigonometry block set to One Minus" },
     { name: "ReciprocalBlock", category: "Math__Standard", modes: [NodeParticleModes.Particle, NodeParticleModes.SolidParticle], tooltip: "Trigonometry block set to Reciprocal" },
@@ -127,6 +134,12 @@ export const BlockDefinitions: IBlockDefinition[] = [
         category: "Math__Scientific",
         modes: [NodeParticleModes.Particle, NodeParticleModes.SolidParticle],
         tooltip: "Trigonometry block set to Arc tan (using radians)",
+    },
+    {
+        name: "ArcTan2Block",
+        category: "Math__Scientific",
+        modes: [NodeParticleModes.Particle, NodeParticleModes.SolidParticle],
+        tooltip: "Trigonometry block set to Arc tan2 (using radians)",
     },
     {
         name: "CosBlock",
