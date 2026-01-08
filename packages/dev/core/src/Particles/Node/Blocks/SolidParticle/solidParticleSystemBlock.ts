@@ -58,9 +58,7 @@ export class SolidParticleSystemBlock extends NodeParticleBlock {
         }
 
         // Create the SPS
-        const sps = new SolidParticleSystem(this.name, state.scene, {
-            useModelMaterial: true,
-        });
+        const sps = new SolidParticleSystem(this.name, state.scene);
 
         const createBlocks = new Map<number, ISolidParticleInitData>();
         // Support both single particle config and array of configs

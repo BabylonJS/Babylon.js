@@ -1,6 +1,7 @@
 import { InputDisplayManager } from "./display/inputDisplayManager";
 import { DisplayLedger } from "shared-ui-components/nodeGraphSystem/displayLedger";
 import { TextureDisplayManager } from "./display/textureDisplayManager";
+import { MeshDisplayManager } from "./display/meshDisplayManager";
 import { EmitterDisplayManager } from "./display/emitterDisplayManager";
 import { UpdateDisplayManager } from "./display/updateDisplayManager";
 import { SystemDisplayManager } from "./display/systemDisplayManager";
@@ -40,7 +41,7 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["UpdateNoiseBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["SystemBlock"] = SystemDisplayManager;
 
-    DisplayLedger.RegisteredControls["MeshSourceBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["MeshSourceBlock"] = MeshDisplayManager;
     DisplayLedger.RegisteredControls["CreateSolidParticleBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["MergeSolidParticlesBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["SolidParticleSystemBlock"] = SystemDisplayManager;
