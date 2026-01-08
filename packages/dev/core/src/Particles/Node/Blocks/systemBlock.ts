@@ -232,6 +232,7 @@ export class SystemBlock extends NodeParticleBlock {
         };
 
         // Get the ramp gradients
+        particleSystem.useRampGradients = false;
         if (this.rampGradient.isConnected) {
             if (this.rampGradient.connectedPoint?.ownerBlock instanceof ParticleGradientBlock) {
                 // We have a possible gradient, loop through its entries
