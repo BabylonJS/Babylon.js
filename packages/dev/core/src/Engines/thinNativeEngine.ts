@@ -62,7 +62,7 @@ import type { ShaderLanguage } from "../Materials/shaderLanguage";
 import type { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "../Buffers/buffer.align";
-import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
+
 import { _TimeToken } from "../Instrumentation/timeToken";
 
 // REVIEW: add a flag to effect to prevent multiple compilations of the same shader.
@@ -1825,7 +1825,7 @@ export class ThinNativeEngine extends ThinEngine {
         // leaving TextureLoader extension check for future use
         let loaderPromise = null;
         if (extension.endsWith(".basis") || extension.endsWith(".ktx") || extension.endsWith(".ktx2") || mimeType === "image/ktx" || mimeType === "image/ktx2") {
-            loaderPromise = _GetCompatibleTextureLoader(extension);
+            loaderPromise = AbstractEngine.GetCompatibleTextureLoader(extension);
         }
 
         if (scene) {
