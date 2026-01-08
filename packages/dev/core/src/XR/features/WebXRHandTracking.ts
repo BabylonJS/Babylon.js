@@ -596,6 +596,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                     newInstance.scaling.setAll(0.02);
 
                     // Detect physics version
+                    const scene = newInstance.getScene();
                     const physicsEngine = scene.getPhysicsEngine();
                     const physicsVersion = physicsEngine?.getPluginVersion() || 1;
 
