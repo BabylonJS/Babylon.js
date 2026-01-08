@@ -62,8 +62,8 @@ import type { ShaderLanguage } from "../Materials/shaderLanguage";
 import type { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "../Buffers/buffer.align";
-
 import { _TimeToken } from "../Instrumentation/timeToken";
+import { PerfCounter } from "../Misc/perfCounter";
 
 // REVIEW: add a flag to effect to prevent multiple compilations of the same shader.
 declare module "../Materials/effect" {
@@ -251,6 +251,8 @@ export class ThinNativeEngine extends ThinEngine {
 
     public constructor(options: ThinNativeEngineOptions = {}) {
         super(null, false, undefined, options.adaptToDeviceRatio);
+
+        this._drawCalls = new PerfCounter();
 
         if (_native.Engine.PROTOCOL_VERSION !== ThinNativeEngine.PROTOCOL_VERSION) {
             throw new Error(`Protocol version mismatch: ${_native.Engine.PROTOCOL_VERSION} (Native) !== ${ThinNativeEngine.PROTOCOL_VERSION} (JS)`);
