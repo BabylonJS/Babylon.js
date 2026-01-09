@@ -144,7 +144,7 @@ class CommandBufferEncoder {
     private _isCommandBufferScopeActive = false;
 
     public constructor(private readonly _engine: INativeEngine) {
-        this._commandStream = ThinNativeEngine._createNativeDataStream();
+        this._commandStream = new NativeDataStream();
         this._engine.setCommandDataStream(this._commandStream);
     }
 
@@ -465,12 +465,6 @@ export class ThinNativeEngine extends ThinEngine {
         this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
         this._commandBufferEncoder.finishEncodingCommand();
     }
-
-    /** @internal */
-    public static _createNativeDataStream(): NativeDataStream {
-        return new NativeDataStream();
-    }
-
     /**
      * Can be used to override the current requestAnimationFrame requester.
      * @internal

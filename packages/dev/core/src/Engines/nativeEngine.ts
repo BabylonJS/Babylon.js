@@ -6,7 +6,7 @@ import { Tools } from "../Misc/tools";
 
 import "./AbstractEngine/abstractEngine.loadFile";
 import "./AbstractEngine/abstractEngine.textureLoaders";
-import "./NativeEngine/Extensions/nativeEngine.cubeTexture";
+import "./Native/Extensions/nativeEngine.cubeTexture";
 
 /**
  * Options to create the Native engine
