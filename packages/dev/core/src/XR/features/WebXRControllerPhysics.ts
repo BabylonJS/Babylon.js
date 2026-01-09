@@ -412,7 +412,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
     public getImpostorForController(controller: WebXRInputSource | string): Nullable<PhysicsImpostor> {
         const id = typeof controller === "string" ? controller : controller.uniqueId;
         if (this._controllers[id]) {
-            return this._controllers[id].impostor;
+            return this._controllers[id].impostor || null;
         } else {
             return null;
         }
