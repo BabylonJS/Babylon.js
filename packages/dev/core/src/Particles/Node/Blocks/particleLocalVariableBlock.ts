@@ -99,6 +99,7 @@ export class ParticleLocalVariableBlock extends NodeParticleBlock {
                 if (this.scope === ParticleLocalVariableBlockScope.Particle) {
                     state.particleContext!.onReset = () => {
                         this._storage.delete(id);
+                        state.particleContext!.onReset = null;
                     };
                     state.systemContext!.onDisposeObservable.addOnce(() => {
                         this._storage.clear();

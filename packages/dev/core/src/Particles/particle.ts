@@ -163,7 +163,7 @@ export class Particle {
     /**
      * Callback triggered when the particle is reset
      */
-    public onReset: () => void;
+    public onReset: Nullable<() => void>;
 
     /**
      * Creates a new instance Particle
