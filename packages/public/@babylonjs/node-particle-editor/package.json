@@ -18,14 +18,13 @@
         "clean": "rimraf dist"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^8.0.0",
+        "@babylonjs/core": "^8.0.0"
+    },
+    "devDependencies": {
         "@dev/shared-ui-components": "1.0.0",
         "@tools/node-particle-editor": "1.0.0",
         "@types/react": ">=16.7.3",
-        "@types/react-dom": ">=16.0.9"
-    },
-    "devDependencies": {
-        "@babylonjs/core": "^8.45.1",
+        "@types/react-dom": ">=16.0.9",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
     },
