@@ -95,7 +95,7 @@ export class NodeRenderGraphBaseWithPropertiesPostProcessBlock extends NodeRende
     }
 
     /** The viewport to use. */
-    @editableInPropertyPage("Viewport", PropertyTypeForEdition.Viewport, "BASE PROPERTIES")
+    @editableInPropertyPage("    Viewport", PropertyTypeForEdition.Viewport, "BASE PROPERTIES")
     public get viewport(): IViewportLike {
         return this._viewport;
     }

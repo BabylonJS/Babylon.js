@@ -2,8 +2,8 @@ import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 import type { ParticleGradientValueBlock } from "./particleGradientValueBlock";
-import type { ParticleInputBlock } from "./particleInputBlock";
 
+import { Constants } from "../../../Engines/constants";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Vector2 } from "core/Maths/math.vector";
@@ -12,16 +12,13 @@ import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { _TriggerSubEmitter } from "core/Particles/Node/Blocks/Triggers/triggerTools";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
-import { Constants } from "../../../Engines/constants";
-
-export const RampValue0Index = 8;
+import { ParticleGradientBlock } from "./particleGradientBlock";
 
 /**
  * Block used to get a system of particles
  */
 export class SystemBlock extends NodeParticleBlock {
     private static _IdCounter = 0;
-    private _entryCount = RampValue0Index;
 
     /**
      * Gets or sets the blend mode for the particle system
@@ -134,28 +131,8 @@ export class SystemBlock extends NodeParticleBlock {
         this.registerInput("targetStopDuration", NodeParticleBlockConnectionPointTypes.Float, true, 0, 0);
         this.registerInput("onStart", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("onEnd", NodeParticleBlockConnectionPointTypes.System, true);
-        this.registerInput("rampValue0", NodeParticleBlockConnectionPointTypes.Color4Gradient, true);
+        this.registerInput("rampGradient", NodeParticleBlockConnectionPointTypes.Color4, true);
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
-
-        this._manageExtendedInputs(RampValue0Index);
-    }
-
-    private _manageExtendedInputs(index: number) {
-        this._inputs[index].onConnectionObservable.add(() => {
-            if (this._entryCount > index) {
-                return;
-            }
-
-            this._extend();
-        });
-    }
-
-    private _extend() {
-        this._entryCount++;
-        this.registerInput("rampValue" + (this._entryCount - RampValue0Index), NodeParticleBlockConnectionPointTypes.Color4Gradient, true);
-        this._linkConnectionTypes(1, this._entryCount);
-
-        this._manageExtendedInputs(this._entryCount);
     }
 
     /**
@@ -223,6 +200,13 @@ export class SystemBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the rampGradient input component
+     */
+    public get rampGradient(): NodeParticleConnectionPoint {
+        return this._inputs[8];
+    }
+
+    /**
      * Gets the system output component
      */
     public get system(): NodeParticleConnectionPoint {
@@ -265,24 +249,27 @@ export class SystemBlock extends NodeParticleBlock {
         };
 
         // Get the ramp gradients
-        const entries: ParticleGradientValueBlock[] = [];
-        for (let i = RampValue0Index; i < this._inputs.length; i++) {
-            if (this._inputs[i].isConnected) {
-                entries.push(this._inputs[i].connectedPoint?.ownerBlock as ParticleGradientValueBlock);
-            }
-        }
+        particleSystem.useRampGradients = false;
+        if (this.rampGradient.isConnected) {
+            if (this.rampGradient.connectedPoint?.ownerBlock instanceof ParticleGradientBlock) {
+                // We have a possible gradient, loop through its entries
+                const gradientInputs = this.rampGradient.connectedPoint?.ownerBlock.inputs;
 
-        if (entries.length > 0) {
-            // Create ramp gradient entries
-            for (let i = 0; i < entries.length; i++) {
-                const entry = entries[i];
-                const colorBlock = entry._inputs[0].connectedPoint?.ownerBlock as ParticleInputBlock;
-                const color = colorBlock.value as Color4;
-                particleSystem.addRampGradient(entry.reference, new Color3(color.r, color.g, color.b));
+                // Skip the first input which is the gradient selector, and we only care about the gradient values
+                for (let i = 1; i < gradientInputs.length; i++) {
+                    if (gradientInputs[i].isConnected) {
+                        const rampEntry = gradientInputs[i].connectedPoint?.ownerBlock as ParticleGradientValueBlock;
+                        const color = rampEntry._inputs[0].getConnectedValue(state) as Color4;
+                        particleSystem.addRampGradient(rampEntry.reference, new Color3(color.r, color.g, color.b));
+                        particleSystem.useRampGradients = true;
+                    }
+                }
+            } else {
+                // We have a single value, add it as ramp gradient
+                const color = this.rampGradient.getConnectedValue(state) as Color4;
+                particleSystem.addRampGradient(0, new Color3(color.r, color.g, color.b));
+                particleSystem.useRampGradients = true;
             }
-
-            // Mark the system as using ramp gradients
-            particleSystem.useRampGradients = true;
         }
 
         this.system._storedValue = this;

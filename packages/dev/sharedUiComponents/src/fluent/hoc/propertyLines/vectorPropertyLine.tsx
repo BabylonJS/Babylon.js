@@ -81,54 +81,32 @@ const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Ve
             {...props}
             onCopy={() => `new ${props.value.getClassName()}(${vector.x},${vector.y}${HasZ(vector) ? `,${vector.z}` : ""}${HasW(vector) ? `,${vector.w}` : ""})`}
             expandedContent={
-                <>
-                    <SyncedSliderPropertyLine
-                        label="X"
-                        value={converted(vector.x)}
-                        min={min}
-                        max={max}
-                        onChange={(val) => onChange(val, "x")}
-                        unit={props.unit}
-                        step={props.step}
-                    />
-                    <SyncedSliderPropertyLine
-                        label="Y"
-                        value={converted(vector.y)}
-                        min={min}
-                        max={max}
-                        onChange={(val) => onChange(val, "y")}
-                        unit={props.unit}
-                        step={props.step}
-                    />
-                    {HasZ(vector) && (
-                        <SyncedSliderPropertyLine
-                            label="Z"
-                            value={converted(vector.z)}
-                            min={min}
-                            max={max}
-                            onChange={(val) => onChange(val, "z")}
-                            unit={props.unit}
-                            step={props.step}
-                        />
-                    )}
-                    {HasW(vector) && (
-                        <SyncedSliderPropertyLine
-                            label="W"
-                            value={converted(vector.w)}
-                            min={min}
-                            max={max}
-                            onChange={(val) => onChange(val, "w")}
-                            unit={props.unit}
-                            step={props.step}
-                        />
-                    )}
-                </>
+                vector ? <VectorSliders vector={vector} min={min} max={max} unit={props.unit} step={props.step} converted={converted} onChange={onChange} /> : undefined
             }
         >
             <Body1>{`[${formatted(props.value.x)}, ${formatted(props.value.y)}${HasZ(props.value) ? `, ${formatted(props.value.z)}` : ""}${HasW(props.value) ? `, ${formatted(props.value.w)}` : ""}]`}</Body1>
         </PropertyLine>
     );
 };
+
+type VectorSlidersProps<V extends Vector2 | Vector3 | Vector4 | Quaternion> = {
+    vector: V;
+    min?: number;
+    max?: number;
+    unit?: string;
+    step?: number;
+    converted: (val: number) => number;
+    onChange: (val: number, key: "x" | "y" | "z" | "w") => void;
+};
+
+const VectorSliders = <V extends Vector2 | Vector3 | Vector4 | Quaternion>({ vector, min, max, unit, step, converted, onChange }: VectorSlidersProps<V>) => (
+    <>
+        <SyncedSliderPropertyLine label="X" value={converted(vector.x)} min={min} max={max} onChange={(val) => onChange(val, "x")} unit={unit} step={step} />
+        <SyncedSliderPropertyLine label="Y" value={converted(vector.y)} min={min} max={max} onChange={(val) => onChange(val, "y")} unit={unit} step={step} />
+        {HasZ(vector) && <SyncedSliderPropertyLine label="Z" value={converted(vector.z)} min={min} max={max} onChange={(val) => onChange(val, "z")} unit={unit} step={step} />}
+        {HasW(vector) && <SyncedSliderPropertyLine label="W" value={converted(vector.w)} min={min} max={max} onChange={(val) => onChange(val, "w")} unit={unit} step={step} />}
+    </>
+);
 
 type RotationVectorPropertyLineProps = TensorPropertyLineProps<Vector3> & {
     /**

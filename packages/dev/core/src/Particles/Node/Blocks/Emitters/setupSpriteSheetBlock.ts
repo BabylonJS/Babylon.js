@@ -34,6 +34,12 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
     public height = 64;
 
     /**
+     * Gets or sets the speed of the cell change
+     */
+    @editableInPropertyPage("Sprite Cell Change Speed", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
+    public spriteCellChangeSpeed = 1;
+
+    /**
      * Gets or sets a boolean indicating if the sprite sheet should loop
      */
     @editableInPropertyPage("Loop", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
@@ -92,7 +98,7 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
         system.endSpriteCellID = this.end;
         system.spriteCellLoop = this.loop;
         system.spriteRandomStartCell = this.randomStartCell;
-
+        system.spriteCellChangeSpeed = this.spriteCellChangeSpeed;
         this.output._storedValue = system;
     }
 
@@ -103,9 +109,9 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
         serializationObject.height = this.height;
         serializationObject.start = this.start;
         serializationObject.end = this.end;
+        serializationObject.spriteCellChangeSpeed = this.spriteCellChangeSpeed;
         serializationObject.loop = this.loop;
         serializationObject.randomStartCell = this.randomStartCell;
-
         return serializationObject;
     }
 
@@ -116,6 +122,7 @@ export class SetupSpriteSheetBlock extends NodeParticleBlock {
         this.height = serializationObject.height;
         this.start = serializationObject.start;
         this.end = serializationObject.end;
+        this.spriteCellChangeSpeed = serializationObject.spriteCellChangeSpeed;
         this.loop = serializationObject.loop;
         this.randomStartCell = serializationObject.randomStartCell;
     }

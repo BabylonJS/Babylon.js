@@ -702,9 +702,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                     step.action(this, this._currentFaceIndex, this._currentLayer);
                 }
             }
+
+            engine._debugPushGroup(`Render to ${this.name} (face #${this._currentFaceIndex} layer #${this._currentLayer})`);
         });
 
         this._onAfterRenderingManagerRenderObserver = this._objectRenderer.onAfterRenderingManagerRenderObservable.add(() => {
+            engine._debugPopGroup();
+
             // After Camera Draw
             if (!this._disableEngineStages) {
                 for (const step of this._scene!._afterRenderTargetDrawStage) {
@@ -1202,11 +1206,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
 
-        engine._debugPushGroup?.(`render to face #${faceIndex} layer #${layer}`, 2);
-
         this._objectRenderer.render(faceIndex + layer, true); // only faceIndex or layer (if any) will be different from 0 (we don't support array of cubes), so it's safe to add them to get the pass index
-
-        engine._debugPopGroup?.(2);
 
         this._unbindFrameBuffer(engine, faceIndex);
 

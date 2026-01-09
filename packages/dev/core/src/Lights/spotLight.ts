@@ -259,9 +259,10 @@ export class SpotLight extends ShadowLight {
      * @param angle The cone angle of the light in Radians
      * @param exponent The light decay speed with the distance from the emission spot
      * @param scene The scene the lights belongs to
+     * @param dontAddToScene True to not add the light to the scene
      */
-    constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene?: Scene) {
-        super(name, scene);
+    constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene?: Scene, dontAddToScene?: boolean) {
+        super(name, scene, dontAddToScene);
 
         this.position = position;
         this.direction = direction;

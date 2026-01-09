@@ -6,11 +6,11 @@ populateEnvironment();
 
 const isCI = !!process.env.CI;
 const browserType = process.env.BROWSER || (isCI ? "Firefox" : "Chrome");
-const numberOfWorkers = process.env.CIWORKERS ? +process.env.CIWORKERS : process.env.CI ? 1 : browserType === "BrowserStack" ? 1 : undefined;
+const numberOfWorkers = process.env.CIWORKERS ? +process.env.CIWORKERS : process.env.CI ? 1 : browserType === "BrowserStack" ? 1 : 4;
 
 export default defineConfig({
     // testDir: "./test/playwright",
-    /* Run tests in files in parallel */
+    /* Run tests in files not in parallel or half are skipped */
     fullyParallel: true,
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,

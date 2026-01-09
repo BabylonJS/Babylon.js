@@ -6,7 +6,7 @@ populateEnvironment();
 
 const isCI = !!process.env.CI;
 const browserType = process.env.BROWSER || (isCI ? "Firefox" : "Chrome");
-const numberOfWorkers = process.env.CIWORKERS ? +process.env.CIWORKERS : process.env.CI ? 1 : browserType === "BrowserStack" ? 1 : undefined;
+const numberOfWorkers = process.env.CIWORKERS ? +process.env.CIWORKERS : process.env.CI ? 1 : browserType === "BrowserStack" ? 1 : 4;
 
 export default defineConfig({
     // testDir: "./test/playwright",

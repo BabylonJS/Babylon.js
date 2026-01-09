@@ -21,6 +21,7 @@ import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttrib
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import type { IEffectCreationOptions } from "core/Materials/effect";
+import type { GaussianSplattingMaterial } from "../Materials/GaussianSplatting/gaussianSplattingMaterial";
 
 /**
  * This represents a depth renderer in Babylon.
@@ -175,11 +176,16 @@ export class DepthRenderer {
         });
 
         this._depthMap.onBeforeBindObservable.add(() => {
-            engine._debugPushGroup?.("depth renderer", 1);
+            if (engine._enableGPUDebugMarkers) {
+                engine.restoreDefaultFramebuffer();
+                engine._debugPushGroup(`Depth renderer`);
+            }
         });
 
         this._depthMap.onAfterUnbindObservable.add(() => {
-            engine._debugPopGroup?.(1);
+            if (engine._enableGPUDebugMarkers) {
+                engine._debugPopGroup();
+            }
         });
 
         this._depthMap.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => {
@@ -245,7 +251,15 @@ export class DepthRenderer {
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 subMesh._renderId = scene.getRenderId();
 
-                const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
+                let renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
+                if (renderingMaterial === undefined && effectiveMesh.getClassName() === "GaussianSplattingMesh") {
+                    const gsMaterial = effectiveMesh.material! as GaussianSplattingMaterial;
+                    renderingMaterial = gsMaterial.makeDepthRenderingMaterial(this._scene, this._shaderLanguage);
+                    this.setMaterialForRendering(effectiveMesh, renderingMaterial);
+                    if (!renderingMaterial.isReady()) {
+                        return;
+                    }
+                }
 
                 let drawWrapper = subMesh._getDrawWrapper();
                 if (!drawWrapper && renderingMaterial) {

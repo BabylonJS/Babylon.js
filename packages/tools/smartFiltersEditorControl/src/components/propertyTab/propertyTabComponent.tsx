@@ -21,9 +21,11 @@ import type { FrameNodePort } from "shared-ui-components/nodeGraphSystem/frameNo
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ForceWebGL1StorageKey, type GlobalState } from "../../globalState.js";
 import type { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
-import { SmartFilterCoreVersion } from "smart-filters";
+import { OptimizerDebugMode, SmartFilterCoreVersion } from "smart-filters";
 import type { Observer } from "core/Misc/observable.js";
 import { OnlyShowCustomBlocksDefaultValue } from "../../constants.js";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
+import type { IInspectableOptions } from "core/Misc/iInspectable.js";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -38,6 +40,11 @@ interface IPropertyTabComponentState {
     uploadInProgress: boolean;
     optimize: Nullable<boolean>;
 }
+
+const OptimizerDebugOptions: IInspectableOptions[] = [
+    { label: "Off", value: 0 },
+    { label: "Clamp Return Values", value: OptimizerDebugMode.ClampReturnValues },
+];
 
 /**
  * The property tab is used to edit the properties of the current node
@@ -296,6 +303,23 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                                 onSelect={(value: boolean) => {
                                     if (this.props.globalState.optimizerEnabled) {
                                         this.props.globalState.optimizerEnabled.value = value;
+                                    }
+                                }}
+                            />
+                        )}
+                        {this.props.globalState.optimizerEnabled && this.props.globalState.optimizerDebugMode && (
+                            <OptionsLine
+                                label="Optimizer Debug Mode"
+                                target={{}}
+                                propertyName="value"
+                                options={OptimizerDebugOptions}
+                                noDirectUpdate
+                                extractValue={() => {
+                                    return this.props.globalState.optimizerDebugMode?.value ? this.props.globalState.optimizerDebugMode.value : 0;
+                                }}
+                                onSelect={(newSelectionValue: string | number) => {
+                                    if (this.props.globalState.optimizerDebugMode) {
+                                        this.props.globalState.optimizerDebugMode.value = newSelectionValue ? (newSelectionValue as OptimizerDebugMode) : null;
                                     }
                                 }}
                             />

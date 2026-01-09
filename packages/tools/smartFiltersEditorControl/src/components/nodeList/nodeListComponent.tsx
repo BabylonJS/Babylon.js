@@ -3,7 +3,7 @@ import * as react from "react";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools.js";
-import { ContextMenu, MenuItem } from "react-contextmenu";
+import type { ContextMenuItem } from "shared-ui-components/fluent/primitives/contextMenu";
 
 import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";
@@ -108,7 +108,7 @@ export class NodeListComponent extends react.Component<INodeListComponentProps, 
                     return <DraggableBlockLineComponent key={GetBlockKey(block.blockType, block.namespace)} block={block} />;
                 });
 
-            let contextMenu: JSX.Element | undefined = undefined;
+            let contextMenuItems: ContextMenuItem[] | undefined = undefined;
 
             if (key === CustomBlocksNamespace) {
                 const line = (
@@ -128,25 +128,22 @@ export class NodeListComponent extends react.Component<INodeListComponentProps, 
 
                 if (this.props.globalState.clearCustomBlocks) {
                     const clearCustomBlocks = this.props.globalState.clearCustomBlocks;
-                    contextMenu = (
-                        <ContextMenu id={"contextmenu#" + key} className="context-menu">
-                            <MenuItem
-                                key="Remove_All_Custom_Blocks"
-                                onClick={() => {
-                                    clearCustomBlocks();
-                                    this.forceUpdate();
-                                }}
-                            >
-                                Remove All Custom Blocks
-                            </MenuItem>
-                        </ContextMenu>
-                    );
+                    contextMenuItems = [
+                        {
+                            key: "Remove_All_Custom_Blocks",
+                            label: "Remove All Custom Blocks",
+                            onClick: () => {
+                                clearCustomBlocks();
+                                this.forceUpdate();
+                            },
+                        },
+                    ];
                 }
             }
 
             if (blockList.length) {
                 blockMenu.push(
-                    <LineContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false} contextMenu={contextMenu}>
+                    <LineContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false} contextMenuItems={contextMenuItems}>
                         {blockList}
                     </LineContainerComponent>
                 );
