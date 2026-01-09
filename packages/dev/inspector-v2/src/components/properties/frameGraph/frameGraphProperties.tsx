@@ -38,8 +38,12 @@ export const FrameGraphGeneralProperties: FunctionComponent<{ frameGraph: FrameG
             {isSceneFrameGraph !== frameGraph && <ButtonLine onClick={() => (frameGraph.scene.frameGraph = frameGraph)} label="Set as scene's frame graph" />}
             <ButtonLine
                 label="Edit Graph"
-                onClick={() => {
-                    void frameGraph.getLinkedNodeRenderGraph()!.edit({ nodeRenderGraphEditorConfig: { hostScene: frameGraph.scene } });
+                onClick={async () => {
+                    const renderGraph = frameGraph.getLinkedNodeRenderGraph();
+                    if (renderGraph) {
+                        const { NodeRenderGraphEditor } = await import("node-render-graph-editor/nodeRenderGraphEditor");
+                        NodeRenderGraphEditor.Show({ nodeRenderGraph: renderGraph, hostScene: frameGraph.scene });
+                    }
                 }}
             ></ButtonLine>
         </>

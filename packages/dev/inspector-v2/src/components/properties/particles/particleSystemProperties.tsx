@@ -15,7 +15,9 @@ import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleE
 import { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { Deferred } from "core/Misc/deferred";
 import { Tools } from "core/Misc/tools";
+import { ConvertToNodeParticleSystemSetAsync } from "core/Particles/Node/nodeParticleSystemSet.helper";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { BlendModeOptions, ParticleBillboardModeOptions } from "shared-ui-components/constToOptionsMaps";
@@ -179,7 +181,9 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
         request.send();
     }, [applyParticleSystemJsonToSystem, scene, system]);
 
-    const saveToSnippetServer = useCallback(() => {
+    const saveToSnippetServer = useCallback(async () => {
+        const deferred = new Deferred<void>();
+
         // Serialize once and post as snippet payload.
         const content = JSON.stringify(system.serialize(true));
 
@@ -190,6 +194,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             }
 
             if (xmlHttp.status !== 200) {
+                deferred.reject();
                 alert("Unable to save your particle system");
                 return;
             }
@@ -208,8 +213,10 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
 
                 PersistSnippetId(system.snippetId);
 
+                deferred.resolve();
                 alert("Particle system saved with ID: " + system.snippetId + " (the id was also saved to your clipboard)");
             } catch (e) {
+                deferred.reject(e);
                 alert("Unable to save your particle system: " + e);
             }
         };
@@ -227,6 +234,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
         };
 
         xmlHttp.send(JSON.stringify(dataToSend));
+
+        await deferred.promise;
     }, [system]);
 
     return (
@@ -246,10 +255,20 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             <BoundProperty component={NumberInputPropertyLine} label="Update Speed" target={system} propertyKey="updateSpeed" min={0} step={0.01} />
 
             <ButtonLine
-                label={system.isNodeGenerated ? "Edit in Node Particle Editor (coming soon)" : "View in Node Particle Editor (coming soon)"}
-                disabled={true}
-                onClick={() => {
-                    // Hook up once Node Particle Editor UX is wired.
+                label={system.isNodeGenerated ? "Edit in Node Particle Editor" : "View in Node Particle Editor"}
+                onClick={async () => {
+                    const scene = system.getScene();
+                    if (!scene) {
+                        return;
+                    }
+
+                    const { NodeParticleEditor } = await import("node-particle-editor/nodeParticleEditor");
+
+                    const systemSet = system.isNodeGenerated && system.source ? system.source : await ConvertToNodeParticleSystemSetAsync("source", [system]);
+
+                    if (systemSet) {
+                        NodeParticleEditor.Show({ nodeParticleSet: systemSet, hostScene: scene, backgroundColor: scene.clearColor });
+                    }
                 }}
             />
 
