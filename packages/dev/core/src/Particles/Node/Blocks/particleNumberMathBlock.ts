@@ -149,6 +149,28 @@ export class ParticleNumberMathBlock extends NodeParticleBlock {
         }
         this._connectionObservers.length = 0;
     }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.operation = this.operation;
+
+        return serializationObject;
+    }
+
+    /**
+     * Deserializes the block from a JSON object
+     * @param serializationObject the JSON object to deserialize from
+     */
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.operation = serializationObject.operation;
+    }
 }
 
 RegisterClass("BABYLON.ParticleNumberMathBlock", ParticleNumberMathBlock);

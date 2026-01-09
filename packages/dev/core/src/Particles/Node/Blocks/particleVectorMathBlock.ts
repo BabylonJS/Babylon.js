@@ -6,7 +6,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
-import { Vector3 } from "../../../Maths";
+import { Vector3 } from "../../../Maths/math.vector";
 
 /**
  * Operations supported by the Vector Math block
@@ -63,7 +63,7 @@ export class ParticleVectorMathBlock extends NodeParticleBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "ParticleNumberMathBlock";
+        return "ParticleVectorMathBlock";
     }
 
     /**
@@ -131,6 +131,28 @@ export class ParticleVectorMathBlock extends NodeParticleBlock {
             observer.remove();
         }
         this._connectionObservers.length = 0;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.operation = this.operation;
+
+        return serializationObject;
+    }
+
+    /**
+     * Deserializes the block from a JSON object
+     * @param serializationObject the JSON object to deserialize from
+     */
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.operation = serializationObject.operation;
     }
 }
 

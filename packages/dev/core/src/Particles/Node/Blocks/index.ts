@@ -36,3 +36,4 @@ export * from "./particleLocalVariableBlock";
 export * from "./particleVectorLengthBlock";
 export * from "./particleFresnelBlock";
 export * from "./particleNumberMathBlock";
+export * from "./particleVectorMathBlock";
