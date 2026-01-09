@@ -61,14 +61,14 @@ export class FrameGraphContext {
      * @param name The name of the debug group
      */
     public pushDebugGroup(name: string) {
-        this.enableDebugMarkers && this._engine._debugPushGroup(name);
+        this.enableDebugMarkers && this._engine._debugPushGroup?.(name);
     }
 
     /**
      * Pops a debug group from the engine's debug stack.
      */
     public popDebugGroup() {
-        this.enableDebugMarkers && this._engine._debugPopGroup();
+        this.enableDebugMarkers && this._engine._debugPopGroup?.();
     }
 
     /**
@@ -76,7 +76,7 @@ export class FrameGraphContext {
      * @param text The text of the debug marker
      */
     public insertDebugMarker(text: string) {
-        this.enableDebugMarkers && this._engine._debugInsertMarker(text);
+        this.enableDebugMarkers && this._engine._debugInsertMarker?.(text);
     }
 
     /**
