@@ -495,6 +495,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         return this._indexBuffer;
     }
 
+    /**
+     * Gets or sets a texture used to add random noise to particle positions
+     */
     public override get noiseTexture() {
         return this._noiseTexture;
     }
@@ -759,6 +762,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         // Do nothing
     };
 
+    /**
+     * Serializes the particle system to a JSON object.
+     * @param _serializeTexture Whether to serialize the texture information
+     */
     serialize(_serializeTexture: boolean) {
         throw new Error("Method not implemented.");
     }
@@ -831,6 +838,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
     }
 
+    /**
+     * The amount of time the particle system is running (depends of the overall update speed).
+     */
     public override get targetStopDuration(): number {
         return this._targetStopDuration;
     }
@@ -1571,7 +1581,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      */
     public start(delay = this.startDelay): void {
         if (!this.targetStopDuration && this._hasTargetStopDurationDependantGradient()) {
-            // eslint-disable-next-line no-throw-literal
             throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
         }
         if (delay) {

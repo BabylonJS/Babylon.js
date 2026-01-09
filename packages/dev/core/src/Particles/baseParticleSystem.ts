@@ -889,6 +889,13 @@ export class BaseParticleSystem implements IClipPlanesHolder {
         throw new Error("Method not implemented.");
     }
 
+    /**
+     * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
+     * @param radius The radius of the cone to emit from
+     * @param angle The base angle of the cone
+     * @param direction1 Particles are emitted between the direction1 and direction2 from within the cone
+     * @param direction2 Particles are emitted between the direction1 and direction2 from within the cone
+     */
     public createDirectedConeEmitter(radius = 1, angle = Math.PI / 4, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): ConeDirectedParticleEmitter {
         throw new Error("Method not implemented.");
     }
