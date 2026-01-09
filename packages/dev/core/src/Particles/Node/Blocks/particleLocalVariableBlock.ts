@@ -27,6 +27,7 @@ export class ParticleLocalVariableBlock extends NodeParticleBlock {
         ],
     })
     public scope = ParticleLocalVariableBlockScope.Particle;
+    private _storage = new Map<number, any>();
 
     /**
      * Create a new ParticleLocalVariableBlock
@@ -79,27 +80,38 @@ export class ParticleLocalVariableBlock extends NodeParticleBlock {
             return;
         }
 
-        let storedValue: any = null;
-        let localId = -1;
-
         const func = (state: NodeParticleBuildState) => {
             if (!state.particleContext && !state.systemContext) {
-                storedValue = null;
+                this._storage.clear();
                 return null;
             }
 
             const id = (this.scope === ParticleLocalVariableBlockScope.Particle ? state.particleContext?.id : state.systemContext?.getScene()!.getFrameId()) || -1;
 
-            if (localId !== id) {
-                localId = id;
-                storedValue = null;
+            if (!this._storage.has(id)) {
+                let value = this.input.getConnectedValue(state);
+
+                if (value.clone) {
+                    value = value.clone(); // We clone to snapshot the value at this moment
+                }
+                this._storage.set(id, value);
+
+                if (this.scope === ParticleLocalVariableBlockScope.Particle) {
+                    state.particleContext!.onReset = () => {
+                        this._storage.delete(id);
+                    };
+                    state.systemContext!.onDisposeObservable.addOnce(() => {
+                        this._storage.clear();
+                    });
+                } else {
+                    // Loop scope cleanup
+                    state.systemContext!.onDisposeObservable.addOnce(() => {
+                        this._storage.delete(id);
+                    });
+                }
             }
 
-            if (storedValue === null) {
-                storedValue = this.input.getConnectedValue(state);
-            }
-
-            return storedValue;
+            return this._storage.get(id);
         };
 
         if (this.output.isConnected) {
@@ -121,6 +133,11 @@ export class ParticleLocalVariableBlock extends NodeParticleBlock {
         super._deserialize(serializationObject);
 
         this.scope = serializationObject.scope;
+    }
+
+    public override dispose() {
+        this._storage.clear();
+        super.dispose();
     }
 }
 
