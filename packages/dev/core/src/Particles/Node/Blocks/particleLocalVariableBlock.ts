@@ -107,7 +107,7 @@ export class ParticleLocalVariableBlock extends NodeParticleBlock {
                 } else {
                     // Loop scope cleanup
                     state.systemContext!.onDisposeObservable.addOnce(() => {
-                        this._storage.delete(id);
+                        this._storage.clear();
                     });
                 }
             }
