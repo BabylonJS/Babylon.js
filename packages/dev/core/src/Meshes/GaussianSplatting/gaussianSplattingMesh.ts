@@ -325,6 +325,13 @@ export class GaussianSplattingMesh extends Mesh {
 
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
+
+    private static readonly _DefaultViewUpdateThreshold = 1e-4;
+    /**
+     * Cosine value of the angle threshold to update view dependent splat sorting. Default is 0.0001.
+     */
+    public viewUpdateThreshold: number = GaussianSplattingMesh._DefaultViewUpdateThreshold;
+
     /**
      * View direction factor used to compute the SH view direction in the shader.
      * @deprecated Not used anymore for SH rendering
@@ -535,12 +542,15 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     public _getCameraDirection(camera: Camera): Vector3 {
-        const cameraMatrix = camera.getViewMatrix();
-        this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
+        const cameraViewMatrix = camera.getViewMatrix();
+        const cameraProjectionMatrix = camera.getProjectionMatrix();
+        const cameraViewProjectionMatrix = TmpVectors.Matrix[0];
+        cameraViewMatrix.multiplyToRef(cameraProjectionMatrix, cameraViewProjectionMatrix);
+        this.getWorldMatrix().multiplyToRef(cameraViewProjectionMatrix, this._modelViewMatrix);
 
         // return vector used to compute distance to camera
         const localDirection = TmpVectors.Vector3[1];
-        localDirection.set(this._modelViewMatrix.m[2], this._modelViewMatrix.m[6], this._modelViewMatrix.m[10]);
+        localDirection.set(this._modelViewMatrix.m[8], this._modelViewMatrix.m[9], this._modelViewMatrix.m[10]);
         localDirection.normalize();
 
         return localDirection;
@@ -599,7 +609,7 @@ export class GaussianSplattingMesh extends Mesh {
 
                 const previousCameraDirection = cameraViewInfos.cameraDirection;
                 const dot = Vector3.Dot(cameraDirection, previousCameraDirection);
-                if ((forced || Math.abs(dot - 1) >= 0.01) && this._canPostToWorker) {
+                if ((forced || Math.abs(dot - 1) >= this.viewUpdateThreshold) && this._canPostToWorker) {
                     cameraViewInfos.cameraDirection.copyFrom(cameraDirection);
                     cameraViewInfos.frameIdLastUpdate = frameId;
                     this._canPostToWorker = false;
