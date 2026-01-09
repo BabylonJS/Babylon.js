@@ -231,7 +231,7 @@ export abstract class FrameGraphTask {
         this.onBeforeTaskExecute.notifyObservers(this);
 
         if (!this._disableDebugMarkers) {
-            this._frameGraph.engine._debugPushGroup(`${this.getClassName()} (${this.name})`);
+            this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
         }
 
         for (const pass of passes) {
@@ -239,7 +239,7 @@ export abstract class FrameGraphTask {
         }
 
         if (!this._disableDebugMarkers) {
-            this._frameGraph.engine._debugPopGroup();
+            this._frameGraph.engine._debugPopGroup?.();
         }
 
         this.onAfterTaskExecute.notifyObservers(this);
@@ -248,7 +248,7 @@ export abstract class FrameGraphTask {
     /** @internal */
     public _initializePasses() {
         if (!this._disableDebugMarkers) {
-            this._frameGraph.engine._debugPushGroup(`${this.getClassName()} (${this.name})`);
+            this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
         }
 
         for (const pass of this._passes) {
@@ -260,7 +260,7 @@ export abstract class FrameGraphTask {
         }
 
         if (!this._disableDebugMarkers) {
-            this._frameGraph.engine._debugPopGroup();
+            this._frameGraph.engine._debugPopGroup?.();
         }
     }
 
