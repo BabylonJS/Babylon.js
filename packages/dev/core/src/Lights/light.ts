@@ -379,17 +379,22 @@ export abstract class Light extends Node implements ISortableLight {
      * Documentation : https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
      * @param name The friendly name of the light
      * @param scene The scene the light belongs too
+     * @param dontAddToScene True to not add the light to the scene
      */
-    constructor(name: string, scene?: Scene) {
+    constructor(name: string, scene?: Scene, dontAddToScene?: boolean) {
         super(name, scene, false);
-        this.getScene().addLight(this);
+        if (!dontAddToScene) {
+            this.getScene().addLight(this);
+        }
         this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name);
         this._buildUniformLayout();
 
         this.includedOnlyMeshes = [] as AbstractMesh[];
         this.excludedMeshes = [] as AbstractMesh[];
 
-        this._resyncMeshes();
+        if (!dontAddToScene) {
+            this._resyncMeshes();
+        }
     }
 
     protected abstract _buildUniformLayout(): void;

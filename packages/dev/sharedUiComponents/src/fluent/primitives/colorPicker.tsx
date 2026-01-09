@@ -60,6 +60,10 @@ const useColorPickerStyles = makeStyles({
         minWidth: 0,
         gap: tokens.spacingVerticalSNudge, // 6px
     },
+    trigger: {
+        display: "flex",
+        alignItems: "center",
+    },
 });
 
 export type ColorPickerProps<C extends Color3 | Color4> = {
@@ -95,6 +99,7 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
         <Popover
             trigger={
                 <ColorSwatch
+                    className={classes.trigger}
                     ref={ref}
                     {...rest}
                     borderColor={tokens.colorNeutralShadowKeyDarker}
