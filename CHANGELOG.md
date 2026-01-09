@@ -1,5 +1,23 @@
 # Changelog
 
+## 8.45.2
+
+### Core
+
+- Update WebXR controllers to use physics V2 - by [yuripourre](https://github.com/yuripourre) ([#17629](https://github.com/BabylonJS/Babylon.js/pull/17629))
+- Engine: Fix crash when debug marker functions are not defined - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17637](https://github.com/BabylonJS/Babylon.js/pull/17637))
+- Inspector V2: fully support PBR materials - by [Popov72](https://github.com/Popov72) ([#17562](https://github.com/BabylonJS/Babylon.js/pull/17562))
+- Add support for remap color and alpha - by [VicenteCartas](https://github.com/VicenteCartas) ([#17633](https://github.com/BabylonJS/Babylon.js/pull/17633))
+- Export geospatialcamerakeyboardinput - by [georginahalpern](https://github.com/georginahalpern) ([#17631](https://github.com/BabylonJS/Babylon.js/pull/17631))
+
+### Materials
+
+- Remove concurrently package - by [docEdub](https://github.com/docEdub) ([#17611](https://github.com/BabylonJS/Babylon.js/pull/17611))
+
+### Procedural Textures
+
+- Remove concurrently package - by [docEdub](https://github.com/docEdub) ([#17611](https://github.com/BabylonJS/Babylon.js/pull/17611))
+
 ## 8.45.1
 
 ### Core
