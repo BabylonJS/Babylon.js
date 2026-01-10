@@ -604,11 +604,11 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 }
                 newInstance.isPickable = false;
                 if (options.jointMeshes?.enablePhysics) {
-                    const props = options.jointMeshes?.physicsProps || {};
+                    const props = options.jointMeshes?.physicsProps;
                     // downscale the instances so that physics will be initialized correctly
                     newInstance.scaling.setAll(0.02);
-                    const type = props.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
-                    newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, { mass: 0, ...props });
+                    const type = props?.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
+                    newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, props ? { mass: 0, ...props } : { mass: 0 });
                 }
                 if (options.jointMeshes?.invisible) {
                     newInstance.isVisible = false;
