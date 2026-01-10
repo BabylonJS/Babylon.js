@@ -454,7 +454,6 @@ export class WebXRHand implements IDisposable {
 
         // TODO: Modify webxr.d.ts to better match WebXR IDL so we don't need this any cast.
         const anyHand: any = hand;
-        // Optimization - avoid allocation
         for (let i = 0; i < HandJointReferenceArray.length; ++i) {
             this._jointSpaces[i] = anyHand[HandJointReferenceArray[i]] || hand.get(HandJointReferenceArray[i]);
         }
@@ -697,6 +696,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 // if in multiview do not use the material
                 if (!isMultiview && !options?.handMeshes?.disableHandShader) {
                     handMesh.material = handShader.clone(`${handedness}HandShaderClone`, true);
+                    handMesh.material.freeze();
                 }
                 handMesh.isVisible = false;
 
@@ -982,15 +982,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                     trackedMesh.dispose();
                 }
                 this._handResources.jointMeshes = null;
-                this._handResources.jointMeshes = null;
-                // clean up thinner instances (if they exist)
-                // Note: we can't easily access the thin instances here due to null check above
-                // but they should be disposed when the internal hand object is disposed?
-                // No, internal hand object doesn't own the mesh.
-                // We need to re-access _handResources before setting to null?
-                // Actually, _handResources.jointMeshes was just set to null.
-                // Revert to original code pattern to fix TS error:
             }
+
             if (this._handResources.handMeshes) {
                 this._handResources.handMeshes.left.dispose();
                 this._handResources.handMeshes.right.dispose();
