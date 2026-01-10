@@ -654,6 +654,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 }
                 if (options.jointMeshes?.invisible) {
                     newInstance.isVisible = false;
+                }
                 newInstance.rotationQuaternion = new Quaternion();
                 trackedMeshes.push(newInstance);
             }
@@ -972,6 +973,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             this._handResources.handMeshes && this._handResources.handMeshes[handedness],
             this._handResources.rigMappings && this._handResources.rigMappings[handedness],
             this.options.handMeshes?.meshesUseLeftHandedCoordinates,
+            this.options.jointMeshes?.invisible,
             this.options.jointMeshes?.scaleFactor
         );
 
