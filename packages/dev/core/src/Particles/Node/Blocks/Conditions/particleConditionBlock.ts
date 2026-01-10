@@ -78,6 +78,9 @@ export class ParticleConditionBlock extends NodeParticleBlock {
         this._inputs[0].acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Int);
         this._inputs[1].acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Int);
         this._linkConnectionTypes(2, 3);
+
+        this._inputs[2].excludedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Particle);
+        this._inputs[3].excludedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Particle);
     }
 
     /**

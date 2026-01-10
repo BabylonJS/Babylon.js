@@ -79,9 +79,10 @@ export abstract class AreaLight extends Light {
      * @param name The friendly name of the light
      * @param position The position of the area light.
      * @param scene The scene the light belongs to
+     * @param dontAddToScene True to not add the light to the scene
      */
-    constructor(name: string, position: Vector3, scene?: Scene) {
-        super(name, scene);
+    constructor(name: string, position: Vector3, scene?: Scene, dontAddToScene?: boolean) {
+        super(name, scene, dontAddToScene);
         this.position = position;
 
         if (!this._scene._ltcTextures) {

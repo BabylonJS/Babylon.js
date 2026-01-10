@@ -16,7 +16,7 @@
         "compile": "tsc -b tsconfig.build.json",
         "watch:assets": "build-tools -c build-shaders --package procedural-textures --watch",
         "watch:source": "tsc -b tsconfig.build.json -w",
-        "watch": "concurrently \"npm run watch:assets\" \"npm run watch:source\" --kill-others",
+        "watch": "npx nx run-many --targets watch:assets watch:source --projects @dev/procedural-textures --parallel 2 --skipNxCache true --outputStyle stream",
         "watch:dev": "npm run watch",
         "watch:lts": "npm run watch:assets"
     },

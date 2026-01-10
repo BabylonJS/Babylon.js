@@ -8,6 +8,8 @@ import type { WebXRInputSource } from "../webXRInputSource";
 import { Matrix, Quaternion } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import { PhysicsImpostor } from "../../Physics/v1/physicsImpostor";
+import { PhysicsAggregate } from "../../Physics/v2/physicsAggregate";
+import { PhysicsMotionType, PhysicsShapeType } from "../../Physics/v2/IPhysicsEnginePlugin";
 
 import type { IDisposable, Scene } from "../../scene";
 import type { Observer } from "../../Misc/observable";
@@ -607,12 +609,51 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                     const props = options.jointMeshes?.physicsProps;
                     // downscale the instances so that physics will be initialized correctly
                     newInstance.scaling.setAll(0.02);
-                    const type = props?.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
-                    newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, props ? { mass: 0, ...props } : { mass: 0 });
+                    // Detect physics version
+                    const scene = newInstance.getScene();
+                    const physicsEngine = scene.getPhysicsEngine();
+                    const physicsVersion = physicsEngine?.getPluginVersion() || 1;
+
+                    if (physicsVersion === 2) {
+                        // V2 physics
+                        const impostorType = props?.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
+                        let shapeType = PhysicsShapeType.SPHERE;
+
+                        // Map v1 impostor types to v2 shape types
+                        switch (impostorType) {
+                            case PhysicsImpostor.SphereImpostor:
+                                shapeType = PhysicsShapeType.SPHERE;
+                                break;
+                            case PhysicsImpostor.BoxImpostor:
+                                shapeType = PhysicsShapeType.BOX;
+                                break;
+                            case PhysicsImpostor.CapsuleImpostor:
+                                shapeType = PhysicsShapeType.CAPSULE;
+                                break;
+                            default:
+                                shapeType = PhysicsShapeType.SPHERE;
+                        }
+
+                        const aggregate = new PhysicsAggregate(
+                            newInstance,
+                            shapeType,
+                            {
+                                mass: 0,
+                                friction: props?.friction ?? 0.2,
+                                restitution: props?.restitution ?? 0.2,
+                            },
+                            scene
+                        );
+                        aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
+                        aggregate.body.disableSync = true;
+                    } else {
+                        // V1 physics
+                        const type = props?.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
+                        newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, props? { mass: 0, ...props } : { mass: 0 });
+                    }
                 }
                 if (options.jointMeshes?.invisible) {
                     newInstance.isVisible = false;
-                }
                 newInstance.rotationQuaternion = new Quaternion();
                 trackedMeshes.push(newInstance);
             }
