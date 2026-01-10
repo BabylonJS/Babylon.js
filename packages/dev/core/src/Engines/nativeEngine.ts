@@ -23,9 +23,17 @@ export interface NativeEngineOptions {
 export class NativeEngine extends Engine {
     /**
      * @internal
+     * Will be overriden by the Thin Native engine implementation
+     */
+    protected _initializeNativeEngine(_adaptToDeviceRatio: boolean): void {}
+
+    /**
+     * @internal
      */
     public constructor(options: NativeEngineOptions = {}) {
         super(null, false, undefined, options.adaptToDeviceRatio);
+
+        this._initializeNativeEngine(options.adaptToDeviceRatio ?? false);
 
         Tools.LoadScript = function (scriptUrl, onSuccess, onError) {
             Tools.LoadFile(
@@ -63,12 +71,25 @@ export class NativeEngine extends Engine {
     }
 }
 
+/**
+ * @internal
+ * Augments the NativeEngine type to include ThinNativeEngine methods and preventing dupplicate TS errors
+ */
+export interface NativeEngine extends Omit<ThinNativeEngine, keyof Engine> {}
+
+/**
+ * @internal
+ * Applies the functionality of one or more base constructors to a derived constructor.
+ */
 function applyMixins(derivedCtor: any, constructors: any[]) {
     constructors.forEach((baseCtor) => {
         Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
-            Object.defineProperty(derivedCtor.prototype, name, Object.getOwnPropertyDescriptor(baseCtor.prototype, name) || Object.create(null));
+            if (name !== "constructor") {
+                derivedCtor.prototype[name] = baseCtor.prototype[name];
+            }
         });
     });
 }
 
+// Apply the ThinNativeEngine mixins to the NativeEngine.
 applyMixins(NativeEngine, [ThinNativeEngine]);

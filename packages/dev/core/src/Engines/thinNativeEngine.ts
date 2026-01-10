@@ -217,32 +217,30 @@ export class ThinNativeEngine extends ThinEngine {
     // This must match the protocol version in NativeEngine.cpp
     private static readonly PROTOCOL_VERSION = 9;
 
-    protected readonly _engine: INativeEngine = new _native.Engine({
-        version: AbstractEngine.Version,
-        nonFloatVertexBuffers: true,
-    });
+    /** @internal */
+    public static _createNativeDataStream(): NativeDataStream {
+        return new NativeDataStream();
+    }
 
-    private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;
-
-    protected readonly _commandBufferEncoder = new CommandBufferEncoder(this._engine);
-
-    private readonly _frameStats: NativeFrameStats = { gpuTimeNs: Number.NaN };
-
-    private _boundBuffersVertexArray: any = null;
-    private _currentDepthTest: number = _native.Engine.DEPTH_TEST_LEQUAL;
-    private _stencilTest = false;
-    private _stencilMask: number = 255;
-    private _stencilFunc: number = Constants.ALWAYS;
-    private _stencilFuncRef: number = 0;
-    private _stencilFuncMask: number = 255;
-    private _stencilOpStencilFail: number = Constants.KEEP;
-    private _stencilOpDepthFail: number = Constants.KEEP;
-    private _stencilOpStencilDepthPass: number = Constants.REPLACE;
-    private _zOffset: number = 0;
-    private _zOffsetUnits: number = 0;
-    private _depthWrite: boolean = true;
+    protected _engine: INativeEngine;
+    private _camera: Nullable<INativeCamera>;
+    private _commandBufferEncoder: CommandBufferEncoder;
+    private _frameStats: NativeFrameStats;
+    private _boundBuffersVertexArray: any;
+    private _currentDepthTest: number;
+    private _stencilTest: boolean;
+    private _stencilMask: number;
+    private _stencilFunc: number;
+    private _stencilFuncRef: number;
+    private _stencilFuncMask: number;
+    private _stencilOpStencilFail: number;
+    private _stencilOpDepthFail: number;
+    private _stencilOpStencilDepthPass: number;
+    private _zOffset: number;
+    private _zOffsetUnits: number;
+    private _depthWrite: boolean;
     // warning for non supported fill mode has already been displayed
-    private _fillModeWarningDisplayed = false;
+    private _fillModeWarningDisplayed: boolean;
 
     public override setHardwareScalingLevel(level: number): void {
         super.setHardwareScalingLevel(level);
@@ -251,6 +249,36 @@ export class ThinNativeEngine extends ThinEngine {
 
     public constructor(options: ThinNativeEngineOptions = {}) {
         super(null, false, undefined, options.adaptToDeviceRatio);
+        this._initializeNativeEngine(options.adaptToDeviceRatio ?? false);
+    }
+
+    /**
+     * Keeps as a separate function to use in NativeEngine
+     * @internal
+     */
+    protected _initializeNativeEngine(adaptToDeviceRatio: boolean): void {
+        this._engine = new _native.Engine({
+            version: AbstractEngine.Version,
+            nonFloatVertexBuffers: true,
+        });
+        this._camera = _native.Camera ? new _native.Camera() : null;
+        this._commandBufferEncoder = new CommandBufferEncoder(this._engine);
+        this._frameStats = { gpuTimeNs: Number.NaN };
+        this._boundBuffersVertexArray = null;
+        this._currentDepthTest = _native.Engine.DEPTH_TEST_LEQUAL;
+        this._stencilTest;
+        this._stencilMask = 255;
+        this._stencilFunc = Constants.ALWAYS;
+        this._stencilFuncRef = 0;
+        this._stencilFuncMask = 255;
+        this._stencilOpStencilFail = Constants.KEEP;
+        this._stencilOpDepthFail = Constants.KEEP;
+        this._stencilOpStencilDepthPass = Constants.REPLACE;
+        this._zOffset = 0;
+        this._zOffsetUnits = 0;
+        this._depthWrite = true;
+        // warning for non supported fill mode has already been displayed
+        this._fillModeWarningDisplayed = false;
 
         this._drawCalls = new PerfCounter();
 
@@ -407,7 +435,7 @@ export class ThinNativeEngine extends ThinEngine {
         // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
         // Setup resolution scaling based on display settings.
         const devicePixelRatio = window ? window.devicePixelRatio || 1.0 : 1.0;
-        this._hardwareScalingLevel = options.adaptToDeviceRatio ? 1.0 / devicePixelRatio : 1.0;
+        this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / devicePixelRatio : 1.0;
         this._engine.setHardwareScalingLevel(this._hardwareScalingLevel);
         this._lastDevicePixelRatio = devicePixelRatio;
         this.resize();
@@ -464,11 +492,6 @@ export class ThinNativeEngine extends ThinEngine {
         this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
         this._commandBufferEncoder.finishEncodingCommand();
-    }
-
-    /** @internal */
-    public static _createNativeDataStream(): NativeDataStream {
-        return new NativeDataStream();
     }
 
     /**
@@ -572,7 +595,7 @@ export class ThinNativeEngine extends ThinEngine {
         return buffer;
     }
 
-    protected _recordVertexArrayObject(
+    private _recordVertexArrayObject(
         vertexArray: any,
         vertexBuffers: { [key: string]: VertexBuffer },
         indexBuffer: Nullable<NativeDataBuffer>,
