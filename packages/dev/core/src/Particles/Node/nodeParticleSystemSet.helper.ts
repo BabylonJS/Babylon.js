@@ -1,3 +1,4 @@
+import type { Attractor } from "../attractor";
 import type { Color3Gradient, ColorGradient } from "core/Misc";
 import type { Nullable } from "core/types";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -45,6 +46,7 @@ import { SetupSpriteSheetBlock } from "./Blocks/Emitters/setupSpriteSheetBlock";
 import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
 import { UpdateAngleBlock } from "./Blocks/Update/updateAngleBlock";
 import { BasicSpriteUpdateBlock } from "./Blocks/Update/basicSpriteUpdateBlock";
+import { UpdateAttractorBlock } from "./Blocks/Update/updateAttractorBlock";
 import { UpdateColorBlock } from "./Blocks/Update/updateColorBlock";
 import { UpdateDirectionBlock } from "./Blocks/Update/updateDirectionBlock";
 import { UpdateNoiseBlock } from "./Blocks/Update/updateNoiseBlock";
@@ -459,6 +461,10 @@ function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, o
 
     updatedParticle = _UpdateParticlePositionBlockGroup(updatedParticle, oldSystem.isLocal, context);
 
+    if (oldSystem.attractors && oldSystem.attractors.length > 0) {
+        updatedParticle = _UpdateParticleAttractorBlockGroup(updatedParticle, oldSystem.attractors);
+    }
+
     if (oldSystem._limitVelocityGradients && oldSystem._limitVelocityGradients.length > 0 && oldSystem.limitVelocityDamping !== 0) {
         updatedParticle = _UpdateParticleVelocityLimitGradientBlockGroup(updatedParticle, oldSystem._limitVelocityGradients, oldSystem.limitVelocityDamping, context);
     }
@@ -723,6 +729,28 @@ function _UpdateParticlePositionBlockGroup(inputParticle: NodeParticleConnection
     }
 
     return updatePosition.output;
+}
+
+/**
+ * Creates the group of blocks that represent the particle attractor update
+ * @param inputParticle The input particle to update
+ * @param attractors The attractors (if any)
+ * @returns The output of the group of blocks that represent the particle attractor update
+ */
+function _UpdateParticleAttractorBlockGroup(inputParticle: NodeParticleConnectionPoint, attractors: Attractor[]): NodeParticleConnectionPoint {
+    let outputParticle = inputParticle;
+
+    // Chain update attractor blocks for each attractor
+    for (let i = 0; i < attractors.length; i++) {
+        const attractor = attractors[i];
+        const attractorBlock = new UpdateAttractorBlock(`Attractor Block ${i}`);
+        outputParticle.connectTo(attractorBlock.particle);
+        _CreateAndConnectInput("Attractor Position", attractor.position.clone(), attractorBlock.attractor);
+        _CreateAndConnectInput("Attractor Strength", attractor.strength, attractorBlock.strength);
+        outputParticle = attractorBlock.output;
+    }
+
+    return outputParticle;
 }
 
 /**
