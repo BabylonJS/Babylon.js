@@ -152,11 +152,11 @@ export class SolidParticleSystemBlock extends NodeParticleBlock {
             state.systemContext = sps;
 
             try {
-                if (updateData.position) {
-                    particle.position.copyFrom(updateData.position());
-                }
                 if (updateData.velocity) {
                     particle.velocity.copyFrom(updateData.velocity());
+                }
+                if (updateData.position) {
+                    particle.position.copyFrom(updateData.position());
                 }
                 if (updateData.color) {
                     particle.color?.copyFrom(updateData.color());
