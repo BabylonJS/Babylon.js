@@ -4,6 +4,9 @@ import type { Attractor } from "core/Particles/attractor";
 import type { FunctionComponent } from "react";
 import type { ISelectionService } from "../../../services/selectionService";
 
+import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, EditRegular, EyeRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
 import { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
@@ -13,7 +16,6 @@ import { HemisphericParticleEmitter } from "core/Particles/EmitterTypes/hemisphe
 import { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
 import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 import { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
-import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Deferred } from "core/Misc/deferred";
 import { Tools } from "core/Misc/tools";
@@ -38,7 +40,6 @@ import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import { AttractorList } from "./attractorList";
-import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, EditRegular, EyeRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
 
 const SnippetDashboardStorageKey = "Babylon/InspectorV2/SnippetDashboard/ParticleSystems";
 

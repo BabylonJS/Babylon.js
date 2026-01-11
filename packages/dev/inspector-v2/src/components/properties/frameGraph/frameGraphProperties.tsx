@@ -2,12 +2,13 @@ import type { FrameGraph } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { EditRegular, PlayRegular } from "@fluentui/react-icons";
+
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { EditRegular, PlayRegular } from "@fluentui/react-icons";
 
 export const FrameGraphTaskProperties: FunctionComponent<{ frameGraph: FrameGraph }> = (props) => {
     const { frameGraph } = props;
