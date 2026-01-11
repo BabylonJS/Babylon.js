@@ -342,6 +342,10 @@ export class ParticleMathBlock extends NodeParticleBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block from a JSON object
+     * @param serializationObject the JSON object to deserialize from
+     */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
