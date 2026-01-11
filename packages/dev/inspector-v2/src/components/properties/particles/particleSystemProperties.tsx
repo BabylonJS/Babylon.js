@@ -38,7 +38,7 @@ import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import { AttractorList } from "./attractorList";
-import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, EditRegular, EyeRegular, PlayRegular } from "@fluentui/react-icons";
+import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, EditRegular, EyeRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
 
 const SnippetDashboardStorageKey = "Babylon/InspectorV2/SnippetDashboard/ParticleSystems";
 
@@ -279,6 +279,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             ) : isAlive ? (
                 <ButtonLine
                     label="Stop"
+                    icon={StopRegular}
                     onClick={() => {
                         setStopRequested(true);
                         system.stop();

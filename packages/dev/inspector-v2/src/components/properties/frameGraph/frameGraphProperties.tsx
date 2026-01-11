@@ -7,6 +7,7 @@ import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { EditRegular, PlayRegular } from "@fluentui/react-icons";
 
 export const FrameGraphTaskProperties: FunctionComponent<{ frameGraph: FrameGraph }> = (props) => {
     const { frameGraph } = props;
@@ -35,9 +36,10 @@ export const FrameGraphGeneralProperties: FunctionComponent<{ frameGraph: FrameG
                 target={frameGraph}
                 propertyKey="optimizeTextureAllocation"
             ></BoundProperty>
-            {isSceneFrameGraph !== frameGraph && <ButtonLine onClick={() => (frameGraph.scene.frameGraph = frameGraph)} label="Set as scene's frame graph" />}
+            {isSceneFrameGraph !== frameGraph && <ButtonLine onClick={() => (frameGraph.scene.frameGraph = frameGraph)} label="Make Active" icon={PlayRegular} />}
             <ButtonLine
                 label="Edit Graph"
+                icon={EditRegular}
                 onClick={async () => {
                     const renderGraph = frameGraph.getLinkedNodeRenderGraph();
                     if (renderGraph) {
