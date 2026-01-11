@@ -2,6 +2,8 @@ import type { FunctionComponent } from "react";
 
 import type { NodeMaterial } from "core/index";
 
+import { EditRegular } from "@fluentui/react-icons";
+
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { BoundProperty } from "../boundProperty";
@@ -14,6 +16,7 @@ export const NodeMaterialGeneralProperties: FunctionComponent<{ material: NodeMa
             <BoundProperty component={SwitchPropertyLine} label="Ignore Alpha" target={material} propertyKey="ignoreAlpha" />
             <ButtonLine
                 label="Edit"
+                icon={EditRegular}
                 onClick={async () => {
                     const { NodeEditor } = await import("node-editor/nodeEditor");
                     NodeEditor.Show({ nodeMaterial: material });
