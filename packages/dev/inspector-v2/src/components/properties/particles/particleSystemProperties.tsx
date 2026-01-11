@@ -298,7 +298,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             {!system.isNodeGenerated && (
                 <>
                     <FileUploadLine
-                        label="Load from file"
+                        label="Load from File"
                         accept=".json"
                         onClick={(files) => {
                             if (files.length === 0) {
@@ -324,7 +324,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                     />
 
                     <ButtonLine
-                        label="Save to file"
+                        label="Save to File"
                         icon={ArrowDownloadRegular}
                         onClick={() => {
                             // Download serialization as a JSON file.
@@ -336,8 +336,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                     />
 
                     {snippetId && <TextPropertyLine label="Snippet ID" value={snippetId} />}
-                    <ButtonLine label="Load from snippet server" onClick={loadFromSnippetServer} icon={CloudArrowUpRegular} />
-                    <ButtonLine label="Save to snippet server" onClick={saveToSnippetServer} icon={CloudArrowDownRegular} />
+                    <ButtonLine label="Load from Snippet Server" onClick={loadFromSnippetServer} icon={CloudArrowUpRegular} />
+                    <ButtonLine label="Save to Snippet Server" onClick={saveToSnippetServer} icon={CloudArrowDownRegular} />
                 </>
             )}
         </>
