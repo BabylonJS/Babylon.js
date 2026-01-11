@@ -28,6 +28,7 @@
         "@babylonjs/loaders": "^8.0.0",
         "@babylonjs/materials": "^8.0.0",
         "@babylonjs/node-editor": "^8.0.0",
+        "@babylonjs/node-geometry-editor": "^8.0.0",
         "@babylonjs/node-particle-editor": "^8.0.0",
         "@babylonjs/node-render-graph-editor": "^8.0.0",
         "@babylonjs/serializers": "^8.0.0",
