@@ -87,9 +87,7 @@ export class _WebAudioParameterComponent {
             this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, Number.isFinite(this._param.value) ? this._param.value : 0, value), startTime, duration);
             this._rampEndTime = startTime + duration;
         } catch (e) {
-            Logger.Warn(`Audio parameter ramping failed. Setting value without ramping: ${(e as Error).message}`);
-            this._param.value = value;
-            this._rampEndTime = startTime;
+            Logger.Warn(`Audio parameter ramping failed: ${(e as Error).message}`);
         }
     }
 }

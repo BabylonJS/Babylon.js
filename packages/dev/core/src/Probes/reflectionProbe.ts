@@ -192,7 +192,7 @@ export class ReflectionProbe {
             this._currentSceneUBO = scene.getSceneUniformBuffer();
             if (engine._enableGPUDebugMarkers) {
                 engine.restoreDefaultFramebuffer();
-                engine._debugPushGroup(`reflection probe generation for ${name}`);
+                engine._debugPushGroup?.(`reflection probe generation for ${name}`);
             }
             currentApplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
             if (linearSpace) {
@@ -209,7 +209,7 @@ export class ReflectionProbe {
             }
             scene.updateTransformMatrix(true);
             if (engine._enableGPUDebugMarkers) {
-                engine._debugPopGroup();
+                engine._debugPopGroup?.();
             }
         });
     }

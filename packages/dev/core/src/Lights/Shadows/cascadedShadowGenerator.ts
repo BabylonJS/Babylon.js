@@ -902,7 +902,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             this._currentSceneUBO = this._scene.getSceneUniformBuffer();
             if (engine._enableGPUDebugMarkers) {
                 engine.restoreDefaultFramebuffer();
-                engine._debugPushGroup(`Cascaded shadow map generation for pass id ${engine.currentRenderPassId}`);
+                engine._debugPushGroup?.(`Cascaded shadow map generation for pass id ${engine.currentRenderPassId}`);
             }
             if (this._breaksAreDirty) {
                 this._splitFrustum();
