@@ -38,6 +38,7 @@ import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import { AttractorList } from "./attractorList";
+import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, EditRegular, EyeRegular, PlayRegular } from "@fluentui/react-icons";
 
 const SnippetDashboardStorageKey = "Babylon/InspectorV2/SnippetDashboard/ParticleSystems";
 
@@ -255,7 +256,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             <BoundProperty component={NumberInputPropertyLine} label="Update Speed" target={system} propertyKey="updateSpeed" min={0} step={0.01} />
 
             <ButtonLine
-                label={system.isNodeGenerated ? "Edit in Node Particle Editor" : "View in Node Particle Editor"}
+                label={system.isNodeGenerated ? "Edit" : "View"}
+                icon={system.isNodeGenerated ? EditRegular : EyeRegular}
                 onClick={async () => {
                     const scene = system.getScene();
                     if (!scene) {
@@ -264,7 +266,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
 
                     const { NodeParticleEditor } = await import("node-particle-editor/nodeParticleEditor");
 
-                    const systemSet = system.isNodeGenerated && system.source ? system.source : await ConvertToNodeParticleSystemSetAsync("source", [system]);
+                    const systemSet = system.source ? system.source : await ConvertToNodeParticleSystemSetAsync("source", [system]);
 
                     if (systemSet) {
                         NodeParticleEditor.Show({ nodeParticleSet: systemSet, hostScene: scene, backgroundColor: scene.clearColor });
@@ -285,6 +287,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             ) : (
                 <ButtonLine
                     label="Start"
+                    icon={PlayRegular}
                     onClick={() => {
                         setStopRequested(false);
                         system.start();
@@ -322,6 +325,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
 
                     <ButtonLine
                         label="Save to file"
+                        icon={ArrowDownloadRegular}
                         onClick={() => {
                             // Download serialization as a JSON file.
                             const data = JSON.stringify(system.serialize(true), null, 2);
@@ -332,8 +336,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                     />
 
                     {snippetId && <TextPropertyLine label="Snippet ID" value={snippetId} />}
-                    <ButtonLine label="Load from snippet server" onClick={loadFromSnippetServer} />
-                    <ButtonLine label="Save to snippet server" onClick={saveToSnippetServer} />
+                    <ButtonLine label="Load from snippet server" onClick={loadFromSnippetServer} icon={CloudArrowUpRegular} />
+                    <ButtonLine label="Save to snippet server" onClick={saveToSnippetServer} icon={CloudArrowDownRegular} />
                 </>
             )}
         </>

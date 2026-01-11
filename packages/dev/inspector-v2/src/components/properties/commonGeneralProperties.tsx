@@ -11,6 +11,7 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { useProperty } from "../../hooks/compoundPropertyHooks";
 import { GetPropertyDescriptor, IsPropertyReadonly } from "../../instrumentation/propertyInstrumentation";
 import { BoundProperty } from "./boundProperty";
+import { DeleteRegular } from "@fluentui/react-icons";
 
 function IsEntityWithProperty<ObjectT, PropertyT extends keyof ObjectT>(entity: ObjectT, property: PropertyT): entity is ObjectT & Required<Pick<ObjectT, PropertyT>> {
     return !!entity && typeof entity === "object" && property in entity && entity[property] !== undefined;
@@ -63,7 +64,7 @@ export const DisposableGeneralProperties: FunctionComponent<{ disposableEntity: 
 
     return (
         <>
-            <ButtonLine label="Dispose" onClick={() => disposableEntity.dispose()} />
+            <ButtonLine label="Dispose" icon={DeleteRegular} onClick={() => disposableEntity.dispose()} />
         </>
     );
 };
