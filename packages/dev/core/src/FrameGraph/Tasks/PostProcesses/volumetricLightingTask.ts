@@ -49,7 +49,7 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
 
     /**
      * The lighting volume texture (optional).
-     * If not provided, a new texture will be created, which the same size, format and type as targetTexture.
+     * If not provided, a new texture will be created, with the same size, format and type as targetTexture.
      * This is the texture that will store the volumetric lighting information, before being blended to targetTexture.
      */
     public lightingVolumeTexture?: FrameGraphTextureHandle;
@@ -204,7 +204,7 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
         return "FrameGraphVolumetricLightingTask";
     }
 
-    public override record(skipCreationOfDisabledPasses = false) {
+    public record(skipCreationOfDisabledPasses = false) {
         if (this.targetTexture === undefined || this.depthTexture === undefined || this.camera === undefined || this.lightingVolumeMesh === undefined || this.light === undefined) {
             throw new Error(`FrameGraphVolumetricLightingTask "${this.name}": targetTexture, depthTexture, camera, lightingVolumeMesh and light are required`);
         }

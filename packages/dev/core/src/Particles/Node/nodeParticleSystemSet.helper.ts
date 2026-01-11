@@ -1,8 +1,9 @@
+import type { Attractor } from "../attractor";
+import type { Color3Gradient, ColorGradient } from "core/Misc";
 import type { Nullable } from "core/types";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Mesh } from "core/Meshes/mesh";
-import type { Color3Gradient, ColorGradient } from "core/Misc";
 import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
@@ -45,6 +46,7 @@ import { SetupSpriteSheetBlock } from "./Blocks/Emitters/setupSpriteSheetBlock";
 import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
 import { UpdateAngleBlock } from "./Blocks/Update/updateAngleBlock";
 import { BasicSpriteUpdateBlock } from "./Blocks/Update/basicSpriteUpdateBlock";
+import { UpdateAttractorBlock } from "./Blocks/Update/updateAttractorBlock";
 import { UpdateColorBlock } from "./Blocks/Update/updateColorBlock";
 import { UpdateDirectionBlock } from "./Blocks/Update/updateDirectionBlock";
 import { UpdateNoiseBlock } from "./Blocks/Update/updateNoiseBlock";
@@ -459,6 +461,10 @@ function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, o
 
     updatedParticle = _UpdateParticlePositionBlockGroup(updatedParticle, oldSystem.isLocal, context);
 
+    if (oldSystem.attractors && oldSystem.attractors.length > 0) {
+        updatedParticle = _UpdateParticleAttractorBlockGroup(updatedParticle, oldSystem.attractors);
+    }
+
     if (oldSystem._limitVelocityGradients && oldSystem._limitVelocityGradients.length > 0 && oldSystem.limitVelocityDamping !== 0) {
         updatedParticle = _UpdateParticleVelocityLimitGradientBlockGroup(updatedParticle, oldSystem._limitVelocityGradients, oldSystem.limitVelocityDamping, context);
     }
@@ -726,6 +732,28 @@ function _UpdateParticlePositionBlockGroup(inputParticle: NodeParticleConnection
 }
 
 /**
+ * Creates the group of blocks that represent the particle attractor update
+ * @param inputParticle The input particle to update
+ * @param attractors The attractors (if any)
+ * @returns The output of the group of blocks that represent the particle attractor update
+ */
+function _UpdateParticleAttractorBlockGroup(inputParticle: NodeParticleConnectionPoint, attractors: Attractor[]): NodeParticleConnectionPoint {
+    let outputParticle = inputParticle;
+
+    // Chain update attractor blocks for each attractor
+    for (let i = 0; i < attractors.length; i++) {
+        const attractor = attractors[i];
+        const attractorBlock = new UpdateAttractorBlock(`Attractor Block ${i}`);
+        outputParticle.connectTo(attractorBlock.particle);
+        _CreateAndConnectInput("Attractor Position", attractor.position.clone(), attractorBlock.attractor);
+        _CreateAndConnectInput("Attractor Strength", attractor.strength, attractorBlock.strength);
+        outputParticle = attractorBlock.output;
+    }
+
+    return outputParticle;
+}
+
+/**
  * Creates the group of blocks that represent the particle size update
  * @param inputParticle The input particle to update
  * @param sizeGradients The size gradients (if any)
@@ -969,6 +997,7 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     newSystem.preWarmCycles = oldSystem.preWarmCycles;
     newSystem.preWarmStepOffset = oldSystem.preWarmStepOffset;
     newSystem.isBillboardBased = oldSystem.isBillboardBased;
+    newSystem.billBoardMode = oldSystem.billboardMode;
     newSystem.isLocal = oldSystem.isLocal;
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
 

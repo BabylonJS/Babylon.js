@@ -6,7 +6,8 @@ import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "core/Particles/Node/Blocks/particleMathBlock";
-import { ParticleModuloBlock } from "core/Particles/Node/Blocks/particleModuloBlock";
+import { ParticleNumberMathBlock, ParticleNumberMathBlockOperations } from "core/Particles/Node/Blocks/particleNumberMathBlock";
+import { ParticleVectorMathBlock, ParticleVectorMathBlockOperations } from "core/Particles/Node/Blocks/particleVectorMathBlock";
 import { UpdateColorBlock } from "core/Particles/Node/Blocks/Update/updateColorBlock";
 import { ParticleLerpBlock } from "core/Particles/Node/Blocks/particleLerpBlock";
 import { UpdateScaleBlock } from "core/Particles/Node/Blocks/Update/updateScaleBlock";
@@ -372,7 +373,18 @@ export class BlockTools {
                 return block;
             }
             case "ModuloBlock": {
-                const block = new ParticleModuloBlock("Modulo");
+                const block = new ParticleNumberMathBlock("Modulo");
+                block.operation = ParticleNumberMathBlockOperations.Modulo;
+                return block;
+            }
+            case "PowBlock": {
+                const block = new ParticleNumberMathBlock("Pow");
+                block.operation = ParticleNumberMathBlockOperations.Pow;
+                return block;
+            }
+            case "DotBlock": {
+                const block = new ParticleVectorMathBlock("Dot");
+                block.operation = ParticleVectorMathBlockOperations.Dot;
                 return block;
             }
             case "ToDegreesBlock": {

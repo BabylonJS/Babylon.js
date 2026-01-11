@@ -112,6 +112,18 @@ const MathStandardBlocks: IBlockDefinition[] = [
         modes: BothModes,
         tooltip: "Block used to convert a float value to an integer value using a specified operation (Round, Ceil, Floor, Truncate)",
     },
+    {
+        name: "DotBlock",
+        category: "Math__Standard",
+        modes: BothModes,
+        tooltip: "Block to calculate the Dot product",
+    },
+    {
+        name: "PowBlock",
+        category: "Math__Standard",
+        modes: BothModes,
+        tooltip: "Block to calculate the Power",
+    },
 ];
 
 const MathScientificBlocks: IBlockDefinition[] = [
