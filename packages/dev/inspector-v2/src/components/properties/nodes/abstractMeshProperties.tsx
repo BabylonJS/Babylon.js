@@ -94,14 +94,13 @@ export const AbstractMeshDisplayProperties: FunctionComponent<{ mesh: AbstractMe
             <BoundProperty component={NumberInputPropertyLine} label="Alpha Index" target={mesh} propertyKey="alphaIndex" />
             <BoundProperty component={SwitchPropertyLine} label="Receive Shadows" target={mesh} propertyKey="receiveShadows" />
 
-            {mesh.isVerticesDataPresent(VertexBuffer.ColorKind) && (
-                <BoundProperty label="Use vertex colors" component={SwitchPropertyLine} target={mesh} propertyKey="useVertexColors" />
+            {mesh.isVerticesDataPresent(VertexBuffer.ColorKind) ? (
+                <BoundProperty label="Use Vertex Colors" component={SwitchPropertyLine} target={mesh} propertyKey="useVertexColors" />
+            ) : (
+                <BoundProperty label="Has Vertex Alpha" component={SwitchPropertyLine} target={mesh} propertyKey="hasVertexAlpha" />
             )}
-            {mesh.isVerticesDataPresent(VertexBuffer.ColorKind) && (
-                <BoundProperty label="Has vertex alpha" component={SwitchPropertyLine} target={mesh} propertyKey="hasVertexAlpha" />
-            )}
-            {mesh.getScene().fogMode !== Constants.FOGMODE_NONE && <BoundProperty label="Apply fog" component={SwitchPropertyLine} target={mesh} propertyKey="applyFog" />}
-            {!mesh.parent && <BoundProperty component={SwitchPropertyLine} label="Infinite distance" target={mesh} propertyKey="infiniteDistance" />}
+            {mesh.getScene().fogMode !== Constants.FOGMODE_NONE && <BoundProperty label="Apply Fog" component={SwitchPropertyLine} target={mesh} propertyKey="applyFog" />}
+            {!mesh.parent && <BoundProperty component={SwitchPropertyLine} label="Infinite Distance" target={mesh} propertyKey="infiniteDistance" />}
             <BoundProperty
                 component={SyncedSliderPropertyLine}
                 label="Rendering Group Id"
