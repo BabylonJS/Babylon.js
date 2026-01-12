@@ -161,6 +161,11 @@ export class Particle {
     public _localPosition?: Vector3;
 
     /**
+     * Callback triggered when the particle is reset
+     */
+    public onReset: Nullable<() => void>;
+
+    /**
      * Creates a new instance Particle
      * @param particleSystem the particle system the particle belongs to
      */
@@ -245,6 +250,9 @@ export class Particle {
 
     /** @internal */
     public _reset() {
+        if (this.onReset) {
+            this.onReset();
+        }
         this.age = 0;
         this.id = Particle._Count++;
         this._currentColorGradient = null;

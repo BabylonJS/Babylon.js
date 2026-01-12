@@ -379,7 +379,7 @@ export class GeospatialCamera extends Camera {
         }
     }
 
-    private _getCenterAndRadiusFromZoomToPoint(targetPoint: Vector3, distance: number, newCenterResult: Vector3): number {
+    private _getCenterAndRadiusFromZoomToPoint(targetPoint: DeepImmutable<IVector3Like>, distance: number, newCenterResult: Vector3): number {
         const directionToTarget = Vector3SubtractToRef(targetPoint, this._position, TmpVectors.Vector3[0]);
         const distanceToTarget = directionToTarget.length();
 
@@ -419,10 +419,10 @@ export class GeospatialCamera extends Camera {
         }
         if (pickedPoint) {
             // Zoom toward the picked point under cursor
-            this._zoomToPoint(pickedPoint, zoomDelta);
+            this.zoomToPoint(pickedPoint, zoomDelta);
         } else {
             // Zoom along lookAt vector (fallback when no surface under cursor)
-            this._zoomAlongLookAt(zoomDelta);
+            this.zoomAlongLookAt(zoomDelta);
         }
     }
 
@@ -448,13 +448,13 @@ export class GeospatialCamera extends Camera {
         }
     }
 
-    private _zoomToPoint(targetPoint: Vector3, distance: number) {
+    public zoomToPoint(targetPoint: DeepImmutable<IVector3Like>, distance: number) {
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(targetPoint, distance, this._tempCenter);
         // Apply the new orientation
         this._setOrientation(this._yaw, this._pitch, newRadius, this._tempCenter);
     }
 
-    private _zoomAlongLookAt(distance: number) {
+    public zoomAlongLookAt(distance: number) {
         // Clamp radius to limits
         const requestedRadius = this._radius - distance;
         const newRadius = Clamp(requestedRadius, this.limits.radiusMin, this.limits.radiusMax);
