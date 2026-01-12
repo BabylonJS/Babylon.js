@@ -20,6 +20,7 @@ import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBloc
 
 import { Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { FactorGradient } from "core/Misc/gradients";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
@@ -1033,13 +1034,11 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     newSystem.isLocal = oldSystem.isLocal;
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
 
-    _SystemEmitRateValue(oldSystem.getEmitRateGradients(), oldSystem.targetStopDuration, oldSystem.emitRate, newSystem, context);
-
-    const texture = oldSystem.particleTexture;
-    if (texture) {
-        _CreateTextureBlock(texture).connectTo(newSystem.texture);
+    if (oldSystem.emitter) {
+        _SystemEmitterPosition(oldSystem.emitter, newSystem);
     }
 
+    _SystemEmitRateValue(oldSystem.getEmitRateGradients(), oldSystem.targetStopDuration, oldSystem.emitRate, newSystem, context);
     _SystemTargetStopDuration(oldSystem.targetStopDuration, newSystem, context);
 
     const rampGradients = oldSystem.getRampGradients();
@@ -1047,9 +1046,25 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
         _SystemRampGradientsBlockGroup(rampGradients, newSystem);
     }
 
+    const texture = oldSystem.particleTexture;
+    if (texture) {
+        _CreateTextureBlock(texture).connectTo(newSystem.texture);
+    }
+
     updateParticleOutput.connectTo(newSystem.particle);
 
     return newSystem;
+}
+
+function _SystemEmitterPosition(emitter: AbstractMesh | Vector3, newSystem: SystemBlock): void {
+    if (emitter) {
+        _CreateAndConnectInput(
+            "Emitter Position",
+            emitter instanceof AbstractMesh ? emitter.position.clone() : emitter.clone(),
+            newSystem.emitterPosition,
+            NodeParticleBlockConnectionPointTypes.Vector3
+        );
+    }
 }
 
 function _SystemEmitRateValue(
