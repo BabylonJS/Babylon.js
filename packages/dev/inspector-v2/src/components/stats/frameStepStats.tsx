@@ -64,8 +64,6 @@ export const FrameStepsStats: FunctionComponent<{ context: Scene }> = ({ context
             <StringifiedPropertyLine key="Sprites" label="Sprites" value={sprites} precision={2} units="ms" />
             <StringifiedPropertyLine key="Animations" label="Animations" value={animations} precision={2} units="ms" />
             <StringifiedPropertyLine key="Physics" label="Physics" value={physics} precision={2} units="ms" />
-            <StringifiedPropertyLine key="Render" label="Render" value={sceneInstrumentation.renderTimeCounter.lastSecAverage} precision={2} units="ms" />
-            <StringifiedPropertyLine key="Frame" label="Frame" value={sceneInstrumentation.frameTimeCounter.lastSecAverage} precision={2} units="ms" />
             <StringifiedPropertyLine key="InterFrameTime" label="Inter-Frame Time" value={interFrameTime} precision={2} units="ms" />
             <StringifiedPropertyLine key="GPUFrameTime" label="GPU Frame Time" value={gpuFrameTime} precision={2} units="ms" />
             <StringifiedPropertyLine key="GPUFrameTimeAverage" label="GPU Frame Time (Average)" value={gpuFrameTimeAverage} precision={2} units="ms" />
