@@ -380,7 +380,7 @@ const packageMapping: {
                     return "BABYLON.GLTF2";
                 }
             }
-            return "BABYLON";
+            return "BABYLON.NodeEditor";
         },
         "node-geometry-editor": (filePath?: string) => {
             filePath = filePath?.replaceAll("\\", "/");
@@ -392,7 +392,7 @@ const packageMapping: {
                     return "BABYLON.GLTF2";
                 }
             }
-            return "BABYLON";
+            return "BABYLON.NodeGeometryEditor";
         },
         "node-render-graph-editor": (filePath?: string) => {
             filePath = filePath?.replaceAll("\\", "/");
@@ -404,7 +404,7 @@ const packageMapping: {
                     return "BABYLON.GLTF2";
                 }
             }
-            return "BABYLON";
+            return "BABYLON.NodeRenderGraphEditor";
         },
         "node-particle-editor": (filePath?: string) => {
             filePath = filePath?.replaceAll("\\", "/");
@@ -416,7 +416,7 @@ const packageMapping: {
                     return "BABYLON.GLTF2";
                 }
             }
-            return "BABYLON";
+            return "BABYLON.NodeParticleEditor";
         },
         "gui-editor": (filePath?: string) => {
             filePath = filePath?.replaceAll("\\", "/");
