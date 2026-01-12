@@ -1,8 +1,10 @@
+import type { Attractor } from "../attractor";
+import type { FlowMap } from "../flowMap";
+import type { Color3Gradient, ColorGradient } from "core/Misc";
 import type { Nullable } from "core/types";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Mesh } from "core/Meshes/mesh";
-import type { Color3Gradient, ColorGradient } from "core/Misc";
 import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
@@ -18,6 +20,7 @@ import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBloc
 
 import { Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { FactorGradient } from "core/Misc/gradients";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
@@ -45,12 +48,15 @@ import { SetupSpriteSheetBlock } from "./Blocks/Emitters/setupSpriteSheetBlock";
 import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
 import { UpdateAngleBlock } from "./Blocks/Update/updateAngleBlock";
 import { BasicSpriteUpdateBlock } from "./Blocks/Update/basicSpriteUpdateBlock";
+import { UpdateAttractorBlock } from "./Blocks/Update/updateAttractorBlock";
 import { UpdateColorBlock } from "./Blocks/Update/updateColorBlock";
 import { UpdateDirectionBlock } from "./Blocks/Update/updateDirectionBlock";
+import { UpdateFlowMapBlock } from "./Blocks/Update/updateFlowMapBlock";
 import { UpdateNoiseBlock } from "./Blocks/Update/updateNoiseBlock";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { UpdateSizeBlock } from "./Blocks/Update/updateSizeBlock";
 import { UpdateRemapBlock } from "./Blocks/Update/updateRemapBlock";
+import { GenerateBase64StringFromPixelData } from "core/Misc/copyTools";
 
 /** Represents blocks or groups of blocks that can be used in multiple places in the graph, so they are stored in this context to be reused */
 type ConversionContext = {
@@ -459,6 +465,14 @@ function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, o
 
     updatedParticle = _UpdateParticlePositionBlockGroup(updatedParticle, oldSystem.isLocal, context);
 
+    if (oldSystem.attractors && oldSystem.attractors.length > 0) {
+        updatedParticle = _UpdateParticleAttractorBlockGroup(updatedParticle, oldSystem.attractors);
+    }
+
+    if (oldSystem.flowMap) {
+        updatedParticle = _UpdateParticleFlowMapBlockGroup(updatedParticle, oldSystem.flowMap, oldSystem.flowMapStrength);
+    }
+
     if (oldSystem._limitVelocityGradients && oldSystem._limitVelocityGradients.length > 0 && oldSystem.limitVelocityDamping !== 0) {
         updatedParticle = _UpdateParticleVelocityLimitGradientBlockGroup(updatedParticle, oldSystem._limitVelocityGradients, oldSystem.limitVelocityDamping, context);
     }
@@ -726,6 +740,53 @@ function _UpdateParticlePositionBlockGroup(inputParticle: NodeParticleConnection
 }
 
 /**
+ * Creates the group of blocks that represent the particle attractor update
+ * @param inputParticle The input particle to update
+ * @param attractors The attractors (if any)
+ * @returns The output of the group of blocks that represent the particle attractor update
+ */
+function _UpdateParticleAttractorBlockGroup(inputParticle: NodeParticleConnectionPoint, attractors: Attractor[]): NodeParticleConnectionPoint {
+    let outputParticle = inputParticle;
+
+    // Chain update attractor blocks for each attractor
+    for (let i = 0; i < attractors.length; i++) {
+        const attractor = attractors[i];
+        const attractorBlock = new UpdateAttractorBlock(`Attractor Block ${i}`);
+        outputParticle.connectTo(attractorBlock.particle);
+        _CreateAndConnectInput("Attractor Position", attractor.position.clone(), attractorBlock.attractor);
+        _CreateAndConnectInput("Attractor Strength", attractor.strength, attractorBlock.strength);
+        outputParticle = attractorBlock.output;
+    }
+
+    return outputParticle;
+}
+
+/**
+ * Creates the group of blocks that represent the particle flow map update
+ * @param inputParticle The input particle to update
+ * @param flowMap The flow map data
+ * @param flowMapStrength The strength of the flow map
+ * @returns The output of the group of blocks that represent the particle flow map update
+ */
+function _UpdateParticleFlowMapBlockGroup(inputParticle: NodeParticleConnectionPoint, flowMap: FlowMap, flowMapStrength: number): NodeParticleConnectionPoint {
+    // Create the flow map update block
+    const updateFlowMapBlock = new UpdateFlowMapBlock("Flow Map Update");
+    inputParticle.connectTo(updateFlowMapBlock.particle);
+
+    // Create a texture block from the flow map data
+    // The FlowMap only stores raw pixel data, so we need to convert it to a base64 data URL
+    // Y has to be flipped as the texture data is flipped between CPU (canvas, Y=0 at top) and GPU (texture, Y=0 at bottom)
+    const flowMapTextureBlock = new ParticleTextureSourceBlock("Flow Map Texture");
+    flowMapTextureBlock.serializedCachedData = true;
+    flowMapTextureBlock.textureDataUrl = GenerateBase64StringFromPixelData(flowMap.data, { width: flowMap.width, height: flowMap.height }, true) ?? "";
+    flowMapTextureBlock.texture.connectTo(updateFlowMapBlock.flowMap);
+
+    _CreateAndConnectInput("Flow Map Strength", flowMapStrength, updateFlowMapBlock.strength);
+
+    return updateFlowMapBlock.output;
+}
+
+/**
  * Creates the group of blocks that represent the particle size update
  * @param inputParticle The input particle to update
  * @param sizeGradients The size gradients (if any)
@@ -969,16 +1030,15 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     newSystem.preWarmCycles = oldSystem.preWarmCycles;
     newSystem.preWarmStepOffset = oldSystem.preWarmStepOffset;
     newSystem.isBillboardBased = oldSystem.isBillboardBased;
+    newSystem.billBoardMode = oldSystem.billboardMode;
     newSystem.isLocal = oldSystem.isLocal;
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
 
-    _SystemEmitRateValue(oldSystem.getEmitRateGradients(), oldSystem.targetStopDuration, oldSystem.emitRate, newSystem, context);
-
-    const texture = oldSystem.particleTexture;
-    if (texture) {
-        _CreateTextureBlock(texture).connectTo(newSystem.texture);
+    if (oldSystem.emitter) {
+        _SystemEmitterPosition(oldSystem.emitter, newSystem);
     }
 
+    _SystemEmitRateValue(oldSystem.getEmitRateGradients(), oldSystem.targetStopDuration, oldSystem.emitRate, newSystem, context);
     _SystemTargetStopDuration(oldSystem.targetStopDuration, newSystem, context);
 
     const rampGradients = oldSystem.getRampGradients();
@@ -986,9 +1046,25 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
         _SystemRampGradientsBlockGroup(rampGradients, newSystem);
     }
 
+    const texture = oldSystem.particleTexture;
+    if (texture) {
+        _CreateTextureBlock(texture).connectTo(newSystem.texture);
+    }
+
     updateParticleOutput.connectTo(newSystem.particle);
 
     return newSystem;
+}
+
+function _SystemEmitterPosition(emitter: AbstractMesh | Vector3, newSystem: SystemBlock): void {
+    if (emitter) {
+        _CreateAndConnectInput(
+            "Emitter Position",
+            emitter instanceof AbstractMesh ? emitter.position.clone() : emitter.clone(),
+            newSystem.emitterPosition,
+            NodeParticleBlockConnectionPointTypes.Vector3
+        );
+    }
 }
 
 function _SystemEmitRateValue(

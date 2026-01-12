@@ -11,6 +11,9 @@ import { TeleportInDisplayManager } from "./display/teleportInDisplayManager";
 import { ConditionDisplayManager } from "./display/conditionDisplayManager";
 import { TriggerDisplayManager } from "./display/triggerDisplayManager";
 
+/**
+ * Registers all display managers to the display ledger
+ */
 export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ParticleInputBlock"] = InputDisplayManager;
     DisplayLedger.RegisteredControls["ParticleTextureSourceBlock"] = TextureDisplayManager;
@@ -36,6 +39,7 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["BasicPositionUpdateBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["BasicSpriteUpdateBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["BasicColorUpdateBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateAttractorBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateFlowMapBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateNoiseBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateRemapBlock"] = UpdateDisplayManager;

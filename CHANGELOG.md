@@ -1,5 +1,14 @@
 # Changelog
 
+## 8.45.3
+
+### Core
+
+- Update pinchToZoom to zoom towards center of pinch and be more forgiving of slow gestures - by [georginahalpern](https://github.com/georginahalpern) ([#17642](https://github.com/BabylonJS/Babylon.js/pull/17642))
+- Do not attempt fallback when audio parameter `setValueCurveAtTime` fails - by [docEdub](https://github.com/docEdub) ([#17641](https://github.com/BabylonJS/Babylon.js/pull/17641))
+- Billboard support - by [VicenteCartas](https://github.com/VicenteCartas) ([#17635](https://github.com/BabylonJS/Babylon.js/pull/17635))
+- Adds blocks for Pow and Dot operations - by [VicenteCartas](https://github.com/VicenteCartas) ([#17639](https://github.com/BabylonJS/Babylon.js/pull/17639))
+
 ## 8.45.2
 
 ### Core

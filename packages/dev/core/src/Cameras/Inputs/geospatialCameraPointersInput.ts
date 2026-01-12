@@ -20,6 +20,9 @@ import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
 export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     public camera: GeospatialCamera;
 
+    private _initialPinchSquaredDistance: number = 0;
+    private _pinchCentroid: Nullable<PointerTouch> = null;
+
     public override getClassName(): string {
         return "GeospatialCameraPointersInput";
     }
@@ -53,11 +56,42 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
 
     /**
      * Move camera from multitouch (pinch) zoom distances.
+     * Zooms towards the centroid (midpoint between the two fingers).
      * @param previousPinchSquaredDistance
      * @param pinchSquaredDistance
      */
     protected override _computePinchZoom(previousPinchSquaredDistance: number, pinchSquaredDistance: number): void {
-        this.camera.radius = (this.camera.radius * Math.sqrt(previousPinchSquaredDistance)) / Math.sqrt(pinchSquaredDistance);
+        // Calculate zoom distance based on pinch delta
+        const previousDistance = Math.sqrt(previousPinchSquaredDistance);
+        const currentDistance = Math.sqrt(pinchSquaredDistance);
+        const pinchDelta = currentDistance - previousDistance;
+
+        // Try to zoom towards centroid if we have it
+        if (this._pinchCentroid) {
+            const scene = this.camera.getScene();
+            const engine = scene.getEngine();
+            const canvasRect = engine.getInputElementClientRect();
+
+            if (canvasRect) {
+                // Convert centroid from clientX/Y to canvas-relative coordinates (same as scene.pointerX/Y)
+                const canvasX = this._pinchCentroid.x - canvasRect.left;
+                const canvasY = this._pinchCentroid.y - canvasRect.top;
+
+                // Pick at centroid
+                const pickResult = scene.pick(canvasX, canvasY, this.camera.pickPredicate);
+                if (pickResult?.pickedPoint) {
+                    // Scale zoom by distance to picked point
+                    const distanceToPoint = this.camera.position.subtract(pickResult.pickedPoint).length();
+                    const zoomDistance = pinchDelta * distanceToPoint * 0.005;
+                    this.camera.zoomToPoint(pickResult.pickedPoint, zoomDistance);
+                    return;
+                }
+            }
+        }
+
+        // Fallback: scale zoom by camera radius along lookat vector
+        const zoomDistance = pinchDelta * this.camera.radius * 0.005;
+        this.camera.zoomAlongLookAt(zoomDistance);
     }
 
     /**
@@ -89,15 +123,41 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         previousMultiTouchPanPosition: Nullable<PointerTouch>,
         multiTouchPanPosition: Nullable<PointerTouch>
     ): void {
-        this._shouldStartPinchZoom =
-            this._twoFingerActivityCount < 20 && Math.abs(Math.sqrt(pinchSquaredDistance) - Math.sqrt(previousPinchSquaredDistance)) > this.camera.limits.pinchToPanMax;
+        // Store centroid for use in _computePinchZoom (it's already calculated by parent)
+        this._pinchCentroid = multiTouchPanPosition;
+
+        // Reset on gesture end
+        if (pinchSquaredDistance === 0 && multiTouchPanPosition === null) {
+            this._initialPinchSquaredDistance = 0;
+            this._pinchCentroid = null;
+            super.onMultiTouch(pointA, pointB, previousPinchSquaredDistance, pinchSquaredDistance, previousMultiTouchPanPosition, multiTouchPanPosition);
+            return;
+        }
+
+        // Track initial distance at gesture start for cumulative threshold detection
+        if (this._initialPinchSquaredDistance === 0 && pinchSquaredDistance !== 0) {
+            this._initialPinchSquaredDistance = pinchSquaredDistance;
+        }
+
+        // Use cumulative delta from gesture start for threshold detection (more forgiving than frame-to-frame)
+        const cumulativeDelta = Math.abs(Math.sqrt(pinchSquaredDistance) - Math.sqrt(this._initialPinchSquaredDistance));
+        this._shouldStartPinchZoom = this._twoFingerActivityCount < 20 && cumulativeDelta > this.camera.limits.pinchToPanMax;
+
         super.onMultiTouch(pointA, pointB, previousPinchSquaredDistance, pinchSquaredDistance, previousMultiTouchPanPosition, multiTouchPanPosition);
     }
 
     public override onButtonUp(_evt: IPointerEvent): void {
         this.camera.movement.stopDrag();
         this.camera.movement.activeInput = false;
+        this._initialPinchSquaredDistance = 0;
+        this._pinchCentroid = null;
         super.onButtonUp(_evt);
+    }
+
+    public override onLostFocus(): void {
+        this._initialPinchSquaredDistance = 0;
+        this._pinchCentroid = null;
+        super.onLostFocus();
     }
 
     private _handleTilt(deltaX: number, deltaY: number): void {
