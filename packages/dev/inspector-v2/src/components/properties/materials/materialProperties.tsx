@@ -74,7 +74,6 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
             <BoundProperty
                 component={SwitchPropertyLine}
                 label="Face Culling"
-                description="Enabling this will enable culling, default is to cull backfaces. To enable front face culling instead, you can disable 'cullBackfaces' using the below option"
                 docLink="https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#back-face-culling"
                 target={material}
                 propertyKey="backFaceCulling"
