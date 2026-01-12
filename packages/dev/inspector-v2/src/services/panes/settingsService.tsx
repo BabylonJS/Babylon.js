@@ -19,7 +19,6 @@ import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { SettingsContextIdentity } from "../settingsContext";
 import { ShellServiceIdentity } from "../shellService";
-import { BoundProperty } from "../../components/properties/boundProperty";
 
 export const SettingsServiceIdentity = Symbol("SettingsService");
 
@@ -138,33 +137,37 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                                             setCompactMode(checked);
                                         }}
                                     />
-                                    <BoundProperty
+                                    <SwitchPropertyLine
                                         label="Use Degrees"
                                         description="Using degrees instead of radians."
-                                        component={SwitchPropertyLine}
-                                        target={settings}
-                                        propertyKey="useDegrees"
+                                        value={settings.useDegrees}
+                                        onChange={(checked) => {
+                                            settings.useDegrees = checked;
+                                        }}
                                     />
-                                    <BoundProperty
+                                    <SwitchPropertyLine
                                         label="Only Show Euler Angles"
                                         description="Only show Euler angles in rotation properties, rather than quaternions."
-                                        component={SwitchPropertyLine}
-                                        target={settings}
-                                        propertyKey="useEuler"
+                                        value={settings.useEuler}
+                                        onChange={(checked) => {
+                                            settings.useEuler = checked;
+                                        }}
                                     />
-                                    <BoundProperty
+                                    <SwitchPropertyLine
                                         label="Ignore Backfaces for Picking"
                                         description="Ignore backfaces when picking."
-                                        component={SwitchPropertyLine}
-                                        target={settings}
-                                        propertyKey="ignoreBackfacesForPicking"
+                                        value={settings.ignoreBackfacesForPicking}
+                                        onChange={(checked) => {
+                                            settings.ignoreBackfacesForPicking = checked;
+                                        }}
                                     />
-                                    <BoundProperty
+                                    <SwitchPropertyLine
                                         label="Show Properties on Selection"
                                         description="Shows the Properties pane when an entity is selected."
-                                        component={SwitchPropertyLine}
-                                        target={settings}
-                                        propertyKey="showPropertiesOnEntitySelection"
+                                        value={settings.showPropertiesOnEntitySelection}
+                                        onChange={(checked) => {
+                                            settings.showPropertiesOnEntitySelection = checked;
+                                        }}
                                     />
                                     <ButtonLine label="Reset Layout" onClick={resetSidePaneLayout} />
                                 </AccordionSection>
