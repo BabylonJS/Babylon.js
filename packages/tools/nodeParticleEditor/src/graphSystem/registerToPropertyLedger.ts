@@ -6,6 +6,9 @@ import { DebugPropertyTabComponent } from "./properties/debugNodePropertyCompone
 import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePropertyComponent";
 import { MeshShapePropertyTabComponent } from "./properties/meshShapeNodePropertyComponent";
 
+/**
+ * Registers particle node blocks to the property ledger
+ */
 export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.DefaultControl = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["ParticleInputBlock"] = InputPropertyTabComponent;
