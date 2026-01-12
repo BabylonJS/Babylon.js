@@ -19,6 +19,7 @@ import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { SettingsContextIdentity } from "../settingsContext";
 import { ShellServiceIdentity } from "../shellService";
+import { BoundProperty } from "../../components/properties/boundProperty";
 
 export const SettingsServiceIdentity = Symbol("SettingsService");
 
@@ -77,6 +78,13 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                 DataStorage.WriteBoolean("Babylon/Settings/IgnoreBackfacesForPicking", ignoreBackfacesForPicking);
                 this.settingsChangedObservable.notifyObservers(this);
             },
+            get onlyShowEuler() {
+                return DataStorage.ReadBoolean("Babylon/Settings/OnlyShowEuler", false);
+            },
+            set onlyShowEuler(value: boolean) {
+                DataStorage.WriteBoolean("Babylon/Settings/OnlyShowEuler", value);
+                this.settingsChangedObservable.notifyObservers(this);
+            },
             get showPropertiesOnEntitySelection() {
                 return showPropertiesOnEntitySelection;
             },
@@ -124,29 +132,33 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                                             setCompactMode(checked);
                                         }}
                                     />
-                                    <SwitchPropertyLine
+                                    <BoundProperty
                                         label="Use Degrees"
                                         description="Using degrees instead of radians."
-                                        value={settings.useDegrees}
-                                        onChange={(checked) => {
-                                            settings.useDegrees = checked;
-                                        }}
+                                        component={SwitchPropertyLine}
+                                        target={settings}
+                                        propertyKey="useDegrees"
                                     />
-                                    <SwitchPropertyLine
+                                    <BoundProperty
+                                        label="Only Show Euler Angles"
+                                        description="Only show Euler angles in rotation properties, rather than quaternions."
+                                        component={SwitchPropertyLine}
+                                        target={settings}
+                                        propertyKey="onlyShowEuler"
+                                    />
+                                    <BoundProperty
                                         label="Ignore Backfaces for Picking"
                                         description="Ignore backfaces when picking."
-                                        value={settings.ignoreBackfacesForPicking}
-                                        onChange={(checked) => {
-                                            settings.ignoreBackfacesForPicking = checked;
-                                        }}
+                                        component={SwitchPropertyLine}
+                                        target={settings}
+                                        propertyKey="ignoreBackfacesForPicking"
                                     />
-                                    <SwitchPropertyLine
+                                    <BoundProperty
                                         label="Show Properties on Selection"
                                         description="Shows the Properties pane when an entity is selected."
-                                        value={settings.showPropertiesOnEntitySelection}
-                                        onChange={(checked) => {
-                                            settings.showPropertiesOnEntitySelection = checked;
-                                        }}
+                                        component={SwitchPropertyLine}
+                                        target={settings}
+                                        propertyKey="showPropertiesOnEntitySelection"
                                     />
                                     <ButtonLine label="Reset Layout" onClick={resetSidePaneLayout} />
                                 </AccordionSection>
