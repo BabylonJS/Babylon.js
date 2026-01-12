@@ -56,6 +56,7 @@ export const FreeCameraCollisionProperties: FunctionComponent<{ camera: FreeCame
     return (
         <>
             <BoundProperty component={SwitchPropertyLine} label="Check Collisions" target={camera} propertyKey="checkCollisions" />
+            <BoundProperty component={SwitchPropertyLine} label="Apply Gravity" target={camera} propertyKey="applyGravity" />
             <Vector3PropertyLine label="Ellipsoid" value={ellipsoid} onChange={(val) => (camera.ellipsoid = val)} />
             <Vector3PropertyLine label="Ellipsoid Offset" value={ellipsoidOffset} onChange={(val) => (camera.ellipsoidOffset = val)} />
         </>
