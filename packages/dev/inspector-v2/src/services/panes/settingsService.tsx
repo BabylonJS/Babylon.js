@@ -49,6 +49,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
         const sectionContentCollection = new ObservableCollection<DynamicAccordionSectionContent<Scene>>();
 
         let useDegrees = DataStorage.ReadBoolean("Babylon/Settings/UseDegrees", false);
+        let useEuler = DataStorage.ReadBoolean("Babylon/Settings/UseEuler", false);
         let ignoreBackfacesForPicking = DataStorage.ReadBoolean("Babylon/Settings/IgnoreBackfacesForPicking", false);
         let showPropertiesOnEntitySelection = DataStorage.ReadBoolean("Babylon/Settings/ShowPropertiesOnEntitySelection", true);
 
@@ -79,10 +80,15 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                 this.settingsChangedObservable.notifyObservers(this);
             },
             get useEuler() {
-                return DataStorage.ReadBoolean("Babylon/Settings/UseEuler", false);
+                return useEuler;
             },
             set useEuler(value: boolean) {
-                DataStorage.WriteBoolean("Babylon/Settings/UseEuler", value);
+                if (useEuler === value) {
+                    return; // No change, no need to notify
+                }
+                useEuler = value;
+
+                DataStorage.WriteBoolean("Babylon/Settings/UseEuler", useEuler);
                 this.settingsChangedObservable.notifyObservers(this);
             },
             get showPropertiesOnEntitySelection() {
