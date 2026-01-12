@@ -59,7 +59,7 @@ import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
-import { GLTFLoaderServiceDefinition } from "./services/panes/tools/gltfLoaderService";
+import { GLTFValidatorServiceDefinition } from "./services/panes/tools/import/gltfValidatorService";
 
 export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & { autoResizeEngine?: boolean };
 
@@ -264,8 +264,8 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
                 StatsServiceDefinition,
 
                 // Tools pane tab and related services.
+                GLTFValidatorServiceDefinition, // TODO: even with this, only sometimes is the initial load validated?
                 ToolsServiceDefinition,
-                GLTFLoaderServiceDefinition,
 
                 // Settings pane tab and related services.
                 SettingsServiceDefinition,

@@ -1,10 +1,9 @@
 import { useCallback } from "react";
 import type { FunctionComponent } from "react";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import type { IGLTFLoaderService } from "../../../services/panes/tools/gltfLoaderService";
-import { useObservableState } from "../../../hooks/observableHooks";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
+import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
 /**
  * Component that displays glTF validation results.
@@ -12,19 +11,11 @@ import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
  * @param props - Component props
  * @returns The validation results UI
  */
-export const GLTFValidationTools: FunctionComponent<{ gltfLoaderService: IGLTFLoaderService }> = ({ gltfLoaderService }) => {
-    const validationResults = useObservableState(
-        useCallback(() => gltfLoaderService.getValidationResults(), [gltfLoaderService]),
-        gltfLoaderService.onValidationResultsObservable
-    );
-
+export const GLTFValidationTools: FunctionComponent<{ validationResults: IGLTFValidationResults }> = ({ validationResults }) => {
     const openValidationDetails = useCallback(() => {
-        if (!validationResults) {
-            return;
-        }
-
         const win = window.open("", "_blank");
         if (win) {
+            // TODO: format this better and use generator registry (https://github.com/KhronosGroup/glTF-Generator-Registry)
             win.document.title = `${validationResults.uri} - glTF Validation Results`;
             win.document.body.style.backgroundColor = "#322e2eff";
             win.document.body.style.color = "#fff";
@@ -38,10 +29,6 @@ export const GLTFValidationTools: FunctionComponent<{ gltfLoaderService: IGLTFLo
             win.focus();
         }
     }, [validationResults]);
-
-    if (!validationResults) {
-        return <MessageBar intent="info" title="" message="Reload the file to see validation results" />;
-    }
 
     const issues = validationResults.issues;
     const hasErrors = issues.numErrors > 0;
