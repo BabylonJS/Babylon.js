@@ -6,12 +6,20 @@ export type InfoLabelProps = {
     info?: JSX.Element;
     label: string;
     className?: string;
+    /**
+     * When true, applies flex layout styling to the label slot for proper truncation in flex containers
+     */
+    flexLabel?: boolean;
 };
 export type InfoLabelParentProps = Omit<InfoLabelProps, "htmlFor">;
 const useInfoLabelStyles = makeStyles({
     infoPopup: {
         whiteSpace: "normal",
         wordBreak: "break-word",
+    },
+    labelSlot: {
+        display: "flex",
+        minWidth: 0,
     },
     labelText: {
         whiteSpace: "nowrap",
@@ -30,9 +38,11 @@ export const InfoLabel: FunctionComponent<InfoLabelProps> = (props) => {
 
     const infoContent = props.info ? <div className={classes.infoPopup}>{props.info}</div> : undefined;
 
-    return (
-        <FluentInfoLabel htmlFor={props.htmlFor} info={infoContent} className={props.className}>
+    return infoContent ? (
+        <FluentInfoLabel htmlFor={props.htmlFor} info={infoContent} className={props.className} label={props.flexLabel ? { className: classes.labelSlot } : undefined}>
             <Body1Strong className={classes.labelText}>{props.label}</Body1Strong>
         </FluentInfoLabel>
+    ) : (
+        <Body1Strong className={props.className}>{props.label}</Body1Strong>
     );
 };

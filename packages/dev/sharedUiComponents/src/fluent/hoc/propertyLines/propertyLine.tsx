@@ -141,7 +141,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     const [expanded, setExpanded] = useState("expandByDefault" in props ? props.expandByDefault : false);
     const cachedVal = useRef(nullable ? props.value : null);
 
-    const description = props.docLink ? <Link url={props.docLink} value={props.description ?? "Docs"} /> : <Body1>{props.description}</Body1>;
+    const description = props.docLink ? <Link url={props.docLink} value={props.description ?? "Docs"} /> : props.description ? <Body1>{props.description}</Body1> : undefined;
 
     // Process children to handle nullable state -- creating component in disabled state with default value in lieu of null value
     const processedChildren =
@@ -157,7 +157,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     return (
         <LineContainer ref={ref}>
             <div className={classes.baseLine}>
-                <InfoLabel className={classes.infoLabel} htmlFor="property" info={description} label={label} />
+                <InfoLabel className={classes.infoLabel} htmlFor="property" info={description} label={label} flexLabel />
                 <div className={classes.rightContent} id="property">
                     {expandedContent && (
                         <ToggleButton
