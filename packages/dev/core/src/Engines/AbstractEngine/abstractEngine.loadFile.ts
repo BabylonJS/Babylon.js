@@ -14,7 +14,7 @@ declare module "../abstractEngine" {
 }
 
 AbstractEngine.prototype._loadFileAsync = async function (url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<any> {
-    return await new Promise((resolve, reject) => {
+    return await new Promise<string | ArrayBuffer>((resolve, reject) => {
         this._loadFile(
             url,
             (data) => {
