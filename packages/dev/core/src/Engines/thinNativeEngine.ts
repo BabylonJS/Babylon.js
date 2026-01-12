@@ -222,6 +222,9 @@ export class ThinNativeEngine extends ThinEngine {
         return new NativeDataStream();
     }
 
+    /////////// No assignment allowed in constructor           ///////////
+    /////////// They should all be in _initializeNativeEngine  ///////////
+    /////////// To ensure a correct sharing with NativeEngine  ///////////
     protected _engine: INativeEngine;
     private _camera: Nullable<INativeCamera>;
     private _commandBufferEncoder: CommandBufferEncoder;
@@ -242,15 +245,11 @@ export class ThinNativeEngine extends ThinEngine {
     // warning for non supported fill mode has already been displayed
     private _fillModeWarningDisplayed: boolean;
 
-    public override setHardwareScalingLevel(level: number): void {
-        super.setHardwareScalingLevel(level);
-        this._engine.setHardwareScalingLevel(level);
-    }
-
     public constructor(options: ThinNativeEngineOptions = {}) {
         super(null, false, undefined, options.adaptToDeviceRatio);
         this._initializeNativeEngine(options.adaptToDeviceRatio ?? false);
     }
+    //////////////////////////////////////////////////////////////////////
 
     /**
      * Keeps as a separate function to use in NativeEngine
@@ -456,6 +455,11 @@ export class ThinNativeEngine extends ThinEngine {
                 this._commandBufferEncoder.endCommandScope();
             };
         });
+    }
+
+    public override setHardwareScalingLevel(level: number): void {
+        super.setHardwareScalingLevel(level);
+        this._engine.setHardwareScalingLevel(level);
     }
 
     public override dispose(): void {
@@ -2559,7 +2563,7 @@ export class ThinNativeEngine extends ThinEngine {
         height: number,
         faceIndex?: number,
         level?: number,
-        buffer?: Nullable<ArrayBufferView>,
+        buffer?: Nullable<ArrayBufferView<ArrayBuffer>>,
         _flushRenderer?: boolean,
         _noDataConversion?: boolean,
         x?: number,

@@ -24,6 +24,7 @@ export class NativeEngine extends Engine {
     /**
      * @internal
      * Will be overriden by the Thin Native engine implementation
+     * No code should be placed here
      */
     protected _initializeNativeEngine(_adaptToDeviceRatio: boolean): void {}
 
