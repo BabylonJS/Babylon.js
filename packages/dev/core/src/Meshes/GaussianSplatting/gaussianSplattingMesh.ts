@@ -325,6 +325,26 @@ export class GaussianSplattingMesh extends Mesh {
 
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
+
+    protected _disableDepthSort = false;
+    /**
+     * If true, disables depth sorting of the splats (default: false)
+     */
+    public get disableDepthSort() {
+        return this._disableDepthSort;
+    }
+    public set disableDepthSort(value: boolean) {
+        if (!this._disableDepthSort && value) {
+            this._worker?.terminate();
+            this._worker = null;
+            this._disableDepthSort = true;
+        } else if (this._disableDepthSort && !value) {
+            this._disableDepthSort = false;
+            this._sortIsDirty = true;
+            this._instanciateWorker();
+        }
+    }
+
     /**
      * View direction factor used to compute the SH view direction in the shader.
      * @deprecated Not used anymore for SH rendering
@@ -1400,6 +1420,7 @@ export class GaussianSplattingMesh extends Mesh {
         newGS._modelViewMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
         newGS._readyToDisplay = false;
+        newGS._disableDepthSort = this._disableDepthSort;
         newGS._instanciateWorker();
 
         const binfo = this.getBoundingInfo();
@@ -1747,6 +1768,9 @@ export class GaussianSplattingMesh extends Mesh {
     }
     private _instanciateWorker(): void {
         if (!this._vertexCount) {
+            return;
+        }
+        if (this._disableDepthSort) {
             return;
         }
         this._updateSplatIndexBuffer(this._vertexCount);
