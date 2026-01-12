@@ -71,10 +71,10 @@ export type NamespacePackageName =
     | "BABYLON.GLTF2.Loader"
     | "BABYLON.GLTF2.Loader.Extensions"
     | "BABYLON.Debug"
-    | "BABYLON.NodeEditor"
-    | "BABYLON.NodeGeometryEditor"
-    | "BABYLON.NodeRenderGraphEditor"
-    | "BABYLON.NodeParticleEditor"
+    | "BABYLON.NODEEDITOR"
+    | "BABYLON.NODEGEOMETRYEDITOR"
+    | "BABYLON.NODERENDERGRAPHEDITOR"
+    | "BABYLON.NODEPARTICLEEDITOR"
     | "BABYLON.GuiEditor"
     | "BABYLON.Accessibility"
     | "ADDONS"
@@ -83,10 +83,10 @@ export type NamespacePackageName =
     | "KTX2DECODER"
     | "INSPECTOR.SharedUIComponents"
     | "BABYLON.SharedUIComponents"
-    | "BABYLON.NodeEditor.SharedUIComponents"
-    | "BABYLON.NodeGeometryEditor.SharedUIComponents"
-    | "BABYLON.NodeRenderGraphEditor.SharedUIComponents"
-    | "BABYLON.NodeParticleEditor.SharedUIComponents"
+    | "BABYLON.NODEEDITOR.SharedUIComponents"
+    | "BABYLON.NODEGEOMETRYEDITOR.SharedUIComponents"
+    | "BABYLON.NODERENDERGRAPHEDITOR.SharedUIComponents"
+    | "BABYLON.NODEPARTICLEEDITOR.SharedUIComponents"
     | "BABYLON.GuiEditor.SharedUIComponents"
     | "BABYLON.SmartFilters";
 export type ES6PackageName =
@@ -375,48 +375,48 @@ const packageMapping: {
             if (filePath) {
                 if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
                     // was .endsWith
-                    return "BABYLON.NodeEditor.SharedUIComponents";
+                    return "BABYLON.NODEEDITOR.SharedUIComponents";
                 } else if (filePath.includes("babylonjs-gltf2interface")) {
                     return "BABYLON.GLTF2";
                 }
             }
-            return "BABYLON.NodeEditor";
+            return "BABYLON.NODEEDITOR";
         },
         "node-geometry-editor": (filePath?: string) => {
             filePath = filePath?.replaceAll("\\", "/");
             if (filePath) {
                 if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
                     // was .endsWith
-                    return "BABYLON.NodeGeometryEditor.SharedUIComponents";
+                    return "BABYLON.NODEGEOMETRYEDITOR.SharedUIComponents";
                 } else if (filePath.includes("babylonjs-gltf2interface")) {
                     return "BABYLON.GLTF2";
                 }
             }
-            return "BABYLON.NodeGeometryEditor";
+            return "BABYLON.NODEGEOMETRYEDITOR";
         },
         "node-render-graph-editor": (filePath?: string) => {
             filePath = filePath?.replaceAll("\\", "/");
             if (filePath) {
                 if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
                     // was .endsWith
-                    return "BABYLON.NodeRenderGraphEditor.SharedUIComponents";
+                    return "BABYLON.NODERENDERGRAPHEDITOR.SharedUIComponents";
                 } else if (filePath.includes("babylonjs-gltf2interface")) {
                     return "BABYLON.GLTF2";
                 }
             }
-            return "BABYLON.NodeRenderGraphEditor";
+            return "BABYLON.NODERENDERGRAPHEDITOR";
         },
         "node-particle-editor": (filePath?: string) => {
             filePath = filePath?.replaceAll("\\", "/");
             if (filePath) {
                 if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
                     // was .endsWith
-                    return "BABYLON.NodeParticleEditor.SharedUIComponents";
+                    return "BABYLON.NODEPARTICLEEDITOR.SharedUIComponents";
                 } else if (filePath.includes("babylonjs-gltf2interface")) {
                     return "BABYLON.GLTF2";
                 }
             }
-            return "BABYLON.NodeParticleEditor";
+            return "BABYLON.NODEPARTICLEEDITOR";
         },
         "gui-editor": (filePath?: string) => {
             filePath = filePath?.replaceAll("\\", "/");
