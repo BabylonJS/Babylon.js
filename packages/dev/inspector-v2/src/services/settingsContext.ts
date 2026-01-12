@@ -20,7 +20,7 @@ export interface ISettingsContext extends IService<typeof SettingsContextIdentit
     /**
      * Only show Euler angles in rotation properties.
      */
-    onlyShowEuler: boolean;
+    useEuler: boolean;
 
     /**
      * Shows the Properties pane when an entity is selected.

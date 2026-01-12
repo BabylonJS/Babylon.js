@@ -78,11 +78,11 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                 DataStorage.WriteBoolean("Babylon/Settings/IgnoreBackfacesForPicking", ignoreBackfacesForPicking);
                 this.settingsChangedObservable.notifyObservers(this);
             },
-            get onlyShowEuler() {
-                return DataStorage.ReadBoolean("Babylon/Settings/OnlyShowEuler", false);
+            get useEuler() {
+                return DataStorage.ReadBoolean("Babylon/Settings/UseEuler", false);
             },
-            set onlyShowEuler(value: boolean) {
-                DataStorage.WriteBoolean("Babylon/Settings/OnlyShowEuler", value);
+            set useEuler(value: boolean) {
+                DataStorage.WriteBoolean("Babylon/Settings/UseEuler", value);
                 this.settingsChangedObservable.notifyObservers(this);
             },
             get showPropertiesOnEntitySelection() {
@@ -144,7 +144,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                                         description="Only show Euler angles in rotation properties, rather than quaternions."
                                         component={SwitchPropertyLine}
                                         target={settings}
-                                        propertyKey="onlyShowEuler"
+                                        propertyKey="useEuler"
                                     />
                                     <BoundProperty
                                         label="Ignore Backfaces for Picking"
