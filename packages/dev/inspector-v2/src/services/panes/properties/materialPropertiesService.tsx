@@ -5,13 +5,24 @@ import type { IPropertiesService } from "./propertiesService";
 
 import { Material } from "core/Materials/material";
 import { MultiMaterial } from "core/Materials/multiMaterial";
-import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { SkyMaterial } from "materials/sky/skyMaterial";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 import { MultiMaterialChildrenProperties } from "../../../components/properties/materials/multiMaterialProperties";
+import { NodeMaterialGeneralProperties } from "../../../components/properties/materials/nodeMaterialProperties";
 import { NormalMapProperties } from "../../../components/properties/materials/normalMapProperties";
+import {
+    OpenPBRMaterialBaseProperties,
+    OpenPBRMaterialCoatProperties,
+    OpenPBRMaterialEmissionProperties,
+    OpenPBRMaterialFuzzProperties,
+    OpenPBRMaterialGeometryProperties,
+    OpenPBRMaterialSpecularProperties,
+    OpenPBRMaterialThinFilmProperties,
+} from "../../../components/properties/materials/openpbrMaterialProperties";
 import {
     PBRBaseMaterialAdvancedProperties,
     PBRBaseMaterialAnisotropicProperties,
@@ -28,15 +39,6 @@ import {
     PBRBaseMaterialSubSurfaceProperties,
     PBRBaseMaterialTransparencyProperties,
 } from "../../../components/properties/materials/pbrBaseMaterialProperties";
-import {
-    OpenPBRMaterialBaseProperties,
-    OpenPBRMaterialCoatProperties,
-    OpenPBRMaterialEmissionProperties,
-    OpenPBRMaterialFuzzProperties,
-    OpenPBRMaterialGeometryProperties,
-    OpenPBRMaterialSpecularProperties,
-    OpenPBRMaterialThinFilmProperties,
-} from "../../../components/properties/materials/openpbrMaterialProperties";
 import { SkyMaterialProperties } from "../../../components/properties/materials/skyMaterialProperties";
 import {
     StandardMaterialGeneralProperties,
@@ -238,6 +240,17 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
+        const nodeMaterialContentRegistration = propertiesService.addSectionContent({
+            key: "Node Material Properties",
+            predicate: (entity: unknown) => entity instanceof NodeMaterial,
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <NodeMaterialGeneralProperties material={context} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
                 pbrMaterialPropertyChangedObserver.remove();
@@ -247,6 +260,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 openPBRMaterialPropertiesRegistration.dispose();
                 skyMaterialRegistration.dispose();
                 multiMaterialContentRegistration.dispose();
+                nodeMaterialContentRegistration.dispose();
             },
         };
     },

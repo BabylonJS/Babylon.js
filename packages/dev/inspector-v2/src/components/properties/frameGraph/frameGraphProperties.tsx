@@ -2,11 +2,13 @@ import type { FrameGraph } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { EditRegular, PlayRegular } from "@fluentui/react-icons";
+
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 
 export const FrameGraphTaskProperties: FunctionComponent<{ frameGraph: FrameGraph }> = (props) => {
     const { frameGraph } = props;
@@ -35,11 +37,19 @@ export const FrameGraphGeneralProperties: FunctionComponent<{ frameGraph: FrameG
                 target={frameGraph}
                 propertyKey="optimizeTextureAllocation"
             ></BoundProperty>
-            {isSceneFrameGraph !== frameGraph && <ButtonLine onClick={() => (frameGraph.scene.frameGraph = frameGraph)} label="Set as scene's frame graph" />}
+            {isSceneFrameGraph !== frameGraph && <ButtonLine onClick={() => (frameGraph.scene.frameGraph = frameGraph)} label="Make Active" icon={PlayRegular} />}
             <ButtonLine
                 label="Edit Graph"
-                onClick={() => {
-                    void frameGraph.getLinkedNodeRenderGraph()!.edit({ nodeRenderGraphEditorConfig: { hostScene: frameGraph.scene } });
+                icon={EditRegular}
+                onClick={async () => {
+                    const renderGraph = frameGraph.getLinkedNodeRenderGraph();
+                    if (renderGraph) {
+                        // TODO: Figure out how to get all the various build steps to work with this.
+                        //       See the initial attempt here: https://github.com/BabylonJS/Babylon.js/pull/17646
+                        // const { NodeRenderGraphEditor } = await import("node-render-graph-editor/nodeRenderGraphEditor");
+                        // NodeRenderGraphEditor.Show({ nodeRenderGraph: renderGraph, hostScene: frameGraph.scene });
+                        await renderGraph.edit({ nodeRenderGraphEditorConfig: { hostScene: frameGraph.scene } });
+                    }
                 }}
             ></ButtonLine>
         </>
