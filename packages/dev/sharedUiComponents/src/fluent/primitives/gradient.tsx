@@ -16,20 +16,19 @@ const useGradientStyles = makeStyles({
         gap: tokens.spacingHorizontalS,
         width: "100%",
     },
-    // Wrapper for factor sliders - equal width distribution
+    // Wrapper for factor spin buttons - fixed size
     valueWrapper: {
-        flex: "1 1 0", // Grow, shrink, and use 0 basis for equal distribution
-        minWidth: 0, // Allow shrinking below content size
+        flex: "0 0 auto", // Don't grow, natural size
     },
     // Wrapper for color pickers - fixed size since they're just swatches
     colorWrapper: {
         flex: "0 0 auto",
         alignContent: "center",
     },
-    // Wrapper for the step slider - equal width distribution
+    // Wrapper for the step slider - grows to fill remaining space
     stepSliderWrapper: {
-        flex: "1 1 0", // Grow, shrink, and use 0 basis for equal distribution
-        minWidth: 0, // Allow shrinking below content size
+        flex: "1 1 0", // Grow to fill available space
+        minWidth: 0,
     },
 });
 
