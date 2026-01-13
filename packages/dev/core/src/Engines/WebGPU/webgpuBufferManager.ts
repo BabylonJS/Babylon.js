@@ -149,7 +149,7 @@ export class WebGPUBufferManager {
                         if (data === null) {
                             data = allocateAndCopyTypedBuffer(type, size, true, copyArrayBuffer);
                         } else {
-                            data = allocateAndCopyTypedBuffer(type, data.buffer, undefined, copyArrayBuffer);
+                            data = allocateAndCopyTypedBuffer(type, data.buffer as ArrayBuffer, undefined, copyArrayBuffer);
                         }
                     } else {
                         if (data === null) {

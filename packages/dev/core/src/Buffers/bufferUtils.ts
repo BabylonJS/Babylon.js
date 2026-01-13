@@ -336,7 +336,7 @@ export function GetTypedArrayData(
     if (data instanceof ArrayBuffer) {
         buffer = data;
     } else {
-        buffer = data.buffer;
+        buffer = data.buffer as ArrayBuffer;
         adjustedByteOffset += data.byteOffset;
     }
 

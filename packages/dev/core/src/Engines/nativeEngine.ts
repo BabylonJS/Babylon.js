@@ -2734,7 +2734,7 @@ export class NativeEngine extends Engine {
                     y ?? 0,
                     width,
                     height,
-                    buffer?.buffer ?? null,
+                    (buffer?.buffer ?? null) as ArrayBuffer | null,
                     buffer?.byteOffset ?? 0,
                     buffer?.byteLength ?? 0
                 )

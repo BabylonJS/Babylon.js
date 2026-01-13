@@ -119,7 +119,7 @@ export class NativeDataStream {
     }
 
     private _flush(): void {
-        this._nativeDataStream.writeBuffer(this._uint32s.buffer, this._position);
+        this._nativeDataStream.writeBuffer(this._uint32s.buffer as ArrayBuffer, this._position);
         this._position = 0;
     }
 }
