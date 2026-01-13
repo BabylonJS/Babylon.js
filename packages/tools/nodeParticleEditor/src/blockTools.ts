@@ -47,6 +47,7 @@ import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleL
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
 import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
+import { ParticleClampBlock } from "core/Particles/Node/Blocks/particleClampBlock";
 
 /**
  * Static class for BlockTools
@@ -54,6 +55,8 @@ import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloa
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "ClampBlock":
+                return new ParticleClampBlock("Clamp");
             case "FresnelBlock":
                 return new ParticleFresnelBlock("Fresnel");
             case "LocalVariableBlock":
