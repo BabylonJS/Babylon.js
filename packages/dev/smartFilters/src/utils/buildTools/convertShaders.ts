@@ -23,10 +23,17 @@ export function ConvertShaders(shaderPath: string, smartFiltersCorePath: string,
         shaderFiles = [
             {
                 name: fileName,
+                parentPath: dirPath,
                 path: dirPath,
                 isFile: () => true,
                 isDirectory: () => false,
-            } as fs.Dirent,
+                isBlockDevice: () => false,
+                isCharacterDevice: () => false,
+                isSymbolicLink: () => false,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                isFIFO: () => false,
+                isSocket: () => false,
+            },
         ];
     } else if (stats.isDirectory()) {
         // Get all files in the directory
@@ -41,7 +48,7 @@ export function ConvertShaders(shaderPath: string, smartFiltersCorePath: string,
 
     // Convert all shaders
     for (const shaderFile of shaderFiles) {
-        const fullPathAndFileName = path.join(shaderFile.path, shaderFile.name);
+        const fullPathAndFileName = path.join(shaderFile.parentPath, shaderFile.name);
         ConvertShader(fullPathAndFileName, smartFiltersCorePath, babylonCorePath);
     }
 }
