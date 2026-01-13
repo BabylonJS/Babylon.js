@@ -1,5 +1,30 @@
 # Changelog
 
+## 8.45.4
+
+### Core
+
+- Disable Depth sort flag - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17647](https://github.com/BabylonJS/Babylon.js/pull/17647))
+- Fix vertex count in sorting worker - by [eliemichel](https://github.com/eliemichel) ([#17659](https://github.com/BabylonJS/Babylon.js/pull/17659))
+- FrameGraph: switch to v1 - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17660](https://github.com/BabylonJS/Babylon.js/pull/17660))
+- Add Vector3.Distance - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17657](https://github.com/BabylonJS/Babylon.js/pull/17657))
+- Handle undefined in setupInputs - by [alexchuber](https://github.com/alexchuber) ([#17652](https://github.com/BabylonJS/Babylon.js/pull/17652))
+- Adding emitterPosition to systemBlock - by [VicenteCartas](https://github.com/VicenteCartas) ([#17648](https://github.com/BabylonJS/Babylon.js/pull/17648))
+- Migrating flowmap to NPE - by [VicenteCartas](https://github.com/VicenteCartas) ([#17645](https://github.com/BabylonJS/Babylon.js/pull/17645))
+- Migrating attractors - by [VicenteCartas](https://github.com/VicenteCartas) ([#17643](https://github.com/BabylonJS/Babylon.js/pull/17643))
+
+### Inspector
+
+- FrameGraph: switch to v1 - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17660](https://github.com/BabylonJS/Babylon.js/pull/17660))
+
+### Serializers
+
+- Fix double subset of indices with non-zero verticesStart - by [alexchuber](https://github.com/alexchuber) ([#17662](https://github.com/BabylonJS/Babylon.js/pull/17662))
+
+### Viewer
+
+- Viewer: Add support for querying hotspots when multiple models are loaded - by [ryantrem](https://github.com/ryantrem) ([#17661](https://github.com/BabylonJS/Babylon.js/pull/17661))
+
 ## 8.45.3
 
 ### Core
