@@ -132,9 +132,8 @@ export const SpriteManagerSnippetProperties: FunctionComponent<{ spriteManager: 
     const snippetId = useProperty(spriteManager, "snippetId");
     const [, forceUpdate] = useState({});
 
-    const loadFromSnippet = useCallback(() => {
+    const loadFromSnippet = useCallback(async () => {
         const requestedSnippetId = window.prompt("Please enter the snippet ID to use");
-
         if (!requestedSnippetId) {
             return;
         }
@@ -142,51 +141,16 @@ export const SpriteManagerSnippetProperties: FunctionComponent<{ spriteManager: 
         spriteManager.dispose();
         selectionService.selectedEntity = null;
 
-        SpriteManager.ParseFromSnippetAsync(requestedSnippetId, scene)
-            .then((newManager) => {
-                selectionService.selectedEntity = newManager;
-            })
-            .catch((err) => {
-                alert("Unable to load your sprite manager: " + err);
-            });
+        try {
+            const newManager = await SpriteManager.ParseFromSnippetAsync(requestedSnippetId, scene);
+            selectionService.selectedEntity = newManager;
+        } catch (err) {
+            alert("Unable to load your sprite manager: " + err);
+        }
     }, [spriteManager, scene, selectionService]);
 
-    const saveToSnippet = useCallback(() => {
+    const saveToSnippet = useCallback(async () => {
         const content = JSON.stringify(spriteManager.serialize(true));
-
-        const xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = () => {
-            if (xmlHttp.readyState == 4) {
-                if (xmlHttp.status == 200) {
-                    const snippet = JSON.parse(xmlHttp.responseText);
-                    const oldId = spriteManager.snippetId || "_BLANK";
-                    spriteManager.snippetId = snippet.id;
-                    if (snippet.version && snippet.version != "0") {
-                        spriteManager.snippetId += "#" + snippet.version;
-                    }
-                    forceUpdate({});
-
-                    if (navigator.clipboard) {
-                        void navigator.clipboard.writeText(spriteManager.snippetId);
-                    }
-
-                    const windowAsAny = window as any;
-                    if (windowAsAny.Playground && oldId) {
-                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(`SpriteManager.ParseFromSnippetAsync\\("${oldId}`, "g"),
-                            replace: `SpriteManager.ParseFromSnippetAsync("${spriteManager.snippetId}`,
-                        });
-                    }
-
-                    alert("Sprite manager saved with ID: " + spriteManager.snippetId + " (please note that the id was also saved to your clipboard)");
-                } else {
-                    alert("Unable to save your sprite manager");
-                }
-            }
-        };
-
-        xmlHttp.open("POST", snippetUrl + (spriteManager.snippetId ? "/" + spriteManager.snippetId : ""), true);
-        xmlHttp.setRequestHeader("Content-Type", "application/json");
 
         const dataToSend = {
             payload: JSON.stringify({
@@ -197,7 +161,45 @@ export const SpriteManagerSnippetProperties: FunctionComponent<{ spriteManager: 
             tags: "",
         };
 
-        xmlHttp.send(JSON.stringify(dataToSend));
+        try {
+            const headers = new Headers();
+            headers.append("Content-Type", "application/json");
+
+            const response = await fetch(snippetUrl + (spriteManager.snippetId ? "/" + spriteManager.snippetId : ""), {
+                method: "POST",
+                headers,
+                body: JSON.stringify(dataToSend),
+            });
+
+            if (!response.ok) {
+                alert("Unable to save your sprite manager");
+                return;
+            }
+
+            const snippet = await response.json();
+            const oldId = spriteManager.snippetId || "_BLANK";
+            spriteManager.snippetId = snippet.id;
+            if (snippet.version && snippet.version != "0") {
+                spriteManager.snippetId += "#" + snippet.version;
+            }
+            forceUpdate({});
+
+            if (navigator.clipboard) {
+                await navigator.clipboard.writeText(spriteManager.snippetId);
+            }
+
+            const windowAsAny = window as any;
+            if (windowAsAny.Playground && oldId) {
+                windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                    regex: new RegExp(`SpriteManager.ParseFromSnippetAsync\\("${oldId}`, "g"),
+                    replace: `SpriteManager.ParseFromSnippetAsync("${spriteManager.snippetId}`,
+                });
+            }
+
+            alert("Sprite manager saved with ID: " + spriteManager.snippetId + " (please note that the id was also saved to your clipboard)");
+        } catch {
+            alert("Unable to save your sprite manager");
+        }
     }, [spriteManager, snippetUrl]);
 
     return (
