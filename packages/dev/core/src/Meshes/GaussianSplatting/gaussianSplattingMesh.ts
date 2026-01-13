@@ -1835,4 +1835,3 @@ export class GaussianSplattingMesh extends Mesh {
     }
 }
 
-
