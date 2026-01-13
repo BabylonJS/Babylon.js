@@ -39,10 +39,7 @@ const useStyles = makeStyles({
         marginBottom: tokens.spacingVerticalS,
         width: "100%",
         // Checkerboard background to show transparency
-        backgroundSize: "32px",
-        backgroundColor: "white",
-        backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2'%3E%3Cpath fill='rgba(1.0,1.0,1.0,0.3)' fill-rule='evenodd' d='M0 0h1v1H0V0zm1 1h1v1H1V1z'/%3E%3C/svg%3E\")",
+        background: "repeating-conic-gradient(#B2B2B2 0% 25%, white 25% 50%) 50% / 32px 32px",
     },
 });
 
