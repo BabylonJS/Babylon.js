@@ -104,15 +104,12 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
     const [shadowGeneratorSettings, setShadowGeneratorSettings] = useState<Readonly<ShadowGeneratorSettings>>({ generatorType: defaultGeneratorType, mapSize: defaultMapSize });
     const shadowGeneratorOptions = shadowLight instanceof DirectionalLight ? DirectionalLightGeneratorOptions : DefaultShadowGeneratorOptions;
     const camera = useObservableState(() => shadowLight.getScene().activeCamera, shadowLight.getScene().onActiveCameraChanged);
-    const shadowGeneratorInterface = GetShadowGenerator(camera, shadowLight);
-    const [hasShadowGenerator, setHasShadowGenerator] = useState(!!shadowGeneratorInterface);
-
-    // Cast to ShadowGenerator for property access (both ShadowGenerator and CascadedShadowGenerator extend it)
-    const shadowGenerator = shadowGeneratorInterface as ShadowGenerator | CascadedShadowGenerator | null;
+    const shadowGenerator = GetShadowGenerator(camera, shadowLight) as ShadowGenerator | CascadedShadowGenerator | null;
+    const [hasShadowGenerator, setHasShadowGenerator] = useState(!!shadowGenerator);
 
     useEffect(() => {
-        setHasShadowGenerator(!!shadowGeneratorInterface);
-    }, [shadowGeneratorInterface]);
+        setHasShadowGenerator(!!shadowGenerator);
+    }, [shadowGenerator]);
 
     const isCascaded = shadowGenerator instanceof CascadedShadowGenerator;
     const isStandardGenerator = shadowGenerator instanceof ShadowGenerator && !isCascaded;
