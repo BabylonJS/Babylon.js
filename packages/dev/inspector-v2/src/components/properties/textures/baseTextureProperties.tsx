@@ -5,6 +5,7 @@ import type { DropdownOption } from "shared-ui-components/fluent/primitives/drop
 import type { TextureEditorProps } from "../../textureEditor/textureEditor";
 import type { TexturePreviewImperativeRef } from "./texturePreview";
 
+import { EditRegular } from "@fluentui/react-icons";
 import { useRef } from "react";
 
 import { Constants } from "core/Engines/constants";
@@ -36,7 +37,7 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
         <>
             <TexturePreview imperativeRef={texturePreviewImperativeRef} texture={texture} />
             <TextureUpload texture={texture} />
-            <ButtonLine label="Edit Texture" onClick={() => childWindow.current?.open()} />
+            <ButtonLine label="Edit Texture" onClick={() => childWindow.current?.open()} icon={EditRegular} />
             <ChildWindow id="Texture Editor" imperativeRef={childWindow}>
                 <TextureEditor texture={texture} onUpdate={async () => await texturePreviewImperativeRef.current?.refresh()} />
             </ChildWindow>

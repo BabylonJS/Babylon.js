@@ -38,6 +38,8 @@ const useStyles = makeStyles({
         marginTop: tokens.spacingVerticalXS,
         marginBottom: tokens.spacingVerticalS,
         width: "100%",
+        // Checkerboard background to show transparency
+        background: "repeating-conic-gradient(#B2B2B2 0% 25%, white 25% 50%) 50% / 32px 32px",
     },
 });
 

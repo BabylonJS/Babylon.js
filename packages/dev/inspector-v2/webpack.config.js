@@ -34,6 +34,7 @@ module.exports = (env) => {
                 "node-geometry-editor": path.resolve("../../tools/nodeGeometryEditor/dist"),
                 "node-particle-editor": path.resolve("../../tools/nodeParticleEditor/dist"),
                 "node-render-graph-editor": path.resolve("../../tools/nodeRenderGraphEditor/dist"),
+                "gui-editor": path.resolve("../../tools/guiEditor/dist"),
             },
         },
 
