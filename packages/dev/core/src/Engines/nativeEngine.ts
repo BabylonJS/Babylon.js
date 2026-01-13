@@ -2,7 +2,6 @@
 
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Engine } from "./engine";
-import { Tools } from "../Misc/tools";
 
 import "./AbstractEngine/abstractEngine.loadFile";
 import "./AbstractEngine/abstractEngine.textureLoaders";
@@ -35,26 +34,6 @@ export class NativeEngine extends Engine {
         super(null, false, undefined, options.adaptToDeviceRatio);
 
         this._initializeNativeEngine(options.adaptToDeviceRatio ?? false);
-
-        Tools.LoadScript = function (scriptUrl, onSuccess, onError) {
-            Tools.LoadFile(
-                scriptUrl,
-                (data) => {
-                    Function(data as string).apply(null);
-                    if (onSuccess) {
-                        onSuccess();
-                    }
-                },
-                undefined,
-                undefined,
-                false,
-                (_request, exception) => {
-                    if (onError) {
-                        onError("LoadScript Error", exception);
-                    }
-                }
-            );
-        };
     }
 
     /**
