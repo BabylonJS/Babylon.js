@@ -13,6 +13,8 @@ import type { _WebAudioEngine } from "../webAudioEngine";
  */
 const MinRampDuration = 0.000001;
 
+let Warn = true;
+
 /** @internal */
 export class _WebAudioParameterComponent {
     private _rampEndTime: number = 0;
@@ -87,7 +89,10 @@ export class _WebAudioParameterComponent {
             this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, Number.isFinite(this._param.value) ? this._param.value : 0, value), startTime, duration);
             this._rampEndTime = startTime + duration;
         } catch (e) {
-            Logger.Warn(`Audio parameter ramping failed: ${(e as Error).message}`);
+            if (Warn) {
+                Logger.Warn(`Audio parameter ramping failed: ${(e as Error).message}`);
+                Warn = false;
+            }
         }
     }
 }
