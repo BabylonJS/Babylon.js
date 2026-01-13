@@ -43,24 +43,9 @@ export class ParticleVectorMathBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("left", NodeParticleBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("right", NodeParticleBlockConnectionPointTypes.AutoDetect);
-
-        this.registerOutput("output", NodeParticleBlockConnectionPointTypes.BasedOnInput);
-
-        this.output._typeConnectionSource = this.left;
-
-        this.left.acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Vector3);
-        this.right.acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Vector3);
-
-        this._linkConnectionTypes(0, 1);
-
-        this._connectionObservers = [
-            this.left.onConnectionObservable.add(() => this._updateInputOutputTypes()),
-            this.left.onDisconnectionObservable.add(() => this._updateInputOutputTypes()),
-            this.right.onConnectionObservable.add(() => this._updateInputOutputTypes()),
-            this.right.onDisconnectionObservable.add(() => this._updateInputOutputTypes()),
-        ];
+        this.registerInput("left", NodeParticleBlockConnectionPointTypes.Vector3);
+        this.registerInput("right", NodeParticleBlockConnectionPointTypes.Vector3);
+        this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -121,27 +106,6 @@ export class ParticleVectorMathBlock extends NodeParticleBlock {
         this.output._storedFunction = (state) => {
             return func(state);
         };
-    }
-
-    private _updateInputOutputTypes() {
-        // First update the output type with the initial assumption that we'll base it on the left input.
-        this.output._typeConnectionSource = this.left;
-
-        // If left is not connected, then instead use the type of right if it's connected.
-        if (!this.left.isConnected && this.right.isConnected) {
-            this.output._typeConnectionSource = this.right;
-        }
-    }
-
-    /**
-     * Release resources
-     */
-    public override dispose() {
-        super.dispose();
-        for (const observer of this._connectionObservers) {
-            observer.remove();
-        }
-        this._connectionObservers.length = 0;
     }
 
     /**

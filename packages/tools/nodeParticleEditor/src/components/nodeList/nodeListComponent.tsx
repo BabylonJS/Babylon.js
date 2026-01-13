@@ -13,7 +13,6 @@ import deleteButton from "../../imgs/delete.svg";
 import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 
 import "./nodeList.scss";
-import { DistanceBlock } from "core/Materials";
 
 interface INodeListComponentProps {
     globalState: GlobalState;
