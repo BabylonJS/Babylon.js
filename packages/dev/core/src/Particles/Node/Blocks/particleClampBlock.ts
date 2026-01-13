@@ -2,8 +2,8 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
-import { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import { NodeParticleBuildState } from "../nodeParticleBuildState";
+import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
+import type { NodeParticleBuildState } from "../nodeParticleBuildState";
 import { Color4 } from "../../../Maths/math.color";
 
 /**
