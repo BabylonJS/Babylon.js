@@ -1426,7 +1426,7 @@ export class GaussianSplattingMesh extends Mesh {
                 const cameraId = e.data.cameraId;
                 const viewProj = e.data.view;
 
-                const vertexCountPadded = (positions.length + 15) & ~0xf;
+                const vertexCountPadded = ((positions.length / 4) + 15) & ~0xf;
                 if (!positions || !viewProj) {
                     // Sanity check, it shouldn't happen!
                     throw new Error("positions or view is not defined!");
@@ -1834,3 +1834,4 @@ export class GaussianSplattingMesh extends Mesh {
         return new Vector2(width, height);
     }
 }
+
