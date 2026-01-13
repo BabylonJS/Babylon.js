@@ -134,7 +134,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FresnelBlock: "Block used to compute the Fresnel term",
         ColorStepBlock: "Contextual block to get the expected color step of a particle",
         ScaledColorStepBlock: "Contextual block to get the expected scaled color step of a particle",
-        ClampBlock: "Block used to clamp a value between a minimum and maximum range",
+        ClampBlock: "Block used to limit a value to a range between minimum and maximum values",
     };
 
     private _customFrameList: { [key: string]: string };
