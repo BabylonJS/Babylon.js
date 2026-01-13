@@ -145,6 +145,11 @@ function TransformerFactory<T extends TransformerNode>(context: ts.Transformatio
             if (ts.isStringLiteral(node)) {
                 return getResolvedPathNode(node) || node;
             }
+            // Skip type literals - they can't contain dynamic imports and their
+            // get/set accessor signatures cause lexical environment issues in TS 5.9
+            if (ts.isTypeLiteralNode(node)) {
+                return node;
+            }
             return ts.visitEachChild(node, pathReplacer, context);
         }
 
@@ -188,6 +193,12 @@ function TransformerFactory<T extends TransformerNode>(context: ts.Transformatio
              */
             if (ts.isModuleDeclaration(node)) {
                 return ts.visitEachChild(node, pathReplacer, context);
+            }
+
+            // Skip type literals - they can't contain dynamic imports and their
+            // get/set accessor signatures cause lexical environment issues in TS 5.9
+            if (ts.isTypeLiteralNode(node)) {
+                return node;
             }
 
             return ts.visitEachChild(node, visitor, context);
