@@ -200,7 +200,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
 
         // eslint-disable-next-line github/no-then
         clip._objectURL = promise.then((data) => {
-            return URL.createObjectURL(new Blob([data], { type: clip.mimeType }));
+            return URL.createObjectURL(new Blob([data as BlobPart], { type: clip.mimeType }));
         });
 
         return clip._objectURL;

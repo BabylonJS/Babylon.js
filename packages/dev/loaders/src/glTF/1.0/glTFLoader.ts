@@ -1535,7 +1535,7 @@ export class GLTFLoaderBase {
 
         const samplingMode = Texture.BILINEAR_SAMPLINGMODE;
 
-        const blob = buffer == null ? new Blob() : new Blob([buffer]);
+        const blob = buffer == null ? new Blob() : new Blob([buffer as BlobPart]);
         const blobURL = URL.createObjectURL(blob);
         const revokeBlobURL = () => URL.revokeObjectURL(blobURL);
         const newTexture = new Texture(blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);

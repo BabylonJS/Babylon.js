@@ -548,7 +548,7 @@ export class GLTFExporter {
         this._extensionsOnExporting();
         const jsonText = this._generateJSON(binaryBuffer.byteLength, glTFPrefix, true);
 
-        const bin = new Blob([binaryBuffer], { type: "application/octet-stream" });
+        const bin = new Blob([binaryBuffer as Uint8Array<ArrayBuffer>], { type: "application/octet-stream" });
 
         const glTFFileName = glTFPrefix + ".gltf";
         const glTFBinFile = glTFPrefix + ".bin";
@@ -653,7 +653,7 @@ export class GLTFExporter {
         }
 
         const container = new GLTFData();
-        container.files[glbFileName] = new Blob([dataWriter.getOutputData()], { type: "application/octet-stream" });
+        container.files[glbFileName] = new Blob([dataWriter.getOutputData() as Uint8Array<ArrayBuffer>], { type: "application/octet-stream" });
 
         return container;
     }

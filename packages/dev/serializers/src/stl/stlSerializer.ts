@@ -147,7 +147,7 @@ export class STLExport {
 
         if (download) {
             const a = document.createElement("a");
-            const blob = new Blob([data], { type: "application/octet-stream" });
+            const blob = new Blob([data as BlobPart], { type: "application/octet-stream" });
             a.href = window.URL.createObjectURL(blob);
             a.download = fileName + ".stl";
             a.click();

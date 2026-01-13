@@ -218,7 +218,7 @@ export const LoadImage = (
 
     if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
         if (typeof Blob !== "undefined" && typeof URL !== "undefined") {
-            url = URL.createObjectURL(new Blob([input], { type: mimeType }));
+            url = URL.createObjectURL(new Blob([input as BlobPart], { type: mimeType }));
             usingObjectURL = true;
         } else {
             url = `data:${mimeType};base64,` + EncodeArrayBufferToBase64(input);
