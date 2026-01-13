@@ -26,6 +26,7 @@ import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { Texture } from "core/Materials/Textures/texture";
+import { ShowInspector } from "../../src/inspector";
 
 // TODO: Get this working automatically without requiring an explicit import. Inspector v2 should dynamically import these when needed.
 //       See the initial attempt here: https://github.com/BabylonJS/Babylon.js/pull/17646
