@@ -1834,4 +1834,3 @@ export class GaussianSplattingMesh extends Mesh {
         return new Vector2(width, height);
     }
 }
-
