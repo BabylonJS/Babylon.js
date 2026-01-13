@@ -35,6 +35,8 @@ export interface ISaveToSnippetConfig {
     payloadKey: string;
     /** Optional local storage key for persisting snippet IDs. */
     storageKey?: string;
+    /** Optional friendly name for the entity type (used in alerts). */
+    entityName?: string;
 }
 
 /**
@@ -53,7 +55,7 @@ export interface ISaveToSnippetResult {
  * @returns Promise resolving to the save result.
  */
 export async function SaveToSnippetServer(config: ISaveToSnippetConfig): Promise<ISaveToSnippetResult> {
-    const { snippetUrl, currentSnippetId, content, payloadKey, storageKey } = config;
+    const { snippetUrl, currentSnippetId, content, payloadKey, storageKey, entityName } = config;
 
     const dataToSend = {
         payload: JSON.stringify({
@@ -67,14 +69,23 @@ export async function SaveToSnippetServer(config: ISaveToSnippetConfig): Promise
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
 
-    const response = await fetch(snippetUrl + (currentSnippetId ? "/" + currentSnippetId : ""), {
-        method: "POST",
-        headers,
-        body: JSON.stringify(dataToSend),
-    });
+    let response: Response;
+    try {
+        response = await fetch(snippetUrl + (currentSnippetId ? "/" + currentSnippetId : ""), {
+            method: "POST",
+            headers,
+            body: JSON.stringify(dataToSend),
+        });
+    } catch (e) {
+        const errorMsg = `Unable to save your ${entityName ?? "content"}: ${e}`;
+        alert(errorMsg);
+        throw new Error(errorMsg);
+    }
 
     if (!response.ok) {
-        throw new Error("Unable to save to snippet server");
+        const errorMsg = `Unable to save your ${entityName ?? "content"}`;
+        alert(errorMsg);
+        throw new Error(errorMsg);
     }
 
     const snippet = await response.json();
@@ -94,6 +105,9 @@ export async function SaveToSnippetServer(config: ISaveToSnippetConfig): Promise
         PersistSnippetId(storageKey, newSnippetId);
     }
 
+    // Show success alert
+    alert(`${entityName ?? "Content"} saved with ID: ${newSnippetId} (the id was also saved to your clipboard)`);
+
     return {
         snippetId: newSnippetId,
         oldSnippetId,
@@ -108,6 +122,8 @@ export interface ILoadFromSnippetConfig {
     snippetUrl: string;
     /** The snippet ID to load. */
     snippetId: string;
+    /** Optional friendly name for the entity type (used in alerts). */
+    entityName?: string;
 }
 
 /**
@@ -116,12 +132,21 @@ export interface ILoadFromSnippetConfig {
  * @returns Promise resolving to the parsed response object.
  */
 export async function LoadFromSnippetServer(config: ILoadFromSnippetConfig): Promise<any> {
-    const { snippetUrl, snippetId } = config;
+    const { snippetUrl, snippetId, entityName } = config;
 
-    const response = await fetch(snippetUrl + "/" + snippetId.replace(/#/g, "/"));
+    let response: Response;
+    try {
+        response = await fetch(snippetUrl + "/" + snippetId.replace(/#/g, "/"));
+    } catch (e) {
+        const errorMsg = `Unable to load your ${entityName ?? "content"}: ${e}`;
+        alert(errorMsg);
+        throw new Error(errorMsg);
+    }
 
     if (!response.ok) {
-        throw new Error("Unable to load from snippet server");
+        const errorMsg = `Unable to load your ${entityName ?? "content"}`;
+        alert(errorMsg);
+        throw new Error(errorMsg);
     }
 
     return await response.json();

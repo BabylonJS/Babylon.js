@@ -163,6 +163,7 @@ export const SpriteManagerSnippetProperties: FunctionComponent<{ spriteManager: 
                 content,
                 payloadKey: "spriteManager",
                 storageKey: SnippetDashboardStorageKey,
+                entityName: "sprite manager",
             });
 
             // eslint-disable-next-line require-atomic-updates
@@ -171,10 +172,8 @@ export const SpriteManagerSnippetProperties: FunctionComponent<{ spriteManager: 
             forceUpdate({});
 
             NotifyPlaygroundOfSnippetChange(result.oldSnippetId, result.snippetId, "SpriteManager.ParseFromSnippetAsync");
-
-            alert("Sprite manager saved with ID: " + spriteManager.snippetId + " (please note that the id was also saved to your clipboard)");
         } catch {
-            alert("Unable to save your sprite manager");
+            // Alert already shown by SaveToSnippetServer
         }
     }, [spriteManager, snippetUrl]);
 

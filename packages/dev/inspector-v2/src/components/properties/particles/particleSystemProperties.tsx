@@ -165,6 +165,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                 content,
                 payloadKey: "particleSystem",
                 storageKey: SnippetDashboardStorageKey,
+                entityName: "particle system",
             });
 
             // eslint-disable-next-line require-atomic-updates
@@ -172,10 +173,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             PersistSnippetId(SnippetDashboardStorageKey, result.snippetId);
 
             NotifyPlaygroundOfSnippetChange(result.oldSnippetId, result.snippetId, "ParticleSystem.ParseFromSnippetAsync");
-
-            alert("Particle system saved with ID: " + system.snippetId + " (the id was also saved to your clipboard)");
-        } catch (e) {
-            alert("Unable to save your particle system: " + e);
+        } catch {
+            // Alert already shown by SaveToSnippetServer
         }
     }, [system]);
 
