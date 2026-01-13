@@ -39,7 +39,6 @@ export function GetDefaultEngine(): NonNullable<CanvasViewerOptions["engine"]> {
 }
 
 /**
- * @experimental
  * Creates a Viewer instance that is bound to an HTML canvas.
  * @remarks
  * This function can be shared across multiple UI integrations (e.g. Web Components, React, etc.).

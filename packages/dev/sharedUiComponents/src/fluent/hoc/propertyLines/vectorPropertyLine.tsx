@@ -176,10 +176,10 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
             min={min}
             max={max}
             onChange={onEulerChange}
-            unit="deg"
+            unit={props.useDegrees ? "deg" : "rad"}
         />
     ) : (
-        <QuaternionPropertyLineInternal {...props} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} />
+        <QuaternionPropertyLineInternal {...props} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} unit={props.useDegrees ? "deg" : "rad"} />
     );
 };
 export const Vector2PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector2>>;
