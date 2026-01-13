@@ -1,4 +1,3 @@
-import type { Observer } from "core/Misc/observable";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
 
@@ -34,7 +33,6 @@ export class ParticleVectorMathBlock extends NodeParticleBlock {
         ],
     })
     public operation = ParticleVectorMathBlockOperations.Dot;
-    private readonly _connectionObservers: Observer<NodeParticleConnectionPoint>[];
 
     /**
      * Create a new ParticleVectorMathBlock
