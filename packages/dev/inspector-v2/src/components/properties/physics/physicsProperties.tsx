@@ -7,15 +7,17 @@ import { useCallback } from "react";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 
 import { Vector3 } from "core/Maths/math.vector";
-import { PhysicsMotionType, PhysicsPrestepType } from "core/Physics/v2/IPhysicsEnginePlugin";
+import { PhysicsMotionType, PhysicsPrestepType, PhysicsShapeType } from "core/Physics/v2/IPhysicsEnginePlugin";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useProperty, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 
 import "core/Physics/v2/physicsEngineComponent";
+import { BoundProperty } from "../boundProperty";
 
 const MotionOptions = [
     { label: "Static", value: PhysicsMotionType.STATIC },
@@ -28,6 +30,34 @@ const PrestepOptions = [
     { label: "Teleport", value: PhysicsPrestepType.TELEPORT },
     { label: "Action", value: PhysicsPrestepType.ACTION },
 ] as const satisfies readonly DropdownOption<number>[];
+
+/**
+ * Convert physics shape type to a human-readable string.
+ * @param type The physics shape type.
+ * @returns The human-readable string.
+ */
+function GetShapeTypeString(type?: PhysicsShapeType): string {
+    switch (type) {
+        case PhysicsShapeType.BOX:
+            return "Box";
+        case PhysicsShapeType.SPHERE:
+            return "Sphere";
+        case PhysicsShapeType.CYLINDER:
+            return "Cylinder";
+        case PhysicsShapeType.CAPSULE:
+            return "Capsule";
+        case PhysicsShapeType.CONTAINER:
+            return "Container";
+        case PhysicsShapeType.CONVEX_HULL:
+            return "Convex Hull";
+        case PhysicsShapeType.MESH:
+            return "Mesh";
+        case PhysicsShapeType.HEIGHTFIELD:
+            return "Heightfield";
+        default:
+            return "Unknown";
+    }
+}
 
 export const TransformNodePhysicsProperties: FunctionComponent<{ node: TransformNode }> = (props) => {
     const { node } = props;
@@ -82,6 +112,11 @@ const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody }> = (
         useInterceptObservable("function", physicsBody, "setAngularVelocity")
     );
 
+    // Get shape and material properties
+    const shape = useProperty(physicsBody, "shape");
+    const type = useProperty(shape, "type");
+    const material = useProperty(shape, "material");
+
     return (
         <>
             <NumberDropdownPropertyLine
@@ -101,6 +136,7 @@ const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody }> = (
                     return physicsBody.setPrestepType(value);
                 }}
             />
+            {shape && <TextPropertyLine label="Shape Type" value={GetShapeTypeString(type)} />}
             {/* Linear Damping */}
             <NumberInputPropertyLine
                 label="Linear Damping"
@@ -123,6 +159,44 @@ const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody }> = (
                     physicsBody.setAngularDamping(e);
                 }}
             />
+            {/* Material Properties */}
+            {shape && (
+                <>
+                    <BoundProperty
+                        component={NumberInputPropertyLine}
+                        label="Dynamic Friction"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        target={material}
+                        propertyKey="friction"
+                        nullable
+                        defaultValue={0.5}
+                    />
+                    <BoundProperty
+                        component={NumberInputPropertyLine}
+                        label="Static Friction"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        target={material}
+                        propertyKey="staticFriction"
+                        nullable
+                        defaultValue={material?.friction ?? 0.5}
+                    />
+                    <BoundProperty
+                        component={NumberInputPropertyLine}
+                        label="Restitution"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        target={material}
+                        propertyKey="restitution"
+                        nullable
+                        defaultValue={0}
+                    />
+                </>
+            )}
             <Vector3PropertyLine label="Linear Velocity" value={linearVelocity} onChange={(value) => physicsBody.setLinearVelocity(value)} />
             <Vector3PropertyLine label="Angular Velocity" value={angularVelocity} onChange={(value) => physicsBody.setAngularVelocity(value)} />
             {/* Physics Mass Properties Controls */}
