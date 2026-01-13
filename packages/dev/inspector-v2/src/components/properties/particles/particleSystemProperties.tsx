@@ -3,6 +3,8 @@ import type { Color3Gradient } from "core/Misc/gradients";
 import type { Attractor } from "core/Particles/attractor";
 import type { FunctionComponent } from "react";
 import type { ISelectionService } from "../../../services/selectionService";
+import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, EditRegular, EyeRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
@@ -13,9 +15,9 @@ import { HemisphericParticleEmitter } from "core/Particles/EmitterTypes/hemisphe
 import { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
 import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 import { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
-import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Tools } from "core/Misc/tools";
+import { ConvertToNodeParticleSystemSetAsync } from "core/Particles/Node/nodeParticleSystemSet.helper";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { ParticleSystem } from "core/Particles/particleSystem";
@@ -38,7 +40,6 @@ import { NotifyPlaygroundOfSnippetChange, PersistSnippetId, PromptForSnippetId, 
 import { BoundProperty } from "../boundProperty";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import { AttractorList } from "./attractorList";
-import { CloudArrowDownRegular, CloudArrowUpRegular } from "@fluentui/react-icons";
 
 const SnippetDashboardStorageKey = "Babylon/InspectorV2/SnippetDashboard/ParticleSystems";
 
@@ -154,7 +155,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
         }
     }, [scene, selectionService, system]);
 
-    const handleSaveToSnippetServer = useCallback(async () => {
+    const saveToSnippetServer = useCallback(async () => {
         try {
             const content = JSON.stringify(system.serialize(true));
             const currentSnippetId = system.snippetId;
@@ -195,10 +196,23 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             <BoundProperty component={NumberInputPropertyLine} label="Update Speed" target={system} propertyKey="updateSpeed" min={0} step={0.01} />
 
             <ButtonLine
-                label={system.isNodeGenerated ? "Edit in Node Particle Editor (coming soon)" : "View in Node Particle Editor (coming soon)"}
-                disabled={true}
-                onClick={() => {
-                    // Hook up once Node Particle Editor UX is wired.
+                label={system.isNodeGenerated ? "Edit" : "View"}
+                icon={system.isNodeGenerated ? EditRegular : EyeRegular}
+                onClick={async () => {
+                    const scene = system.getScene();
+                    if (!scene) {
+                        return;
+                    }
+
+                    const systemSet = system.source ? system.source : await ConvertToNodeParticleSystemSetAsync("source", [system]);
+
+                    if (systemSet) {
+                        // TODO: Figure out how to get all the various build steps to work with this.
+                        //       See the initial attempt here: https://github.com/BabylonJS/Babylon.js/pull/17646
+                        // const { NodeParticleEditor } = await import("node-particle-editor/nodeParticleEditor");
+                        // NodeParticleEditor.Show({ nodeParticleSet: systemSet, hostScene: scene, backgroundColor: scene.clearColor });
+                        await systemSet.editAsync({ nodeEditorConfig: { backgroundColor: scene.clearColor } });
+                    }
                 }}
             />
 
@@ -207,6 +221,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             ) : isAlive ? (
                 <ButtonLine
                     label="Stop"
+                    icon={StopRegular}
                     onClick={() => {
                         setStopRequested(true);
                         system.stop();
@@ -215,6 +230,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             ) : (
                 <ButtonLine
                     label="Start"
+                    icon={PlayRegular}
                     onClick={() => {
                         setStopRequested(false);
                         system.start();
@@ -225,7 +241,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             {!system.isNodeGenerated && (
                 <>
                     <FileUploadLine
-                        label="Load from file"
+                        label="Load from File"
                         accept=".json"
                         onClick={(files) => {
                             if (files.length === 0) {
@@ -251,7 +267,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                     />
 
                     <ButtonLine
-                        label="Save to file"
+                        label="Save to File"
+                        icon={ArrowDownloadRegular}
                         onClick={() => {
                             // Download serialization as a JSON file.
                             const data = JSON.stringify(system.serialize(true), null, 2);
@@ -263,7 +280,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
 
                     {snippetId && <TextPropertyLine label="Snippet ID" value={snippetId} />}
                     <ButtonLine label="Load from Snippet Server" onClick={loadFromSnippetServer} icon={CloudArrowUpRegular} />
-                    <ButtonLine label="Save to Snippet Server" onClick={handleSaveToSnippetServer} icon={CloudArrowDownRegular} />
+                    <ButtonLine label="Save to Snippet Server" onClick={saveToSnippetServer} icon={CloudArrowDownRegular} />
                 </>
             )}
         </>
