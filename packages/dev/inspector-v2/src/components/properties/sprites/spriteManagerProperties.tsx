@@ -2,7 +2,7 @@ import type { FunctionComponent } from "react";
 
 import type { ISelectionService } from "../../../services/selectionService";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
 import { Constants } from "core/Engines/constants";
 import { RenderingManager } from "core/Rendering/renderingManager";
@@ -21,6 +21,7 @@ import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { NotifyPlaygroundOfSnippetChange, PersistSnippetId, PromptForSnippetId, SaveToSnippetServer } from "../../../utils/snippetUtils";
+import { CloudArrowDownRegular, CloudArrowUpRegular } from "@fluentui/react-icons";
 
 const SnippetDashboardStorageKey = "Babylon/InspectorV2/SnippetDashboard/SpriteManagers";
 
@@ -133,7 +134,6 @@ export const SpriteManagerSnippetProperties: FunctionComponent<{ spriteManager: 
     const snippetUrl = Constants.SnippetUrl;
 
     const snippetId = useProperty(spriteManager, "snippetId");
-    const [, forceUpdate] = useState({});
 
     const loadFromSnippet = useCallback(async () => {
         const requestedSnippetId = PromptForSnippetId();
@@ -169,7 +169,6 @@ export const SpriteManagerSnippetProperties: FunctionComponent<{ spriteManager: 
             // eslint-disable-next-line require-atomic-updates
             spriteManager.snippetId = result.snippetId;
             PersistSnippetId(SnippetDashboardStorageKey, result.snippetId);
-            forceUpdate({});
 
             NotifyPlaygroundOfSnippetChange(result.oldSnippetId, result.snippetId, "SpriteManager.ParseFromSnippetAsync");
         } catch {
@@ -180,8 +179,8 @@ export const SpriteManagerSnippetProperties: FunctionComponent<{ spriteManager: 
     return (
         <>
             {snippetId && <TextPropertyLine label="Snippet ID" value={snippetId} />}
-            <ButtonLine label="Load from Snippet Server" onClick={loadFromSnippet} />
-            <ButtonLine label="Save to Snippet Server" onClick={saveToSnippet} />
+            <ButtonLine label="Load from Snippet Server" onClick={loadFromSnippet} icon={CloudArrowUpRegular} />
+            <ButtonLine label="Save to Snippet Server" onClick={saveToSnippet} icon={CloudArrowDownRegular} />
         </>
     );
 };
