@@ -20,6 +20,10 @@ import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coro
 import { EngineStore } from "core/Engines/engineStore";
 import type { Camera } from "core/Cameras/camera";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
+import type { INative } from "core/Engines/Native/nativeInterfaces";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _native: INative;
 
 interface IDelayedTextureUpdate {
     covA: Uint16Array;
@@ -578,7 +582,8 @@ export class GaussianSplattingMesh extends Mesh {
             }
         });
 
-        if ((forced || outdated) && this._worker && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
+        const canSortSplats = (this._worker || (_native && _native.sortSplats)) && this._disableDepthSort === false;
+        if ((forced || outdated) && canSortSplats && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
             // array of cameras used for rendering
             const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
             // list view infos for active cameras
@@ -623,15 +628,27 @@ export class GaussianSplattingMesh extends Mesh {
                     cameraViewInfos.cameraDirection.copyFrom(cameraDirection);
                     cameraViewInfos.frameIdLastUpdate = frameId;
                     this._canPostToWorker = false;
-                    this._worker!.postMessage(
-                        {
-                            view: this._modelViewMatrix.m,
-                            depthMix: this._depthMix,
-                            useRightHandedSystem: this._scene.useRightHandedSystem,
-                            cameraId: camera.uniqueId,
-                        },
-                        [this._depthMix.buffer]
-                    );
+                    if (this._worker) {
+                        this._worker!.postMessage(
+                            {
+                                view: this._modelViewMatrix.m,
+                                depthMix: this._depthMix,
+                                useRightHandedSystem: this._scene.useRightHandedSystem,
+                                cameraId: camera.uniqueId,
+                            },
+                            [this._depthMix.buffer]
+                        );
+                    } else if (_native && _native.sortSplats) {
+                        _native.sortSplats(this._modelViewMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
+                        if (cameraViewInfos.splatIndexBufferSet) {
+                            cameraViewInfos.mesh.thinInstanceBufferUpdated("splatIndex");
+                        } else {
+                            cameraViewInfos.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
+                            cameraViewInfos.splatIndexBufferSet = true;
+                        }
+                        this._canPostToWorker = true;
+                        this._readyToDisplay = true;
+                    }
                 }
             });
         }
@@ -1587,7 +1604,9 @@ export class GaussianSplattingMesh extends Mesh {
             this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions!, sh: sh };
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
-            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+            if (this._worker) {
+                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            }
 
             this._postToWorker(true);
         } else {
@@ -1673,7 +1692,9 @@ export class GaussianSplattingMesh extends Mesh {
             // sort will be dirty here as just finished filled positions will not be sorted
             const positions = Float32Array.from(this._splatPositions);
             const vertexCount = this._vertexCount;
-            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+            if (this._worker) {
+                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            }
             this._sortIsDirty = true;
         } else {
             const paddedVertexCount = (vertexCount + 15) & ~0xf;
@@ -1774,6 +1795,11 @@ export class GaussianSplattingMesh extends Mesh {
             return;
         }
         this._updateSplatIndexBuffer(this._vertexCount);
+
+        // no worker in native
+        if (_native) {
+            return;
+        }
 
         // Start the worker thread
         this._worker?.terminate();
