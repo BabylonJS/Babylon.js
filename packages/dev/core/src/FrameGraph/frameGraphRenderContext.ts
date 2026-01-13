@@ -39,7 +39,6 @@ const SamplingModeHasMipMapFiltering = [
 
 /**
  * Frame graph context used render passes.
- * @experimental
  */
 export class FrameGraphRenderContext extends FrameGraphContext {
     private readonly _effectRenderer: EffectRenderer;
