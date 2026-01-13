@@ -575,16 +575,7 @@ export class Tools {
         return await Tools.LoadScriptAsync(scriptUrl);
     }
 
-    /**
-     * This function is used internally by babylon components to load a script (identified by an url). When the url returns, the
-     * content of this file is added into a new script element, attached to the DOM (body element)
-     * @param scriptUrl defines the url of the script to load
-     * @param onSuccess defines the callback called when the script is loaded
-     * @param onError defines the callback to call if an error occurs
-     * @param scriptId defines the id of the script element
-     * @param useModule defines if we should use the module strategy to load the script
-     */
-    private static _LoadScriptNative(scriptUrl: string, onSuccess?: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string, useModule = false) {
+    private static _LoadScriptNative(scriptUrl: string, onSuccess?: () => void, onError?: (message?: string, exception?: any) => void) {
         if (_native) {
             Tools.LoadFile(
                 scriptUrl,
@@ -606,15 +597,6 @@ export class Tools {
         }
     }
 
-    /**
-     * This function is used internally by babylon components to load a script (identified by an url). When the url returns, the
-     * content of this file is added into a new script element, attached to the DOM (body element)
-     * @param scriptUrl defines the url of the script to load
-     * @param onSuccess defines the callback called when the script is loaded
-     * @param onError defines the callback to call if an error occurs
-     * @param scriptId defines the id of the script element
-     * @param useModule defines if we should use the module strategy to load the script
-     */
     private static _LoadScriptWeb(scriptUrl: string, onSuccess?: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string, useModule = false) {
         if (typeof importScripts === "function") {
             try {
