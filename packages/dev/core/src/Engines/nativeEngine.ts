@@ -218,7 +218,7 @@ const remappedAttributesNames: string[] = [];
 /** @internal */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 9;
+    private static readonly PROTOCOL_VERSION = 10;
 
     private readonly _engine: INativeEngine = new _native.Engine({
         version: Engine.Version,
