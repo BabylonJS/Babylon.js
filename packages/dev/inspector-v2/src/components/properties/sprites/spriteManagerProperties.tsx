@@ -180,8 +180,8 @@ export const SpriteManagerSnippetProperties: FunctionComponent<{ spriteManager: 
     return (
         <>
             {snippetId && <TextPropertyLine label="Snippet ID" value={snippetId} />}
-            <ButtonLine label="Load from snippet server" onClick={loadFromSnippet} />
-            <ButtonLine label="Save to snippet server" onClick={saveToSnippet} />
+            <ButtonLine label="Load from Snippet Server" onClick={loadFromSnippet} />
+            <ButtonLine label="Save to Snippet Server" onClick={saveToSnippet} />
         </>
     );
 };
@@ -201,7 +201,7 @@ export const SpriteManagerActionsProperties: FunctionComponent<{ spriteManager: 
 
     return (
         <>
-            {spriteManager.sprites.length < spriteManager.capacity && <ButtonLine label="Add new sprite" onClick={addNewSprite} />}
+            {spriteManager.sprites.length < spriteManager.capacity && <ButtonLine label="Add New Sprite" onClick={addNewSprite} />}
             <ButtonLine label="Dispose" onClick={disposeManager} />
         </>
     );

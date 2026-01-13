@@ -24,7 +24,7 @@ export function PersistSnippetId(storageKey: string, snippetId: string, maxItems
 /**
  * Configuration for saving to the snippet server.
  */
-export interface ISaveToSnippetConfig {
+export type SaveToSnippetConfig = {
     /** The base URL of the snippet server. */
     snippetUrl: string;
     /** The current snippet ID (if updating an existing snippet). */
@@ -37,24 +37,24 @@ export interface ISaveToSnippetConfig {
     storageKey?: string;
     /** Optional friendly name for the entity type (used in alerts). */
     entityName?: string;
-}
+};
 
 /**
  * Result from saving to the snippet server.
  */
-export interface ISaveToSnippetResult {
+export type SaveToSnippetResult = {
     /** The new snippet ID. */
     snippetId: string;
     /** The previous snippet ID (or "_BLANK" if none). */
     oldSnippetId: string;
-}
+};
 
 /**
  * Save content to the snippet server.
  * @param config Configuration for the save operation.
  * @returns Promise resolving to the save result.
  */
-export async function SaveToSnippetServer(config: ISaveToSnippetConfig): Promise<ISaveToSnippetResult> {
+export async function SaveToSnippetServer(config: SaveToSnippetConfig): Promise<SaveToSnippetResult> {
     const { snippetUrl, currentSnippetId, content, payloadKey, storageKey, entityName } = config;
 
     const dataToSend = {
@@ -117,21 +117,21 @@ export async function SaveToSnippetServer(config: ISaveToSnippetConfig): Promise
 /**
  * Configuration for loading from the snippet server.
  */
-export interface ILoadFromSnippetConfig {
+export type LoadFromSnippetConfig = {
     /** The base URL of the snippet server. */
     snippetUrl: string;
     /** The snippet ID to load. */
     snippetId: string;
     /** Optional friendly name for the entity type (used in alerts). */
     entityName?: string;
-}
+};
 
 /**
  * Load content from the snippet server.
  * @param config Configuration for the load operation.
  * @returns Promise resolving to the parsed response object.
  */
-export async function LoadFromSnippetServer(config: ILoadFromSnippetConfig): Promise<any> {
+export async function LoadFromSnippetServer(config: LoadFromSnippetConfig): Promise<any> {
     const { snippetUrl, snippetId, entityName } = config;
 
     let response: Response;
@@ -165,6 +165,8 @@ export function PromptForSnippetId(message: string = "Please enter the snippet I
 
 /**
  * Notify the playground about a snippet ID change (for code replacement).
+ * NOTE this is an anti-pattern, instead playground should hook in and observe changes / update its own code
+ * This is a legacy approach and should not be copied elsewhere
  * @param oldSnippetId The previous snippet ID.
  * @param newSnippetId The new snippet ID.
  * @param parseMethodName The name of the parse method (e.g., "SpriteManager.ParseFromSnippetAsync").
