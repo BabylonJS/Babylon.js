@@ -2,21 +2,17 @@
 
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Engine } from "./engine";
+import type { ThinNativeEngineOptions } from "./thinNativeEngine";
+import { ThinNativeEngine } from "./thinNativeEngine";
 
 import "./AbstractEngine/abstractEngine.loadFile";
 import "./AbstractEngine/abstractEngine.textureLoaders";
 import "./Native/Extensions/nativeEngine.cubeTexture";
-import { ThinNativeEngine } from "./thinNativeEngine";
 
 /**
  * Options to create the Native engine
  */
-export interface NativeEngineOptions {
-    /**
-     * defines whether to adapt to the device's viewport characteristics (default: false)
-     */
-    adaptToDeviceRatio?: boolean;
-}
+export interface NativeEngineOptions extends ThinNativeEngineOptions {}
 
 /** @internal */
 export class NativeEngine extends Engine {
