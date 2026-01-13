@@ -5,6 +5,8 @@ import { forwardRef, useMemo } from "react";
 import { usePropertyChangedNotifier } from "../../contexts/propertyContext";
 import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
 import { GetPropertyDescriptor } from "../../instrumentation/propertyInstrumentation";
+import { copyCommandToClipboard, getClassNameWithNamespace } from "shared-ui-components/copyCommandToClipboard";
+import { GenerateCopyString } from "./generateCopyString";
 
 /**
  * Helper type to check if a type includes null or undefined
@@ -100,6 +102,12 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
                 ref,
                 value: convertedValue as TargetT[PropertyKeyT],
                 onChange,
+                onCopy: () => {
+                    const { className, babylonNamespace } = getClassNameWithNamespace(target);
+                    const valueStr = GenerateCopyString(value);
+                    const strCommand = `globalThis.debugNode.${String(propertyKey)} = ${valueStr};// (debugNode as ${babylonNamespace}${className})`;
+                    copyCommandToClipboard(strCommand);
+                },
             };
 
             return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;
