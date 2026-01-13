@@ -3,12 +3,12 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { AppGenericRegular, RectangleLandscapeRegular } from "@fluentui/react-icons";
+import { AppGenericRegular, BorderNoneRegular, BorderOutsideRegular, EyeOffRegular, EyeRegular, RectangleLandscapeRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
-import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
+import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 // Don't use instanceof in this case as we don't want to bring in the gui package just to check if the entity is an AdvancedDynamicTexture.
@@ -17,7 +17,13 @@ function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTex
 }
 
 function IsContainer(entity: Control): entity is Container {
-    return (entity as Container)?.children !== undefined;
+    // Check for Container-specific properties without using instanceof to avoid importing the concrete type
+    return (entity as Container)?.children !== undefined && (entity as Container)?.onControlAddedObservable !== undefined;
+}
+
+function IsControl(entity: unknown): entity is Control {
+    // Check for Control-specific properties without using instanceof to avoid importing the concrete type
+    return (entity as Control)?._currentMeasure !== undefined && (entity as Control)?.onPointerDownObservable !== undefined;
 }
 
 export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
@@ -97,11 +103,64 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
             getEntityRemovedObservables: () => [guiEntityRemovedObservable],
         });
 
+        const highlightControlCommandRegistration = sceneExplorerService.addEntityCommand({
+            predicate: (entity: unknown): entity is Control => IsControl(entity),
+            order: DefaultCommandsOrder.GuiHighlight,
+            getCommand: (control) => {
+                const onChangeObservable = new Observable<void>();
+                const showBoundingBoxHook = InterceptProperty(control, "isHighlighted", {
+                    afterSet: () => onChangeObservable.notifyObservers(),
+                });
+
+                return {
+                    type: "toggle",
+                    get displayName() {
+                        return `${control.isHighlighted ? "Hide" : "Show"} Bounding Box`;
+                    },
+                    icon: () => (control.isHighlighted ? <BorderOutsideRegular /> : <BorderNoneRegular />),
+                    get isEnabled() {
+                        return control.isHighlighted;
+                    },
+                    set isEnabled(enabled: boolean) {
+                        control.isHighlighted = enabled;
+                    },
+                    onChange: onChangeObservable,
+                    dispose: () => {
+                        showBoundingBoxHook.dispose();
+                        onChangeObservable.clear();
+                    },
+                };
+            },
+        });
+
+        const controlVisibilityCommandRegistration = sceneExplorerService.addEntityCommand({
+            predicate: (entity: unknown): entity is Control => IsControl(entity),
+            order: DefaultCommandsOrder.GuiVisibility,
+            getCommand: (control) => {
+                return {
+                    type: "toggle",
+                    get displayName() {
+                        return `${control.isVisible ? "Hide" : "Show"} Mesh`;
+                    },
+                    icon: () => (control.isVisible ? <EyeRegular /> : <EyeOffRegular />),
+                    get isEnabled() {
+                        return !control.isVisible;
+                    },
+                    set isEnabled(enabled: boolean) {
+                        control.isVisible = !enabled;
+                    },
+                    onChange: control.onIsVisibleChangedObservable,
+                };
+            },
+        });
+
         return {
             dispose: () => {
                 textureAddedObserver.remove();
                 textureRemovedObserver.remove();
                 sectionRegistration.dispose();
+                highlightControlCommandRegistration.dispose();
+                controlVisibilityCommandRegistration.dispose();
             },
         };
     },
