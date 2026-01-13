@@ -1,9 +1,9 @@
-import type { AdvancedDynamicTexture } from "gui/index";
+import type { AdvancedDynamicTexture, Container, Control } from "gui/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { AppGenericRegular } from "@fluentui/react-icons";
+import { AppGenericRegular, RectangleLandscapeRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
@@ -16,6 +16,10 @@ function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTex
     return (entity as AdvancedDynamicTexture)?.getClassName?.() === "AdvancedDynamicTexture";
 }
 
+function IsContainer(entity: Control): entity is Container {
+    return (entity as Container)?.children !== undefined;
+}
+
 export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
     friendlyName: "GUI Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
@@ -25,37 +29,78 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
             return undefined;
         }
 
-        const sectionRegistration = sceneExplorerService.addSection({
+        const guiEntityAddedObservable = new Observable<AdvancedDynamicTexture | Container | Control>();
+        const guiEntityRemovedObservable = new Observable<AdvancedDynamicTexture | Container | Control>();
+
+        const textureAddedObserver = scene.onNewTextureAddedObservable.add((texture) => {
+            if (IsAdvancedDynamicTexture(texture)) {
+                guiEntityAddedObservable.notifyObservers(texture);
+            }
+        });
+
+        const textureRemovedObserver = scene.onTextureRemovedObservable.add((texture) => {
+            if (IsAdvancedDynamicTexture(texture)) {
+                guiEntityRemovedObservable.notifyObservers(texture);
+            }
+        });
+
+        const sectionRegistration = sceneExplorerService.addSection<AdvancedDynamicTexture | Container | Control>({
             displayName: "GUI",
             order: DefaultSectionsOrder.GUIs,
             getRootEntities: () => scene.textures.filter(IsAdvancedDynamicTexture),
-            getEntityDisplayInfo: (texture) => {
-                const onChangeObservable = new Observable<void>();
+            getEntityChildren: (entity) => (IsAdvancedDynamicTexture(entity) ? entity.getChildren() : IsContainer(entity) ? entity.children : []),
+            getEntityDisplayInfo: (entity) => {
+                const disposeActions: (() => void)[] = [];
 
-                const nameHookToken = InterceptProperty(texture, "name", {
+                const onChangeObservable = new Observable<void>();
+                disposeActions.push(() => onChangeObservable.clear());
+
+                const nameHookToken = InterceptProperty(entity, "name", {
                     afterSet: () => {
                         onChangeObservable.notifyObservers();
                     },
                 });
+                disposeActions.push(() => nameHookToken.dispose());
+
+                if (!IsAdvancedDynamicTexture(entity) && IsContainer(entity)) {
+                    const controlAddedObserver = entity.onControlAddedObservable.add((control) => {
+                        if (control) {
+                            guiEntityAddedObservable.notifyObservers(control);
+                        }
+                    });
+                    disposeActions.push(() => entity.onControlAddedObservable.remove(controlAddedObserver));
+
+                    const controlRemovedObserver = entity.onControlRemovedObservable.add((control) => {
+                        if (control) {
+                            guiEntityRemovedObservable.notifyObservers(control);
+                        }
+                    });
+                    disposeActions.push(() => entity.onControlRemovedObservable.remove(controlRemovedObserver));
+                }
 
                 return {
                     get name() {
-                        return texture.name;
+                        if (IsAdvancedDynamicTexture(entity)) {
+                            return entity.name;
+                        } else {
+                            return `${entity.name ?? "No name"} [${entity.getClassName()}]`;
+                        }
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
-                        nameHookToken.dispose();
-                        onChangeObservable.clear();
+                        disposeActions.reverse().forEach((disposeAction) => disposeAction());
                     },
                 };
             },
-            entityIcon: () => <AppGenericRegular />,
-            getEntityAddedObservables: () => [scene.onNewTextureAddedObservable],
-            getEntityRemovedObservables: () => [scene.onTextureRemovedObservable],
+            entityIcon: ({ entity }) => (IsAdvancedDynamicTexture(entity) ? <AppGenericRegular /> : <RectangleLandscapeRegular />),
+            getEntityAddedObservables: () => [guiEntityAddedObservable],
+            getEntityRemovedObservables: () => [guiEntityRemovedObservable],
         });
 
         return {
             dispose: () => {
+                textureAddedObserver.remove();
+                textureRemovedObserver.remove();
                 sectionRegistration.dispose();
             },
         };
