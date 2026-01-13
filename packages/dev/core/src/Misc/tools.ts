@@ -650,7 +650,7 @@ export class Tools {
      * @param useModule defines if we should use the module strategy to load the script
      */
     public static LoadScript: (scriptUrl: string, onSuccess?: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string, useModule?: boolean) => void =
-        _native ? this._LoadScriptNative : this._LoadScriptWeb;
+        typeof _native === "undefined" ? this._LoadScriptWeb : this._LoadScriptNative;
 
     /**
      * Load an asynchronous script (identified by an url). When the url returns, the
