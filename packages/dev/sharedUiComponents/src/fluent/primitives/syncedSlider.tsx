@@ -17,13 +17,9 @@ const useSyncedSliderStyles = makeStyles({
         alignItems: "center",
     },
     slider: {
-        minWidth: CustomTokens.sliderMinWidth, // Minimum width for slider to remain usable
-        maxWidth: CustomTokens.sliderMaxWidth,
-    },
-    compactSlider: {
         flex: "1 1 auto", // Grow to fill available space
         minWidth: CustomTokens.sliderMinWidth,
-        maxWidth: "none", // Remove max width constraint
+        maxWidth: "none", // Allow slider to grow
     },
     compactSpinButton: {
         width: "70px",
@@ -108,7 +104,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                 {props.min !== undefined && props.max !== undefined && (
                     <Slider
                         {...passthroughProps}
-                        className={props.compact ? classes.compactSlider : classes.slider}
+                        className={classes.slider}
                         size={size}
                         min={min / step}
                         max={max / step}
