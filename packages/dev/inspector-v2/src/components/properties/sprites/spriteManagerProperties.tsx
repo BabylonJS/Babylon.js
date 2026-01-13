@@ -1,9 +1,14 @@
 import type { FunctionComponent } from "react";
 
-import type { SpriteManager } from "core/Sprites/spriteManager";
 import type { ISelectionService } from "../../../services/selectionService";
 
+import { useCallback, useState } from "react";
+
+import { Constants } from "core/Engines/constants";
 import { RenderingManager } from "core/Rendering/renderingManager";
+import { Sprite } from "core/Sprites/sprite";
+import { SpriteManager } from "core/Sprites/spriteManager";
+import { Tools } from "core/Misc/tools";
 import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
@@ -12,6 +17,9 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { BoundProperty } from "../boundProperty";
 import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
+import { useProperty } from "../../../hooks/compoundPropertyHooks";
 
 export const SpriteManagerGeneralProperties: FunctionComponent<{ spriteManager: SpriteManager; selectionService: ISelectionService }> = (props) => {
     const { spriteManager, selectionService } = props;
@@ -69,6 +77,155 @@ export const SpriteManagerCellProperties: FunctionComponent<{ spriteManager: Spr
         <>
             <BoundProperty component={SpinButtonPropertyLine} key="CellWidth" label="Cell Width" target={spriteManager} propertyKey="cellWidth" min={1} step={1} />
             <BoundProperty component={SpinButtonPropertyLine} key="CellHeight" label="Cell Height" target={spriteManager} propertyKey="cellHeight" min={1} step={1} />
+        </>
+    );
+};
+
+export const SpriteManagerFileProperties: FunctionComponent<{ spriteManager: SpriteManager; selectionService: ISelectionService }> = (props) => {
+    const { spriteManager, selectionService } = props;
+    const scene = spriteManager.scene;
+
+    const loadFromFile = useCallback(
+        (files: FileList) => {
+            const file = files[0];
+            if (!file) {
+                return;
+            }
+
+            Tools.ReadFile(
+                file,
+                (data) => {
+                    const decoder = new TextDecoder("utf-8");
+                    const jsonObject = JSON.parse(decoder.decode(data));
+
+                    spriteManager.dispose();
+                    selectionService.selectedEntity = null;
+
+                    const newManager = SpriteManager.Parse(jsonObject, scene, "");
+                    selectionService.selectedEntity = newManager;
+                },
+                undefined,
+                true
+            );
+        },
+        [spriteManager, scene, selectionService]
+    );
+
+    const saveToFile = useCallback(() => {
+        const content = JSON.stringify(spriteManager.serialize(true));
+        Tools.Download(new Blob([content]), "spriteManager.json");
+    }, [spriteManager]);
+
+    return (
+        <>
+            <FileUploadLine label="Load" onClick={loadFromFile} accept=".json" />
+            <ButtonLine label="Save" onClick={saveToFile} />
+        </>
+    );
+};
+
+export const SpriteManagerSnippetProperties: FunctionComponent<{ spriteManager: SpriteManager; selectionService: ISelectionService }> = (props) => {
+    const { spriteManager, selectionService } = props;
+    const scene = spriteManager.scene;
+    const snippetUrl = Constants.SnippetUrl;
+
+    const snippetId = useProperty(spriteManager, "snippetId");
+    const [, forceUpdate] = useState({});
+
+    const loadFromSnippet = useCallback(() => {
+        const requestedSnippetId = window.prompt("Please enter the snippet ID to use");
+
+        if (!requestedSnippetId) {
+            return;
+        }
+
+        spriteManager.dispose();
+        selectionService.selectedEntity = null;
+
+        SpriteManager.ParseFromSnippetAsync(requestedSnippetId, scene)
+            .then((newManager) => {
+                selectionService.selectedEntity = newManager;
+            })
+            .catch((err) => {
+                alert("Unable to load your sprite manager: " + err);
+            });
+    }, [spriteManager, scene, selectionService]);
+
+    const saveToSnippet = useCallback(() => {
+        const content = JSON.stringify(spriteManager.serialize(true));
+
+        const xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = () => {
+            if (xmlHttp.readyState == 4) {
+                if (xmlHttp.status == 200) {
+                    const snippet = JSON.parse(xmlHttp.responseText);
+                    const oldId = spriteManager.snippetId || "_BLANK";
+                    spriteManager.snippetId = snippet.id;
+                    if (snippet.version && snippet.version != "0") {
+                        spriteManager.snippetId += "#" + snippet.version;
+                    }
+                    forceUpdate({});
+
+                    if (navigator.clipboard) {
+                        void navigator.clipboard.writeText(spriteManager.snippetId);
+                    }
+
+                    const windowAsAny = window as any;
+                    if (windowAsAny.Playground && oldId) {
+                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                            regex: new RegExp(`SpriteManager.ParseFromSnippetAsync\\("${oldId}`, "g"),
+                            replace: `SpriteManager.ParseFromSnippetAsync("${spriteManager.snippetId}`,
+                        });
+                    }
+
+                    alert("Sprite manager saved with ID: " + spriteManager.snippetId + " (please note that the id was also saved to your clipboard)");
+                } else {
+                    alert("Unable to save your sprite manager");
+                }
+            }
+        };
+
+        xmlHttp.open("POST", snippetUrl + (spriteManager.snippetId ? "/" + spriteManager.snippetId : ""), true);
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+
+        const dataToSend = {
+            payload: JSON.stringify({
+                spriteManager: content,
+            }),
+            name: "",
+            description: "",
+            tags: "",
+        };
+
+        xmlHttp.send(JSON.stringify(dataToSend));
+    }, [spriteManager, snippetUrl]);
+
+    return (
+        <>
+            {snippetId && <TextPropertyLine label="Snippet ID" value={snippetId} />}
+            <ButtonLine label="Load from snippet server" onClick={loadFromSnippet} />
+            <ButtonLine label="Save to snippet server" onClick={saveToSnippet} />
+        </>
+    );
+};
+
+export const SpriteManagerActionsProperties: FunctionComponent<{ spriteManager: SpriteManager; selectionService: ISelectionService }> = (props) => {
+    const { spriteManager, selectionService } = props;
+
+    const addNewSprite = useCallback(() => {
+        const newSprite = new Sprite("new sprite", spriteManager);
+        selectionService.selectedEntity = newSprite;
+    }, [spriteManager, selectionService]);
+
+    const disposeManager = useCallback(() => {
+        spriteManager.dispose();
+        selectionService.selectedEntity = null;
+    }, [spriteManager, selectionService]);
+
+    return (
+        <>
+            {spriteManager.sprites.length < spriteManager.capacity && <ButtonLine label="Add new sprite" onClick={addNewSprite} />}
+            <ButtonLine label="Dispose" onClick={disposeManager} />
         </>
     );
 };
