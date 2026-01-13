@@ -14,6 +14,7 @@ export const FreeCameraTransformProperties: FunctionComponent<{ camera: FreeCame
     const { camera, settings } = props;
 
     const useDegrees = useObservableState(() => settings.useDegrees, settings.settingsChangedObservable);
+    const useEuler = useObservableState(() => settings.useEuler, settings.settingsChangedObservable);
 
     const position = useProperty(camera, "position");
     const rotation = useProperty(camera, "rotation");
@@ -29,6 +30,7 @@ export const FreeCameraTransformProperties: FunctionComponent<{ camera: FreeCame
                     value={quatRotation}
                     onChange={(val) => (camera.rotationQuaternion = val)}
                     useDegrees={useDegrees}
+                    useEuler={useEuler}
                 />
             ) : (
                 <RotationVectorPropertyLine key="RotationTransform" label="Rotation" value={rotation} onChange={(val) => (camera.rotation = val)} useDegrees={useDegrees} />
@@ -56,6 +58,7 @@ export const FreeCameraCollisionProperties: FunctionComponent<{ camera: FreeCame
     return (
         <>
             <BoundProperty component={SwitchPropertyLine} label="Check Collisions" target={camera} propertyKey="checkCollisions" />
+            <BoundProperty component={SwitchPropertyLine} label="Apply Gravity" target={camera} propertyKey="applyGravity" />
             <Vector3PropertyLine label="Ellipsoid" value={ellipsoid} onChange={(val) => (camera.ellipsoid = val)} />
             <Vector3PropertyLine label="Ellipsoid Offset" value={ellipsoidOffset} onChange={(val) => (camera.ellipsoidOffset = val)} />
         </>
