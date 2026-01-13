@@ -137,6 +137,10 @@ type QuaternionPropertyLineProps = TensorPropertyLineProps<Quaternion> & {
      * Display angles as degrees instead of radians
      */
     useDegrees?: boolean;
+    /**
+     * Display angles as Euler angles instead of quaternions
+     */
+    useEuler?: boolean;
 };
 const QuaternionPropertyLineInternal = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Quaternion>>;
 export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLineProps> = (props) => {
@@ -150,7 +154,7 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
     }, [props.value]);
 
     // Extract only the properties that exist on QuaternionPropertyLineProps
-    const { useDegrees, ...restProps } = props;
+    const { useEuler, ...restProps } = props;
 
     const onQuatChange = (val: Quaternion) => {
         setQuat(val);
@@ -162,7 +166,7 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
         onQuatChange(quat);
     };
 
-    return useDegrees ? (
+    return useEuler ? (
         <Vector3PropertyLine
             {...restProps}
             nullable={false}

@@ -265,11 +265,10 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                         return;
                     }
 
-                    const { NodeParticleEditor } = await import("node-particle-editor/nodeParticleEditor");
-
                     const systemSet = system.source ? system.source : await ConvertToNodeParticleSystemSetAsync("source", [system]);
 
                     if (systemSet) {
+                        const { NodeParticleEditor } = await import("node-particle-editor/nodeParticleEditor");
                         NodeParticleEditor.Show({ nodeParticleSet: systemSet, hostScene: scene, backgroundColor: scene.clearColor });
                     }
                 }}

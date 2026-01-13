@@ -16,6 +16,7 @@ export const TransformProperties: FunctionComponent<{ transform: Transform; sett
     const quatRotation = useQuaternionProperty(transform, "rotationQuaternion");
 
     const useDegrees = useObservableState(() => settings.useDegrees, settings.settingsChangedObservable);
+    const useEuler = useObservableState(() => settings.useEuler, settings.settingsChangedObservable);
 
     return (
         <>
@@ -27,6 +28,7 @@ export const TransformProperties: FunctionComponent<{ transform: Transform; sett
                     value={quatRotation}
                     onChange={(val) => (transform.rotationQuaternion = val)}
                     useDegrees={useDegrees}
+                    useEuler={useEuler}
                 />
             ) : (
                 <BoundProperty component={RotationVectorPropertyLine} label="Rotation" target={transform} propertyKey="rotation" useDegrees={useDegrees} />

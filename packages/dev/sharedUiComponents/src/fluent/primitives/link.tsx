@@ -2,8 +2,9 @@ import type { PropsWithChildren } from "react";
 
 import type { ImmutablePrimitiveProps } from "./primitive";
 
-import { forwardRef } from "react";
-import { Body1, Link as FluentLink } from "@fluentui/react-components";
+import { forwardRef, useContext } from "react";
+import { Body1, Caption1, Link as FluentLink } from "@fluentui/react-components";
+import { ToolContext } from "../hoc/fluentToolWrapper";
 
 export type LinkProps = ImmutablePrimitiveProps<string> & {
     /**
@@ -21,13 +22,15 @@ export type LinkProps = ImmutablePrimitiveProps<string> & {
 };
 
 export const Link = forwardRef<HTMLAnchorElement, PropsWithChildren<LinkProps>>((props, ref) => {
+    const { size } = useContext(ToolContext);
     const { target, url, onLink, ...rest } = props;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const TextComponent = size === "small" ? Caption1 : Body1;
+
     return (
         <FluentLink ref={ref} inline target={target === "current" ? "_self" : "_blank"} rel="noopener noreferrer" href={url} onClick={onLink ?? undefined} {...rest}>
             {props.children}
-            <Body1 wrap={false} truncate>
-                {props.value}
-            </Body1>
+            <TextComponent>{props.value}</TextComponent>
         </FluentLink>
     );
 });
