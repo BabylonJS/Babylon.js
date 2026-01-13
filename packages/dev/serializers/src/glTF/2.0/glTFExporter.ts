@@ -1340,7 +1340,7 @@ export class GLTFExporter {
         state: ExporterState,
         primitive: IMeshPrimitive
     ): void {
-        let indicesToExport: Nullable<Uint32Array | Uint16Array> = null;
+        let indicesToExport = null;
 
         primitive.mode = GetPrimitiveMode(fillMode);
 
