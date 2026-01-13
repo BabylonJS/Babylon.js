@@ -49,8 +49,8 @@
         "ts-node": "~10.9.0",
         "ts-patch": "3.3.0",
         "tslib": "^2.4.0",
-        "typedoc": "^0.27.6",
-        "typescript": "~5.7.0",
+        "typedoc": "^0.28.16",
+        "typescript": "~5.9.0",
         "webpack": "^5.103.0",
         "webpack-cli": "6.0.1"
     },
