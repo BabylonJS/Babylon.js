@@ -20,6 +20,9 @@ import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/pro
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
+import { NotifyPlaygroundOfSnippetChange, PersistSnippetId, PromptForSnippetId, SaveToSnippetServer } from "../../../utils/snippetUtils";
+
+const SnippetDashboardStorageKey = "Babylon/InspectorV2/SnippetDashboard/SpriteManagers";
 
 export const SpriteManagerGeneralProperties: FunctionComponent<{ spriteManager: SpriteManager; selectionService: ISelectionService }> = (props) => {
     const { spriteManager, selectionService } = props;
@@ -133,7 +136,7 @@ export const SpriteManagerSnippetProperties: FunctionComponent<{ spriteManager: 
     const [, forceUpdate] = useState({});
 
     const loadFromSnippet = useCallback(async () => {
-        const requestedSnippetId = window.prompt("Please enter the snippet ID to use");
+        const requestedSnippetId = PromptForSnippetId();
         if (!requestedSnippetId) {
             return;
         }
@@ -150,51 +153,24 @@ export const SpriteManagerSnippetProperties: FunctionComponent<{ spriteManager: 
     }, [spriteManager, scene, selectionService]);
 
     const saveToSnippet = useCallback(async () => {
-        const content = JSON.stringify(spriteManager.serialize(true));
-
-        const dataToSend = {
-            payload: JSON.stringify({
-                spriteManager: content,
-            }),
-            name: "",
-            description: "",
-            tags: "",
-        };
-
         try {
-            const headers = new Headers();
-            headers.append("Content-Type", "application/json");
+            const content = JSON.stringify(spriteManager.serialize(true));
+            const currentSnippetId = spriteManager.snippetId;
 
-            const response = await fetch(snippetUrl + (spriteManager.snippetId ? "/" + spriteManager.snippetId : ""), {
-                method: "POST",
-                headers,
-                body: JSON.stringify(dataToSend),
+            const result = await SaveToSnippetServer({
+                snippetUrl,
+                currentSnippetId,
+                content,
+                payloadKey: "spriteManager",
+                storageKey: SnippetDashboardStorageKey,
             });
 
-            if (!response.ok) {
-                alert("Unable to save your sprite manager");
-                return;
-            }
-
-            const snippet = await response.json();
-            const oldId = spriteManager.snippetId || "_BLANK";
-            spriteManager.snippetId = snippet.id;
-            if (snippet.version && snippet.version != "0") {
-                spriteManager.snippetId += "#" + snippet.version;
-            }
+            // eslint-disable-next-line require-atomic-updates
+            spriteManager.snippetId = result.snippetId;
+            PersistSnippetId(SnippetDashboardStorageKey, result.snippetId);
             forceUpdate({});
 
-            if (navigator.clipboard) {
-                await navigator.clipboard.writeText(spriteManager.snippetId);
-            }
-
-            const windowAsAny = window as any;
-            if (windowAsAny.Playground && oldId) {
-                windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                    regex: new RegExp(`SpriteManager.ParseFromSnippetAsync\\("${oldId}`, "g"),
-                    replace: `SpriteManager.ParseFromSnippetAsync("${spriteManager.snippetId}`,
-                });
-            }
+            NotifyPlaygroundOfSnippetChange(result.oldSnippetId, result.snippetId, "SpriteManager.ParseFromSnippetAsync");
 
             alert("Sprite manager saved with ID: " + spriteManager.snippetId + " (please note that the id was also saved to your clipboard)");
         } catch {

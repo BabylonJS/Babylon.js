@@ -17,7 +17,6 @@ import { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmi
 import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 import { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
 
-import { Deferred } from "core/Misc/deferred";
 import { Tools } from "core/Misc/tools";
 import { ConvertToNodeParticleSystemSetAsync } from "core/Particles/Node/nodeParticleSystemSet.helper";
 import { ParticleHelper } from "core/Particles/particleHelper";
@@ -37,6 +36,7 @@ import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
+import { PersistSnippetId, PromptForSnippetId, SaveToSnippetServer } from "../../../utils/snippetUtils";
 import { BoundProperty } from "../boundProperty";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import { AttractorList } from "./attractorList";
@@ -72,20 +72,6 @@ function NormalizeParticleSystemSerialization(rawData: any): any {
     const jsonPayload = TryParseJsonString(rawData?.jsonPayload);
     const particleSystem = TryParseJsonString(jsonPayload?.particleSystem);
     return particleSystem ?? rawData;
-}
-
-function PersistSnippetId(snippetId: string) {
-    // Persist snippet IDs locally for quick reuse.
-    try {
-        const existing = JSON.parse(localStorage.getItem(SnippetDashboardStorageKey) || "[]");
-        const list = Array.isArray(existing) ? existing : [];
-        if (!list.includes(snippetId)) {
-            list.unshift(snippetId);
-        }
-        localStorage.setItem(SnippetDashboardStorageKey, JSON.stringify(list.slice(0, 50)));
-    } catch {
-        // Ignore storage failures.
-    }
 }
 
 /**
@@ -146,10 +132,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             return;
         }
 
-        // Prompt for a snippet id (minimal UX).
-
-        const requestedSnippetId = window.prompt("Please enter the snippet ID to use");
-        const trimmed = requestedSnippetId?.trim();
+        const trimmed = PromptForSnippetId();
         if (!trimmed) {
             return;
         }
@@ -183,61 +166,27 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
         request.send();
     }, [applyParticleSystemJsonToSystem, scene, system]);
 
-    const saveToSnippetServer = useCallback(async () => {
-        const deferred = new Deferred<void>();
+    const handleSaveToSnippetServer = useCallback(async () => {
+        try {
+            const content = JSON.stringify(system.serialize(true));
+            const currentSnippetId = system.snippetId;
 
-        // Serialize once and post as snippet payload.
-        const content = JSON.stringify(system.serialize(true));
+            const result = await SaveToSnippetServer({
+                snippetUrl: ParticleHelper.SnippetUrl,
+                currentSnippetId,
+                content,
+                payloadKey: "particleSystem",
+                storageKey: SnippetDashboardStorageKey,
+            });
 
-        const xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = () => {
-            if (xmlHttp.readyState !== 4) {
-                return;
-            }
+            // eslint-disable-next-line require-atomic-updates
+            system.snippetId = result.snippetId;
+            PersistSnippetId(SnippetDashboardStorageKey, result.snippetId);
 
-            if (xmlHttp.status !== 200) {
-                deferred.reject();
-                alert("Unable to save your particle system");
-                return;
-            }
-
-            try {
-                const snippet = JSON.parse(xmlHttp.responseText);
-                system.snippetId = snippet.id;
-                if (snippet.version && snippet.version !== "0") {
-                    system.snippetId += "#" + snippet.version;
-                }
-
-                // Copy to clipboard when available.
-                if (navigator.clipboard) {
-                    void navigator.clipboard.writeText(system.snippetId);
-                }
-
-                PersistSnippetId(system.snippetId);
-
-                deferred.resolve();
-                alert("Particle system saved with ID: " + system.snippetId + " (the id was also saved to your clipboard)");
-            } catch (e) {
-                deferred.reject(e);
-                alert("Unable to save your particle system: " + e);
-            }
-        };
-
-        xmlHttp.open("POST", ParticleHelper.SnippetUrl + (system.snippetId ? "/" + system.snippetId : ""), true);
-        xmlHttp.setRequestHeader("Content-Type", "application/json");
-
-        const dataToSend = {
-            payload: JSON.stringify({
-                particleSystem: content,
-            }),
-            name: "",
-            description: "",
-            tags: "",
-        };
-
-        xmlHttp.send(JSON.stringify(dataToSend));
-
-        await deferred.promise;
+            alert("Particle system saved with ID: " + system.snippetId + " (the id was also saved to your clipboard)");
+        } catch (e) {
+            alert("Unable to save your particle system: " + e);
+        }
     }, [system]);
 
     return (
@@ -341,7 +290,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
 
                     {snippetId && <TextPropertyLine label="Snippet ID" value={snippetId} />}
                     <ButtonLine label="Load from Snippet Server" onClick={loadFromSnippetServer} icon={CloudArrowUpRegular} />
-                    <ButtonLine label="Save to Snippet Server" onClick={saveToSnippetServer} icon={CloudArrowDownRegular} />
+                    <ButtonLine label="Save to Snippet Server" onClick={handleSaveToSnippetServer} icon={CloudArrowDownRegular} />
                 </>
             )}
         </>
