@@ -14,6 +14,8 @@ import { Vector3 } from "../../../Maths/math.vector";
 export enum ParticleVectorMathBlockOperations {
     /** Dot product */
     Dot,
+    /** Distance between two vectors */
+    Distance,
 }
 
 /**
@@ -26,7 +28,10 @@ export class ParticleVectorMathBlock extends NodeParticleBlock {
     @editableInPropertyPage("Operation", PropertyTypeForEdition.List, "ADVANCED", {
         notifiers: { rebuild: true },
         embedded: true,
-        options: [{ label: "Dot", value: ParticleVectorMathBlockOperations.Dot }],
+        options: [
+            { label: "Dot", value: ParticleVectorMathBlockOperations.Dot },
+            { label: "Distance", value: ParticleVectorMathBlockOperations.Distance },
+        ],
     })
     public operation = ParticleVectorMathBlockOperations.Dot;
     private readonly _connectionObservers: Observer<NodeParticleConnectionPoint>[];
@@ -102,6 +107,12 @@ export class ParticleVectorMathBlock extends NodeParticleBlock {
             case ParticleVectorMathBlockOperations.Dot: {
                 func = (state) => {
                     return Vector3.Dot(left.getConnectedValue(state), right.getConnectedValue(state));
+                };
+                break;
+            }
+            case ParticleVectorMathBlockOperations.Distance: {
+                func = (state) => {
+                    return Vector3.Distance(left.getConnectedValue(state), right.getConnectedValue(state));
                 };
                 break;
             }

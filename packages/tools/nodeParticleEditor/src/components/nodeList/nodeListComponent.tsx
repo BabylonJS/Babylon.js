@@ -13,6 +13,7 @@ import deleteButton from "../../imgs/delete.svg";
 import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 
 import "./nodeList.scss";
+import { DistanceBlock } from "core/Materials";
 
 interface INodeListComponentProps {
     globalState: GlobalState;
@@ -53,6 +54,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ModuloBlock: "Block to calculate the Modulo",
         PowBlock: "Block to calculate the Power",
         DotBlock: "Block to calculate the Dot product",
+        DistanceBlock: "Block to calculate the Distance between two vectors",
         PositionBlock: "Contextual block to get the position of a particle",
         DirectionBlock: "Contextual block to get the direction of a particle",
         DirectionScaleBlock: "Contextual block to get the direction scale of a particle",
@@ -258,6 +260,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "CeilingBlock",
                 "FloatToIntBlock",
                 "DotBlock",
+                "DistanceBlock",
             ],
             Math__Scientific: [
                 "AbsBlock",
