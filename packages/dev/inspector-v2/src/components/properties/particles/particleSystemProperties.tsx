@@ -16,6 +16,7 @@ import { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticl
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Tools } from "core/Misc/tools";
+import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { BlendModeOptions, ParticleBillboardModeOptions } from "shared-ui-components/constToOptionsMaps";
@@ -33,7 +34,7 @@ import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
-import { PersistSnippetId, PromptForSnippetId, SaveToSnippetServer } from "../../../utils/snippetUtils";
+import { NotifyPlaygroundOfSnippetChange, PersistSnippetId, PromptForSnippetId, SaveToSnippetServer } from "../../../utils/snippetUtils";
 import { BoundProperty } from "../boundProperty";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import { AttractorList } from "./attractorList";
@@ -77,8 +78,8 @@ function NormalizeParticleSystemSerialization(rawData: any): any {
  * @param props Component props.
  * @returns Render property lines.
  */
-export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
-    const { particleSystem: system } = props;
+export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem: ParticleSystem; selectionService: ISelectionService }> = (props) => {
+    const { particleSystem: system, selectionService } = props;
 
     const scene = system.getScene();
 
@@ -124,45 +125,34 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
         [scene, system]
     );
 
-    const loadFromSnippetServer = useCallback(() => {
+    const loadFromSnippetServer = useCallback(async () => {
         if (!scene) {
             alert("No scene available.");
             return;
         }
 
-        const trimmed = PromptForSnippetId();
-        if (!trimmed) {
+        const snippetId = PromptForSnippetId();
+        if (!snippetId) {
             return;
         }
 
-        const request = new XMLHttpRequest();
-        request.onreadystatechange = () => {
-            if (request.readyState !== 4) {
-                return;
-            }
+        const isGpu = system instanceof GPUParticleSystem;
+        const oldSnippetId = system.snippetId;
 
-            if (request.status !== 200) {
-                alert("Unable to load your particle system");
-                return;
-            }
+        // Dispose the old system and clear selection (v1 behavior)
+        system.dispose();
+        selectionService.selectedEntity = null;
 
-            try {
-                const responseObject = ParseJsonLoadContents(request.responseText);
-                if (!responseObject) {
-                    alert("Unable to load your particle system");
-                    return;
-                }
+        try {
+            const newSystem = await ParticleHelper.ParseFromSnippetAsync(snippetId, scene, isGpu);
+            selectionService.selectedEntity = newSystem;
 
-                applyParticleSystemJsonToSystem(responseObject);
-                system.snippetId = trimmed;
-            } catch (e) {
-                alert("Unable to load your particle system: " + e);
-            }
-        };
-
-        request.open("GET", ParticleHelper.SnippetUrl + "/" + trimmed.replace(/#/g, "/"), true);
-        request.send();
-    }, [applyParticleSystemJsonToSystem, scene, system]);
+            // Notify the playground to update its code with the new snippet ID.
+            NotifyPlaygroundOfSnippetChange(oldSnippetId, snippetId, "ParticleHelper.ParseFromSnippetAsync");
+        } catch (err) {
+            alert("Unable to load your particle system: " + err);
+        }
+    }, [scene, selectionService, system]);
 
     const handleSaveToSnippetServer = useCallback(async () => {
         try {
@@ -180,6 +170,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             // eslint-disable-next-line require-atomic-updates
             system.snippetId = result.snippetId;
             PersistSnippetId(SnippetDashboardStorageKey, result.snippetId);
+
+            NotifyPlaygroundOfSnippetChange(result.oldSnippetId, result.snippetId, "ParticleSystem.ParseFromSnippetAsync");
 
             alert("Particle system saved with ID: " + system.snippetId + " (the id was also saved to your clipboard)");
         } catch (e) {

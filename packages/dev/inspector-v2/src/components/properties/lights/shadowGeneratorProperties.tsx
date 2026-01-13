@@ -121,7 +121,7 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
     const blurModeOptions = isCascaded ? CSMBlurModeOptions : BlurModeOptions;
 
     const near = camera?.minZ ?? 0;
-    const far = camera?.maxZ ?? 500000;
+    const far = camera?.maxZ ?? 10000;
 
     const isPCFOrPCSS = filter === ShadowGenerator.FILTER_PCF || filter === ShadowGenerator.FILTER_PCSS;
     const isPCSS = filter === ShadowGenerator.FILTER_PCSS;
