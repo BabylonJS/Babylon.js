@@ -340,6 +340,11 @@ export class BlockTools {
                 block.operation = ParticleVectorMathBlockOperations.Dot;
                 return block;
             }
+            case "DistanceBlock": {
+                const block = new ParticleVectorMathBlock("Distance");
+                block.operation = ParticleVectorMathBlockOperations.Distance;
+                return block;
+            }
             case "ToDegreesBlock": {
                 const block = new ParticleTrigonometryBlock("To degrees");
                 block.operation = ParticleTrigonometryBlockOperations.ToDegrees;

@@ -4,6 +4,9 @@ import type { Attractor } from "core/Particles/attractor";
 import type { FunctionComponent } from "react";
 import type { ISelectionService } from "../../../services/selectionService";
 
+import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, EditRegular, EyeRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
 import { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
@@ -13,9 +16,10 @@ import { HemisphericParticleEmitter } from "core/Particles/EmitterTypes/hemisphe
 import { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
 import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 import { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
-import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { Deferred } from "core/Misc/deferred";
 import { Tools } from "core/Misc/tools";
+import { ConvertToNodeParticleSystemSetAsync } from "core/Particles/Node/nodeParticleSystemSet.helper";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { BlendModeOptions, ParticleBillboardModeOptions } from "shared-ui-components/constToOptionsMaps";
@@ -179,7 +183,9 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
         request.send();
     }, [applyParticleSystemJsonToSystem, scene, system]);
 
-    const saveToSnippetServer = useCallback(() => {
+    const saveToSnippetServer = useCallback(async () => {
+        const deferred = new Deferred<void>();
+
         // Serialize once and post as snippet payload.
         const content = JSON.stringify(system.serialize(true));
 
@@ -190,6 +196,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             }
 
             if (xmlHttp.status !== 200) {
+                deferred.reject();
                 alert("Unable to save your particle system");
                 return;
             }
@@ -208,8 +215,10 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
 
                 PersistSnippetId(system.snippetId);
 
+                deferred.resolve();
                 alert("Particle system saved with ID: " + system.snippetId + " (the id was also saved to your clipboard)");
             } catch (e) {
+                deferred.reject(e);
                 alert("Unable to save your particle system: " + e);
             }
         };
@@ -227,6 +236,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
         };
 
         xmlHttp.send(JSON.stringify(dataToSend));
+
+        await deferred.promise;
     }, [system]);
 
     return (
@@ -246,10 +257,23 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             <BoundProperty component={NumberInputPropertyLine} label="Update Speed" target={system} propertyKey="updateSpeed" min={0} step={0.01} />
 
             <ButtonLine
-                label={system.isNodeGenerated ? "Edit in Node Particle Editor (coming soon)" : "View in Node Particle Editor (coming soon)"}
-                disabled={true}
-                onClick={() => {
-                    // Hook up once Node Particle Editor UX is wired.
+                label={system.isNodeGenerated ? "Edit" : "View"}
+                icon={system.isNodeGenerated ? EditRegular : EyeRegular}
+                onClick={async () => {
+                    const scene = system.getScene();
+                    if (!scene) {
+                        return;
+                    }
+
+                    const systemSet = system.source ? system.source : await ConvertToNodeParticleSystemSetAsync("source", [system]);
+
+                    if (systemSet) {
+                        // TODO: Figure out how to get all the various build steps to work with this.
+                        //       See the initial attempt here: https://github.com/BabylonJS/Babylon.js/pull/17646
+                        // const { NodeParticleEditor } = await import("node-particle-editor/nodeParticleEditor");
+                        // NodeParticleEditor.Show({ nodeParticleSet: systemSet, hostScene: scene, backgroundColor: scene.clearColor });
+                        await systemSet.editAsync({ nodeEditorConfig: { backgroundColor: scene.clearColor } });
+                    }
                 }}
             />
 
@@ -258,6 +282,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             ) : isAlive ? (
                 <ButtonLine
                     label="Stop"
+                    icon={StopRegular}
                     onClick={() => {
                         setStopRequested(true);
                         system.stop();
@@ -266,6 +291,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             ) : (
                 <ButtonLine
                     label="Start"
+                    icon={PlayRegular}
                     onClick={() => {
                         setStopRequested(false);
                         system.start();
@@ -276,7 +302,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             {!system.isNodeGenerated && (
                 <>
                     <FileUploadLine
-                        label="Load from file"
+                        label="Load from File"
                         accept=".json"
                         onClick={(files) => {
                             if (files.length === 0) {
@@ -302,7 +328,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                     />
 
                     <ButtonLine
-                        label="Save to file"
+                        label="Save to File"
+                        icon={ArrowDownloadRegular}
                         onClick={() => {
                             // Download serialization as a JSON file.
                             const data = JSON.stringify(system.serialize(true), null, 2);
@@ -313,8 +340,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                     />
 
                     {snippetId && <TextPropertyLine label="Snippet ID" value={snippetId} />}
-                    <ButtonLine label="Load from snippet server" onClick={loadFromSnippetServer} />
-                    <ButtonLine label="Save to snippet server" onClick={saveToSnippetServer} />
+                    <ButtonLine label="Load from Snippet Server" onClick={loadFromSnippetServer} icon={CloudArrowUpRegular} />
+                    <ButtonLine label="Save to Snippet Server" onClick={saveToSnippetServer} icon={CloudArrowDownRegular} />
                 </>
             )}
         </>

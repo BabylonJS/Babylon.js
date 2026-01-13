@@ -20,7 +20,7 @@ module.exports = (env) => {
         ),
 
         resolve: {
-            extensions: [".ts", ".tsx", ".js", ".jsx"],
+            extensions: [".ts", ".tsx", ".js", ".jsx", ".svg", ".scss"],
             alias: {
                 addons: path.resolve("../../dev/addons/dist"),
                 core: path.resolve("../../dev/core/dist"),
@@ -30,13 +30,23 @@ module.exports = (env) => {
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
                 "inspector-v2": path.resolve("./src"),
                 serializers: path.resolve("../../dev/serializers/dist"),
+                "node-editor": path.resolve("../../tools/nodeEditor/dist"),
+                "node-geometry-editor": path.resolve("../../tools/nodeGeometryEditor/dist"),
+                "node-particle-editor": path.resolve("../../tools/nodeParticleEditor/dist"),
+                "node-render-graph-editor": path.resolve("../../tools/nodeRenderGraphEditor/dist"),
             },
         },
 
         module: {
             rules: webpackTools.getRules({
                 sideEffects: true,
-                includeCSS: false,
+                includeCSS: true,
+                extraRules: [
+                    {
+                        test: /\.svg$/,
+                        type: "asset/inline",
+                    },
+                ],
                 enableFastRefresh: !production,
                 tsOptions: {
                     configFile: "tsconfig.build.json",
