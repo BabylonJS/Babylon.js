@@ -1351,8 +1351,6 @@ export class GLTFExporter {
                 throw new Error("Triangle strip/fan fill mode is not implemented");
             }
 
-            primitive.mode = GetPrimitiveMode(fillMode);
-
             const newIndices = is32Bits ? new Uint32Array(count) : new Uint16Array(count);
 
             if (indices) {
