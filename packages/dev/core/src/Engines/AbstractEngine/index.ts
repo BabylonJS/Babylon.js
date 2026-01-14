@@ -10,3 +10,5 @@ export * from "./abstractEngine.renderPass";
 export * from "./abstractEngine.texture";
 export * from "./abstractEngine.alpha";
 export * from "./abstractEngine.views";
+export * from "./abstractEngine.loadFile";
+export * from "./abstractEngine.textureLoaders";

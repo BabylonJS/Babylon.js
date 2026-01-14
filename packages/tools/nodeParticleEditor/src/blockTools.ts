@@ -31,6 +31,7 @@ import { BasicSpriteUpdateBlock } from "core/Particles/Node/Blocks/Update/basicS
 import { UpdateSpriteCellIndexBlock } from "core/Particles/Node/Blocks/Update/updateSpriteCellIndexBlock";
 import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlowMapBlock";
 import { UpdateNoiseBlock } from "core/Particles/Node/Blocks/Update/updateNoiseBlock";
+import { UpdateRemapBlock } from "core/Particles/Node/Blocks/Update/updateRemapBlock";
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "core/Particles/Node/Blocks/Conditions/particleConditionBlock";
 import { CreateParticleBlock } from "core/Particles/Node/Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "core/Particles/Node/Blocks/Emitters/boxShapeBlock";
@@ -56,6 +57,7 @@ import { CreateSolidParticleBlock } from "core/Particles/Node/Blocks/SolidPartic
 import { MergeSolidParticlesBlock } from "core/Particles/Node/Blocks/SolidParticle/mergeSolidParticlesBlock";
 import { SolidParticleSystemBlock } from "core/Particles/Node/Blocks/SolidParticle/solidParticleSystemBlock";
 import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
+import { ParticleClampBlock } from "core/Particles/Node/Blocks/particleClampBlock";
 
 /**
  * Static class for BlockTools
@@ -63,6 +65,8 @@ import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloa
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "ClampBlock":
+                return new ParticleClampBlock("Clamp");
             case "FresnelBlock":
                 return new ParticleFresnelBlock("Fresnel");
             case "LocalVariableBlock":
@@ -166,6 +170,8 @@ export class BlockTools {
                 return new UpdateNoiseBlock("Update noise");
             case "UpdateAttractorBlock":
                 return new UpdateAttractorBlock("Update attractor");
+            case "UpdateRemapBlock":
+                return new UpdateRemapBlock("Update remap");
             case "SystemBlock":
                 return new SystemBlock("System");
             case "MeshSourceBlock":
@@ -385,6 +391,11 @@ export class BlockTools {
             case "DotBlock": {
                 const block = new ParticleVectorMathBlock("Dot");
                 block.operation = ParticleVectorMathBlockOperations.Dot;
+                return block;
+            }
+            case "DistanceBlock": {
+                const block = new ParticleVectorMathBlock("Distance");
+                block.operation = ParticleVectorMathBlockOperations.Distance;
                 return block;
             }
             case "ToDegreesBlock": {

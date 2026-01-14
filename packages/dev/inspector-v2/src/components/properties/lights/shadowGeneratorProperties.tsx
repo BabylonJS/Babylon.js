@@ -10,7 +10,13 @@ import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGener
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useObservableState } from "../../../hooks/observableHooks";
+import { useProperty } from "../../../hooks/compoundPropertyHooks";
+import { BoundProperty } from "../boundProperty";
 
 import "core/Lights/Shadows/shadowGeneratorSceneComponent";
 
@@ -29,6 +35,35 @@ const MapSizeOptions = [
     { label: "1024 x 1024", value: 1024 },
     { label: "512 x 512", value: 512 },
     { label: "256 x 256", value: 256 },
+] as const satisfies DropdownOption<number>[];
+
+const BlurModeOptions = [
+    { label: "None", value: ShadowGenerator.FILTER_NONE },
+    { label: "PCF", value: ShadowGenerator.FILTER_PCF },
+    { label: "PCSS", value: ShadowGenerator.FILTER_PCSS },
+    { label: "Poisson", value: ShadowGenerator.FILTER_POISSONSAMPLING },
+    { label: "Exponential", value: ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP },
+    { label: "Blurred Exponential", value: ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP },
+    { label: "Close Exponential", value: ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP },
+    { label: "Blurred Close Exponential", value: ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP },
+] as const satisfies DropdownOption<number>[];
+
+const CSMBlurModeOptions = [
+    { label: "None", value: ShadowGenerator.FILTER_NONE },
+    { label: "PCF", value: ShadowGenerator.FILTER_PCF },
+    { label: "PCSS", value: ShadowGenerator.FILTER_PCSS },
+] as const satisfies DropdownOption<number>[];
+
+const FilteringQualityOptions = [
+    { label: "Low", value: ShadowGenerator.QUALITY_LOW },
+    { label: "Medium", value: ShadowGenerator.QUALITY_MEDIUM },
+    { label: "High", value: ShadowGenerator.QUALITY_HIGH },
+] as const satisfies DropdownOption<number>[];
+
+const NumCascadesOptions = [
+    { label: "2", value: 2 },
+    { label: "3", value: 3 },
+    { label: "4", value: 4 },
 ] as const satisfies DropdownOption<number>[];
 
 type ShadowGeneratorSettings = {
@@ -69,12 +104,29 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
     const [shadowGeneratorSettings, setShadowGeneratorSettings] = useState<Readonly<ShadowGeneratorSettings>>({ generatorType: defaultGeneratorType, mapSize: defaultMapSize });
     const shadowGeneratorOptions = shadowLight instanceof DirectionalLight ? DirectionalLightGeneratorOptions : DefaultShadowGeneratorOptions;
     const camera = useObservableState(() => shadowLight.getScene().activeCamera, shadowLight.getScene().onActiveCameraChanged);
-    const shadowGenerator = GetShadowGenerator(camera, shadowLight);
+    const shadowGenerator = GetShadowGenerator(camera, shadowLight) as ShadowGenerator | CascadedShadowGenerator | null;
     const [hasShadowGenerator, setHasShadowGenerator] = useState(!!shadowGenerator);
 
     useEffect(() => {
         setHasShadowGenerator(!!shadowGenerator);
     }, [shadowGenerator]);
+
+    const isCascaded = shadowGenerator instanceof CascadedShadowGenerator;
+    const isStandardGenerator = shadowGenerator instanceof ShadowGenerator && !isCascaded;
+
+    // Use useProperty to track filter changes and trigger re-renders for conditional UI
+    const filter = useProperty(shadowGenerator, "filter") ?? ShadowGenerator.FILTER_NONE;
+    const useKernelBlur = useProperty(shadowGenerator as ShadowGenerator | null, "useKernelBlur");
+
+    const blurModeOptions = isCascaded ? CSMBlurModeOptions : BlurModeOptions;
+
+    const near = camera?.minZ ?? 0;
+    const far = camera?.maxZ ?? 10000;
+
+    const isPCFOrPCSS = filter === ShadowGenerator.FILTER_PCF || filter === ShadowGenerator.FILTER_PCSS;
+    const isPCSS = filter === ShadowGenerator.FILTER_PCSS;
+    const isBlurExponential = filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP || filter === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP;
+    const isExponential = filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP || filter === ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP;
 
     return (
         <>
@@ -103,7 +155,121 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
             )}
             {shadowGenerator && (
                 <>
-                    TODO: Not Implemented
+                    {isCascaded && <CascadedShadowGeneratorProperties generator={shadowGenerator} near={near} far={far} isPCSS={isPCSS} />}
+
+                    <BoundProperty
+                        component={NumberInputPropertyLine}
+                        label="Bias"
+                        description="Bias to apply to the shadow map to avoid shadow acne."
+                        target={shadowGenerator}
+                        propertyKey="bias"
+                        step={0.0001}
+                    />
+                    <BoundProperty
+                        component={NumberInputPropertyLine}
+                        label="Normal Bias"
+                        description="Normal bias to apply to avoid shadow acne."
+                        target={shadowGenerator}
+                        propertyKey="normalBias"
+                    />
+                    <BoundProperty
+                        component={SyncedSliderPropertyLine}
+                        label="Darkness"
+                        description="Darkness of the shadow (0 = no shadow, 1 = full shadow)."
+                        target={shadowGenerator}
+                        propertyKey="darkness"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                    />
+                    <BoundProperty
+                        component={SwitchPropertyLine}
+                        label="Transparent Shadows"
+                        description="Allow transparent objects to cast shadows."
+                        target={shadowGenerator}
+                        propertyKey="transparencyShadow"
+                    />
+
+                    <BoundProperty
+                        component={NumberDropdownPropertyLine}
+                        label="Filter"
+                        description="Shadow filtering mode."
+                        target={shadowGenerator}
+                        propertyKey="filter"
+                        options={blurModeOptions}
+                    />
+                    <Collapse visible={isPCFOrPCSS}>
+                        <BoundProperty
+                            component={NumberDropdownPropertyLine}
+                            label="Filtering Quality"
+                            target={shadowGenerator}
+                            propertyKey="filteringQuality"
+                            options={FilteringQualityOptions}
+                        />
+                    </Collapse>
+                    <Collapse visible={isPCSS}>
+                        <BoundProperty
+                            component={SyncedSliderPropertyLine}
+                            label="Penumbra Ratio"
+                            description="Light size UV ratio for PCSS."
+                            target={shadowGenerator}
+                            propertyKey="contactHardeningLightSizeUVRatio"
+                            min={0}
+                            max={0.5}
+                            step={0.001}
+                        />
+                    </Collapse>
+                    {isStandardGenerator && (
+                        <>
+                            <Collapse visible={isBlurExponential}>
+                                <>
+                                    <BoundProperty
+                                        component={SwitchPropertyLine}
+                                        label="Use Kernel Blur"
+                                        description="Use kernel-based blur instead of box blur."
+                                        target={shadowGenerator}
+                                        propertyKey="useKernelBlur"
+                                    />
+                                    {useKernelBlur ? (
+                                        <BoundProperty
+                                            component={SyncedSliderPropertyLine}
+                                            label="Blur Kernel"
+                                            target={shadowGenerator}
+                                            propertyKey="blurKernel"
+                                            min={1}
+                                            max={64}
+                                            step={1}
+                                        />
+                                    ) : (
+                                        <BoundProperty
+                                            component={SyncedSliderPropertyLine}
+                                            label="Blur Box Offset"
+                                            target={shadowGenerator}
+                                            propertyKey="blurBoxOffset"
+                                            min={1}
+                                            max={64}
+                                            step={1}
+                                        />
+                                    )}
+                                </>
+                            </Collapse>
+                            <Collapse visible={isExponential}>
+                                <>
+                                    <BoundProperty component={NumberInputPropertyLine} label="Depth Scale" target={shadowGenerator} propertyKey="depthScale" />
+                                    <BoundProperty
+                                        component={SyncedSliderPropertyLine}
+                                        label="Blur Scale"
+                                        target={shadowGenerator}
+                                        propertyKey="blurScale"
+                                        min={1}
+                                        max={4}
+                                        step={1}
+                                    />
+                                </>
+                            </Collapse>
+                        </>
+                    )}
+
                     <ButtonLine
                         label="Dispose Generator"
                         onClick={() => {
@@ -113,6 +279,69 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
                     />
                 </>
             )}
+        </>
+    );
+};
+
+const CascadedShadowGeneratorProperties: FunctionComponent<{ generator: CascadedShadowGenerator; near: number; far: number; isPCSS: boolean }> = ({
+    generator,
+    near,
+    far,
+    isPCSS,
+}) => {
+    return (
+        <>
+            <BoundProperty
+                component={NumberDropdownPropertyLine}
+                label="Num Cascades"
+                description="Number of cascades for the cascaded shadow map."
+                target={generator}
+                propertyKey="numCascades"
+                options={NumCascadesOptions}
+            />
+            <BoundProperty component={SwitchPropertyLine} label="Debug Mode" description="Colorize cascades for debugging." target={generator} propertyKey="debug" />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Stabilize Cascades"
+                description="Stabilize the cascade splits to avoid shimmering."
+                target={generator}
+                propertyKey="stabilizeCascades"
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Lambda"
+                description="Balance between logarithmic and uniform cascade splits."
+                target={generator}
+                propertyKey="lambda"
+                min={0}
+                max={1}
+                step={0.01}
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Cascade Blend"
+                description="Percentage of blending between cascades."
+                target={generator}
+                propertyKey="cascadeBlendPercentage"
+                min={0}
+                max={1}
+                step={0.01}
+            />
+            <BoundProperty component={SwitchPropertyLine} label="Depth Clamp" target={generator} propertyKey="depthClamp" />
+            <BoundProperty component={SwitchPropertyLine} label="Auto-Calc Depth Bounds" target={generator} propertyKey="autoCalcDepthBounds" />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Shadow MaxZ" target={generator} propertyKey="shadowMaxZ" min={near} max={far} step={0.5} />
+            <Collapse visible={isPCSS}>
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="Penumbra Darkness"
+                    description="Darkness of the penumbra for PCSS in CSM."
+                    target={generator}
+                    propertyKey="penumbraDarkness"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                />
+            </Collapse>
         </>
     );
 };

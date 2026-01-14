@@ -124,6 +124,18 @@ const MathStandardBlocks: IBlockDefinition[] = [
         modes: BothModes,
         tooltip: "Block to calculate the Power",
     },
+    {
+        name: "DistanceBlock",
+        category: "Math__Standard",
+        modes: BothModes,
+        tooltip: "Block to calculate the Distance between two vectors",
+    },
+    {
+        name: "ClampBlock",
+        category: "Math__Standard",
+        modes: BothModes,
+        tooltip: "Block used to limit a value to a range between minimum and maximum values",
+    },
 ];
 
 const MathScientificBlocks: IBlockDefinition[] = [

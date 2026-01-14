@@ -10,7 +10,7 @@ import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
-import { AdvancedDynamicTextureGeneralProperties } from "../../../components/properties/textures/advancedDynamicTextureProperties";
+import { AdvancedDynamicTextureGeneralProperties, AdvancedDynamicTexturePreviewProperties } from "../../../components/properties/textures/advancedDynamicTextureProperties";
 import {
     BaseTextureCharacteristicProperties,
     BaseTextureGeneralProperties,
@@ -84,6 +84,7 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                 {
                     section: "Preview",
                     component: ({ context }) => <TexturePreviewProperties texture={context} />,
+                    order: 200,
                 },
                 {
                     section: "General",
@@ -146,6 +147,11 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                     section: "Advanced Dynamic Texture",
                     order: 100,
                     component: ({ context }) => <AdvancedDynamicTextureGeneralProperties texture={context} />,
+                },
+                {
+                    section: "Preview",
+                    order: 100,
+                    component: ({ context }) => <AdvancedDynamicTexturePreviewProperties texture={context} />,
                 },
             ],
         });
