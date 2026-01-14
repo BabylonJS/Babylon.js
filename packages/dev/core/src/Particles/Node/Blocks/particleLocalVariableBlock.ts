@@ -4,6 +4,8 @@ import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBloc
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
+import { Particle } from "../../particle";
+import { ThinParticleSystem } from "../../thinParticleSystem";
 
 export enum ParticleLocalVariableBlockScope {
     Particle = 0,
@@ -97,14 +99,18 @@ export class ParticleLocalVariableBlock extends NodeParticleBlock {
                 this._storage.set(id, value);
 
                 if (this.scope === ParticleLocalVariableBlockScope.Particle) {
-                    state.particleContext!.onReset = () => {
-                        this._storage.delete(id);
-                        state.particleContext!.onReset = null;
-                    };
+                    if (state.particleContext instanceof Particle) {
+                        state.particleContext!.onReset = () => {
+                            this._storage.delete(id);
+                            (state.particleContext as Particle).onReset = null;
+                        };
+                    }
                 }
-                state.systemContext!.onDisposeObservable.addOnce(() => {
-                    this._storage.clear();
-                });
+                if (state.systemContext instanceof ThinParticleSystem) {
+                    state.systemContext!.onDisposeObservable.addOnce(() => {
+                        this._storage.clear();
+                    });
+                }
             }
 
             return this._storage.get(id);
