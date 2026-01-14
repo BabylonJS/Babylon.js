@@ -21,6 +21,10 @@ uniform kernelSize: f32;
 uniform eyePosition: vec3f;
 uniform alpha: f32;
 
+#if USE_RIG
+uniform rigNodeWorld: array<mat4x4<f32>, MAX_RIG_NODE_COUNT>;
+#endif
+
 // textures
 var covariancesATexture: texture_2d<f32>;
 var covariancesBTexture: texture_2d<f32>;
@@ -35,11 +39,15 @@ var shTexture1: texture_2d<u32>;
 #if SH_DEGREE > 2
 var shTexture2: texture_2d<u32>;
 #endif
+#if USE_RIG
+var rigNodeIndexTexture: texture_2d<u32>;
+#endif
 // Output
 varying vColor: vec4f;
 varying vPosition: vec2f;
 
 #include<gaussianSplatting>
+#include<gaussianSplattingRig>
 
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
@@ -50,12 +58,19 @@ fn main(input : VertexInputs) -> FragmentInputs {
     var covA: vec3f = splat.covA.xyz;
     var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);
 
-    let worldPos: vec4f = mesh.world * vec4f(splat.center.xyz, 1.0);
+#if USE_RIG
+    // In case of rig, each splat may have a different world transform
+    let splatWorld: mat4x4f = getRigNodeWorld(splat.rigNodeIndex);
+#else
+    let splatWorld: mat4x4f = mesh.world;
+#endif
+
+    let worldPos: vec4f = splatWorld * vec4f(splat.center.xyz, 1.0);
 
     vertexOutputs.vPosition = input.position.xy;
 
 #if SH_DEGREE > 0
-    let worldRot: mat3x3f =  mat3x3f(mesh.world[0].xyz, mesh.world[1].xyz, mesh.world[2].xyz);
+    let worldRot: mat3x3f =  mat3x3f(splatWorld[0].xyz, splatWorld[1].xyz, splatWorld[2].xyz);
     let normWorldRot: mat3x3f = inverseMat3(worldRot);
 
     var eyeToSplatLocalSpace: vec3f = normalize(normWorldRot * (worldPos.xyz - uniforms.eyePosition.xyz));
@@ -64,7 +79,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vColor = vec4f(splat.color.xyz, splat.color.w * uniforms.alpha);
 #endif
 
-    vertexOutputs.position = gaussianSplatting(input.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, mesh.world, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
+    vertexOutputs.position = gaussianSplatting(input.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
 
 #include<clipPlaneVertex>
 #include<fogVertex>

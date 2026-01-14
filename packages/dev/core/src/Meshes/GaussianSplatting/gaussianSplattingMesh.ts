@@ -31,6 +31,7 @@ interface IDelayedTextureUpdate {
     colors: Uint8Array;
     centers: Float32Array;
     sh?: Uint8Array[];
+    rigNodeIndices?: Uint32Array;
 }
 interface IUpdateOptions {
     flipY?: boolean;
@@ -298,7 +299,8 @@ export class GaussianSplattingMesh extends Mesh {
     private _vertexCount = 0;
     private _worker: Nullable<Worker> = null;
     private _modelViewMatrix = Matrix.Identity();
-    private _depthMix: BigInt64Array;
+    private _viewMatrix = Matrix.Identity();
+    private _depthMix: BigInt64Array = new BigInt64Array(0);
     private _canPostToWorker = true;
     private _readyToDisplay = false;
     private _covariancesATexture: Nullable<BaseTexture> = null;
@@ -309,6 +311,11 @@ export class GaussianSplattingMesh extends Mesh {
     private _splatIndex: Nullable<Float32Array> = null;
     private _shTextures: Nullable<BaseTexture[]> = null;
     private _splatsData: Nullable<ArrayBuffer> = null;
+    private _shData: Nullable<Uint8Array[]> = null;
+    private _rigNodeIndexTexture: Nullable<BaseTexture> = null;
+    private _rigNodeIndices: Nullable<Uint32Array> = null;
+    private _hasRigData = false;
+    private _rigNodeWorld: Matrix[] = [];
     private readonly _keepInRam: boolean = false;
 
     private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
@@ -376,6 +383,41 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public get splatsData() {
         return this._splatsData;
+    }
+
+    /**
+     * returns the SH data arrays
+     */
+    public get shData() {
+        return this._shData;
+    }
+
+    /**
+     * Gets whether this mesh has rig node index data
+     */
+    public get hasRigData() {
+        return this._hasRigData;
+    }
+
+    /**
+     * Gets the world matrices for each rig node
+     */
+    public get rigNodeWorld() {
+        return this._rigNodeWorld;
+    }
+
+    /**
+     * returns the rig node indices array
+     */
+    public get rigNodeIndices() {
+        return this._rigNodeIndices;
+    }
+
+    /**
+     * Gets the rig node index texture
+     */
+    public get rigNodeIndexTexture() {
+        return this._rigNodeIndexTexture;
     }
 
     /**
@@ -561,6 +603,7 @@ export class GaussianSplattingMesh extends Mesh {
     public _getCameraDirection(camera: Camera): Vector3 {
         const cameraMatrix = camera.getViewMatrix();
         this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
+        this._viewMatrix.copyFrom(cameraMatrix);
 
         // return vector used to compute distance to camera
         const localDirection = TmpVectors.Vector3[1];
@@ -632,6 +675,7 @@ export class GaussianSplattingMesh extends Mesh {
                         this._worker!.postMessage(
                             {
                                 view: this._modelViewMatrix.m,
+                                viewOnly: this._viewMatrix.m,
                                 depthMix: this._depthMix,
                                 useRightHandedSystem: this._scene.useRightHandedSystem,
                                 cameraId: camera.uniqueId,
@@ -1401,12 +1445,18 @@ export class GaussianSplattingMesh extends Mesh {
                 shTexture.dispose();
             }
         }
+        if (this._rigNodeIndexTexture) {
+            this._rigNodeIndexTexture.dispose();
+        }
 
         this._covariancesATexture = null;
         this._covariancesBTexture = null;
         this._centersTexture = null;
         this._colorsTexture = null;
         this._shTextures = null;
+        this._rigNodeIndexTexture = null;
+        this._hasRigData = false;
+        this._rigNodeWorld = [];
 
         this._worker?.terminate();
         this._worker = null;
@@ -1424,9 +1474,10 @@ export class GaussianSplattingMesh extends Mesh {
         this._covariancesBTexture = source.covariancesBTexture?.clone()!;
         this._centersTexture = source.centersTexture?.clone()!;
         this._colorsTexture = source.colorsTexture?.clone()!;
+        this._rigNodeIndexTexture = source._rigNodeIndexTexture?.clone()!;
         if (source._shTextures) {
             this._shTextures = [];
-            for (const shTexture of this._shTextures) {
+            for (const shTexture of source._shTextures) {
                 this._shTextures?.push(shTexture.clone()!);
             }
         }
@@ -1447,6 +1498,8 @@ export class GaussianSplattingMesh extends Mesh {
         newGS._splatPositions = this._splatPositions;
         newGS._readyToDisplay = false;
         newGS._disableDepthSort = this._disableDepthSort;
+        newGS._hasRigData = this._hasRigData;
+        newGS._rigNodeWorld = this._rigNodeWorld.map((m) => m.clone());
         newGS._instanciateWorker();
 
         const binfo = this.getBoundingInfo();
@@ -1462,21 +1515,50 @@ export class GaussianSplattingMesh extends Mesh {
         let depthMix: BigInt64Array;
         let indices: Uint32Array;
         let floatMix: Float32Array;
+        let rigNodeIndices: Uint32Array;
+        let rigNodeWorld: Float32Array[];
+
+        function multiplyMatrices(matrix1: Float32Array, matrix2: Float32Array): Float32Array {
+            const result = new Float32Array(16);
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    for (let k = 0; k < 4; k++) {
+                        result[j * 4 + i] += matrix1[k * 4 + i] * matrix2[j * 4 + k];
+                    }
+                }
+            }
+            return result;
+        }
 
         self.onmessage = (e: any) => {
             // updated on init
             if (e.data.positions) {
                 positions = e.data.positions;
             }
-            // udpate on view changed
+            // update on rig node changed
+            else if (e.data.rigNodeWorld) {
+                rigNodeWorld = e.data.rigNodeWorld;
+            }
+            // update on rig node indices changed
+            else if (e.data.rigNodeIndices !== undefined) {
+                rigNodeIndices = e.data.rigNodeIndices;
+            }
+            // update on view changed
             else {
                 const cameraId = e.data.cameraId;
-                const viewProj = e.data.view;
+                const globalModelViewProj = e.data.view;
+                const viewProj = e.data.viewOnly;
 
                 const vertexCountPadded = (positions.length / 4 + 15) & ~0xf;
                 if (!positions || !viewProj) {
                     // Sanity check, it shouldn't happen!
                     throw new Error("positions or view is not defined!");
+                }
+
+                // If there are rig node matrices, we precompute modelViewProj for each rig node
+                let modelViewProjs: Float32Array[] = [];
+                if (rigNodeWorld) {
+                    modelViewProjs = rigNodeWorld.map((model) => multiplyMatrices(viewProj, model));
                 }
 
                 depthMix = e.data.depthMix;
@@ -1494,7 +1576,12 @@ export class GaussianSplattingMesh extends Mesh {
                 }
 
                 for (let j = 0; j < vertexCountPadded; j++) {
-                    floatMix[2 * j + 1] = 10000 + (viewProj[2] * positions[4 * j + 0] + viewProj[6] * positions[4 * j + 1] + viewProj[10] * positions[4 * j + 2]) * depthFactor;
+                    const rigNodeIndex = rigNodeIndices && j < rigNodeIndices.length ? rigNodeIndices[j] : -1;
+                    const modelViewProj = modelViewProjs?.[rigNodeIndex] ?? globalModelViewProj;
+                    floatMix[2 * j + 1] =
+                        10000 +
+                        (modelViewProj[2] * positions[4 * j + 0] + modelViewProj[6] * positions[4 * j + 1] + modelViewProj[10] * positions[4 * j + 2] + modelViewProj[14]) *
+                            depthFactor;
                 }
 
                 depthMix.sort();
@@ -1590,7 +1677,7 @@ export class GaussianSplattingMesh extends Mesh {
         colorArray[index * 4 + 3] = uBuffer[32 * index + 24 + 3];
     }
 
-    private _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[]): void {
+    private _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[], rigNodeIndices?: Uint32Array): void {
         const textureSize = this._getTextureSize(this._vertexCount);
         // Update the textures
         const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
@@ -1610,11 +1697,50 @@ export class GaussianSplattingMesh extends Mesh {
         };
 
         if (this._covariancesATexture) {
-            this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions!, sh: sh };
+            this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions!, sh: sh, rigNodeIndices: rigNodeIndices };
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
             if (this._worker) {
                 this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            }
+
+            // Handle rig node indices in update path
+            if (rigNodeIndices) {
+                // Create texture if it doesn't exist
+                if (!this._rigNodeIndexTexture) {
+                    const buffer = new Uint32Array(textureSize.x * textureSize.y);
+                    buffer.set(rigNodeIndices);
+                    this._rigNodeIndexTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_R_INTEGER);
+                    this._rigNodeIndexTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._rigNodeIndexTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                }
+                this._hasRigData = true;
+                if (this._worker) {
+                    this._worker.postMessage({ rigNodeIndices });
+                }
+            } else {
+                // If no rig indices provided, clear rig data
+                this._hasRigData = false;
+                this._rigNodeWorld = [];
+                if (this._rigNodeIndexTexture) {
+                    this._rigNodeIndexTexture.dispose();
+                    this._rigNodeIndexTexture = null;
+                }
+                if (this._worker) {
+                    this._worker.postMessage({ rigNodeIndices: null });
+                }
+            }
+
+            // Handle SH textures in update path - create if they don't exist
+            if (sh && !this._shTextures) {
+                this._shTextures = [];
+                for (const shData of sh) {
+                    const buffer = new Uint32Array(shData.buffer);
+                    const shTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
+                    shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._shTextures!.push(shTexture);
+                }
             }
 
             this._postToWorker(true);
@@ -1628,6 +1754,25 @@ export class GaussianSplattingMesh extends Mesh {
             );
             this._centersTexture = createTextureFromData(this._splatPositions!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+
+            // Handle rig node indices
+            if (rigNodeIndices) {
+                const buffer = new Uint32Array(textureSize.x * textureSize.y);
+                buffer.set(rigNodeIndices);
+                this._rigNodeIndexTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_R_INTEGER);
+                this._rigNodeIndexTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._rigNodeIndexTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._hasRigData = true;
+            } else {
+                // If no rig indices provided, clear rig data
+                this._hasRigData = false;
+                this._rigNodeWorld = [];
+                if (this._rigNodeIndexTexture) {
+                    this._rigNodeIndexTexture.dispose();
+                    this._rigNodeIndexTexture = null;
+                }
+            }
+
             if (sh) {
                 this._shTextures = [];
                 for (const shData of sh) {
@@ -1642,7 +1787,7 @@ export class GaussianSplattingMesh extends Mesh {
         }
     }
 
-    private *_updateData(data: ArrayBuffer, isAsync: boolean, sh?: Uint8Array[], options: IUpdateOptions = { flipY: false }): Coroutine<void> {
+    private *_updateData(data: ArrayBuffer, isAsync: boolean, sh?: Uint8Array[], rigNodeIndices?: Uint32Array, options: IUpdateOptions = { flipY: false }): Coroutine<void> {
         // if a covariance texture is present, then it's not a creation but an update
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
@@ -1654,7 +1799,8 @@ export class GaussianSplattingMesh extends Mesh {
 
         if (this._keepInRam) {
             this._splatsData = data;
-            // keep sh in ram too ?
+            this._shData = sh ? sh.map((arr) => new Uint8Array(arr)) : null;
+            this._rigNodeIndices = rigNodeIndices ? new Uint32Array(rigNodeIndices) : null;
         }
 
         const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
@@ -1680,7 +1826,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
             // create textures with not filled-yet array, then update directly portions of it
-            this._updateTextures(covA, covB, colorArray, sh);
+            this._updateTextures(covA, covB, colorArray, sh, rigNodeIndices);
             this.setEnabled(true);
 
             const partCount = Math.ceil(textureSize.y / lineCountUpdate);
@@ -1703,6 +1849,7 @@ export class GaussianSplattingMesh extends Mesh {
             const vertexCount = this._vertexCount;
             if (this._worker) {
                 this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+                this._worker.postMessage({ rigNodeIndices });
             }
             this._sortIsDirty = true;
         } else {
@@ -1718,7 +1865,7 @@ export class GaussianSplattingMesh extends Mesh {
                 this._makeEmptySplat(i, covA, covB, colorArray);
             }
             // textures
-            this._updateTextures(covA, covB, colorArray, sh);
+            this._updateTextures(covA, covB, colorArray, sh, rigNodeIndices);
             // Update the binfo
             this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
             this.setEnabled(true);
@@ -1731,10 +1878,11 @@ export class GaussianSplattingMesh extends Mesh {
      * Update asynchronously the buffer
      * @param data array buffer containing center, color, orientation and scale of splats
      * @param sh optional array of uint8 array for SH data
+     * @param rigNodeIndices optional array of uint32 for rig node indices
      * @returns a promise
      */
-    public async updateDataAsync(data: ArrayBuffer, sh?: Uint8Array[]): Promise<void> {
-        return await runCoroutineAsync(this._updateData(data, true, sh), createYieldingScheduler());
+    public async updateDataAsync(data: ArrayBuffer, sh?: Uint8Array[], rigNodeIndices?: Uint32Array): Promise<void> {
+        return await runCoroutineAsync(this._updateData(data, true, sh, rigNodeIndices), createYieldingScheduler());
     }
 
     /**
@@ -1742,10 +1890,11 @@ export class GaussianSplattingMesh extends Mesh {
      * Update data from GS (position, orientation, color, scaling)
      * @param data array that contain all the datas
      * @param sh optional array of uint8 array for SH data
-     * @param options optional informations on how to treat data
+     * @param options optional informations on how to treat data (needs to be 3rd for backward compatibility)
+     * @param rigNodeIndices optional array of uint32 for rig node indices
      */
-    public updateData(data: ArrayBuffer, sh?: Uint8Array[], options: IUpdateOptions = { flipY: true }): void {
-        runCoroutineSync(this._updateData(data, false, sh, options));
+    public updateData(data: ArrayBuffer, sh?: Uint8Array[], options: IUpdateOptions = { flipY: true }, rigNodeIndices?: Uint32Array): void {
+        runCoroutineSync(this._updateData(data, false, sh, rigNodeIndices, options));
     }
 
     /**
@@ -1774,7 +1923,16 @@ export class GaussianSplattingMesh extends Mesh {
         this.forcedInstanceCount = paddedVertexCount >> 4;
     }
 
-    private _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number, sh?: Uint8Array[]): void {
+    private _updateSubTextures(
+        centers: Float32Array,
+        covA: Uint16Array,
+        covB: Uint16Array,
+        colors: Uint8Array,
+        lineStart: number,
+        lineCount: number,
+        sh?: Uint8Array[],
+        rigNodeIndices?: Uint32Array
+    ): void {
         const updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
             (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
         };
@@ -1797,6 +1955,10 @@ export class GaussianSplattingMesh extends Mesh {
                 const shView = new Uint32Array(sh[i].buffer, texelStart * componentCount * 4, texelCount * componentCount);
                 updateTextureFromData(this._shTextures![i], shView, textureSize.x, lineStart, lineCount);
             }
+        }
+        if (rigNodeIndices && this._rigNodeIndexTexture) {
+            const rigNodeIndicesView = new Uint32Array(rigNodeIndices.buffer, texelStart, texelCount);
+            updateTextureFromData(this._rigNodeIndexTexture, rigNodeIndicesView, textureSize.x, lineStart, lineCount);
         }
     }
     private _instanciateWorker(): void {
@@ -1826,8 +1988,12 @@ export class GaussianSplattingMesh extends Mesh {
         const vertexCountPadded = (this._vertexCount + 15) & ~0xf;
         this._depthMix = new BigInt64Array(vertexCountPadded);
         const positions = Float32Array.from(this._splatPositions!);
+        const rigNodeIndices = this._rigNodeIndices ? new Uint32Array(this._rigNodeIndices) : null;
+        const rigNodeWorld = this._rigNodeWorld;
 
         this._worker.postMessage({ positions }, [positions.buffer]);
+        this._worker.postMessage({ rigNodeIndices });
+        this._worker.postMessage({ rigNodeWorld: rigNodeWorld.map((m) => new Float32Array(m.m)) });
 
         this._worker.onmessage = (e) => {
             this._depthMix = e.data.depthMix;
@@ -1848,7 +2014,8 @@ export class GaussianSplattingMesh extends Mesh {
                     this._delayedTextureUpdate.colors,
                     0,
                     textureSize.y,
-                    this._delayedTextureUpdate.sh
+                    this._delayedTextureUpdate.sh,
+                    this._delayedTextureUpdate.rigNodeIndices
                 );
                 this._delayedTextureUpdate = null;
             }
@@ -1894,5 +2061,91 @@ export class GaussianSplattingMesh extends Mesh {
         }
 
         return new Vector2(width, height);
+    }
+
+    /**
+     * @experimental
+     * Assign all splats to the same rig node
+     * @param nodeIndex index of the rig node
+     */
+    public setNodeIndex(nodeIndex: number): void {
+        const textureSize = this._getTextureSize(this._vertexCount);
+        const createTextureFromDataU32 = (data: Uint32Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_INTEGER);
+        };
+
+        // Create rig node index texture (initialized to 0 for all splats)
+        const rigNodeIndices = new Uint32Array(this.splatCount || 0);
+        rigNodeIndices.fill(nodeIndex);
+
+        // Update texture with the new rig node indices
+        {
+            const buffer = new Uint32Array(textureSize.x * textureSize.y);
+            buffer.fill(nodeIndex);
+            this._rigNodeIndexTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_R_INTEGER);
+            this._rigNodeIndexTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            this._rigNodeIndexTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        }
+
+        // Store in RAM if requested
+        if (this._keepInRam) {
+            this._rigNodeIndices = new Uint32Array(rigNodeIndices);
+        }
+
+        // Mark that this mesh now has rig data
+        this._hasRigData = true;
+
+        this._ensureRigNodeWorldLength(nodeIndex + 1);
+    }
+
+    /**
+     * Gets the number of rig node world matrices
+     * @returns the number of rig node world matrices
+     */
+    public getRigNodeWorldLength(): number {
+        return this._rigNodeWorld.length;
+    }
+
+    /**
+     * Gets the world matrix for a specific rig node
+     * @param nodeIndex index of the rig node
+     * @returns the world matrix for the rig node
+     */
+    public getWorldMatrixForNode(nodeIndex: number): Matrix {
+        return this._rigNodeWorld[nodeIndex];
+    }
+
+    /**
+     * Sets the world matrix for a specific rig node
+     * @param nodeIndex index of the rig node
+     * @param worldMatrix the world matrix to set
+     */
+    public setWorldMatrixForNode(nodeIndex: number, worldMatrix: Matrix): void {
+        this._ensureRigNodeWorldLength(nodeIndex + 1);
+        this._rigNodeWorld[nodeIndex].copyFrom(worldMatrix);
+        if (this._worker) {
+            this._worker.postMessage({ rigNodeWorld: this._rigNodeWorld.map((matrix) => new Float32Array(matrix.m)) });
+        }
+        this._postToWorker(true);
+    }
+
+    /**
+     * Ensure that the rig node world matrix array is long enough
+     * @param length - The length to ensure
+     */
+    private _ensureRigNodeWorldLength(length: number): void {
+        if (this._rigNodeWorld.length >= length) {
+            return;
+        }
+        this.computeWorldMatrix(true);
+        while (this._rigNodeWorld.length < length) {
+            const m = Matrix.Identity();
+            m.copyFrom(this.getWorldMatrix());
+            this._rigNodeWorld.push(m);
+        }
+        if (this._worker) {
+            this._worker.postMessage({ rigNodeWorld: this._rigNodeWorld.map((matrix) => new Float32Array(matrix.m)) });
+        }
+        this._postToWorker(true);
     }
 }

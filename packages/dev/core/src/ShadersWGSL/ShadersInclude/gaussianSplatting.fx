@@ -18,6 +18,9 @@ struct Splat {
 #if SH_DEGREE > 2
     sh2: vec4<u32>,
 #endif
+#if USE_RIG
+    rigNodeIndex: u32,
+#endif
 };
 
 fn getSplatIndex(localIndex: i32, splatIndex0: vec4f, splatIndex1: vec4f, splatIndex2: vec4f, splatIndex3: vec4f) -> f32 {
@@ -127,6 +130,9 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
 #endif
 #if SH_DEGREE > 2
     splat.sh2 = textureLoad(shTexture2, splatUVi32, 0);
+#endif
+#if USE_RIG
+    splat.rigNodeIndex = textureLoad(rigNodeIndexTexture, splatUVi32, 0).x;
 #endif
     return splat;
 }

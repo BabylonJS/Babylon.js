@@ -49,6 +49,8 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
     public CLIPPLANE6 = false;
     public SH_DEGREE = 0;
     public COMPENSATION = false;
+    public USE_RIG = false;
+    public MAX_RIG_NODE_COUNT = 16;
 
     /**
      * Constructor of the defines.
@@ -134,7 +136,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     protected static _Attribs = [VertexBuffer.PositionKind, "splatIndex0", "splatIndex1", "splatIndex2", "splatIndex3"];
-    protected static _Samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2"];
+    protected static _Samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2", "rigNodeIndexTexture"];
     protected static _UniformBuffers = ["Scene", "Mesh"];
     protected static _Uniforms = [
         "world",
@@ -150,6 +152,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "kernelSize",
         "alpha",
         "depthValues",
+        "rigNodeWorld",
     ];
     private _sourceMesh: GaussianSplattingMesh | null = null;
     /**
@@ -216,6 +219,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
         if (engine.version > 1 || engine.isWebGPU) {
             defines["SH_DEGREE"] = gsMesh.shDegree;
         }
+
+        // Enable rig support only if rig data exists
+        defines["USE_RIG"] = gsMesh.hasRigData;
 
         // Compensation
         const splatMaterial = gsMesh.material as GaussianSplattingMaterial;
@@ -346,6 +352,17 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 for (let i = 0; i < gsMesh.shTextures?.length; i++) {
                     effect.setTexture(`shTexture${i}`, gsMesh.shTextures[i]);
                 }
+            }
+
+            // Bind rig node index texture
+            if (gsMesh.rigNodeIndexTexture) {
+                effect.setTexture("rigNodeIndexTexture", gsMesh.rigNodeIndexTexture);
+                const rigNodeWorld = gsMesh.rigNodeWorld;
+                const rigNodeWorldData = new Float32Array(rigNodeWorld.length * 16);
+                for (let i = 0; i < rigNodeWorld.length; i++) {
+                    rigNodeWorld[i].toArray(rigNodeWorldData, i * 16);
+                }
+                effect.setMatrices("rigNodeWorld", rigNodeWorldData);
             }
         }
     }
