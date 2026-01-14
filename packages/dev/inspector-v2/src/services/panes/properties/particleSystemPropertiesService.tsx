@@ -4,19 +4,19 @@ import type { ISelectionService } from "../../selectionService";
 
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";
-import {
-    ParticleSystemGeneralProperties,
-    ParticleSystemAttractorProperties,
-    ParticleSystemEmitterProperties,
-    ParticleSystemEmissionProperties,
-    ParticleSystemSizeProperties,
-    ParticleSystemLifetimeProperties,
-    ParticleSystemColorProperties,
-    ParticleSystemRotationProperties,
-    ParticleSystemSpritesheetProperties,
-} from "../../../components/properties/particles/particleSystemProperties";
-import { NodeParticleSystemGeneralProperties } from "../../../components/properties/particles/nodeParticleSystemProperties";
 import { ParticleSystem } from "core/Particles/particleSystem";
+
+import { ParticleSystemGeneralProperties } from "../../../components/properties/particles/regular/generalProperties";
+import { ParticleSystemEmitterProperties } from "../../../components/properties/particles/regular/emitterProperties";
+import { ParticleSystemSizeProperties } from "../../../components/properties/particles/regular/sizeProperties";
+import { ParticleSystemEmissionProperties } from "../../../components/properties/particles/regular/emissionProperties";
+import { ParticleSystemLifetimeProperties } from "../../../components/properties/particles/regular/lifetimeProperties";
+import { ParticleSystemColorProperties } from "../../../components/properties/particles/regular/colorProperties";
+import { ParticleSystemRotationProperties } from "../../../components/properties/particles/regular/rotationProperties";
+import { ParticleSystemSpritesheetProperties } from "../../../components/properties/particles/regular/spritesheetProperties";
+import { ParticleSystemAttractorProperties } from "../../../components/properties/particles/regular/attractorProperties";
+
+import { NodeParticleSystemGeneralProperties } from "../../../components/properties/particles/node/generalProperties";
 
 function IsNonNodeParticleSystem(entity: unknown): entity is ParticleSystem {
     return entity instanceof ParticleSystem && !entity.isNodeGenerated;
