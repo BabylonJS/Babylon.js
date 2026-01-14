@@ -5,6 +5,7 @@ import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
 import type { ICanvas, IImage, IPath2D } from "../ICanvas";
 import type { NativeData, NativeDataStream } from "./nativeDataStream";
+import type { Matrix } from "../../Maths/math.vector";
 
 export type NativeTexture = NativeData;
 export type NativeFramebuffer = NativeData;
@@ -445,4 +446,7 @@ export interface INative {
     disablePerformanceLogging?(): void;
     startPerformanceCounter?(counter: string): unknown;
     endPerformanceCounter?(counter: unknown): void;
+
+    // GaussianSplatting
+    sortSplats?(modelViewMatrix: Matrix, splatPositions: Float32Array, splatIndex: Float32Array, useRightHandedSystem: boolean): void;
 }

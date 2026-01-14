@@ -2,6 +2,7 @@ import type { FunctionComponent } from "react";
 
 import type { IDisposable } from "core/index";
 
+import { DeleteRegular } from "@fluentui/react-icons";
 import { useMemo } from "react";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
@@ -63,7 +64,7 @@ export const DisposableGeneralProperties: FunctionComponent<{ disposableEntity: 
 
     return (
         <>
-            <ButtonLine label="Dispose" onClick={() => disposableEntity.dispose()} />
+            <ButtonLine label="Dispose" icon={DeleteRegular} onClick={() => disposableEntity.dispose()} />
         </>
     );
 };

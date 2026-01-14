@@ -1340,7 +1340,7 @@ export class GLTFExporter {
         state: ExporterState,
         primitive: IMeshPrimitive
     ): void {
-        let indicesToExport = indices;
+        let indicesToExport = null;
 
         primitive.mode = GetPrimitiveMode(fillMode);
 
@@ -1350,8 +1350,6 @@ export class GLTFExporter {
             if (fillMode === Material.TriangleStripDrawMode || fillMode === Material.TriangleFanDrawMode) {
                 throw new Error("Triangle strip/fan fill mode is not implemented");
             }
-
-            primitive.mode = GetPrimitiveMode(fillMode);
 
             const newIndices = is32Bits ? new Uint32Array(count) : new Uint16Array(count);
 
@@ -1377,14 +1375,14 @@ export class GLTFExporter {
             }
 
             indicesToExport = newIndices;
+        } else if (indices) {
+            indicesToExport = IndicesArrayToTypedSubarray(indices, start, count, is32Bits);
         }
 
         if (indicesToExport) {
             let accessorIndex = state.getIndicesAccessor(indices, start, count, offset, flip);
             if (accessorIndex === undefined) {
-                const bytes = IndicesArrayToTypedSubarray(indicesToExport, start, count, is32Bits);
-                const bufferView = this._bufferManager.createBufferView(bytes);
-
+                const bufferView = this._bufferManager.createBufferView(indicesToExport);
                 const componentType = is32Bits ? AccessorComponentType.UNSIGNED_INT : AccessorComponentType.UNSIGNED_SHORT;
                 this._accessors.push(this._bufferManager.createAccessor(bufferView, AccessorType.SCALAR, componentType, count, 0));
                 accessorIndex = this._accessors.length - 1;

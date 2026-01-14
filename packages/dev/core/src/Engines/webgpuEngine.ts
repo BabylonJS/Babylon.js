@@ -84,6 +84,8 @@ import "./AbstractEngine/abstractEngine.dom";
 import "./AbstractEngine/abstractEngine.states";
 import "./AbstractEngine/abstractEngine.stencil";
 import "./AbstractEngine/abstractEngine.renderPass";
+import "./AbstractEngine/abstractEngine.loadFile";
+import "./AbstractEngine/abstractEngine.textureLoaders";
 import "../Audio/audioEngine";
 import { resetCachedPipeline } from "../Materials/effect.functions";
 

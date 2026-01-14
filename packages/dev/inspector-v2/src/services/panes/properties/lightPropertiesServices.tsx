@@ -8,7 +8,7 @@ import { RectAreaLight } from "core/Lights/rectAreaLight";
 import { ShadowLight } from "core/Lights/shadowLight";
 import { SpotLight } from "core/Lights/spotLight";
 import { AreaLightSetupProperties } from "../../../components/properties/lights/areaLightProperties";
-import { DirectionalLightSetupProperties } from "../../../components/properties/lights/directionalLightProperties";
+import { DirectionalLightSetupProperties, DirectionalLightDebugProperties } from "../../../components/properties/lights/directionalLightProperties";
 import { HemisphericLightSetupProperties } from "../../../components/properties/lights/hemisphericLightProperties";
 import { PointLightSetupProperties } from "../../../components/properties/lights/pointLightProperties";
 import { ShadowGeneratorSetupProperties } from "../../../components/properties/lights/shadowGeneratorProperties";
@@ -27,6 +27,10 @@ export const LightPropertiesServiceDefinition: ServiceDefinition<[], [IPropertie
                 {
                     section: "Setup",
                     component: DirectionalLightSetupProperties,
+                },
+                {
+                    section: "Debug",
+                    component: DirectionalLightDebugProperties,
                 },
             ],
         });
