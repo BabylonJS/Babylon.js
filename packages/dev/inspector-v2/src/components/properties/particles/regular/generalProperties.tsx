@@ -1,6 +1,6 @@
 import type { FunctionComponent } from "react";
 import type { ISelectionService } from "../../../../services/selectionService";
-import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, EditRegular, EyeRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
+import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, EyeRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useState } from "react";
 
 import { Tools } from "core/Misc/tools";
@@ -167,7 +167,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
 
             <BoundProperty component={NumberDropdownPropertyLine} label="Blend Mode" target={system} propertyKey="blendMode" options={BlendModeOptions} />
             <BoundProperty component={Vector3PropertyLine} label="World Offset" target={system} propertyKey="worldOffset" />
-            {!system.isNodeGenerated && <BoundProperty component={Vector3PropertyLine} label="Gravity" target={system} propertyKey="gravity" />}
+            <BoundProperty component={Vector3PropertyLine} label="Gravity" target={system} propertyKey="gravity" />
             <BoundProperty component={SwitchPropertyLine} label="Is Billboard" target={system} propertyKey="isBillboardBased" />
             {isBillboardBased && (
                 <BoundProperty component={NumberDropdownPropertyLine} label="Billboard Mode" target={system} propertyKey="billboardMode" options={ParticleBillboardModeOptions} />
@@ -177,22 +177,17 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             <BoundProperty component={NumberInputPropertyLine} label="Update Speed" target={system} propertyKey="updateSpeed" min={0} step={0.01} />
 
             <ButtonLine
-                label={system.isNodeGenerated ? "Edit" : "View"}
-                icon={system.isNodeGenerated ? EditRegular : EyeRegular}
+                label={"View as Node-Based Particle System"}
+                icon={EyeRegular}
                 onClick={async () => {
                     const scene = system.getScene();
                     if (!scene) {
                         return;
                     }
 
-                    const systemSet = system.source ? system.source : await ConvertToNodeParticleSystemSetAsync("source", [system]);
-
+                    const systemSet = await ConvertToNodeParticleSystemSetAsync("source", [system]);
                     if (systemSet) {
-                        // TODO: Figure out how to get all the various build steps to work with this.
-                        //       See the initial attempt here: https://github.com/BabylonJS/Babylon.js/pull/17646
-                        // const { NodeParticleEditor } = await import("node-particle-editor/nodeParticleEditor");
-                        // NodeParticleEditor.Show({ nodeParticleSet: systemSet, hostScene: scene, backgroundColor: scene.clearColor });
-                        await systemSet.editAsync({ nodeEditorConfig: { backgroundColor: scene.clearColor, disposeOnClose: false } });
+                        await systemSet.editAsync({ nodeEditorConfig: { backgroundColor: scene.clearColor, disposeOnClose: true } });
                     }
                 }}
             />
@@ -219,51 +214,47 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                 />
             )}
 
-            {!system.isNodeGenerated && (
-                <>
-                    <FileUploadLine
-                        label="Load from File"
-                        accept=".json"
-                        onClick={(files) => {
-                            if (files.length === 0) {
+            <FileUploadLine
+                label="Load from File"
+                accept=".json"
+                onClick={(files) => {
+                    if (files.length === 0) {
+                        return;
+                    }
+
+                    const file = files[0];
+                    Tools.ReadFile(
+                        file,
+                        (data) => {
+                            const jsonObject = ParseJsonLoadContents(data);
+                            if (!jsonObject) {
+                                alert("Unable to load particle system from file.");
                                 return;
                             }
 
-                            const file = files[0];
-                            Tools.ReadFile(
-                                file,
-                                (data) => {
-                                    const jsonObject = ParseJsonLoadContents(data);
-                                    if (!jsonObject) {
-                                        alert("Unable to load particle system from file.");
-                                        return;
-                                    }
+                            applyParticleSystemJsonToSystem(jsonObject);
+                        },
+                        undefined,
+                        true
+                    );
+                }}
+            />
 
-                                    applyParticleSystemJsonToSystem(jsonObject);
-                                },
-                                undefined,
-                                true
-                            );
-                        }}
-                    />
+            <ButtonLine
+                label="Save to File"
+                icon={ArrowDownloadRegular}
+                onClick={() => {
+                    // Download serialization as a JSON file.
+                    const data = JSON.stringify(system.serialize(true), null, 2);
+                    const blob = new Blob([data], { type: "application/json" });
+                    const name = (system.name && system.name.trim().length > 0 ? system.name.trim() : "particleSystem") + ".json";
+                    Tools.Download(blob, name);
+                }}
+            />
 
-                    <ButtonLine
-                        label="Save to File"
-                        icon={ArrowDownloadRegular}
-                        onClick={() => {
-                            // Download serialization as a JSON file.
-                            const data = JSON.stringify(system.serialize(true), null, 2);
-                            const blob = new Blob([data], { type: "application/json" });
-                            const name = (system.name && system.name.trim().length > 0 ? system.name.trim() : "particleSystem") + ".json";
-                            Tools.Download(blob, name);
-                        }}
-                    />
-
-                    {snippetId && <TextPropertyLine label="Snippet ID" value={snippetId} />}
-                    <ButtonLine label="Load from Snippet Server" onClick={loadFromSnippetServer} icon={CloudArrowUpRegular} />
-                    <ButtonLine label="Save to Snippet Server" onClick={saveToSnippetServer} icon={CloudArrowDownRegular} />
-                </>
-            )}
+            {snippetId && <TextPropertyLine label="Snippet ID" value={snippetId} />}
+            <ButtonLine label="Load from Snippet Server" onClick={loadFromSnippetServer} icon={CloudArrowUpRegular} />
+            <ButtonLine label="Save to Snippet Server" onClick={saveToSnippetServer} icon={CloudArrowDownRegular} />
         </>
     );
 };

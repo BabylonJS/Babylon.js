@@ -57,7 +57,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
         <>
             <BoundProperty component={NumberInputPropertyLine} label="Emit rate" target={system} propertyKey="emitRate" min={0} step={1} />
 
-            {!system.isNodeGenerated && !useEmitRateGradients && (
+            {!useEmitRateGradients && (
                 <ButtonLine
                     label="Use Emit rate gradients"
                     onClick={() => {
@@ -67,7 +67,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
                 />
             )}
 
-            {!system.isNodeGenerated && useEmitRateGradients && (
+            {useEmitRateGradients && (
                 <FactorGradientList
                     gradients={emitRateGradients}
                     label="Emit Rate Gradient"
@@ -89,14 +89,10 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
                 />
             )}
 
-            {!system.isNodeGenerated && (
-                <>
-                    <BoundProperty component={NumberInputPropertyLine} label="Min Emit Power" target={system} propertyKey="minEmitPower" min={0} step={0.1} />
-                    <BoundProperty component={NumberInputPropertyLine} label="Max Emit Power" target={system} propertyKey="maxEmitPower" min={0} step={0.1} />
-                </>
-            )}
+            <BoundProperty component={NumberInputPropertyLine} label="Min Emit Power" target={system} propertyKey="minEmitPower" min={0} step={0.1} />
+            <BoundProperty component={NumberInputPropertyLine} label="Max Emit Power" target={system} propertyKey="maxEmitPower" min={0} step={0.1} />
 
-            {!system.isNodeGenerated && !useVelocityGradients && (
+            {!useVelocityGradients && (
                 <ButtonLine
                     label="Use Velocity gradients"
                     onClick={() => {
@@ -106,7 +102,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
                 />
             )}
 
-            {!system.isNodeGenerated && useVelocityGradients && (
+            {useVelocityGradients && (
                 <FactorGradientList
                     gradients={velocityGradients}
                     label="Velocity Gradient"
@@ -128,7 +124,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
                 />
             )}
 
-            {!system.isNodeGenerated && !useLimitVelocityGradients && (
+            {!useLimitVelocityGradients && (
                 <ButtonLine
                     label="Use Limit Velocity gradients"
                     onClick={() => {
@@ -138,7 +134,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
                 />
             )}
 
-            {!system.isNodeGenerated && useLimitVelocityGradients && (
+            {useLimitVelocityGradients && (
                 <FactorGradientList
                     gradients={limitVelocityGradients}
                     label="Limit Velocity Gradient"
@@ -160,7 +156,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
                 />
             )}
 
-            {!system.isNodeGenerated && !useDragGradients && (
+            {!useDragGradients && (
                 <ButtonLine
                     label="Use Drag gradients"
                     onClick={() => {
@@ -170,7 +166,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
                 />
             )}
 
-            {!system.isNodeGenerated && useDragGradients && (
+            {useDragGradients && (
                 <FactorGradientList
                     gradients={dragGradients}
                     label="Drag Gradient"

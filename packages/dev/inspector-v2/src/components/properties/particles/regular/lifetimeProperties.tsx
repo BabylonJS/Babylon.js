@@ -18,10 +18,6 @@ import { useObservableArray } from "../useObservableArray";
 export const ParticleSystemLifetimeProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
-    if (system.isNodeGenerated) {
-        return <BoundProperty component={NumberInputPropertyLine} label="Target stop duration" target={system} propertyKey="targetStopDuration" min={0} step={0.1} />;
-    }
-
     const lifeTimeGradientsGetter = useCallback(() => system.getLifeTimeGradients(), [system]);
     const lifeTimeGradients = useObservableArray<ParticleSystem, FactorGradient>(
         system,

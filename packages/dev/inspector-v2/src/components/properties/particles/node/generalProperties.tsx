@@ -1,5 +1,5 @@
 import type { FunctionComponent } from "react";
-import type { ISelectionService } from "../../../services/selectionService";
+import type { ISelectionService } from "../../../../services/selectionService";
 import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, EditRegular, EyeRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useState } from "react";
 
@@ -17,10 +17,10 @@ import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propert
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
-import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
-import { NotifyPlaygroundOfSnippetChange, PersistSnippetId, PromptForSnippetId, SaveToSnippetServer } from "../../../utils/snippetUtils";
-import { BoundProperty } from "../boundProperty";
+import { useProperty } from "../../../../hooks/compoundPropertyHooks";
+import { useObservableState } from "../../../../hooks/observableHooks";
+import { NotifyPlaygroundOfSnippetChange, PersistSnippetId, PromptForSnippetId, SaveToSnippetServer } from "../../../../utils/snippetUtils";
+import { BoundProperty } from "../../boundProperty";
 
 const SnippetDashboardStorageKey = "Babylon/InspectorV2/SnippetDashboard/ParticleSystems";
 
