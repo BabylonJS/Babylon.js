@@ -17,7 +17,6 @@ import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleE
 import { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
 
 import { Tools } from "core/Misc/tools";
-import { ConvertToNodeParticleSystemSetAsync } from "core/Particles/Node/nodeParticleSystemSet.helper";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { ParticleSystem } from "core/Particles/particleSystem";

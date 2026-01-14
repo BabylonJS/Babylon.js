@@ -15,14 +15,15 @@ import {
     ParticleSystemRotationProperties,
     ParticleSystemSpritesheetProperties,
 } from "../../../components/properties/particles/particleSystemProperties";
+import { NodeParticleSystemGeneralProperties } from "../../../components/properties/particles/nodeParticleSystemProperties";
 import { ParticleSystem } from "core/Particles/particleSystem";
-
-function IsParticleSystem(entity: unknown): entity is ParticleSystem {
-    return entity instanceof ParticleSystem;
-}
 
 function IsNonNodeParticleSystem(entity: unknown): entity is ParticleSystem {
     return entity instanceof ParticleSystem && !entity.isNodeGenerated;
+}
+
+function IsNodeParticleSystem(entity: unknown): entity is ParticleSystem {
+    return entity instanceof ParticleSystem && entity.isNodeGenerated;
 }
 
 // TODO: This file and particleSystemProperties.tsx still need to handle CPU vs GPU systems differently where applicable.
@@ -33,9 +34,10 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // Register each section in its own call to keep ordering predictable across registrations.
         // Note: section `order` is not globally sorted across different registrations, so call order matters.
 
+        // Register sections for non-node-generated particle systems.
         const particleSystemGeneralContent = propertiesService.addSectionContent({
             key: "Particle System General Properties",
-            predicate: IsParticleSystem,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "General",
@@ -60,7 +62,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
 
         const particleSystemEmitterContent = propertiesService.addSectionContent({
             key: "Particle System Emitter Properties",
-            predicate: IsParticleSystem,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Emitter",
@@ -72,7 +74,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
 
         const particleSystemEmissionContent = propertiesService.addSectionContent({
             key: "Particle System Emission Properties",
-            predicate: IsParticleSystem,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Emission",
@@ -98,7 +100,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // Lifetime is registered for all systems; the component limits the visible fields for node-generated systems.
         const particleSystemLifetimeContent = propertiesService.addSectionContent({
             key: "Particle System Lifetime Properties",
-            predicate: IsParticleSystem,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Lifetime",
@@ -146,6 +148,20 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 },
             ],
         });
+
+        // Register sections for node-generated particle systems.
+        const nodeParticleSystemGeneralContent = propertiesService.addSectionContent({
+            key: "Particle System General Properties",
+            predicate: IsNodeParticleSystem,
+            content: [
+                {
+                    section: "General",
+                    order: 1,
+                    component: ({ context }) => <NodeParticleSystemGeneralProperties particleSystem={context} selectionService={selectionService} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
                 particleSystemGeneralContent.dispose();
@@ -157,6 +173,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 particleSystemColorContent.dispose();
                 particleSystemRotationContent.dispose();
                 particleSystemSpritesheetContent.dispose();
+                nodeParticleSystemGeneralContent.dispose();
             },
         };
     },
