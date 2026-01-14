@@ -20,13 +20,21 @@ import { ImageProcessingPostProcess } from "core/PostProcesses/imageProcessingPo
 import "core/Helpers/sceneHelpers";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { Texture } from "core/Materials/Textures/texture";
-import { ShowInspector } from "../../src";
+import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { Button } from "gui/2D/controls/button";
+import { ShowInspector } from "../../src/inspector";
+
+// TODO: Get this working automatically without requiring an explicit import. Inspector v2 should dynamically import these when needed.
+//       See the initial attempt here: https://github.com/BabylonJS/Babylon.js/pull/17646
+import "node-editor/legacy/legacy";
+import "node-geometry-editor/legacy/legacy";
+import "node-particle-editor/legacy/legacy";
+import "node-render-graph-editor/legacy/legacy";
 
 import "node-particle-editor/legacy/legacy"; // Ensure node particle editor legacy code is imported
 
@@ -163,6 +171,17 @@ function createGaussianSplatting() {
     });
 }
 
+function createGui() {
+    const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    const button = Button.CreateSimpleButton("but1", "Click Me");
+    button.onPointerClickObservable.add(() => alert("button clicked"));
+    button.width = 0.2;
+    button.height = "40px";
+    button.color = "white";
+    button.background = "green";
+    advancedTexture.addControl(button);
+}
+
 (async () => {
     let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
     assetContainer.addAllToScene();
@@ -179,6 +198,8 @@ function createGaussianSplatting() {
     createMaterials();
 
     createTestMetadata();
+
+    createGui();
 
     engine.runRenderLoop(() => {
         scene.render();

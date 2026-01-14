@@ -48,6 +48,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
         const sectionContentCollection = new ObservableCollection<DynamicAccordionSectionContent<Scene>>();
 
         let useDegrees = DataStorage.ReadBoolean("Babylon/Settings/UseDegrees", false);
+        let useEuler = DataStorage.ReadBoolean("Babylon/Settings/UseEuler", false);
         let ignoreBackfacesForPicking = DataStorage.ReadBoolean("Babylon/Settings/IgnoreBackfacesForPicking", false);
         let showPropertiesOnEntitySelection = DataStorage.ReadBoolean("Babylon/Settings/ShowPropertiesOnEntitySelection", true);
 
@@ -75,6 +76,18 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                 ignoreBackfacesForPicking = value;
 
                 DataStorage.WriteBoolean("Babylon/Settings/IgnoreBackfacesForPicking", ignoreBackfacesForPicking);
+                this.settingsChangedObservable.notifyObservers(this);
+            },
+            get useEuler() {
+                return useEuler;
+            },
+            set useEuler(value: boolean) {
+                if (useEuler === value) {
+                    return; // No change, no need to notify
+                }
+                useEuler = value;
+
+                DataStorage.WriteBoolean("Babylon/Settings/UseEuler", useEuler);
                 this.settingsChangedObservable.notifyObservers(this);
             },
             get showPropertiesOnEntitySelection() {
@@ -130,6 +143,14 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                                         value={settings.useDegrees}
                                         onChange={(checked) => {
                                             settings.useDegrees = checked;
+                                        }}
+                                    />
+                                    <SwitchPropertyLine
+                                        label="Only Show Euler Angles"
+                                        description="Only show Euler angles in rotation properties, rather than quaternions."
+                                        value={settings.useEuler}
+                                        onChange={(checked) => {
+                                            settings.useEuler = checked;
                                         }}
                                     />
                                     <SwitchPropertyLine

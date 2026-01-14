@@ -51,7 +51,7 @@ import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _LoadFile } from "./abstractEngine.functions";
 import type { Material } from "core/Materials/material";
-import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
+import type { IInternalTextureLoader } from "../Materials/Textures/Loaders/internalTextureLoader";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -1589,7 +1589,7 @@ export abstract class AbstractEngine {
             extension = extension.split("?")[0];
         }
 
-        const loaderPromise = _GetCompatibleTextureLoader(extension, mimeType);
+        const loaderPromise = AbstractEngine.GetCompatibleTextureLoader(extension, mimeType);
 
         if (scene) {
             scene.addPendingData(texture);
@@ -1922,14 +1922,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.44.1";
+        return "babylonjs@8.45.4";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.44.1";
+        return "8.45.4";
     }
 
     /**
@@ -2823,4 +2823,15 @@ export abstract class AbstractEngine {
      * @returns frame number
      */
     public static QueueNewFrame: (func: () => void, requester?: any) => number = QueueNewFrame;
+
+    /**
+     * @internal
+     * Function used to get the correct texture loader for a specific extension.
+     * @param extension defines the file extension of the file being loaded
+     * @param mimeType defines the optional mime type of the file being loaded
+     * @returns the IInternalTextureLoader or null if it wasn't found
+     */
+    public static GetCompatibleTextureLoader(_extension: string, _mimeType?: string): Nullable<Promise<IInternalTextureLoader>> {
+        return null;
+    }
 }

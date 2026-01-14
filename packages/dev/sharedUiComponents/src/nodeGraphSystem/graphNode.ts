@@ -879,7 +879,12 @@ export class GraphNode {
                         const items = options.options as IEditablePropertyListOption[];
 
                         this._visualPropertiesRefresh.push(() => {
-                            selectText.innerText = items[source[propertyName]].label;
+                            const currentValue = source[propertyName] as number;
+                            const matchedItem = items.find((item) => item.value === currentValue);
+                            // Back-compat fallback for index based lists
+                            const fallbackItem =
+                                matchedItem ?? (typeof currentValue === "number" && currentValue >= 0 && currentValue < items.length ? items[currentValue] : undefined);
+                            selectText.innerText = fallbackItem?.label ?? "";
                         });
                         const selectList = root.ownerDocument.createElement("div");
                         selectList.classList.add(localStyles.selectList);

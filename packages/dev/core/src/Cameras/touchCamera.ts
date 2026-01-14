@@ -81,12 +81,12 @@ export class TouchCamera extends FreeCamera {
 
     /** @internal */
     public override _setupInputs() {
-        const touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
-        const mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
+        const touch = this.inputs.attached["touch"] as FreeCameraTouchInput | undefined;
+        const mouse = this.inputs.attached["mouse"] as FreeCameraMouseInput | undefined;
         if (mouse) {
             // enable touch in mouse input if touch module is not enabled
             mouse.touchEnabled = !touch;
-        } else {
+        } else if (touch) {
             // allow mouse in touch input if mouse module is not available
             touch.allowMouse = !mouse;
         }

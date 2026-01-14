@@ -1,16 +1,20 @@
+import type { FunctionComponent } from "react";
+
 import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
 import { useCallback } from "react";
 
+import { EditRegular } from "@fluentui/react-icons";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { usePollingObservable } from "../../../hooks/pollingHooks";
 import { useResource } from "../../../hooks/resourceHooks";
 import { BoundProperty } from "../boundProperty";
-import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
-import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 
 export const AdvancedDynamicTextureGeneralProperties = MakeLazyComponent(
     async () => {
@@ -56,3 +60,20 @@ export const AdvancedDynamicTextureGeneralProperties = MakeLazyComponent(
     },
     { spinnerSize: "extra-tiny", spinnerLabel: "Loading..." }
 );
+
+export const AdvancedDynamicTexturePreviewProperties: FunctionComponent<{ texture: AdvancedDynamicTexture }> = (props) => {
+    const { texture } = props;
+
+    return (
+        <>
+            <ButtonLine
+                label="Edit GUI"
+                icon={EditRegular}
+                onClick={async () => {
+                    const { GUIEditor } = await import("gui-editor/guiEditor");
+                    await GUIEditor.Show({ liveGuiTexture: texture });
+                }}
+            />
+        </>
+    );
+};

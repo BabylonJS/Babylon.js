@@ -14,6 +14,7 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
+import { HexPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
 
 const OrientationOptions = [
     { label: "Clockwise", value: Material.ClockWiseSideOrientation },
@@ -73,6 +74,7 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
             <BoundProperty
                 component={SwitchPropertyLine}
                 label="Face Culling"
+                description="Enabling this will enable culling, default is to cull backfaces. To enable front face culling instead, you can disable 'cullBackfaces' using the below option"
                 docLink="https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#back-face-culling"
                 target={material}
                 propertyKey="backFaceCulling"
@@ -96,8 +98,6 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
                 nullable
                 defaultValue={material.getScene().useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation}
             />
-            {/* TODO: Property name is different per material type
-            <BoundProperty component={SwitchPropertyLine} label="Disable Lighting" target={material} propertyKey="disableLighting" /> */}
             <BoundProperty component={SwitchPropertyLine} label="Disable Color Write" target={material} propertyKey="disableColorWrite" />
             <BoundProperty component={SwitchPropertyLine} label="Disable Depth Write" target={material} propertyKey="disableDepthWrite" />
             <BoundProperty component={SwitchPropertyLine} label="Force Depth Write" target={material} propertyKey="forceDepthWrite" />
@@ -164,9 +164,6 @@ export const MaterialTransparencyProperties: FunctionComponent<{ material: Mater
                 propertyKey="alphaMode"
                 options={AlphaModeOptions}
             />
-            {/* TODO: Property names are different per material type
-            <BoundProperty component={SwitchPropertyLine} label="Diffuse/albedo texture has alpha" target={material.albedoTexture} propertyKey="hasAlpha" />
-            <BoundProperty component={SwitchPropertyLine} label="Use alpha from diffuse/albedo texture" target={material} propertyKey="useAlphaFromDiffuseTexture" /> */}
             <BoundProperty component={SwitchPropertyLine} label="Separate Culling Pass" target={material} propertyKey="separateCullingPass" />
         </>
     );
@@ -181,11 +178,18 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
             <BoundProperty component={SwitchPropertyLine} label="Enabled" target={material.stencil} propertyKey="enabled" />
             <Collapse visible={stencilEnabled}>
                 <>
-                    {/* TODO: Make HexPropertyLine work in the case of simply editing a hex value */}
-                    {/* <BoundProperty component={HexPropertyLine} label="Write Mask" target={material.stencil} propertyKey="mask" /> */}
-                    {/* <BoundProperty component={HexPropertyLine} label="Read Mask" target={material.stencil} propertyKey="funcMask" /> */}
-                    {/** TODO: Force int integer-only for NumberInputPropertyLine */}
-                    <BoundProperty component={NumberInputPropertyLine} label="Reference Value" target={material.stencil} propertyKey="funcRef" step={0} />
+                    <BoundProperty component={HexPropertyLine} label="Write Mask" target={material.stencil} propertyKey="mask" numBits={8} />
+                    <BoundProperty component={HexPropertyLine} label="Read Mask" target={material.stencil} propertyKey="funcMask" numBits={8} />
+                    <BoundProperty
+                        component={NumberInputPropertyLine}
+                        label="Reference Value"
+                        target={material.stencil}
+                        propertyKey="funcRef"
+                        step={1}
+                        forceInt={true}
+                        min={0}
+                        max={255}
+                    />
                     <PropertyLine
                         label="Front"
                         expandByDefault={true}

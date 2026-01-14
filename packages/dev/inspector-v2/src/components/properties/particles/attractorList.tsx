@@ -90,12 +90,12 @@ export const AttractorList: FunctionComponent<AttractorListProps> = (props) => {
         <>
             {items.length > 0 && (
                 <>
-                    <Color3PropertyLine label="Attractor debug color" value={impostorColor} onChange={setImpostorColor} />
-                    <SyncedSliderPropertyLine label="Attractor debug size" value={impostorScale} onChange={setImpostorScale} min={0} max={10} step={0.1} />
+                    <Color3PropertyLine label="Attractor Debug Color" value={impostorColor} onChange={setImpostorColor} />
+                    <SyncedSliderPropertyLine label="Attractor Debug Size" value={impostorScale} onChange={setImpostorScale} min={0} max={10} step={0.1} />
                 </>
             )}
             <List
-                addButtonLabel={`Add new attractor`}
+                addButtonLabel={`Add New Attractor`}
                 items={items}
                 onDelete={(item, _index) => system.removeAttractor(item.data)}
                 onAdd={(item) => system.addAttractor(item?.data ?? new Attractor())}

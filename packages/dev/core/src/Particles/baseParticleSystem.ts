@@ -691,7 +691,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     public _billboardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
     /**
      * Gets or sets the billboard mode to use when isBillboardBased = true.
-     * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED
+     * Value can be: ParticleSystem.BILLBOARDMODE_ALL, ParticleSystem.BILLBOARDMODE_Y, ParticleSystem.BILLBOARDMODE_STRETCHED, ParticleSystem.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL
      */
     public get billboardMode(): number {
         return this._billboardMode;
@@ -889,6 +889,13 @@ export class BaseParticleSystem implements IClipPlanesHolder {
         throw new Error("Method not implemented.");
     }
 
+    /**
+     * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
+     * @param radius The radius of the cone to emit from
+     * @param angle The base angle of the cone
+     * @param direction1 Particles are emitted between the direction1 and direction2 from within the cone
+     * @param direction2 Particles are emitted between the direction1 and direction2 from within the cone
+     */
     public createDirectedConeEmitter(radius = 1, angle = Math.PI / 4, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): ConeDirectedParticleEmitter {
         throw new Error("Method not implemented.");
     }

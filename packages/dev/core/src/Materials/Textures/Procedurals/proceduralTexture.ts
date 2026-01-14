@@ -730,7 +730,7 @@ export class ProceduralTexture extends Texture {
 
         if (engine._enableGPUDebugMarkers) {
             engine.restoreDefaultFramebuffer();
-            engine._debugPushGroup(`procedural texture generation for ${this.name}`);
+            engine._debugPushGroup?.(`procedural texture generation for ${this.name}`);
         }
 
         const viewPort = engine.currentViewport;
@@ -796,7 +796,7 @@ export class ProceduralTexture extends Texture {
         }
 
         if (engine._enableGPUDebugMarkers) {
-            engine._debugPopGroup();
+            engine._debugPopGroup?.();
         }
 
         if (this.onGenerated) {

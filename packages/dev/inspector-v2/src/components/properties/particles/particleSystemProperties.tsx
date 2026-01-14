@@ -3,6 +3,8 @@ import type { Color3Gradient } from "core/Misc/gradients";
 import type { Attractor } from "core/Particles/attractor";
 import type { FunctionComponent } from "react";
 import type { ISelectionService } from "../../../services/selectionService";
+import { ArrowDownloadRegular, CloudArrowDownRegular, CloudArrowUpRegular, EditRegular, EyeRegular, PlayRegular, StopRegular } from "@fluentui/react-icons";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
@@ -13,9 +15,10 @@ import { HemisphericParticleEmitter } from "core/Particles/EmitterTypes/hemisphe
 import { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
 import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 import { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
-import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Tools } from "core/Misc/tools";
+import { ConvertToNodeParticleSystemSetAsync } from "core/Particles/Node/nodeParticleSystemSet.helper";
+import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { ConvertToNodeParticleSystemSetAsync } from "core/Particles/Node/nodeParticleSystemSet.helper";
@@ -34,6 +37,7 @@ import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
+import { NotifyPlaygroundOfSnippetChange, PersistSnippetId, PromptForSnippetId, SaveToSnippetServer } from "../../../utils/snippetUtils";
 import { BoundProperty } from "../boundProperty";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import { AttractorList } from "./attractorList";
@@ -71,27 +75,13 @@ function NormalizeParticleSystemSerialization(rawData: any): any {
     return particleSystem ?? rawData;
 }
 
-function PersistSnippetId(snippetId: string) {
-    // Persist snippet IDs locally for quick reuse.
-    try {
-        const existing = JSON.parse(localStorage.getItem(SnippetDashboardStorageKey) || "[]");
-        const list = Array.isArray(existing) ? existing : [];
-        if (!list.includes(snippetId)) {
-            list.unshift(snippetId);
-        }
-        localStorage.setItem(SnippetDashboardStorageKey, JSON.stringify(list.slice(0, 50)));
-    } catch {
-        // Ignore storage failures.
-    }
-}
-
 /**
  * Display general (high-level) information about a particle system.
  * @param props Component props.
  * @returns Render property lines.
  */
-export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
-    const { particleSystem: system } = props;
+export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem: ParticleSystem; selectionService: ISelectionService }> = (props) => {
+    const { particleSystem: system, selectionService } = props;
 
     const scene = system.getScene();
 
@@ -137,97 +127,57 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
         [scene, system]
     );
 
-    const loadFromSnippetServer = useCallback(() => {
+    const loadFromSnippetServer = useCallback(async () => {
         if (!scene) {
             alert("No scene available.");
             return;
         }
 
-        // Prompt for a snippet id (minimal UX).
-
-        const requestedSnippetId = window.prompt("Please enter the snippet ID to use");
-        const trimmed = requestedSnippetId?.trim();
-        if (!trimmed) {
+        const snippetId = PromptForSnippetId();
+        if (!snippetId) {
             return;
         }
 
-        const request = new XMLHttpRequest();
-        request.onreadystatechange = () => {
-            if (request.readyState !== 4) {
-                return;
-            }
+        const isGpu = system instanceof GPUParticleSystem;
+        const oldSnippetId = system.snippetId;
 
-            if (request.status !== 200) {
-                alert("Unable to load your particle system");
-                return;
-            }
+        // Dispose the old system and clear selection (v1 behavior)
+        system.dispose();
+        selectionService.selectedEntity = null;
 
-            try {
-                const responseObject = ParseJsonLoadContents(request.responseText);
-                if (!responseObject) {
-                    alert("Unable to load your particle system");
-                    return;
-                }
+        try {
+            const newSystem = await ParticleHelper.ParseFromSnippetAsync(snippetId, scene, isGpu);
+            selectionService.selectedEntity = newSystem;
 
-                applyParticleSystemJsonToSystem(responseObject);
-                system.snippetId = trimmed;
-            } catch (e) {
-                alert("Unable to load your particle system: " + e);
-            }
-        };
+            // Notify the playground to update its code with the new snippet ID.
+            NotifyPlaygroundOfSnippetChange(oldSnippetId, snippetId, "ParticleHelper.ParseFromSnippetAsync");
+        } catch (err) {
+            alert("Unable to load your particle system: " + err);
+        }
+    }, [scene, selectionService, system]);
 
-        request.open("GET", ParticleHelper.SnippetUrl + "/" + trimmed.replace(/#/g, "/"), true);
-        request.send();
-    }, [applyParticleSystemJsonToSystem, scene, system]);
+    const saveToSnippetServer = useCallback(async () => {
+        try {
+            const content = JSON.stringify(system.serialize(true));
+            const currentSnippetId = system.snippetId;
 
-    const saveToSnippetServer = useCallback(() => {
-        // Serialize once and post as snippet payload.
-        const content = JSON.stringify(system.serialize(true));
+            const result = await SaveToSnippetServer({
+                snippetUrl: ParticleHelper.SnippetUrl,
+                currentSnippetId,
+                content,
+                payloadKey: "particleSystem",
+                storageKey: SnippetDashboardStorageKey,
+                entityName: "particle system",
+            });
 
-        const xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = () => {
-            if (xmlHttp.readyState !== 4) {
-                return;
-            }
+            // eslint-disable-next-line require-atomic-updates
+            system.snippetId = result.snippetId;
+            PersistSnippetId(SnippetDashboardStorageKey, result.snippetId);
 
-            if (xmlHttp.status !== 200) {
-                alert("Unable to save your particle system");
-                return;
-            }
-
-            try {
-                const snippet = JSON.parse(xmlHttp.responseText);
-                system.snippetId = snippet.id;
-                if (snippet.version && snippet.version !== "0") {
-                    system.snippetId += "#" + snippet.version;
-                }
-
-                // Copy to clipboard when available.
-                if (navigator.clipboard) {
-                    void navigator.clipboard.writeText(system.snippetId);
-                }
-
-                PersistSnippetId(system.snippetId);
-
-                alert("Particle system saved with ID: " + system.snippetId + " (the id was also saved to your clipboard)");
-            } catch (e) {
-                alert("Unable to save your particle system: " + e);
-            }
-        };
-
-        xmlHttp.open("POST", ParticleHelper.SnippetUrl + (system.snippetId ? "/" + system.snippetId : ""), true);
-        xmlHttp.setRequestHeader("Content-Type", "application/json");
-
-        const dataToSend = {
-            payload: JSON.stringify({
-                particleSystem: content,
-            }),
-            name: "",
-            description: "",
-            tags: "",
-        };
-
-        xmlHttp.send(JSON.stringify(dataToSend));
+            NotifyPlaygroundOfSnippetChange(result.oldSnippetId, result.snippetId, "ParticleSystem.ParseFromSnippetAsync");
+        } catch {
+            // Alert already shown by SaveToSnippetServer
+        }
     }, [system]);
 
     return (
@@ -247,21 +197,22 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             <BoundProperty component={NumberInputPropertyLine} label="Update Speed" target={system} propertyKey="updateSpeed" min={0} step={0.01} />
 
             <ButtonLine
-                label={system.isNodeGenerated ? "Edit in Node Particle Editor" : "View in Node Particle Editor"}
+                label={system.isNodeGenerated ? "Edit" : "View"}
+                icon={system.isNodeGenerated ? EditRegular : EyeRegular}
                 onClick={async () => {
                     const scene = system.getScene();
                     if (!scene) {
                         return;
                     }
 
-                    if (system.isNodeGenerated && system.source) {
-                        await system.source.editAsync({ nodeEditorConfig: { backgroundColor: scene.clearColor, disposeOnClose: false } });
-                    } else {
-                        // View: Convert the particle system to a NodeParticleSystemSet and open editor
-                        const systemSet = await ConvertToNodeParticleSystemSetAsync("source", [system]);
-                        if (systemSet) {
-                            await systemSet.editAsync({ nodeEditorConfig: { backgroundColor: scene.clearColor } });
-                        }
+                    const systemSet = system.source ? system.source : await ConvertToNodeParticleSystemSetAsync("source", [system]);
+
+                    if (systemSet) {
+                        // TODO: Figure out how to get all the various build steps to work with this.
+                        //       See the initial attempt here: https://github.com/BabylonJS/Babylon.js/pull/17646
+                        // const { NodeParticleEditor } = await import("node-particle-editor/nodeParticleEditor");
+                        // NodeParticleEditor.Show({ nodeParticleSet: systemSet, hostScene: scene, backgroundColor: scene.clearColor });
+                        await systemSet.editAsync({ nodeEditorConfig: { backgroundColor: scene.clearColor, disposeOnClose: false } });
                     }
                 }}
             />
@@ -271,6 +222,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             ) : isAlive ? (
                 <ButtonLine
                     label="Stop"
+                    icon={StopRegular}
                     onClick={() => {
                         setStopRequested(true);
                         system.stop();
@@ -279,6 +231,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             ) : (
                 <ButtonLine
                     label="Start"
+                    icon={PlayRegular}
                     onClick={() => {
                         setStopRequested(false);
                         system.start();
@@ -289,7 +242,7 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
             {!system.isNodeGenerated && (
                 <>
                     <FileUploadLine
-                        label="Load from file"
+                        label="Load from File"
                         accept=".json"
                         onClick={(files) => {
                             if (files.length === 0) {
@@ -315,7 +268,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                     />
 
                     <ButtonLine
-                        label="Save to file"
+                        label="Save to File"
+                        icon={ArrowDownloadRegular}
                         onClick={() => {
                             // Download serialization as a JSON file.
                             const data = JSON.stringify(system.serialize(true), null, 2);
@@ -326,8 +280,8 @@ export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem
                     />
 
                     {snippetId && <TextPropertyLine label="Snippet ID" value={snippetId} />}
-                    <ButtonLine label="Load from snippet server" onClick={loadFromSnippetServer} />
-                    <ButtonLine label="Save to snippet server" onClick={saveToSnippetServer} />
+                    <ButtonLine label="Load from Snippet Server" onClick={loadFromSnippetServer} icon={CloudArrowUpRegular} />
+                    <ButtonLine label="Save to Snippet Server" onClick={saveToSnippetServer} icon={CloudArrowDownRegular} />
                 </>
             )}
         </>

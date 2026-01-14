@@ -1049,7 +1049,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this._currentSceneUBO = this._scene.getSceneUniformBuffer();
             if (engine._enableGPUDebugMarkers) {
                 engine.restoreDefaultFramebuffer();
-                engine._debugPushGroup(`Shadow map generation for pass id ${engine.currentRenderPassId}`);
+                engine._debugPushGroup?.(`Shadow map generation for pass id ${engine.currentRenderPassId}`);
             }
         });
 
@@ -1083,7 +1083,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.setColorWrite(true);
             }
             if (!this.useBlurExponentialShadowMap && !this.useBlurCloseExponentialShadowMap) {
-                engine._debugPopGroup();
+                engine._debugPopGroup?.();
                 return;
             }
             const shadowMap = this.getShadowMapForRendering();
@@ -1094,7 +1094,7 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             if (engine._enableGPUDebugMarkers) {
-                engine._debugPopGroup();
+                engine._debugPopGroup?.();
             }
         });
 
