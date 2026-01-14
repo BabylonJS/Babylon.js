@@ -814,6 +814,7 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
                     label="Meters Per Unit"
                     target={material.getScene().subSurfaceConfiguration}
                     propertyKey="metersPerUnit"
+                    propertyPath="getScene().subSurfaceConfiguration.metersPerUnit"
                     min={0.01}
                     max={2}
                     step={0.01}
