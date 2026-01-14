@@ -4,6 +4,7 @@ export * from "./engineCapabilities";
 export * from "./instancingAttributeInfo";
 export * from "./abstractEngine";
 export * from "./thinEngine";
+export * from "./thinNativeEngine";
 export * from "./engine";
 export * from "./engineStore";
 export * from "./nullEngine";
