@@ -57,7 +57,6 @@ enum FrameGraphTextureNamespace {
 
 /**
  * Manages the textures used by a frame graph
- * @experimental
  */
 export class FrameGraphTextureManager {
     private static _Counter = 2; // 0 and 1 are reserved for backbuffer textures

@@ -296,14 +296,6 @@ export class NodeRenderGraph {
     }
 
     /**
-     * @deprecated Use buildAsync instead
-     * @param dontBuildFrameGraph If the underlying frame graph should not be built (default: false)
-     */
-    public build(dontBuildFrameGraph = false): void {
-        void this.buildAsync(dontBuildFrameGraph, false, false);
-    }
-
-    /**
      * Build the final list of blocks that will be executed by the "execute" method.
      * It also builds the underlying frame graph unless specified otherwise.
      * @param dontBuildFrameGraph If the underlying frame graph should not be built (default: false)

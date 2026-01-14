@@ -1,12 +1,38 @@
 import type { FunctionComponent } from "react";
 
-import type { Mesh } from "core/index";
+import type { Mesh, NodeGeometry } from "core/index";
+
+import { EditRegular } from "@fluentui/react-icons";
 
 import { Constants } from "core/Engines/constants";
-
-import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { BoundProperty } from "../boundProperty";
+
+export const MeshGeneralProperties: FunctionComponent<{ mesh: Mesh }> = (props) => {
+    const { mesh } = props;
+
+    const nodeGeometry = mesh._internalMetadata?.nodeGeometry as NodeGeometry | undefined;
+
+    return (
+        <>
+            {nodeGeometry && (
+                <ButtonLine
+                    label="Edit"
+                    icon={EditRegular}
+                    onClick={async () => {
+                        // TODO: Figure out how to get all the various build steps to work with this.
+                        //       See the initial attempt here: https://github.com/BabylonJS/Babylon.js/pull/17646
+                        // const { NodeGeometryEditor } = await import("node-geometry-editor/nodeGeometryEditor");
+                        // NodeGeometryEditor.Show({ nodeGeometry: nodeGeometry, hostScene: mesh.getScene() });
+                        await nodeGeometry.edit({ nodeGeometryEditorConfig: { hostScene: mesh.getScene() } });
+                    }}
+                />
+            )}
+        </>
+    );
+};
 
 export const MeshDisplayProperties: FunctionComponent<{ mesh: Mesh }> = (props) => {
     const { mesh } = props;

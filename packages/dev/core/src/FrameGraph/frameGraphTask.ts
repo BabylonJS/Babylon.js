@@ -5,7 +5,6 @@ import { Observable } from "core/Misc/observable";
 
 /**
  * Represents a task in a frame graph.
- * @experimental
  */
 export abstract class FrameGraphTask {
     protected readonly _frameGraph: FrameGraph;

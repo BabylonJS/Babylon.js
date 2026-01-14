@@ -1,4 +1,4 @@
-import { RegisterNativeTypeAsync } from "../../Engines/nativeEngine";
+import { RegisterNativeTypeAsync } from "../../Engines/thinNativeEngine";
 
 /** @internal */
 interface INativeXRFrame extends XRFrame {

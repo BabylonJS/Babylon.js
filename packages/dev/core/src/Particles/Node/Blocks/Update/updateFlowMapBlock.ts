@@ -10,17 +10,11 @@ import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleB
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 import { FlowMap } from "core/Particles/flowMap";
-import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
  * Block used to update particle position based on a flow map
  */
 export class UpdateFlowMapBlock extends NodeParticleBlock {
-    /**
-     * Gets or sets the strenght of the flow map effect
-     */
-    @editableInPropertyPage("strength", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
-    public strength = 1;
     /**
      * Create a new UpdateFlowMapBlock
      * @param name defines the block name
@@ -30,6 +24,7 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
 
         this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("flowMap", NodeParticleBlockConnectionPointTypes.Texture);
+        this.registerInput("strength", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
@@ -45,6 +40,13 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
      */
     public get flowMap(): NodeParticleConnectionPoint {
         return this._inputs[1];
+    }
+
+    /**
+     * Gets the strength input component
+     */
+    public get strength(): NodeParticleConnectionPoint {
+        return this._inputs[2];
     }
 
     /**
@@ -87,8 +89,8 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
                 // If the flow map is not ready, we skip processing
                 return;
             }
-
-            flowMap._processParticle(particle, this.strength * system._tempScaledUpdateSpeed, matrix);
+            const strength = this.strength.getConnectedValue(state) as number;
+            flowMap._processParticle(particle, strength * system._tempScaledUpdateSpeed, matrix);
         };
 
         const flowMapProcessing = {
@@ -104,28 +106,6 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
         }
 
         this.output._storedValue = system;
-    }
-
-    /**
-     * Serializes the block into a json object
-     * @returns The serialized object
-     */
-    public override serialize(): any {
-        const serializationObject = super.serialize();
-
-        serializationObject.strength = this.strength;
-
-        return serializationObject;
-    }
-
-    /**
-     * Deserializes the block from a json object
-     * @param serializationObject The object to deserialize from
-     */
-    public override _deserialize(serializationObject: any) {
-        super._deserialize(serializationObject);
-
-        this.strength = serializationObject.strength;
     }
 }
 

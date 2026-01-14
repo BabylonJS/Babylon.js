@@ -53,6 +53,15 @@ export function getNativeTextureFormat(format: number, type: number): number {
             }
             break;
         }
+
+        case Constants.TEXTUREFORMAT_RGBA_INTEGER: {
+            switch (type) {
+                case Constants.TEXTURETYPE_UNSIGNED_INTEGER:
+                    return _native.Engine.TEXTURE_FORMAT_RGBA32U;
+            }
+            break;
+        }
+
         case Constants.TEXTUREFORMAT_RGBA: {
             switch (type) {
                 case Constants.TEXTURETYPE_UNSIGNED_BYTE:
