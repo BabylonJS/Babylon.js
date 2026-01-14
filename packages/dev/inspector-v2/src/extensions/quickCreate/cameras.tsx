@@ -5,21 +5,12 @@ import type { Scene } from "core/scene";
 import { useState } from "react";
 import type { FunctionComponent } from "react";
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import { makeStyles, tokens } from "@fluentui/react-components";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 import { SettingsPopover } from "./settingsPopover";
-
-const useStyles = makeStyles({
-    section: {
-        display: "flex",
-        flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
-    },
-    row: { display: "flex", alignItems: "center", gap: "4px" },
-});
+import { QuickCreateSection, QuickCreateRow } from "./quickCreateLayout";
 
 type CamerasContentProps = {
     scene: Scene;
@@ -31,8 +22,6 @@ type CamerasContentProps = {
  * @returns React component
  */
 export const CamerasContent: FunctionComponent<CamerasContentProps> = ({ scene }) => {
-    const classes = useStyles();
-
     // ArcRotate Camera state
     const [arcRotateCameraName, setArcRotateCameraName] = useState("ArcRotate Camera");
     const [arcRotateCameraTarget, setArcRotateCameraTarget] = useState(new Vector3(0, 0, 0));
@@ -65,9 +54,9 @@ export const CamerasContent: FunctionComponent<CamerasContentProps> = ({ scene }
     };
 
     return (
-        <div className={classes.section}>
+        <QuickCreateSection>
             {/* ArcRotate Camera */}
-            <div className={classes.row}>
+            <QuickCreateRow>
                 <Button onClick={handleCreateArcRotateCamera} label="ArcRotate Camera" />
                 <SettingsPopover>
                     <TextInputPropertyLine label="Name" value={arcRotateCameraName} onChange={(value) => setArcRotateCameraName(value)} />
@@ -92,17 +81,17 @@ export const CamerasContent: FunctionComponent<CamerasContentProps> = ({ scene }
                     <CheckboxPropertyLine label="Use Radians" value={arcRotateCameraUseRadians} onChange={(value) => setArcRotateCameraUseRadians(value)} />
                     <Button appearance="primary" onClick={handleCreateArcRotateCamera} label="Create" />
                 </SettingsPopover>
-            </div>
+            </QuickCreateRow>
 
             {/* Universal Camera */}
-            <div className={classes.row}>
+            <QuickCreateRow>
                 <Button onClick={handleCreateUniversalCamera} label="Universal Camera" />
                 <SettingsPopover>
                     <TextInputPropertyLine label="Name" value={universalCameraName} onChange={(value) => setUniversalCameraName(value)} />
                     <Vector3PropertyLine label="Position" value={universalCameraPosition} onChange={(value) => setUniversalCameraPosition(value)} />
                     <Button appearance="primary" onClick={handleCreateUniversalCamera} label="Create" />
                 </SettingsPopover>
-            </div>
-        </div>
+            </QuickCreateRow>
+        </QuickCreateSection>
     );
 };
