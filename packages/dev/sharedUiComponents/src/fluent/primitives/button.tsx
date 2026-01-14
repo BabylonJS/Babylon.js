@@ -20,7 +20,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
     const [isOnClickBusy, setIsOnClickBusy] = useState(false);
     const handleOnClick = useCallback(
         async (e: MouseEvent<HTMLButtonElement>) => {
-            const result = onClick?.();
+            const result = onClick?.(e);
             if (result instanceof Promise) {
                 setIsOnClickBusy(true);
                 try {
