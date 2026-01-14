@@ -5,7 +5,7 @@ import { forwardRef, useMemo } from "react";
 import { usePropertyChangedNotifier } from "../../contexts/propertyContext";
 import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
 import { GetPropertyDescriptor } from "../../instrumentation/propertyInstrumentation";
-import { copyCommandToClipboard, getClassNameWithNamespace } from "shared-ui-components/copyCommandToClipboard";
+import { getClassNameWithNamespace } from "shared-ui-components/copyCommandToClipboard";
 import { GenerateCopyString } from "./generateCopyString";
 
 /**
@@ -105,8 +105,7 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
                 onCopy: () => {
                     const { className, babylonNamespace } = getClassNameWithNamespace(target);
                     const valueStr = GenerateCopyString(value);
-                    const strCommand = `globalThis.debugNode.${String(propertyKey)} = ${valueStr};// (debugNode as ${babylonNamespace}${className})`;
-                    copyCommandToClipboard(strCommand);
+                    return `globalThis.debugNode.${String(propertyKey)} = ${valueStr};// (debugNode as ${babylonNamespace}${className})`;
                 },
             };
 
@@ -154,3 +153,39 @@ function CreateGenericForwardRef<T extends (...args: any[]) => any>(render: T) {
  * @returns JSX element
  */
 export const BoundProperty = CreateGenericForwardRef(BoundPropertyImpl);
+
+/**
+ * Props for Property component - a simpler version of BoundProperty that only handles onCopy
+ */
+export type PropertyProps<ComponentT extends ComponentType<any>> = Omit<ComponentProps<ComponentT>, "onCopy"> & {
+    component: ComponentT;
+    propertyKey: string;
+};
+
+function PropertyImpl<ComponentT extends ComponentType<any>>(props: PropertyProps<ComponentT>, ref?: any) {
+    const { component: Component, propertyKey, value, ...rest } = props as PropertyProps<ComponentT> & { value?: unknown };
+
+    const onCopy = () => {
+        const valueStr = GenerateCopyString(value);
+        return `globalThis.debugNode.${propertyKey} = ${valueStr};`;
+    };
+
+    const propsToSend = {
+        ...rest,
+        ref,
+        value,
+        onCopy,
+    };
+
+    return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;
+}
+
+/**
+ * A simpler version of BoundProperty that only provides the onCopy functionality.
+ * Does not bind the value/onChange - those must be provided by the caller.
+ * Use this when you need copy support but have custom value/onChange handling.
+ *
+ * @param props PropertyProps with propertyName for copy support
+ * @returns JSX element
+ */
+export const Property = CreateGenericForwardRef(PropertyImpl);
