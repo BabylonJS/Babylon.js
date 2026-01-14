@@ -163,6 +163,7 @@ export type PropertyProps<ComponentT extends ComponentType<any>> = Omit<Componen
 };
 
 function PropertyImpl<ComponentT extends ComponentType<any>>(props: PropertyProps<ComponentT>, ref?: any) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     const { component: Component, propertyKey, value, ...rest } = props as PropertyProps<ComponentT> & { value?: unknown };
 
     const onCopy = () => {
