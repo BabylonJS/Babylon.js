@@ -2,6 +2,7 @@ import type { Scene } from "core/scene";
 import { useState } from "react";
 import type { FunctionComponent } from "react";
 import { Button } from "shared-ui-components/fluent/primitives/button";
+import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SettingsPopover } from "./settingsPopover";
 import { QuickCreateSection, QuickCreateRow } from "./quickCreateLayout";
@@ -10,6 +11,7 @@ import { SSAORenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelin
 import { SSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 import { SSRRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline";
 import { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
+import { useProperty } from "../../hooks/compoundPropertyHooks";
 
 type RenderingPipelinesContentProps = {
     scene: Scene;
@@ -59,62 +61,64 @@ export const RenderingPipelinesContent: FunctionComponent<RenderingPipelinesCont
     const caps = scene.getEngine().getCaps();
     const hasDrawBuffers = caps.drawBuffersExtension;
     const hasTexelFetch = caps.texelFetch;
-
+    const camera = useProperty(scene, "activeCamera");
     return (
         <QuickCreateSection>
-            {/* Default Rendering Pipeline */}
-            {scene.activeCamera && (
-                <QuickCreateRow>
-                    <Button onClick={handleCreateDefaultPipeline} label="Default Pipeline" />
-                    <SettingsPopover>
-                        <TextInputPropertyLine label="Name" value={defaultPipelineName} onChange={(value) => setDefaultPipelineName(value)} />
-                        <Button appearance="primary" onClick={handleCreateDefaultPipeline} label="Create" />
-                    </SettingsPopover>
-                </QuickCreateRow>
-            )}
+            {!camera ? (
+                <MessageBar message="Cannot create rendering pipeline without an active camera." title="No active camera" intent="info"></MessageBar>
+            ) : (
+                <>
+                    {/* Default Rendering Pipeline */}
+                    <QuickCreateRow>
+                        <Button onClick={handleCreateDefaultPipeline} label="Default Pipeline" />
+                        <SettingsPopover>
+                            <TextInputPropertyLine label="Name" value={defaultPipelineName} onChange={(value) => setDefaultPipelineName(value)} />
+                            <Button appearance="primary" onClick={handleCreateDefaultPipeline} label="Create" />
+                        </SettingsPopover>
+                    </QuickCreateRow>
 
-            {/* SSAO Pipeline */}
-            {scene.activeCamera && (
-                <QuickCreateRow>
-                    <Button onClick={handleCreateSSAOPipeline} label="SSAO Pipeline" />
-                    <SettingsPopover>
-                        <TextInputPropertyLine label="Name" value={ssaoPipelineName} onChange={(value) => setSsaoPipelineName(value)} />
-                        <Button appearance="primary" onClick={handleCreateSSAOPipeline} label="Create" />
-                    </SettingsPopover>
-                </QuickCreateRow>
-            )}
+                    {/* SSAO Pipeline */}
+                    <QuickCreateRow>
+                        <Button onClick={handleCreateSSAOPipeline} label="SSAO Pipeline" />
+                        <SettingsPopover>
+                            <TextInputPropertyLine label="Name" value={ssaoPipelineName} onChange={(value) => setSsaoPipelineName(value)} />
+                            <Button appearance="primary" onClick={handleCreateSSAOPipeline} label="Create" />
+                        </SettingsPopover>
+                    </QuickCreateRow>
 
-            {/* SSAO2 Pipeline */}
-            {scene.activeCamera && hasDrawBuffers && (
-                <QuickCreateRow>
-                    <Button onClick={handleCreateSSAO2Pipeline} label="SSAO2 Pipeline" />
-                    <SettingsPopover>
-                        <TextInputPropertyLine label="Name" value={ssao2PipelineName} onChange={(value) => setSsao2PipelineName(value)} />
-                        <Button appearance="primary" onClick={handleCreateSSAO2Pipeline} label="Create" />
-                    </SettingsPopover>
-                </QuickCreateRow>
-            )}
+                    {/* SSAO2 Pipeline */}
+                    {hasDrawBuffers && (
+                        <QuickCreateRow>
+                            <Button onClick={handleCreateSSAO2Pipeline} label="SSAO2 Pipeline" />
+                            <SettingsPopover>
+                                <TextInputPropertyLine label="Name" value={ssao2PipelineName} onChange={(value) => setSsao2PipelineName(value)} />
+                                <Button appearance="primary" onClick={handleCreateSSAO2Pipeline} label="Create" />
+                            </SettingsPopover>
+                        </QuickCreateRow>
+                    )}
 
-            {/* SSR Pipeline */}
-            {scene.activeCamera && hasDrawBuffers && hasTexelFetch && (
-                <QuickCreateRow>
-                    <Button onClick={handleCreateSSRPipeline} label="SSR Pipeline" />
-                    <SettingsPopover>
-                        <TextInputPropertyLine label="Name" value={ssrPipelineName} onChange={(value) => setSsrPipelineName(value)} />
-                        <Button appearance="primary" onClick={handleCreateSSRPipeline} label="Create" />
-                    </SettingsPopover>
-                </QuickCreateRow>
-            )}
+                    {/* SSR Pipeline */}
+                    {hasDrawBuffers && hasTexelFetch && (
+                        <QuickCreateRow>
+                            <Button onClick={handleCreateSSRPipeline} label="SSR Pipeline" />
+                            <SettingsPopover>
+                                <TextInputPropertyLine label="Name" value={ssrPipelineName} onChange={(value) => setSsrPipelineName(value)} />
+                                <Button appearance="primary" onClick={handleCreateSSRPipeline} label="Create" />
+                            </SettingsPopover>
+                        </QuickCreateRow>
+                    )}
 
-            {/* IBL Shadows Pipeline */}
-            {scene.activeCamera && hasDrawBuffers && hasTexelFetch && (
-                <QuickCreateRow>
-                    <Button onClick={handleCreateIBLShadowsPipeline} label="IBL Shadows Pipeline" />
-                    <SettingsPopover>
-                        <TextInputPropertyLine label="Name" value={iblShadowsPipelineName} onChange={(value) => setIblShadowsPipelineName(value)} />
-                        <Button appearance="primary" onClick={handleCreateIBLShadowsPipeline} label="Create" />
-                    </SettingsPopover>
-                </QuickCreateRow>
+                    {/* IBL Shadows Pipeline */}
+                    {hasDrawBuffers && hasTexelFetch && (
+                        <QuickCreateRow>
+                            <Button onClick={handleCreateIBLShadowsPipeline} label="IBL Shadows Pipeline" />
+                            <SettingsPopover>
+                                <TextInputPropertyLine label="Name" value={iblShadowsPipelineName} onChange={(value) => setIblShadowsPipelineName(value)} />
+                                <Button appearance="primary" onClick={handleCreateIBLShadowsPipeline} label="Create" />
+                            </SettingsPopover>
+                        </QuickCreateRow>
+                    )}
+                </>
             )}
         </QuickCreateSection>
     );
