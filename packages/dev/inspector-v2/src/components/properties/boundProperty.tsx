@@ -23,6 +23,8 @@ type BaseBoundPropertyProps<TargetT extends object, PropertyKeyT extends keyof T
     component: ComponentT;
     target: TargetT | null | undefined;
     propertyKey: PropertyKeyT;
+    /** Optional path from the root object to the property, used for generating the onCopy string */
+    propertyPath?: string;
     convertTo?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
     convertFrom?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
 };
@@ -78,7 +80,7 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
     const SpecificComponent = useMemo(() => {
         return (props: ComponentProps<ComponentT>) => {
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            const { target, propertyKey, convertTo, convertFrom, component: Component, ...rest } = props;
+            const { target, propertyKey, propertyPath, convertTo, convertFrom, component: Component, ...rest } = props;
 
             // Hook the property, using the specific hook that also catches changes to nested properties as well (like x/y/z on a Vector3 for example).
             const value = useSpecificProperty(target, propertyKey);
@@ -98,15 +100,18 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
             }, [target, propertyKey, convertFrom, notifyPropertyChanged]);
 
             const propsToSend = {
+                // will be overriden if custom onCopy is passed in
+                onCopy: () => {
+                    if (propertyPath) {
+                        return GetOnCopyString(value, propertyPath);
+                    }
+                    const { className, babylonNamespace } = getClassNameWithNamespace(target);
+                    return `${GetOnCopyString(value, String(propertyKey))} // (debugNode as ${babylonNamespace}${className})`;
+                },
                 ...rest,
                 ref,
                 value: convertedValue as TargetT[PropertyKeyT],
                 onChange,
-                onCopy: () => {
-                    const { className, babylonNamespace } = getClassNameWithNamespace(target);
-                    const valueStr = GenerateCopyString(value);
-                    return `globalThis.debugNode.${String(propertyKey)} = ${valueStr};// (debugNode as ${babylonNamespace}${className})`;
-                },
             };
 
             return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;
@@ -155,27 +160,28 @@ function CreateGenericForwardRef<T extends (...args: any[]) => any>(render: T) {
 export const BoundProperty = CreateGenericForwardRef(BoundPropertyImpl);
 
 /**
- * Props for Property component - a simpler version of BoundProperty that only handles onCopy
+ * Props for Property component - a simpler version of BoundProperty that only handles onCopy functionality
+ * Pass in the full propertyPath from entity to property (e.g. "meshes[0].position.x") to ensure copyString is accurate
  */
 export type PropertyProps<ComponentT extends ComponentType<any>> = Omit<ComponentProps<ComponentT>, "onCopy"> & {
     component: ComponentT;
-    propertyKey: string;
+    propertyPath: string;
 };
+
+function GetOnCopyString(value: unknown, propertyPath: string) {
+    const valueStr = GenerateCopyString(value);
+    return `globalThis.debugNode.${propertyPath} = ${valueStr};`;
+}
 
 function PropertyImpl<ComponentT extends ComponentType<any>>(props: PropertyProps<ComponentT>, ref?: any) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { component: Component, propertyKey, value, ...rest } = props as PropertyProps<ComponentT> & { value?: unknown };
-
-    const onCopy = () => {
-        const valueStr = GenerateCopyString(value);
-        return `globalThis.debugNode.${propertyKey} = ${valueStr};`;
-    };
+    const { component: Component, propertyPath, value, ...rest } = props as PropertyProps<ComponentT> & { value?: unknown };
 
     const propsToSend = {
+        onCopy: () => GetOnCopyString(value, propertyPath),
         ...rest,
         ref,
         value,
-        onCopy,
     };
 
     return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;

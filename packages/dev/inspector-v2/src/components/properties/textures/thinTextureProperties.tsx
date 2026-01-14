@@ -53,7 +53,7 @@ export const ThinTextureSamplingProperties: FunctionComponent<{ texture: ThinTex
         <Property
             component={NumberDropdownPropertyLine}
             label="Sampling"
-            propertyKey="samplingMode"
+            propertyPath="samplingMode"
             value={samplingMode}
             options={SamplingMode}
             onChange={(value) => texture.updateSamplingMode(value)}

@@ -21,14 +21,14 @@ export const ShadowsSetupProperties: FunctionComponent<{ context: ShadowLight }>
                     <Property
                         component={NumberInputPropertyLine}
                         label="Shadows Near Plane"
-                        propertyKey="shadowMinZ"
+                        propertyPath="shadowMinZ"
                         value={shadowsMinZ ?? 0}
                         onChange={(value) => (shadowLight.shadowMinZ = value)}
                     />
                     <Property
                         component={NumberInputPropertyLine}
                         label="Shadows Far Plane"
-                        propertyKey="shadowMaxZ"
+                        propertyPath="shadowMaxZ"
                         value={shadowsMaxZ ?? 0}
                         onChange={(value) => (shadowLight.shadowMaxZ = value)}
                     />
