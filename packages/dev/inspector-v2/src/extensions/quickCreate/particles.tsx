@@ -6,22 +6,13 @@ import type { Scene } from "core/scene";
 import { useState } from "react";
 import type { FunctionComponent } from "react";
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import { makeStyles, tokens } from "@fluentui/react-components";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
 import { SettingsPopover } from "./settingsPopover";
+import { QuickCreateSection, QuickCreateRow } from "./quickCreateLayout";
 
 // Side-effect import needed for GPUParticleSystem
 import "core/Particles/webgl2ParticleSystem";
-
-const useStyles = makeStyles({
-    section: {
-        display: "flex",
-        flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
-    },
-    row: { display: "flex", alignItems: "center", gap: "4px" },
-});
 
 type ParticlesContentProps = {
     scene: Scene;
@@ -33,8 +24,6 @@ type ParticlesContentProps = {
  * @returns React component
  */
 export const ParticlesContent: FunctionComponent<ParticlesContentProps> = ({ scene }) => {
-    const classes = useStyles();
-
     // CPU Particle System state
     const [cpuParticleSystemName, setCpuParticleSystemName] = useState("Particle System");
     const [cpuParticleSystemCapacity, setCpuParticleSystemCapacity] = useState(2000);
@@ -89,9 +78,9 @@ export const ParticlesContent: FunctionComponent<ParticlesContentProps> = ({ sce
     };
 
     return (
-        <div className={classes.section}>
+        <QuickCreateSection>
             {/* CPU Particle System */}
-            <div className={classes.row}>
+            <QuickCreateRow>
                 <Button onClick={handleCreateCPUParticleSystem} label="CPU Particle System" />
                 <SettingsPopover>
                     <TextInputPropertyLine label="Name" value={cpuParticleSystemName} onChange={(value) => setCpuParticleSystemName(value)} />
@@ -105,10 +94,10 @@ export const ParticlesContent: FunctionComponent<ParticlesContentProps> = ({ sce
                     />
                     <Button appearance="primary" onClick={handleCreateCPUParticleSystem} label="Create" />
                 </SettingsPopover>
-            </div>
+            </QuickCreateRow>
 
             {/* GPU Particle System */}
-            <div className={classes.row}>
+            <QuickCreateRow>
                 <Button onClick={handleCreateGPUParticleSystem} label="GPU Particle System" />
                 <SettingsPopover>
                     <TextInputPropertyLine label="Name" value={gpuParticleSystemName} onChange={(value) => setGpuParticleSystemName(value)} />
@@ -122,17 +111,17 @@ export const ParticlesContent: FunctionComponent<ParticlesContentProps> = ({ sce
                     />
                     <Button appearance="primary" onClick={handleCreateGPUParticleSystem} label="Create" />
                 </SettingsPopover>
-            </div>
+            </QuickCreateRow>
 
             {/* Node Particle System */}
-            <div className={classes.row}>
+            <QuickCreateRow>
                 <Button onClick={handleCreateNodeParticleSystemAsync} label="Node Particle System" />
                 <SettingsPopover>
                     <TextInputPropertyLine label="Name" value={nodeParticleSystemName} onChange={(value) => setNodeParticleSystemName(value)} />
                     <TextInputPropertyLine label="Snippet ID" value={nodeParticleSystemSnippetId} onChange={(value) => setNodeParticleSystemSnippetId(value)} />
                     <Button appearance="primary" onClick={handleCreateNodeParticleSystemAsync} label="Create" />
                 </SettingsPopover>
-            </div>
-        </div>
+            </QuickCreateRow>
+        </QuickCreateSection>
     );
 };

@@ -587,6 +587,9 @@ export class GaussianSplattingMesh extends Mesh {
         // list view infos for active cameras
         const activeViewInfos: ICameraViewInfo[] = [];
         cameras.forEach((camera) => {
+            if (!camera) {
+                return;
+            }
             const cameraId = camera.uniqueId;
 
             const cameraViewInfos = this._cameraViewInfos.get(cameraId);

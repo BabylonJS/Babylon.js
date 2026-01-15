@@ -233,19 +233,17 @@ export const AbstractMeshEdgeRenderingProperties: FunctionComponent<{ mesh: Abst
                 }}
             />
             <Collapse visible={!!edgesRenderer}>
-                <>
-                    <BoundProperty
-                        component={SyncedSliderPropertyLine}
-                        label="Edges Width"
-                        description="Width of the rendered edges (0 to 10)."
-                        target={mesh}
-                        propertyKey="edgesWidth"
-                        min={0}
-                        max={10}
-                        step={0.1}
-                    />
-                    <BoundProperty component={Color4PropertyLine} label="Edge Color" target={mesh} propertyKey="edgesColor" />
-                </>
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="Edges Width"
+                    description="Width of the rendered edges (0 to 10)."
+                    target={mesh}
+                    propertyKey="edgesWidth"
+                    min={0}
+                    max={10}
+                    step={0.1}
+                />
+                <BoundProperty component={Color4PropertyLine} label="Edge Color" target={mesh} propertyKey="edgesColor" />
             </Collapse>
         </>
     );
