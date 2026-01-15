@@ -17,8 +17,8 @@ export const PostProcessProperties: FunctionComponent<{ postProcess: PostProcess
     const { postProcess } = props;
     return (
         <>
-            <StringifiedPropertyLine key="width" label="Width" description="The width of the post process" value={postProcess.width} units="px" />
-            <StringifiedPropertyLine key="height" label="Height" description="The height of the post process" value={postProcess.height} units="px" />
+            <StringifiedPropertyLine label="Width" description="The width of the post process" value={postProcess.width} units="px" />
+            <StringifiedPropertyLine label="Height" description="The height of the post process" value={postProcess.height} units="px" />
             <BoundProperty component={CheckboxPropertyLine} label="Auto Clear" target={postProcess} propertyKey="autoClear" />
             {postProcess.clearColor && <BoundProperty component={Color4PropertyLine} label="Clear Color" target={postProcess} propertyKey="clearColor" />}
             <BoundProperty component={CheckboxPropertyLine} label="Pixel Perfect" target={postProcess} propertyKey="enablePixelPerfectMode" />
