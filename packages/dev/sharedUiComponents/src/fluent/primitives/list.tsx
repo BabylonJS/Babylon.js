@@ -1,7 +1,10 @@
-import { CopyRegular, DeleteRegular } from "@fluentui/react-icons";
-import type { ReactNode, ReactElement } from "react";
-import { ButtonLine } from "../hoc/buttonLine";
+import type { ReactElement, ReactNode } from "react";
+
 import { Body1Strong, makeStyles, tokens } from "@fluentui/react-components";
+import { AddRegular, CopyRegular, DeleteRegular } from "@fluentui/react-icons";
+import { useMemo } from "react";
+
+import { ButtonLine } from "../hoc/buttonLine";
 
 const useListStyles = makeStyles({
     item: {
@@ -59,23 +62,23 @@ export function List<T>(props: ListProps<T>): ReactElement {
     const { items, renderItem, onDelete, onAdd, addButtonLabel = "Add new item" } = props;
     const classes = useListStyles();
 
+    const sortedItems = useMemo(() => [...items].sort((a, b) => a.sortBy - b.sortBy), [items]);
+
     return (
         <div>
-            <ButtonLine label={addButtonLabel} onClick={() => props.onAdd()} />
+            <ButtonLine label={addButtonLabel} icon={AddRegular} onClick={() => props.onAdd()} />
 
             <div className={classes.list}>
-                {items
-                    .sort((a, b) => a.sortBy - b.sortBy)
-                    .map((item: ListItem<T>, index: number) => (
-                        <div key={item.id} className={classes.item}>
-                            <Body1Strong className={classes.itemId}>#{index}</Body1Strong>
-                            <div className={classes.itemContent}>{renderItem(item, index)}</div>
-                            <div className={classes.iconContainer}>
-                                <CopyRegular onClick={() => onAdd(item)} />
-                                <DeleteRegular onClick={() => onDelete(item, index)} />
-                            </div>
+                {sortedItems.map((item: ListItem<T>, index: number) => (
+                    <div key={item.id} className={classes.item}>
+                        <Body1Strong className={classes.itemId}>#{index}</Body1Strong>
+                        <div className={classes.itemContent}>{renderItem(item, items.indexOf(sortedItems[index]))}</div>
+                        <div className={classes.iconContainer}>
+                            <CopyRegular onClick={() => onAdd(item)} />
+                            <DeleteRegular onClick={() => onDelete(item, items.indexOf(sortedItems[index]))} />
                         </div>
-                    ))}
+                    </div>
+                ))}
             </div>
         </div>
     );
