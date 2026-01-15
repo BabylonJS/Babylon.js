@@ -4,8 +4,8 @@ import {
     ChevronCircleDown16Regular,
     ChevronCircleRight16Regular,
     ChevronCircleRight20Regular,
+    CopyRegular,
     Copy16Regular,
-    Copy20Regular,
 } from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
@@ -59,6 +59,12 @@ const usePropertyLineStyles = makeStyles({
     checkbox: {
         display: "flex",
         alignItems: "center",
+        marginRight: tokens.spacingHorizontalXS,
+        "& > .fui-Checkbox__indicator": {
+            margin: "2px",
+            width: "12px",
+            height: "12px",
+        },
     },
 });
 
@@ -195,7 +201,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                             className={classes.copy}
                             title="Copy to clipboard"
                             appearance="transparent"
-                            icon={size === "small" ? Copy16Regular : Copy20Regular}
+                            icon={size === "small" ? Copy16Regular : CopyRegular}
                             onClick={() => copyCommandToClipboard(onCopy())}
                         />
                     )}
@@ -220,6 +226,12 @@ const useLineStyles = makeStyles({
         justifyContent: "center",
         paddingTop: tokens.spacingVerticalXXS,
         paddingBottom: tokens.spacingVerticalXXS,
+        borderTop: `1px solid transparent`,
+        borderBottom: `1px solid transparent`,
+        ":hover": {
+            borderTopColor: tokens.colorNeutralStroke2,
+            borderBottomColor: tokens.colorNeutralStroke2,
+        },
     },
     containerSmall: {
         minHeight: CustomTokens.lineHeightSmall,

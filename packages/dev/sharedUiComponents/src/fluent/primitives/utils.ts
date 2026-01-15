@@ -21,10 +21,10 @@ export const useInputStyles = makeStyles({
     inputSlot: { textAlign: "right" },
     invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
     container: {
-        flex: 1,
         display: "flex",
         flexDirection: "column",
         justifyContent: "center", // align items vertically
+        minWidth: 0, // Allow shrinking
     },
 });
 

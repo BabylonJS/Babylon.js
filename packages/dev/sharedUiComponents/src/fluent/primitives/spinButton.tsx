@@ -75,9 +75,9 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     const id = useId("spin-button");
     const mergedClassName = mergeClasses(classes.input, !validateValue(value) ? classes.invalid : "", props.className);
 
-    return (
+    return props.infoLabel ? (
         <div className={classes.container}>
-            {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
+            <InfoLabel {...props.infoLabel} htmlFor={id} />
             <FluentSpinButton
                 {...props}
                 input={{ className: classes.inputSlot }}
@@ -94,5 +94,21 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
                 className={mergedClassName}
             />
         </div>
+    ) : (
+        <FluentSpinButton
+            {...props}
+            input={{ className: classes.inputSlot }}
+            step={step}
+            id={id}
+            size={size}
+            precision={precision}
+            displayValue={`${value.toFixed(precision)}${props.unit ? " " + props.unit : ""}`}
+            value={value}
+            onChange={handleChange}
+            onKeyUp={handleKeyUp}
+            onKeyDown={HandleKeyDown}
+            onBlur={HandleOnBlur}
+            className={mergedClassName}
+        />
     );
 };
