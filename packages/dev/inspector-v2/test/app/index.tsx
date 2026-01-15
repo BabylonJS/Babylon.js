@@ -24,6 +24,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MultiMaterial } from "core/Materials/multiMaterial";
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Button } from "gui/2D/controls/button";
@@ -158,6 +159,8 @@ function createTestMetadata() {
 function createMaterials() {
     const multiMaterial = new MultiMaterial("multi", scene);
     multiMaterial.subMaterials.push(...scene.materials);
+
+    NodeMaterial.ParseFromSnippetAsync("9RX8AG#4", scene);
 }
 
 function createGaussianSplatting() {
