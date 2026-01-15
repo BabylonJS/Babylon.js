@@ -215,7 +215,7 @@ const remappedAttributesNames: string[] = [];
 /** @internal */
 export class ThinNativeEngine extends ThinEngine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 9;
+    private static readonly PROTOCOL_VERSION = 10;
 
     /** @internal */
     public static _createNativeDataStream(): NativeDataStream {
