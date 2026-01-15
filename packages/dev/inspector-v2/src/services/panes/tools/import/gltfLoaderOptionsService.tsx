@@ -5,13 +5,12 @@ import type { GLTFFileLoader, IGLTFLoaderExtension } from "loaders/glTF/glTFFile
 import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/glTFFileLoader";
 import type { IToolsService } from "../../toolsService";
 import { ToolsServiceIdentity } from "../../toolsService";
-import { useCallback, useEffect, useState } from "react";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { GLTFExtensionOptions, GLTFLoaderOptions } from "../../../../components/tools/import/gltfLoaderOptions";
 
 export const GLTFLoaderServiceIdentity = Symbol("GLTFLoaderService");
 
-let CurrentLoaderOptions = {
+const CurrentLoaderOptions = {
     alwaysComputeBoundingBox: false,
     alwaysComputeSkeletonRootNode: false,
     animationStartMode: GLTFLoaderAnimationStartMode.FIRST,
@@ -30,7 +29,7 @@ let CurrentLoaderOptions = {
 
 export type GLTFLoaderOptionsType = typeof CurrentLoaderOptions;
 
-let CurrentExtensionOptions = {
+const CurrentExtensionOptions = {
     /* eslint-disable @typescript-eslint/naming-convention */
     EXT_lights_image_based: { enabled: true },
     EXT_mesh_gpu_instancing: { enabled: true },
@@ -66,9 +65,6 @@ let CurrentExtensionOptions = {
 
 export type GLTFExtensionOptionsType = typeof CurrentExtensionOptions;
 
-/**
- * Service for managing the glTF loader's configuration, both loader options and extensions
- */
 export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
     friendlyName: "glTF Loader Options",
     consumes: [ToolsServiceIdentity],
@@ -101,38 +97,11 @@ export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsSe
             section: "GLTF Loader",
             order: 50,
             component: () => {
-                // Current configuration in the UI
-                const [loaderOpts, setLoaderOptions] = useState<GLTFLoaderOptionsType>(CurrentLoaderOptions);
-                const [extensionOpts, setExtensionOptions] = useState<GLTFExtensionOptionsType>(CurrentExtensionOptions);
-
-                // Update service state when UI state changes
-                useEffect(() => {
-                    CurrentLoaderOptions = loaderOpts;
-                }, [loaderOpts]);
-
-                useEffect(() => {
-                    CurrentExtensionOptions = extensionOpts;
-                }, [extensionOpts]);
-
-                const updateLoaderOption = useCallback(
-                    <K extends keyof GLTFLoaderOptionsType>(key: K, value: GLTFLoaderOptionsType[K]) => {
-                        setLoaderOptions({ ...loaderOpts, [key]: value });
-                    },
-                    [loaderOpts, setLoaderOptions]
-                );
-
-                const updateExtensionOption = useCallback(
-                    <T extends keyof GLTFExtensionOptionsType, K extends keyof GLTFExtensionOptionsType[T]>(extensionName: T, key: K, value: GLTFExtensionOptionsType[T][K]) => {
-                        setExtensionOptions({ ...extensionOpts, [extensionName]: { ...extensionOpts[extensionName], [key]: value } });
-                    },
-                    [extensionOpts, setExtensionOptions]
-                );
-
                 return (
                     <>
                         <MessageBar intent="info" title="" message="Reload the file for changes to take effect" />
-                        <GLTFLoaderOptions loaderOptions={loaderOpts} updateLoaderOption={updateLoaderOption} />
-                        <GLTFExtensionOptions extensionOptions={extensionOpts} updateExtensionOption={updateExtensionOption} />
+                        <GLTFLoaderOptions loaderOptions={CurrentLoaderOptions} />
+                        <GLTFExtensionOptions extensionOptions={CurrentExtensionOptions} />
                     </>
                 );
             },
