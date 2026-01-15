@@ -6,20 +6,11 @@ import type { Scene } from "core/scene";
 import { useState } from "react";
 import type { FunctionComponent } from "react";
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import { makeStyles, tokens } from "@fluentui/react-components";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { SettingsPopover } from "./settingsPopover";
-
-const useStyles = makeStyles({
-    section: {
-        display: "flex",
-        flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
-    },
-    row: { display: "flex", alignItems: "center", gap: "4px" },
-});
+import { QuickCreateSection, QuickCreateRow } from "./quickCreateLayout";
 
 type LightsContentProps = {
     scene: Scene;
@@ -31,8 +22,6 @@ type LightsContentProps = {
  * @returns React component
  */
 export const LightsContent: FunctionComponent<LightsContentProps> = ({ scene }) => {
-    const classes = useStyles();
-
     // Point Light state
     const [pointLightName, setPointLightName] = useState("Point Light");
     const [pointLightPosition, setPointLightPosition] = useState(new Vector3(0, 5, 0));
@@ -64,29 +53,29 @@ export const LightsContent: FunctionComponent<LightsContentProps> = ({ scene }) 
     };
 
     return (
-        <div className={classes.section}>
+        <QuickCreateSection>
             {/* Point Light */}
-            <div className={classes.row}>
+            <QuickCreateRow>
                 <Button onClick={handleCreatePointLight} label="Point Light" />
                 <SettingsPopover>
                     <TextInputPropertyLine label="Name" value={pointLightName} onChange={(value) => setPointLightName(value)} />
                     <Vector3PropertyLine label="Position" value={pointLightPosition} onChange={(value) => setPointLightPosition(value)} />
                     <Button appearance="primary" onClick={handleCreatePointLight} label="Create" />
                 </SettingsPopover>
-            </div>
+            </QuickCreateRow>
 
             {/* Directional Light */}
-            <div className={classes.row}>
+            <QuickCreateRow>
                 <Button onClick={handleCreateDirectionalLight} label="Directional Light" />
                 <SettingsPopover>
                     <TextInputPropertyLine label="Name" value={directionalLightName} onChange={(value) => setDirectionalLightName(value)} />
                     <Vector3PropertyLine label="Direction" value={directionalLightDirection} onChange={(value) => setDirectionalLightDirection(value)} />
                     <Button appearance="primary" onClick={handleCreateDirectionalLight} label="Create" />
                 </SettingsPopover>
-            </div>
+            </QuickCreateRow>
 
             {/* Spotlight */}
-            <div className={classes.row}>
+            <QuickCreateRow>
                 <Button onClick={handleCreateSpotlight} label="Spotlight" />
                 <SettingsPopover>
                     <TextInputPropertyLine label="Name" value={spotlightName} onChange={(value) => setSpotlightName(value)} />
@@ -96,7 +85,7 @@ export const LightsContent: FunctionComponent<LightsContentProps> = ({ scene }) 
                     <SpinButtonPropertyLine label="Exponent" value={spotlightExponent} onChange={(value) => setSpotlightExponent(value)} min={0} max={10} step={0.1} />
                     <Button appearance="primary" onClick={handleCreateSpotlight} label="Create" />
                 </SettingsPopover>
-            </div>
-        </div>
+            </QuickCreateRow>
+        </QuickCreateSection>
     );
 };

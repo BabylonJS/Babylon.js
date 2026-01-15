@@ -15,6 +15,9 @@ import { MaterialsContent } from "./materials";
 import { LightsContent } from "./lights";
 import { CamerasContent } from "./cameras";
 import { ParticlesContent } from "./particles";
+import { RenderingPipelinesContent } from "./renderingPipelines";
+import { FrameGraphsContent } from "./frameGraphs";
+import { SpriteManagersContent } from "./spriteManagers";
 
 // TODO: This is just a placeholder for a dynamically installed extension that brings in asset creation tools (node materials, etc.).
 export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext]> = {
@@ -48,6 +51,15 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                 </BabylonAccordionSection>
                                 <BabylonAccordionSection title="Cameras">
                                     <CamerasContent scene={scene} />
+                                </BabylonAccordionSection>
+                                <BabylonAccordionSection title="Rendering Pipelines">
+                                    <RenderingPipelinesContent scene={scene} />
+                                </BabylonAccordionSection>
+                                <BabylonAccordionSection title="Frame Graphs">
+                                    <FrameGraphsContent scene={scene} />
+                                </BabylonAccordionSection>
+                                <BabylonAccordionSection title="Sprite Managers">
+                                    <SpriteManagersContent scene={scene} />
                                 </BabylonAccordionSection>
                             </BabylonAccordion>
                         </>

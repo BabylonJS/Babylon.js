@@ -28,6 +28,7 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { MaterialSelectorPropertyLine, NodeSelectorPropertyLine, SkeletonSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
+import { Constants } from "core/Engines/constants";
 
 // Ensures that the outlineRenderer and edgesRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/edgesRenderer";
@@ -92,6 +93,15 @@ export const AbstractMeshDisplayProperties: FunctionComponent<{ mesh: AbstractMe
         <>
             <BoundProperty component={NumberInputPropertyLine} label="Alpha Index" target={mesh} propertyKey="alphaIndex" />
             <BoundProperty component={SwitchPropertyLine} label="Receive Shadows" target={mesh} propertyKey="receiveShadows" />
+
+            {mesh.isVerticesDataPresent(VertexBuffer.ColorKind) && (
+                <>
+                    <BoundProperty label="Use Vertex Colors" component={SwitchPropertyLine} target={mesh} propertyKey="useVertexColors" />
+                    <BoundProperty label="Has Vertex Alpha" component={SwitchPropertyLine} target={mesh} propertyKey="hasVertexAlpha" />
+                </>
+            )}
+            {mesh.getScene().fogMode !== Constants.FOGMODE_NONE && <BoundProperty label="Apply Fog" component={SwitchPropertyLine} target={mesh} propertyKey="applyFog" />}
+            {!mesh.parent && <BoundProperty component={SwitchPropertyLine} label="Infinite distance" target={mesh} propertyKey="infiniteDistance" />}
             <BoundProperty
                 component={SyncedSliderPropertyLine}
                 label="Rendering Group Id"
@@ -223,19 +233,17 @@ export const AbstractMeshEdgeRenderingProperties: FunctionComponent<{ mesh: Abst
                 }}
             />
             <Collapse visible={!!edgesRenderer}>
-                <>
-                    <BoundProperty
-                        component={SyncedSliderPropertyLine}
-                        label="Edges Width"
-                        description="Width of the rendered edges (0 to 10)."
-                        target={mesh}
-                        propertyKey="edgesWidth"
-                        min={0}
-                        max={10}
-                        step={0.1}
-                    />
-                    <BoundProperty component={Color4PropertyLine} label="Edge Color" target={mesh} propertyKey="edgesColor" />
-                </>
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="Edges Width"
+                    description="Width of the rendered edges (0 to 10)."
+                    target={mesh}
+                    propertyKey="edgesWidth"
+                    min={0}
+                    max={10}
+                    step={0.1}
+                />
+                <BoundProperty component={Color4PropertyLine} label="Edge Color" target={mesh} propertyKey="edgesColor" />
             </Collapse>
         </>
     );

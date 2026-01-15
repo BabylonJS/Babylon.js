@@ -52,6 +52,8 @@ export class GeospatialCamera extends Camera {
     private _collisionVelocity: Vector3 = new Vector3();
     /** Public option to customize the collision offset applied each frame - vs the one calculated using internal CollisionCoordinator */
     public perFrameCollisionOffset: Vector3 = new Vector3();
+    /** Enable or disable collision checking for this camera. Default is false. */
+    public checkCollisions: boolean = false;
 
     constructor(name: string, scene: Scene, options: CameraOptions, pickPredicate?: MeshPredicate) {
         super(name, new Vector3(), scene);
@@ -192,7 +194,9 @@ export class GeospatialCamera extends Camera {
         this._tempPosition.copyFrom(this._center).addInPlace(this._tempVect);
 
         // Recalculate collisionOffset to be applied later when viewMatrix is calculated (allowing camera users to modify the value in afterCheckInputsObservable)
-        this.perFrameCollisionOffset = this._getCollisionOffset(this._tempPosition);
+        if (this.checkCollisions) {
+            this.perFrameCollisionOffset = this._getCollisionOffset(this._tempPosition);
+        }
 
         this._position.copyFrom(this._tempPosition);
 
@@ -523,9 +527,13 @@ export class GeospatialCamera extends Camera {
      * @returns
      */
     protected _getCollisionOffset(newPosition: Vector3): Vector3 {
-        const coordinator = this.getScene().collisionCoordinator;
         const collisionOffset = TmpVectors.Vector3[6].setAll(0);
-        if (!coordinator || !this._scene.collisionsEnabled) {
+        if (!this.checkCollisions || !this._scene.collisionsEnabled) {
+            return collisionOffset;
+        }
+
+        const coordinator = this.getScene().collisionCoordinator;
+        if (!coordinator) {
             return collisionOffset;
         }
 

@@ -6,7 +6,7 @@ import type { ParticleGradientValueBlock } from "./particleGradientValueBlock";
 import { Constants } from "../../../Engines/constants";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
@@ -132,6 +132,7 @@ export class SystemBlock extends NodeParticleBlock {
         this.registerInput("onStart", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("onEnd", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("rampGradient", NodeParticleBlockConnectionPointTypes.Color4, true);
+        this.registerInput("emitterPosition", NodeParticleBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
     }
 
@@ -207,6 +208,13 @@ export class SystemBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the emitterPosition input component
+     */
+    public get emitterPosition(): NodeParticleConnectionPoint {
+        return this._inputs[9];
+    }
+
+    /**
      * Gets the system output component
      */
     public get system(): NodeParticleConnectionPoint {
@@ -241,6 +249,7 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem.textureMask = this.textureMask.getConnectedValue(state) ?? new Color4(1, 1, 1, 1);
         particleSystem.isLocal = this.isLocal;
         particleSystem.disposeOnStop = this.disposeOnStop;
+        particleSystem.emitter = (this.emitterPosition.getConnectedValue(state) as Vector3) ?? Vector3.Zero();
 
         // The emit rate can vary if it is connected to another block like a gradient
         particleSystem._calculateEmitRate = () => {

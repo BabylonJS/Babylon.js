@@ -40,7 +40,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 {
                     section: "General",
                     order: 1,
-                    component: ({ context }) => <ParticleSystemGeneralProperties particleSystem={context} />,
+                    component: ({ context }) => <ParticleSystemGeneralProperties particleSystem={context} selectionService={selectionService} />,
                 },
             ],
         });

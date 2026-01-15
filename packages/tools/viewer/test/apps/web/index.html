@@ -316,18 +316,20 @@
                 }
             };
 
-            let isInspectorVisible = false;
+            let inspectorToken = null;
             globalThis.onToggleInspector = async () => {
-                const { Inspector } = await import("inspector/inspector");
+                const { ShowInspector } = await import("inspector-v2/inspector");
                 console.log("toggle inspector");
-                if (isInspectorVisible) {
-                    Inspector.Hide();
+                if (inspectorToken) {
+                    inspectorToken.dispose();
+                    inspectorToken = null;
                 } else {
                     console.log(viewerDetails != null);
                     console.log(viewerDetails?.scene != null);
-                    Inspector.Show(viewerDetails.scene, {});
+                    inspectorToken = ShowInspector(viewerDetails.scene, {
+                        // containerElement: document.body,
+                    });
                 }
-                isInspectorVisible = !isInspectorVisible;
             };
 
             let isTopContentVisible = false;

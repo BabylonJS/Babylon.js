@@ -3,22 +3,13 @@ import type { Scene } from "core/scene";
 import { useState, useRef, type ChangeEvent } from "react";
 import type { FunctionComponent } from "react";
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import { makeStyles, tokens } from "@fluentui/react-components";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
 import { FilesInput } from "core/Misc/filesInput";
 import { SettingsPopover } from "./settingsPopover";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-
-const useStyles = makeStyles({
-    section: {
-        display: "flex",
-        flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
-    },
-    row: { display: "flex", alignItems: "center", gap: "4px" },
-});
+import { QuickCreateSection, QuickCreateRow } from "./quickCreateLayout";
 
 const SetCamera = function (scene: Scene) {
     const camera = scene.activeCamera as ArcRotateCamera;
@@ -82,7 +73,6 @@ type GroundParams = {
  * @internal
  */
 export const MeshesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
-    const classes = useStyles();
     const [sphereParams, setSphereParams] = useState<SphereParams>({
         name: "Sphere",
         segments: 32,
@@ -213,8 +203,8 @@ export const MeshesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) =>
     };
 
     return (
-        <div className={classes.section}>
-            <div className={classes.row}>
+        <QuickCreateSection>
+            <QuickCreateRow>
                 <Button
                     onClick={() => {
                         MeshBuilder.CreateSphere("Sphere", {}, scene);
@@ -288,8 +278,8 @@ export const MeshesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) =>
                         />
                     </div>
                 </SettingsPopover>
-            </div>
-            <div className={classes.row}>
+            </QuickCreateRow>
+            <QuickCreateRow>
                 <Button
                     onClick={() => {
                         MeshBuilder.CreateBox("Box", {}, scene);
@@ -314,8 +304,8 @@ export const MeshesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) =>
                         />
                     </div>
                 </SettingsPopover>
-            </div>
-            <div className={classes.row}>
+            </QuickCreateRow>
+            <QuickCreateRow>
                 <Button
                     onClick={() => {
                         MeshBuilder.CreateCylinder("Cylinder", {}, scene);
@@ -371,8 +361,8 @@ export const MeshesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) =>
                         />
                     </div>
                 </SettingsPopover>
-            </div>
-            <div className={classes.row}>
+            </QuickCreateRow>
+            <QuickCreateRow>
                 <Button
                     onClick={() => {
                         MeshBuilder.CreateCylinder("Cone", { diameterTop: 0 }, scene);
@@ -404,8 +394,8 @@ export const MeshesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) =>
                         />
                     </div>
                 </SettingsPopover>
-            </div>
-            <div className={classes.row}>
+            </QuickCreateRow>
+            <QuickCreateRow>
                 <Button
                     onClick={() => {
                         MeshBuilder.CreateGround("Ground", {}, scene);
@@ -446,8 +436,8 @@ export const MeshesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) =>
                         />
                     </div>
                 </SettingsPopover>
-            </div>
-            <div className={classes.row}>
+            </QuickCreateRow>
+            <QuickCreateRow>
                 <Button
                     onClick={() => {
                         fileInputRef.current?.click();
@@ -474,7 +464,7 @@ export const MeshesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) =>
                     style={{ display: "none" }}
                     onChange={handleLocalMeshImport}
                 />
-            </div>
-        </div>
+            </QuickCreateRow>
+        </QuickCreateSection>
     );
 };

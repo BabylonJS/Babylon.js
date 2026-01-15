@@ -17,8 +17,13 @@ const useSyncedSliderStyles = makeStyles({
         alignItems: "center",
     },
     slider: {
-        minWidth: CustomTokens.sliderMinWidth, // Minimum width for slider to remain usable
-        maxWidth: CustomTokens.sliderMaxWidth,
+        flex: "1 1 auto", // Grow to fill available space
+        minWidth: CustomTokens.sliderMinWidth,
+        maxWidth: "none", // Allow slider to grow
+    },
+    compactSpinButton: {
+        width: "70px",
+        flex: "0 0 auto", // Don't grow, stay fixed
     },
 });
 
@@ -33,6 +38,8 @@ export type SyncedSliderProps = PrimitiveProps<number> & {
     unit?: string;
     /** When true, onChange is only called when the user releases the slider, not during drag */
     notifyOnlyOnRelease?: boolean;
+    /** When true, slider grows to fill space and SpinButton is fixed at 70px */
+    compact?: boolean;
 };
 
 /**
@@ -108,7 +115,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                         onPointerUp={handleSliderPointerUp}
                     />
                 )}
-                <SpinButton {...passthroughProps} value={value} onChange={handleInputChange} step={props.step} />
+                <SpinButton {...passthroughProps} className={props.compact ? classes.compactSpinButton : undefined} value={value} onChange={handleInputChange} step={props.step} />
             </div>
         </div>
     );

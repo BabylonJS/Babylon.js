@@ -2,7 +2,6 @@ import type { Nullable, AbstractMesh, IParticleSystem } from "core/index";
 
 /**
  * Structure used by the frame graph to reference objects.
- * @experimental
  */
 export class FrameGraphObjectList {
     /**
