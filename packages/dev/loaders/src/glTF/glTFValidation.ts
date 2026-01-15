@@ -2,6 +2,7 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable @typescript-eslint/promise-function-async */
 import type * as GLTF2 from "babylonjs-gltf2interface";
+import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
 
@@ -101,14 +102,37 @@ export class GLTFValidation {
     private static _LoadScriptPromise: Promise<void>;
 
     /**
-     * The history of validation results.
+     * The history of validation results (default: null)
+     * Set `ResultsHistoryEnabled` to true to enable.
+     * Used internally by the Inspector and Sandbox tools.
+     * @internal
      */
-    public static ResultsHistory: GLTF2.IGLTFValidationResults[] = [];
+    public static ResultsHistory: Nullable<GLTF2.IGLTFValidationResults[]> = null;
 
+    /**
+     * Whether to track the results history (default: false)
+     * If so, use `ResultsHistory` to access the history.
+     * Used internally by the Inspector and Sandbox tools.
+     * @internal
+     */
+    public static set ResultsHistoryEnabled(value: boolean) {
+        if (value && this.ResultsHistory === null) {
+            this.ResultsHistory = [];
+        } else if (!value && this.ResultsHistory !== null) {
+            this.ResultsHistory = null;
+        }
+    }
+
+    private static _OnValidatedObservable: Nullable<Observable<GLTF2.IGLTFValidationResults>> = null;
     /**
      * Observable event fired when new validation results are available.
      */
-    public static OnValidatedObservable = new Observable<GLTF2.IGLTFValidationResults>();
+    public static get OnValidatedObservable(): Observable<GLTF2.IGLTFValidationResults> {
+        if (!this._OnValidatedObservable) {
+            this._OnValidatedObservable = new Observable<GLTF2.IGLTFValidationResults>();
+        }
+        return this._OnValidatedObservable;
+    }
 
     /**
      * Validate a glTF asset using the glTF-Validator.
@@ -154,8 +178,8 @@ export class GLTFValidation {
                         case "validate.resolve": {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
-                            this.ResultsHistory.push(data.value);
-                            this.OnValidatedObservable.notifyObservers(data.value);
+                            GLTFValidation.ResultsHistory?.push(data.value);
+                            this._OnValidatedObservable?.notifyObservers(data.value);
                             resolve(data.value);
                             worker.terminate();
                             break;

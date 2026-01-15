@@ -17,6 +17,7 @@ export const GLTFValidationServiceDefinition: ServiceDefinition<[], [IToolsServi
     friendlyName: "glTF Validation",
     consumes: [ToolsServiceIdentity],
     factory: (toolsService) => {
+        GLTFValidation.ResultsHistoryEnabled = true;
         const pluginObserver = SceneLoader.OnPluginActivatedObservable.add((plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync) => {
             if (plugin.name === "gltf") {
                 const loader = plugin as GLTFFileLoader;
@@ -30,7 +31,7 @@ export const GLTFValidationServiceDefinition: ServiceDefinition<[], [IToolsServi
             order: 60,
             component: () => {
                 const validationState = useObservableState(() => {
-                    if (GLTFValidation.ResultsHistory.length === 0) {
+                    if (!GLTFValidation.ResultsHistory?.length) {
                         return null;
                     }
                     return GLTFValidation.ResultsHistory[GLTFValidation.ResultsHistory.length - 1];

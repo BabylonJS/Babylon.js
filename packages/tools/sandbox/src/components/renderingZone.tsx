@@ -26,6 +26,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
+import { GLTFValidation } from "loaders/glTF/glTFValidation";
 
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
@@ -415,6 +416,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         // Setting up some GLTF values
         GLTFFileLoader.IncrementalLoading = false;
+        GLTFValidation.ResultsHistoryEnabled = true; // Early enable validation results tracking for glTF Validation tool
         this.props.globalState.glTFLoaderExtensions = {};
         SceneLoader.OnPluginActivatedObservable.add((plugin) => {
             this._currentPluginName = plugin.name;
