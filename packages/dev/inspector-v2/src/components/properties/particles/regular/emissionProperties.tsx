@@ -1,8 +1,8 @@
 import type { FactorGradient } from "core/index";
-import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import type { FunctionComponent } from "react";
 
+import { ParticleSystem } from "core/Particles/particleSystem";
 import { useCallback } from "react";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
@@ -19,35 +19,42 @@ import { useObservableArray } from "../useObservableArray";
 export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSystem: ParticleSystem | GPUParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
-    const emitRateGradientsGetter = useCallback(() => system.getEmitRateGradients(), [system]);
+    const isCpuParticleSystem = system instanceof ParticleSystem;
+    const emitRateGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getEmitRateGradients() : null), [system]);
     const emitRateGradients = useObservableArray<ParticleSystem, FactorGradient>(
-        system,
+        isCpuParticleSystem ? system : null,
         emitRateGradientsGetter,
         "addEmitRateGradient",
         "removeEmitRateGradient",
         "forceRefreshGradients"
     );
 
-    const velocityGradientsGetter = useCallback(() => system.getVelocityGradients(), [system]);
+    const velocityGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getVelocityGradients() : null), [system]);
     const velocityGradients = useObservableArray<ParticleSystem, FactorGradient>(
-        system,
+        isCpuParticleSystem ? system : null,
         velocityGradientsGetter,
         "addVelocityGradient",
         "removeVelocityGradient",
         "forceRefreshGradients"
     );
 
-    const limitVelocityGradientsGetter = useCallback(() => system.getLimitVelocityGradients(), [system]);
+    const limitVelocityGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getLimitVelocityGradients() : null), [system]);
     const limitVelocityGradients = useObservableArray<ParticleSystem, FactorGradient>(
-        system,
+        isCpuParticleSystem ? system : null,
         limitVelocityGradientsGetter,
         "addLimitVelocityGradient",
         "removeLimitVelocityGradient",
         "forceRefreshGradients"
     );
 
-    const dragGradientsGetter = useCallback(() => system.getDragGradients(), [system]);
-    const dragGradients = useObservableArray<ParticleSystem, FactorGradient>(system, dragGradientsGetter, "addDragGradient", "removeDragGradient", "forceRefreshGradients");
+    const dragGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getDragGradients() : null), [system]);
+    const dragGradients = useObservableArray<ParticleSystem, FactorGradient>(
+        isCpuParticleSystem ? system : null,
+        dragGradientsGetter,
+        "addDragGradient",
+        "removeDragGradient",
+        "forceRefreshGradients"
+    );
 
     const useEmitRateGradients = (emitRateGradients?.length ?? 0) > 0;
     const useVelocityGradients = (velocityGradients?.length ?? 0) > 0;
@@ -58,7 +65,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
         <>
             <BoundProperty component={NumberInputPropertyLine} label="Emit rate" target={system} propertyKey="emitRate" min={0} step={1} />
 
-            {!useEmitRateGradients && (
+            {isCpuParticleSystem && !useEmitRateGradients && (
                 <ButtonLine
                     label="Use Emit rate gradients"
                     onClick={() => {
@@ -93,7 +100,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
             <BoundProperty component={NumberInputPropertyLine} label="Min Emit Power" target={system} propertyKey="minEmitPower" min={0} step={0.1} />
             <BoundProperty component={NumberInputPropertyLine} label="Max Emit Power" target={system} propertyKey="maxEmitPower" min={0} step={0.1} />
 
-            {!useVelocityGradients && (
+            {isCpuParticleSystem && !useVelocityGradients && (
                 <ButtonLine
                     label="Use Velocity gradients"
                     onClick={() => {
@@ -125,7 +132,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
                 />
             )}
 
-            {!useLimitVelocityGradients && (
+            {isCpuParticleSystem && !useLimitVelocityGradients && (
                 <ButtonLine
                     label="Use Limit Velocity gradients"
                     onClick={() => {
@@ -157,7 +164,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
                 />
             )}
 
-            {!useDragGradients && (
+            {isCpuParticleSystem && !useDragGradients && (
                 <ButtonLine
                     label="Use Drag gradients"
                     onClick={() => {

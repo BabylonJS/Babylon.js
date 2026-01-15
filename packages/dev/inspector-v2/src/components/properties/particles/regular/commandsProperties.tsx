@@ -84,13 +84,20 @@ export const ParticleSystemCommandProperties: FunctionComponent<{ particleSystem
             const candidate = NormalizeParticleSystemSerialization(jsonObject);
 
             try {
-                // Apply in-place to keep selection stable.
-                ParticleSystem._Parse(candidate, system, scene, "");
+                let newSystem: GPUParticleSystem | ParticleSystem;
+                if (isCpuParticleSystem) {
+                    newSystem = ParticleSystem.Parse(candidate, scene, "");
+                } else {
+                    newSystem = GPUParticleSystem.Parse(candidate, scene, "");
+                }
+
+                system.dispose();
+                selectionService.selectedEntity = newSystem;
             } catch (e) {
                 alert("Failed to load particle system: " + e);
             }
         },
-        [scene, system]
+        [scene, system, isCpuParticleSystem, selectionService]
     );
 
     const loadFromSnippetServer = useCallback(async () => {

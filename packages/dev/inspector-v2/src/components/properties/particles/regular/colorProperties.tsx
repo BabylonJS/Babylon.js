@@ -1,11 +1,11 @@
 import type { ColorGradient, FactorGradient } from "core/index";
 import type { Color3Gradient } from "core/Misc/gradients";
-import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import type { FunctionComponent } from "react";
 
 import { useCallback } from "react";
 import { Color3 } from "core/Maths/math.color";
+import { ParticleSystem } from "core/Particles/particleSystem";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Color3GradientList, Color4GradientList, FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
@@ -23,26 +23,39 @@ import { useObservableArray } from "../useObservableArray";
 export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: ParticleSystem | GPUParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
-    const colorGradientsGetter = useCallback(() => system.getColorGradients(), [system]);
-    const colorGradients = useObservableArray<ParticleSystem, ColorGradient>(system, colorGradientsGetter, "addColorGradient", "removeColorGradient", "forceRefreshGradients");
+    const isCpuParticleSystem = system instanceof ParticleSystem;
+    const colorGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getColorGradients() : null), [system]);
+    const colorGradients = useObservableArray<ParticleSystem, ColorGradient>(
+        isCpuParticleSystem ? system : null,
+        colorGradientsGetter,
+        "addColorGradient",
+        "removeColorGradient",
+        "forceRefreshGradients"
+    );
 
     const useRampGradients = useProperty(system, "useRampGradients");
 
-    const rampGradientsGetter = useCallback(() => system.getRampGradients(), [system]);
-    const rampGradients = useObservableArray<ParticleSystem, Color3Gradient>(system, rampGradientsGetter, "addRampGradient", "removeRampGradient", "forceRefreshGradients");
+    const rampGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getRampGradients() : null), [system]);
+    const rampGradients = useObservableArray<ParticleSystem, Color3Gradient>(
+        isCpuParticleSystem ? system : null,
+        rampGradientsGetter,
+        "addRampGradient",
+        "removeRampGradient",
+        "forceRefreshGradients"
+    );
 
-    const colorRemapGradientsGetter = useCallback(() => system.getColorRemapGradients(), [system]);
+    const colorRemapGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getColorRemapGradients() : null), [system]);
     const colorRemapGradients = useObservableArray<ParticleSystem, FactorGradient>(
-        system,
+        isCpuParticleSystem ? system : null,
         colorRemapGradientsGetter,
         "addColorRemapGradient",
         "removeColorRemapGradient",
         "forceRefreshGradients"
     );
 
-    const alphaRemapGradientsGetter = useCallback(() => system.getAlphaRemapGradients(), [system]);
+    const alphaRemapGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getAlphaRemapGradients() : null), [system]);
     const alphaRemapGradients = useObservableArray<ParticleSystem, FactorGradient>(
-        system,
+        isCpuParticleSystem ? system : null,
         alphaRemapGradientsGetter,
         "addAlphaRemapGradient",
         "removeAlphaRemapGradient",
@@ -94,8 +107,7 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                 />
             )}
 
-            <BoundProperty component={SwitchPropertyLine} label="Enable Ramp gradients" target={system} propertyKey="useRampGradients" />
-
+            {isCpuParticleSystem && <BoundProperty component={SwitchPropertyLine} label="Enable Ramp gradients" target={system} propertyKey="useRampGradients" />}
             {useRampGradients && (
                 <>
                     {!hasRampGradients && (

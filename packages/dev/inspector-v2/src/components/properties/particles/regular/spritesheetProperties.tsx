@@ -1,4 +1,5 @@
 import type { ParticleSystem } from "core/Particles/particleSystem";
+import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import type { FunctionComponent } from "react";
 
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
@@ -10,7 +11,7 @@ import { BoundProperty } from "../../boundProperty";
  * @param props Component props.
  * @returns Render property lines.
  */
-export const ParticleSystemSpritesheetProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
+export const ParticleSystemSpritesheetProperties: FunctionComponent<{ particleSystem: ParticleSystem | GPUParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
     return (
