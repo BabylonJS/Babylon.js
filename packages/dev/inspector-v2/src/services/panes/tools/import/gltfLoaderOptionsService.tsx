@@ -6,7 +6,7 @@ import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "lo
 import type { IToolsService } from "../../toolsService";
 import { ToolsServiceIdentity } from "../../toolsService";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
-import { GLTFExtensionOptions, GLTFLoaderOptions } from "../../../../components/tools/import/gltfLoaderOptions";
+import { GLTFExtensionOptionsTool, GLTFLoaderOptionsTool } from "../../../../components/tools/import/gltfLoaderOptionsTool";
 
 export const GLTFLoaderServiceIdentity = Symbol("GLTFLoaderService");
 
@@ -66,7 +66,7 @@ const CurrentExtensionOptions = {
 export type GLTFExtensionOptionsType = typeof CurrentExtensionOptions;
 
 export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
-    friendlyName: "glTF Loader Options",
+    friendlyName: "GLTF Loader Options",
     consumes: [ToolsServiceIdentity],
     factory: (toolsService) => {
         // Subscribe to plugin activation
@@ -100,8 +100,8 @@ export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsSe
                 return (
                     <>
                         <MessageBar intent="info" title="" message="Reload the file for changes to take effect" />
-                        <GLTFLoaderOptions loaderOptions={CurrentLoaderOptions} />
-                        <GLTFExtensionOptions extensionOptions={CurrentExtensionOptions} />
+                        <GLTFLoaderOptionsTool loaderOptions={CurrentLoaderOptions} />
+                        <GLTFExtensionOptionsTool extensionOptions={CurrentExtensionOptions} />
                     </>
                 );
             },

@@ -9,15 +9,12 @@ import { useObservableState } from "../../../../hooks/observableHooks";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { GLTFValidation } from "loaders/glTF/glTFValidation";
 
-/**
- * glTF Validator service that displays validation results
- * of the latest glTF loaded in the tools pane.
- */
 export const GLTFValidationServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
-    friendlyName: "glTF Validation",
+    friendlyName: "GLTF Validation",
     consumes: [ToolsServiceIdentity],
     factory: (toolsService) => {
         GLTFValidation.ResultsHistoryEnabled = true;
+
         const pluginObserver = SceneLoader.OnPluginActivatedObservable.add((plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync) => {
             if (plugin.name === "gltf") {
                 const loader = plugin as GLTFFileLoader;

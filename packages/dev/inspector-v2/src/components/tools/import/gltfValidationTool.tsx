@@ -5,12 +5,6 @@ import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propert
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
-/**
- * Component that displays glTF validation results.
- * Shows validation status (errors, warnings, hints, info) and allows viewing detailed report.
- * @param props - Component props
- * @returns The validation results UI
- */
 export const GLTFValidationTool: FunctionComponent<{ validationResults: IGLTFValidationResults }> = ({ validationResults }) => {
     const openValidationDetails = useCallback(() => {
         const win = window.open("", "_blank");

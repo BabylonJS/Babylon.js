@@ -20,12 +20,7 @@ const CoordinateSystemModeOptions: DropdownOption<number>[] = [
     { label: "Right Handed", value: GLTFLoaderCoordinateSystemMode.FORCE_RIGHT_HANDED },
 ];
 
-/**
- * Displays global loader configuration options in a collapsible section.
- * @param props - Component props including service and current config
- * @returns Loader settings UI
- */
-export const GLTFLoaderOptions: FunctionComponent<{
+export const GLTFLoaderOptionsTool: FunctionComponent<{
     loaderOptions: GLTFLoaderOptionsType;
 }> = ({ loaderOptions }) => {
     return (
@@ -66,13 +61,7 @@ export const GLTFLoaderOptions: FunctionComponent<{
     );
 };
 
-/**
- * Displays glTF extension configuration options in a collapsible section.
- * Allows enabling/disabling extensions and configuring extension-specific properties.
- * @param props - Component props including service and extension states
- * @returns Extension options UI
- */
-export const GLTFExtensionOptions: FunctionComponent<{
+export const GLTFExtensionOptionsTool: FunctionComponent<{
     extensionOptions: GLTFExtensionOptionsType;
 }> = ({ extensionOptions }) => {
     return (

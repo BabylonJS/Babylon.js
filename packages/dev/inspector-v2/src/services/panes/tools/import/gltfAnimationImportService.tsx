@@ -1,17 +1,17 @@
 import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
 import { ToolsServiceIdentity } from "../../toolsService";
 import type { IToolsService } from "../../toolsService";
-import { GLTFAnimationImport } from "../../../../components/tools/import/gltfAnimationImport";
+import { GLTFAnimationImportTool } from "../../../../components/tools/import/gltfAnimationImportTool";
 
 export const GLTFAnimationImportServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
-    friendlyName: "Animation Import Tool",
+    friendlyName: "GLTF Animation Import",
     consumes: [ToolsServiceIdentity],
     factory: (toolsService) => {
         const contentRegistration = toolsService.addSectionContent({
             key: "AnimationImport",
             order: 40,
-            section: "Animation Import",
-            component: ({ context }) => <GLTFAnimationImport scene={context} />,
+            section: "GLTF Animation Import",
+            component: ({ context }) => <GLTFAnimationImportTool scene={context} />,
         });
 
         return {
