@@ -22,7 +22,6 @@ export const PostProcessRenderPipelineSamplesProperties: FunctionComponent<{ pip
             target={pipeline as PostProcessRenderPipeline & { samples: number }}
             propertyKey="samples"
             min={1}
-            max={64}
             step={1}
         />
     );

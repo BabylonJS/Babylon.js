@@ -16,11 +16,11 @@ export const IblShadowsRenderPipelineVoxelProperties: FunctionComponent<{ pipeli
         <>
             <ButtonLine label="Update Scene Bounds" onClick={() => pipeline.updateSceneBounds()} />
             <ButtonLine label="Revoxelize" onClick={() => pipeline.updateVoxelization()} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Shadow Opacity" target={pipeline} propertyKey="shadowOpacity" min={0} max={1} step={0.05} />
-            <BoundProperty component={NumberInputPropertyLine} label="Sample Directions" target={pipeline} propertyKey="sampleDirections" min={0} max={8} step={1} />
-            <BoundProperty component={NumberInputPropertyLine} label="Resolution Exp" target={pipeline} propertyKey="resolutionExp" min={4} max={8} step={1} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Shadow Remanence" target={pipeline} propertyKey="shadowRemanence" min={0} max={1} step={0.01} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Voxel Shadow Opacity" target={pipeline} propertyKey="voxelShadowOpacity" min={0} max={1} step={0.05} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Shadow Opacity" target={pipeline} propertyKey="shadowOpacity" min={0} step={0.05} />
+            <BoundProperty component={NumberInputPropertyLine} label="Sample Directions" target={pipeline} propertyKey="sampleDirections" min={0} step={1} />
+            <BoundProperty component={NumberInputPropertyLine} label="Resolution Exp" target={pipeline} propertyKey="resolutionExp" min={4} step={1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Shadow Remanence" target={pipeline} propertyKey="shadowRemanence" min={0} step={0.01} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Voxel Shadow Opacity" target={pipeline} propertyKey="voxelShadowOpacity" min={0} step={0.05} />
         </>
     );
 };
@@ -30,27 +30,11 @@ export const IblShadowsRenderPipelineScreenspaceProperties: FunctionComponent<{ 
 
     return (
         <>
-            <BoundProperty component={SyncedSliderPropertyLine} label="SS Shadow Opacity" target={pipeline} propertyKey="ssShadowOpacity" min={0} max={1} step={0.01} />
-            <BoundProperty component={NumberInputPropertyLine} label="SS Shadow Sample Count" target={pipeline} propertyKey="ssShadowSampleCount" min={0} max={16} step={1} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="SS Shadow Stride" target={pipeline} propertyKey="ssShadowStride" min={0} max={16} step={0.01} />
-            <BoundProperty
-                component={SyncedSliderPropertyLine}
-                label="SS Shadow Distance Scale"
-                target={pipeline}
-                propertyKey="ssShadowDistanceScale"
-                min={0.01}
-                max={0.2}
-                step={0.01}
-            />
-            <BoundProperty
-                component={SyncedSliderPropertyLine}
-                label="SS Shadow Thickness Scale"
-                target={pipeline}
-                propertyKey="ssShadowThicknessScale"
-                min={0.005}
-                max={0.02}
-                step={0.001}
-            />
+            <BoundProperty component={SyncedSliderPropertyLine} label="SS Shadow Opacity" target={pipeline} propertyKey="ssShadowOpacity" min={0} step={0.01} />
+            <BoundProperty component={NumberInputPropertyLine} label="SS Shadow Sample Count" target={pipeline} propertyKey="ssShadowSampleCount" min={0} step={1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="SS Shadow Stride" target={pipeline} propertyKey="ssShadowStride" min={0} step={0.01} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="SS Shadow Distance Scale" target={pipeline} propertyKey="ssShadowDistanceScale" min={0.01} step={0.01} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="SS Shadow Thickness Scale" target={pipeline} propertyKey="ssShadowThicknessScale" min={0.005} step={0.001} />
         </>
     );
 };

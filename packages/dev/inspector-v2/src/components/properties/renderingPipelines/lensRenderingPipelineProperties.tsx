@@ -11,11 +11,11 @@ export const LensRenderingPipelineOptionsProperties: FunctionComponent<{ pipelin
 
     return (
         <>
-            <BoundProperty component={SyncedSliderPropertyLine} label="Edge Blur" target={pipeline} propertyKey="edgeBlur" min={0} max={5} step={0.1} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Edge Distortion" target={pipeline} propertyKey="edgeDistortion" min={0} max={5} step={0.1} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Grain Amount" target={pipeline} propertyKey="grainAmount" min={0} max={1} step={0.1} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Chromatic Aberration" target={pipeline} propertyKey="chromaticAberration" min={0} max={5} step={0.1} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Darken Out of Focus" target={pipeline} propertyKey="darkenOutOfFocus" min={0} max={5} step={0.1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Edge Blur" target={pipeline} propertyKey="edgeBlur" min={0} step={0.1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Edge Distortion" target={pipeline} propertyKey="edgeDistortion" min={0} step={0.1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Grain Amount" target={pipeline} propertyKey="grainAmount" min={0} step={0.1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Chromatic Aberration" target={pipeline} propertyKey="chromaticAberration" min={0} step={0.1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Darken Out of Focus" target={pipeline} propertyKey="darkenOutOfFocus" min={0} step={0.1} />
             <BoundProperty component={SwitchPropertyLine} label="Blur Noise" target={pipeline} propertyKey="blurNoise" />
         </>
     );
@@ -26,11 +26,11 @@ export const LensRenderingPipelineDepthOfFieldProperties: FunctionComponent<{ pi
 
     return (
         <>
-            <BoundProperty component={SyncedSliderPropertyLine} label="DOF Aperture" target={pipeline} propertyKey="dofAperture" min={0} max={10} step={0.1} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="DOF Distortion" target={pipeline} propertyKey="dofDistortion" min={0} max={1000} step={0.1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="DOF Aperture" target={pipeline} propertyKey="dofAperture" min={0} step={0.1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="DOF Distortion" target={pipeline} propertyKey="dofDistortion" min={0} step={0.1} />
             <BoundProperty component={SwitchPropertyLine} label="Pentagon Bokeh" target={pipeline} propertyKey="pentagonBokeh" />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Highlights Gain" target={pipeline} propertyKey="highlightsGain" min={0} max={5} step={0.1} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Highlights Threshold" target={pipeline} propertyKey="highlightsThreshold" min={0} max={5} step={0.1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Highlights Gain" target={pipeline} propertyKey="highlightsGain" min={0} step={0.1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Highlights Threshold" target={pipeline} propertyKey="highlightsThreshold" min={0} step={0.1} />
         </>
     );
 };

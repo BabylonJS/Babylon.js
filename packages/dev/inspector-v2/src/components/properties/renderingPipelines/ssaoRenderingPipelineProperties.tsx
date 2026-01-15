@@ -10,11 +10,11 @@ export const SSAORenderingPipelineProperties: FunctionComponent<{ pipeline: SSAO
 
     return (
         <>
-            <BoundProperty component={SyncedSliderPropertyLine} label="Total Strength" target={pipeline} propertyKey="totalStrength" min={0} max={2} step={0.05} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Base" target={pipeline} propertyKey="base" min={0} max={1} step={0.05} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Radius" target={pipeline} propertyKey="radius" min={0.0001} max={0.001} step={0.0001} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Area" target={pipeline} propertyKey="area" min={0.0001} max={0.01} step={0.0001} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Fall Off" target={pipeline} propertyKey="fallOff" min={0} max={0.00001} step={0.000001} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Total Strength" target={pipeline} propertyKey="totalStrength" min={0} step={0.05} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Base" target={pipeline} propertyKey="base" min={0} step={0.05} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Radius" target={pipeline} propertyKey="radius" min={0.0001} step={0.0001} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Area" target={pipeline} propertyKey="area" min={0.0001} step={0.0001} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Fall Off" target={pipeline} propertyKey="fallOff" min={0} step={0.000001} />
         </>
     );
 };

@@ -40,10 +40,10 @@ export const DefaultRenderingPipelineBloomProperties: FunctionComponent<{ pipeli
         <>
             <BoundProperty component={SwitchPropertyLine} label="Bloom Enabled" target={pipeline} propertyKey="bloomEnabled" />
             <Collapse visible={!!bloomEnabled}>
-                <BoundProperty component={SyncedSliderPropertyLine} label="Threshold" target={pipeline} propertyKey="bloomThreshold" min={0} max={2} step={0.01} />
-                <BoundProperty component={SyncedSliderPropertyLine} label="Weight" target={pipeline} propertyKey="bloomWeight" min={0} max={1} step={0.05} />
-                <BoundProperty component={SyncedSliderPropertyLine} label="Kernel" target={pipeline} propertyKey="bloomKernel" min={0} max={128} step={1} />
-                <BoundProperty component={SyncedSliderPropertyLine} label="Scale" target={pipeline} propertyKey="bloomScale" min={0} max={1} step={0.25} />
+                <BoundProperty component={SyncedSliderPropertyLine} label="Threshold" target={pipeline} propertyKey="bloomThreshold" min={0} step={0.01} />
+                <BoundProperty component={SyncedSliderPropertyLine} label="Weight" target={pipeline} propertyKey="bloomWeight" min={0} step={0.05} />
+                <BoundProperty component={SyncedSliderPropertyLine} label="Kernel" target={pipeline} propertyKey="bloomKernel" min={0} step={1} />
+                <BoundProperty component={SyncedSliderPropertyLine} label="Scale" target={pipeline} propertyKey="bloomScale" min={0} step={0.25} />
             </Collapse>
         </>
     );
@@ -65,7 +65,6 @@ export const DefaultRenderingPipelineChromaticAberrationProperties: FunctionComp
                     propertyKey="aberrationAmount"
                     propertyPath="chromaticAberration.aberrationAmount"
                     min={0}
-                    max={128}
                     step={0.1}
                 />
                 <BoundProperty
@@ -75,7 +74,6 @@ export const DefaultRenderingPipelineChromaticAberrationProperties: FunctionComp
                     propertyKey="radialIntensity"
                     propertyPath="chromaticAberration.radialIntensity"
                     min={0}
-                    max={1}
                     step={0.01}
                 />
                 <BoundProperty
@@ -122,16 +120,7 @@ export const DefaultRenderingPipelineDepthOfFieldProperties: FunctionComponent<{
                     min={0}
                     step={0.1}
                 />
-                <BoundProperty
-                    component={SyncedSliderPropertyLine}
-                    label="F-Stop"
-                    target={depthOfField}
-                    propertyKey="fStop"
-                    propertyPath="depthOfField.fStop"
-                    min={0}
-                    max={32}
-                    step={0.1}
-                />
+                <BoundProperty component={SyncedSliderPropertyLine} label="F-Stop" target={depthOfField} propertyKey="fStop" propertyPath="depthOfField.fStop" min={0} step={0.1} />
                 <BoundProperty
                     component={NumberInputPropertyLine}
                     label="Focus Distance"
@@ -148,7 +137,6 @@ export const DefaultRenderingPipelineDepthOfFieldProperties: FunctionComponent<{
                     propertyKey="lensSize"
                     propertyPath="depthOfField.lensSize"
                     min={0}
-                    max={1000}
                     step={1}
                 />
             </Collapse>
@@ -173,7 +161,6 @@ export const DefaultRenderingPipelineFxaaGlowProperties: FunctionComponent<{ pip
                     propertyKey="blurKernelSize"
                     propertyPath="glowLayer.blurKernelSize"
                     min={1}
-                    max={128}
                     step={1}
                 />
                 <BoundProperty
@@ -183,7 +170,6 @@ export const DefaultRenderingPipelineFxaaGlowProperties: FunctionComponent<{ pip
                     propertyKey="intensity"
                     propertyPath="glowLayer.intensity"
                     min={0}
-                    max={10}
                     step={0.1}
                 />
             </Collapse>
@@ -201,16 +187,7 @@ export const DefaultRenderingPipelineGrainProperties: FunctionComponent<{ pipeli
             <BoundProperty component={SwitchPropertyLine} label="Grain Enabled" target={pipeline} propertyKey="grainEnabled" />
             <Collapse visible={!!grainEnabled && !!grain}>
                 <BoundProperty component={SwitchPropertyLine} label="Animated" target={grain} propertyKey="animated" propertyPath="grain.animated" />
-                <BoundProperty
-                    component={SyncedSliderPropertyLine}
-                    label="Intensity"
-                    target={grain}
-                    propertyKey="intensity"
-                    propertyPath="grain.intensity"
-                    min={0}
-                    max={50}
-                    step={0.1}
-                />
+                <BoundProperty component={SyncedSliderPropertyLine} label="Intensity" target={grain} propertyKey="intensity" propertyPath="grain.intensity" min={0} step={0.1} />
             </Collapse>
         </>
     );
@@ -246,7 +223,6 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                     propertyKey="contrast"
                     propertyPath="imageProcessing.contrast"
                     min={0}
-                    max={4}
                     step={0.1}
                 />
                 <BoundProperty
@@ -256,7 +232,6 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                     propertyKey="exposure"
                     propertyPath="imageProcessing.exposure"
                     min={0}
-                    max={4}
                     step={0.1}
                 />
                 <BoundProperty
@@ -289,7 +264,6 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                         propertyKey="vignetteWeight"
                         propertyPath="imageProcessing.vignetteWeight"
                         min={0}
-                        max={4}
                         step={0.1}
                     />
                     <BoundProperty
@@ -299,7 +273,6 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                         propertyKey="vignetteStretch"
                         propertyPath="imageProcessing.vignetteStretch"
                         min={0}
-                        max={1}
                         step={0.1}
                     />
                     <BoundProperty
@@ -309,7 +282,6 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                         propertyKey="vignetteCameraFov"
                         propertyPath="imageProcessing.vignetteCameraFov"
                         min={0}
-                        max={Math.PI}
                         step={0.1}
                     />
                     <BoundProperty
@@ -318,8 +290,6 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                         target={imageProcessing}
                         propertyKey="vignetteCenterX"
                         propertyPath="imageProcessing.vignetteCenterX"
-                        min={0}
-                        max={1}
                         step={0.1}
                     />
                     <BoundProperty
@@ -328,8 +298,6 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                         target={imageProcessing}
                         propertyKey="vignetteCenterY"
                         propertyPath="imageProcessing.vignetteCenterY"
-                        min={0}
-                        max={1}
                         step={0.1}
                     />
                     <BoundProperty
@@ -362,7 +330,6 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                     propertyKey="ditheringIntensity"
                     propertyPath="imageProcessing.ditheringIntensity"
                     min={0}
-                    max={1}
                     step={0.5 / 255}
                 />
             </Collapse>
@@ -386,7 +353,6 @@ export const DefaultRenderingPipelineSharpenProperties: FunctionComponent<{ pipe
                     propertyKey="colorAmount"
                     propertyPath="sharpen.colorAmount"
                     min={0}
-                    max={1}
                     step={0.05}
                 />
                 <BoundProperty
@@ -396,7 +362,6 @@ export const DefaultRenderingPipelineSharpenProperties: FunctionComponent<{ pipe
                     propertyKey="edgeAmount"
                     propertyPath="sharpen.edgeAmount"
                     min={0}
-                    max={5}
                     step={0.05}
                 />
             </Collapse>

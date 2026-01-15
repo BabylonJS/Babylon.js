@@ -16,25 +16,24 @@ export const SSRRenderingPipelineSSRProperties: FunctionComponent<{ pipeline: SS
         <>
             <BoundProperty component={SwitchPropertyLine} label="Enabled" target={pipeline} propertyKey="isEnabled" />
             <BoundProperty component={SwitchPropertyLine} label="Debug" target={pipeline} propertyKey="debug" />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Strength" target={pipeline} propertyKey="strength" min={0} max={5} step={0.05} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Strength" target={pipeline} propertyKey="strength" min={0} step={0.05} />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
                 label="Reflection Specular Falloff"
                 target={pipeline}
                 propertyKey="reflectionSpecularFalloffExponent"
                 min={0}
-                max={5}
                 step={0.05}
             />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Reflectivity Threshold" target={pipeline} propertyKey="reflectivityThreshold" min={0} max={1} step={0.01} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Thickness" target={pipeline} propertyKey="thickness" min={0} max={10} step={0.01} />
-            <BoundProperty component={NumberInputPropertyLine} label="Step" target={pipeline} propertyKey="step" min={1} max={50} step={1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Reflectivity Threshold" target={pipeline} propertyKey="reflectivityThreshold" min={0} step={0.01} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Thickness" target={pipeline} propertyKey="thickness" min={0} step={0.01} />
+            <BoundProperty component={NumberInputPropertyLine} label="Step" target={pipeline} propertyKey="step" min={1} step={1} forceInt />
             <BoundProperty component={SwitchPropertyLine} label="Enable Smooth Reflections" target={pipeline} propertyKey="enableSmoothReflections" />
-            <BoundProperty component={NumberInputPropertyLine} label="Max Steps" target={pipeline} propertyKey="maxSteps" min={1} max={3000} step={10} />
-            <BoundProperty component={NumberInputPropertyLine} label="Max Distance" target={pipeline} propertyKey="maxDistance" min={1} max={3000} step={10} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Roughness Factor" target={pipeline} propertyKey="roughnessFactor" min={0} max={1} step={0.01} />
-            <BoundProperty component={NumberInputPropertyLine} label="Self Collision Skip" target={pipeline} propertyKey="selfCollisionNumSkip" min={1} max={10} step={1} />
-            <BoundProperty component={NumberInputPropertyLine} label="SSR Downsample" target={pipeline} propertyKey="ssrDownsample" min={0} max={5} step={1} />
+            <BoundProperty component={NumberInputPropertyLine} label="Max Steps" target={pipeline} propertyKey="maxSteps" min={1} step={10} forceInt />
+            <BoundProperty component={NumberInputPropertyLine} label="Max Distance" target={pipeline} propertyKey="maxDistance" min={1} step={10} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Roughness Factor" target={pipeline} propertyKey="roughnessFactor" min={0} step={0.01} />
+            <BoundProperty component={NumberInputPropertyLine} label="Self Collision Skip" target={pipeline} propertyKey="selfCollisionNumSkip" min={1} step={1} />
+            <BoundProperty component={NumberInputPropertyLine} label="SSR Downsample" target={pipeline} propertyKey="ssrDownsample" min={0} step={1} />
             <BoundProperty component={SwitchPropertyLine} label="Clip to Frustum" target={pipeline} propertyKey="clipToFrustum" />
         </>
     );
@@ -60,7 +59,6 @@ export const SSRRenderingPipelineThicknessProperties: FunctionComponent<{ pipeli
                     target={pipeline}
                     propertyKey="backfaceDepthTextureDownsample"
                     min={0}
-                    max={5}
                     step={1}
                 />
             </Collapse>
@@ -73,16 +71,8 @@ export const SSRRenderingPipelineBlurProperties: FunctionComponent<{ pipeline: S
 
     return (
         <>
-            <BoundProperty
-                component={SyncedSliderPropertyLine}
-                label="Blur Dispersion Strength"
-                target={pipeline}
-                propertyKey="blurDispersionStrength"
-                min={0}
-                max={0.15}
-                step={0.001}
-            />
-            <BoundProperty component={NumberInputPropertyLine} label="Blur Downsample" target={pipeline} propertyKey="blurDownsample" min={0} max={5} step={1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Blur Dispersion Strength" target={pipeline} propertyKey="blurDispersionStrength" min={0} step={0.001} />
+            <BoundProperty component={NumberInputPropertyLine} label="Blur Downsample" target={pipeline} propertyKey="blurDownsample" min={0} step={1} />
         </>
     );
 };
