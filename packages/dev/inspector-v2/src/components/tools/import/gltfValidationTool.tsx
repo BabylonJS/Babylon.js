@@ -11,7 +11,7 @@ import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
  * @param props - Component props
  * @returns The validation results UI
  */
-export const GLTFValidationTools: FunctionComponent<{ validationResults: IGLTFValidationResults }> = ({ validationResults }) => {
+export const GLTFValidationTool: FunctionComponent<{ validationResults: IGLTFValidationResults }> = ({ validationResults }) => {
     const openValidationDetails = useCallback(() => {
         const win = window.open("", "_blank");
         if (win) {

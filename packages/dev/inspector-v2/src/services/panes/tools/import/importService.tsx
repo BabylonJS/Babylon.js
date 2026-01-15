@@ -1,7 +1,7 @@
 import { GLTFLoaderOptionsServiceDefinition } from "./gltfLoaderOptionsService";
-import { GLTFValidationResultsServiceDefinition } from "./gltfValidatorService";
+import { GLTFValidationServiceDefinition } from "./gltfValidationService";
 import { GLTFAnimationImportServiceDefinition } from "./gltfAnimationService";
 
 export default {
-    serviceDefinitions: [GLTFAnimationImportServiceDefinition, GLTFLoaderOptionsServiceDefinition, GLTFValidationResultsServiceDefinition],
+    serviceDefinitions: [GLTFAnimationImportServiceDefinition, GLTFLoaderOptionsServiceDefinition, GLTFValidationServiceDefinition],
 } as const;
