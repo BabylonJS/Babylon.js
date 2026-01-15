@@ -649,7 +649,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                     } else {
                         // V1 physics
                         const type = props?.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
-                        newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, props? { mass: 0, ...props } : { mass: 0 });
+                        newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, props ? { mass: 0, ...props } : { mass: 0 });
                     }
                 }
                 if (options.jointMeshes?.invisible) {
