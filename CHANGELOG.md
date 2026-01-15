@@ -1,5 +1,14 @@
 # Changelog
 
+## 8.46.0
+
+### Core
+
+- Add missing Cameras to QuickCreate extension. Add geospatialCamera properties - by [georginahalpern](https://github.com/georginahalpern) ([#17684](https://github.com/BabylonJS/Babylon.js/pull/17684))
+
+### Node Editor
+
+
 ## 8.45.5
 
 ### Core
