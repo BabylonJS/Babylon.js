@@ -17,6 +17,23 @@ type RenderingPipelinesContentProps = {
     scene: Scene;
 };
 
+const GetUniquePipelineName = (baseName: string, scene: Scene): string => {
+    const pipelines = scene.postProcessRenderPipelineManager.supportedPipelines;
+    const existingNames = new Set(pipelines.map((p) => p._name));
+
+    if (!existingNames.has(baseName)) {
+        return baseName;
+    }
+
+    let counter = 1;
+    let uniqueName = `${baseName} ${counter}`;
+    while (existingNames.has(uniqueName)) {
+        counter++;
+        uniqueName = `${baseName} ${counter}`;
+    }
+    return uniqueName;
+};
+
 /**
  * Rendering Pipelines content component
  * @param props - Component props
@@ -39,23 +56,28 @@ export const RenderingPipelinesContent: FunctionComponent<RenderingPipelinesCont
     const [iblShadowsPipelineName, setIblShadowsPipelineName] = useState("IBL Shadows rendering pipeline");
 
     const handleCreateDefaultPipeline = () => {
-        new DefaultRenderingPipeline(defaultPipelineName, true, scene, scene.cameras);
+        const name = GetUniquePipelineName(defaultPipelineName, scene);
+        new DefaultRenderingPipeline(name, true, scene, scene.cameras);
     };
 
     const handleCreateSSAOPipeline = () => {
-        new SSAORenderingPipeline(ssaoPipelineName, scene, 1, scene.cameras);
+        const name = GetUniquePipelineName(ssaoPipelineName, scene);
+        new SSAORenderingPipeline(name, scene, 1, scene.cameras);
     };
 
     const handleCreateSSAO2Pipeline = () => {
-        new SSAO2RenderingPipeline(ssao2PipelineName, scene, 1, scene.cameras);
+        const name = GetUniquePipelineName(ssao2PipelineName, scene);
+        new SSAO2RenderingPipeline(name, scene, 1, scene.cameras);
     };
 
     const handleCreateSSRPipeline = () => {
-        new SSRRenderingPipeline(ssrPipelineName, scene, scene.cameras);
+        const name = GetUniquePipelineName(ssrPipelineName, scene);
+        new SSRRenderingPipeline(name, scene, scene.cameras);
     };
 
     const handleCreateIBLShadowsPipeline = () => {
-        new IblShadowsRenderPipeline(iblShadowsPipelineName, scene, {}, scene.cameras);
+        const name = GetUniquePipelineName(iblShadowsPipelineName, scene);
+        new IblShadowsRenderPipeline(name, scene, {}, scene.cameras);
     };
 
     const caps = scene.getEngine().getCaps();
