@@ -232,8 +232,8 @@ uniform mat4 view;
 #endif
 
 #ifdef REFRACTED_BACKGROUND
-    mat4 backgroundRefractionMatrix;
-    vec3 vBackgroundRefractionInfos;
+    uniform mat4 backgroundRefractionMatrix;
+    uniform vec3 vBackgroundRefractionInfos;
 #endif
 
 #define ADDITIONAL_FRAGMENT_DECLARATION

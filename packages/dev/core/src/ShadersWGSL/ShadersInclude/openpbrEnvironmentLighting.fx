@@ -244,9 +244,8 @@
     var slab_translucent_base_ibl: vec3f = slab_translucent_background.rgb * transmission_absorption;
     #ifdef REFRACTED_ENVIRONMENT
         
-        let refractionAlphaG: f32 = transmission_roughness * transmission_roughness;
         #ifdef ANISOTROPIC_BASE
-            var environmentRefraction: vec3f = sampleRadianceAnisotropic(refractionAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+            var environmentRefraction: vec3f = sampleRadianceAnisotropic(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
                 , baseGeoInfo
                 , normalW
                 , viewDirectionW
@@ -277,7 +276,7 @@
 
             iblRefractionCoords = (uniforms.reflectionMatrix * vec4f(iblRefractionCoords, 0.0f)).xyz;
             #ifdef DISPERSION
-                environmentRefraction[i] = sampleRadiance(refractionAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                environmentRefraction[i] = sampleRadiance(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
                     , baseGeoInfo
                     , reflectionSampler
                     , reflectionSamplerSampler
@@ -287,7 +286,7 @@
                     #endif
                 )[i];
             #else
-                environmentRefraction = sampleRadiance(refractionAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                environmentRefraction = sampleRadiance(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
                     , baseGeoInfo
                     , reflectionSampler
                     , reflectionSamplerSampler
@@ -307,20 +306,22 @@
             // at low blurriness since it represents the transmitted light that is in front of the IBL.
             // At high blurriness, the refraction from the environment will be coming from more directions
             // and so we want to include more of this indirect lighting.
-            environmentRefraction *= max(refractionAlphaG * refractionAlphaG - 0.1f, 0.0f);
+            environmentRefraction *= max(roughness_alpha_modified_for_scatter * roughness_alpha_modified_for_scatter - 0.1f, 0.0f);
         #endif
 
         #ifdef SCATTERING
-            // IF Transmission Scatter
-            // ISO Scattering
-            let density: f32 = sqrt(min(1.0f / transmission_depth * max3(extinction_coeff), 1.0f));
+            // Isotropic Scattering
+            
             #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
-            let isoscatterVector: vec3f = mix(uniforms.vReflectionDominantDirection, normalW, density);
+                var scatterVector: vec3f = mix(uniforms.vReflectionDominantDirection, normalW, max3(iso_scatter_density));
             #else
-            let isoscatterVector: vec3f = normalW;
+                var scatterVector: vec3f = normalW;
             #endif
-            var isoScatteredEnvironmentLight: vec3f = sampleIrradiance(
-                isoscatterVector
+
+            // Backscattering can be approximated by sampling IBL along the view vector.
+            scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
+            var scatteredEnvironmentLight: vec3f = sampleIrradiance(
+                scatterVector
                 #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                     , vEnvironmentIrradiance //SH
                 #endif
@@ -347,29 +348,17 @@
                 , multi_scatter_color
             );
 
-            isoScatteredEnvironmentLight *= multi_scatter_color * density; // also modulate by some absorption
-            
-            // BACK Scattering
-            let backscatterScale: f32 = clamp(1.0f + transmission_scatter_anisotropy, 0.1f, 1.0f);
-            // For backscattering, generate a reflection vector relative to the view direction
-            let backscatterVector: vec3f = createReflectionCoords(fragmentInputs.vPositionW, normalize(mix(viewDirectionW, normalW, backscatterScale)));
-            var backscatteredEnvironmentLight: vec3f = sampleRadiance(0.1f, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
-                , baseGeoInfo
-                , reflectionSampler
-                , reflectionSamplerSampler
-                , backscatterVector
-                #ifdef REALTIME_FILTERING
-                    , uniforms.vReflectionFilteringInfo
-                #endif
-            );
-            
-            if (transmission_depth > 0.0f) {
-                // Direct Transmission
-                slab_translucent_base_ibl += environmentRefraction * transmission_absorption;
+            if (transmission_depth>0.0f) {
+                // Direct Transmission (aka forward-scattered light from back side)
+                let forward_scattered_light: vec3f = environmentRefraction * transmission_absorption;
                 // Back Scattering
-                slab_translucent_base_ibl += backscatteredEnvironmentLight * ss_integrated_factor * phase_function * absorption_at_mfp * density;
+                let back_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
                 // Iso Scattering
-                slab_translucent_base_ibl += isoScatteredEnvironmentLight * absorption_at_mfp * (1.0f - abs(transmission_scatter_anisotropy));
+                let iso_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * multi_scatter_color, iso_scatter_density);
+
+                // Lerp between the three based on the anisotropy
+                slab_translucent_base_ibl = mix(back_scattered_light, iso_scattered_light, back_to_iso_scattering_blend);
+                slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend);
             } else {
                 slab_translucent_base_ibl += environmentRefraction.rgb;
             }

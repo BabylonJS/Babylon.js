@@ -237,9 +237,8 @@
     vec3 slab_translucent_base_ibl = slab_translucent_background.rgb * transmission_absorption;
     #ifdef REFRACTED_ENVIRONMENT
         
-        float refractionAlphaG = transmission_roughness * transmission_roughness;
         #ifdef ANISOTROPIC_BASE
-            vec3 environmentRefraction = sampleRadianceAnisotropic(refractionAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+            vec3 environmentRefraction = sampleRadianceAnisotropic(roughness_alpha_modified_for_scatter, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
                 , baseGeoInfo
                 , normalW
                 , viewDirectionW
@@ -269,7 +268,7 @@
 
             iblRefractionCoords = vec3(reflectionMatrix * vec4(iblRefractionCoords, 0));
             #ifdef DISPERSION
-                environmentRefraction[i] = sampleRadiance(refractionAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                environmentRefraction[i] = sampleRadiance(roughness_alpha_modified_for_scatter, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
                     , baseGeoInfo
                     , reflectionSampler
                     , iblRefractionCoords
@@ -278,7 +277,7 @@
                     #endif
                 )[i];
             #else
-                environmentRefraction = sampleRadiance(refractionAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                environmentRefraction = sampleRadiance(roughness_alpha_modified_for_scatter, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
                     , baseGeoInfo
                     , reflectionSampler
                     , iblRefractionCoords
@@ -302,16 +301,18 @@
         #endif
 
         #ifdef SCATTERING
-            // IF Transmission Scatter
-            // ISO Scattering
-            float density = sqrt(min(1.0 / transmission_depth * max3(extinction_coeff), 1.0));
+            // Isotropic Scattering
+            
             #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
-                vec3 isoscatterVector = mix(vReflectionDominantDirection, normalW, density);
+                vec3 scatterVector = mix(vReflectionDominantDirection, normalW, max3(iso_scatter_density));
             #else
-                vec3 isoscatterVector = normalW;
+                vec3 scatterVector = normalW;
             #endif
-            vec3 isoScatteredEnvironmentLight = sampleIrradiance(
-                isoscatterVector
+
+            // Backscattering can be approximated by sampling IBL along the view vector.
+            scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
+            vec3 scatteredEnvironmentLight = sampleIrradiance(
+                scatterVector
                 #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                     , vEnvironmentIrradiance
                 #endif
@@ -336,25 +337,17 @@
                 , multi_scatter_color
             );
 
-            isoScatteredEnvironmentLight *= multi_scatter_color * density; // also modulate by some absorption
-            
-            // BACK Scattering
-            float backscatterScale = clamp(1.0 + transmission_scatter_anisotropy, 0.1, 1.0);
-            // For backscattering, generate a reflection vector relative to the view direction
-            vec3 backscatterVector = createReflectionCoords(vPositionW, normalize(mix(viewDirectionW, normalW, backscatterScale)));
-            vec3 backscatteredEnvironmentLight = sampleRadiance(0.1, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos, baseGeoInfo, reflectionSampler, backscatterVector
-                #ifdef REALTIME_FILTERING
-                    , vReflectionFilteringInfo
-                #endif
-            );
-            
             if (transmission_depth>0.0) {
-                // Direct Transmission
-                slab_translucent_base_ibl += environmentRefraction * transmission_absorption;
+                // Direct Transmission (aka forward-scattered light from back side)
+                vec3 forward_scattered_light = environmentRefraction * transmission_absorption;
                 // Back Scattering
-                slab_translucent_base_ibl += backscatteredEnvironmentLight * ss_integrated_factor * phase_function * absorption_at_mfp * density;
+                vec3 back_scattered_light = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
                 // Iso Scattering
-                slab_translucent_base_ibl += isoScatteredEnvironmentLight * absorption_at_mfp * (1.0 - abs(transmission_scatter_anisotropy));
+                vec3 iso_scattered_light = mix(forward_scattered_light, scatteredEnvironmentLight * multi_scatter_color, iso_scatter_density);
+
+                // Lerp between the three based on the anisotropy
+                slab_translucent_base_ibl = mix(back_scattered_light, iso_scattered_light, back_to_iso_scattering_blend);
+                slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend);
             } else {
                 slab_translucent_base_ibl += environmentRefraction.rgb;
             }

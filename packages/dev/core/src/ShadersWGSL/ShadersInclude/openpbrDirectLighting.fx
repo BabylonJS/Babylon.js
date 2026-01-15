@@ -69,19 +69,24 @@
             // TODO
         #else
             {
-                preInfo{X}.roughness = transmission_roughness;
+                var preInfoTrans = preInfo{X};
+                #ifdef SCATTERING
+                    preInfoTrans.roughness = roughness_alpha_modified_for_scatter;
+                #else
+                    preInfoTrans.roughness = transmission_roughness;
+                #endif
                 // On the side of the surface facing away from the light, we'll modify
                 // the VdotH used for the Fresnel calculation. This is to avoid the maxed-out
                 // Fresnel from obscuring the transmitted light.
-                if (preInfo{X}.NdotLUnclamped <= 0.0) {
+                if (preInfoTrans.NdotLUnclamped <= 0.0) {
                     specularFresnel = 0.0;
                     specularColoredFresnel = specularFresnel * specular_color;
                 }
 
                 #ifdef ANISOTROPIC_BASE
-                    preInfo{X}.NdotL = max(dot(-normalW, preInfo{X}.L), 0.0);
+                    preInfoTrans.NdotL = max(dot(-normalW, preInfoTrans.L), 0.0);
                 #else
-                    preInfo{X}.NdotL = max(dot(-normalW, preInfo{X}.L) * 0.5 + 0.5, 0.0);
+                    preInfoTrans.NdotL = max(dot(-normalW, preInfoTrans.L) * 0.5 + 0.5, 0.0);
                 #endif
 
                 #ifdef DISPERSION
@@ -97,8 +102,8 @@
                 #else
                     let eta: f32 = 1.0 / specular_ior;
                 #endif
-                    preInfo{X}.H = -normalize( preInfo{X}.L + min(eta, 0.95) * viewDirectionW);
-                    preInfo{X}.VdotH = clamp(dot(viewDirectionW, preInfo{X}.H), 0.0, 1.0);
+                    preInfoTrans.H = -normalize( preInfoTrans.L + min(eta, 0.95) * viewDirectionW);
+                    preInfoTrans.VdotH = clamp(dot(viewDirectionW, preInfoTrans.H), 0.0, 1.0);
                 
                 #ifdef DISPERSION
                     slab_translucent[i] += 
@@ -106,13 +111,13 @@
                     slab_translucent += 
                 #endif
                 #ifdef ANISOTROPIC_BASE
-                    computeAnisotropicSpecularLighting(preInfo{X}, viewDirectionW, normalW, 
+                    computeAnisotropicSpecularLighting(preInfoTrans, viewDirectionW, normalW, 
                         baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 
-                        transmission_roughness, lightColor{X}.rgb)
+                        roughness_alpha_modified_for_scatter, lightColor{X}.rgb
                 #else
                     // We're passing in vec3(1.0) for both F0 and F90 here because the actual Fresnel is computed below
                     // Also computeSpecularLighting does some legacy iridescence work using these values that we don't want.
-                    computeSpecularLighting(preInfo{X}, normalW, vec3(1.0), vec3(1.0), transmission_roughness, lightColor{X}.rgb
+                    computeSpecularLighting(preInfoTrans, normalW, vec3(1.0), vec3(1.0), roughness_alpha_modified_for_scatter, lightColor{X}.rgb
                 #endif
                 #ifdef DISPERSION
                     )[i];
@@ -122,7 +127,34 @@
                 #endif
                 // Empirical scattered light contribution for transmission
                 // As roughness increases, we add a small ambient term to simulate scattering of internal reflections
-                slab_translucent += 0.025 * transmission_roughness * preInfo0.attenuation * lightColor0.rgb;
+                slab_translucent += 0.025f * transmission_roughness * preInfoTrans.attenuation * lightColor{X}.rgb;
+
+                #ifdef SCATTERING
+                if (transmission_depth>0.0f) {
+                    preInfoTrans.roughness = 1.0f;
+                    let rough_forward_scattering: vec3f = computeSpecularLighting(preInfoTrans, normalW, vec3f(1.0f), vec3f(1.0f), 1.0f, lightColor0.rgb) * transmission_absorption;
+                    preInfoTrans.NdotL = max(dot(viewDirectionW, preInfoTrans.L), 0.0f);
+                    preInfoTrans.NdotV = 1.0f;
+                    preInfoTrans.H = normalize(viewDirectionW + preInfoTrans.L);
+                    preInfoTrans.VdotH = clamp(dot(viewDirectionW, preInfoTrans.H), 0.0f, 1.0f);
+                    preInfoTrans.roughness = 0.025f;
+                    let back_scattering: vec3f = computeSpecularLighting(preInfoTrans, viewDirectionW, vec3f(1.0f), vec3f(1.0f), 0.025f, lightColor0.rgb);
+                    // Direct Transmission (aka forward-scattered light from back side)
+                    let forward_scattered_light: vec3f = slab_translucent * transmission_absorption;
+                    // let scatterVector: vec3f = mix(preInfoTrans.L+normalW, normalW, 0.8f * max3(iso_scatter_density * iso_scatter_density));
+                    // preInfoTrans.NdotL = dot(scatterVector, preInfoTrans.L);
+                    // preInfoTrans.NdotV = dot(scatterVector, viewDirectionW);
+                    let scattered_light: vec3f = slab_diffuse;//computeDiffuseLighting(preInfoTrans, lightColor0.rgb);
+                    // Back Scattering
+                    let back_scattered_light: vec3f = mix(forward_scattered_light, forward_scattered_light + back_scattering * absorption_at_mfp, max3(iso_scatter_density));
+                    // Iso Scattering
+                    let iso_scattered_light: vec3f = mix(forward_scattered_light, rough_forward_scattering + scattered_light * multi_scatter_color, max3(iso_scatter_density));
+
+                    // Lerp between the three based on the anisotropy
+                    slab_translucent = mix(back_scattered_light, iso_scattered_light, back_to_iso_scattering_blend);
+                    slab_translucent = mix(slab_translucent, forward_scattered_light, iso_to_forward_scattering_blend);
+                }
+                #endif
             }
         #endif
     #endif
@@ -220,7 +252,7 @@
 
     slab_diffuse *= base_color.rgb;
     let material_opaque_base: vec3f = mix(slab_diffuse, slab_subsurface, subsurface_weight);
-    let material_dielectric_base: vec3f = mix(material_opaque_base, slab_translucent * transmission_absorption, transmission_weight);
+    let material_dielectric_base: vec3f = mix(material_opaque_base, slab_translucent, transmission_weight);
     let material_dielectric_gloss: vec3f = material_dielectric_base * (1.0f - specularFresnel) + slab_glossy * specularColoredFresnel;
     let material_base_substrate: vec3f = mix(material_dielectric_gloss, slab_metal, base_metalness);
     let material_coated_base: vec3f = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3f(1.0f));

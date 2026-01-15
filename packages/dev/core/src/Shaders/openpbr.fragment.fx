@@ -215,7 +215,6 @@ void main(void) {
         vec3 absorption_coeff = vec3(0.0);
         vec3 ss_albedo = vec3(0.0);
         vec3 multi_scatter_color = vec3(1.0);
-        vec3 extinction_coeff_reduced = vec3(0.0);
         // Absorption is volumetric if transmission depth is > 0.
         // Otherwise, absorption is considered instantaneous at the surface.
         if (transmission_depth > 0.0) {
@@ -233,9 +232,6 @@ void main(void) {
             ss_albedo = scatter_coeff / (extinction_coeff);
             multi_scatter_color = singleScatterToMultiScatterAlbedo(ss_albedo);
 
-            // Reduced scattering takes anisotropy into account.
-            // vec3 scatter_coeff_reduced = scatter_coeff * (1.0 - abs(transmission_scatter_anisotropy));           // reduced scattering for diffusion length
-            // extinction_coeff_reduced = absorption_coeff + scatter_coeff_reduced;
             transmission_absorption = exp(-absorption_coeff * geometry_thickness);
         } else {
             // We'll account for double-absorption here, assuming light enters and then exits the
@@ -243,16 +239,28 @@ void main(void) {
             transmission_absorption = transmission_color.rgb * transmission_color.rgb;
         }
 
-        // Transmission Scattering
-        vec3 direct_transmission = exp(-extinction_coeff * geometry_thickness);
-        vec3 ss_integrated_factor = scatter_coeff * (1.0 - direct_transmission) / max(vec3(1e-6), extinction_coeff);
-        float k = (1.0 + transmission_scatter_anisotropy) / max(1.0 - transmission_scatter_anisotropy, 0.0001);
-        float phase_function = max((1.0 - k * k) / max(pow(1.0 - k * baseGeoInfo.NdotV, 2.0), 0.0001), 0.0);
+        float refractionAlphaG = transmission_roughness * transmission_roughness;
+        #ifdef SCATTERING
+            // Transmission Scattering
+            float back_to_iso_scattering_blend = min(1.0 + transmission_scatter_anisotropy, 1.0);
+            float iso_to_forward_scattering_blend = max(transmission_scatter_anisotropy, 0.0);
+
+            // The 0.2 exponent is an empirical fit to match reference renderers - check if it works broadly
+            vec3 iso_scatter_transmittance = pow(exp(-extinction_coeff * geometry_thickness), vec3(0.2));
+            vec3 iso_scatter_density = clamp(vec3(1.0) - iso_scatter_transmittance, 0.0, 1.0);
+            
+            // Refration roughness is modified by the density of the scattering and also by the anisotropy.
+            float roughness_alpha_modified_for_scatter = min(refractionAlphaG + (1.0 - abs(transmission_scatter_anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 1.0);
+            roughness_alpha_modified_for_scatter = pow(roughness_alpha_modified_for_scatter, 6.0);
+            roughness_alpha_modified_for_scatter = clamp(roughness_alpha_modified_for_scatter, refractionAlphaG, 1.0);
+        #else
+            float roughness_alpha_modified_for_scatter = refractionAlphaG;
+        #endif
         
         // Calculated viewable distance based on reduced extinction and use that to
         // determine absorption at mean free path.
-        vec3 transport_mfp = vec3(1.0) / max3(extinction_coeff_reduced);
-        vec3 absorption_at_mfp = exp(clamp(-absorption_coeff * transport_mfp, 0.0, 1.0));
+        vec3 transport_mfp = vec3(2.0) / scatter_coeff;
+        vec3 absorption_at_mfp = exp(-absorption_coeff * transport_mfp);
         
     #endif
     // __________________ Transmitted Light From Background Refraction ___________________________

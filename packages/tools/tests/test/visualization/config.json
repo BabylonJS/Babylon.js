@@ -3228,7 +3228,12 @@
         },
         {
             "title": "OpenPBR Transmission Scatter Anisotropy - IBL",
-            "playgroundId": "#GRQHVV#150",
+            "playgroundId": "#GRQHVV#216",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Anisotropy - Analytic Lights",
+            "playgroundId": "#GRQHVV#217",
             "excludedEngines": ["webgl1"]
         },
         {

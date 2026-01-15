@@ -195,7 +195,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         var absorption_coeff: vec3f = vec3f(0.0f);
         var ss_albedo: vec3f = vec3f(0.0f);
         var multi_scatter_color: vec3f = vec3f(1.0f);
-        var extinction_coeff_reduced: vec3f = vec3f(0.0f);
         // Absorption is volumetric if transmission depth is > 0.
         // Otherwise, absorption is considered instantaneous at the surface.
         if (transmission_depth > 0.0f) {
@@ -213,9 +212,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             ss_albedo = scatter_coeff / (extinction_coeff);
             multi_scatter_color = singleScatterToMultiScatterAlbedo(ss_albedo);
 
-            // Reduced scattering takes anisotropy into account.
-            // let scatter_coeff_reduced: vec3f = scatter_coeff * (1.0f - abs(transmission_scatter_anisotropy));           // reduced scattering for diffusion length
-            // extinction_coeff_reduced = absorption_coeff + scatter_coeff_reduced;
             transmission_absorption = exp(-absorption_coeff * geometry_thickness);
         } else {
             // We'll account for double-absorption here, assuming light enters and then exits the
@@ -223,16 +219,28 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             transmission_absorption = transmission_color.rgb * transmission_color.rgb;
         }
 
-        // Transmission Scattering
-        let direct_transmission: vec3f = exp(-extinction_coeff * geometry_thickness);
-        let ss_integrated_factor: vec3f = scatter_coeff * (vec3f(1.0f) - direct_transmission) / max(vec3f(1e-6), extinction_coeff);
-        let k: f32 = (1.0f + transmission_scatter_anisotropy) / max(1.0f - transmission_scatter_anisotropy, 0.0001f);
-        let phase_function: f32 = max((1.0f - k * k) / max(pow(1.0f - k * baseGeoInfo.NdotV, 2.0f), 0.0001f), 0.0f);
+        let refractionAlphaG: f32 = transmission_roughness * transmission_roughness;
+        #ifdef SCATTERING
+            // Transmission Scattering
+            let back_to_iso_scattering_blend: f32 = min(1.0f + transmission_scatter_anisotropy, 1.0f);
+            let iso_to_forward_scattering_blend: f32 = max(transmission_scatter_anisotropy, 0.0f);
+
+            // The 0.2 exponent is an empirical fit to match reference renderers - check if it works broadly
+            let iso_scatter_transmittance: vec3f = pow(exp(-extinction_coeff * geometry_thickness), vec3f(0.2f));
+            let iso_scatter_density: vec3f = clamp(vec3f(1.0f) - iso_scatter_transmittance, vec3f(0.0f), vec3f(1.0f));
+            
+            // Refration roughness is modified by the density of the scattering and also by the anisotropy.
+            var roughness_alpha_modified_for_scatter: f32 = min(refractionAlphaG + (1.0f - abs(transmission_scatter_anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 1.0f);
+            roughness_alpha_modified_for_scatter = pow(roughness_alpha_modified_for_scatter, 6.0f);
+            roughness_alpha_modified_for_scatter = clamp(roughness_alpha_modified_for_scatter, refractionAlphaG, 1.0f);
+        #else
+            let roughness_alpha_modified_for_scatter: f32 = refractionAlphaG;
+        #endif
         
         // Calculated viewable distance based on reduced extinction and use that to
         // determine absorption at mean free path.
-        let transport_mfp: vec3f = vec3f(1.0f) / max3(extinction_coeff_reduced);
-        let absorption_at_mfp: vec3f = exp(clamp(-absorption_coeff * transport_mfp, vec3f(0.0f), vec3f(1.0f)));
+        let transport_mfp: vec3f = vec3f(2.0f) / scatter_coeff;
+        let absorption_at_mfp: vec3f = exp(-absorption_coeff * transport_mfp);
     #endif
     // __________________ Transmitted Light From Background Refraction ___________________________
     #include<openpbrBackgroundTransmission>

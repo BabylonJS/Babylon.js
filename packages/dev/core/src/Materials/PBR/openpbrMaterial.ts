@@ -2701,7 +2701,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "morphTargetTextureIndices",
             "cameraInfo",
             "backgroundRefractionMatrix",
-            "backgroundRefractionInfos",
+            "vBackgroundRefractionInfos",
         ];
 
         for (const uniformName in this._uniformsList) {
