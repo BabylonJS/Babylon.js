@@ -8,7 +8,7 @@ import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import type { ISolidParticleInitData } from "./ISolidParticleData";
 
 /**
- * Block used to create a solid particle configuration (mesh, count, position, velocity, color, scaling, rotation)
+ * Block used to create a solid particle configuration (mesh, count, position, color, scaling, rotation)
  */
 export class CreateSolidParticleBlock extends NodeParticleBlock {
     public constructor(name: string) {
@@ -17,7 +17,6 @@ export class CreateSolidParticleBlock extends NodeParticleBlock {
         this.registerInput("count", NodeParticleBlockConnectionPointTypes.Int, true, 1);
         this.registerInput("lifeTime", NodeParticleBlockConnectionPointTypes.Float, true, Infinity);
         this.registerInput("position", NodeParticleBlockConnectionPointTypes.Vector3, true);
-        this.registerInput("velocity", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerInput("color", NodeParticleBlockConnectionPointTypes.Color4, true);
         this.registerInput("scaling", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerInput("rotation", NodeParticleBlockConnectionPointTypes.Vector3, true);
@@ -42,24 +41,20 @@ export class CreateSolidParticleBlock extends NodeParticleBlock {
         return this._inputs[2];
     }
 
-    public get velocity(): NodeParticleConnectionPoint {
+    public get color(): NodeParticleConnectionPoint {
         return this._inputs[3];
     }
 
-    public get color(): NodeParticleConnectionPoint {
+    public get scaling(): NodeParticleConnectionPoint {
         return this._inputs[4];
     }
 
-    public get scaling(): NodeParticleConnectionPoint {
+    public get rotation(): NodeParticleConnectionPoint {
         return this._inputs[5];
     }
 
-    public get rotation(): NodeParticleConnectionPoint {
-        return this._inputs[6];
-    }
-
     public get mesh(): NodeParticleConnectionPoint {
-        return this._inputs[7];
+        return this._inputs[6];
     }
 
     public get solidParticle(): NodeParticleConnectionPoint {
@@ -77,9 +72,7 @@ export class CreateSolidParticleBlock extends NodeParticleBlock {
         const position = () => {
             return this.position.isConnected ? this.position.getConnectedValue(state) : Vector3.Zero();
         };
-        const velocity = () => {
-            return this.velocity.isConnected ? this.velocity.getConnectedValue(state) : Vector3.Zero();
-        };
+
         const color = () => {
             return this.color.isConnected ? this.color.getConnectedValue(state) : new Color4(1, 1, 1, 1);
         };
@@ -95,7 +88,6 @@ export class CreateSolidParticleBlock extends NodeParticleBlock {
             count,
             lifeTime,
             position,
-            velocity,
             color,
             scaling,
             rotation,

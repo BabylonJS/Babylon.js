@@ -151,7 +151,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Scaled direction", value: NodeParticleContextualSources.ScaledDirection },
                     { label: "Initial Direction", value: NodeParticleContextualSources.InitialDirection },
                     { label: "Local Position Updated", value: NodeParticleContextualSources.LocalPositionUpdated },
-                    { label: "Solid Particle Velocity", value: NodeParticleContextualSources.SolidParticleVelocity },
                     { label: "Solid Particle Scaling", value: NodeParticleContextualSources.SolidParticleScaling },
                     { label: "Solid Particle Rotation", value: NodeParticleContextualSources.SolidParticleRotation },
                 ];

@@ -45,7 +45,6 @@ export * from "./SolidParticle/createSolidParticleBlock";
 export * from "./SolidParticle/mergeSolidParticlesBlock";
 export * from "./SolidParticle/solidParticleSystemBlock";
 export * from "./SolidParticle/updateSolidParticlePositionBlock";
-export * from "./SolidParticle/updateSolidParticleVelocityBlock";
 export * from "./SolidParticle/updateSolidParticleColorBlock";
 export * from "./SolidParticle/updateSolidParticleScalingBlock";
 export * from "./SolidParticle/updateSolidParticleRotationBlock";

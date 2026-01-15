@@ -202,11 +202,6 @@ export class NodeParticleBuildState {
                     return null;
                 }
                 return (this.particleContext as SolidParticle).idx;
-            case NodeParticleContextualSources.SolidParticleVelocity:
-                if (!this._isSolidParticle) {
-                    return null;
-                }
-                return (this.particleContext as SolidParticle).velocity;
             case NodeParticleContextualSources.SolidParticleScaling:
                 if (!this._isSolidParticle) {
                     return null;

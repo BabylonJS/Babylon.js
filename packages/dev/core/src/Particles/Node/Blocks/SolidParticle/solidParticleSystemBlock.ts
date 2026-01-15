@@ -97,7 +97,7 @@ export class SolidParticleSystemBlock extends NodeParticleBlock {
                     if (!particleCreateData) {
                         continue;
                     }
-                    const { lifeTime, position, velocity, color, scaling, rotation } = particleCreateData;
+                    const { lifeTime, position, color, scaling, rotation } = particleCreateData;
 
                     state.particleContext = particle;
                     state.systemContext = sps;
@@ -111,9 +111,7 @@ export class SolidParticleSystemBlock extends NodeParticleBlock {
                     if (position) {
                         particle.position.copyFrom(position());
                     }
-                    if (velocity) {
-                        particle.velocity.copyFrom(velocity());
-                    }
+
                     if (color) {
                         const particleColor = particle.color;
                         if (particleColor) {
@@ -152,9 +150,6 @@ export class SolidParticleSystemBlock extends NodeParticleBlock {
             state.systemContext = sps;
 
             try {
-                if (updateData.velocity) {
-                    particle.velocity.copyFrom(updateData.velocity());
-                }
                 if (updateData.position) {
                     particle.position.copyFrom(updateData.position());
                 }

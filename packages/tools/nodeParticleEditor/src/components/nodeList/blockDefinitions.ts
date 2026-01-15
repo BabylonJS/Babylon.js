@@ -26,7 +26,7 @@ const InputBlocks: IBlockDefinition[] = [
     { name: "Vector2", category: "Inputs", modes: BothModes, tooltip: "Input block set to a Vector2 value" },
     { name: "Vector3", category: "Inputs", modes: BothModes, tooltip: "Input block set to a Vector3 value" },
     { name: "Int", category: "Inputs", modes: BothModes, tooltip: "Input block set to a integer value" },
-    { name: "TextureBlock", category: "Inputs", modes: BothModes, tooltip: "Provide a texture" },
+    { name: "TextureBlock", category: "Inputs", modes: ParticleOnly, tooltip: "Provide a texture" },
     { name: "Color4", category: "Inputs", modes: BothModes, tooltip: "Input block set to a Color4 value" },
     { name: "MeshSourceBlock", category: "Inputs", modes: SolidParticleOnly, tooltip: "Mesh source for SPS - load custom geometry from the inspector" },
 ];
@@ -68,7 +68,6 @@ const ParticleUpdateBlocks: IBlockDefinition[] = [
 
 const SolidParticleUpdateBlocks: IBlockDefinition[] = [
     { name: "UpdateSolidParticlePositionBlock", category: "Updates", modes: SolidParticleOnly, tooltip: "Update the position of a solid particle" },
-    { name: "UpdateSolidParticleVelocityBlock", category: "Updates", modes: SolidParticleOnly, tooltip: "Update the velocity of a solid particle" },
     { name: "UpdateSolidParticleColorBlock", category: "Updates", modes: SolidParticleOnly, tooltip: "Update the color of a solid particle" },
     { name: "UpdateSolidParticleScalingBlock", category: "Updates", modes: SolidParticleOnly, tooltip: "Update the scaling of a solid particle" },
     { name: "UpdateSolidParticleRotationBlock", category: "Updates", modes: SolidParticleOnly, tooltip: "Update the rotation of a solid particle" },
@@ -201,7 +200,7 @@ const SystemBlocks: IBlockDefinition[] = [
     },
     { name: "TimeBlock", category: "System_Nodes", modes: BothModes, tooltip: "Block used to get the current time in ms" },
     { name: "DeltaBlock", category: "System_Nodes", modes: BothModes, tooltip: "Block used to get the delta value for animations" },
-    { name: "EmitterPositionBlock", category: "System_Nodes", modes: BothModes, tooltip: "Contextual block to get the coordinates of the emitter" },
+    { name: "EmitterPositionBlock", category: "System_Nodes", modes: ParticleOnly, tooltip: "Contextual block to get the coordinates of the emitter" },
     { name: "CameraPositionBlock", category: "System_Nodes", modes: BothModes, tooltip: "Contextual block to get the position of the active camera" },
 ];
 
@@ -213,12 +212,11 @@ const ContextualBlocks: IBlockDefinition[] = [
     { name: "ColorBlock", category: "Contextual", modes: BothModes, tooltip: "Contextual block to get the color of a particle" },
     { name: "AgeBlock", category: "Contextual", modes: BothModes, tooltip: "Contextual block to get the age of a particle" },
     { name: "LifetimeBlock", category: "Contextual", modes: BothModes, tooltip: "Contextual block to get the lifetime of a particle" },
-    { name: "ScaleBlock", category: "Contextual", modes: BothModes, tooltip: "Contextual block to get the scale of a particle" },
+    { name: "ScaleBlock", category: "Contextual", modes: ParticleOnly, tooltip: "Contextual block to get the scale of a particle" },
     { name: "SizeBlock", category: "Contextual", modes: ParticleOnly, tooltip: "Contextual block to get the size of a particle" },
     { name: "AgeGradientBlock", category: "Contextual", modes: BothModes, tooltip: "Contextual block to get the age gradient of a particle ie. the age divided by the lifetime" },
     { name: "AngleBlock", category: "Contextual", modes: ParticleOnly, tooltip: "Contextual block to get the angle of a particle" },
     { name: "SolidParticleIndexBlock", category: "Contextual", modes: SolidParticleOnly, tooltip: "Contextual block to get the index of a solid particle" },
-    { name: "SolidParticleVelocityBlock", category: "Contextual", modes: SolidParticleOnly, tooltip: "Contextual block to get the velocity of a solid particle" },
     { name: "SolidParticleScalingBlock", category: "Contextual", modes: SolidParticleOnly, tooltip: "Contextual block to get the scaling of a solid particle" },
     { name: "SolidParticleRotationBlock", category: "Contextual", modes: SolidParticleOnly, tooltip: "Contextual block to get the rotation of a solid particle" },
     { name: "InitialColorBlock", category: "Contextual", modes: ParticleOnly, tooltip: "Contextual block to get the initial color of a particle" },

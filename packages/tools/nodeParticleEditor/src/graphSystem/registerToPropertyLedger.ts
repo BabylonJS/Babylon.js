@@ -23,7 +23,6 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["MergeSolidParticlesBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SolidParticleSystemBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["UpdateSolidParticlePositionBlock"] = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["UpdateSolidParticleVelocityBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["UpdateSolidParticleColorBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["UpdateSolidParticleScalingBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["UpdateSolidParticleRotationBlock"] = GenericPropertyComponent;

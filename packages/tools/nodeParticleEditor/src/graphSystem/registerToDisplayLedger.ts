@@ -51,7 +51,6 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["MergeSolidParticlesBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["SolidParticleSystemBlock"] = SystemDisplayManager;
     DisplayLedger.RegisteredControls["UpdateSolidParticlePositionBlock"] = UpdateDisplayManager;
-    DisplayLedger.RegisteredControls["UpdateSolidParticleVelocityBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateSolidParticleColorBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateSolidParticleScalingBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateSolidParticleRotationBlock"] = UpdateDisplayManager;

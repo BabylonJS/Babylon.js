@@ -15,7 +15,6 @@ export interface ISolidParticleMeshSourceData {
  */
 export interface ISolidParticleUpdateData {
     position?: () => Vector3;
-    velocity?: () => Vector3;
     color?: () => Color4;
     scaling?: () => Vector3;
     rotation?: () => Vector3;
@@ -28,7 +27,6 @@ export interface ISolidParticleInitData {
     meshData: ISolidParticleMeshSourceData | null;
     count: number;
     position?: () => Vector3;
-    velocity?: () => Vector3;
     color?: () => Color4;
     scaling?: () => Vector3;
     rotation?: () => Vector3;

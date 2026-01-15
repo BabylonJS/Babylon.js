@@ -49,7 +49,6 @@ import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVe
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
 import { MeshSourceBlock } from "core/Particles/Node/Blocks/SolidParticle/meshSourceBlock";
 import { UpdateSolidParticlePositionBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticlePositionBlock";
-import { UpdateSolidParticleVelocityBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleVelocityBlock";
 import { UpdateSolidParticleColorBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleColorBlock";
 import { UpdateSolidParticleScalingBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleScalingBlock";
 import { UpdateSolidParticleRotationBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleRotationBlock";
@@ -184,8 +183,6 @@ export class BlockTools {
                 return new MergeSolidParticlesBlock("Merge Solid Particles");
             case "UpdateSolidParticlePositionBlock":
                 return new UpdateSolidParticlePositionBlock("Update Solid Particle Position");
-            case "UpdateSolidParticleVelocityBlock":
-                return new UpdateSolidParticleVelocityBlock("Update Solid Particle Velocity");
             case "UpdateSolidParticleColorBlock":
                 return new UpdateSolidParticleColorBlock("Update Solid Particle Color");
             case "UpdateSolidParticleScalingBlock":
@@ -291,11 +288,6 @@ export class BlockTools {
             case "SolidParticleIndexBlock": {
                 const block = new ParticleInputBlock("Solid Particle Index");
                 block.contextualValue = NodeParticleContextualSources.SolidParticleIndex;
-                return block;
-            }
-            case "SolidParticleVelocityBlock": {
-                const block = new ParticleInputBlock("Solid Particle Velocity");
-                block.contextualValue = NodeParticleContextualSources.SolidParticleVelocity;
                 return block;
             }
             case "SolidParticleScalingBlock": {
