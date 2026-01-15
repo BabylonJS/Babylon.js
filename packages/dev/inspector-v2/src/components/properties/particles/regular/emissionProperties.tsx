@@ -1,5 +1,6 @@
 import type { FactorGradient } from "core/index";
 import type { ParticleSystem } from "core/Particles/particleSystem";
+import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import type { FunctionComponent } from "react";
 
 import { useCallback } from "react";
@@ -15,7 +16,7 @@ import { useObservableArray } from "../useObservableArray";
  * @param props Component props.
  * @returns Render property lines.
  */
-export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
+export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSystem: ParticleSystem | GPUParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
     const emitRateGradientsGetter = useCallback(() => system.getEmitRateGradients(), [system]);

@@ -1,6 +1,7 @@
 import type { FunctionComponent } from "react";
 import type { AbstractMesh } from "core/index";
 import type { ParticleSystem } from "core/Particles/particleSystem";
+import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import type { ISelectionService } from "../../../../services/selectionService";
 
 import { useEffect, useMemo, useState } from "react";
@@ -28,7 +29,7 @@ import { LinkToEntityPropertyLine } from "../../linkToEntityPropertyLine";
  * @param props Component props.
  * @returns Render property lines.
  */
-export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem: ParticleSystem; selectionService: ISelectionService }> = (props) => {
+export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem: ParticleSystem | GPUParticleSystem; selectionService: ISelectionService }> = (props) => {
     const { particleSystem: system, selectionService } = props;
 
     const scene = system.getScene();

@@ -1,6 +1,7 @@
 import type { ColorGradient, FactorGradient } from "core/index";
 import type { Color3Gradient } from "core/Misc/gradients";
 import type { ParticleSystem } from "core/Particles/particleSystem";
+import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import type { FunctionComponent } from "react";
 
 import { useCallback } from "react";
@@ -19,7 +20,7 @@ import { useObservableArray } from "../useObservableArray";
  * @param props Component props.
  * @returns Render property lines.
  */
-export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
+export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: ParticleSystem | GPUParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
     const colorGradientsGetter = useCallback(() => system.getColorGradients(), [system]);
