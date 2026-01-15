@@ -4,7 +4,7 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
-import { Vector3 } from "core/Maths";
+import { Vector3 } from "core/Maths/math.vector";
 
 /**
  * Material Loading Adapter for OpenPBR materials that provides a unified OpenPBR-like interface.
@@ -724,7 +724,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Sets the attenuation distance for volume scattering.
+     * Sets the attenuation distance.
      * @param value The attenuation distance value
      */
     public set transmissionDepth(value: number) {
@@ -739,14 +739,14 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Gets the attenuation distance for volume scattering.
+     * Gets the attenuation distance.
      */
     public get transmissionDepth(): number {
         return this._material.transmissionDepth;
     }
 
     /**
-     * Sets the attenuation color for volume scattering.
+     * Sets the attenuation color.
      * @param value The attenuation color as a Color3
      */
     public set transmissionColor(value: Color3) {
@@ -759,14 +759,14 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Gets the attenuation color for volume scattering.
+     * Gets the attenuation color.
      */
     public get transmissionColor(): Color3 {
         return this._material.transmissionColor;
     }
 
     /**
-     * Sets the thickness texture for volume scattering.
+     * Sets the thickness texture.
      * @param value The thickness texture or null
      */
     public set volumeThicknessTexture(value: Nullable<BaseTexture>) {
@@ -775,7 +775,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Sets the thickness factor for volume scattering.
+     * Sets the thickness factor.
      * @param value The thickness value
      */
     public set volumeThickness(value: number) {

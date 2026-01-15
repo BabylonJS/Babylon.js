@@ -8,7 +8,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsVolume } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { Vector3 } from "core/Maths";
+import { Vector3 } from "core/Maths/math.vector";
 
 const NAME = "KHR_materials_volume";
 

@@ -5,7 +5,7 @@ import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Color3 } from "core/Maths/math.color";
-import { OpenPBRMaterial } from "core/Materials";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
 const NAME = "KHR_materials_volume";
 

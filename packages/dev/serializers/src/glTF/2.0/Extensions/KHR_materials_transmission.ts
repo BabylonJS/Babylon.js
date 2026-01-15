@@ -126,6 +126,12 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 }
             }
 
+            if (transmissionFactor === 1) {
+                if (node.pbrMetallicRoughness) {
+                    node.pbrMetallicRoughness.baseColorFactor = undefined;
+                }
+            }
+
             node.extensions ||= {};
             node.extensions[NAME] = transmissionInfo;
         }
