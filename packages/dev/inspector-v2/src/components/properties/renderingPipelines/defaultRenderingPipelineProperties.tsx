@@ -10,6 +10,7 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { Vector2PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
@@ -219,20 +220,31 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
     const { pipeline } = props;
     const imageProcessingEnabled = useProperty(pipeline, "imageProcessingEnabled");
     const imageProcessing = pipeline.imageProcessing;
-    const imageProcessingConfig = imageProcessing?.imageProcessingConfiguration;
 
-    const vignetteEnabled = useProperty(imageProcessingConfig, "vignetteEnabled");
+    const vignetteEnabled = useProperty(imageProcessing, "vignetteEnabled");
 
     return (
         <>
             <BoundProperty component={SwitchPropertyLine} label="Image Processing Enabled" target={pipeline} propertyKey="imageProcessingEnabled" />
-            <Collapse visible={!!imageProcessingEnabled && !!imageProcessingConfig}>
+            <Collapse visible={!!imageProcessingEnabled && !!imageProcessing}>
+                <ButtonLine
+                    label="Convert Clear Color to Linear"
+                    onClick={() => {
+                        pipeline.scene.clearColor = pipeline.scene.clearColor.toLinearSpace(pipeline.scene.getEngine().useExactSrgbConversions);
+                    }}
+                />
+                <ButtonLine
+                    label="Convert Clear Color to Gamma"
+                    onClick={() => {
+                        pipeline.scene.clearColor = pipeline.scene.clearColor.toGammaSpace(pipeline.scene.getEngine().useExactSrgbConversions);
+                    }}
+                />
                 <BoundProperty
                     component={SyncedSliderPropertyLine}
                     label="Contrast"
-                    target={imageProcessingConfig}
+                    target={imageProcessing}
                     propertyKey="contrast"
-                    propertyPath="imageProcessing.imageProcessingConfiguration.contrast"
+                    propertyPath="imageProcessing.contrast"
                     min={0}
                     max={4}
                     step={0.1}
@@ -240,9 +252,9 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                 <BoundProperty
                     component={SyncedSliderPropertyLine}
                     label="Exposure"
-                    target={imageProcessingConfig}
+                    target={imageProcessing}
                     propertyKey="exposure"
-                    propertyPath="imageProcessing.imageProcessingConfiguration.exposure"
+                    propertyPath="imageProcessing.exposure"
                     min={0}
                     max={4}
                     step={0.1}
@@ -250,32 +262,32 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                 <BoundProperty
                     component={SwitchPropertyLine}
                     label="Tone Mapping Enabled"
-                    target={imageProcessingConfig}
+                    target={imageProcessing}
                     propertyKey="toneMappingEnabled"
-                    propertyPath="imageProcessing.imageProcessingConfiguration.toneMappingEnabled"
+                    propertyPath="imageProcessing.toneMappingEnabled"
                 />
                 <BoundProperty
                     component={NumberDropdownPropertyLine}
                     label="Tone Mapping Type"
-                    target={imageProcessingConfig}
+                    target={imageProcessing}
                     propertyKey="toneMappingType"
-                    propertyPath="imageProcessing.imageProcessingConfiguration.toneMappingType"
+                    propertyPath="imageProcessing.toneMappingType"
                     options={ToneMappingTypeOptions}
                 />
                 <BoundProperty
                     component={SwitchPropertyLine}
                     label="Vignette Enabled"
-                    target={imageProcessingConfig}
+                    target={imageProcessing}
                     propertyKey="vignetteEnabled"
-                    propertyPath="imageProcessing.imageProcessingConfiguration.vignetteEnabled"
+                    propertyPath="imageProcessing.vignetteEnabled"
                 />
                 <Collapse visible={!!vignetteEnabled}>
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
                         label="Vignette Weight"
-                        target={imageProcessingConfig}
+                        target={imageProcessing}
                         propertyKey="vignetteWeight"
-                        propertyPath="imageProcessing.imageProcessingConfiguration.vignetteWeight"
+                        propertyPath="imageProcessing.vignetteWeight"
                         min={0}
                         max={4}
                         step={0.1}
@@ -283,9 +295,9 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
                         label="Vignette Stretch"
-                        target={imageProcessingConfig}
+                        target={imageProcessing}
                         propertyKey="vignetteStretch"
-                        propertyPath="imageProcessing.imageProcessingConfiguration.vignetteStretch"
+                        propertyPath="imageProcessing.vignetteStretch"
                         min={0}
                         max={1}
                         step={0.1}
@@ -293,9 +305,9 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
                         label="Vignette Camera FOV"
-                        target={imageProcessingConfig}
+                        target={imageProcessing}
                         propertyKey="vignetteCameraFov"
-                        propertyPath="imageProcessing.imageProcessingConfiguration.vignetteCameraFov"
+                        propertyPath="imageProcessing.vignetteCameraFov"
                         min={0}
                         max={Math.PI}
                         step={0.1}
@@ -303,9 +315,9 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
                         label="Vignette Center X"
-                        target={imageProcessingConfig}
+                        target={imageProcessing}
                         propertyKey="vignetteCenterX"
-                        propertyPath="imageProcessing.imageProcessingConfiguration.vignetteCenterX"
+                        propertyPath="imageProcessing.vignetteCenterX"
                         min={0}
                         max={1}
                         step={0.1}
@@ -313,9 +325,9 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
                         label="Vignette Center Y"
-                        target={imageProcessingConfig}
+                        target={imageProcessing}
                         propertyKey="vignetteCenterY"
-                        propertyPath="imageProcessing.imageProcessingConfiguration.vignetteCenterY"
+                        propertyPath="imageProcessing.vignetteCenterY"
                         min={0}
                         max={1}
                         step={0.1}
@@ -323,32 +335,32 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                     <BoundProperty
                         component={Color4PropertyLine}
                         label="Vignette Color"
-                        target={imageProcessingConfig}
+                        target={imageProcessing}
                         propertyKey="vignetteColor"
-                        propertyPath="imageProcessing.imageProcessingConfiguration.vignetteColor"
+                        propertyPath="imageProcessing.vignetteColor"
                     />
                     <BoundProperty
                         component={NumberDropdownPropertyLine}
                         label="Vignette Blend Mode"
-                        target={imageProcessingConfig}
+                        target={imageProcessing}
                         propertyKey="vignetteBlendMode"
-                        propertyPath="imageProcessing.imageProcessingConfiguration.vignetteBlendMode"
+                        propertyPath="imageProcessing.vignetteBlendMode"
                         options={VignetteBlendModeOptions}
                     />
                 </Collapse>
                 <BoundProperty
                     component={SwitchPropertyLine}
                     label="Dithering Enabled"
-                    target={imageProcessingConfig}
+                    target={imageProcessing}
                     propertyKey="ditheringEnabled"
-                    propertyPath="imageProcessing.imageProcessingConfiguration.ditheringEnabled"
+                    propertyPath="imageProcessing.ditheringEnabled"
                 />
                 <BoundProperty
                     component={SyncedSliderPropertyLine}
                     label="Dithering Intensity"
-                    target={imageProcessingConfig}
+                    target={imageProcessing}
                     propertyKey="ditheringIntensity"
-                    propertyPath="imageProcessing.imageProcessingConfiguration.ditheringIntensity"
+                    propertyPath="imageProcessing.ditheringIntensity"
                     min={0}
                     max={1}
                     step={0.5 / 255}
