@@ -18,38 +18,39 @@ import { useObservableArray } from "../useObservableArray";
  */
 export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSystem: ParticleSystem | GPUParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
-
     const isCpuParticleSystem = system instanceof ParticleSystem;
-    const emitRateGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getEmitRateGradients() : null), [system]);
-    const emitRateGradients = useObservableArray<ParticleSystem, FactorGradient>(
-        isCpuParticleSystem ? system : null,
+
+    // Emit rate gradient is not supported in GPU particle systems, so the UI will be hidden below
+    const emitRateGradientsGetter = useCallback(() => system.getEmitRateGradients(), [system]);
+    const emitRateGradients = useObservableArray<ParticleSystem | GPUParticleSystem, FactorGradient>(
+        system,
         emitRateGradientsGetter,
         "addEmitRateGradient",
         "removeEmitRateGradient",
         "forceRefreshGradients"
     );
 
-    const velocityGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getVelocityGradients() : null), [system]);
-    const velocityGradients = useObservableArray<ParticleSystem, FactorGradient>(
-        isCpuParticleSystem ? system : null,
+    const velocityGradientsGetter = useCallback(() => system.getVelocityGradients(), [system]);
+    const velocityGradients = useObservableArray<ParticleSystem | GPUParticleSystem, FactorGradient>(
+        system,
         velocityGradientsGetter,
         "addVelocityGradient",
         "removeVelocityGradient",
         "forceRefreshGradients"
     );
 
-    const limitVelocityGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getLimitVelocityGradients() : null), [system]);
-    const limitVelocityGradients = useObservableArray<ParticleSystem, FactorGradient>(
-        isCpuParticleSystem ? system : null,
+    const limitVelocityGradientsGetter = useCallback(() => system.getLimitVelocityGradients(), [system]);
+    const limitVelocityGradients = useObservableArray<ParticleSystem | GPUParticleSystem, FactorGradient>(
+        system,
         limitVelocityGradientsGetter,
         "addLimitVelocityGradient",
         "removeLimitVelocityGradient",
         "forceRefreshGradients"
     );
 
-    const dragGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getDragGradients() : null), [system]);
-    const dragGradients = useObservableArray<ParticleSystem, FactorGradient>(
-        isCpuParticleSystem ? system : null,
+    const dragGradientsGetter = useCallback(() => system.getDragGradients(), [system]);
+    const dragGradients = useObservableArray<ParticleSystem | GPUParticleSystem, FactorGradient>(
+        system,
         dragGradientsGetter,
         "addDragGradient",
         "removeDragGradient",
@@ -100,7 +101,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
             <BoundProperty component={NumberInputPropertyLine} label="Min Emit Power" target={system} propertyKey="minEmitPower" min={0} step={0.1} />
             <BoundProperty component={NumberInputPropertyLine} label="Max Emit Power" target={system} propertyKey="maxEmitPower" min={0} step={0.1} />
 
-            {isCpuParticleSystem && !useVelocityGradients && (
+            {!useVelocityGradients && (
                 <ButtonLine
                     label="Use Velocity gradients"
                     onClick={() => {
@@ -132,7 +133,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
                 />
             )}
 
-            {isCpuParticleSystem && !useLimitVelocityGradients && (
+            {!useLimitVelocityGradients && (
                 <ButtonLine
                     label="Use Limit Velocity gradients"
                     onClick={() => {
@@ -164,7 +165,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
                 />
             )}
 
-            {isCpuParticleSystem && !useDragGradients && (
+            {!useDragGradients && (
                 <ButtonLine
                     label="Use Drag gradients"
                     onClick={() => {

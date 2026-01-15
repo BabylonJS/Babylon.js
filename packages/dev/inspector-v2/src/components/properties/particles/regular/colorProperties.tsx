@@ -22,40 +22,40 @@ import { useObservableArray } from "../useObservableArray";
  */
 export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: ParticleSystem | GPUParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
-
     const isCpuParticleSystem = system instanceof ParticleSystem;
-    const colorGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getColorGradients() : null), [system]);
-    const colorGradients = useObservableArray<ParticleSystem, ColorGradient>(
-        isCpuParticleSystem ? system : null,
+    const useRampGradients = useProperty(system, "useRampGradients");
+
+    const colorGradientsGetter = useCallback(() => system.getColorGradients(), [system]);
+    const colorGradients = useObservableArray<ParticleSystem | GPUParticleSystem, ColorGradient>(
+        system,
         colorGradientsGetter,
         "addColorGradient",
         "removeColorGradient",
         "forceRefreshGradients"
     );
 
-    const useRampGradients = useProperty(system, "useRampGradients");
-
-    const rampGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getRampGradients() : null), [system]);
-    const rampGradients = useObservableArray<ParticleSystem, Color3Gradient>(
-        isCpuParticleSystem ? system : null,
+    // Ramp, Color Remap, and Alpha Remap gradients are only supported in CPU particle systems, they will be hidden in the UI for GPU particle systems
+    const rampGradientsGetter = useCallback(() => system.getRampGradients(), [system]);
+    const rampGradients = useObservableArray<ParticleSystem | GPUParticleSystem, Color3Gradient>(
+        system,
         rampGradientsGetter,
         "addRampGradient",
         "removeRampGradient",
         "forceRefreshGradients"
     );
 
-    const colorRemapGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getColorRemapGradients() : null), [system]);
-    const colorRemapGradients = useObservableArray<ParticleSystem, FactorGradient>(
-        isCpuParticleSystem ? system : null,
+    const colorRemapGradientsGetter = useCallback(() => system.getColorRemapGradients(), [system]);
+    const colorRemapGradients = useObservableArray<ParticleSystem | GPUParticleSystem, FactorGradient>(
+        system,
         colorRemapGradientsGetter,
         "addColorRemapGradient",
         "removeColorRemapGradient",
         "forceRefreshGradients"
     );
 
-    const alphaRemapGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getAlphaRemapGradients() : null), [system]);
-    const alphaRemapGradients = useObservableArray<ParticleSystem, FactorGradient>(
-        isCpuParticleSystem ? system : null,
+    const alphaRemapGradientsGetter = useCallback(() => system.getAlphaRemapGradients(), [system]);
+    const alphaRemapGradients = useObservableArray<ParticleSystem | GPUParticleSystem, FactorGradient>(
+        system,
         alphaRemapGradientsGetter,
         "addAlphaRemapGradient",
         "removeAlphaRemapGradient",

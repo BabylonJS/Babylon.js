@@ -20,7 +20,7 @@ export const ParticleSystemRotationProperties: FunctionComponent<{ particleSyste
     const { particleSystem: system } = props;
 
     const angularSpeedGradientsGetter = useCallback(() => system.getAngularSpeedGradients(), [system]);
-    const angularSpeedGradients = useObservableArray<ParticleSystem, FactorGradient>(
+    const angularSpeedGradients = useObservableArray<ParticleSystem | GPUParticleSystem, FactorGradient>(
         system,
         angularSpeedGradientsGetter,
         "addAngularSpeedGradient",

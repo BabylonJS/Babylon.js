@@ -18,11 +18,12 @@ import { useObservableArray } from "../useObservableArray";
  */
 export const ParticleSystemLifetimeProperties: FunctionComponent<{ particleSystem: ParticleSystem | GPUParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
-
     const isCpuParticleSystem = system instanceof ParticleSystem;
-    const lifeTimeGradientsGetter = useCallback(() => (isCpuParticleSystem ? system.getLifeTimeGradients() : null), [system, isCpuParticleSystem]);
-    const lifeTimeGradients = useObservableArray<ParticleSystem, FactorGradient>(
-        isCpuParticleSystem ? system : null,
+
+    // Lifetime gradient is not supported in GPU particle systems, so the UI will be hidden below
+    const lifeTimeGradientsGetter = useCallback(() => system.getLifeTimeGradients(), [system]);
+    const lifeTimeGradients = useObservableArray<ParticleSystem | GPUParticleSystem, FactorGradient>(
+        system,
         lifeTimeGradientsGetter,
         "addLifeTimeGradient",
         "removeLifeTimeGradient",

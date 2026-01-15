@@ -18,12 +18,12 @@ import { useObservableArray } from "../useObservableArray";
  */
 export const ParticleSystemSizeProperties: FunctionComponent<{ particleSystem: ParticleSystem | GPUParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
-
     const isCpuParticleSystem = system instanceof ParticleSystem;
 
-    const starSizeGradientGetter = useCallback(() => (isCpuParticleSystem ? system.getStartSizeGradients() : null), [system]);
-    const startSizeGradient = useObservableArray<ParticleSystem, FactorGradient>(
-        isCpuParticleSystem ? system : null,
+    // Start size gradient is not supported in GPU particle systems, so the UI will be hidden below
+    const starSizeGradientGetter = useCallback(() => system.getStartSizeGradients(), [system]);
+    const startSizeGradient = useObservableArray<ParticleSystem | GPUParticleSystem, FactorGradient>(
+        system,
         starSizeGradientGetter,
         "addStartSizeGradient",
         "removeStartSizeGradient",
@@ -31,9 +31,9 @@ export const ParticleSystemSizeProperties: FunctionComponent<{ particleSystem: P
     );
     const useStartSizeGradients = (startSizeGradient?.length ?? 0) > 0;
 
-    const sizeGradientGetter = useCallback(() => (isCpuParticleSystem ? system.getSizeGradients() : null), [system]);
-    const sizeGradient = useObservableArray<ParticleSystem, FactorGradient>(
-        isCpuParticleSystem ? system : null,
+    const sizeGradientGetter = useCallback(() => system.getSizeGradients(), [system]);
+    const sizeGradient = useObservableArray<ParticleSystem | GPUParticleSystem, FactorGradient>(
+        system,
         sizeGradientGetter,
         "addSizeGradient",
         "removeSizeGradient",
@@ -82,7 +82,7 @@ export const ParticleSystemSizeProperties: FunctionComponent<{ particleSystem: P
                 />
             )}
 
-            {isCpuParticleSystem && !useSizeGradients && (
+            {!useSizeGradients && (
                 <ButtonLine
                     label="Use Size gradients"
                     onClick={() => {
