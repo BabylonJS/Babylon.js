@@ -7,6 +7,7 @@ import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Camera } from "core/Cameras/camera";
 import { FollowCamera } from "core/Cameras/followCamera";
 import { FreeCamera } from "core/Cameras/freeCamera";
+import { GeospatialCamera } from "core/Cameras/geospatialCamera";
 import { TargetCamera } from "core/Cameras/targetCamera";
 import {
     ArcRotateCameraTransformProperties,
@@ -15,6 +16,11 @@ import {
     ArcRotateCameraControlProperties,
     ArcRotateCameraLimitsProperties,
 } from "../../../components/properties/cameras/arcRotateCameraProperties";
+import {
+    GeospatialCameraTransformProperties,
+    GeospatialCameraCollisionProperties,
+    GeospatialCameraLimitsProperties,
+} from "../../../components/properties/cameras/geospatialCameraProperties";
 import { CameraGeneralProperties } from "../../../components/properties/cameras/cameraProperties";
 import { FollowCameraLimitsProperties, FollowCameraTransformProperties } from "../../../components/properties/cameras/followCameraProperties";
 import { FreeCameraCollisionProperties, FreeCameraControlProperties, FreeCameraTransformProperties } from "../../../components/properties/cameras/freeCameraProperties";
@@ -118,6 +124,25 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
             ],
         });
 
+        const geospatialCameraContentRegistration = propertiesService.addSectionContent({
+            key: "Geospatial Camera Properties",
+            predicate: (entity: unknown) => entity instanceof GeospatialCamera,
+            content: [
+                {
+                    section: "Transform",
+                    component: ({ context }) => <GeospatialCameraTransformProperties camera={context} settings={settingsContext} />,
+                },
+                {
+                    section: "Collision",
+                    component: ({ context }) => <GeospatialCameraCollisionProperties camera={context} />,
+                },
+                {
+                    section: "Limits",
+                    component: ({ context }) => <GeospatialCameraLimitsProperties camera={context} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
                 cameraContentRegistration.dispose();
@@ -125,6 +150,7 @@ export const CameraPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
                 arcRotateCameraContentRegistration.dispose();
                 freeCameraContentRegistration.dispose();
                 followCameraContentRegistration.dispose();
+                geospatialCameraContentRegistration.dispose();
             },
         };
     },
