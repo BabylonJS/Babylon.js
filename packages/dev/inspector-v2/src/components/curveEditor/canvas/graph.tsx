@@ -1,5 +1,6 @@
 import type { FunctionComponent } from "react";
 import type { Animation } from "core/Animations/animation";
+import type { IAnimationKey } from "core/Animations/animationKey";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -88,11 +89,104 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             forceUpdate((c) => c + 1);
         });
 
+        // Handle create or update key point
+        const onCreateOrUpdateKeyPointRequired = observables.onCreateOrUpdateKeyPointRequired.add(() => {
+            if (state.activeAnimations.length === 0) {
+                return;
+            }
+
+            for (const currentAnimation of state.activeAnimations) {
+                if (currentAnimation.dataType === AnimationEnum.ANIMATIONTYPE_QUATERNION) {
+                    continue;
+                }
+                const keys = currentAnimation.getKeys();
+                const currentFrame = state.activeFrame;
+
+                // Find where to insert the new key
+                let indexToAdd = -1;
+                for (const key of keys) {
+                    if (key.frame < currentFrame) {
+                        indexToAdd++;
+                    } else {
+                        break;
+                    }
+                }
+
+                // Get the value at the current frame
+                const value = currentAnimation.evaluate(currentFrame);
+
+                const leftKey = keys[indexToAdd];
+                const rightKey = keys[indexToAdd + 1];
+
+                if (leftKey && Math.floor(currentFrame - leftKey.frame) === 0) {
+                    // Key already exists at this frame, update it
+                    leftKey.value = value;
+                } else if (rightKey && Math.floor(rightKey.frame - currentFrame) === 0) {
+                    // Key already exists at this frame, update it
+                    rightKey.value = value;
+                } else {
+                    // Create new key
+                    const newKey: IAnimationKey = {
+                        frame: currentFrame,
+                        value: value,
+                        lockedTangent: true,
+                    };
+
+                    keys.splice(indexToAdd + 1, 0, newKey);
+                }
+
+                currentAnimation.setKeys(keys);
+            }
+
+            // Clear selection and refresh
+            actions.setActiveKeyPoints([]);
+            observables.onActiveKeyPointChanged.notifyObservers();
+            observables.onActiveAnimationChanged.notifyObservers({});
+            forceUpdate((c) => c + 1);
+        });
+
+        // Handle delete active key points
+        const onDeleteKeyActiveKeyPoints = observables.onDeleteKeyActiveKeyPoints.add(() => {
+            if (!state.activeKeyPoints || state.activeKeyPoints.length === 0) {
+                return;
+            }
+
+            // Group key points by animation
+            const keysByAnimation = new Map<Animation, Set<number>>();
+            for (const keyPoint of state.activeKeyPoints) {
+                const animation = keyPoint.curve.animation;
+                if (!keysByAnimation.has(animation)) {
+                    keysByAnimation.set(animation, new Set());
+                }
+                keysByAnimation.get(animation)!.add(keyPoint.keyId);
+            }
+
+            // Delete keys from each animation (in reverse order to maintain indices)
+            for (const [animation, keyIndices] of keysByAnimation) {
+                const keys = animation.getKeys();
+                const sortedIndices = Array.from(keyIndices).sort((a, b) => b - a); // Sort descending
+                for (const index of sortedIndices) {
+                    if (index >= 0 && index < keys.length) {
+                        keys.splice(index, 1);
+                    }
+                }
+                animation.setKeys(keys);
+            }
+
+            // Clear selection and refresh
+            actions.setActiveKeyPoints([]);
+            observables.onActiveKeyPointChanged.notifyObservers();
+            observables.onActiveAnimationChanged.notifyObservers({});
+            forceUpdate((c) => c + 1);
+        });
+
         return () => {
             observables.onActiveAnimationChanged.remove(onActiveAnimationChanged);
             observables.onRangeUpdated.remove(onRangeUpdated);
+            observables.onCreateOrUpdateKeyPointRequired.remove(onCreateOrUpdateKeyPointRequired);
+            observables.onDeleteKeyActiveKeyPoints.remove(onDeleteKeyActiveKeyPoints);
         };
-    }, [observables]);
+    }, [observables, state.activeAnimations, state.activeFrame, state.activeKeyPoints, actions]);
 
     // Get curves from active animations
     const curves = useMemo((): CurveData[] => {

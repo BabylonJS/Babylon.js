@@ -2,7 +2,15 @@ import type { FunctionComponent } from "react";
 
 import { makeStyles, tokens, Tooltip, Divider } from "@fluentui/react-components";
 import { useCallback, useEffect, useState } from "react";
-import { AddRegular, FullScreenMaximizeRegular, ArrowMinimizeRegular, LineHorizontal1Regular, ChevronDoubleRightRegular, ChevronDoubleLeftRegular } from "@fluentui/react-icons";
+import {
+    AddRegular,
+    DeleteRegular,
+    FullScreenMaximizeRegular,
+    ArrowMinimizeRegular,
+    LineHorizontal1Regular,
+    ChevronDoubleRightRegular,
+    ChevronDoubleLeftRegular,
+} from "@fluentui/react-icons";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
@@ -142,6 +150,9 @@ export const TopBar: FunctionComponent = () => {
             <div className={styles.buttonGroup}>
                 <Tooltip content="New key" relationship="label">
                     <Button icon={AddRegular} appearance="subtle" disabled={!hasActiveAnimations} onClick={() => observables.onCreateOrUpdateKeyPointRequired.notifyObservers()} />
+                </Tooltip>
+                <Tooltip content="Delete key" relationship="label">
+                    <Button icon={DeleteRegular} appearance="subtle" disabled={!hasActiveKeyPoints} onClick={() => observables.onDeleteKeyActiveKeyPoints.notifyObservers()} />
                 </Tooltip>
                 <Tooltip content="Frame canvas" relationship="label">
                     <Button icon={FullScreenMaximizeRegular} appearance="subtle" onClick={() => observables.onFrameRequired.notifyObservers()} />
