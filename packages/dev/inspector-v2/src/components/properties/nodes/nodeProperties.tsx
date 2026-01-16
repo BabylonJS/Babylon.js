@@ -30,7 +30,7 @@ export const NodeGeneralProperties: FunctionComponent<{ node: Node; selectionSer
                 description="Whether the node is enabled or not."
                 value={isEnabled}
                 onChange={(checked) => node.setEnabled(checked)}
-                propertyFuncPath="setEnabled"
+                functionPath="setEnabled"
             />
             <BoundProperty
                 component={SwitchPropertyLine}
