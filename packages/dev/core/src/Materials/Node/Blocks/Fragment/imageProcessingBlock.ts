@@ -176,8 +176,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
 
         if (color.connectedPoint?.isConnected) {
             const isVec4Input =
-                color.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Color4 ||
-                color.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4;
+                color.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4;
             // For vec3 inputs (Color3/Vector3), use 1.0 for alpha since they have no .a component
             const alpha = isVec4Input ? `${color.associatedVariableName}.a` : "1.0";
 
