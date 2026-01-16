@@ -1011,6 +1011,12 @@ export class ThinEffectLayer {
                     renderingMesh.morphTargetManager._bind(effect);
                 }
 
+                // Baked vertex animations
+                const bvaManager = subMesh.getMesh().bakedVertexAnimationManager;
+                if (bvaManager && bvaManager.isEnabled) {
+                    bvaManager.bind(effect, hardwareInstancedRendering);
+                }
+
                 // Alpha mode
                 if (enableAlphaMode) {
                     engine.setAlphaMode(material.alphaMode);
