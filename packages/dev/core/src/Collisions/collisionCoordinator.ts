@@ -17,7 +17,7 @@ export interface ICollisionCoordinator {
         onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void,
         collisionIndex: number,
         slideOnCollide?: boolean
-    ): void;
+    ): Vector3;
     init(scene: Scene): void;
 }
 
@@ -39,7 +39,7 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
         onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void,
         collisionIndex: number,
         slideOnCollide: boolean = true
-    ): void {
+    ): Vector3 {
         position.divideToRef(collider._radius, this._scaledPosition);
         displacement.divideToRef(collider._radius, this._scaledVelocity);
         collider.collidedMesh = null;
@@ -51,6 +51,8 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
         this._finalPosition.multiplyInPlace(collider._radius);
         //run the callback
         onNewPosition(collisionIndex, this._finalPosition, collider.collidedMesh);
+
+        return this._finalPosition;
     }
 
     public createCollider(): Collider {

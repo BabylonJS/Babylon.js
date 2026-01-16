@@ -1,3 +1,4 @@
+import { Logger } from "../../../Misc/logger";
 import type { Nullable } from "../../../types";
 import type { IAudioParameterRampOptions } from "../../audioParameter";
 import { AudioParameterRampShape } from "../../audioParameter";
@@ -11,6 +12,8 @@ import type { _WebAudioEngine } from "../webAudioEngine";
  * there is no perceptual difference for such short durations, so a ramp is not needed.
  */
 const MinRampDuration = 0.000001;
+
+let Warn = true;
 
 /** @internal */
 export class _WebAudioParameterComponent {
@@ -57,12 +60,17 @@ export class _WebAudioParameterComponent {
      * @internal
      */
     public setTargetValue(value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
-        const shape = typeof options?.shape === "string" ? options.shape : AudioParameterRampShape.Linear;
+        if (!Number.isFinite(value)) {
+            Logger.Warn(`Attempted to set audio parameter to non-finite value: ${value}`);
+            return;
+        }
 
+        this._param.cancelScheduledValues(0);
+
+        const shape = typeof options?.shape === "string" ? options.shape : AudioParameterRampShape.Linear;
         const startTime = this._engine.currentTime;
 
         if (shape === AudioParameterRampShape.None) {
-            this._param.cancelScheduledValues(0);
             this._param.value = this._targetValue = value;
             this._rampEndTime = startTime;
             return;
@@ -70,14 +78,21 @@ export class _WebAudioParameterComponent {
 
         let duration = typeof options?.duration === "number" ? Math.max(options.duration, this._engine.parameterRampDuration) : this._engine.parameterRampDuration;
 
+        this._targetValue = value;
+
         if ((duration = Math.max(this._engine.parameterRampDuration, duration)) < MinRampDuration) {
-            this._param.setValueAtTime((this._targetValue = value), startTime);
+            this._param.setValueAtTime(value, startTime);
             return;
         }
 
-        this._param.cancelScheduledValues(0);
-        this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, this._param.value, (this._targetValue = value)), startTime, duration);
-
-        this._rampEndTime = startTime + duration;
+        try {
+            this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, Number.isFinite(this._param.value) ? this._param.value : 0, value), startTime, duration);
+            this._rampEndTime = startTime + duration;
+        } catch (e) {
+            if (Warn) {
+                Logger.Warn(`Audio parameter ramping failed: ${(e as Error).message}`);
+                Warn = false;
+            }
+        }
     }
 }

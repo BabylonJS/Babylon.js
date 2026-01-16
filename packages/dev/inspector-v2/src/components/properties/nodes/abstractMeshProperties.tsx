@@ -26,21 +26,19 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
+import { MaterialSelectorPropertyLine, NodeSelectorPropertyLine, SkeletonSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
+import { Constants } from "core/Engines/constants";
 
 // Ensures that the outlineRenderer and edgesRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/edgesRenderer";
 import "core/Rendering/outlineRenderer";
-import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import { HexPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
 
     // Use the observable to keep keep state up-to-date and re-render the component when it changes.
-    const material = useObservableState(() => mesh.material, mesh.onMaterialChangedObservable);
-    const skeleton = useProperty(mesh, "skeleton");
     const isAnInstance = useProperty(mesh, "isAnInstance");
     // TODO: Handle case where array is mutated
     const subMeshes = useProperty(mesh, "subMeshes");
@@ -50,15 +48,38 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
             <StringifiedPropertyLine label="Vertices" value={mesh.getTotalVertices()} />
             <StringifiedPropertyLine label="Faces" value={mesh.getTotalIndices() / 3} />
             <StringifiedPropertyLine label="Sub-Meshes" value={subMeshes.length} />
-            <LinkToEntityPropertyLine label="Skeleton" description="The skeleton associated with the mesh." entity={skeleton} selectionService={selectionService} />
-            <LinkToEntityPropertyLine label="Material" description="The material used by the mesh." entity={material} selectionService={selectionService} />
+            <BoundProperty
+                defaultValue={null}
+                component={SkeletonSelectorPropertyLine}
+                label="Skeleton"
+                description="The skeleton associated with the mesh."
+                target={mesh}
+                propertyKey="skeleton"
+                scene={mesh.getScene()}
+                onLink={(skeleton) => (selectionService.selectedEntity = skeleton)}
+            />
+            {!mesh.isAnInstance && (
+                <BoundProperty
+                    defaultValue={null}
+                    component={MaterialSelectorPropertyLine}
+                    label="Material"
+                    description="The material used by the mesh."
+                    target={mesh}
+                    propertyKey="material"
+                    scene={mesh.getScene()}
+                    onLink={(material) => (selectionService.selectedEntity = material)}
+                />
+            )}
             <BoundProperty component={SwitchPropertyLine} label="Is Pickable" target={mesh} propertyKey={"isPickable"} />
             {isAnInstance && mesh instanceof InstancedMesh && (
-                <LinkToEntityPropertyLine
+                <BoundProperty
+                    component={NodeSelectorPropertyLine}
                     label="Source"
                     description="The source mesh from which this instance was created."
-                    entity={mesh.sourceMesh}
-                    selectionService={selectionService}
+                    target={mesh}
+                    propertyKey="sourceMesh"
+                    scene={mesh.getScene()}
+                    onLink={(node) => (selectionService.selectedEntity = node)}
                 />
             )}
         </>
@@ -72,6 +93,15 @@ export const AbstractMeshDisplayProperties: FunctionComponent<{ mesh: AbstractMe
         <>
             <BoundProperty component={NumberInputPropertyLine} label="Alpha Index" target={mesh} propertyKey="alphaIndex" />
             <BoundProperty component={SwitchPropertyLine} label="Receive Shadows" target={mesh} propertyKey="receiveShadows" />
+
+            {mesh.isVerticesDataPresent(VertexBuffer.ColorKind) && (
+                <>
+                    <BoundProperty label="Use Vertex Colors" component={SwitchPropertyLine} target={mesh} propertyKey="useVertexColors" />
+                    <BoundProperty label="Has Vertex Alpha" component={SwitchPropertyLine} target={mesh} propertyKey="hasVertexAlpha" />
+                </>
+            )}
+            {mesh.getScene().fogMode !== Constants.FOGMODE_NONE && <BoundProperty label="Apply Fog" component={SwitchPropertyLine} target={mesh} propertyKey="applyFog" />}
+            {!mesh.parent && <BoundProperty component={SwitchPropertyLine} label="Infinite distance" target={mesh} propertyKey="infiniteDistance" />}
             <BoundProperty
                 component={SyncedSliderPropertyLine}
                 label="Rendering Group Id"
@@ -203,19 +233,17 @@ export const AbstractMeshEdgeRenderingProperties: FunctionComponent<{ mesh: Abst
                 }}
             />
             <Collapse visible={!!edgesRenderer}>
-                <>
-                    <BoundProperty
-                        component={SyncedSliderPropertyLine}
-                        label="Edges Width"
-                        description="Width of the rendered edges (0 to 10)."
-                        target={mesh}
-                        propertyKey="edgesWidth"
-                        min={0}
-                        max={10}
-                        step={0.1}
-                    />
-                    <BoundProperty component={Color4PropertyLine} label="Edge Color" target={mesh} propertyKey="edgesColor" />
-                </>
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="Edges Width"
+                    description="Width of the rendered edges (0 to 10)."
+                    target={mesh}
+                    propertyKey="edgesWidth"
+                    min={0}
+                    max={10}
+                    step={0.1}
+                />
+                <BoundProperty component={Color4PropertyLine} label="Edge Color" target={mesh} propertyKey="edgesColor" />
             </Collapse>
         </>
     );

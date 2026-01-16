@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { useState, useEffect, useCallback, useContext } from "react";
+import { forwardRef, useState, useEffect, useCallback, useContext } from "react";
 import type { FunctionComponent } from "react";
 import { ColorPicker as FluentColorPicker, ColorSlider, ColorArea, AlphaSlider, makeStyles, tokens, Body1Strong, ColorSwatch, Body1 } from "@fluentui/react-components";
 import type { ColorPickerProps as FluentColorPickerProps } from "@fluentui/react-components";
@@ -60,26 +60,31 @@ const useColorPickerStyles = makeStyles({
         minWidth: 0,
         gap: tokens.spacingVerticalSNudge, // 6px
     },
+    trigger: {
+        display: "flex",
+        alignItems: "center",
+    },
 });
 
 export type ColorPickerProps<C extends Color3 | Color4> = {
     isLinearMode?: boolean;
 } & PrimitiveProps<C>;
 
-export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color4>> = (props) => {
+export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<Color3 | Color4>>((props, ref) => {
     ColorPickerPopup.displayName = "ColorPickerPopup";
+    const { value, onChange, isLinearMode, ...rest } = props;
     const classes = useColorPickerStyles();
-    const [color, setColor] = useState(props.value);
-    const [isLinear, setIsLinear] = useState(props.isLinearMode ?? false);
+    const [color, setColor] = useState(value);
+    const [isLinear, setIsLinear] = useState(isLinearMode ?? false);
     const [isFloat, setFloat] = useState(false);
     const { size } = useContext(ToolContext);
     useEffect(() => {
-        setColor(props.value); // Ensures the trigger color updates when props.value changes
-    }, [props.value]);
+        setColor(value); // Ensures the trigger color updates when props.value changes
+    }, [value]);
 
     const handleColorPickerChange: FluentColorPickerProps["onColorChange"] = (_, data) => {
         let color: Color3 | Color4 = Color3.FromHSV(data.color.h, data.color.s, data.color.v);
-        if (props.value instanceof Color4) {
+        if (value instanceof Color4) {
             color = Color4.FromColor3(color, data.color.a ?? 1);
         }
         handleChange(color);
@@ -87,13 +92,16 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
 
     const handleChange = (newColor: Color3 | Color4) => {
         setColor(newColor);
-        props.onChange(newColor); // Ensures the parent is notified when color changes from within colorPicker
+        onChange(newColor); // Ensures the parent is notified when color changes from within colorPicker
     };
 
     return (
         <Popover
             trigger={
                 <ColorSwatch
+                    className={classes.trigger}
+                    ref={ref}
+                    {...rest}
                     borderColor={tokens.colorNeutralShadowKeyDarker}
                     size={size === "small" ? "extra-small" : "small"}
                     shape="rounded"
@@ -162,7 +170,7 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
             </div>
         </Popover>
     );
-};
+});
 
 export type InputHexProps = PrimitiveProps<Color3 | Color4> & {
     linearHex?: boolean;

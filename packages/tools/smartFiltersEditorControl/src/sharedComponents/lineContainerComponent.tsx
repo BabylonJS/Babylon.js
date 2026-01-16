@@ -1,13 +1,15 @@
 import { DataStorage } from "core/Misc/dataStorage.js";
 import * as react from "react";
 import downArrow from "../assets/imgs/downArrow.svg";
-import { ContextMenuTrigger } from "react-contextmenu";
+import type { ContextMenuItem } from "shared-ui-components/fluent/primitives/contextMenu";
+import { ContextMenu } from "shared-ui-components/fluent/primitives/contextMenu";
+import { FluentToolWrapper } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 interface ILineContainerComponentProps {
     title: string;
     children: any[] | any;
     closed?: boolean;
-    contextMenu?: JSX.Element;
+    contextMenuItems?: ContextMenuItem[];
 }
 
 export class LineContainerComponent extends react.Component<ILineContainerComponentProps, { isExpanded: boolean }> {
@@ -37,13 +39,11 @@ export class LineContainerComponent extends react.Component<ILineContainerCompon
                 </div>
             </div>
         );
-
-        if (this.props.contextMenu) {
+        if (this.props.contextMenuItems && this.props.contextMenuItems.length > 0) {
             return (
-                <ContextMenuTrigger id={this.props.contextMenu.props.id}>
-                    {this.props.contextMenu}
-                    {header}
-                </ContextMenuTrigger>
+                <FluentToolWrapper toolName="Smart Filter Editor" useFluent>
+                    <ContextMenu trigger={header} items={this.props.contextMenuItems} />
+                </FluentToolWrapper>
             );
         } else {
             return header;

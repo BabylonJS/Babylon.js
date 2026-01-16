@@ -2,7 +2,7 @@ import * as ts from "typescript";
 import * as path from "path";
 import * as fs from "fs";
 import type { BuildType, PublicPackageVariable } from "./packageMapping.js";
-import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, declarationsOnlyPackages } from "./packageMapping.js";
+import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, declarationsOnlyPackages, bundledESPackages } from "./packageMapping.js";
 
 const AddJS = (to: string, forceAppend?: boolean | string): string => (forceAppend && !to.endsWith(".js") ? to + (forceAppend === true ? ".js" : forceAppend) : to);
 
@@ -75,6 +75,10 @@ export const transformPackageLocation = (location: string, options: ITransformer
     } else {
         if (directoryParts.length === 0) {
             // Do not add .js to imports that reference the root of a package
+            return returnPackage;
+        }
+        // For bundled packages, always return just the package name without sub-paths
+        if (bundledESPackages.indexOf(basePackage) !== -1) {
             return returnPackage;
         }
         return AddJS(options.packageOnly ? returnPackage : `${returnPackage}/${directoryParts.join("/")}`, options.appendJS);

@@ -31,6 +31,14 @@ export interface IThinGlowLayerOptions extends IThinEffectLayerOptions {
      * Forces the merge step to be done in ldr (clamp values > 1). Default: false
      */
     ldrMerge?: boolean;
+
+    /**
+     * Exclude all meshes from the glow layer by default.
+     * This is useful if you have dynamic meshes and you want to control them specifically and
+     * make sure that there are no "leaking" glowing meshes.
+     * Default: false
+     */
+    excludeByDefault?: boolean;
 }
 
 /**
@@ -140,6 +148,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
             renderingGroupId: -1,
             ldrMerge: false,
             alphaBlendingMode: Constants.ALPHA_ADD,
+            excludeByDefault: false,
             ...options,
         };
 
@@ -176,6 +185,14 @@ export class ThinGlowLayer extends ThinEffectLayer {
 
     public override getEffectName(): string {
         return ThinGlowLayer.EffectName;
+    }
+
+    /** @internal */
+    public override _internalShouldRender(): boolean {
+        if (this._options.excludeByDefault && !this._includedOnlyMeshes.length) {
+            return false;
+        }
+        return super._internalShouldRender();
     }
 
     public override _createMergeEffect(): Effect {
@@ -298,6 +315,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
 
     /**
      * Add a mesh in the exclusion list to prevent it to impact or being impacted by the glow layer.
+     * This will not have an effect if meshes are excluded by default (see setExcludedByDefault).
      * @param mesh The mesh to exclude from the glow layer
      */
     public addExcludedMesh(mesh: Mesh): void {
@@ -308,6 +326,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
 
     /**
      * Remove a mesh from the exclusion list to let it impact or being impacted by the glow layer.
+     * This will not have an effect if meshes are excluded by default (see setExcludedByDefault).
      * @param mesh The mesh to remove
      */
     public removeExcludedMesh(mesh: Mesh): void {
@@ -336,6 +355,15 @@ export class ThinGlowLayer extends ThinEffectLayer {
         if (index !== -1) {
             this._includedOnlyMeshes.splice(index, 1);
         }
+    }
+
+    /**
+     * Set the excluded by default option.
+     * If true, all meshes will be excluded by default unless they are added to the inclusion list.
+     * @param value The boolean value to set the excluded by default option to
+     */
+    public setExcludedByDefault(value: boolean): void {
+        this._options.excludeByDefault = value;
     }
 
     public override hasMesh(mesh: AbstractMesh): boolean {

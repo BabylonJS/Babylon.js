@@ -69,6 +69,14 @@ export const textureDepthStencilFormatList = [
     { label: "Depth 32 float", value: Constants.TEXTUREFORMAT_DEPTH32_FLOAT },
 ];
 
+export const TextureTargetTypeList = [
+    { label: "2D", value: Constants.TEXTURE_2D },
+    { label: "2D Array", value: Constants.TEXTURE_2D_ARRAY },
+    { label: "3D", value: Constants.TEXTURE_3D },
+    { label: "Cube", value: Constants.TEXTURE_CUBE_MAP },
+    { label: "Cube Array", value: Constants.TEXTURE_CUBE_MAP_ARRAY },
+];
+
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
         super(props);
@@ -157,7 +165,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         for (const { propertyName, displayName, type, groupName, options, className } of propStore) {
             let components = componentList[groupName];
 
-            if (options.embedded || classes.indexOf(className) === -1) {
+            if (classes.indexOf(className) === -1) {
                 continue;
             }
 
@@ -234,6 +242,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                                 label={displayName}
                                 target={block}
                                 propertyName={propertyName}
+                                decimalCount={0}
                                 step={1}
                                 minimum={Math.min(options.min as number, options.max as number)}
                                 maximum={options.max as number}

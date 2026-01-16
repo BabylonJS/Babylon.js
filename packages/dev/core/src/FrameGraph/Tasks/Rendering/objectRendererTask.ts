@@ -16,22 +16,23 @@ import type {
     ShadowLight,
     SmartArray,
     SubMesh,
+    ClusteredLightContainer,
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
-import { FrameGraphTask } from "../../frameGraphTask";
+import { FrameGraphTaskMultiRenderTarget } from "../../frameGraphTaskMultiRenderTarget";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
-import { FrameGraphCascadedShadowGeneratorTask } from "./csmShadowGeneratorTask";
 import { Constants } from "../../../Engines/constants";
 import { ThinDepthPeelingRenderer } from "../../../Rendering/thinDepthPeelingRenderer";
 import { RenderingManager } from "../../../Rendering/renderingManager";
 import { FrameGraphRenderTarget } from "../../frameGraphRenderTarget";
+import { LightConstants } from "../../../Lights/lightConstants";
 
 /**
  * Task used to render objects to a texture.
  */
-export class FrameGraphObjectRendererTask extends FrameGraphTask {
+export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarget {
     /**
-     * The target texture where the objects will be rendered.
+     * The target texture(s) where the objects will be rendered.
      */
     public targetTexture: FrameGraphTextureHandle | FrameGraphTextureHandle[];
 
@@ -394,9 +395,20 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
+
+        this.onBeforeTaskExecute.add(() => {
+            /**
+             * When clustered lights are used, we need to disable the debug markers because there's a flushFramebuffer call
+             * done by the clustered light container during the frame rendering that breaks the debug groups.
+             */
+            this._disableDebugMarkers = this._engine._enableGPUDebugMarkers && this._sceneHasClusteredLights();
+        });
     }
 
     public override isReady() {
+        this._renderer.renderList = this.objectList.meshes;
+        this._renderer.particleSystemList = this.objectList.particleSystems;
+
         return this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
     }
 
@@ -406,10 +418,6 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     public record(skipCreationOfDisabledPasses = false, additionalExecute?: (context: FrameGraphRenderContext) => void): FrameGraphRenderPass {
         this._checkParameters();
-
-        // Make sure the renderList / particleSystemList are set when FrameGraphObjectRendererTask.isReady() is called!
-        this._renderer.renderList = this.objectList.meshes;
-        this._renderer.particleSystemList = this.objectList.particleSystems;
 
         const targetTextures = this._getTargetHandles();
 
@@ -432,6 +440,8 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
 
+            this._updateLayerAndFaceIndices(pass);
+
             const renderTargetWrapper = pass.frameGraphRenderTarget!.renderTargetWrapper;
             if (renderTargetWrapper) {
                 renderTargetWrapper.resolveMSAAColors = this.resolveMSAAColors;
@@ -450,9 +460,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
                 currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
             }
 
-            this._prepareRendering(context, depthEnabled);
+            const attachments = this._prepareRendering(context, depthEnabled);
 
-            const currentOITRenderer = this._scene.depthPeelingRenderer;
+            const currentOITRenderer = this._scene._depthPeelingRenderer;
             this._scene._depthPeelingRenderer = this._oitRenderer;
 
             const camera = this._renderer.activeCamera;
@@ -464,13 +474,21 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
                     this._renderer.activeCamera = rigCamera;
 
-                    context.render(this._renderer, this._textureWidth, this._textureHeight);
+                    context.pushDebugGroup(`Render objects for camera rig ${index} "${rigCamera.name}"`);
+                    context.bindRenderTarget(pass.frameGraphRenderTarget);
+                    attachments && context.bindAttachments(attachments);
+                    context.render(this._renderer, this._textureWidth, this._textureHeight, true);
+                    context.popDebugGroup();
 
                     rigCamera.rigParent = camera;
                 }
                 this._renderer.activeCamera = camera;
             } else {
-                context.render(this._renderer, this._textureWidth, this._textureHeight);
+                context.pushDebugGroup(`Render objects for camera "${this._renderer.activeCamera?.name ?? "undefined"}"`);
+                context.bindRenderTarget(pass.frameGraphRenderTarget);
+                attachments && context.bindAttachments(attachments);
+                context.render(this._renderer, this._textureWidth, this._textureHeight, true);
+                context.popDebugGroup();
             }
 
             additionalExecute?.(context);
@@ -561,8 +579,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         return Array.isArray(this.targetTexture) ? this.targetTexture : [this.targetTexture];
     }
 
-    protected _prepareRendering(context: FrameGraphRenderContext, depthEnabled: boolean) {
+    protected _prepareRendering(context: FrameGraphRenderContext, depthEnabled: boolean): Nullable<number[]> {
         context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
+        return null;
     }
 
     protected _setLightsForShadow() {
@@ -575,7 +594,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
                 const light = shadowGenerator.getLight();
                 if (light.isEnabled() && light.shadowEnabled) {
                     lightsForShadow.add(light);
-                    if (FrameGraphCascadedShadowGeneratorTask.IsCascadedShadowGenerator(shadowGeneratorTask)) {
+                    if (shadowGeneratorTask.getClassName() === "FrameGraphCascadedShadowGeneratorTask") {
                         light._shadowGenerators!.set(shadowGeneratorTask.camera, shadowGenerator);
                     } else {
                         light._shadowGenerators!.set(null, shadowGenerator);
@@ -628,5 +647,14 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         }
 
         this._scene._useOrderIndependentTransparency = saveOIT;
+    }
+
+    protected _sceneHasClusteredLights() {
+        for (const light of this._scene.lights) {
+            if (light.getTypeID() === LightConstants.LIGHTTYPEID_CLUSTERED_CONTAINER && (light as ClusteredLightContainer).isSupported) {
+                return true;
+            }
+        }
+        return false;
     }
 }

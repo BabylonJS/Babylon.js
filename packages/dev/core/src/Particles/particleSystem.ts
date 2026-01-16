@@ -218,6 +218,10 @@ export class ParticleSystem extends ThinParticleSystem {
         }
     }
 
+    /**
+     * Starts the particle system and begins to emit
+     * @param delay defines the delay in milliseconds before starting the system (this.startDelay by default)
+     */
     public override start(delay = this.startDelay): void {
         if (!this.canStart()) {
             return;
@@ -309,6 +313,14 @@ export class ParticleSystem extends ThinParticleSystem {
         return particleEmitter;
     }
 
+    /**
+     * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
+     * @param radius The radius of the cone to emit from
+     * @param angle The base angle of the cone
+     * @param direction1 Particles are emitted between the direction1 and direction2 from within the cone
+     * @param direction2 Particles are emitted between the direction1 and direction2 from within the cone
+     * @returns the emitter
+     */
     public override createDirectedConeEmitter(
         radius = 1,
         angle = Math.PI / 4,

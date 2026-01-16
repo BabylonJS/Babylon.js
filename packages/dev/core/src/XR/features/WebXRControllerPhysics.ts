@@ -9,6 +9,9 @@ import { CreateSphere } from "../../Meshes/Builders/sphereBuilder";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
+import { PhysicsAggregate } from "../../Physics/v2/physicsAggregate";
+import type { PhysicsBody } from "../../Physics/v2/physicsBody";
+import { PhysicsMotionType, PhysicsShapeType } from "../../Physics/v2/IPhysicsEnginePlugin";
 
 /**
  * Options for the controller physics feature
@@ -84,6 +87,15 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         if (!this._xrSessionManager.scene.isPhysicsEnabled()) {
             Logger.Warn("physics engine not enabled, skipped. Please add this controller manually.");
         }
+
+        if (this._physicsVersion === 2) {
+            this._attachControllerV2(xrController);
+        } else {
+            this._attachControllerV1(xrController);
+        }
+    };
+
+    private _attachControllerV1 = (xrController: WebXRInputSource) => {
         // if no motion controller available, create impostors!
         if (this._options.physicsProperties!.useControllerMesh && xrController.inputSource.gamepad) {
             xrController.onMotionControllerInitObservable.addOnce((motionController) => {
@@ -112,6 +124,68 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         }
     };
 
+    private _attachControllerV2 = (xrController: WebXRInputSource) => {
+        // if no motion controller available, create physics aggregates!
+        if (this._options.physicsProperties!.useControllerMesh && xrController.inputSource.gamepad) {
+            xrController.onMotionControllerInitObservable.addOnce((motionController) => {
+                if (!motionController._doNotLoadControllerMesh) {
+                    motionController.onModelLoadedObservable.addOnce(() => {
+                        const shapeType = this._mapImpostorTypeToShapeType(PhysicsImpostor.MeshImpostor);
+                        const aggregate = new PhysicsAggregate(
+                            motionController.rootMesh!,
+                            shapeType,
+                            {
+                                mass: 0,
+                                friction: this._options.physicsProperties?.friction ?? 0.2,
+                                restitution: this._options.physicsProperties?.restitution ?? 0.2,
+                            },
+                            this._xrSessionManager.scene
+                        );
+
+                        aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
+                        aggregate.body.disableSync = true;
+
+                        const controllerMesh = xrController.grip || xrController.pointer;
+                        this._controllers[xrController.uniqueId] = {
+                            xrController,
+                            physicsAggregate: aggregate,
+                            physicsBody: aggregate.body,
+                            isPhysicsV2: true,
+                            oldPos: controllerMesh.position.clone(),
+                            oldRotation: controllerMesh.rotationQuaternion!.clone(),
+                        };
+                    });
+                } else {
+                    // This controller isn't using a model, create physics aggregate instead
+                    this._createPhysicsAggregate(xrController);
+                }
+            });
+        } else {
+            this._createPhysicsAggregate(xrController);
+        }
+    };
+
+    private _mapImpostorTypeToShapeType(impostorType: number): PhysicsShapeType {
+        // Map v1 PhysicsImpostor types to v2 PhysicsShapeType
+        switch (impostorType) {
+            case PhysicsImpostor.SphereImpostor:
+                return PhysicsShapeType.SPHERE;
+            case PhysicsImpostor.BoxImpostor:
+                return PhysicsShapeType.BOX;
+            case PhysicsImpostor.CapsuleImpostor:
+                return PhysicsShapeType.CAPSULE;
+            case PhysicsImpostor.CylinderImpostor:
+                return PhysicsShapeType.CYLINDER;
+            case PhysicsImpostor.MeshImpostor:
+                return PhysicsShapeType.MESH;
+            case PhysicsImpostor.ConvexHullImpostor:
+                return PhysicsShapeType.CONVEX_HULL;
+            default:
+                Logger.Warn(`Unsupported impostor type ${impostorType} for v2 physics, defaulting to SPHERE`);
+                return PhysicsShapeType.SPHERE;
+        }
+    }
+
     private _createPhysicsImpostor(xrController: WebXRInputSource) {
         const impostorType: number = this._options.physicsProperties!.impostorType || PhysicsImpostor.SphereImpostor;
         const impostorSize: number | { width: number; height: number; depth: number } = this._options.physicsProperties!.impostorSize || 0.1;
@@ -137,11 +211,53 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         };
     }
 
+    private _createPhysicsAggregate(xrController: WebXRInputSource) {
+        const impostorType: number = this._options.physicsProperties!.impostorType || PhysicsImpostor.SphereImpostor;
+        const impostorSize: number | { width: number; height: number; depth: number } = this._options.physicsProperties!.impostorSize || 0.1;
+        const impostorMesh = CreateSphere("impostor-mesh-" + xrController.uniqueId, {
+            diameterX: typeof impostorSize === "number" ? impostorSize : impostorSize.width,
+            diameterY: typeof impostorSize === "number" ? impostorSize : impostorSize.height,
+            diameterZ: typeof impostorSize === "number" ? impostorSize : impostorSize.depth,
+        });
+        impostorMesh.isVisible = this._debugMode;
+        impostorMesh.isPickable = false;
+        impostorMesh.rotationQuaternion = new Quaternion();
+        const controllerMesh = xrController.grip || xrController.pointer;
+        impostorMesh.position.copyFrom(controllerMesh.position);
+        impostorMesh.rotationQuaternion.copyFrom(controllerMesh.rotationQuaternion!);
+
+        const shapeType = this._mapImpostorTypeToShapeType(impostorType);
+        const aggregate = new PhysicsAggregate(
+            impostorMesh,
+            shapeType,
+            {
+                mass: 0,
+                friction: this._options.physicsProperties?.friction ?? 0.2,
+                restitution: this._options.physicsProperties?.restitution ?? 0.2,
+            },
+            this._xrSessionManager.scene
+        );
+
+        aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
+        aggregate.body.disableSync = true;
+
+        this._controllers[xrController.uniqueId] = {
+            xrController,
+            physicsAggregate: aggregate,
+            physicsBody: aggregate.body,
+            isPhysicsV2: true,
+            impostorMesh,
+        };
+    }
+
     private _controllers: {
         [id: string]: {
             xrController: WebXRInputSource;
             impostorMesh?: AbstractMesh;
-            impostor: PhysicsImpostor;
+            impostor?: PhysicsImpostor;
+            physicsAggregate?: PhysicsAggregate;
+            physicsBody?: PhysicsBody;
+            isPhysicsV2?: boolean;
             oldPos?: Vector3;
             oldSpeed?: Vector3;
             oldRotation?: Quaternion;
@@ -151,7 +267,9 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
     private _delta: number = 0;
     private _headsetImpostor?: PhysicsImpostor;
     private _headsetMesh?: AbstractMesh;
+    private _headsetAggregateV2?: PhysicsAggregate;
     private _lastTimestamp: number = 0;
+    private _physicsVersion: 1 | 2 = 1;
     private _tmpQuaternion: Quaternion = new Quaternion();
     private _tmpVector: Vector3 = new Vector3();
 
@@ -164,7 +282,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
      * This is an integer representing the implementation version.
      * This number does not correspond to the webxr specs version
      */
-    public static readonly Version = 1;
+    public static readonly Version = 2;
 
     /**
      * Construct a new Controller Physics Feature
@@ -215,6 +333,15 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             return false;
         }
 
+        // Detect physics version
+        const physicsEngine = this._xrSessionManager.scene.getPhysicsEngine();
+        if (physicsEngine) {
+            this._physicsVersion = (physicsEngine.getPluginVersion() as 1 | 2) || 1;
+        } else {
+            // Default to v1 if no physics engine (warning will be shown later)
+            this._physicsVersion = 1;
+        }
+
         if (!this._options.xrInput) {
             return true;
         }
@@ -229,20 +356,11 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         });
 
         if (this._options.enableHeadsetImpostor) {
-            const params = this._options.headsetImpostorParams || {
-                impostorType: PhysicsImpostor.SphereImpostor,
-                restitution: 0.8,
-                impostorSize: 0.3,
-            };
-            const impostorSize = params.impostorSize || 0.3;
-            this._headsetMesh = CreateSphere("headset-mesh", {
-                diameterX: typeof impostorSize === "number" ? impostorSize : impostorSize.width,
-                diameterY: typeof impostorSize === "number" ? impostorSize : impostorSize.height,
-                diameterZ: typeof impostorSize === "number" ? impostorSize : impostorSize.depth,
-            });
-            this._headsetMesh.rotationQuaternion = new Quaternion();
-            this._headsetMesh.isVisible = false;
-            this._headsetImpostor = new PhysicsImpostor(this._headsetMesh, params.impostorType, { mass: 0, ...params });
+            if (this._physicsVersion === 2) {
+                this._enableHeadsetPhysicsV2();
+            } else {
+                this._enableHeadsetPhysicsV1();
+            }
         }
 
         return true;
@@ -268,6 +386,12 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             this._headsetMesh.dispose();
         }
 
+        // Dispose v2 aggregate if present
+        if (this._headsetAggregateV2) {
+            this._headsetAggregateV2.dispose();
+            this._headsetAggregateV2 = undefined;
+        }
+
         return true;
     }
 
@@ -288,10 +412,46 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
     public getImpostorForController(controller: WebXRInputSource | string): Nullable<PhysicsImpostor> {
         const id = typeof controller === "string" ? controller : controller.uniqueId;
         if (this._controllers[id]) {
-            return this._controllers[id].impostor;
+            return this._controllers[id].impostor || null;
         } else {
             return null;
         }
+    }
+
+    /**
+     * Get the physics aggregate for a controller (v2 only)
+     * @param controller the controller or the controller id
+     * @returns the aggregate or null
+     */
+    public getPhysicsAggregateForController(controller: WebXRInputSource | string): Nullable<PhysicsAggregate> {
+        const id = typeof controller === "string" ? controller : controller.uniqueId;
+        if (this._controllers[id]) {
+            return this._controllers[id].physicsAggregate || null;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get the physics body for a controller (v2 only)
+     * @param controller the controller or the controller id
+     * @returns the physics body or null
+     */
+    public getPhysicsBodyForController(controller: WebXRInputSource | string): Nullable<PhysicsBody> {
+        const id = typeof controller === "string" ? controller : controller.uniqueId;
+        if (this._controllers[id]) {
+            return this._controllers[id].physicsBody || null;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get the headset physics aggregate (v2 only)
+     * @returns the physics aggregate or null
+     */
+    public getHeadsetPhysicsAggregate(): Nullable<PhysicsAggregate> {
+        return this._headsetAggregateV2 || null;
     }
 
     /**
@@ -317,6 +477,15 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
     protected _onXRFrame(_xrFrame: any): void {
         this._delta = this._xrSessionManager.currentTimestamp - this._lastTimestamp;
         this._lastTimestamp = this._xrSessionManager.currentTimestamp;
+
+        if (this._physicsVersion === 2) {
+            this._onXRFrameV2();
+        } else {
+            this._onXRFrameV1();
+        }
+    }
+
+    private _onXRFrameV1(): void {
         if (this._headsetMesh && this._headsetImpostor) {
             this._headsetMesh.position.copyFrom(this._options.xrInput.xrCamera.globalPosition);
             this._headsetMesh.rotationQuaternion!.copyFrom(this._options.xrInput.xrCamera.absoluteRotation);
@@ -339,11 +508,11 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             if (controllerData.xrController._lastXRPose?.linearVelocity) {
                 const lv = controllerData.xrController._lastXRPose.linearVelocity;
                 this._tmpVector.set(lv.x, lv.y, lv.z);
-                controllerData.impostor.setLinearVelocity(this._tmpVector);
+                controllerData.impostor!.setLinearVelocity(this._tmpVector);
             } else {
                 controllerMesh.position.subtractToRef(comparedPosition, this._tmpVector);
                 this._tmpVector.scaleInPlace(1000 / this._delta);
-                controllerData.impostor.setLinearVelocity(this._tmpVector);
+                controllerData.impostor!.setLinearVelocity(this._tmpVector);
             }
             comparedPosition.copyFrom(controllerMesh.position);
             if (this._debugMode) {
@@ -354,7 +523,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             if (controllerData.xrController._lastXRPose?.angularVelocity) {
                 const av = controllerData.xrController._lastXRPose.angularVelocity;
                 this._tmpVector.set(av.x, av.y, av.z);
-                controllerData.impostor.setAngularVelocity(this._tmpVector);
+                controllerData.impostor!.setAngularVelocity(this._tmpVector);
             } else {
                 if (!comparedQuaternion.equalsWithEpsilon(controllerMesh.rotationQuaternion!)) {
                     // roughly based on this - https://www.gamedev.net/forums/topic/347752-quaternion-and-angular-velocity/
@@ -370,7 +539,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
                         const angle = 2 * Math.atan2(len, this._tmpQuaternion.w);
                         this._tmpVector.scaleInPlace(angle / (len * (this._delta / 1000)));
                     }
-                    controllerData.impostor.setAngularVelocity(this._tmpVector);
+                    controllerData.impostor!.setAngularVelocity(this._tmpVector);
                 }
             }
             comparedQuaternion.copyFrom(controllerMesh.rotationQuaternion!);
@@ -378,6 +547,122 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
                 Logger.Log([this._tmpVector, this._tmpQuaternion, "angular"]);
             }
         }
+    }
+
+    private _onXRFrameV2(): void {
+        if (this._headsetMesh && this._headsetAggregateV2) {
+            this._headsetMesh.position.copyFrom(this._options.xrInput.xrCamera.globalPosition);
+            this._headsetMesh.rotationQuaternion!.copyFrom(this._options.xrInput.xrCamera.absoluteRotation);
+            if (this._options.xrInput.xrCamera._lastXRViewerPose?.linearVelocity) {
+                const lv = this._options.xrInput.xrCamera._lastXRViewerPose.linearVelocity;
+                this._tmpVector.set(lv.x, lv.y, lv.z);
+                this._headsetAggregateV2.body.setLinearVelocity(this._tmpVector);
+            }
+            if (this._options.xrInput.xrCamera._lastXRViewerPose?.angularVelocity) {
+                const av = this._options.xrInput.xrCamera._lastXRViewerPose.angularVelocity;
+                this._tmpVector.set(av.x, av.y, av.z);
+                this._headsetAggregateV2.body.setAngularVelocity(this._tmpVector);
+            }
+        }
+        const keys = Object.keys(this._controllers);
+        for (const controllerId of keys) {
+            const controllerData = this._controllers[controllerId];
+            if (!controllerData.isPhysicsV2) {
+                continue;
+            }
+
+            const controllerMesh = controllerData.xrController.grip || controllerData.xrController.pointer;
+            const comparedPosition = controllerData.oldPos || controllerData.impostorMesh!.position;
+            if (controllerData.xrController._lastXRPose?.linearVelocity) {
+                const lv = controllerData.xrController._lastXRPose.linearVelocity;
+                this._tmpVector.set(lv.x, lv.y, lv.z);
+                controllerData.physicsBody!.setLinearVelocity(this._tmpVector);
+            } else {
+                controllerMesh.position.subtractToRef(comparedPosition, this._tmpVector);
+                this._tmpVector.scaleInPlace(1000 / this._delta);
+                controllerData.physicsBody!.setLinearVelocity(this._tmpVector);
+            }
+            comparedPosition.copyFrom(controllerMesh.position);
+            if (this._debugMode) {
+                Logger.Log([this._tmpVector, "linear"]);
+            }
+
+            const comparedQuaternion = controllerData.oldRotation || controllerData.impostorMesh!.rotationQuaternion!;
+            if (controllerData.xrController._lastXRPose?.angularVelocity) {
+                const av = controllerData.xrController._lastXRPose.angularVelocity;
+                this._tmpVector.set(av.x, av.y, av.z);
+                controllerData.physicsBody!.setAngularVelocity(this._tmpVector);
+            } else {
+                if (!comparedQuaternion.equalsWithEpsilon(controllerMesh.rotationQuaternion!)) {
+                    // roughly based on this - https://www.gamedev.net/forums/topic/347752-quaternion-and-angular-velocity/
+                    comparedQuaternion.conjugateInPlace().multiplyToRef(controllerMesh.rotationQuaternion!, this._tmpQuaternion);
+                    const len = Math.sqrt(
+                        this._tmpQuaternion.x * this._tmpQuaternion.x + this._tmpQuaternion.y * this._tmpQuaternion.y + this._tmpQuaternion.z * this._tmpQuaternion.z
+                    );
+                    this._tmpVector.set(this._tmpQuaternion.x, this._tmpQuaternion.y, this._tmpQuaternion.z);
+                    // define a better epsilon
+                    if (len < 0.001) {
+                        this._tmpVector.scaleInPlace(2);
+                    } else {
+                        const angle = 2 * Math.atan2(len, this._tmpQuaternion.w);
+                        this._tmpVector.scaleInPlace(angle / (len * (this._delta / 1000)));
+                    }
+                    controllerData.physicsBody!.setAngularVelocity(this._tmpVector);
+                }
+            }
+            comparedQuaternion.copyFrom(controllerMesh.rotationQuaternion!);
+            if (this._debugMode) {
+                Logger.Log([this._tmpVector, this._tmpQuaternion, "angular"]);
+            }
+        }
+    }
+
+    private _enableHeadsetPhysicsV1(): void {
+        const params = this._options.headsetImpostorParams || {
+            impostorType: PhysicsImpostor.SphereImpostor,
+            restitution: 0.8,
+            impostorSize: 0.3,
+        };
+        const impostorSize = params.impostorSize || 0.3;
+        this._headsetMesh = CreateSphere("headset-mesh", {
+            diameterX: typeof impostorSize === "number" ? impostorSize : impostorSize.width,
+            diameterY: typeof impostorSize === "number" ? impostorSize : impostorSize.height,
+            diameterZ: typeof impostorSize === "number" ? impostorSize : impostorSize.depth,
+        });
+        this._headsetMesh.rotationQuaternion = new Quaternion();
+        this._headsetMesh.isVisible = false;
+        this._headsetImpostor = new PhysicsImpostor(this._headsetMesh, params.impostorType, { mass: 0, ...params });
+    }
+
+    private _enableHeadsetPhysicsV2(): void {
+        const params = this._options.headsetImpostorParams || {
+            impostorType: PhysicsImpostor.SphereImpostor,
+            restitution: 0.8,
+            impostorSize: 0.3,
+        };
+        const impostorSize = params.impostorSize || 0.3;
+        this._headsetMesh = CreateSphere("headset-mesh", {
+            diameterX: typeof impostorSize === "number" ? impostorSize : impostorSize.width,
+            diameterY: typeof impostorSize === "number" ? impostorSize : impostorSize.height,
+            diameterZ: typeof impostorSize === "number" ? impostorSize : impostorSize.depth,
+        });
+        this._headsetMesh.rotationQuaternion = new Quaternion();
+        this._headsetMesh.isVisible = false;
+
+        const shapeType = this._mapImpostorTypeToShapeType(params.impostorType);
+        this._headsetAggregateV2 = new PhysicsAggregate(
+            this._headsetMesh,
+            shapeType,
+            {
+                mass: 0,
+                friction: params.friction ?? 0.2,
+                restitution: params.restitution ?? 0.8,
+            },
+            this._xrSessionManager.scene
+        );
+
+        this._headsetAggregateV2.body.setMotionType(PhysicsMotionType.ANIMATED);
+        this._headsetAggregateV2.body.disableSync = true;
     }
 
     private _detachController(xrControllerUniqueId: string) {
@@ -388,6 +673,12 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         if (controllerData.impostorMesh) {
             controllerData.impostorMesh.dispose();
         }
+
+        // Dispose v2 aggregate if present
+        if (controllerData.physicsAggregate) {
+            controllerData.physicsAggregate.dispose();
+        }
+
         // remove from the map
         delete this._controllers[xrControllerUniqueId];
     }

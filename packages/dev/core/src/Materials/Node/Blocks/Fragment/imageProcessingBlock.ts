@@ -175,19 +175,24 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
         if (color.connectedPoint?.isConnected) {
-            if (color.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+            const isVec4Input =
+                color.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4;
+            // For vec3 inputs (Color3/Vector3), use 1.0 for alpha since they have no .a component
+            const alpha = isVec4Input ? `${color.associatedVariableName}.a` : "1.0";
+
+            if (isVec4Input) {
                 state.compilationString += `${state._declareOutput(output)} = ${color.associatedVariableName};\n`;
             } else {
                 state.compilationString += `${state._declareOutput(output)} = vec4${state.fSuffix}(${color.associatedVariableName}, 1.0);\n`;
             }
             state.compilationString += `#ifdef IMAGEPROCESSINGPOSTPROCESS\n`;
             if (this.convertInputToLinearSpace) {
-                state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpace${overrideText}(${color.associatedVariableName}.rgb), ${color.associatedVariableName}.a);\n`;
+                state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpace${overrideText}(${color.associatedVariableName}.rgb), ${alpha});\n`;
             }
             state.compilationString += `#else\n`;
             state.compilationString += `#ifdef IMAGEPROCESSING\n`;
             if (this.convertInputToLinearSpace) {
-                state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpace${overrideText}(${color.associatedVariableName}.rgb), ${color.associatedVariableName}.a);\n`;
+                state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpace${overrideText}(${color.associatedVariableName}.rgb), ${alpha});\n`;
             }
             state.compilationString += `${output.associatedVariableName} = applyImageProcessing(${output.associatedVariableName});\n`;
             state.compilationString += `#endif\n`;

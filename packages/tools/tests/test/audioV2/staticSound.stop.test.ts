@@ -6,8 +6,6 @@ InitAudioV2Tests();
 
 test.describe("StaticSound stop", () => {
     test("Stop should not throw error if not playing", async ({ page }) => {
-        test.setTimeout(0);
-
         const result = await page.evaluate(async () => {
             const audioEngine = await AudioV2Test.CreateAudioEngineAsync("Realtime");
             await ((audioEngine as any)._audioContext as AudioContext).suspend();

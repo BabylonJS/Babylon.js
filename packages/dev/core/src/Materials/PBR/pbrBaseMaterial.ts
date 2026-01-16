@@ -282,6 +282,7 @@ export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialD
 
     public DEBUGMODE = 0;
     public USE_VERTEX_PULLING = false;
+    public RIGHT_HANDED = false;
 
     public CLUSTLIGHT_SLICES = 0;
     public CLUSTLIGHT_BATCH = 0;
@@ -838,8 +839,9 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
 
     /**
      * If set to true, no lighting calculations will be applied.
+     * @internal
      */
-    private _unlit = false;
+    public _unlit = false;
 
     /**
      * If sets to true, the decal map will be applied after the detail map. Else, it is applied before (default: false)
