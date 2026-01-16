@@ -5,6 +5,10 @@ import type { IAnimationKey } from "core/Animations/animationKey";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Animation as AnimationEnum } from "core/Animations/animation";
+import { Vector2 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector";
+import { Quaternion } from "core/Maths/math.vector";
+import { Color3, Color4 } from "core/Maths/math.color";
 
 import { useCurveEditor } from "../curveEditorContext";
 import { Curve, type CurveData } from "./curve";
@@ -142,7 +146,6 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             actions.setActiveKeyPoints([]);
             observables.onActiveKeyPointChanged.notifyObservers();
             observables.onActiveAnimationChanged.notifyObservers({});
-            forceUpdate((c) => c + 1);
         });
 
         // Handle frame canvas - reset view to fit all content
@@ -184,7 +187,180 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             actions.setActiveKeyPoints([]);
             observables.onActiveKeyPointChanged.notifyObservers();
             observables.onActiveAnimationChanged.notifyObservers({});
-            forceUpdate((c) => c + 1);
+        });
+
+        // Helper to get the component property name for a data type
+        const getComponentProperty = (dataType: number, component: number): string | null => {
+            if (dataType === AnimationEnum.ANIMATIONTYPE_FLOAT) {
+                return null; // Float has no components
+            } else if (dataType === AnimationEnum.ANIMATIONTYPE_VECTOR2) {
+                return ["x", "y"][component] || null;
+            } else if (dataType === AnimationEnum.ANIMATIONTYPE_VECTOR3) {
+                return ["x", "y", "z"][component] || null;
+            } else if (dataType === AnimationEnum.ANIMATIONTYPE_COLOR3) {
+                return ["r", "g", "b"][component] || null;
+            } else if (dataType === AnimationEnum.ANIMATIONTYPE_COLOR4) {
+                return ["r", "g", "b", "a"][component] || null;
+            } else if (dataType === AnimationEnum.ANIMATIONTYPE_QUATERNION) {
+                return ["x", "y", "z", "w"][component] || null;
+            }
+            return null;
+        };
+
+        // Helper to create a tangent object for a given data type (initialized to 0)
+        // Must use actual Babylon.js classes so they have .scale() method
+        const createTangentObject = (dataType: number): unknown => {
+            if (dataType === AnimationEnum.ANIMATIONTYPE_FLOAT) {
+                return 0;
+            } else if (dataType === AnimationEnum.ANIMATIONTYPE_VECTOR2) {
+                return new Vector2(0, 0);
+            } else if (dataType === AnimationEnum.ANIMATIONTYPE_VECTOR3) {
+                return new Vector3(0, 0, 0);
+            } else if (dataType === AnimationEnum.ANIMATIONTYPE_COLOR3) {
+                return new Color3(0, 0, 0);
+            } else if (dataType === AnimationEnum.ANIMATIONTYPE_COLOR4) {
+                return new Color4(0, 0, 0, 0);
+            } else if (dataType === AnimationEnum.ANIMATIONTYPE_QUATERNION) {
+                return new Quaternion(0, 0, 0, 0);
+            }
+            return 0;
+        };
+
+        // Helper to set a tangent component value
+        const setTangentComponent = (key: IAnimationKey, tangentType: "inTangent" | "outTangent", dataType: number, component: number, value: number) => {
+            const prop = getComponentProperty(dataType, component);
+            if (prop === null) {
+                // Float type - set directly
+                key[tangentType] = value;
+            } else {
+                // Vector/Color type - set component
+                if (!key[tangentType]) {
+                    key[tangentType] = createTangentObject(dataType);
+                }
+                (key[tangentType] as Record<string, number>)[prop] = value;
+            }
+        };
+
+        // Handle flatten tangent - set tangent slopes to 0 (horizontal)
+        const onFlattenTangentRequired = observables.onFlattenTangentRequired.add(() => {
+            if (!state.activeKeyPoints || state.activeKeyPoints.length === 0) {
+                return;
+            }
+
+            for (const keyPoint of state.activeKeyPoints) {
+                const animation = keyPoint.curve.animation;
+                const keys = animation.getKeys();
+                const keyId = keyPoint.keyId;
+                const component = keyPoint.curve.component;
+                const dataType = animation.dataType;
+
+                if (keyId >= 0 && keyId < keys.length) {
+                    const key = keys[keyId];
+                    // Set interpolation to NONE (bezier)
+                    key.interpolation = undefined;
+                    // Set tangents to 0 (flat/horizontal)
+                    if (keyId > 0) {
+                        setTangentComponent(key, "inTangent", dataType, component, 0);
+                    }
+                    if (keyId < keys.length - 1) {
+                        setTangentComponent(key, "outTangent", dataType, component, 0);
+                    }
+                }
+            }
+
+            observables.onActiveAnimationChanged.notifyObservers({});
+        });
+
+        // Handle linear tangent - set tangent to slope between adjacent keys
+        const onLinearTangentRequired = observables.onLinearTangentRequired.add(() => {
+            if (!state.activeKeyPoints || state.activeKeyPoints.length === 0) {
+                return;
+            }
+
+            for (const keyPoint of state.activeKeyPoints) {
+                const animation = keyPoint.curve.animation;
+                const keys = animation.getKeys();
+                const keyId = keyPoint.keyId;
+                const component = keyPoint.curve.component;
+                const dataType = animation.dataType;
+                const prop = getComponentProperty(dataType, component);
+
+                if (keyId >= 0 && keyId < keys.length) {
+                    const key = keys[keyId];
+                    // Set interpolation to NONE (bezier)
+                    key.interpolation = undefined;
+
+                    // Get the component value from a key
+                    const getKeyValue = (k: IAnimationKey): number => {
+                        if (prop === null) {
+                            return k.value as number;
+                        }
+                        return (k.value as Record<string, number>)[prop];
+                    };
+
+                    // Calculate linear tangent (slope to adjacent keys)
+                    if (keyId > 0) {
+                        const prevKey = keys[keyId - 1];
+                        const frameDiff = key.frame - prevKey.frame;
+                        if (frameDiff !== 0) {
+                            const slope = (getKeyValue(key) - getKeyValue(prevKey)) / frameDiff;
+                            setTangentComponent(key, "inTangent", dataType, component, slope);
+                        }
+                    }
+                    if (keyId < keys.length - 1) {
+                        const nextKey = keys[keyId + 1];
+                        const frameDiff = nextKey.frame - key.frame;
+                        if (frameDiff !== 0) {
+                            const slope = (getKeyValue(nextKey) - getKeyValue(key)) / frameDiff;
+                            setTangentComponent(key, "outTangent", dataType, component, slope);
+                        }
+                    }
+                }
+            }
+
+            observables.onActiveAnimationChanged.notifyObservers({});
+        });
+
+        // Handle break tangent - allow in/out tangents to be different
+        const onBreakTangentRequired = observables.onBreakTangentRequired.add(() => {
+            if (!state.activeKeyPoints || state.activeKeyPoints.length === 0) {
+                return;
+            }
+
+            for (const keyPoint of state.activeKeyPoints) {
+                const animation = keyPoint.curve.animation;
+                const keys = animation.getKeys();
+                const keyId = keyPoint.keyId;
+
+                if (keyId >= 0 && keyId < keys.length) {
+                    const key = keys[keyId];
+                    key.interpolation = undefined;
+                    key.lockedTangent = false;
+                }
+            }
+
+            observables.onActiveAnimationChanged.notifyObservers({});
+        });
+
+        // Handle unify tangent - keep in/out tangents the same
+        const onUnifyTangentRequired = observables.onUnifyTangentRequired.add(() => {
+            if (!state.activeKeyPoints || state.activeKeyPoints.length === 0) {
+                return;
+            }
+
+            for (const keyPoint of state.activeKeyPoints) {
+                const animation = keyPoint.curve.animation;
+                const keys = animation.getKeys();
+                const keyId = keyPoint.keyId;
+
+                if (keyId >= 0 && keyId < keys.length) {
+                    const key = keys[keyId];
+                    key.interpolation = undefined;
+                    key.lockedTangent = true;
+                }
+            }
+
+            observables.onActiveAnimationChanged.notifyObservers({});
         });
 
         return () => {
@@ -193,6 +369,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             observables.onCreateOrUpdateKeyPointRequired.remove(onCreateOrUpdateKeyPointRequired);
             observables.onFrameRequired.remove(onFrameRequired);
             observables.onDeleteKeyActiveKeyPoints.remove(onDeleteKeyActiveKeyPoints);
+            observables.onFlattenTangentRequired.remove(onFlattenTangentRequired);
+            observables.onLinearTangentRequired.remove(onLinearTangentRequired);
+            observables.onBreakTangentRequired.remove(onBreakTangentRequired);
+            observables.onUnifyTangentRequired.remove(onUnifyTangentRequired);
         };
     }, [observables, state.activeAnimations, state.activeFrame, state.activeKeyPoints, actions]);
 
@@ -533,7 +713,6 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             const keys = animation.getKeys();
             if (keyIndex >= 0 && keyIndex < keys.length) {
                 keys[keyIndex].frame = newFrame;
-                forceUpdate((c) => c + 1);
                 // Notify observers about the new frame value for spinbutton updates
                 observables.onFrameSet.notifyObservers(newFrame);
                 observables.onActiveAnimationChanged.notifyObservers({});
@@ -574,7 +753,6 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                     (key.value as Record<string, number>)[componentKeys[component]] = newValue;
                 }
 
-                forceUpdate((c) => c + 1);
                 // Notify observers about the new value for spinbutton updates
                 observables.onValueSet.notifyObservers(newValue);
                 observables.onActiveAnimationChanged.notifyObservers({});
