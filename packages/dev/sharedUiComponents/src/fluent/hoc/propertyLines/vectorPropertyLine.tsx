@@ -79,7 +79,6 @@ const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Ve
     return (
         <PropertyLine
             {...props}
-            onCopy={() => `new ${props.value.getClassName()}(${vector.x},${vector.y}${HasZ(vector) ? `,${vector.z}` : ""}${HasW(vector) ? `,${vector.w}` : ""})`}
             expandedContent={
                 vector ? <VectorSliders vector={vector} min={min} max={max} unit={props.unit} step={props.step} converted={converted} onChange={onChange} /> : undefined
             }

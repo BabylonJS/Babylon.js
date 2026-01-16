@@ -1,5 +1,30 @@
 # Changelog
 
+## 8.46.2
+
+## 8.46.1
+
+### Core
+
+- fix crash sandbox with GS - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17686](https://github.com/BabylonJS/Babylon.js/pull/17686))
+- Optimize WebXR hands tracking for WebKit +. Snapdragon AR2 - by [matthargett](https://github.com/matthargett) ([#17644](https://github.com/BabylonJS/Babylon.js/pull/17644))
+
+## 8.46.0
+
+### Core
+
+- Add missing Cameras to QuickCreate extension. Add geospatialCamera properties - by [georginahalpern](https://github.com/georginahalpern) ([#17684](https://github.com/BabylonJS/Babylon.js/pull/17684))
+
+### Node Editor
+
+
+## 8.45.5
+
+### Core
+
+- Issues with remap block - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17673](https://github.com/BabylonJS/Babylon.js/pull/17673))
+- Add support for clamp node for NPE - by [deltakosh](https://github.com/deltakosh) ([#17671](https://github.com/BabylonJS/Babylon.js/pull/17671))
+
 ## 8.45.4
 
 ### Core
