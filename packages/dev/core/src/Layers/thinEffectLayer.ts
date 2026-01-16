@@ -667,6 +667,15 @@ export class ThinEffectLayer {
             }
         }
 
+        // Baked vertex animations
+        const bvaManager = mesh.bakedVertexAnimationManager;
+        if (bvaManager && bvaManager.isEnabled) {
+            defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
+            if (useInstances) {
+                attribs.push("bakedVertexAnimationSettingsInstanced");
+            }
+        }
+
         // ClipPlanes
         PrepareStringDefinesForClipPlanes(material, this._scene, defines);
 
@@ -691,6 +700,10 @@ export class ThinEffectLayer {
                 "opacityIntensity",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",
+                "bakedVertexAnimationSettings",
+                "bakedVertexAnimationTextureSizeInverted",
+                "bakedVertexAnimationTime",
+                "bakedVertexAnimationTexture",
                 "glowIntensity",
             ];
 
@@ -701,7 +714,7 @@ export class ThinEffectLayer {
                     "glowMapGeneration",
                     attribs,
                     uniforms,
-                    ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"],
+                    ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"],
                     join,
                     fallbacks,
                     undefined,
