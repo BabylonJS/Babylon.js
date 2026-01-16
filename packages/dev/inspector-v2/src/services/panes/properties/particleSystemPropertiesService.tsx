@@ -7,30 +7,32 @@ import { SelectionServiceIdentity } from "../../selectionService";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 
-import { ParticleSystemGeneralProperties } from "../../../components/properties/particles/regular/generalProperties";
-import { ParticleSystemCommandProperties } from "../../../components/properties/particles/regular/commandsProperties";
-import { ParticleSystemEmitterProperties } from "../../../components/properties/particles/regular/emitterProperties";
-import { ParticleSystemSizeProperties } from "../../../components/properties/particles/regular/sizeProperties";
-import { ParticleSystemEmissionProperties } from "../../../components/properties/particles/regular/emissionProperties";
-import { ParticleSystemLifetimeProperties } from "../../../components/properties/particles/regular/lifetimeProperties";
-import { ParticleSystemColorProperties } from "../../../components/properties/particles/regular/colorProperties";
-import { ParticleSystemRotationProperties } from "../../../components/properties/particles/regular/rotationProperties";
-import { ParticleSystemSpritesheetProperties } from "../../../components/properties/particles/regular/spritesheetProperties";
-import { ParticleSystemAttractorProperties } from "../../../components/properties/particles/regular/attractorProperties";
+import { ParticleSystemGeneralProperties } from "../../../components/properties/particles/generalProperties";
+import { ParticleSystemCommandProperties } from "../../../components/properties/particles/commandsProperties";
+import { ParticleSystemEmitterProperties } from "../../../components/properties/particles/emitterProperties";
+import { ParticleSystemSizeProperties } from "../../../components/properties/particles/sizeProperties";
+import { ParticleSystemEmissionProperties } from "../../../components/properties/particles/emissionProperties";
+import { ParticleSystemLifetimeProperties } from "../../../components/properties/particles/lifetimeProperties";
+import { ParticleSystemColorProperties } from "../../../components/properties/particles/colorProperties";
+import { ParticleSystemRotationProperties } from "../../../components/properties/particles/rotationProperties";
+import { ParticleSystemSpritesheetProperties } from "../../../components/properties/particles/spritesheetProperties";
+import { ParticleSystemAttractorProperties } from "../../../components/properties/particles/attractorProperties";
 
-import { NodeParticleSystemGeneralProperties } from "../../../components/properties/particles/node/generalProperties";
+function IsParticleSystem(entity: unknown): entity is ParticleSystem | GPUParticleSystem {
+    return entity instanceof ParticleSystem || entity instanceof GPUParticleSystem;
+}
 
-function IsCPUParticleSystem(entity: unknown): entity is ParticleSystem {
+function IsNonNodeCPUParticleSystem(entity: unknown): entity is ParticleSystem {
     return entity instanceof ParticleSystem && !entity.isNodeGenerated;
 }
 
-function IsCPUorGPUParticleSystem(entity: unknown): entity is ParticleSystem | GPUParticleSystem {
+function IsNonNodeParticleSystem(entity: unknown): entity is ParticleSystem | GPUParticleSystem {
     return (entity instanceof ParticleSystem && !entity.isNodeGenerated) || entity instanceof GPUParticleSystem;
 }
 
-function IsNodeParticleSystem(entity: unknown): entity is ParticleSystem {
-    return entity instanceof ParticleSystem && entity.isNodeGenerated;
-}
+// function IsNodeParticleSystem(entity: unknown): entity is ParticleSystem {
+//     return entity instanceof ParticleSystem && entity.isNodeGenerated;
+// }
 
 // TODO: This file and particleSystemProperties.tsx still need to handle CPU vs GPU systems differently where applicable.
 export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
@@ -43,7 +45,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // Register sections for non-node-generated particle systems.
         const particleSystemGeneralContent = propertiesService.addSectionContent({
             key: "Particle System General Properties",
-            predicate: IsCPUorGPUParticleSystem,
+            predicate: IsParticleSystem,
             content: [
                 {
                     section: "General",
@@ -56,7 +58,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // Register sections for non-node-generated particle systems.
         const particleSystemCommandsContent = propertiesService.addSectionContent({
             key: "Particle System Commands Properties",
-            predicate: IsCPUorGPUParticleSystem,
+            predicate: IsParticleSystem,
             content: [
                 {
                     section: "Commands",
@@ -69,7 +71,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // The Attractors section must not be visible at all (including the accordion entry) for CPU systems.
         const particleSystemAttractorsContent = propertiesService.addSectionContent({
             key: "Particle System Attractors Properties",
-            predicate: IsCPUParticleSystem,
+            predicate: IsNonNodeCPUParticleSystem,
             content: [
                 {
                     section: "Attractors",
@@ -81,7 +83,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
 
         const particleSystemEmitterContent = propertiesService.addSectionContent({
             key: "Particle System Emitter Properties",
-            predicate: IsCPUorGPUParticleSystem,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Emitter",
@@ -93,7 +95,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
 
         const particleSystemEmissionContent = propertiesService.addSectionContent({
             key: "Particle System Emission Properties",
-            predicate: IsCPUorGPUParticleSystem,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Emission",
@@ -106,7 +108,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // The Size section must not be visible at all (including the accordion entry) for node-generated systems.
         const particleSystemSizeContent = propertiesService.addSectionContent({
             key: "Particle System Size Properties",
-            predicate: IsCPUorGPUParticleSystem,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Size",
@@ -119,7 +121,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // Lifetime is registered for all systems; the component limits the visible fields for node-generated systems.
         const particleSystemLifetimeContent = propertiesService.addSectionContent({
             key: "Particle System Lifetime Properties",
-            predicate: IsCPUorGPUParticleSystem,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Lifetime",
@@ -132,7 +134,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // Register Color after Lifetime.
         const particleSystemColorContent = propertiesService.addSectionContent({
             key: "Particle System Color Properties",
-            predicate: IsCPUorGPUParticleSystem,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Colors",
@@ -145,7 +147,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // Register Rotation after Colors.
         const particleSystemRotationContent = propertiesService.addSectionContent({
             key: "Particle System Rotation Properties",
-            predicate: IsCPUorGPUParticleSystem,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Rotation",
@@ -158,25 +160,12 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // Register Spritesheet after Rotation.
         const particleSystemSpritesheetContent = propertiesService.addSectionContent({
             key: "Particle System Spritesheet Properties",
-            predicate: IsCPUorGPUParticleSystem,
+            predicate: IsNonNodeParticleSystem,
             content: [
                 {
                     section: "Spritesheet",
                     order: 10,
                     component: ({ context }) => <ParticleSystemSpritesheetProperties particleSystem={context} />,
-                },
-            ],
-        });
-
-        // Register sections for node-generated particle systems.
-        const nodeParticleSystemGeneralContent = propertiesService.addSectionContent({
-            key: "Particle System General Properties",
-            predicate: IsNodeParticleSystem,
-            content: [
-                {
-                    section: "General",
-                    order: 1,
-                    component: ({ context }) => <NodeParticleSystemGeneralProperties particleSystem={context} selectionService={selectionService} />,
                 },
             ],
         });
@@ -193,7 +182,6 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 particleSystemColorContent.dispose();
                 particleSystemRotationContent.dispose();
                 particleSystemSpritesheetContent.dispose();
-                nodeParticleSystemGeneralContent.dispose();
             },
         };
     },
