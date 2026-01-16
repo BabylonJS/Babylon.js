@@ -432,6 +432,8 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             if (keyIndex >= 0 && keyIndex < keys.length) {
                 keys[keyIndex].frame = newFrame;
                 forceUpdate((c) => c + 1);
+                // Notify observers about the new frame value for spinbutton updates
+                observables.onFrameSet.notifyObservers(newFrame);
                 observables.onActiveAnimationChanged.notifyObservers({});
             }
         },
@@ -471,6 +473,8 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                 }
 
                 forceUpdate((c) => c + 1);
+                // Notify observers about the new value for spinbutton updates
+                observables.onValueSet.notifyObservers(newValue);
                 observables.onActiveAnimationChanged.notifyObservers({});
             }
         },

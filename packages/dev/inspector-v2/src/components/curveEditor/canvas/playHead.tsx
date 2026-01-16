@@ -25,9 +25,9 @@ const useStyles = makeStyles({
     handle: {
         position: "absolute",
         top: 0,
-        left: "-6px",
-        width: "14px",
-        height: "14px",
+        left: "-10px",
+        width: "20px",
+        height: "20px",
         backgroundColor: tokens.colorPaletteRedBackground3,
         borderRadius: "50%",
         border: `2px solid ${tokens.colorNeutralBackground1}`,
@@ -36,23 +36,9 @@ const useStyles = makeStyles({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-    },
-    frameLabel: {
-        position: "absolute",
-        top: "-20px",
-        left: "-16px",
-        width: "32px",
-        height: "18px",
-        backgroundColor: tokens.colorPaletteRedBackground3,
-        borderRadius: "3px",
         color: tokens.colorNeutralForegroundOnBrand,
-        fontSize: "11px",
+        fontSize: "9px",
         fontWeight: "bold",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        pointerEvents: "auto",
-        cursor: "pointer",
         userSelect: "none",
     },
 });
@@ -189,11 +175,10 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
 
     return (
         <div className={styles.root}>
-            <div className={styles.frameLabel} style={{ left: playheadX - 16 }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
+            <div className={styles.line} style={{ left: playheadX - 1 }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} />
+            <div className={styles.handle} style={{ left: playheadX - 10 }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
                 {Math.round(currentFrame)}
             </div>
-            <div className={styles.line} style={{ left: playheadX - 1 }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} />
-            <div className={styles.handle} style={{ left: playheadX - 7 }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} />
         </div>
     );
 };

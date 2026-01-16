@@ -75,8 +75,12 @@ export const TopBar: FunctionComponent = () => {
         });
 
         const onActiveAnimationChangedObserver = observables.onActiveAnimationChanged.add(() => {
-            setKeyFrameValue(null);
-            setKeyValue(null);
+            // Only reset values if there are no active key points selected
+            // This prevents values from being cleared during drag operations
+            if (!state.activeKeyPoints || state.activeKeyPoints.length === 0) {
+                setKeyFrameValue(null);
+                setKeyValue(null);
+            }
         });
 
         const onActiveKeyPointChangedObserver = observables.onActiveKeyPointChanged.add(() => {

@@ -131,14 +131,19 @@ export const RangeSelector: FunctionComponent = () => {
     const rightPos = range > 0 ? 2 + ((maxFrame - state.toKey) / range) * viewWidth : 2;
 
     const handlePointerDown = useCallback((evt: React.PointerEvent<HTMLDivElement>) => {
-        const target = evt.target as HTMLElement;
-        const targetId = target.id || target.parentElement?.id;
-
+        // Find if we clicked on a handle by traversing up the DOM tree
+        let element = evt.target as HTMLElement | null;
         let mode: "left" | "right" | "both" = "both";
-        if (targetId === "left-handle") {
-            mode = "left";
-        } else if (targetId === "right-handle") {
-            mode = "right";
+
+        while (element && element !== evt.currentTarget) {
+            if (element.id === "left-handle") {
+                mode = "left";
+                break;
+            } else if (element.id === "right-handle") {
+                mode = "right";
+                break;
+            }
+            element = element.parentElement;
         }
 
         dragStateRef.current = {
