@@ -2,13 +2,14 @@ import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnection
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
 import type { Nullable } from "core/types";
 import type { BaseTexture } from "../../../Materials/Textures/baseTexture";
-import type { ProceduralTexture } from "../../../Materials";
+import type { ProceduralTexture } from "../../../Materials/Textures/Procedurals/proceduralTexture";
 
 import { Texture } from "core/Materials/Textures/texture";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { TextureTools } from "core/Misc/textureTools";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 
 /**
  * Interface used to define texture data
@@ -31,6 +32,11 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     private _sourceTexture: Nullable<BaseTexture> = null;
     private _cachedData: Nullable<INodeParticleTextureData> = null;
     private _clonedTextures: BaseTexture[] = [];
+
+    /**
+     * Gets or sets the strenght of the flow map effect
+     */
+    public invertY = false;
 
     /**
      * Indicates if the texture data should be serialized as a base64 string.
@@ -196,7 +202,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                 // Cross-engine: recreate texture from URL if available, preserving invertY
                 const url = (this._sourceTexture as Texture).url || this._url;
                 if (url) {
-                    const invertY = (this._sourceTexture as Texture).invertY ?? true;
+                    const invertY = (this._sourceTexture as Texture).invertY ?? this.invertY;
                     const tex = new Texture(url, state.scene, undefined, invertY);
                     this._copyTextureProperties(this._sourceTexture, tex);
                     this._clonedTextures.push(tex);
@@ -226,13 +232,13 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
         }
 
         if (this._textureDataUrl) {
-            const tex = new Texture(this._textureDataUrl, state.scene);
+            const tex = new Texture(this._textureDataUrl, state.scene, undefined, this.invertY);
             this._clonedTextures.push(tex);
             this.texture._storedValue = tex;
             return;
         }
 
-        const tex = new Texture(this._url, state.scene);
+        const tex = new Texture(this._url, state.scene, undefined, this.invertY);
         this._clonedTextures.push(tex);
         this.texture._storedValue = tex;
     }
@@ -246,6 +252,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
 
         serializationObject.url = this.url;
         serializationObject.serializedCachedData = this.serializedCachedData;
+        serializationObject.invertY = this.invertY;
 
         if (this.serializedCachedData) {
             serializationObject.textureDataUrl = this.textureDataUrl;
@@ -263,6 +270,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
 
         this.url = serializationObject.url;
         this.serializedCachedData = !!serializationObject.serializedCachedData;
+        this.invertY = !!serializationObject.invertY;
 
         if (serializationObject.textureDataUrl) {
             this.textureDataUrl = serializationObject.textureDataUrl;
