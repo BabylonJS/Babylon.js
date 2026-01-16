@@ -151,8 +151,8 @@ fn readMatrixWeights(info: vec3f, vertexIndex : u32) -> vec4f {
 fn readMatrixIndexExtraValue(byteOffset: u32, dataType: u32) -> f32 {
     let wordOffset = byteOffset / 4u;
     let byteInWord = byteOffset % 4u;
-    let word: u32 = bitcast<u32>(matricesIndicesExtra[wordOffset]);
-    
+    let word : u32 = matricesIndicesExtra[wordOffset];
+
     return convertToFloat(word, byteInWord, dataType);
 }
 
@@ -182,7 +182,7 @@ fn readMatrixWeightExtraValue(byteOffset: u32, dataType: u32) -> f32 {
     return convertToFloat(word, byteInWord, dataType);
 }
 
-fn readMatrixIndicesExtra(info: vec3f, vertexIndex : u32) -> vec4f {
+fn readMatrixWeightsExtra(info : vec3f, vertexIndex : u32)->vec4f {
   let baseOffset = u32(info.x);
   let stride = u32(info.y);
   let dataType = u32(info.z);
