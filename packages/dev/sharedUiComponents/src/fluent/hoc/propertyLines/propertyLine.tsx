@@ -1,4 +1,4 @@
-import { Body1, InfoLabel, Checkbox, makeStyles, Body1Strong, tokens, mergeClasses } from "@fluentui/react-components";
+import { Body1, Checkbox, makeStyles, tokens, mergeClasses, Tooltip } from "@fluentui/react-components";
 import {
     ChevronCircleDown20Regular,
     ChevronCircleDown16Regular,
@@ -17,6 +17,7 @@ import { Link } from "../../primitives/link";
 import { ToggleButton } from "../../primitives/toggleButton";
 import { Button } from "../../primitives/button";
 import { CustomTokens } from "../../primitives/utils";
+import { InfoLabel } from "../../primitives/infoLabel";
 
 const usePropertyLineStyles = makeStyles({
     baseLine: {
@@ -31,20 +32,19 @@ const usePropertyLineStyles = makeStyles({
         minWidth: CustomTokens.labelMinWidth,
         textAlign: "left",
     },
-    labelSlot: {
-        display: "flex",
-        minWidth: 0,
-    },
-    labelText: {
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-    },
     rightContent: {
         flex: "0 1 auto",
+        minWidth: 0,
+        overflow: "hidden",
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-end",
+    },
+    childWrapper: {
+        minWidth: 0,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
     },
     infoPopup: {
         whiteSpace: "normal",
@@ -55,6 +55,10 @@ const usePropertyLineStyles = makeStyles({
     },
     expandedContentDiv: {
         overflow: "hidden",
+    },
+    checkbox: {
+        display: "flex",
+        alignItems: "center",
     },
 });
 
@@ -137,7 +141,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     const [expanded, setExpanded] = useState("expandByDefault" in props ? props.expandByDefault : false);
     const cachedVal = useRef(nullable ? props.value : null);
 
-    const description = props.docLink ? <Link url={props.docLink} value={props.description ?? "Docs"} /> : props.description;
+    const description = props.docLink ? <Link url={props.docLink} value={props.description ?? "Docs"} /> : props.description ? <Body1>{props.description}</Body1> : undefined;
 
     // Process children to handle nullable state -- creating component in disabled state with default value in lieu of null value
     const processedChildren =
@@ -153,16 +157,8 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     return (
         <LineContainer ref={ref}>
             <div className={classes.baseLine}>
-                <InfoLabel
-                    size={size}
-                    className={classes.infoLabel}
-                    label={{ className: classes.labelSlot }}
-                    info={description ? <div className={classes.infoPopup}>{description}</div> : undefined}
-                    title={label}
-                >
-                    <Body1Strong className={classes.labelText}>{label}</Body1Strong>
-                </InfoLabel>
-                <div className={classes.rightContent}>
+                <InfoLabel className={classes.infoLabel} htmlFor="property" info={description} label={label} flexLabel />
+                <div className={classes.rightContent} id="property">
                     {expandedContent && (
                         <ToggleButton
                             title="Expand/Collapse property"
@@ -176,22 +172,24 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
 
                     {nullable && !ignoreNullable && (
                         // If this is a nullableProperty and ignoreNullable was not sent, display a checkbox used to toggle null ('checked' means 'non null')
-                        <Checkbox
-                            checked={!(props.value == null)}
-                            onChange={(_, data) => {
-                                if (data.checked) {
-                                    // if checked this means we are returning to non-null, use cached value if exists. If no cached value, use default value
-                                    cachedVal.current != null ? props.onChange(cachedVal.current) : props.onChange(props.defaultValue);
-                                } else {
-                                    // if moving to un-checked state, this means moving to null value. Cache the old value and tell props.onChange(null)
-                                    cachedVal.current = props.value;
-                                    props.onChange(null);
-                                }
-                            }}
-                            title="Toggle null state"
-                        />
+                        <Tooltip relationship="label" content={props.value == null ? "Enable property" : "Disable property (set to null)"}>
+                            <Checkbox
+                                className={classes.checkbox}
+                                checked={!(props.value == null)}
+                                onChange={(_, data) => {
+                                    if (data.checked) {
+                                        // if checked this means we are returning to non-null, use cached value if exists. If no cached value, use default value
+                                        cachedVal.current != null ? props.onChange(cachedVal.current) : props.onChange(props.defaultValue);
+                                    } else {
+                                        // if moving to un-checked state, this means moving to null value. Cache the old value and tell props.onChange(null)
+                                        cachedVal.current = props.value;
+                                        props.onChange(null);
+                                    }
+                                }}
+                            />
+                        </Tooltip>
                     )}
-                    {processedChildren}
+                    <div className={classes.childWrapper}>{processedChildren}</div>
                     {onCopy && !disableCopy && (
                         <Button
                             className={classes.copy}

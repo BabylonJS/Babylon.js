@@ -170,4 +170,13 @@ export class DepthPeelingRenderer extends ThinDepthPeelingRenderer {
     protected override _afterRender() {
         (this._scene.prePassRenderer! as any)._enabled = true;
     }
+
+    protected override _noTransparentMeshes() {
+        this._engine.bindFramebuffer(this._colorMrts[1].renderTarget!);
+        this._engine.bindAttachments(this._layoutCache[1]);
+        this._engine.clear(this._colorCache[2], true, false, false);
+        this._engine.unBindFramebuffer(this._colorMrts[1].renderTarget!);
+
+        this._finalCompose(1);
+    }
 }

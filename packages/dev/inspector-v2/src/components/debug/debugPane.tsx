@@ -188,6 +188,7 @@ export const DebugPane: typeof ExtensibleAccordion<Scene> = (props) => {
                 <BoundProperty component={SwitchPropertyLine} key="Bump" label="Bump" target={StandardMaterial} propertyKey="BumpTextureEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Opacity" label="Opacity" target={StandardMaterial} propertyKey="OpacityTextureEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Reflection" label="Reflection" target={StandardMaterial} propertyKey="ReflectionTextureEnabled" />
+                <BoundProperty component={SwitchPropertyLine} key="Refraction" label="Refraction" target={StandardMaterial} propertyKey="RefractionTextureEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="ColorGrading" label="Color Grading" target={StandardMaterial} propertyKey="ColorGradingTextureEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Lightmap" label="Lightmap" target={StandardMaterial} propertyKey="LightmapTextureEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Fresnel" label="Fresnel" target={StandardMaterial} propertyKey="FresnelEnabled" />

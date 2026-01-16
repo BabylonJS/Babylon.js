@@ -5,7 +5,6 @@ import { Observable } from "core/Misc/observable";
 
 /**
  * Represents a task in a frame graph.
- * @experimental
  */
 export abstract class FrameGraphTask {
     protected readonly _frameGraph: FrameGraph;
@@ -42,14 +41,14 @@ export abstract class FrameGraphTask {
     }
 
     /**
-     * Gets the render passes of the task.
+     * Gets the passes of the task.
      */
     public get passes() {
         return this._passes;
     }
 
     /**
-     * Gets the disabled render passes of the task.
+     * Gets the disabled passes of the task.
      */
     public get passesDisabled() {
         return this._passesDisabled;
@@ -59,6 +58,9 @@ export abstract class FrameGraphTask {
      * The (texture) dependencies of the task (optional).
      */
     public dependencies?: Set<FrameGraphTextureHandle>;
+
+    /** @internal */
+    public _disableDebugMarkers = false;
 
     /**
      * Records the task in the frame graph. Use this function to add content (render passes, ...) to the task.
@@ -227,20 +229,26 @@ export abstract class FrameGraphTask {
 
         this.onBeforeTaskExecute.notifyObservers(this);
 
-        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`, 2);
+        if (!this._disableDebugMarkers) {
+            this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
+        }
 
         for (const pass of passes) {
             pass._execute();
         }
 
-        this._frameGraph.engine._debugPopGroup?.(2);
+        if (!this._disableDebugMarkers) {
+            this._frameGraph.engine._debugPopGroup?.();
+        }
 
         this.onAfterTaskExecute.notifyObservers(this);
     }
 
     /** @internal */
     public _initializePasses() {
-        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`, 2);
+        if (!this._disableDebugMarkers) {
+            this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
+        }
 
         for (const pass of this._passes) {
             pass._initialize();
@@ -250,7 +258,9 @@ export abstract class FrameGraphTask {
             pass._initialize();
         }
 
-        this._frameGraph.engine._debugPopGroup?.(2);
+        if (!this._disableDebugMarkers) {
+            this._frameGraph.engine._debugPopGroup?.();
+        }
     }
 
     private _checkSameRenderTarget(src: Nullable<Nullable<InternalTexture>[]>, dst: Nullable<Nullable<InternalTexture>[]>) {

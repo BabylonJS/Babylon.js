@@ -411,6 +411,8 @@ export class ThinDepthPeelingRenderer {
 
     protected _afterRender() {}
 
+    protected _noTransparentMeshes() {}
+
     /**
      * Renders transparent submeshes with depth peeling
      * @param transparentSubMeshes List of transparent meshes to render
@@ -444,6 +446,7 @@ export class ThinDepthPeelingRenderer {
         }
 
         if (!this._candidateSubMeshes.length) {
+            this._noTransparentMeshes();
             return this._excludedSubMeshes;
         }
 

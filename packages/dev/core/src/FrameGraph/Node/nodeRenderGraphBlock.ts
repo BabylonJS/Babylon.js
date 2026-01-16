@@ -391,6 +391,26 @@ export class NodeRenderGraphBlock {
         return false;
     }
 
+    protected _getConnectedTextures(targetConnectedPoint: Nullable<NodeRenderGraphConnectionPoint>) {
+        let textureHandles: FrameGraphTextureHandle | FrameGraphTextureHandle[] | undefined;
+        if (targetConnectedPoint) {
+            if (targetConnectedPoint.type === NodeRenderGraphBlockConnectionPointTypes.ResourceContainer) {
+                const container = targetConnectedPoint.ownerBlock as NodeRenderGraphResourceContainerBlock;
+                textureHandles = [];
+                for (let i = 0; i < container.inputs.length; i++) {
+                    const input = container.inputs[i];
+                    if (input.connectedPoint && input.connectedPoint.value !== undefined && NodeRenderGraphConnectionPoint.IsTextureHandle(input.connectedPoint.value)) {
+                        textureHandles.push(input.connectedPoint.value as FrameGraphTextureHandle);
+                    }
+                }
+            } else {
+                textureHandles = targetConnectedPoint.value as FrameGraphTextureHandle;
+            }
+        }
+
+        return textureHandles;
+    }
+
     protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling = false) {
         if (looseCoupling) {
             this._inputs[inputIndex1]._acceptedConnectionPointType = this._inputs[inputIndex0];

@@ -1,5 +1,165 @@
 # Changelog
 
+## 8.46.2
+
+## 8.46.1
+
+### Core
+
+- fix crash sandbox with GS - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17686](https://github.com/BabylonJS/Babylon.js/pull/17686))
+- Optimize WebXR hands tracking for WebKit +. Snapdragon AR2 - by [matthargett](https://github.com/matthargett) ([#17644](https://github.com/BabylonJS/Babylon.js/pull/17644))
+
+## 8.46.0
+
+### Core
+
+- Add missing Cameras to QuickCreate extension. Add geospatialCamera properties - by [georginahalpern](https://github.com/georginahalpern) ([#17684](https://github.com/BabylonJS/Babylon.js/pull/17684))
+
+### Node Editor
+
+
+## 8.45.5
+
+### Core
+
+- Issues with remap block - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17673](https://github.com/BabylonJS/Babylon.js/pull/17673))
+- Add support for clamp node for NPE - by [deltakosh](https://github.com/deltakosh) ([#17671](https://github.com/BabylonJS/Babylon.js/pull/17671))
+
+## 8.45.4
+
+### Core
+
+- Disable Depth sort flag - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17647](https://github.com/BabylonJS/Babylon.js/pull/17647))
+- Fix vertex count in sorting worker - by [eliemichel](https://github.com/eliemichel) ([#17659](https://github.com/BabylonJS/Babylon.js/pull/17659))
+- FrameGraph: switch to v1 - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17660](https://github.com/BabylonJS/Babylon.js/pull/17660))
+- Add Vector3.Distance - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17657](https://github.com/BabylonJS/Babylon.js/pull/17657))
+- Handle undefined in setupInputs - by [alexchuber](https://github.com/alexchuber) ([#17652](https://github.com/BabylonJS/Babylon.js/pull/17652))
+- Adding emitterPosition to systemBlock - by [VicenteCartas](https://github.com/VicenteCartas) ([#17648](https://github.com/BabylonJS/Babylon.js/pull/17648))
+- Migrating flowmap to NPE - by [VicenteCartas](https://github.com/VicenteCartas) ([#17645](https://github.com/BabylonJS/Babylon.js/pull/17645))
+- Migrating attractors - by [VicenteCartas](https://github.com/VicenteCartas) ([#17643](https://github.com/BabylonJS/Babylon.js/pull/17643))
+
+### Inspector
+
+- FrameGraph: switch to v1 - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17660](https://github.com/BabylonJS/Babylon.js/pull/17660))
+
+### Serializers
+
+- Fix double subset of indices with non-zero verticesStart - by [alexchuber](https://github.com/alexchuber) ([#17662](https://github.com/BabylonJS/Babylon.js/pull/17662))
+
+### Viewer
+
+- Viewer: Add support for querying hotspots when multiple models are loaded - by [ryantrem](https://github.com/ryantrem) ([#17661](https://github.com/BabylonJS/Babylon.js/pull/17661))
+
+## 8.45.3
+
+### Core
+
+- Update pinchToZoom to zoom towards center of pinch and be more forgiving of slow gestures - by [georginahalpern](https://github.com/georginahalpern) ([#17642](https://github.com/BabylonJS/Babylon.js/pull/17642))
+- Do not attempt fallback when audio parameter `setValueCurveAtTime` fails - by [docEdub](https://github.com/docEdub) ([#17641](https://github.com/BabylonJS/Babylon.js/pull/17641))
+- Billboard support - by [VicenteCartas](https://github.com/VicenteCartas) ([#17635](https://github.com/BabylonJS/Babylon.js/pull/17635))
+- Adds blocks for Pow and Dot operations - by [VicenteCartas](https://github.com/VicenteCartas) ([#17639](https://github.com/BabylonJS/Babylon.js/pull/17639))
+
+## 8.45.2
+
+### Core
+
+- Update WebXR controllers to use physics V2 - by [yuripourre](https://github.com/yuripourre) ([#17629](https://github.com/BabylonJS/Babylon.js/pull/17629))
+- Engine: Fix crash when debug marker functions are not defined - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17637](https://github.com/BabylonJS/Babylon.js/pull/17637))
+- Inspector V2: fully support PBR materials - by [Popov72](https://github.com/Popov72) ([#17562](https://github.com/BabylonJS/Babylon.js/pull/17562))
+- Add support for remap color and alpha - by [VicenteCartas](https://github.com/VicenteCartas) ([#17633](https://github.com/BabylonJS/Babylon.js/pull/17633))
+- Export geospatialcamerakeyboardinput - by [georginahalpern](https://github.com/georginahalpern) ([#17631](https://github.com/BabylonJS/Babylon.js/pull/17631))
+
+### Materials
+
+- Remove concurrently package - by [docEdub](https://github.com/docEdub) ([#17611](https://github.com/BabylonJS/Babylon.js/pull/17611))
+
+### Procedural Textures
+
+- Remove concurrently package - by [docEdub](https://github.com/docEdub) ([#17611](https://github.com/BabylonJS/Babylon.js/pull/17611))
+
+## 8.45.1
+
+### Core
+
+- Adding sprite cell change speed - by [VicenteCartas](https://github.com/VicenteCartas) ([#17630](https://github.com/BabylonJS/Babylon.js/pull/17630))
+- Add support for migrating ramp - by [VicenteCartas](https://github.com/VicenteCartas) ([#17608](https://github.com/BabylonJS/Babylon.js/pull/17608))
+- Prevent scene events during babylon file container loading - by [sebavan](https://github.com/sebavan) ([#17623](https://github.com/BabylonJS/Babylon.js/pull/17623))
+
+## 8.45.0
+
+### Core
+
+- Rework center/radius calc after zoom to point - by [georginahalpern](https://github.com/georginahalpern) ([#17625](https://github.com/BabylonJS/Babylon.js/pull/17625))
+- Stop zooming once a rotation motion occurs - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17624](https://github.com/BabylonJS/Babylon.js/pull/17624))
+- Allow zooming to cursor if already at radiusMin - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17622](https://github.com/BabylonJS/Babylon.js/pull/17622))
+- Light: Add a flag to not add the light to the scene at creation time - by [Popov72](https://github.com/Popov72) ([#17621](https://github.com/BabylonJS/Babylon.js/pull/17621))
+- Add timeout check on readiness - by [sebavan](https://github.com/sebavan) ([#17620](https://github.com/BabylonJS/Babylon.js/pull/17620))
+- FrameGraph: improve debug marker support - by [Popov72](https://github.com/Popov72) ([#17619](https://github.com/BabylonJS/Babylon.js/pull/17619))
+- Particles: Fix crash when using positionW in NME - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17618](https://github.com/BabylonJS/Babylon.js/pull/17618))
+- Add collision detection - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#17617](https://github.com/BabylonJS/Babylon.js/pull/17617))
+- FlyToPoint scale by distance instead of radius - by [georginahalpern](https://github.com/georginahalpern) ([#17615](https://github.com/BabylonJS/Babylon.js/pull/17615))
+- Fix flyToAsync animation - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17614](https://github.com/BabylonJS/Babylon.js/pull/17614))
+- Update zoomSpeedMultiplier to be based on distance to destination (vs radius). Cleanup zoom / clamping logic - by [georginahalpern](https://github.com/georginahalpern) ([#17613](https://github.com/BabylonJS/Babylon.js/pull/17613))
+- TAA: Fix crash when using materials that don't support plugins - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17610](https://github.com/BabylonJS/Babylon.js/pull/17610))
+- Clone reference values when migrating - by [VicenteCartas](https://github.com/VicenteCartas) ([#17606](https://github.com/BabylonJS/Babylon.js/pull/17606))
+
+### GUI Editor
+
+- Remove react-contextmenu dependency from Inspector and GUI Editor (and references from other packages) - by [georginahalpern](https://github.com/georginahalpern) ([#17612](https://github.com/BabylonJS/Babylon.js/pull/17612))
+
+### Inspector
+
+- Remove react-contextmenu dependency from Inspector and GUI Editor (and references from other packages) - by [georginahalpern](https://github.com/georginahalpern) ([#17612](https://github.com/BabylonJS/Babylon.js/pull/17612))
+
+### Loaders
+
+- FrameGraph: improve debug marker support - by [Popov72](https://github.com/Popov72) ([#17619](https://github.com/BabylonJS/Babylon.js/pull/17619))
+
+### Playground
+
+- Fix Inspector v2 layout regression in Playground and Sandbox - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17609](https://github.com/BabylonJS/Babylon.js/pull/17609))
+
+## 8.44.1
+
+### Core
+
+- Adding support for sprites and textures changes - by [VicenteCartas](https://github.com/VicenteCartas) ([#17605](https://github.com/BabylonJS/Babylon.js/pull/17605))
+- Fix unused PLY properties - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17602](https://github.com/BabylonJS/Babylon.js/pull/17602))
+- Fix typos in `dynamicTexture.ts` comments - by [mahahahad](https://github.com/mahahahad) ([#17601](https://github.com/BabylonJS/Babylon.js/pull/17601))
+
+## 8.44.0
+
+### Core
+
+- Voxel shadow fixes for interleaved buffers - by [sebavan](https://github.com/sebavan) ([#17598](https://github.com/BabylonJS/Babylon.js/pull/17598))
+- Fixed defines where area lights and hemi lights need to checked together - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#17597](https://github.com/BabylonJS/Babylon.js/pull/17597))
+- Added extra guards to Area Lights defines to avoid shader compilation. - [_Bug Fix_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#17596](https://github.com/BabylonJS/Babylon.js/pull/17596))
+- Meshes: Fix wrong normals after calling updateFacetData - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17593](https://github.com/BabylonJS/Babylon.js/pull/17593))
+- FrameGraph: Support multi-RTT in clear texture and object renderer tasks - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17582](https://github.com/BabylonJS/Babylon.js/pull/17582))
+- SolidParticleSystem: Allow AbstractMesh in the addShape signature - by [Popov72](https://github.com/Popov72) ([#17591](https://github.com/BabylonJS/Babylon.js/pull/17591))
+- Shadows: Fix artifacts when using PCF and PCSS - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17594](https://github.com/BabylonJS/Babylon.js/pull/17594))
+- Meshes: Fix crash when calling clearCachedData for a transparent mesh - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17595](https://github.com/BabylonJS/Babylon.js/pull/17595))
+- GPUPicker: Added support for bones, morph targets, and VAT - [_Bug Fix_] by [noname0310](https://github.com/noname0310) ([#17592](https://github.com/BabylonJS/Babylon.js/pull/17592))
+
+## 8.43.0
+
+### Core
+
+- Use shortest path for yaw flyTo - by [georginahalpern](https://github.com/georginahalpern) ([#17590](https://github.com/BabylonJS/Babylon.js/pull/17590))
+- Recalculate center only after drag has completed - by [georginahalpern](https://github.com/georginahalpern) ([#17589](https://github.com/BabylonJS/Babylon.js/pull/17589))
+- EXRCubeTexture: Fix spherical harmonics - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17586](https://github.com/BabylonJS/Babylon.js/pull/17586))
+- Remove Alternate rotation pt - by [georginahalpern](https://github.com/georginahalpern) ([#17588](https://github.com/BabylonJS/Babylon.js/pull/17588))
+- Fix velocity calculation to be pixel based and not world coordinate based - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17587](https://github.com/BabylonJS/Babylon.js/pull/17587))
+- Rendering: Fix no display when OIT is enabled and there's no transparent meshes in the scene - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17585](https://github.com/BabylonJS/Babylon.js/pull/17585))
+- Add an option to set all meshes excluded from the glow layer - by [panuchka](https://github.com/panuchka) ([#17581](https://github.com/BabylonJS/Babylon.js/pull/17581))
+- Make audio parameter ramps more robust - by [docEdub](https://github.com/docEdub) ([#17579](https://github.com/BabylonJS/Babylon.js/pull/17579))
+- Handle non-finite audio parameter values - by [docEdub](https://github.com/docEdub) ([#17576](https://github.com/BabylonJS/Babylon.js/pull/17576))
+- Clustered lights: fix right handed mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17575](https://github.com/BabylonJS/Babylon.js/pull/17575))
+
+### Loaders
+
+- Remove `variable/setMultiple` to match glTF interactivity spec update - by [bghgary](https://github.com/bghgary) ([#17573](https://github.com/BabylonJS/Babylon.js/pull/17573))
+
 ## 8.42.0
 
 ### Core

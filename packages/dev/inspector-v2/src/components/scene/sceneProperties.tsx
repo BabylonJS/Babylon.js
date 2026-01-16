@@ -29,9 +29,33 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
 
     return (
         <>
-            <BoundProperty component={SyncedSliderPropertyLine} label="Contrast" min={0} max={4} step={0.1} target={imageProcessing} propertyKey="contrast" />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Exposure" min={0} max={4} step={0.1} target={imageProcessing} propertyKey="exposure" />
-            <BoundProperty component={SwitchPropertyLine} label="Tone Mapping" target={imageProcessing} propertyKey="toneMappingEnabled" />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Contrast"
+                min={0}
+                max={4}
+                step={0.1}
+                target={imageProcessing}
+                propertyKey="contrast"
+                propertyPath="imageProcessingConfiguration.contrast"
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Exposure"
+                min={0}
+                max={4}
+                step={0.1}
+                target={imageProcessing}
+                propertyKey="exposure"
+                propertyPath="imageProcessingConfiguration.exposure"
+            />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Tone Mapping"
+                target={imageProcessing}
+                propertyKey="toneMappingEnabled"
+                propertyPath="imageProcessingConfiguration.toneMappingEnabled"
+            />
             <Collapse visible={imageProcessing.toneMappingEnabled}>
                 <BoundProperty
                     component={NumberDropdownPropertyLine}
@@ -45,13 +69,53 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
                     label="Tone Mapping Type"
                     target={imageProcessing}
                     propertyKey="toneMappingType"
+                    propertyPath="imageProcessingConfiguration.toneMappingType"
                 />
             </Collapse>
-            <BoundProperty component={SwitchPropertyLine} label="Vignette" target={imageProcessing} propertyKey="vignetteEnabled" />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Vignette FOV" min={0} max={Math.PI} step={0.1} target={imageProcessing} propertyKey="vignetteCameraFov" />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Vignette Center X" min={0} max={1} step={0.1} target={imageProcessing} propertyKey="vignetteCenterX" />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Vignette Center Y" min={0} max={1} step={0.1} target={imageProcessing} propertyKey="vignetteCenterY" />
-            <BoundProperty component={Color4PropertyLine} label="Vignette Color" target={imageProcessing} propertyKey="vignetteColor" />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Vignette"
+                target={imageProcessing}
+                propertyKey="vignetteEnabled"
+                propertyPath="imageProcessingConfiguration.vignetteEnabled"
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Vignette FOV"
+                min={0}
+                max={Math.PI}
+                step={0.1}
+                target={imageProcessing}
+                propertyKey="vignetteCameraFov"
+                propertyPath="imageProcessingConfiguration.vignetteCameraFov"
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Vignette Center X"
+                min={0}
+                max={1}
+                step={0.1}
+                target={imageProcessing}
+                propertyKey="vignetteCenterX"
+                propertyPath="imageProcessingConfiguration.vignetteCenterX"
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Vignette Center Y"
+                min={0}
+                max={1}
+                step={0.1}
+                target={imageProcessing}
+                propertyKey="vignetteCenterY"
+                propertyPath="imageProcessingConfiguration.vignetteCenterY"
+            />
+            <BoundProperty
+                component={Color4PropertyLine}
+                label="Vignette Color"
+                target={imageProcessing}
+                propertyKey="vignetteColor"
+                propertyPath="imageProcessingConfiguration.vignetteColor"
+            />
             <BoundProperty
                 component={NumberDropdownPropertyLine}
                 options={
@@ -63,8 +127,15 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
                 label="Vignette Blend Mode"
                 target={imageProcessing}
                 propertyKey="vignetteBlendMode"
+                propertyPath="imageProcessingConfiguration.vignetteBlendMode"
             />
-            <BoundProperty component={SwitchPropertyLine} label="Dithering" target={imageProcessing} propertyKey="ditheringEnabled" />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Dithering"
+                target={imageProcessing}
+                propertyKey="ditheringEnabled"
+                propertyPath="imageProcessingConfiguration.ditheringEnabled"
+            />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
                 label="Dithering Intensity"
@@ -73,6 +144,7 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
                 step={0.5 / 255.0}
                 target={imageProcessing}
                 propertyKey="ditheringIntensity"
+                propertyPath="imageProcessingConfiguration.ditheringIntensity"
             />
         </>
     );

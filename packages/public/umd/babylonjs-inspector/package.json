@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-inspector",
-    "version": "8.42.0",
+    "version": "8.46.2",
     "main": "babylon.inspector.bundle.js",
     "types": "babylon.inspector.module.d.ts",
     "files": [
@@ -14,13 +14,13 @@
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "^8.42.0",
-        "babylonjs-addons": "^8.42.0",
-        "babylonjs-gui": "^8.42.0",
-        "babylonjs-gui-editor": "^8.42.0",
-        "babylonjs-loaders": "^8.42.0",
-        "babylonjs-materials": "^8.42.0",
-        "babylonjs-serializers": "^8.42.0"
+        "babylonjs": "^8.46.2",
+        "babylonjs-addons": "^8.46.2",
+        "babylonjs-gui": "^8.46.2",
+        "babylonjs-gui-editor": "^8.46.2",
+        "babylonjs-loaders": "^8.46.2",
+        "babylonjs-materials": "^8.46.2",
+        "babylonjs-serializers": "^8.46.2"
     },
     "devDependencies": {
         "@dev/addons": "1.0.0",
@@ -31,7 +31,6 @@
         "@types/react-dom": "^18.0.0",
         "css-loader": "^7.1.0",
         "react": "^18.2.0",
-        "react-contextmenu": "RaananW/react-contextmenu#4cb92c957ebff7aee6fc3b0ace61bc143a7373f2",
         "react-dom": "^18.2.0",
         "sass-loader": "^16.0.0",
         "source-map-loader": "^4.0.0",
