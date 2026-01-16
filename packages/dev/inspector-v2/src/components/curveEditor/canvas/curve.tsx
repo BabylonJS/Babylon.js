@@ -47,6 +47,10 @@ type DragState = {
     startY: number;
     startFrame: number;
     startValue: number;
+    /** The pixel X position of the key when drag started */
+    startKeyPixelX: number;
+    /** The pixel Y position of the key when drag started */
+    startKeyPixelY: number;
     currentFrame: number;
     currentValue: number;
 };
@@ -66,6 +70,8 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
         startY: 0,
         startFrame: 0,
         startValue: 0,
+        startKeyPixelX: 0,
+        startKeyPixelY: 0,
         currentFrame: 0,
         currentValue: 0,
     });
@@ -186,6 +192,11 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
                 nextFrame: nextKey?.frame ?? null,
             };
 
+            // Store the key's current pixel position at drag start
+            // This ensures we track relative movement correctly even if conversion functions change
+            const keyPixelX = frameToX(key.frame);
+            const keyPixelY = valueToY(key.value);
+
             dragStateRef.current = {
                 isDragging: true,
                 keyIndex,
@@ -193,6 +204,8 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
                 startY: e.clientY,
                 startFrame: key.frame,
                 startValue: key.value,
+                startKeyPixelX: keyPixelX,
+                startKeyPixelY: keyPixelY,
                 currentFrame: key.frame,
                 currentValue: key.value,
             };
@@ -201,7 +214,7 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
             (e.target as Element).setPointerCapture(e.pointerId);
             forceUpdateRef.current();
         },
-        [onKeySelected, curve.keys]
+        [onKeySelected, curve.keys, frameToX, valueToY]
     );
 
     // Handle pointer move on key point
@@ -214,14 +227,16 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
         e.preventDefault();
         e.stopPropagation();
 
-        const { frameToX, valueToY, xToFrame, yToValue, onKeyFrameChanged, onKeyValueChanged } = callbacksRef.current;
+        const { xToFrame, yToValue, onKeyFrameChanged, onKeyValueChanged } = callbacksRef.current;
 
         const dx = e.clientX - currentDragState.startX;
         const dy = e.clientY - currentDragState.startY;
 
-        // Convert pixel delta to frame/value delta
-        const currentX = frameToX(currentDragState.startFrame) + dx;
-        const currentY = valueToY(currentDragState.startValue) + dy;
+        // Use the stored pixel position from drag start + delta
+        // This avoids issues where frameToX/valueToY might return different values
+        // due to scale/offset changes during drag
+        const currentX = currentDragState.startKeyPixelX + dx;
+        const currentY = currentDragState.startKeyPixelY + dy;
 
         const newFrame = xToFrame(currentX);
         const newValue = yToValue(currentY);
@@ -279,6 +294,8 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
                 startY: 0,
                 startFrame: 0,
                 startValue: 0,
+                startKeyPixelX: 0,
+                startKeyPixelY: 0,
                 currentFrame: 0,
                 currentValue: 0,
             };
