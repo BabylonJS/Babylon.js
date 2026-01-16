@@ -54,7 +54,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     var finalOutlineMask: f32 = outlineMask * (1.0 - uniforms.occlusionStrength * occlusionFactor);
 
-    fragmentOutputs.color = vec4f(finalColor, finalOutlineMask);
+    fragmentOutputs.color = vec4f(uniforms.outlineColor, finalOutlineMask);
 
 #define CUSTOM_FRAGMENT_MAIN_END
 }

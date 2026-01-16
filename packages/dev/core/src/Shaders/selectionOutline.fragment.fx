@@ -51,7 +51,7 @@ void main(void) {
 
     float finalOutlineMask = outlineMask * (1.0 - occlusionStrength * occlusionFactor);
 
-    gl_FragColor = vec4(finalColor, finalOutlineMask);
+    gl_FragColor = vec4(outlineColor, finalOutlineMask);
 
 #define CUSTOM_FRAGMENT_MAIN_END
 }
