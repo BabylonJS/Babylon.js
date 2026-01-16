@@ -91,7 +91,7 @@ const Gradient: FunctionComponent<PrimitiveProps<GradientProps<number | Color3 |
                     value={gradient.step}
                     onChange={(val) => gradientChange({ ...gradient, step: val })}
                     compact={hasNumericValues}
-                    growSpinButton={!hasNumericValues}
+                    growSlider={!hasNumericValues}
                 />
             </div>
         </div>

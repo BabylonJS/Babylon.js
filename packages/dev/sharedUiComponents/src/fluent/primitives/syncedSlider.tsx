@@ -26,6 +26,11 @@ const useSyncedSliderStyles = makeStyles({
         minWidth: "50px", // Allow shrinking for compact mode
         maxWidth: "75px",
     },
+    growSlider: {
+        flex: "1 1 auto",
+        minWidth: "50px",
+        // No maxWidth - slider grows to fill available space
+    },
     compactSpinButton: {
         width: "65px",
         minWidth: "65px",
@@ -33,10 +38,6 @@ const useSyncedSliderStyles = makeStyles({
     },
     compactSpinButtonInput: {
         minWidth: "0",
-    },
-    growSpinButton: {
-        flex: "1 1 auto",
-        minWidth: "65px",
     },
 });
 
@@ -53,8 +54,8 @@ export type SyncedSliderProps = PrimitiveProps<number> & {
     notifyOnlyOnRelease?: boolean;
     /** When true, slider grows to fill space and SpinButton is fixed at 65px */
     compact?: boolean;
-    /** When true, SpinButton grows to fill available space (use for cases where there's extra room) */
-    growSpinButton?: boolean;
+    /** When true, slider grows to fill all available space (no maxWidth constraint) */
+    growSlider?: boolean;
 };
 
 /**
@@ -114,15 +115,15 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
 
     const hasSlider = props.min !== undefined && props.max !== undefined;
 
-    // Determine SpinButton className based on props
-    const getSpinButtonClassName = () => {
-        if (props.growSpinButton) {
-            return classes.growSpinButton;
+    // Determine Slider className based on props
+    const getSliderClassName = () => {
+        if (props.growSlider) {
+            return classes.growSlider;
         }
-        if (hasSlider || props.compact) {
-            return classes.compactSpinButton;
+        if (props.compact) {
+            return classes.compactSlider;
         }
-        return undefined;
+        return classes.slider;
     };
 
     return (
@@ -132,7 +133,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                 {hasSlider && (
                     <Slider
                         {...passthroughProps}
-                        className={props.compact ? classes.compactSlider : classes.slider}
+                        className={getSliderClassName()}
                         size={size}
                         min={min / step}
                         max={max / step}
@@ -145,7 +146,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                 )}
                 <SpinButton
                     {...passthroughProps}
-                    className={getSpinButtonClassName()}
+                    className={hasSlider || props.compact ? classes.compactSpinButton : undefined}
                     inputClassName={hasSlider || props.compact ? classes.compactSpinButtonInput : undefined}
                     value={value}
                     onChange={handleInputChange}
