@@ -1,6 +1,6 @@
 // Attributes
 attribute position: vec3f;
-#if defined(INSTANCES)
+#ifdef INSTANCES
 attribute instanceSelectionId: f32;
 #endif
 
@@ -9,6 +9,8 @@ attribute instanceSelectionId: f32;
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
+#include<clipPlaneVertexDeclaration>
+
 // Uniforms
 
 #include<instancesDeclaration>
@@ -16,10 +18,22 @@ uniform viewProjection: mat4x4f;
 uniform view: mat4x4f;
 
 // Output
-#if defined(INSTANCES)
+#ifdef INSTANCES
 flat varying vSelectionId: f32;
 #endif
+
 varying vViewPosZ: f32;
+
+#ifdef ALPHATEST
+varying vUV: vec2f;
+uniform diffuseMatrix: mat4x4f; 
+#ifdef UV1
+attribute uv: vec2f;
+#endif
+#ifdef UV2
+attribute uv2: vec2f;
+#endif
+#endif
 
 #define CUSTOM_VERTEX_DEFINITIONS
 
@@ -28,7 +42,13 @@ fn main(input: VertexInputs) -> FragmentInputs {
     
 #define CUSTOM_VERTEX_MAIN_BEGIN
 
-    var positionUpdated: vec3f = input.position;
+    var positionUpdated: vec3f = vertexInputs.position;
+#ifdef UV1
+    var uvUpdated: vec2f = vertexInputs.uv;
+#endif
+#ifdef UV2
+    var uv2Updated: vec2f = vertexInputs.uv2;
+#endif
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 #include<instancesVertex>
@@ -37,11 +57,22 @@ fn main(input: VertexInputs) -> FragmentInputs {
     var worldPos: vec4f = finalWorld * vec4f(positionUpdated, 1.0);
     vertexOutputs.position = uniforms.viewProjection * worldPos;
 
+#ifdef ALPHATEST
+#ifdef UV1
+    vertexOutputs.vUV = (uniforms.diffuseMatrix * vec4f(uvUpdated, 1.0, 0.0)).xy;
+#endif
+#ifdef UV2
+    vertexOutputs.vUV = (uniforms.diffuseMatrix * vec4f(uv2Updated, 1.0, 0.0)).xy;
+#endif
+#endif
+
     vertexOutputs.vViewPosZ = (uniforms.view * worldPos).z;
 
-#if defined(INSTANCES)
-    vertexOutputs.vSelectionId = input.instanceSelectionId;
+#ifdef INSTANCES
+    vertexOutputs.vSelectionId = vertexInputs.instanceSelectionId;
 #endif
+
+#include<clipPlaneVertex>
 
 #define CUSTOM_VERTEX_MAIN_END
 }

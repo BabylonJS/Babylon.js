@@ -128,7 +128,7 @@ export class ThinEffectLayer {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _mergeDrawWrapper: DrawWrapper[];
-    private _dontCheckIfReady = false;
+    protected _dontCheckIfReady = false;
 
     protected _scene: Scene;
     protected _engine: AbstractEngine;

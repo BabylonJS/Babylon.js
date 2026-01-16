@@ -1,6 +1,4 @@
 // samplers
-var textureSamplerSampler: sampler;
-uniform textureSampler: texture_2d<f32>;
 var maskSamplerSampler: sampler;
 uniform maskSampler: texture_2d<f32>;
 var depthSamplerSampler: sampler;
@@ -22,16 +20,14 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
-    var screenColor: vec4f = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV, 0.0);
-
     var texelSize: vec2f = 1.0 / uniforms.screenSize;
     var sampleOffset: vec2f = texelSize * uniforms.outlineThickness;
 
     // sample mask texture for edge detection and depth-based occlusion
-    var centerMask: vec2f = textureSampleLevel(maskSampler, maskSamplerSampler, input.vUV, 0.0).rg;
-    var maskX: vec2f = textureSampleLevel(maskSampler, maskSamplerSampler, input.vUV + vec2f(sampleOffset.x, 0.0), 0.0).rg;
-    var maskY: vec2f = textureSampleLevel(maskSampler, maskSamplerSampler, input.vUV + vec2f(0.0, sampleOffset.y), 0.0).rg;
-    var maskXY: vec2f = textureSampleLevel(maskSampler, maskSamplerSampler, input.vUV + sampleOffset, 0.0).rg;
+    var centerMask: vec2f = textureSampleLevel(maskSampler, maskSamplerSampler, fragmentInputs.vUV, 0.0).rg;
+    var maskX: vec2f = textureSampleLevel(maskSampler, maskSamplerSampler, fragmentInputs.vUV + vec2f(sampleOffset.x, 0.0), 0.0).rg;
+    var maskY: vec2f = textureSampleLevel(maskSampler, maskSamplerSampler, fragmentInputs.vUV + vec2f(0.0, sampleOffset.y), 0.0).rg;
+    var maskXY: vec2f = textureSampleLevel(maskSampler, maskSamplerSampler, fragmentInputs.vUV + sampleOffset, 0.0).rg;
 
     // gradient magnitude edge detection
     var gradient: vec3f = vec3f(
@@ -43,10 +39,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var outlineMask: f32 = step(0.1, edgeStrength); // 0.1 is the outline threshold
 
     // sample depth texture for depth-based occlusion
-    var depthCenter: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, input.vUV, 0.0).r;
-    var depthX: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, input.vUV + vec2f(sampleOffset.x, 0.0), 0.0).r;
-    var depthY: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, input.vUV + vec2f(0.0, sampleOffset.y), 0.0).r;
-    var depthXY: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, input.vUV + sampleOffset, 0.0).r;
+    var depthCenter: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV, 0.0).r;
+    var depthX: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(sampleOffset.x, 0.0), 0.0).r;
+    var depthY: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(0.0, sampleOffset.y), 0.0).r;
+    var depthXY: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + sampleOffset, 0.0).r;
 
     const occlusionThreshold: f32 = 1.0000001;
     var occlusionCenter: f32 = step(occlusionThreshold, abs(centerMask.g - depthCenter));
@@ -58,9 +54,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     var finalOutlineMask: f32 = outlineMask * (1.0 - uniforms.occlusionStrength * occlusionFactor);
 
-    var finalColor: vec3f = mix(screenColor.rgb, uniforms.outlineColor, finalOutlineMask);
-
-    fragmentOutputs.color = vec4f(finalColor, screenColor.a);
+    fragmentOutputs.color = vec4f(finalColor, finalOutlineMask);
 
 #define CUSTOM_FRAGMENT_MAIN_END
 }

@@ -1,5 +1,4 @@
 // samplers
-uniform sampler2D textureSampler;
 uniform sampler2D maskSampler;
 uniform sampler2D depthSampler;
 
@@ -17,8 +16,6 @@ uniform float occlusionStrength;
 void main(void) {
     
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
-
-    vec4 screenColor = texture2D(textureSampler, vUV);
 
     vec2 texelSize = 1.0 / screenSize;
     vec2 sampleOffset = texelSize * outlineThickness;
@@ -54,9 +51,7 @@ void main(void) {
 
     float finalOutlineMask = outlineMask * (1.0 - occlusionStrength * occlusionFactor);
 
-    vec3 finalColor = mix(screenColor.rgb, outlineColor, finalOutlineMask);
-
-    gl_FragColor = vec4(finalColor, screenColor.a);
+    gl_FragColor = vec4(finalColor, finalOutlineMask);
 
 #define CUSTOM_FRAGMENT_MAIN_END
 }
