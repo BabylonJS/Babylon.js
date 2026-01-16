@@ -43,6 +43,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Observable } from "core/Misc/observable";
 import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { ErrorBoundary } from "../components/errorBoundary";
 import { TeachingMoment } from "../components/teachingMoment";
 import { Theme } from "../components/theme";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
@@ -968,7 +969,9 @@ function usePane(
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
                                 {topPanes.map((pane) => (
                                     <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== topSelectedTab.key ? classes.unselectedPane : undefined)}>
-                                        <pane.content />
+                                        <ErrorBoundary name={pane.title}>
+                                            <pane.content />
+                                        </ErrorBoundary>
                                     </div>
                                 ))}
                             </>
@@ -999,7 +1002,9 @@ function usePane(
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
                                 {bottomPanes.map((pane) => (
                                     <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== bottomSelectedTab.key ? classes.unselectedPane : undefined)}>
-                                        <pane.content />
+                                        <ErrorBoundary name={pane.title}>
+                                            <pane.content />
+                                        </ErrorBoundary>
                                     </div>
                                 ))}
                             </>
@@ -1341,7 +1346,9 @@ export function MakeShellServiceDefinition({
                             {/* Render the main/central content. */}
                             <div className={classes.centralContent}>
                                 {centralContents.map((entry) => (
-                                    <entry.component key={entry.key} />
+                                    <ErrorBoundary key={entry.key} name={entry.key}>
+                                        <entry.component />
+                                    </ErrorBoundary>
                                 ))}
                                 {toolbarMode === "compact" && (
                                     <>
