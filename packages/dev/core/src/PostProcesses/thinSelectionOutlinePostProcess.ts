@@ -53,7 +53,7 @@ export class ThinSelectionOutlinePostProcess extends EffectWrapper {
     }
 
     /**
-     * THe outline color
+     * The outline color
      */
     public outlineColor: Color3 = new Color3(1, 0.5, 0);
 
