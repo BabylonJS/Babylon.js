@@ -145,6 +145,13 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             forceUpdate((c) => c + 1);
         });
 
+        // Handle frame canvas - reset view to fit all content
+        const onFrameRequired = observables.onFrameRequired.add(() => {
+            setScale(1);
+            setOffsetX(0);
+            setOffsetY(0);
+        });
+
         // Handle delete active key points
         const onDeleteKeyActiveKeyPoints = observables.onDeleteKeyActiveKeyPoints.add(() => {
             if (!state.activeKeyPoints || state.activeKeyPoints.length === 0) {
@@ -184,6 +191,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             observables.onActiveAnimationChanged.remove(onActiveAnimationChanged);
             observables.onRangeUpdated.remove(onRangeUpdated);
             observables.onCreateOrUpdateKeyPointRequired.remove(onCreateOrUpdateKeyPointRequired);
+            observables.onFrameRequired.remove(onFrameRequired);
             observables.onDeleteKeyActiveKeyPoints.remove(onDeleteKeyActiveKeyPoints);
         };
     }, [observables, state.activeAnimations, state.activeFrame, state.activeKeyPoints, actions]);
