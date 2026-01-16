@@ -9,7 +9,6 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { TextureTools } from "core/Misc/textureTools";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 
 /**
  * Interface used to define texture data
