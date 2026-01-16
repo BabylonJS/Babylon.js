@@ -4,7 +4,7 @@ import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes 
 import type { Effect, IEffectCreationOptions } from "../Materials/effect";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { Material } from "../Materials/material";
-import { BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Color3 } from "../Maths/math.color";
@@ -136,9 +136,10 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             return false;
         }
 
-        if (this._useMeshMaterial(subMesh.getRenderingMesh())) {
-            return material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
-        }
+        // selection outline layer is not compatible with custom materials
+        // if (this._useMeshMaterial(subMesh.getRenderingMesh())) {
+        //     return material.isReadyForSubMesh(subMesh.getMesh(), subMesh, useInstances);
+        // }
 
         const defines: string[] = [];
 
@@ -421,11 +422,13 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
         this.onBeforeRenderMeshToEffect.notifyObservers(ownerMesh);
 
-        if (this._useMeshMaterial(renderingMesh)) {
-            subMesh.getMaterial()!._glowModeEnabled = true;
-            renderingMesh.render(subMesh, enableAlphaMode, replacementMesh || undefined);
-            subMesh.getMaterial()!._glowModeEnabled = false;
-        } else if (this._isSubMeshReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
+        // selection outline layer is not compatible with custom materials
+        // if (this._useMeshMaterial(renderingMesh)) {
+        //     subMesh.getMaterial()!._glowModeEnabled = true;
+        //     renderingMesh.render(subMesh, enableAlphaMode, replacementMesh || undefined);
+        //     subMesh.getMaterial()!._glowModeEnabled = false;
+        // } else
+        if (this._isSubMeshReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
             const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
 
             let drawWrapper = subMesh._getDrawWrapper();
@@ -446,66 +449,24 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
             if (!renderingMaterial) {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
+                effect.setMatrix("view", scene.getViewMatrix());
                 effect.setMatrix("world", effectiveMesh.getWorldMatrix());
-                effect.setFloat4(
-                    "glowColor",
-                    this._emissiveTextureAndColor.color.r,
-                    this._emissiveTextureAndColor.color.g,
-                    this._emissiveTextureAndColor.color.b,
-                    this._emissiveTextureAndColor.color.a
-                );
             } else {
                 renderingMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), effectiveMesh as Mesh, subMesh);
             }
 
             if (!renderingMaterial) {
-                const needAlphaTest = material.needAlphaTestingForMesh(effectiveMesh);
-
-                const diffuseTexture = material.getAlphaTestTexture();
-                const needAlphaBlendFromDiffuse =
-                    diffuseTexture && diffuseTexture.hasAlpha && ((material as any).useAlphaFromDiffuseTexture || (material as any)._useAlphaFromAlbedoTexture);
-
-                if (diffuseTexture && (needAlphaTest || needAlphaBlendFromDiffuse)) {
-                    effect.setTexture("diffuseSampler", diffuseTexture);
-                    const textureMatrix = diffuseTexture.getTextureMatrix();
-
-                    if (textureMatrix) {
-                        effect.setMatrix("diffuseMatrix", textureMatrix);
+                // Alpha test
+                if (material && material.needAlphaTestingForMesh(effectiveMesh)) {
+                    const alphaTexture = material.getAlphaTestTexture();
+                    if (alphaTexture) {
+                        effect.setTexture("diffuseSampler", alphaTexture);
+                        effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
                     }
-                }
-
-                const opacityTexture = (material as any).opacityTexture;
-                if (opacityTexture) {
-                    effect.setTexture("opacitySampler", opacityTexture);
-                    effect.setFloat("opacityIntensity", opacityTexture.level);
-                    const textureMatrix = opacityTexture.getTextureMatrix();
-                    if (textureMatrix) {
-                        effect.setMatrix("opacityMatrix", textureMatrix);
-                    }
-                }
-
-                // Glow emissive only
-                if (this._emissiveTextureAndColor.texture) {
-                    effect.setTexture("emissiveSampler", this._emissiveTextureAndColor.texture);
-                    effect.setMatrix("emissiveMatrix", this._emissiveTextureAndColor.texture.getTextureMatrix());
                 }
 
                 // Bones
-                if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-                    const skeleton = renderingMesh.skeleton;
-
-                    if (skeleton.isUsingTextureForMatrices) {
-                        const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
-                        if (!boneTexture) {
-                            return;
-                        }
-
-                        effect.setTexture("boneSampler", boneTexture);
-                        effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
-                    } else {
-                        effect.setMatrices("mBones", skeleton.getTransformMatrices(renderingMesh));
-                    }
-                }
+                BindBonesParameters(renderingMesh, effect);
 
                 // Morph targets
                 BindMorphTargetParameters(renderingMesh, effect);
@@ -524,11 +485,14 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                     engine.setAlphaMode(material.alphaMode);
                 }
 
-                // Intensity of effect
-                effect.setFloat("glowIntensity", this.getEffectIntensity(renderingMesh));
-
                 // Clip planes
                 BindClipPlane(effect, material, scene);
+
+                // Selection ID
+                const selectionId = this._meshUniqueIdToSelectionId[renderingMesh.uniqueId];
+                if (!renderingMesh.hasInstances && !renderingMesh.isAnInstance && selectionId !== undefined) {
+                    effect.setFloat("selectionId", selectionId);
+                }
             }
 
             // Draw
@@ -599,6 +563,11 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
         }
 
         return this._selection.indexOf(mesh) !== -1;
+    }
+
+    /** @internal */
+    public override _useMeshMaterial(_mesh: AbstractMesh): boolean {
+        return false;
     }
 
     /**
