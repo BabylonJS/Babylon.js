@@ -2,9 +2,8 @@ import type { PropsWithChildren } from "react";
 
 import type { ImmutablePrimitiveProps } from "./primitive";
 
-import { forwardRef, useContext } from "react";
+import { forwardRef } from "react";
 import { Body1, Caption1, Link as FluentLink } from "@fluentui/react-components";
-import { ToolContext } from "../hoc/fluentToolWrapper";
 
 export type LinkProps = ImmutablePrimitiveProps<string> & {
     /**
@@ -19,11 +18,13 @@ export type LinkProps = ImmutablePrimitiveProps<string> & {
      * Defines whether to open the link in current tab or new tab. Default is new
      */
     target?: "current" | "new";
+
+    /**Force link size */
+    size?: "small" | "medium";
 };
 
 export const Link = forwardRef<HTMLAnchorElement, PropsWithChildren<LinkProps>>((props, ref) => {
-    const { size } = useContext(ToolContext);
-    const { target, url, onLink, ...rest } = props;
+    const { target, url, onLink, size, ...rest } = props;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const TextComponent = size === "small" ? Caption1 : Body1;
 
