@@ -194,11 +194,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             const canvasContainerChildren = [...parentElement.childNodes];
             parentElement.replaceChildren();
 
-            disposeActions.push(async () => {
-                // When the ModularTool token is disposed, it unmounts the react element, which asynchronously
-                // removes all children from the parentElement. We need to wait for that to complete before
-                // re-adding the canvas children back to the parentElement.
-                await new Promise((resolve) => setTimeout(resolve));
+            disposeActions.push(() => {
                 parentElement.replaceChildren(...canvasContainerChildren);
             });
 
