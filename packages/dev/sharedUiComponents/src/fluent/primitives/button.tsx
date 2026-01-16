@@ -1,19 +1,17 @@
-import { Button as FluentButton, makeStyles, mergeClasses, Spinner } from "@fluentui/react-components";
+import { Button as FluentButton, makeStyles, Spinner } from "@fluentui/react-components";
 import type { MouseEvent } from "react";
 import { forwardRef, useCallback, useContext, useState } from "react";
 import type { FluentIcon } from "@fluentui/react-icons";
 import type { BasePrimitiveProps } from "./primitive";
 import { ToolContext } from "../hoc/fluentToolWrapper";
+import { TokenMap } from "./utils";
 
 const useButtonStyles = makeStyles({
-    iconOnly: {
-        minWidth: "unset",
-    },
     smallIcon: {
-        fontSize: "16px",
+        fontSize: TokenMap.px16,
     },
     mediumIcon: {
-        fontSize: "20px",
+        fontSize: TokenMap.px20,
     },
 });
 
@@ -29,8 +27,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
     const classes = useButtonStyles();
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { icon: Icon, label, onClick, disabled, className, ...buttonProps } = props;
-
-    const isIconOnly = Icon && !label;
 
     const [isOnClickBusy, setIsOnClickBusy] = useState(false);
     const handleOnClick = useCallback(
@@ -55,7 +51,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
             ref={ref}
             iconPosition="after"
             {...buttonProps}
-            className={mergeClasses(isIconOnly ? classes.iconOnly : undefined, className)}
+            className={className}
             size={size}
             icon={isOnClickBusy ? <Spinner size="extra-tiny" /> : Icon && <Icon className={iconClass} />}
             onClick={handleOnClick}

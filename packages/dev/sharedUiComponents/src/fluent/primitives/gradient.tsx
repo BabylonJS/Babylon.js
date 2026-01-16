@@ -59,9 +59,9 @@ const Gradient: FunctionComponent<PrimitiveProps<GradientProps<number | Color3 |
         props.onChange(newGradient);
     };
     // Only use compact mode when there are numeric values (spinbuttons) taking up space
-    const hasNumericValues = true;
-    // !(gradient.value1 instanceof Color3 || gradient.value1 instanceof Color4) ||
-    // (gradient.value2 !== undefined && !(gradient.value2 instanceof Color3 || gradient.value2 instanceof Color4));
+    const hasNumericValues =
+        !(gradient.value1 instanceof Color3 || gradient.value1 instanceof Color4) ||
+        (gradient.value2 !== undefined && !(gradient.value2 instanceof Color3 || gradient.value2 instanceof Color4));
 
     return (
         <div id="gradientContainer" className={classes.container}>
@@ -91,6 +91,7 @@ const Gradient: FunctionComponent<PrimitiveProps<GradientProps<number | Color3 |
                     value={gradient.step}
                     onChange={(val) => gradientChange({ ...gradient, step: val })}
                     compact={hasNumericValues}
+                    growSpinButton={!hasNumericValues}
                 />
             </div>
         </div>

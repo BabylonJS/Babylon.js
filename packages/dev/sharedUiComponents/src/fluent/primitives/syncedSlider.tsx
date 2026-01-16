@@ -30,9 +30,13 @@ const useSyncedSliderStyles = makeStyles({
         width: "65px",
         minWidth: "65px",
         maxWidth: "65px",
-        "& input": {
-            minWidth: "0 !important", // Override Fluent's built-in min-width
-        },
+    },
+    compactSpinButtonInput: {
+        minWidth: "0",
+    },
+    growSpinButton: {
+        flex: "1 1 auto",
+        minWidth: "65px",
     },
 });
 
@@ -47,8 +51,10 @@ export type SyncedSliderProps = PrimitiveProps<number> & {
     unit?: string;
     /** When true, onChange is only called when the user releases the slider, not during drag */
     notifyOnlyOnRelease?: boolean;
-    /** When true, slider grows to fill space and SpinButton is fixed at 70px */
+    /** When true, slider grows to fill space and SpinButton is fixed at 65px */
     compact?: boolean;
+    /** When true, SpinButton grows to fill available space (use for cases where there's extra room) */
+    growSpinButton?: boolean;
 };
 
 /**
@@ -108,6 +114,17 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
 
     const hasSlider = props.min !== undefined && props.max !== undefined;
 
+    // Determine SpinButton className based on props
+    const getSpinButtonClassName = () => {
+        if (props.growSpinButton) {
+            return classes.growSpinButton;
+        }
+        if (hasSlider || props.compact) {
+            return classes.compactSpinButton;
+        }
+        return undefined;
+    };
+
     return (
         <div className={classes.container}>
             {infoLabel && <InfoLabel {...infoLabel} htmlFor={"syncedSlider"} />}
@@ -128,7 +145,8 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                 )}
                 <SpinButton
                     {...passthroughProps}
-                    className={hasSlider || props.compact ? classes.compactSpinButton : undefined}
+                    className={getSpinButtonClassName()}
+                    inputClassName={hasSlider || props.compact ? classes.compactSpinButtonInput : undefined}
                     value={value}
                     onChange={handleInputChange}
                     step={props.step}

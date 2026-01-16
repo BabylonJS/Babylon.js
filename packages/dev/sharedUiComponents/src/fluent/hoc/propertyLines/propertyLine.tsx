@@ -16,7 +16,7 @@ import type { PrimitiveProps } from "../../primitives/primitive";
 import { Link } from "../../primitives/link";
 import { ToggleButton } from "../../primitives/toggleButton";
 import { Button } from "../../primitives/button";
-import { CustomTokens } from "../../primitives/utils";
+import { CustomTokens, TokenMap } from "../../primitives/utils";
 import { InfoLabel } from "../../primitives/infoLabel";
 
 const usePropertyLineStyles = makeStyles({
@@ -60,11 +60,11 @@ const usePropertyLineStyles = makeStyles({
         display: "flex",
         alignItems: "center",
         marginRight: tokens.spacingHorizontalXS,
-        "& > .fui-Checkbox__indicator": {
-            margin: "2px",
-            width: "12px",
-            height: "12px",
-        },
+    },
+    checkboxIndicator: {
+        margin: TokenMap.px2,
+        width: TokenMap.px12,
+        height: TokenMap.px12,
     },
 });
 
@@ -181,6 +181,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                         <Tooltip relationship="label" content={props.value == null ? "Enable property" : "Disable property (set to null)"}>
                             <Checkbox
                                 className={classes.checkbox}
+                                indicator={{ className: classes.checkboxIndicator }}
                                 checked={!(props.value == null)}
                                 onChange={(_, data) => {
                                     if (data.checked) {

@@ -16,6 +16,8 @@ export type SpinButtonProps = PrimitiveProps<number> & {
     unit?: string;
     forceInt?: boolean;
     validator?: (value: number) => boolean;
+    /** Optional className for the input element */
+    inputClassName?: string;
 };
 
 export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
@@ -75,29 +77,16 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     const id = useId("spin-button");
     const mergedClassName = mergeClasses(classes.input, !validateValue(value) ? classes.invalid : "", props.className);
 
-    return props.infoLabel ? (
-        <div className={classes.container}>
-            <InfoLabel {...props.infoLabel} htmlFor={id} />
-            <FluentSpinButton
-                {...props}
-                input={{ className: classes.inputSlot }}
-                step={step}
-                id={id}
-                size={size}
-                precision={precision}
-                displayValue={`${value.toFixed(precision)}${props.unit ? " " + props.unit : ""}`}
-                value={value}
-                onChange={handleChange}
-                onKeyUp={handleKeyUp}
-                onKeyDown={HandleKeyDown}
-                onBlur={HandleOnBlur}
-                className={mergedClassName}
-            />
-        </div>
-    ) : (
+    // Build input slot from inputClassName
+    const inputSlot = {
+        className: mergeClasses(classes.inputSlot, props.inputClassName),
+    };
+
+    const spinButton = (
         <FluentSpinButton
             {...props}
-            input={{ className: classes.inputSlot }}
+            appearance="outline"
+            input={inputSlot}
             step={step}
             id={id}
             size={size}
@@ -110,5 +99,14 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
             onBlur={HandleOnBlur}
             className={mergedClassName}
         />
+    );
+
+    return props.infoLabel ? (
+        <div className={classes.container}>
+            <InfoLabel {...props.infoLabel} htmlFor={id} />
+            {spinButton}
+        </div>
+    ) : (
+        spinButton
     );
 };
