@@ -36,7 +36,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     /**
      * Gets or sets the strenght of the flow map effect
      */
-    public invertY = false;
+    public invertY = true;
 
     /**
      * Indicates if the texture data should be serialized as a base64 string.
