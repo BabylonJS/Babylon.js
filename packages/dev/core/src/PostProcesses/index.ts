@@ -51,7 +51,6 @@ export * from "./thinMotionBlurPostProcess";
 export * from "./thinPassPostProcess";
 export * from "./thinSharpenPostProcess";
 export * from "./thinScreenSpaceCurvaturePostProcess";
-export * from "./thinSelectionOutlinePostProcess";
 export * from "./thinTonemapPostProcess";
 
 // Postprocess
