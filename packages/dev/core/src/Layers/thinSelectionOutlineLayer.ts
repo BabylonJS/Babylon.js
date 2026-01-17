@@ -332,6 +332,10 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 attributes: [VertexBuffer.PositionKind],
                 uniformsNames: ["screenSize", "outlineColor", "outlineThickness", "occlusionStrength"],
                 samplers: ["maskSampler", "depthSampler"],
+                defines: "",
+                fallbacks: null,
+                onCompiled: null,
+                onError: null,
                 shaderLanguage: this._shaderLanguage,
                 extraInitializationsAsync: this._shadersLoaded
                     ? undefined
