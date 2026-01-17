@@ -131,10 +131,9 @@ export class SelectionOutlineLayer extends EffectLayer {
     protected _createTextureAndPostProcesses(): void {
         this._textures = [];
 
-        const prePassRenderer = this._scene._prePassRenderer!;
-
         this._thinEffectLayer.bindTexturesForCompose = (effect: Effect): void => {
             effect.setTexture("maskSampler", this._mainTexture);
+            const prePassRenderer = this._scene._prePassRenderer!;
             effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
 
             const mainTextureCreatedSize = this._mainTextureCreatedSize;
