@@ -548,7 +548,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
     /** @internal */
     public override _shouldRenderMesh(mesh: Mesh): boolean {
-        return super.hasMesh(mesh);
+        return this.hasMesh(mesh);
     }
 
     /** @internal */
