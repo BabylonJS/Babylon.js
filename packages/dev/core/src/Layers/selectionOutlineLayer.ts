@@ -1,4 +1,4 @@
-import { serialize } from "../Misc/decorators";
+import { serialize, serializeAsColor3 } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import { Scene } from "../scene";
 import type { SubMesh } from "../Meshes/subMesh";
@@ -15,6 +15,7 @@ import type { IThinSelectionOutlineLayerOptions } from "./thinSelectionOutlineLa
 import { ThinSelectionOutlineLayer } from "./thinSelectionOutlineLayer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { SelectionOutlineConfiguration } from "../Rendering/selectionOutlineConfiguration";
+import type { Color3 } from "../Maths/math.color";
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -61,6 +62,42 @@ export class SelectionOutlineLayer extends EffectLayer {
      */
     public static get EffectName() {
         return ThinSelectionOutlineLayer.EffectName;
+    }
+
+    /**
+     * The outline color (default (1, 0.5, 0))
+     */
+    @serializeAsColor3()
+    public get outlineColor(): Color3 {
+        return this._thinEffectLayer.outlineColor;
+    }
+
+    public set outlineColor(value: Color3) {
+        this._thinEffectLayer.outlineColor = value;
+    }
+
+    /**
+     * The thickness of the edges (default: 2.0)
+     */
+    @serialize()
+    public get outlineThickness(): number {
+        return this._thinEffectLayer.outlineThickness;
+    }
+
+    public set outlineThickness(value: number) {
+        this._thinEffectLayer.outlineThickness = value;
+    }
+
+    /**
+     * The strength of the occlusion effect (default: 0.8)
+     */
+    @serialize()
+    public get occlusionStrength(): number {
+        return this._thinEffectLayer.occlusionStrength;
+    }
+
+    public set occlusionStrength(value: number) {
+        this._thinEffectLayer.occlusionStrength = value;
     }
 
     @serialize("options")
