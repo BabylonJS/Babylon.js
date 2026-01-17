@@ -73,6 +73,14 @@ export class TextureSourcePropertyTabComponent extends React.Component<IProperty
                             this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                         }}
                     />
+                    <CheckBoxLineComponent
+                        label="Invert Y"
+                        target={block}
+                        propertyName="invertY"
+                        onValueChanged={() => {
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                        }}
+                    />
                 </LineContainerComponent>
             </div>
         );

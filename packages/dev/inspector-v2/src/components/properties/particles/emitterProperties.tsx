@@ -21,7 +21,7 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { BoundProperty } from "../boundProperty";
+import { BoundProperty, Property } from "../boundProperty";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 
 /**
@@ -136,8 +136,10 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
 
     return (
         <>
-            <StringDropdownPropertyLine
+            <Property
+                component={StringDropdownPropertyLine}
                 label="Emitter"
+                propertyPath="emitter"
                 value={emitterSelectionValue}
                 options={[
                     { label: "None", value: "none" },
@@ -178,8 +180,10 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
             />
 
             {emitterSelectionValue === "position" && emitterVector && (
-                <Vector3PropertyLine
+                <Property
+                    component={Vector3PropertyLine}
                     label="Position"
+                    propertyPath="emitter"
                     value={emitterVector}
                     onChange={(value) => {
                         if (system.emitter instanceof Vector3) {
@@ -192,11 +196,13 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
             )}
 
             {emitterSelectionValue !== "none" && emitter && !(emitter instanceof Vector3) && (
-                <LinkToEntityPropertyLine label="Entity" entity={emitter} selectionService={selectionService} />
+                <Property component={LinkToEntityPropertyLine} label="Entity" propertyPath="emitter" entity={emitter} selectionService={selectionService} />
             )}
 
-            <StringDropdownPropertyLine
+            <Property
+                component={StringDropdownPropertyLine}
                 label="Type"
+                propertyPath="emitterType"
                 value={emitterTypeKey}
                 options={[
                     { label: "Box", value: "box" },
@@ -244,7 +250,9 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
             {particleEmitterType instanceof MeshParticleEmitter && (
                 <>
                     {scene && scene.meshes.length > 0 ? (
-                        <StringDropdownPropertyLine
+                        <Property
+                            component={StringDropdownPropertyLine}
+                            propertyPath="source"
                             label="Source"
                             value={particleEmitterType.mesh ? `mesh:${particleEmitterType.mesh.uniqueId}` : `mesh:${scene.meshes[0].uniqueId}`}
                             options={scene.meshes.map((mesh) => {
@@ -265,7 +273,7 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                             }}
                         />
                     ) : (
-                        <TextPropertyLine label="Source" value="No meshes in scene." />
+                        <Property component={TextPropertyLine} propertyPath="source" label="Source" value="No meshes in scene." />
                     )}
                 </>
             )}
