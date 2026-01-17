@@ -18,17 +18,16 @@ const useStyles = makeStyles({
         position: "absolute",
         width: "2px",
         height: "100%",
-        backgroundColor: tokens.colorPaletteRedBackground3,
+        backgroundColor: tokens.colorNeutralForegroundOnBrand,
         pointerEvents: "auto",
         cursor: "ew-resize",
     },
     handle: {
         position: "absolute",
         top: 0,
-        left: "-10px",
         width: "20px",
         height: "20px",
-        backgroundColor: tokens.colorPaletteRedBackground3,
+        backgroundColor: tokens.colorNeutralForegroundOnBrand,
         borderRadius: "50%",
         border: `2px solid ${tokens.colorNeutralBackground1}`,
         pointerEvents: "auto",
@@ -36,10 +35,11 @@ const useStyles = makeStyles({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: tokens.colorNeutralForegroundOnBrand,
+        color: tokens.colorNeutralBackground1,
         fontSize: "9px",
         fontWeight: "bold",
         userSelect: "none",
+        transform: "translateX(-50%)",
     },
 });
 
@@ -175,8 +175,8 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
 
     return (
         <div className={styles.root}>
-            <div className={styles.line} style={{ left: playheadX - 1 }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} />
-            <div className={styles.handle} style={{ left: playheadX - 10 }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
+            <div className={styles.line} style={{ left: playheadX }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} />
+            <div className={styles.handle} style={{ left: playheadX }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
                 {Math.round(currentFrame)}
             </div>
         </div>

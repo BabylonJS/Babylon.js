@@ -6,7 +6,7 @@ import type { Scene } from "core/scene";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 
 import { makeStyles, tokens, FluentProvider, webDarkTheme } from "@fluentui/react-components";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { CurveEditorProvider, useCurveEditor } from "./curveEditorContext";
 import { TopBar } from "./topBar";
@@ -65,10 +65,13 @@ const useStyles = makeStyles({
 const CurveEditorContent: FunctionComponent = () => {
     const styles = useStyles();
     const { actions } = useCurveEditor();
+    const prepareRef = useRef(actions.prepare);
+    prepareRef.current = actions.prepare;
 
     useEffect(() => {
-        actions.prepare();
-    }, [actions]);
+        // Only run prepare once on mount
+        prepareRef.current();
+    }, []);
 
     // Handle window resize
     useEffect(() => {

@@ -8,7 +8,7 @@ import { ToolContext } from "../hoc/fluentToolWrapper";
 export type ButtonProps = BasePrimitiveProps & {
     onClick?: (e?: MouseEvent<HTMLButtonElement>) => unknown | Promise<unknown>;
     icon?: FluentIcon;
-    appearance?: "subtle" | "transparent" | "primary";
+    appearance?: "subtle" | "transparent" | "primary" | "secondary";
     label?: string;
 };
 

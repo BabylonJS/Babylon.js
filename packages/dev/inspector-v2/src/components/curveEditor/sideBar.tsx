@@ -1,7 +1,7 @@
 import type { FunctionComponent } from "react";
 
 import { makeStyles, tokens, Tooltip } from "@fluentui/react-components";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AddRegular, ArrowDownloadRegular, SaveRegular, EditRegular } from "@fluentui/react-icons";
 import type { Animation } from "core/Animations/animation";
 import type { TargetedAnimation } from "core/Animations/animationGroup";
@@ -10,6 +10,10 @@ import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
 import { useCurveEditor } from "./curveEditorContext";
 import { AnimationList } from "./sideBar/animationList";
+import { AddAnimationPanel } from "./sideBar/addAnimationPanel";
+import { EditAnimationPanel } from "./sideBar/editAnimationPanel";
+import { LoadAnimationPanel } from "./sideBar/loadAnimationPanel";
+import { SaveAnimationPanel } from "./sideBar/saveAnimationPanel";
 
 const useStyles = makeStyles({
     root: {
@@ -56,7 +60,7 @@ const useStyles = makeStyles({
     },
 });
 
-type Mode = "edit" | "add" | "load" | "save";
+type Mode = "edit" | "add" | "load" | "save" | "editAnimation";
 
 /**
  * Sidebar component for the curve editor with animation list and controls
@@ -64,10 +68,11 @@ type Mode = "edit" | "add" | "load" | "save";
  */
 export const SideBar: FunctionComponent = () => {
     const styles = useStyles();
-    const { state, observables } = useCurveEditor();
+    const { state, actions, observables } = useCurveEditor();
 
     const [mode, setMode] = useState<Mode>("edit");
     const [fps, setFps] = useState(60);
+    const [editingAnimation, setEditingAnimation] = useState<Animation | null>(null);
 
     // Get FPS from animations
     useEffect(() => {
@@ -85,6 +90,41 @@ export const SideBar: FunctionComponent = () => {
         return () => {
             observables.onAnimationsLoaded.remove(observer);
         };
+    }, [observables]);
+
+    // Subscribe to edit animation request
+    useEffect(() => {
+        const observer = observables.onEditAnimationRequired.add((animation: Animation) => {
+            setEditingAnimation(animation);
+            setMode("editAnimation");
+        });
+        return () => {
+            observables.onEditAnimationRequired.remove(observer);
+        };
+    }, [observables]);
+
+    // Subscribe to delete animation request - use ref to access current state.target
+    const targetRef = useRef(state.target);
+    targetRef.current = state.target;
+
+    useEffect(() => {
+        const observer = observables.onDeleteAnimation.add((animation: Animation) => {
+            // Remove from active animations
+            actions.setActiveAnimations((prev) => prev.filter((a) => a !== animation));
+
+            // Update target if exists
+            const target = targetRef.current;
+            if (target) {
+                target.animations = (target.animations ?? []).filter((a: Animation) => a !== animation);
+            }
+
+            observables.onAnimationsLoaded.notifyObservers();
+            observables.onActiveAnimationChanged.notifyObservers({});
+        });
+        return () => {
+            observables.onDeleteAnimation.remove(observer);
+        };
+        // Note: We intentionally don't include actions in deps because setActiveAnimations is stable
     }, [observables]);
 
     const handleFpsChange = useCallback(
@@ -134,35 +174,16 @@ export const SideBar: FunctionComponent = () => {
                 {mode === "add" && <AddAnimationPanel onClose={() => setMode("edit")} />}
                 {mode === "load" && <LoadAnimationPanel onClose={() => setMode("edit")} />}
                 {mode === "save" && <SaveAnimationPanel onClose={() => setMode("edit")} />}
+                {mode === "editAnimation" && editingAnimation && (
+                    <EditAnimationPanel
+                        animation={editingAnimation}
+                        onClose={() => {
+                            setEditingAnimation(null);
+                            setMode("edit");
+                        }}
+                    />
+                )}
             </div>
-        </div>
-    );
-};
-
-// Placeholder panels - these would be fully implemented
-const AddAnimationPanel: FunctionComponent<{ onClose: () => void }> = ({ onClose }) => {
-    return (
-        <div>
-            <Button appearance="subtle" onClick={onClose} label="Back" />
-            <p>Add animation panel - to be implemented</p>
-        </div>
-    );
-};
-
-const LoadAnimationPanel: FunctionComponent<{ onClose: () => void }> = ({ onClose }) => {
-    return (
-        <div>
-            <Button appearance="subtle" onClick={onClose} label="Back" />
-            <p>Load animation panel - to be implemented</p>
-        </div>
-    );
-};
-
-const SaveAnimationPanel: FunctionComponent<{ onClose: () => void }> = ({ onClose }) => {
-    return (
-        <div>
-            <Button appearance="subtle" onClick={onClose} label="Back" />
-            <p>Save animation panel - to be implemented</p>
         </div>
     );
 };

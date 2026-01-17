@@ -13,6 +13,7 @@ const useStyles = makeStyles({
         position: "relative",
         margin: "5px 0",
         minWidth: "100px",
+        touchAction: "none",
     },
     scrollbar: {
         position: "absolute",
@@ -24,6 +25,7 @@ const useStyles = makeStyles({
         alignItems: "center",
         minWidth: "70px",
         cursor: "grab",
+        touchAction: "none",
         "&:active": {
             cursor: "grabbing",
         },
@@ -36,6 +38,7 @@ const useStyles = makeStyles({
         justifyContent: "center",
         cursor: "ew-resize",
         flexShrink: 0,
+        touchAction: "none",
     },
     handleIcon: {
         width: "10px",
@@ -131,19 +134,15 @@ export const RangeSelector: FunctionComponent = () => {
     const rightPos = range > 0 ? 2 + ((maxFrame - state.toKey) / range) * viewWidth : 2;
 
     const handlePointerDown = useCallback((evt: React.PointerEvent<HTMLDivElement>) => {
-        // Find if we clicked on a handle by traversing up the DOM tree
-        let element = evt.target as HTMLElement | null;
+        // Check if we clicked on a handle
+        const target = evt.target as HTMLElement;
         let mode: "left" | "right" | "both" = "both";
 
-        while (element && element !== evt.currentTarget) {
-            if (element.id === "left-handle") {
-                mode = "left";
-                break;
-            } else if (element.id === "right-handle") {
-                mode = "right";
-                break;
-            }
-            element = element.parentElement;
+        // Check target and its parent (for the nested handleIcon div)
+        if (target.id === "left-handle" || target.parentElement?.id === "left-handle") {
+            mode = "left";
+        } else if (target.id === "right-handle" || target.parentElement?.id === "right-handle") {
+            mode = "right";
         }
 
         dragStateRef.current = {
@@ -155,6 +154,7 @@ export const RangeSelector: FunctionComponent = () => {
         };
 
         evt.currentTarget.setPointerCapture(evt.pointerId);
+        evt.preventDefault();
     }, []);
 
     const handlePointerMove = useCallback(
@@ -163,6 +163,8 @@ export const RangeSelector: FunctionComponent = () => {
             if (!drag.isPointerDown || !drag.dragMode) {
                 return;
             }
+
+            evt.preventDefault();
 
             const currentMinFrame = minFrameRef.current;
             const currentMaxFrame = maxFrameRef.current;
@@ -216,6 +218,12 @@ export const RangeSelector: FunctionComponent = () => {
         evt.currentTarget.releasePointerCapture(evt.pointerId);
     }, []);
 
+    const handlePointerCancel = useCallback((evt: React.PointerEvent<HTMLDivElement>) => {
+        dragStateRef.current.isPointerDown = false;
+        dragStateRef.current.dragMode = null;
+        evt.currentTarget.releasePointerCapture(evt.pointerId);
+    }, []);
+
     return (
         <div ref={containerRef} className={styles.root}>
             <div
@@ -228,6 +236,7 @@ export const RangeSelector: FunctionComponent = () => {
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerCancel}
             >
                 <div id="left-handle" className={styles.handle}>
                     <div className={styles.handleIcon}>

@@ -257,14 +257,14 @@ export const AnimationList: FunctionComponent = () => {
             setIsVisible(true);
         });
 
-        const onDelete = observables.onDeleteAnimation.add(() => {
+        const onAnimationsLoaded = observables.onAnimationsLoaded.add(() => {
             forceUpdate({});
         });
 
         return () => {
             observables.onEditAnimationRequired.remove(onEditRequired);
             observables.onEditAnimationUIClosed.remove(onEditClosed);
-            observables.onDeleteAnimation.remove(onDelete);
+            observables.onAnimationsLoaded.remove(onAnimationsLoaded);
         };
     }, [observables]);
 
@@ -272,11 +272,14 @@ export const AnimationList: FunctionComponent = () => {
         return null;
     }
 
+    // Get animations from target if available (for dynamically added animations), otherwise from state
+    const animations = state.target?.animations ?? state.animations;
+
     return (
         <div className={styles.root}>
-            {state.animations?.map((a: Animation | TargetedAnimation, i: number) => {
+            {animations?.map((a: Animation | TargetedAnimation, i: number) => {
                 const animation = state.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation);
-                return <AnimationEntry key={i} animation={animation} />;
+                return <AnimationEntry key={animation.uniqueId ?? i} animation={animation} />;
             })}
         </div>
     );
