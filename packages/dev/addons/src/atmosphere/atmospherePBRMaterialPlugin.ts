@@ -14,15 +14,10 @@ import "./ShadersWGSL/ShadersInclude/atmosphereFunctions";
 import "./ShadersWGSL/ShadersInclude/atmosphereUboDeclaration";
 
 class AtmospherePBRMaterialDefines extends MaterialDefines {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public USE_AERIAL_PERSPECTIVE_LUT: boolean;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public APPLY_AERIAL_PERSPECTIVE_INTENSITY = false;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS = false;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public SAMPLE_TRANSMITTANCE_LUT = true;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public EXCLUDE_RAY_MARCHING_FUNCTIONS = true;
 
     /**
@@ -73,19 +68,12 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
             PluginName,
             PluginPriority,
             {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 USE_CUSTOM_REFLECTION: _atmosphere.diffuseSkyIrradianceLut !== null,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_FRAGMENT_BEFORE_FOG: _isAerialPerspectiveEnabled,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 USE_AERIAL_PERSPECTIVE_LUT: _isAerialPerspectiveEnabled && _atmosphere.isAerialPerspectiveLutEnabled,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 APPLY_AERIAL_PERSPECTIVE_INTENSITY: _isAerialPerspectiveEnabled && _atmosphere.aerialPerspectiveIntensity !== 1.0,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS: _isAerialPerspectiveEnabled && _atmosphere.aerialPerspectiveRadianceBias !== 0.0,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 SAMPLE_TRANSMITTANCE_LUT: true,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 EXCLUDE_RAY_MARCHING_FUNCTIONS: true,
             },
             false, // addPluginToList -- false because we need to control when this is added to the list

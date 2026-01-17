@@ -1289,15 +1289,11 @@ export class Atmosphere implements IDisposable {
         const isWGSL = effect.shaderLanguage === ShaderLanguage.WGSL;
         const blockName = isWGSL ? "atmosphere" : uniformBuffer.name;
         uniformBuffer.bindToEffect(effect, blockName);
-        if (uniformBuffer.useUbo) {
-            uniformBuffer.bindUniformBuffer();
-        } else {
-            this.updateUniformBuffer();
-        }
+        uniformBuffer.update();
     }
 
     /**
-     * Updates the atmosphere's uniform buffer.
+     * Updates the values in the atmosphere's uniform buffer.
      */
     public updateUniformBuffer(): void {
         const physicalProperties = this._physicalProperties;
@@ -1349,7 +1345,6 @@ export class Atmosphere implements IDisposable {
         ubo.updateFloat("originHeight", this._originHeight);
         ubo.updateFloat("sinCameraAtmosphereHorizonAngleFromNadir", cameraAtmosphereVariables.sinCameraAtmosphereHorizonAngleFromNadir);
         ubo.updateFloat("atmosphereExposure", this._exposure);
-        ubo.update();
     }
 
     /**
