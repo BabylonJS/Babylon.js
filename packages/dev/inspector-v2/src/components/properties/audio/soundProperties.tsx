@@ -14,21 +14,20 @@ import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty, Property } from "../boundProperty";
 
 function useSoundState(sound: Sound) {
-    const playObservable = useInterceptObservable("function", sound, "play");
-    const pauseObservable = useInterceptObservable("function", sound, "pause");
-    const stopObservable = useInterceptObservable("function", sound, "stop");
+    const stateChangedObservables = [
+        useInterceptObservable("function", sound, "play"),
+        useInterceptObservable("function", sound, "pause"),
+        useInterceptObservable("function", sound, "stop"),
+    ] as const;
 
     const isPaused = useObservableState(
         useCallback(() => sound.isPaused, [sound]),
-        playObservable,
-        pauseObservable,
-        stopObservable
+        ...stateChangedObservables
     );
+
     const isPlaying = useObservableState(
         useCallback(() => sound.isPlaying, [sound]),
-        playObservable,
-        pauseObservable,
-        stopObservable
+        ...stateChangedObservables
     );
 
     return isPaused ? "Paused" : isPlaying ? "Playing" : "Stopped";
