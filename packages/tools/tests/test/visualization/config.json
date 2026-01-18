@@ -2968,14 +2968,14 @@
             "playgroundId": "#VO1Z0C#14",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 120
+            "renderCount": 30
         },
         {
             "title": "Atmosphere Day (Planet Origin)",
             "playgroundId": "#VO1Z0C#30",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 90
+            "renderCount": 30
         },
         {
             "title": "Atmosphere Sunset",
@@ -2989,27 +2989,28 @@
             "playgroundId": "#VO1Z0C#31",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 10
+            "renderCount": 30
         },
         {
             "title": "Atmosphere Night",
             "playgroundId": "#VO1Z0C#13",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 2
+            "renderCount": 30
         },
         {
             "title": "Atmosphere Night (Planet Origin)",
             "playgroundId": "#VO1Z0C#32",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 2
+            "renderCount": 30
         },
         {
             "title": "Atmosphere Space View",
             "playgroundId": "#VO1Z0C#6",
             "referenceImage": "atmosphere-space-view.png",
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "renderCount": 30
         },
         {
             "title": "OpenPBR IBL Reflectance with IOR",
