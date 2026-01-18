@@ -19,10 +19,10 @@ import type { IColor3Like, IVector3Like } from "core/Maths/math.like";
 import type { IDisposable, Scene } from "core/scene";
 import { Observable, type Observer } from "core/Misc/observable";
 import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import type { RenderingGroupInfo } from "core/Rendering/renderingManager";
 import { RenderTargetTexture, type RenderTargetTextureOptions } from "core/Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { TransmittanceLut } from "./transmittanceLut";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3 } from "core/Maths/math.vector";
@@ -719,6 +719,7 @@ export class Atmosphere implements IDisposable {
 
         this._transmittanceLut = new TransmittanceLut(this);
         this._multiScatteringLutRenderTarget = CreateRenderTargetTexture("atmo-multiScattering", { width: 32, height: 32 }, scene);
+        this._multiScatteringEffectWrapper = CreateMultiScatteringEffectWrapper(engine, this.uniformBuffer, this._groundAlbedo);
         if (options?.isDiffuseSkyIrradianceLutEnabled ?? true) {
             this._diffuseSkyIrradianceLut = new DiffuseSkyIrradianceLut(this);
         }
@@ -903,36 +904,6 @@ export class Atmosphere implements IDisposable {
     ): T =>
         this._diffuseSkyIrradianceLut?.getDiffuseSkyIrradianceToRef(directionToLight, pointRadius, pointGeocentricNormal, lightIrradiance, result) ??
         ((result.r = 0), (result.g = 0), (result.b = 0), result);
-
-    /**
-     * Creates a new {@link EffectWrapper} for the multiple scattering LUT
-     * @returns The newly created {@link EffectWrapper}.
-     */
-    private _createMultiScatteringEffectWrapper(): EffectWrapper {
-        const engine = this._engine;
-        const name = "atmo-multiScattering";
-        const ubo = this.uniformBuffer;
-        const useUbo = ubo.useUbo;
-
-        const defines = ["#define POSITION_VEC2"];
-        if (!this._groundAlbedo.equals(Color3.BlackReadOnly)) {
-            defines.push("#define USE_GROUND_ALBEDO");
-        }
-
-        return new EffectWrapper({
-            engine,
-            name,
-            vertexShader: "fullscreenTriangle",
-            fragmentShader: "multiScattering",
-            attributeNames: ["position"],
-            uniformNames: ["depth", ...(useUbo ? [] : ubo.getUniformNames())],
-            uniformBuffers: useUbo ? [ubo.name] : [],
-            samplerNames: ["transmittanceLut"],
-            defines,
-            useShaderStore: true,
-        });
-    }
-
     /**
      * Draws the multiple scattering LUT using {@link EffectWrapper} and {@link EffectRenderer}.
      */
@@ -1268,7 +1239,7 @@ export class Atmosphere implements IDisposable {
         }
 
         if (!this._transmittanceLut!.isDirty && !this._hasRenderedMultiScatteringLut) {
-            this._multiScatteringEffectWrapper ??= this._createMultiScatteringEffectWrapper();
+            this._multiScatteringEffectWrapper ??= CreateMultiScatteringEffectWrapper(this._engine, this.uniformBuffer, this._groundAlbedo);
             if (this._multiScatteringEffectWrapper?.isReady() && this._multiScatteringLutRenderTarget?.isReady()) {
                 this._drawMultiScatteringLut();
                 this._hasRenderedMultiScatteringLut = true;
@@ -1289,7 +1260,11 @@ export class Atmosphere implements IDisposable {
         const isWGSL = effect.shaderLanguage === ShaderLanguage.WGSL;
         const blockName = isWGSL ? "atmosphere" : uniformBuffer.name;
         uniformBuffer.bindToEffect(effect, blockName);
-        uniformBuffer.update();
+        if (uniformBuffer.useUbo) {
+            uniformBuffer.update();
+        } else {
+            this.updateUniformBuffer();
+        }
     }
 
     /**
@@ -1432,6 +1407,29 @@ const CreateEffectWrapper = (
         uniformNames,
         uniformBuffers,
         samplerNames,
+        defines,
+        useShaderStore: true,
+    });
+};
+
+const CreateMultiScatteringEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer, groundAlbedo: Color3): EffectWrapper => {
+    const name = "atmo-multiScattering";
+    const useUbo = uniformBuffer.useUbo;
+
+    const defines = ["#define POSITION_VEC2"];
+    if (!groundAlbedo.equals(Color3.BlackReadOnly)) {
+        defines.push("#define USE_GROUND_ALBEDO");
+    }
+
+    return new EffectWrapper({
+        engine,
+        name,
+        vertexShader: "fullscreenTriangle",
+        fragmentShader: "multiScattering",
+        attributeNames: ["position"],
+        uniformNames: ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
+        uniformBuffers: useUbo ? [uniformBuffer.name] : [],
+        samplerNames: ["transmittanceLut"],
         defines,
         useShaderStore: true,
     });
