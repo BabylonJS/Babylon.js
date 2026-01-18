@@ -3,16 +3,33 @@ import type { GriffelStyle } from "@fluentui/react-components";
 
 import type { KeyboardEvent, FocusEvent } from "react";
 
+export const TokenMap = {
+    px2: tokens.borderRadiusSmall,
+    px4: tokens.borderRadiusMedium,
+    px6: tokens.borderRadiusLarge,
+    px8: tokens.borderRadiusXLarge,
+    px10: tokens.fontSizeBase100,
+    px12: tokens.fontSizeBase200,
+    px14: tokens.fontSizeBase300,
+    px16: tokens.fontSizeBase400,
+    px20: tokens.fontSizeBase500,
+    px24: tokens.fontSizeBase600,
+    px28: tokens.lineHeightBase500,
+    px32: tokens.lineHeightBase600,
+    px36: tokens.lineHeightHero700,
+    px40: tokens.lineHeightHero800,
+};
+
 export const CustomTokens = {
     inputWidth: "150px",
-    lineHeight: tokens.lineHeightHero700, // 36px
-    lineHeightSmall: tokens.lineHeightBase500, // 28px
-    dividerGap: tokens.fontSizeBase100, // "10px",
-    dividerGapSmall: tokens.borderRadiusMedium, // 4px",
+    lineHeight: TokenMap.px36,
+    lineHeightSmall: TokenMap.px28,
+    dividerGap: TokenMap.px10,
+    dividerGapSmall: TokenMap.px4,
     labelMinWidth: "50px",
     sliderMinWidth: "30px",
     sliderMaxWidth: "80px",
-    rightAlignOffset: `-${tokens.borderRadiusXLarge}`, // -8px
+    rightAlignOffset: `-${TokenMap.px8}`,
 };
 
 export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.inputWidth, boxSizing: "border-box" };
@@ -21,10 +38,10 @@ export const useInputStyles = makeStyles({
     inputSlot: { textAlign: "right" },
     invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
     container: {
-        flex: 1,
         display: "flex",
         flexDirection: "column",
         justifyContent: "center", // align items vertically
+        minWidth: 0, // Allow shrinking
     },
 });
 

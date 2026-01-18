@@ -76,6 +76,10 @@
     }
 }
 
+.canvasZone {
+    position: relative;
+}
+
 @media screen and (max-width: 1140px) {
     #pg-root {
         grid-template-rows: 40px calc(100% - 75px) 35px;

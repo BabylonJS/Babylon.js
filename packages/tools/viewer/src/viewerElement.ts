@@ -143,7 +143,6 @@ export interface ViewerElement {
 }
 
 /**
- * @experimental
  * Base class for the viewer custom element.
  */
 export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends LitElement {
@@ -152,7 +151,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     private _viewerDetails?: Readonly<ViewerDetails & { viewer: ViewerClass }>;
 
     /**
-     * @experimental
      * Creates an instance of a ViewerElement subclass.
      * @param _viewerClass The Viewer subclass to use when creating the Viewer instance.
      * @param _options The options to use when creating the Viewer and binding it to the specified canvas.
@@ -794,7 +792,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     public hotSpots: Record<string, HotSpot> = this._options.hotSpots ?? {};
 
     /**
-     * @experimental
      * True if the viewer has any hotspots.
      */
     protected get _hasHotSpots(): boolean {
@@ -815,7 +812,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * True if the loaded model has any animations.
      */
     protected get _hasAnimations(): boolean {
@@ -1024,7 +1020,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * Renders the progress bar.
      * @returns The template result for the progress bar.
      */
@@ -1045,7 +1040,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * Renders the toolbar.
      * @returns The template result for the toolbar.
      */
@@ -1150,7 +1144,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * Renders the reload button.
      * @returns The template result for the reload button.
      */
@@ -1167,7 +1160,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * Renders UI elements that overlay the viewer.
      * Override this method to provide additional rendering for the component.
      * @returns TemplateResult The rendered template result.
@@ -1183,7 +1175,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * Dispatches a custom event.
      * @param type The type of the event.
      * @param event A function that creates the event.
@@ -1193,7 +1184,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * Handles changes to the selected animation.
      * @param event The change event.
      */
@@ -1203,7 +1193,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * Handles changes to the animation speed.
      * @param event The change event.
      */
@@ -1213,7 +1202,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * Handles changes to the animation timeline.
      * @param event The change event.
      */
@@ -1228,7 +1216,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * Handles pointer down events on the animation timeline.
      * @param event The pointer down event.
      */
@@ -1241,7 +1228,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * Handles changes to the selected material variant.
      * @param event The change event.
      */
@@ -1251,7 +1237,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * Handles changes to the hot spot list.
      * @param event The change event.
      */
@@ -1453,7 +1438,6 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     }
 
     /**
-     * @experimental
      * Creates a viewer for the specified canvas.
      * @param canvas The canvas to create the viewer for.
      * @param options The options to use for the viewer.

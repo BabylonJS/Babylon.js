@@ -84,6 +84,8 @@ import "./AbstractEngine/abstractEngine.dom";
 import "./AbstractEngine/abstractEngine.states";
 import "./AbstractEngine/abstractEngine.stencil";
 import "./AbstractEngine/abstractEngine.renderPass";
+import "./AbstractEngine/abstractEngine.loadFile";
+import "./AbstractEngine/abstractEngine.textureLoaders";
 import "../Audio/audioEngine";
 import { resetCachedPipeline } from "../Materials/effect.functions";
 
@@ -340,8 +342,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         colorAttachmentGPUTextures: [],
         depthTextureFormat: undefined,
     };
-    /** @internal */
-    public _pendingDebugCommands: Array<[string, Nullable<string>, number?]> = [];
 
     // DrawCall Life Cycle
     // Effect is on the parent class
@@ -583,6 +583,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         options.deviceDescriptor = options.deviceDescriptor || {};
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
+
+        this._enableGPUDebugMarkers = options.enableGPUDebugMarkers;
 
         Logger.Log(`Babylon.js v${AbstractEngine.Version} - ${this.description} engine`);
         if (!navigator.gpu) {
@@ -3061,8 +3063,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._cacheRenderPipeline.endFrame();
         this._cacheBindGroups.endFrame();
 
-        this._pendingDebugCommands.length = 0;
-
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) {
                 (this as any)._count = 0;
@@ -3252,8 +3252,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
         }
 
-        this._debugPushGroup?.("render target pass" + (renderTargetWrapper.label ? " (" + renderTargetWrapper.label + ")" : ""), 0);
-
         this._rttRenderPassWrapper.renderPassDescriptor = {
             label: (renderTargetWrapper.label ?? "RTT") + " - RenderPass",
             colorAttachments,
@@ -3305,8 +3303,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 ]);
             }
         }
-
-        this._debugFlushPendingCommands?.();
 
         this._resetRenderPassStates();
 
@@ -3368,15 +3364,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
         }
 
-        this._debugPushGroup?.("main pass", 0);
-
         this._timestampQuery.startPass(this._mainRenderPassWrapper.renderPassDescriptor!, this._timestampIndex);
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._mainRenderPassWrapper.renderPassDescriptor!);
 
         this._setDepthTextureFormat(this._mainRenderPassWrapper);
         this._setColorFormat(this._mainRenderPassWrapper);
-
-        this._debugFlushPendingCommands?.();
 
         this._resetRenderPassStates();
 
@@ -3594,13 +3586,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /**
-     * Unbind the current render target and bind the default framebuffer
+     * Unbind the current render target
      */
     public restoreDefaultFramebuffer(): void {
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
-        } else if (!this._currentRenderPass) {
-            this._startMainRenderPass(false);
+        } else if (this._currentRenderPass) {
+            this._endCurrentRenderPass();
         }
 
         if (this._cachedViewport) {

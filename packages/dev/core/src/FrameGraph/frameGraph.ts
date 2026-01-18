@@ -18,7 +18,6 @@ enum FrameGraphPassType {
 
 /**
  * Class used to implement a frame graph
- * @experimental
  */
 export class FrameGraph implements IDisposable {
     /**
@@ -224,15 +223,6 @@ export class FrameGraph implements IDisposable {
     }
 
     /**
-     * @deprecated Use buildAsync instead
-     */
-    public build(): void {
-        void this.buildAsync(false);
-    }
-
-    private _built = false; // TODO: to be removed when build() is removed
-
-    /**
      * Builds the frame graph.
      * This method should be called after all tasks have been added to the frame graph (FrameGraph.addTask) and before the graph is executed (FrameGraph.execute).
      * @param waitForReadiness If true, the method will wait for the frame graph to be ready before returning (default is true)
@@ -241,7 +231,6 @@ export class FrameGraph implements IDisposable {
         this.textureManager._releaseTextures(false);
 
         this.pausedExecution = true;
-        this._built = false;
 
         try {
             await this._importPromise;
@@ -274,8 +263,6 @@ export class FrameGraph implements IDisposable {
                 task._initializePasses();
             }
 
-            this._built = true;
-
             this.onBuildObservable.notifyObservers(this);
 
             if (waitForReadiness) {
@@ -288,7 +275,6 @@ export class FrameGraph implements IDisposable {
             throw e;
         } finally {
             this.pausedExecution = false;
-            this._built = true;
         }
     }
 
@@ -314,19 +300,6 @@ export class FrameGraph implements IDisposable {
      */
     public async whenReadyAsync(timeStep = 16, maxTimeout = 10000): Promise<void> {
         let firstNotReadyTask: FrameGraphTask | null = null;
-
-        // TODO: to be removed when build() is removed
-        await new Promise((resolve) => {
-            const checkBuilt = () => {
-                if (this._built) {
-                    resolve(void 0);
-                    return;
-                }
-                setTimeout(checkBuilt, 16);
-            };
-            checkBuilt();
-        });
-        // END TODO
 
         return await new Promise((resolve, reject) => {
             this._whenReadyAsyncCancel = _RetryWithInterval(
@@ -379,7 +352,7 @@ export class FrameGraph implements IDisposable {
             return;
         }
 
-        this._renderContext.bindRenderTarget();
+        this._renderContext.restoreDefaultFramebuffer();
 
         this.textureManager._updateHistoryTextures();
 
@@ -387,7 +360,7 @@ export class FrameGraph implements IDisposable {
             task._execute();
         }
 
-        this._renderContext.bindRenderTarget(undefined, undefined, true); // restore default framebuffer
+        this._renderContext.restoreDefaultFramebuffer();
     }
 
     /**

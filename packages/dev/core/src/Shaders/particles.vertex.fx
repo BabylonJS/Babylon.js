@@ -29,6 +29,9 @@ uniform vec3 particlesInfos; // x (number of rows) y(number of columns) z(rowSiz
 // Output
 varying vec2 vUV;
 varying vec4 vColor;
+#ifdef POSITIONW_AS_VARYING
+varying vec3 vPositionW;
+#endif
 
 #ifdef RAMPGRADIENT
 varying vec4 remapRanges;
@@ -89,7 +92,9 @@ void main(void) {
 #define CUSTOM_VERTEX_MAIN_BEGIN
 
 	vec2 cornerPos;
+#ifndef POSITIONW_AS_VARYING
 	vec3 vPositionW;
+#endif
 
 	cornerPos = (vec2(offset.x - 0.5, offset.y  - 0.5) - translationPivot) * size;
 

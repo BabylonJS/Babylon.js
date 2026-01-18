@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-particle-editor",
-    "version": "8.44.0",
+    "version": "8.46.2",
     "main": "dist/babylon.nodeParticleEditor.js",
     "module": "dist/babylon.nodeParticleEditor.js",
     "esnext": "dist/babylon.nodeParticleEditor.js",
@@ -18,14 +18,13 @@
         "clean": "rimraf dist"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^8.0.0",
+        "@babylonjs/core": "^8.0.0"
+    },
+    "devDependencies": {
         "@dev/shared-ui-components": "1.0.0",
         "@tools/node-particle-editor": "1.0.0",
         "@types/react": ">=16.7.3",
-        "@types/react-dom": ">=16.0.9"
-    },
-    "devDependencies": {
-        "@babylonjs/core": "^8.44.0",
+        "@types/react-dom": ">=16.0.9",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
     },

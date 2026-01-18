@@ -426,11 +426,16 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
     protected override _prepareRendering(context: FrameGraphRenderContext, depthEnabled: boolean) {
         context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
 
+        context.pushDebugGroup(`Clear attachments`);
+
         this._clearAttachmentsLayout.forEach((layout, clearType) => {
             context.clearColorAttachments(ClearColors[clearType], layout);
         });
 
-        context.bindAttachments(this._allAttachmentsLayout);
+        context.restoreDefaultFramebuffer();
+        context.popDebugGroup();
+
+        return this._allAttachmentsLayout;
     }
 
     private _buildClearAttachmentsLayout() {
