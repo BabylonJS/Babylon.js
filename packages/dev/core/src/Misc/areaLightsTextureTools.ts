@@ -6,7 +6,13 @@ import type { Nullable } from "core/types";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Vector2 } from "core/Maths/math.vector";
 import { WhenTextureReadyAsync } from "./textureTools";
-import { BaseTexture } from "../Materials";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+
+type KernelData = {
+    kernel: Float32Array;
+    kernelSize: number;
+    kernelHalfSize: number;
+};
 
 /**
  * Class used for fast copy from one texture to another
@@ -20,6 +26,9 @@ export class AreaLightTextureTools {
     private _textureResolution: Vector2;
     private _rangeFilter: Vector2;
     private _scalingRange: Vector2;
+    private _kernelLibrary: KernelData[] = [];
+    private readonly _blurSize = 5;
+    private readonly _alphaFactor = 0.5;
 
     /** Shader language used */
     protected _shaderLanguage = ShaderLanguage.GLSL;
@@ -46,6 +55,16 @@ export class AreaLightTextureTools {
         this._textureResolution = new Vector2(1024, 1024);
         this._rangeFilter = new Vector2();
         this._scalingRange = new Vector2();
+
+        let kernelSize = this._blurSize;
+        let alpha = (kernelSize / 2.0) * this._alphaFactor;
+        this._kernelLibrary.push(this._generateGaussianKernel(kernelSize, alpha));
+
+        for (let i = 1; i < 512; i++) {
+            kernelSize = this._blurSize + i * 2 + 2;
+            alpha = (kernelSize / 2.0) * this._alphaFactor;
+            this._kernelLibrary.push(this._generateGaussianKernel(kernelSize, alpha));
+        }
     }
 
     private _shadersLoaded = false;
@@ -63,7 +82,7 @@ export class AreaLightTextureTools {
             name: "AreaLightTextureProcessing",
             fragmentShader: "areaLightTextureProcessing",
             useShaderStore: true,
-            uniformNames: ["textureResolution", "blurDirection", "rangeFilter", "scalingRange"],
+            uniformNames: ["scalingRange"],
             samplerNames: ["textureSampler"],
             defines: [],
             shaderLanguage: this._shaderLanguage,
@@ -83,9 +102,6 @@ export class AreaLightTextureTools {
             } else {
                 effectWrapper.effect.setTexture("textureSampler", this._source);
             }
-            effectWrapper.effect.setVector2("textureResolution", this._textureResolution);
-            effectWrapper.effect.setVector2("blurDirection", this._blurDirection);
-            effectWrapper.effect.setVector2("rangeFilter", this._rangeFilter);
             effectWrapper.effect.setVector2("scalingRange", this._scalingRange);
         });
 
@@ -144,24 +160,15 @@ export class AreaLightTextureTools {
         this._blurDirection.x = 1;
         this._blurDirection.y = 0;
 
-        let result = await this._processAsync(source, width, height, samplingMode, type, format);
-
-        this._scalingRange.x = 0;
-        this._scalingRange.y = 1;
-
-        this._blurDirection.x = 0;
-        this._blurDirection.y = 1;
-
-        result = await this._processAsync(source, width, height, samplingMode, type, format);
+        const result = await this._processAsync(source, samplingMode, type, format);
+        await this._applyProgressiveBlurAsync(result);
 
         return result;
     }
 
-    private async _processAsync(source: ThinTexture, width: number, height: number, samplingMode: number, type: number, format: number): Promise<Nullable<ThinTexture>> {
-        this._source = source;
-        // Hold the output of the decoding.
+    private async _processAsync(source: ThinTexture, samplingMode: number, type: number, format: number): Promise<BaseTexture> {
         const renderTarget = this._engine.createRenderTargetTexture(
-            { width: width, height: height },
+            { width: 1024, height: 1024 },
             {
                 generateDepthBuffer: false,
                 generateMipMaps: false,
@@ -172,22 +179,124 @@ export class AreaLightTextureTools {
             }
         );
 
+        this._source = source;
         const engineDepthMask = this._engine.getDepthWrite(); // for some reasons, depthWrite is not restored by EffectRenderer.restoreStates
         this._renderer.render(this._effectWrapper, renderTarget);
         this._engine.setDepthWrite(engineDepthMask);
+        return new BaseTexture(this._engine, renderTarget.texture);
+    }
 
-        if (this._textureIsInternal(this._source)) {
-            const internalTexture = this._source as InternalTexture;
-            renderTarget._swapAndDie(internalTexture);
-        } else {
-            const thinTexture = this._source as ThinTexture;
-            const internalTexture = thinTexture.getInternalTexture();
+    private _generateGaussianKernel(size: number, sigma: number): KernelData {
+        if (size % 2 === 0) {
+            throw new Error("Kernel size must be odd.");
+        }
 
-            if (internalTexture) {
-                renderTarget._swapAndDie(internalTexture);
+        const kernel = new Float32Array(size);
+        let sum = 0.0;
+        const halfSize = Math.floor(size / 2);
+
+        for (let i = -halfSize; i <= halfSize; ++i) {
+            const value = Math.exp(-(i * i) / (2.0 * sigma * sigma));
+            const index = i + halfSize;
+            kernel[index] = value;
+            sum += value;
+        }
+
+        if (sum !== 0) {
+            for (let i = 0; i < kernel.length; i++) {
+                kernel[i] /= sum;
             }
         }
-        return source;
+
+        return { kernel, kernelSize: size, kernelHalfSize: halfSize };
+    }
+
+    private _mirrorIndex(x: number, width: number): number {
+        if (x < 0) {
+            x = -x;
+            x = -x;
+        }
+        if (x >= width) {
+            x = 2 * width - 2 - x;
+        }
+        return x;
+    }
+
+    private _applyGaussianBlurRange(input: Uint8Array, output: Uint8Array, width: number, height: number, channels: number, kernelLibrary: KernelData[]) {
+        const marginStart = Math.floor(width * 0.125);
+        const marginEnd = Math.floor(width * 0.875);
+
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                let targetKernel = 0;
+
+                if (x <= marginStart) {
+                    targetKernel = Math.max(targetKernel, Math.abs(x - marginStart));
+                }
+                if (y <= marginStart) {
+                    targetKernel = Math.max(targetKernel, Math.abs(y - marginStart));
+                }
+                if (x >= marginEnd) {
+                    targetKernel = Math.max(targetKernel, Math.abs(x - marginEnd));
+                }
+                if (y >= marginEnd) {
+                    targetKernel = Math.max(targetKernel, Math.abs(y - marginEnd));
+                }
+
+                const kernelData = kernelLibrary[targetKernel];
+                const { kernel, kernelHalfSize } = kernelData;
+
+                for (let c = 0; c < channels - 1; c++) {
+                    let sum = 0.0;
+                    for (let kx = -kernelHalfSize; kx <= kernelHalfSize; kx++) {
+                        const px = this._mirrorIndex(x + kx, width);
+                        const weight = kernel[kx + kernelHalfSize];
+                        const pixelData = input[(y * width + px) * channels + c];
+                        sum += pixelData * weight;
+                    }
+                    output[(y * width + x) * channels + c] = Math.max(0, Math.min(255, Math.round(sum)));
+                }
+                // copy alpha if present
+                if (channels > 3) {
+                    output[(y * width + x) * channels + (channels - 1)] = input[(y * width + x) * channels + (channels - 1)];
+                }
+            }
+        }
+    }
+
+    private _transposeImage(input: Uint8Array, width: number, height: number, channels: number, output: Uint8Array): void {
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const srcBase = (y * width + x) * channels;
+                const dstBase = (x * height + y) * channels;
+                for (let c = 0; c < channels; c++) {
+                    output[dstBase + c] = input[srcBase + c];
+                }
+            }
+        }
+    }
+
+    private async _applyProgressiveBlurAsync(source: BaseTexture): Promise<void> {
+        const pixelData = await source.readPixels();
+
+        if (!pixelData) {
+            return;
+        }
+
+        const internalTexture = source.getInternalTexture();
+
+        if (!internalTexture) {
+            return;
+        }
+
+        const rourcePixel = new Uint8Array(pixelData.buffer);
+        const result = new Uint8Array(rourcePixel.length);
+
+        this._applyGaussianBlurRange(rourcePixel, result, internalTexture.width, internalTexture.height, 4, this._kernelLibrary);
+        this._transposeImage(result, internalTexture.width, internalTexture.height, 4, rourcePixel);
+        this._applyGaussianBlurRange(rourcePixel, result, internalTexture.width, internalTexture.height, 4, this._kernelLibrary);
+        this._transposeImage(result, internalTexture.width, internalTexture.height, 4, rourcePixel);
+        this._engine.updateRawTexture(internalTexture, rourcePixel, internalTexture.format, false);
     }
 
     /**
