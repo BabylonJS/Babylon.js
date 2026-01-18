@@ -2968,28 +2968,28 @@
             "playgroundId": "#VO1Z0C#14",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 2
+            "renderCount": 120
         },
         {
             "title": "Atmosphere Day (Planet Origin)",
             "playgroundId": "#VO1Z0C#30",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 2
+            "renderCount": 90
         },
         {
             "title": "Atmosphere Sunset",
             "playgroundId": "#VO1Z0C#15",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 2
+            "renderCount": 30
         },
         {
             "title": "Atmosphere Sunset (Planet Origin)",
             "playgroundId": "#VO1Z0C#31",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 2
+            "renderCount": 10
         },
         {
             "title": "Atmosphere Night",
