@@ -7,6 +7,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Vector2 } from "core/Maths/math.vector";
 import { WhenTextureReadyAsync } from "./textureTools";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { Constants } from "../Engines/constants";
 
 type KernelData = {
     kernel: Float32Array;
@@ -22,9 +23,6 @@ export class AreaLightTextureTools {
     private _renderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
     private _source: InternalTexture | ThinTexture;
-    private _blurDirection: Vector2;
-    private _textureResolution: Vector2;
-    private _rangeFilter: Vector2;
     private _scalingRange: Vector2;
     private _kernelLibrary: KernelData[] = [];
     private readonly _blurSize = 5;
@@ -51,9 +49,6 @@ export class AreaLightTextureTools {
     constructor(engine: AbstractEngine) {
         this._engine = engine;
         this._renderer = new EffectRenderer(this._engine);
-        this._blurDirection = new Vector2(1, 0);
-        this._textureResolution = new Vector2(1024, 1024);
-        this._rangeFilter = new Vector2();
         this._scalingRange = new Vector2();
 
         let kernelSize = this._blurSize;
@@ -61,7 +56,7 @@ export class AreaLightTextureTools {
         this._kernelLibrary.push(this._generateGaussianKernel(kernelSize, alpha));
 
         for (let i = 1; i < 512; i++) {
-            kernelSize = this._blurSize + i * 2 + 2;
+            kernelSize = this._blurSize + i * 2;
             alpha = (kernelSize / 2.0) * this._alphaFactor;
             this._kernelLibrary.push(this._generateGaussianKernel(kernelSize, alpha));
         }
@@ -127,55 +122,31 @@ export class AreaLightTextureTools {
             await WhenTextureReadyAsync(source);
         }
 
-        this._rangeFilter.x = 0.125;
-        this._rangeFilter.y = 0.875;
         this._scalingRange.x = 0.125;
         this._scalingRange.y = 0.875;
 
-        let width = 0;
-        let height = 0;
-        let format = 0;
-        let samplingMode = 0;
-        let type = 0;
         this._source = source;
         this._source.wrapU = 0;
         this._source.wrapV = 0;
 
-        const thinTexture = this._source as ThinTexture;
-        const size = thinTexture.getSize();
-        width = size.width;
-        height = size.height;
-
-        const internalTexture = thinTexture.getInternalTexture();
-
-        if (internalTexture) {
-            format = internalTexture.format;
-            samplingMode = internalTexture.samplingMode;
-            type = internalTexture.type;
-        }
-
-        this._textureResolution.x = width;
-        this._textureResolution.y = height;
-
-        this._blurDirection.x = 1;
-        this._blurDirection.y = 0;
-
-        const result = await this._processAsync(source, samplingMode, type, format);
+        const result = await this._processAsync(source);
         await this._applyProgressiveBlurAsync(result);
+        result.wrapU = Constants.TEXTURE_MIRROR_ADDRESSMODE;
+        result.wrapV = Constants.TEXTURE_MIRROR_ADDRESSMODE;
 
         return result;
     }
 
-    private async _processAsync(source: ThinTexture, samplingMode: number, type: number, format: number): Promise<BaseTexture> {
+    private async _processAsync(source: ThinTexture): Promise<BaseTexture> {
         const renderTarget = this._engine.createRenderTargetTexture(
             { width: 1024, height: 1024 },
             {
                 generateDepthBuffer: false,
                 generateMipMaps: false,
                 generateStencilBuffer: false,
-                samplingMode: samplingMode,
-                type: type,
-                format: format,
+                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                type: Constants.TEXTURE_2D,
+                format: Constants.TEXTUREFORMAT_RGBA,
             }
         );
 
@@ -213,7 +184,6 @@ export class AreaLightTextureTools {
 
     private _mirrorIndex(x: number, width: number): number {
         if (x < 0) {
-            x = -x;
             x = -x;
         }
         if (x >= width) {
