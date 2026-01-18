@@ -20,6 +20,7 @@ import { DebugServiceDefinition } from "./services/panes/debugService";
 import { AnimationGroupPropertiesServiceDefinition } from "./services/panes/properties/animationGroupPropertiesService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
 import { AtmospherePropertiesServiceDefinition } from "./services/panes/properties/atmospherePropertiesService";
+import { AudioPropertiesServiceDefinition } from "./services/panes/properties/audioPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
 import { EffectLayerPropertiesServiceDefinition } from "./services/panes/properties/effectLayerPropertiesService";
@@ -296,6 +297,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             AnimationGroupPropertiesServiceDefinition,
             MetadataPropertiesServiceDefinition,
             AtmospherePropertiesServiceDefinition,
+            AudioPropertiesServiceDefinition,
 
             // Texture editor and related services.
             TextureEditorServiceDefinition,
