@@ -131,8 +131,8 @@ export class AreaLightTextureTools {
 
         const result = await this._processAsync(source);
         await this._applyProgressiveBlurAsync(result);
-        result.wrapU = Constants.TEXTURE_MIRROR_ADDRESSMODE;
-        result.wrapV = Constants.TEXTURE_MIRROR_ADDRESSMODE;
+        result.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        result.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 
         return result;
     }
@@ -142,9 +142,9 @@ export class AreaLightTextureTools {
             { width: 1024, height: 1024 },
             {
                 generateDepthBuffer: false,
-                generateMipMaps: false,
+                generateMipMaps: true,
                 generateStencilBuffer: false,
-                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
                 type: Constants.TEXTURE_2D,
                 format: Constants.TEXTUREFORMAT_RGBA,
             }

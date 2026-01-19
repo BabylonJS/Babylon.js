@@ -148,8 +148,7 @@ vec3 LTCEvaluateWithEmission( const in vec3 N, const in vec3 V, const in vec3 P,
 	coords[ 2 ] = mat * ( rectCoords[ 2 ] - P );
 	coords[ 3 ] = mat * ( rectCoords[ 3 ] - P );
 
-	vec3 textureLight = vec3(1, 1, 1);
-	textureLight = FetchDiffuseFilteredTexture(texFilteredMap, coords[0], coords[1], coords[2], coords[3]);
+	vec3 textureLight = FetchDiffuseFilteredTexture(texFilteredMap, coords[0], coords[1], coords[2], coords[3]);
 
 	// project rect onto sphere
 	coords[ 0 ] = normalize( coords[ 0 ] );
@@ -166,6 +165,7 @@ vec3 LTCEvaluateWithEmission( const in vec3 N, const in vec3 V, const in vec3 P,
 
 	// adjust for horizon clipping
 	float result = LTCClippedSphereFormFactor( vectorFormFactor );
+	
 	return vec3( result ) * textureLight;
 }
 
@@ -232,7 +232,6 @@ areaLightData computeAreaLightSpecularDiffuseFresnelWithEmission(const in sample
 		vec3(    0, 1,    0 ),
 		vec3( t1.z, 0, t1.w )
 	);
-
 	result.Specular = LTCEvaluateWithEmission( normal, viewDir, position, mInv, rectCoords, texFilteredMap );
 	result.Fresnel = t2;
 #endif
