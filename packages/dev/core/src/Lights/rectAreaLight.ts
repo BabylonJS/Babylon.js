@@ -1,14 +1,14 @@
-import { Vector3 } from "../Maths/math.vector";
-import { Node } from "../node";
-import { Light } from "./light";
-import type { Effect } from "../Materials/effect";
-import { RegisterClass } from "../Misc/typeStore";
-import { serialize } from "../Misc/decorators";
-import type { Scene } from "../scene";
-import { AreaLight } from "./areaLight";
+import { Vector3 } from "core/Maths/math.vector";
+import { Node } from "core/node";
+import { Light } from "core/Lights/light";
+import type { Effect } from "core/Materials/effect";
+import { RegisterClass } from "core/Misc/typeStore";
+import { serialize } from "core/Misc/decorators";
+import type { Scene } from "core/scene";
+import { AreaLight } from "core/Lights/areaLight";
 import type { Nullable } from "core/types";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { Texture } from "../Materials/Textures/texture";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Texture } from "core/Materials/Textures/texture";
 import { Constants } from "core/Engines/constants";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
@@ -28,13 +28,15 @@ export class RectAreaLight extends AreaLight {
     private _emissionTextureTexture: Nullable<BaseTexture> = null;
 
     /**
-     * Gets or sets the IES profile texture used to create the spotlight
-     * #UIAXAU#1
+     * Gets Rect Area Light emission texture. (Note: This texture needs pre-processing! Use AreaLightTextureTools to pre-process the texture).
      */
     public get emissionTexture(): Nullable<BaseTexture> {
         return this._emissionTextureTexture;
     }
 
+    /**
+     * Sets Rect Area Light emission texture. (Note: This texture needs pre-processing! Use AreaLightTextureTools to pre-process the texture).
+     */
     public set emissionTexture(value: Nullable<BaseTexture>) {
         if (this._emissionTextureTexture === value) {
             return;

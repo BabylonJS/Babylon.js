@@ -1,13 +1,13 @@
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
-import type { ThinTexture } from "../Materials/Textures/thinTexture";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
+import type { ThinTexture } from "core/Materials/Textures/thinTexture";
 import type { Nullable } from "core/types";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Vector2 } from "core/Maths/math.vector";
-import { WhenTextureReadyAsync } from "./textureTools";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { Constants } from "../Engines/constants";
+import { WhenTextureReadyAsync } from "core/Misc/textureTools";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Constants } from "core/Engines/constants";
 
 type KernelData = {
     kernel: Float32Array;
@@ -22,7 +22,7 @@ export class AreaLightTextureTools {
     private _engine: AbstractEngine;
     private _renderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
-    private _source: InternalTexture | ThinTexture;
+    private _source: BaseTexture;
     private _scalingRange: Vector2;
     private _kernelLibrary: KernelData[] = [];
     private readonly _blurSize = 5;
@@ -111,7 +111,12 @@ export class AreaLightTextureTools {
         return this._shadersLoaded && !!this._effectWrapper?.effect?.isReady();
     }
 
-    public async processAsync(source: BaseTexture): Promise<Nullable<ThinTexture>> {
+    /**
+     * Pre-processes the texture to be used with RectAreaLight emissionTexture.
+     * @param source The texture to pre-process
+     * @returns A promise that resolves with the pre-processed texture
+     */
+    public async processAsync(source: BaseTexture): Promise<Nullable<BaseTexture>> {
         if (!this._shadersLoaded) {
             this._effectWrapper = this._createEffect();
             await this._effectWrapper.effect.whenCompiledAsync();
@@ -126,18 +131,25 @@ export class AreaLightTextureTools {
         this._scalingRange.y = 0.875;
 
         this._source = source;
-        this._source.wrapU = 0;
-        this._source.wrapV = 0;
+        const oldWrapU = this._source.wrapU;
+        const oldWrapV = this._source.wrapV;
 
-        const result = await this._processAsync(source);
+        this._source.wrapU = Constants.TEXTURE_MIRROR_ADDRESSMODE;
+        this._source.wrapV = Constants.TEXTURE_MIRROR_ADDRESSMODE;
+
+        const result = await this._scaleImageDownAsync(source);
         await this._applyProgressiveBlurAsync(result);
+
         result.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         result.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+
+        this._source.wrapU = oldWrapU;
+        this._source.wrapV = oldWrapV;
 
         return result;
     }
 
-    private async _processAsync(source: ThinTexture): Promise<BaseTexture> {
+    private async _scaleImageDownAsync(source: BaseTexture): Promise<BaseTexture> {
         const renderTarget = this._engine.createRenderTargetTexture(
             { width: 1024, height: 1024 },
             {
@@ -173,10 +185,8 @@ export class AreaLightTextureTools {
             sum += value;
         }
 
-        if (sum !== 0) {
-            for (let i = 0; i < kernel.length; i++) {
-                kernel[i] /= sum;
-            }
+        for (let i = 0; i < kernel.length; i++) {
+            kernel[i] /= sum;
         }
 
         return { kernel, kernelSize: size, kernelHalfSize: halfSize };
