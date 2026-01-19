@@ -70,9 +70,6 @@ const CopySource = function <T>(creationFunction: () => T, source: T, instanciat
                 case 12: // Matrix
                     (<any>destination)[property] = instanciate ? sourceProperty : sourceProperty.clone();
                     break;
-                case 13: // Array
-                    (<any>destination)[property] = sourceProperty ? sourceProperty.slice() : sourceProperty;
-                    break;
             }
         }
     }
