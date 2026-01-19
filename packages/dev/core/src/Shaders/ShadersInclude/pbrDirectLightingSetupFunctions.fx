@@ -143,11 +143,9 @@ preLightingInfo computeAreaPreLightingInfoWithTexture(sampler2D ltc1, sampler2D 
 
 	areaLightData data = computeAreaLightSpecularDiffuseFresnelWithEmission(ltc1, ltc2, emissionTexture, viewDirectionW, vNormal, vPosition, lightData.xyz, halfWidth, halfHeight, roughness);
 #ifdef SPECULARTERM
-    data.Specular = toLinearSpace(data.Specular);
     result.areaLightFresnel = data.Fresnel;
     result.areaLightSpecular = data.Specular;
 #endif
-    data.Diffuse = toLinearSpace(data.Diffuse);
 	result.areaLightDiffuse = data.Diffuse;
 
     result.LdotV = 0.;
