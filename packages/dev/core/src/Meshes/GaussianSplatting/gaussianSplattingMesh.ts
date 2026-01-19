@@ -1574,30 +1574,20 @@ export class GaussianSplattingMesh extends Mesh {
 
                     // Precompute modelViewProj for each rig node
                     const modelViewProjs = rigNodeWorld.map((model) => multiplyMatrices(viewProj, model));
-                    
+
                     // NB: For performance reasons, we assume that rig node indices are valid
                     for (let j = 0; j < vertexCountPadded; j++) {
                         const rigNodeIndex = rigNodeIndices[j];
                         const mvp = modelViewProjs[rigNodeIndex];
-                        floatMix[2 * j + 1] =
-                            10000 +
-                            (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) *
-                                depthFactor;
+                        floatMix[2 * j + 1] = 10000 + (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) * depthFactor;
                     }
-
                 } else {
-
                     // If there are no rig node matrices, we use the global model view proj
                     for (let j = 0; j < vertexCountPadded; j++) {
                         const mvp = globalModelViewProj;
-                        floatMix[2 * j + 1] =
-                            10000 +
-                            (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) *
-                                depthFactor;
+                        floatMix[2 * j + 1] = 10000 + (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) * depthFactor;
                     }
-
                 }
-
 
                 depthMix.sort();
 
