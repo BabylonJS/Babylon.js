@@ -1339,8 +1339,8 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param uniformBuffersList defines an optional list of uniform buffers
  * @param updateOnlyBuffersList True to only update the uniformBuffersList array
  * @param iesLightTexture defines if IES texture must be used
- * @param rectAreaLightTexture defines if rect area light is using a emission texture.
  * @param clusteredLightTextures defines if the clustered light textures must be used
+ * @param rectAreaLightTexture defines if rect area light is using a emission texture.
  */
 export function PrepareUniformsAndSamplersForLight(
     lightIndex: number,
@@ -1350,8 +1350,8 @@ export function PrepareUniformsAndSamplersForLight(
     uniformBuffersList: Nullable<string[]> = null,
     updateOnlyBuffersList = false,
     iesLightTexture = false,
-    rectAreaLightTexture = false,
-    clusteredLightTextures = false
+    clusteredLightTextures = false,
+    rectAreaLightTexture = false
 ) {
     if (uniformBuffersList) {
         uniformBuffersList.push("Light" + lightIndex);
@@ -1487,8 +1487,8 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
             uniformBuffersList,
             false,
             defines["IESLIGHTTEXTURE" + lightIndex],
-            defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex],
-            defines["CLUSTLIGHT" + lightIndex]
+            defines["CLUSTLIGHT" + lightIndex],
+            defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex]
         );
     }
 
