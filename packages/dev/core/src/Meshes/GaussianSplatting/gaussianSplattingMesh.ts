@@ -1555,12 +1555,6 @@ export class GaussianSplattingMesh extends Mesh {
                     throw new Error("positions or view is not defined!");
                 }
 
-                // If there are rig node matrices, we precompute modelViewProj for each rig node
-                let modelViewProjs: Float32Array[] = [];
-                if (rigNodeWorld) {
-                    modelViewProjs = rigNodeWorld.map((model) => multiplyMatrices(viewProj, model));
-                }
-
                 depthMix = e.data.depthMix;
                 indices = new Uint32Array(depthMix.buffer);
                 floatMix = new Float32Array(depthMix.buffer);
@@ -1575,14 +1569,35 @@ export class GaussianSplattingMesh extends Mesh {
                     depthFactor = 1;
                 }
 
-                for (let j = 0; j < vertexCountPadded; j++) {
-                    const rigNodeIndex = rigNodeIndices && j < rigNodeIndices.length ? rigNodeIndices[j] : -1;
-                    const modelViewProj = modelViewProjs?.[rigNodeIndex] ?? globalModelViewProj;
-                    floatMix[2 * j + 1] =
-                        10000 +
-                        (modelViewProj[2] * positions[4 * j + 0] + modelViewProj[6] * positions[4 * j + 1] + modelViewProj[10] * positions[4 * j + 2] + modelViewProj[14]) *
-                            depthFactor;
+                if (rigNodeWorld) {
+                    // If there are rig node matrices, we use them instead of the global model view proj
+
+                    // Precompute modelViewProj for each rig node
+                    const modelViewProjs = rigNodeWorld.map((model) => multiplyMatrices(viewProj, model));
+                    
+                    // NB: For performance reasons, we assume that rig node indices are valid
+                    for (let j = 0; j < vertexCountPadded; j++) {
+                        const rigNodeIndex = rigNodeIndices[j];
+                        const mvp = modelViewProjs[rigNodeIndex];
+                        floatMix[2 * j + 1] =
+                            10000 +
+                            (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) *
+                                depthFactor;
+                    }
+
+                } else {
+
+                    // If there are no rig node matrices, we use the global model view proj
+                    for (let j = 0; j < vertexCountPadded; j++) {
+                        const mvp = globalModelViewProj;
+                        floatMix[2 * j + 1] =
+                            10000 +
+                            (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) *
+                                depthFactor;
+                    }
+
                 }
+
 
                 depthMix.sort();
 
