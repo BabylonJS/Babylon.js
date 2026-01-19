@@ -15,7 +15,7 @@ export class CreateSolidParticleBlock extends NodeParticleBlock {
         super(name);
 
         this.registerInput("count", NodeParticleBlockConnectionPointTypes.Int, true, 1);
-        this.registerInput("lifeTime", NodeParticleBlockConnectionPointTypes.Float, true, Infinity);
+        this.registerInput("lifeTime", NodeParticleBlockConnectionPointTypes.Float, true, -1, -1);
         this.registerInput("position", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerInput("color", NodeParticleBlockConnectionPointTypes.Color4, true);
         this.registerInput("scaling", NodeParticleBlockConnectionPointTypes.Vector3, true);
@@ -66,7 +66,8 @@ export class CreateSolidParticleBlock extends NodeParticleBlock {
         const count = this.count.getConnectedValue(state) ?? 1;
 
         const lifeTime = () => {
-            return this.lifeTime.isConnected ? this.lifeTime.getConnectedValue(state) : Infinity;
+            const value = this.lifeTime.isConnected ? this.lifeTime.getConnectedValue(state) : -1;
+            return value < 0 ? Infinity : value;
         };
 
         const position = () => {
