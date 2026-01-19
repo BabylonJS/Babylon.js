@@ -9,23 +9,6 @@
         "dist",
         "src"
     ],
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "import": "./dist/index.js",
-            "default": "./dist/index.js"
-        },
-        "./dynamic": {
-            "types": "./dist/dynamic.d.ts",
-            "import": "./dist/dynamic.js",
-            "default": "./dist/dynamic.js"
-        },
-        "./*": {
-            "types": "./dist/*.d.ts",
-            "import": "./dist/*.js",
-            "default": "./dist/*.js"
-        }
-    },
     "scripts": {
         "build": "npm run clean && npm run compile",
         "test": "jest -c ../../../jest.config.ts",
