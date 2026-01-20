@@ -244,33 +244,18 @@ export const AnimationList: FunctionComponent = () => {
     const styles = useStyles();
     const { state, observables } = useCurveEditor();
 
-    const [isVisible, setIsVisible] = useState(true);
     const [, forceUpdate] = useState({});
 
     // Subscribe to observables
     useEffect(() => {
-        const onEditRequired = observables.onEditAnimationRequired.add(() => {
-            setIsVisible(false);
-        });
-
-        const onEditClosed = observables.onEditAnimationUIClosed.add(() => {
-            setIsVisible(true);
-        });
-
         const onAnimationsLoaded = observables.onAnimationsLoaded.add(() => {
             forceUpdate({});
         });
 
         return () => {
-            observables.onEditAnimationRequired.remove(onEditRequired);
-            observables.onEditAnimationUIClosed.remove(onEditClosed);
             observables.onAnimationsLoaded.remove(onAnimationsLoaded);
         };
     }, [observables]);
-
-    if (!isVisible) {
-        return null;
-    }
 
     // Get animations from target if available (for dynamically added animations), otherwise from state
     const animations = state.target?.animations ?? state.animations;

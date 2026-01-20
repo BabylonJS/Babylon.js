@@ -4,7 +4,6 @@ import type { TargetedAnimation } from "core/Animations/animationGroup";
 
 import { makeStyles, tokens, Checkbox } from "@fluentui/react-components";
 import { useCallback, useState } from "react";
-import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { Animation as AnimationClass } from "core/Animations/animation";
 import { StringTools } from "shared-ui-components/stringTools";
 
@@ -56,7 +55,7 @@ type SaveAnimationPanelProps = {
  * Panel for saving animations to file or snippet server
  * @returns The save animation panel component
  */
-export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({ onClose }) => {
+export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({ onClose: _onClose }) => {
     const styles = useStyles();
     const { state } = useCurveEditor();
 
@@ -70,6 +69,8 @@ export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({
         return [...(state.animations as Animation[])];
     });
     const [snippetId, setSnippetId] = useState<string | null>(null);
+    const [saveError, setSaveError] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const getAnimation = useCallback(
         (anim: Animation | TargetedAnimation): Animation => {
@@ -103,8 +104,12 @@ export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({
         const xmlHttp = new XMLHttpRequest();
         const json = getJson();
 
+        setIsSaving(true);
+        setSaveError(null);
+
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState === 4) {
+                setIsSaving(false);
                 if (xmlHttp.status === 200) {
                     const snippet = JSON.parse(xmlHttp.responseText);
                     let newSnippetId = snippet.id;
@@ -112,9 +117,8 @@ export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({
                         newSnippetId += "#" + snippet.version;
                     }
                     setSnippetId(newSnippetId);
-                    window.alert("Animations saved with ID: " + newSnippetId);
                 } else {
-                    window.alert("Unable to save your animations. Please try again.");
+                    setSaveError("Unable to save your animations. Please try again.");
                 }
             }
         };
@@ -135,7 +139,6 @@ export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({
     return (
         <div className={styles.root}>
             <div className={styles.header}>
-                <Button icon={ArrowLeftRegular} appearance="subtle" onClick={onClose} />
                 <span className={styles.title}>Save Animations</span>
             </div>
 
@@ -148,11 +151,17 @@ export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({
             </div>
 
             <div className={styles.buttons}>
-                <Button appearance="primary" onClick={saveToSnippetServer} disabled={selectedAnimations.length === 0} label="Save to Snippet Server" />
+                <Button
+                    appearance="primary"
+                    onClick={saveToSnippetServer}
+                    disabled={selectedAnimations.length === 0 || isSaving}
+                    label={isSaving ? "Saving..." : "Save to Snippet Server"}
+                />
                 <Button appearance="secondary" onClick={saveToFile} disabled={selectedAnimations.length === 0} label="Save to File" />
             </div>
 
-            {snippetId && <div className={styles.snippetId}>Snippet ID: {snippetId}</div>}
+            {saveError && <span style={{ color: "var(--colorPaletteRedForeground1)", fontSize: "12px" }}>{saveError}</span>}
+            {snippetId && <div className={styles.snippetId}>Saved! Snippet ID: {snippetId}</div>}
         </div>
     );
 };

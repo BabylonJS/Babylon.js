@@ -2,7 +2,6 @@ import type { FunctionComponent } from "react";
 
 import { makeStyles, tokens, Input, Label } from "@fluentui/react-components";
 import { useCallback, useRef, useState } from "react";
-import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { Animation } from "core/Animations/animation";
 import { Tools } from "core/Misc/tools";
 
@@ -104,11 +103,14 @@ export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = ({
         [state.target, actions, observables, onClose]
     );
 
+    const [loadError, setLoadError] = useState<string | null>(null);
+
     const loadFromSnippetServer = useCallback(async () => {
         if (!snippetIdInput) {
-            window.alert("Please enter a snippet ID");
             return;
         }
+
+        setLoadError(null);
 
         try {
             const result = await Animation.ParseFromSnippetAsync(snippetIdInput);
@@ -129,7 +131,7 @@ export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = ({
             observables.onAnimationsLoaded.notifyObservers();
             observables.onActiveAnimationChanged.notifyObservers({});
         } catch (err) {
-            window.alert("Unable to load animations: " + err);
+            setLoadError("Unable to load animations: " + err);
         }
     }, [snippetIdInput, state.target, actions, observables, onClose]);
 
@@ -140,7 +142,6 @@ export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = ({
     return (
         <div className={styles.root}>
             <div className={styles.header}>
-                <Button icon={ArrowLeftRegular} appearance="subtle" onClick={onClose} />
                 <span className={styles.title}>Load Animations</span>
             </div>
 
@@ -148,8 +149,9 @@ export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = ({
                 <Label>From Snippet Server</Label>
                 <div className={styles.row}>
                     <Input className={styles.input} placeholder="Snippet ID" value={snippetIdInput} onChange={(_, data) => setSnippetIdInput(data.value)} />
-                    <Button appearance="primary" onClick={loadFromSnippetServer} label="Load" />
+                    <Button appearance="primary" onClick={loadFromSnippetServer} disabled={!snippetIdInput.trim()} label="Load" />
                 </div>
+                {loadError && <span style={{ color: "var(--colorPaletteRedForeground1)", fontSize: "12px" }}>{loadError}</span>}
             </div>
 
             <div className={styles.section}>

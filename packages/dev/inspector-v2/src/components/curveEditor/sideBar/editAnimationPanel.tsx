@@ -3,7 +3,6 @@ import type { Animation } from "core/Animations/animation";
 
 import { makeStyles, tokens, Input, Label, Dropdown, Option } from "@fluentui/react-components";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeftRegular } from "@fluentui/react-icons";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { useCurveEditor } from "../curveEditorContext";
@@ -97,11 +96,6 @@ export const EditAnimationPanel: FunctionComponent<EditAnimationPanelProps> = ({
 
     return (
         <div className={styles.root}>
-            <div className={styles.header}>
-                <Button icon={ArrowLeftRegular} appearance="subtle" onClick={onClose} />
-                <span className={styles.title}>Edit Animation</span>
-            </div>
-
             <div className={styles.form}>
                 <div className={styles.row}>
                     <Label>Display Name</Label>

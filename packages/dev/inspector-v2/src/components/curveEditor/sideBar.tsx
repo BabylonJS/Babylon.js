@@ -1,12 +1,13 @@
 import type { FunctionComponent } from "react";
 
-import { makeStyles, tokens, Tooltip } from "@fluentui/react-components";
+import { makeStyles, tokens, Tooltip, Dialog, DialogSurface, DialogBody, DialogTitle, DialogContent } from "@fluentui/react-components";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AddRegular, ArrowDownloadRegular, SaveRegular, EditRegular } from "@fluentui/react-icons";
+import { AddRegular, ArrowDownloadRegular, SaveRegular } from "@fluentui/react-icons";
 import type { Animation } from "core/Animations/animation";
 import type { TargetedAnimation } from "core/Animations/animationGroup";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
+import { Popover } from "shared-ui-components/fluent/primitives/popover";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
 import { useCurveEditor } from "./curveEditorContext";
 import { AnimationList } from "./sideBar/animationList";
@@ -58,9 +59,14 @@ const useStyles = makeStyles({
         overflow: "auto",
         padding: tokens.spacingHorizontalS,
     },
+    popoverSurface: {
+        padding: tokens.spacingHorizontalM,
+        maxHeight: "500px",
+        overflow: "auto",
+    },
 });
 
-type Mode = "edit" | "add" | "load" | "save" | "editAnimation";
+type PopoverType = "add" | "load" | "save" | "editAnimation" | null;
 
 /**
  * Sidebar component for the curve editor with animation list and controls
@@ -70,7 +76,7 @@ export const SideBar: FunctionComponent = () => {
     const styles = useStyles();
     const { state, actions, observables } = useCurveEditor();
 
-    const [mode, setMode] = useState<Mode>("edit");
+    const [openPopover, setOpenPopover] = useState<PopoverType>(null);
     const [fps, setFps] = useState(60);
     const [editingAnimation, setEditingAnimation] = useState<Animation | null>(null);
 
@@ -85,7 +91,7 @@ export const SideBar: FunctionComponent = () => {
     // Subscribe to animations loaded
     useEffect(() => {
         const observer = observables.onAnimationsLoaded.add(() => {
-            setMode("edit");
+            setOpenPopover(null);
         });
         return () => {
             observables.onAnimationsLoaded.remove(observer);
@@ -96,7 +102,7 @@ export const SideBar: FunctionComponent = () => {
     useEffect(() => {
         const observer = observables.onEditAnimationRequired.add((animation: Animation) => {
             setEditingAnimation(animation);
-            setMode("editAnimation");
+            setOpenPopover("editAnimation");
         });
         return () => {
             observables.onEditAnimationRequired.remove(observer);
@@ -148,20 +154,44 @@ export const SideBar: FunctionComponent = () => {
             <div className={styles.menuBar}>
                 {!state.useTargetAnimations && (
                     <>
-                        <Tooltip content="Add new animation" relationship="label">
-                            <Button icon={AddRegular} appearance={mode === "add" ? "primary" : "subtle"} onClick={() => setMode("add")} />
-                        </Tooltip>
-                        <Tooltip content="Load animations" relationship="label">
-                            <Button icon={ArrowDownloadRegular} appearance={mode === "load" ? "primary" : "subtle"} onClick={() => setMode("load")} />
-                        </Tooltip>
+                        <Popover
+                            open={openPopover === "add"}
+                            onOpenChange={(open) => setOpenPopover(open ? "add" : null)}
+                            positioning="below-start"
+                            trigger={
+                                <Tooltip content="Add new animation" relationship="label">
+                                    <Button icon={AddRegular} appearance={openPopover === "add" ? "primary" : "subtle"} />
+                                </Tooltip>
+                            }
+                        >
+                            <AddAnimationPanel onClose={() => setOpenPopover(null)} />
+                        </Popover>
+                        <Popover
+                            open={openPopover === "load"}
+                            onOpenChange={(open) => setOpenPopover(open ? "load" : null)}
+                            positioning="below-start"
+                            trigger={
+                                <Tooltip content="Load animations" relationship="label">
+                                    <Button icon={ArrowDownloadRegular} appearance={openPopover === "load" ? "primary" : "subtle"} />
+                                </Tooltip>
+                            }
+                        >
+                            <LoadAnimationPanel onClose={() => setOpenPopover(null)} />
+                        </Popover>
                     </>
                 )}
-                <Tooltip content="Save current animations" relationship="label">
-                    <Button icon={SaveRegular} appearance={mode === "save" ? "primary" : "subtle"} onClick={() => setMode("save")} />
-                </Tooltip>
-                <Tooltip content="Edit animations" relationship="label">
-                    <Button icon={EditRegular} appearance={mode === "edit" ? "primary" : "subtle"} onClick={() => setMode("edit")} />
-                </Tooltip>
+                <Popover
+                    open={openPopover === "save"}
+                    onOpenChange={(open) => setOpenPopover(open ? "save" : null)}
+                    positioning="below-start"
+                    trigger={
+                        <Tooltip content="Save current animations" relationship="label">
+                            <Button icon={SaveRegular} appearance={openPopover === "save" ? "primary" : "subtle"} />
+                        </Tooltip>
+                    }
+                >
+                    <SaveAnimationPanel onClose={() => setOpenPopover(null)} />
+                </Popover>
 
                 <div className={styles.fpsInput}>
                     <SpinButton className={styles.spinButton} value={fps} onChange={handleFpsChange} min={1} max={120} />
@@ -170,20 +200,36 @@ export const SideBar: FunctionComponent = () => {
             </div>
 
             <div className={styles.content}>
-                {mode === "edit" && <AnimationList />}
-                {mode === "add" && <AddAnimationPanel onClose={() => setMode("edit")} />}
-                {mode === "load" && <LoadAnimationPanel onClose={() => setMode("edit")} />}
-                {mode === "save" && <SaveAnimationPanel onClose={() => setMode("edit")} />}
-                {mode === "editAnimation" && editingAnimation && (
-                    <EditAnimationPanel
-                        animation={editingAnimation}
-                        onClose={() => {
-                            setEditingAnimation(null);
-                            setMode("edit");
-                        }}
-                    />
-                )}
+                <AnimationList />
             </div>
+
+            {/* Edit animation dialog - triggered from animation list gear icon */}
+            <Dialog
+                open={openPopover === "editAnimation" && editingAnimation !== null}
+                onOpenChange={(_, data) => {
+                    if (!data.open) {
+                        setOpenPopover(null);
+                        setEditingAnimation(null);
+                    }
+                }}
+            >
+                <DialogSurface>
+                    <DialogBody>
+                        <DialogTitle>Edit Animation</DialogTitle>
+                        <DialogContent>
+                            {editingAnimation && (
+                                <EditAnimationPanel
+                                    animation={editingAnimation}
+                                    onClose={() => {
+                                        setEditingAnimation(null);
+                                        setOpenPopover(null);
+                                    }}
+                                />
+                            )}
+                        </DialogContent>
+                    </DialogBody>
+                </DialogSurface>
+            </Dialog>
         </div>
     );
 };

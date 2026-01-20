@@ -4,7 +4,6 @@ import type { TargetedAnimation } from "core/Animations/animationGroup";
 
 import { makeStyles, tokens, Input, Label, Dropdown, Option } from "@fluentui/react-components";
 import { useCallback, useState, useMemo, useEffect } from "react";
-import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { Animation } from "core/Animations/animation";
 import { Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
@@ -198,14 +197,11 @@ export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ o
         return { minFrame: min, maxFrame: max };
     }, [state.animations, state.useTargetAnimations]);
 
-    const createAnimation = useCallback(() => {
-        if (!name) {
-            window.alert("Please enter a display name");
-            return;
-        }
+    // Validation for the create button
+    const isValid = name.trim() !== "" && currentProperty.trim() !== "";
 
-        if (!currentProperty) {
-            window.alert("Please select or enter a property");
+    const createAnimation = useCallback(() => {
+        if (!name || !currentProperty) {
             return;
         }
 
@@ -315,7 +311,6 @@ export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ o
     return (
         <div className={styles.root}>
             <div className={styles.header}>
-                <Button icon={ArrowLeftRegular} appearance="subtle" onClick={onClose} />
                 <span className={styles.title}>Add Animation</span>
             </div>
 
@@ -388,7 +383,7 @@ export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ o
             </div>
 
             <div className={styles.buttons}>
-                <Button appearance="primary" onClick={createAnimation} label="Create" />
+                <Button appearance="primary" onClick={createAnimation} disabled={!isValid} label="Create" />
                 <Button appearance="subtle" onClick={onClose} label="Cancel" />
             </div>
         </div>
