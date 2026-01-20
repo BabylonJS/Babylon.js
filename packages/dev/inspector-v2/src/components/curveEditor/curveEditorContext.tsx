@@ -5,7 +5,17 @@ import type { TargetedAnimation, AnimationGroup } from "core/Animations/animatio
 import type { Scene } from "core/scene";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { AnimationKeyInterpolation } from "core/Animations/animationKey";
-import type { KeyPoint } from "./graph/keyPoint";
+import type { CurveData } from "./canvas/curve";
+
+/**
+ * Represents a key point on a curve
+ */
+export type KeyPoint = {
+    /** The curve data this key point belongs to */
+    curve: CurveData;
+    /** The key index in the animation */
+    keyId: number;
+};
 
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Observable } from "core/Misc/observable";
