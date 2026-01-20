@@ -1,7 +1,7 @@
 import type { FunctionComponent } from "react";
 
 import { makeStyles, tokens, Tooltip, Button as FluentButton } from "@fluentui/react-components";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PlayRegular, PreviousRegular, NextRegular, ArrowPreviousRegular, ArrowNextRegular, RecordStopRegular } from "@fluentui/react-icons";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
@@ -63,13 +63,20 @@ export const BottomBar: FunctionComponent = () => {
     const styles = useStyles();
     const { state, actions, observables } = useCurveEditor();
 
-    const [clipLength, setClipLength] = useState(state.clipLength);
+    // Use clipLength from state, with referenceMaxFrame as fallback
+    const effectiveClipLength = state.clipLength > 0 ? state.clipLength : state.referenceMaxFrame;
+    const [clipLength, setClipLength] = useState(effectiveClipLength);
     const [, forceUpdate] = useState({});
+
+    // Keep a ref to current toKey for use in observers
+    const toKeyRef = useRef(state.toKey);
+    toKeyRef.current = state.toKey;
 
     // Sync clip length with state
     useEffect(() => {
-        setClipLength(state.clipLength);
-    }, [state.clipLength]);
+        const newClipLength = state.clipLength > 0 ? state.clipLength : state.referenceMaxFrame;
+        setClipLength(newClipLength);
+    }, [state.clipLength, state.referenceMaxFrame]);
 
     // Subscribe to observables
     useEffect(() => {
@@ -82,10 +89,16 @@ export const BottomBar: FunctionComponent = () => {
         const onClipLengthIncreased = observables.onClipLengthIncreased.add((newLength) => {
             setClipLength(newLength);
             actions.setClipLength(newLength);
+            actions.setReferenceMaxFrame(newLength);
         });
         const onClipLengthDecreased = observables.onClipLengthDecreased.add((newLength) => {
             setClipLength(newLength);
             actions.setClipLength(newLength);
+            actions.setReferenceMaxFrame(newLength);
+            // Clamp toKey to new clip length
+            if (toKeyRef.current > newLength) {
+                actions.setToKey(newLength);
+            }
         });
 
         return () => {

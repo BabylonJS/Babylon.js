@@ -52,6 +52,14 @@ const useStyles = makeStyles({
     valueAxisBackground: {
         fill: "#111111",
     },
+    activeRangeOverlay: {
+        position: "absolute" as const,
+        top: 0,
+        height: "100%",
+        backgroundColor: "rgba(38, 82, 128, 0.3)",
+        border: "1px solid rgba(78, 140, 206, 0.5)",
+        pointerEvents: "none" as const,
+    },
 });
 
 type GraphProps = {
@@ -657,15 +665,15 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         return { min: minValue - padding, max: maxValue + padding };
     }, [curves]);
 
-    // Convert frame to x position
+    // Convert frame to x position (uses reference frames for full visible range)
     const frameToX = useCallback(
         (frame: number) => {
-            const { fromKey, toKey } = state;
-            const range = toKey - fromKey;
+            const { referenceMinFrame, referenceMaxFrame } = state;
+            const range = referenceMaxFrame - referenceMinFrame;
             if (range <= 0) {
                 return graphOffsetX;
             }
-            return graphOffsetX + ((frame - fromKey) / range) * viewWidth * scale + offsetX;
+            return graphOffsetX + ((frame - referenceMinFrame) / range) * viewWidth * scale + offsetX;
         },
         [state, viewWidth, scale, offsetX]
     );
@@ -682,15 +690,15 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         [valueRange, safeHeight, scale, offsetY]
     );
 
-    // Convert x position to frame
+    // Convert x position to frame (uses reference frames for full visible range)
     const xToFrame = useCallback(
         (x: number) => {
-            const { fromKey, toKey } = state;
-            const range = toKey - fromKey;
+            const { referenceMinFrame, referenceMaxFrame } = state;
+            const range = referenceMaxFrame - referenceMinFrame;
             if (range <= 0) {
-                return fromKey;
+                return referenceMinFrame;
             }
-            return fromKey + ((x - graphOffsetX - offsetX) / (viewWidth * scale)) * range;
+            return referenceMinFrame + ((x - graphOffsetX - offsetX) / (viewWidth * scale)) * range;
         },
         [state, viewWidth, scale, offsetX]
     );
@@ -853,13 +861,13 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             }
         }
 
-        // Vertical grid lines (frame)
-        const { fromKey, toKey } = state;
-        const frameRange = toKey - fromKey;
+        // Vertical grid lines (frame) - use reference frames for full range
+        const { referenceMinFrame, referenceMaxFrame } = state;
+        const frameRange = referenceMaxFrame - referenceMinFrame;
         const frameStep = calculateNiceStep(frameRange, 10);
-        const startFrame = Math.ceil(fromKey / frameStep) * frameStep;
+        const startFrame = Math.ceil(referenceMinFrame / frameStep) * frameStep;
 
-        for (let frame = startFrame; frame <= toKey; frame += frameStep) {
+        for (let frame = startFrame; frame <= referenceMaxFrame; frame += frameStep) {
             const x = frameToX(frame);
             lines.push(<line key={`v-${frame}`} className={styles.gridLine} x1={x} y1={0} x2={x} y2={safeHeight} />);
         }
@@ -900,8 +908,23 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         return elements;
     }, [valueRange, valueToY, safeHeight, styles, calculateNiceStep]);
 
+    // Calculate active range overlay position
+    const activeRangeLeft = frameToX(state.fromKey);
+    const activeRangeRight = frameToX(state.toKey);
+    const activeRangeWidth = activeRangeRight - activeRangeLeft;
+
     return (
         <div className={styles.root}>
+            {/* Active range overlay (dark rectangle showing playback range) */}
+            {state.activeAnimations.length > 0 && activeRangeWidth > 0 && (
+                <div
+                    className={styles.activeRangeOverlay}
+                    style={{
+                        left: Math.max(graphOffsetX, activeRangeLeft),
+                        width: Math.min(activeRangeWidth, safeWidth - Math.max(graphOffsetX, activeRangeLeft)),
+                    }}
+                />
+            )}
             <svg
                 ref={svgRef}
                 className={styles.svg}

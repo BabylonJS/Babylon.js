@@ -119,25 +119,26 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
         }
     }, [state.activeFrame, state.isPlaying]);
 
-    // Calculate playhead position
+    // Calculate playhead position (uses reference frames for position)
     const getPlayheadX = useCallback(() => {
-        const { fromKey, toKey } = state;
-        const range = toKey - fromKey;
+        const { referenceMinFrame, referenceMaxFrame } = state;
+        const range = referenceMaxFrame - referenceMinFrame;
         if (range <= 0) {
             return graphOffsetX;
         }
-        return graphOffsetX + ((currentFrame - fromKey) / range) * viewWidth * scale + offsetX;
-    }, [state.fromKey, state.toKey, currentFrame, viewWidth, scale, offsetX]);
+        return graphOffsetX + ((currentFrame - referenceMinFrame) / range) * viewWidth * scale + offsetX;
+    }, [state.referenceMinFrame, state.referenceMaxFrame, currentFrame, viewWidth, scale, offsetX]);
 
-    // Convert x to frame
+    // Convert x to frame (uses reference frames for conversion, clamps to fromKey/toKey for playback range)
     const xToFrame = useCallback(
         (x: number) => {
-            const { fromKey, toKey } = state;
-            const range = toKey - fromKey;
-            const frame = fromKey + ((x - graphOffsetX - offsetX) / (viewWidth * scale)) * range;
+            const { referenceMinFrame, referenceMaxFrame, fromKey, toKey } = state;
+            const range = referenceMaxFrame - referenceMinFrame;
+            const frame = referenceMinFrame + ((x - graphOffsetX - offsetX) / (viewWidth * scale)) * range;
+            // Clamp to the active playback range
             return Math.max(fromKey, Math.min(toKey, Math.round(frame)));
         },
-        [state.fromKey, state.toKey, viewWidth, scale, offsetX]
+        [state.referenceMinFrame, state.referenceMaxFrame, state.fromKey, state.toKey, viewWidth, scale, offsetX]
     );
 
     const handlePointerDown = useCallback((e: React.PointerEvent) => {

@@ -90,6 +90,8 @@ export type CurveEditorActions = {
     setIsPlaying: Dispatch<SetStateAction<boolean>>;
     /** Set clip length */
     setClipLength: Dispatch<SetStateAction<number>>;
+    /** Set reference max frame */
+    setReferenceMaxFrame: Dispatch<SetStateAction<number>>;
     /** Set focused input */
     setFocusedInput: Dispatch<SetStateAction<boolean>>;
     /** Set active key points */
@@ -544,6 +546,7 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
             setToKey,
             setIsPlaying,
             setClipLength,
+            setReferenceMaxFrame,
             setFocusedInput,
             setActiveKeyPoints,
             setActiveChannels,
