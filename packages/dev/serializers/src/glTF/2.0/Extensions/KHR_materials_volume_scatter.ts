@@ -20,7 +20,8 @@ function SingleScatterToMultiScatterAlbedo(singleScatter: Vector3): Vector3 {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_volume_scatter/README.md)
+ * TODO: In-progress specification
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/7ea427ed55d44427e83c0a6d1c87068b1a4151c5/extensions/2.0/Khronos/KHR_materials_volume_scatter/README.md)
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_volume_scatter implements IGLTFExporterExtensionV2 {

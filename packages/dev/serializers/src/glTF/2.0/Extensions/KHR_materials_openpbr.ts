@@ -7,7 +7,7 @@ import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 const NAME = "KHR_materials_openpbr";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_openpbr/README.md)
+ * TODO: Add link to specification)
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_openpbr implements IGLTFExporterExtensionV2 {
@@ -22,9 +22,7 @@ export class KHR_materials_openpbr implements IGLTFExporterExtensionV2 {
 
     private _wasUsed = false;
 
-    constructor(exporter: GLTFExporter) {
-        // this._exporter = exporter;
-    }
+    constructor(exporter: GLTFExporter) {}
 
     public dispose() {}
 

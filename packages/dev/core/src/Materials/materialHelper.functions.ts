@@ -678,7 +678,6 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
         }
     }
 
-    // defines["LIGHTCOUNT"] = lightIndex;
     defines["SPECULARTERM"] = state.specularEnabled;
     defines["SHADOWS"] = state.shadowEnabled;
 

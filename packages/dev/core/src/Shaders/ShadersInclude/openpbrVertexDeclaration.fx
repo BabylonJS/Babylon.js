@@ -1,9 +1,5 @@
-uniform mat4 view;
-uniform mat4 viewProjection;
-uniform vec4 vEyePosition;
-#ifdef MULTIVIEW
-	mat4 viewProjectionR;
-#endif
+// Scene uniforms (view, viewProjection, etc.) are included via sceneVertexDeclaration or sceneUboDeclaration
+#include<sceneVertexDeclaration>
 
 #ifdef BASE_COLOR
 uniform vec2 vBaseColorInfos;

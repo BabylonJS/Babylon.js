@@ -2,7 +2,7 @@
 import { serialize, expandToProperty, addAccessorsForMaterialProperty } from "../../Misc/decorators";
 import { GetEnvironmentBRDFTexture, GetEnvironmentFuzzBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
-import { Scene } from "../../scene";
+import type { Scene } from "../../scene";
 import type { Color4 } from "../../Maths/math.color";
 import { Color3 } from "../../Maths/math.color";
 import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
@@ -2223,10 +2223,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @param subMesh the submesh to bind data for
      */
     public bindPropertiesForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
-        // if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
-        //     return;
-        // }
-
         // If min/max thickness is 0, avoid decomposing to determine the scaled thickness (it's always zero).
         if (this.geometryThickness === 0.0) {
             uniformBuffer.updateFloat("vGeometryThickness", 0);
@@ -2410,9 +2406,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
 
             // View
-            if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || radianceTexture || mesh.receiveShadows || defines.PREPASS) {
-                this.bindView(effect);
-            }
+            // if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || radianceTexture || mesh.receiveShadows || defines.PREPASS) {
+            this.bindView(effect);
+            // }
 
             // Fog
             BindFogParameters(scene, mesh, this._activeEffect, true);
@@ -3002,7 +2998,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         defines.THIN_FILM = this.thinFilmWeight > 0.0;
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
         defines.DISPERSION = this.transmissionDispersionScale > 0.0;
-        defines.SCATTERING = this.transmissionScatter.equals(Color3.Black()) === false;
+        defines.SCATTERING = !this.transmissionScatter.equals(Color3.BlackReadOnly);
 
         defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;
         if (defines.FUZZ) {

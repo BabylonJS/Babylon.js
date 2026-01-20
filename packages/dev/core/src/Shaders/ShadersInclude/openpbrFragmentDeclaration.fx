@@ -1,5 +1,3 @@
-uniform vec4 vEyePosition;
-
 uniform float vBaseWeight;
 uniform vec4 vBaseColor;
 uniform float vBaseDiffuseRoughness;
@@ -167,10 +165,8 @@ uniform vec2 vThinFilmWeightInfos;
 uniform vec2 vThinFilmThicknessInfos;
 #endif
 
-// Refraction Reflection
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTED_BACKGROUND) || defined(REFRACTED_ENVIRONMENT) || defined(REFRACTED_LIGHTS) || defined(PREPASS)
-uniform mat4 view;
-#endif
+// Scene uniforms (view, viewProjection, etc.) are included via sceneFragmentDeclaration or sceneUboDeclaration
+#include<sceneFragmentDeclaration>
 
 // Reflection
 #ifdef REFLECTION
