@@ -186,6 +186,15 @@ export class SelectionOutlineLayer extends EffectLayer {
     }
 
     /**
+     * Creates the main texture for the effect layer.
+     */
+    protected override _createMainTexture(): void {
+        super._createMainTexture();
+        // set the render list for selective rendering
+        this._mainTexture.renderList = this._thinEffectLayer._selection;
+    }
+
+    /**
      * @returns whether or not the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
