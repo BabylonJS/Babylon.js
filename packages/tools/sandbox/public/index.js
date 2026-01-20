@@ -4,6 +4,11 @@ var hostElement = document.getElementById("host-element");
 
 const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
 
+// Register service worker for PWA
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
+}
+
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
         // eslint-disable-next-line no-undef
