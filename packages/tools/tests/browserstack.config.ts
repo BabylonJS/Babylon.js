@@ -10,7 +10,7 @@ const caps = {
     os_version: "catalina",
     name: "My first playwright test",
     build: "playwright-build",
-    browser_version: "143", // "latest",
+    browser_version: "latest",
     "browserstack.username": process.env.BROWSERSTACK_USERNAME,
     "browserstack.accessKey": process.env.BROWSERSTACK_ACCESS_KEY,
     "browserstack.local": process.env.BROWSERSTACK_LOCAL || false,
@@ -28,14 +28,12 @@ export const bsLocal = new BrowserStackLocal.Local();
 const patchCaps = (name: string, title: string) => {
     let combination = name.split(/@browserstack/)[0];
     let [browserCaps, osCaps] = combination.split(/:/);
-    // let [browser, browser_version] = browserCaps.split(/@/);
-    let [browser] = browserCaps.split(/@/);
+    let [browser, browser_version] = browserCaps.split(/@/);
     let osCapsSplit = osCaps.split(/ /);
     let os = osCapsSplit.shift();
     let os_version = osCapsSplit.join(" ");
     caps.browser = browser ? browser : "chrome";
-    // caps.browser_version = browser_version ? browser_version : "latest";
-    caps.browser_version = "143";
+    caps.browser_version = browser_version ? browser_version : "latest";
     caps.os = os ? os : "osx";
     caps.os_version = os_version ? os_version : "catalina";
     caps.name = title;
