@@ -364,7 +364,7 @@ export class Sandbox extends React.Component<
      * @param files Array of File objects to load
      */
     private _loadFilesIntoSandbox(files: File[]) {
-        // Create an event that loadFiles expects
+        // Create the event that loadFiles expects
         const event = {
             dataTransfer: { files: files },
         };
