@@ -1,8 +1,10 @@
 import type { ErrorInfo, ReactNode } from "react";
 
 import { Component } from "react";
-import { makeStyles, tokens, Button } from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { ErrorCircleRegular } from "@fluentui/react-icons";
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { TokenMap } from "shared-ui-components/fluent/primitives/utils";
 
 const useStyles = makeStyles({
     root: {
@@ -10,7 +12,7 @@ const useStyles = makeStyles({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "20px",
+        padding: TokenMap.px20,
         backgroundColor: tokens.colorNeutralBackground1,
         color: tokens.colorNeutralForeground1,
         height: "100%",
@@ -19,31 +21,31 @@ const useStyles = makeStyles({
     icon: {
         fontSize: "48px",
         color: tokens.colorPaletteRedForeground1,
-        marginBottom: "12px",
+        marginBottom: TokenMap.px12,
     },
     title: {
-        fontSize: "16px",
+        fontSize: TokenMap.px16,
         fontWeight: "600",
-        marginBottom: "8px",
+        marginBottom: TokenMap.px8,
     },
     message: {
-        fontSize: "12px",
+        fontSize: TokenMap.px12,
         color: tokens.colorNeutralForeground2,
-        marginBottom: "16px",
+        marginBottom: TokenMap.px16,
         textAlign: "center",
         maxWidth: "300px",
     },
     details: {
-        fontSize: "10px",
+        fontSize: TokenMap.px10,
         color: tokens.colorNeutralForeground3,
         fontFamily: "monospace",
         whiteSpace: "pre-wrap",
         maxHeight: "100px",
         overflow: "auto",
-        padding: "8px",
+        padding: TokenMap.px8,
         backgroundColor: tokens.colorNeutralBackground3,
-        borderRadius: "4px",
-        marginTop: "8px",
+        borderRadius: TokenMap.px4,
+        marginTop: TokenMap.px8,
         maxWidth: "100%",
     },
 });
@@ -124,9 +126,7 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
             <ErrorCircleRegular className={styles.icon} />
             <div className={styles.title}>Something went wrong</div>
             <div className={styles.message}>An error occurred in this component. You can try again or continue using other parts of the inspector.</div>
-            <Button appearance="primary" onClick={onRetry}>
-                Try Again
-            </Button>
+            <Button label="Try Again" appearance="primary" onClick={onRetry} />
             {error && <div className={styles.details}>{error.message}</div>}
         </div>
     );
