@@ -18,7 +18,16 @@ export const FrameGraphTaskProperties: FunctionComponent<{ frameGraph: FrameGrap
         <>
             {tasks.length > 0 &&
                 tasks.map((task, i) => {
-                    return <TextPropertyLine label={i + 1 + ". " + task.name} value="" key={"task" + i} />;
+                    return (
+                        <BoundProperty
+                            component={SwitchPropertyLine}
+                            key={"task" + i}
+                            label={i + 1 + ". " + task.name}
+                            target={frameGraph.tasks[i]}
+                            propertyKey="disabled"
+                            invertedMode={true}
+                        ></BoundProperty>
+                    );
                 })}
         </>
     );
