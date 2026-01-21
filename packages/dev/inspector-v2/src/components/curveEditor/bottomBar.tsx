@@ -1,7 +1,7 @@
 import type { FunctionComponent } from "react";
 
-import { makeStyles, tokens, Tooltip, Button as FluentButton } from "@fluentui/react-components";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { makeStyles, tokens, Button as FluentButton } from "@fluentui/react-components";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { PlayRegular, PreviousRegular, NextRegular, ArrowPreviousRegular, ArrowNextRegular, RecordStopRegular } from "@fluentui/react-icons";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
@@ -59,6 +59,57 @@ const useStyles = makeStyles({
 });
 
 /**
+ * Props for the MediaControls component
+ */
+type MediaControlsProps = {
+    hasActiveAnimations: boolean;
+    isPlaying: boolean;
+    forwardAnimation: boolean;
+    onPlayForward: () => void;
+    onPlayBackward: () => void;
+    onStop: () => void;
+    onPrevKey: () => void;
+    onNextKey: () => void;
+    onFirstFrame: () => void;
+    onLastFrame: () => void;
+    playBackwardIconClass: string;
+};
+
+/**
+ * Memoized media controls component to prevent re-renders during playback
+ */
+const MediaControls = memo<MediaControlsProps>(
+    ({ hasActiveAnimations, isPlaying, forwardAnimation, onPlayForward, onPlayBackward, onStop, onPrevKey, onNextKey, onFirstFrame, onLastFrame, playBackwardIconClass }) => {
+        return (
+            <>
+                <Button icon={PreviousRegular} appearance="subtle" disabled={!hasActiveAnimations} onClick={onFirstFrame} title="First frame" />
+                <Button icon={ArrowPreviousRegular} appearance="subtle" disabled={!hasActiveAnimations} onClick={onPrevKey} title="Previous key" />
+                <FluentButton
+                    icon={<PlayRegular className={playBackwardIconClass} />}
+                    appearance={isPlaying && !forwardAnimation ? "primary" : "subtle"}
+                    size="small"
+                    disabled={!hasActiveAnimations}
+                    onClick={onPlayBackward}
+                    title="Play backward"
+                />
+                <Button icon={RecordStopRegular} appearance="subtle" disabled={!hasActiveAnimations || !isPlaying} onClick={onStop} title="Stop" />
+                <Button
+                    icon={PlayRegular}
+                    appearance={isPlaying && forwardAnimation ? "primary" : "subtle"}
+                    disabled={!hasActiveAnimations}
+                    onClick={onPlayForward}
+                    title="Play forward"
+                />
+                <Button icon={ArrowNextRegular} appearance="subtle" disabled={!hasActiveAnimations} onClick={onNextKey} title="Next key" />
+                <Button icon={NextRegular} appearance="subtle" disabled={!hasActiveAnimations} onClick={onLastFrame} title="Last frame" />
+            </>
+        );
+    }
+);
+
+MediaControls.displayName = "MediaControls";
+
+/**
  * Bottom bar component with playback controls and frame navigation.
  * @returns The BottomBar component.
  */
@@ -66,14 +117,34 @@ export const BottomBar: FunctionComponent = () => {
     const styles = useStyles();
     const { state, actions, observables } = useCurveEditor();
 
+    // Track display frame separately for smooth updates during playback
+    const [displayFrame, setDisplayFrame] = useState(state.activeFrame);
+
     // Use clipLength from state, with referenceMaxFrame as fallback
     const effectiveClipLength = state.clipLength > 0 ? state.clipLength : state.referenceMaxFrame;
     const [clipLength, setClipLength] = useState(effectiveClipLength);
-    const [, forceUpdate] = useState({});
 
     // Keep a ref to current toKey for use in observers
     const toKeyRef = useRef(state.toKey);
     toKeyRef.current = state.toKey;
+
+    // Subscribe to playhead moved for display updates during playback
+    useEffect(() => {
+        const onPlayheadMoved = observables.onPlayheadMoved.add((frame) => {
+            setDisplayFrame(frame);
+        });
+
+        return () => {
+            observables.onPlayheadMoved.remove(onPlayheadMoved);
+        };
+    }, [observables]);
+
+    // Sync display frame with state.activeFrame when not playing
+    useEffect(() => {
+        if (!state.isPlaying) {
+            setDisplayFrame(state.activeFrame);
+        }
+    }, [state.activeFrame, state.isPlaying]);
 
     // Sync clip length with state
     useEffect(() => {
@@ -81,14 +152,8 @@ export const BottomBar: FunctionComponent = () => {
         setClipLength(newClipLength);
     }, [state.clipLength, state.referenceMaxFrame]);
 
-    // Subscribe to observables
+    // Subscribe to clip length change observables
     useEffect(() => {
-        const onAnimationsLoaded = observables.onAnimationsLoaded.add(() => {
-            forceUpdate({});
-        });
-        const onActiveAnimationChanged = observables.onActiveAnimationChanged.add(() => {
-            forceUpdate({});
-        });
         const onClipLengthIncreased = observables.onClipLengthIncreased.add((newLength) => {
             setClipLength(newLength);
             actions.setClipLength(newLength);
@@ -105,8 +170,6 @@ export const BottomBar: FunctionComponent = () => {
         });
 
         return () => {
-            observables.onAnimationsLoaded.remove(onAnimationsLoaded);
-            observables.onActiveAnimationChanged.remove(onActiveAnimationChanged);
             observables.onClipLengthIncreased.remove(onClipLengthIncreased);
             observables.onClipLengthDecreased.remove(onClipLengthDecreased);
         };
@@ -179,51 +242,25 @@ export const BottomBar: FunctionComponent = () => {
         <div className={styles.root}>
             {/* Media controls */}
             <div className={styles.mediaControls}>
-                <Tooltip content="First frame" relationship="label">
-                    <Button icon={PreviousRegular} appearance="subtle" disabled={!hasActiveAnimations} onClick={handleFirstFrame} />
-                </Tooltip>
-                <Tooltip content="Previous key" relationship="label">
-                    <Button icon={ArrowPreviousRegular} appearance="subtle" disabled={!hasActiveAnimations} onClick={handlePrevKey} />
-                </Tooltip>
-                <Tooltip content="Play backward" relationship="label">
-                    <FluentButton
-                        icon={<PlayRegular className={styles.playBackwardIcon} />}
-                        appearance={state.isPlaying && !state.forwardAnimation ? "primary" : "subtle"}
-                        size="small"
-                        disabled={!hasActiveAnimations}
-                        onClick={handlePlayBackward}
-                    />
-                </Tooltip>
-                <Tooltip content="Stop" relationship="label">
-                    <Button icon={RecordStopRegular} appearance="subtle" disabled={!hasActiveAnimations || !state.isPlaying} onClick={handleStop} />
-                </Tooltip>
-                <Tooltip content="Play forward" relationship="label">
-                    <Button
-                        icon={PlayRegular}
-                        appearance={state.isPlaying && state.forwardAnimation ? "primary" : "subtle"}
-                        disabled={!hasActiveAnimations}
-                        onClick={handlePlayForward}
-                    />
-                </Tooltip>
-                <Tooltip content="Next key" relationship="label">
-                    <Button icon={ArrowNextRegular} appearance="subtle" disabled={!hasActiveAnimations} onClick={handleNextKey} />
-                </Tooltip>
-                <Tooltip content="Last frame" relationship="label">
-                    <Button icon={NextRegular} appearance="subtle" disabled={!hasActiveAnimations} onClick={handleLastFrame} />
-                </Tooltip>
+                <MediaControls
+                    hasActiveAnimations={hasActiveAnimations}
+                    isPlaying={state.isPlaying}
+                    forwardAnimation={state.forwardAnimation}
+                    onPlayForward={handlePlayForward}
+                    onPlayBackward={handlePlayBackward}
+                    onStop={handleStop}
+                    onPrevKey={handlePrevKey}
+                    onNextKey={handleNextKey}
+                    onFirstFrame={handleFirstFrame}
+                    onLastFrame={handleLastFrame}
+                    playBackwardIconClass={styles.playBackwardIcon}
+                />
             </div>
 
-            {/* Current frame display */}
+            {/* Current frame display - uses displayFrame for smooth updates during playback */}
             <div className={styles.frameDisplay}>
                 <span className={styles.frameLabel}>Frame:</span>
-                <SpinButton
-                    className={styles.spinButton}
-                    value={state.activeFrame}
-                    onChange={handleFrameChange}
-                    min={state.fromKey}
-                    max={state.toKey}
-                    disabled={!hasActiveAnimations}
-                />
+                <SpinButton className={styles.spinButton} value={displayFrame} onChange={handleFrameChange} min={state.fromKey} max={state.toKey} disabled={!hasActiveAnimations} />
             </div>
 
             {/* Range selector */}

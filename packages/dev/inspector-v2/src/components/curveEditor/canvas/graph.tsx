@@ -12,6 +12,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 
 import { useCurveEditor } from "../curveEditorContext";
 import { Curve, type CurveData } from "./curve";
+import { ChannelColors, ColorChannelColors, DefaultCurveColor, GraphColors } from "../curveEditorColors";
 
 const useStyles = makeStyles({
     root: {
@@ -34,23 +35,23 @@ const useStyles = makeStyles({
         strokeDasharray: "4 4",
     },
     zeroLine: {
-        stroke: "#666666",
+        stroke: GraphColors.zeroLine,
         strokeWidth: "1px",
     },
     selectionRect: {
         fill: "rgba(255, 255, 255, 0.1)",
-        stroke: "#ffffff",
+        stroke: GraphColors.selectionStroke,
         strokeWidth: "1px",
         strokeDasharray: "4 4",
     },
     valueAxisLabel: {
-        fill: "#555555",
+        fill: GraphColors.valueAxisLabel,
         fontSize: "10px",
         fontFamily: "acumin-pro-condensed, sans-serif",
         userSelect: "none",
     },
     valueAxisBackground: {
-        fill: "#111111",
+        fill: GraphColors.valueAxisBackground,
     },
     activeRangeOverlay: {
         position: "absolute" as const,
@@ -399,7 +400,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             if (animation.dataType === AnimationEnum.ANIMATIONTYPE_FLOAT) {
                 result.push({
                     animation,
-                    color: color || "#ffffff",
+                    color: color || DefaultCurveColor,
                     component: 0,
                     keys: keys.map((k) => ({
                         frame: k.frame,
@@ -410,10 +411,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                     })),
                 });
             } else if (animation.dataType === AnimationEnum.ANIMATIONTYPE_VECTOR2) {
-                if (!color || color === "#DB3E3E") {
+                if (!color || color === ChannelColors.X) {
                     result.push({
                         animation,
-                        color: "#DB3E3E",
+                        color: ChannelColors.X,
                         component: 0,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -424,10 +425,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                         })),
                     });
                 }
-                if (!color || color === "#51E22D") {
+                if (!color || color === ChannelColors.Y) {
                     result.push({
                         animation,
-                        color: "#51E22D",
+                        color: ChannelColors.Y,
                         component: 1,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -439,10 +440,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                     });
                 }
             } else if (animation.dataType === AnimationEnum.ANIMATIONTYPE_VECTOR3) {
-                if (!color || color === "#DB3E3E") {
+                if (!color || color === ChannelColors.X) {
                     result.push({
                         animation,
-                        color: "#DB3E3E",
+                        color: ChannelColors.X,
                         component: 0,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -453,10 +454,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                         })),
                     });
                 }
-                if (!color || color === "#51E22D") {
+                if (!color || color === ChannelColors.Y) {
                     result.push({
                         animation,
-                        color: "#51E22D",
+                        color: ChannelColors.Y,
                         component: 1,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -467,10 +468,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                         })),
                     });
                 }
-                if (!color || color === "#00A3FF") {
+                if (!color || color === ChannelColors.Z) {
                     result.push({
                         animation,
-                        color: "#00A3FF",
+                        color: ChannelColors.Z,
                         component: 2,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -482,10 +483,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                     });
                 }
             } else if (animation.dataType === AnimationEnum.ANIMATIONTYPE_COLOR3) {
-                if (!color || color === "#DB3E3E") {
+                if (!color || color === ColorChannelColors.R) {
                     result.push({
                         animation,
-                        color: "#DB3E3E",
+                        color: ColorChannelColors.R,
                         component: 0,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -496,10 +497,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                         })),
                     });
                 }
-                if (!color || color === "#51E22D") {
+                if (!color || color === ColorChannelColors.G) {
                     result.push({
                         animation,
-                        color: "#51E22D",
+                        color: ColorChannelColors.G,
                         component: 1,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -510,10 +511,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                         })),
                     });
                 }
-                if (!color || color === "#00A3FF") {
+                if (!color || color === ColorChannelColors.B) {
                     result.push({
                         animation,
-                        color: "#00A3FF",
+                        color: ColorChannelColors.B,
                         component: 2,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -525,10 +526,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                     });
                 }
             } else if (animation.dataType === AnimationEnum.ANIMATIONTYPE_COLOR4) {
-                if (!color || color === "#DB3E3E") {
+                if (!color || color === ColorChannelColors.R) {
                     result.push({
                         animation,
-                        color: "#DB3E3E",
+                        color: ColorChannelColors.R,
                         component: 0,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -539,10 +540,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                         })),
                     });
                 }
-                if (!color || color === "#51E22D") {
+                if (!color || color === ColorChannelColors.G) {
                     result.push({
                         animation,
-                        color: "#51E22D",
+                        color: ColorChannelColors.G,
                         component: 1,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -553,10 +554,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                         })),
                     });
                 }
-                if (!color || color === "#00A3FF") {
+                if (!color || color === ColorChannelColors.B) {
                     result.push({
                         animation,
-                        color: "#00A3FF",
+                        color: ColorChannelColors.B,
                         component: 2,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -567,10 +568,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                         })),
                     });
                 }
-                if (!color || color === "#FFFFFF") {
+                if (!color || color === ColorChannelColors.A) {
                     result.push({
                         animation,
-                        color: "#FFFFFF",
+                        color: ColorChannelColors.A,
                         component: 3,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -582,10 +583,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                     });
                 }
             } else if (animation.dataType === AnimationEnum.ANIMATIONTYPE_QUATERNION) {
-                if (!color || color === "#DB3E3E") {
+                if (!color || color === ChannelColors.X) {
                     result.push({
                         animation,
-                        color: "#DB3E3E",
+                        color: ChannelColors.X,
                         component: 0,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -596,10 +597,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                         })),
                     });
                 }
-                if (!color || color === "#51E22D") {
+                if (!color || color === ChannelColors.Y) {
                     result.push({
                         animation,
-                        color: "#51E22D",
+                        color: ChannelColors.Y,
                         component: 1,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -610,10 +611,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                         })),
                     });
                 }
-                if (!color || color === "#00A3FF") {
+                if (!color || color === ChannelColors.Z) {
                     result.push({
                         animation,
-                        color: "#00A3FF",
+                        color: ChannelColors.Z,
                         component: 2,
                         keys: keys.map((k) => ({
                             frame: k.frame,
@@ -624,10 +625,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                         })),
                     });
                 }
-                if (!color || color === "#8700FF") {
+                if (!color || color === ChannelColors.W) {
                     result.push({
                         animation,
-                        color: "#8700FF",
+                        color: ChannelColors.W,
                         component: 3,
                         keys: keys.map((k) => ({
                             frame: k.frame,

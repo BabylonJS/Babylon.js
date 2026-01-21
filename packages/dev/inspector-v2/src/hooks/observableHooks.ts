@@ -102,3 +102,28 @@ export function useOrderedObservableCollection<T extends Readonly<{ order?: numb
     const sortedItems = useMemo(() => items.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)), [items]);
     return sortedItems;
 }
+
+/**
+ * Forces a re-render when any of the specified observables fire.
+ * This is useful when the component needs to re-render based on external state changes
+ * that are not directly captured in React state.
+ * @param observables The observables to listen for changes on.
+ */
+export function useForceUpdateOnObservable(...observables: Array<IReadonlyObservable | null | undefined>): void {
+    const [, setCounter] = useState(0);
+
+    useEffect(() => {
+        const observers = observables.map((observable) => {
+            if (observable) {
+                return observable.add(() => {
+                    setCounter((c) => c + 1);
+                });
+            }
+            return null;
+        });
+
+        return () => {
+            observers.forEach((observer) => observer?.remove());
+        };
+    }, [...observables]);
+}

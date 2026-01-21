@@ -1,6 +1,6 @@
 import type { FunctionComponent } from "react";
 
-import { makeStyles, tokens, Tooltip, Dialog, DialogSurface, DialogBody, DialogTitle, DialogContent } from "@fluentui/react-components";
+import { makeStyles, tokens, Dialog, DialogSurface, DialogBody, DialogTitle, DialogContent } from "@fluentui/react-components";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AddRegular, ArrowDownloadRegular, SaveRegular } from "@fluentui/react-icons";
 import type { Animation } from "core/Animations/animation";
@@ -158,11 +158,7 @@ export const SideBar: FunctionComponent = () => {
                             open={openPopover === "add"}
                             onOpenChange={(open) => setOpenPopover(open ? "add" : null)}
                             positioning="below-start"
-                            trigger={
-                                <Tooltip content="Add new animation" relationship="label">
-                                    <Button icon={AddRegular} appearance={openPopover === "add" ? "primary" : "subtle"} />
-                                </Tooltip>
-                            }
+                            trigger={<Button icon={AddRegular} appearance={openPopover === "add" ? "primary" : "subtle"} title="Add new animation" />}
                         >
                             <AddAnimationPanel onClose={() => setOpenPopover(null)} />
                         </Popover>
@@ -170,11 +166,7 @@ export const SideBar: FunctionComponent = () => {
                             open={openPopover === "load"}
                             onOpenChange={(open) => setOpenPopover(open ? "load" : null)}
                             positioning="below-start"
-                            trigger={
-                                <Tooltip content="Load animations" relationship="label">
-                                    <Button icon={ArrowDownloadRegular} appearance={openPopover === "load" ? "primary" : "subtle"} />
-                                </Tooltip>
-                            }
+                            trigger={<Button icon={ArrowDownloadRegular} appearance={openPopover === "load" ? "primary" : "subtle"} title="Load animations" />}
                         >
                             <LoadAnimationPanel onClose={() => setOpenPopover(null)} />
                         </Popover>
@@ -184,11 +176,7 @@ export const SideBar: FunctionComponent = () => {
                     open={openPopover === "save"}
                     onOpenChange={(open) => setOpenPopover(open ? "save" : null)}
                     positioning="below-start"
-                    trigger={
-                        <Tooltip content="Save current animations" relationship="label">
-                            <Button icon={SaveRegular} appearance={openPopover === "save" ? "primary" : "subtle"} />
-                        </Tooltip>
-                    }
+                    trigger={<Button icon={SaveRegular} appearance={openPopover === "save" ? "primary" : "subtle"} title="Save current animations" />}
                 >
                     <SaveAnimationPanel onClose={() => setOpenPopover(null)} />
                 </Popover>

@@ -72,9 +72,16 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
         const onScaled = observables.onGraphScaled.add((newScale) => {
             setScale(newScale);
         });
+        // Note: onPlayheadMoved updates the local frame display.
+        // We only update the context's activeFrame if NOT playing (during playback,
+        // the PlayHead component notifies observers but doesn't update context state).
         const onPlayheadMoved = observables.onPlayheadMoved.add((frame) => {
-            actions.setActiveFrame(frame);
             setCurrentFrame(frame);
+            // Only update context if not playing - during playback, frame updates
+            // come from our own RAF loop and shouldn't trigger context re-renders
+            if (!state.isPlaying) {
+                actions.setActiveFrame(frame);
+            }
         });
 
         return () => {
@@ -82,9 +89,12 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
             observables.onGraphScaled.remove(onScaled);
             observables.onPlayheadMoved.remove(onPlayheadMoved);
         };
-    }, [observables, actions]);
+    }, [observables, actions, state.isPlaying]);
 
     // Track animation playback using requestAnimationFrame
+    // Note: We only update local state during playback to avoid constant context re-renders.
+    // The context's activeFrame is synced when playback stops.
+    const lastFrameRef = useRef<number>(state.activeFrame);
     useEffect(() => {
         const trackAnimation = () => {
             if (state.isPlaying && state.activeAnimations.length > 0) {
@@ -94,7 +104,9 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
                     if (runtimeAnimation && runtimeAnimation.currentFrame !== undefined) {
                         const frame = runtimeAnimation.currentFrame;
                         setCurrentFrame(frame);
-                        actions.setActiveFrame(frame);
+                        lastFrameRef.current = frame;
+                        // Notify observers about frame change (for UI updates) without updating context state
+                        observables.onPlayheadMoved.notifyObservers(frame);
                     }
                 }
             }
@@ -103,6 +115,11 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
 
         if (state.isPlaying) {
             animationFrameRef.current = requestAnimationFrame(trackAnimation);
+        } else {
+            // Sync the context's activeFrame when playback stops
+            if (lastFrameRef.current !== state.activeFrame) {
+                actions.setActiveFrame(lastFrameRef.current);
+            }
         }
 
         return () => {
@@ -110,7 +127,7 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
                 cancelAnimationFrame(animationFrameRef.current);
             }
         };
-    }, [state.isPlaying, state.activeAnimations, actions]);
+    }, [state.isPlaying, state.activeAnimations, actions, state.activeFrame, observables]);
 
     // Sync currentFrame with activeFrame when not playing
     useEffect(() => {

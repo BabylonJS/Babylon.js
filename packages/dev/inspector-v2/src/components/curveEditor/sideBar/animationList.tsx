@@ -2,13 +2,14 @@ import type { FunctionComponent } from "react";
 import type { Animation } from "core/Animations/animation";
 import type { TargetedAnimation } from "core/Animations/animationGroup";
 
-import { makeStyles, tokens, Tooltip } from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback, useEffect, useState } from "react";
 import { ChevronDownRegular, ChevronRightRegular, SettingsRegular, DeleteRegular, CircleSmallFilled } from "@fluentui/react-icons";
 import { Animation as AnimationEnum } from "core/Animations/animation";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { useCurveEditor } from "../curveEditorContext";
+import { ChannelColors, ColorChannelColors } from "../curveEditorColors";
 
 const useStyles = makeStyles({
     root: {
@@ -135,34 +136,34 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
         switch (animation.dataType) {
             case AnimationEnum.ANIMATIONTYPE_COLOR3:
                 return [
-                    { name: "Red", color: "#DB3E3E" },
-                    { name: "Green", color: "#51E22D" },
-                    { name: "Blue", color: "#00A3FF" },
+                    { name: "Red", color: ColorChannelColors.R },
+                    { name: "Green", color: ColorChannelColors.G },
+                    { name: "Blue", color: ColorChannelColors.B },
                 ];
             case AnimationEnum.ANIMATIONTYPE_COLOR4:
                 return [
-                    { name: "Red", color: "#DB3E3E" },
-                    { name: "Green", color: "#51E22D" },
-                    { name: "Blue", color: "#00A3FF" },
-                    { name: "Alpha", color: "#FFFFFF" },
+                    { name: "Red", color: ColorChannelColors.R },
+                    { name: "Green", color: ColorChannelColors.G },
+                    { name: "Blue", color: ColorChannelColors.B },
+                    { name: "Alpha", color: ColorChannelColors.A },
                 ];
             case AnimationEnum.ANIMATIONTYPE_VECTOR2:
                 return [
-                    { name: "X", color: "#DB3E3E" },
-                    { name: "Y", color: "#51E22D" },
+                    { name: "X", color: ChannelColors.X },
+                    { name: "Y", color: ChannelColors.Y },
                 ];
             case AnimationEnum.ANIMATIONTYPE_VECTOR3:
                 return [
-                    { name: "X", color: "#DB3E3E" },
-                    { name: "Y", color: "#51E22D" },
-                    { name: "Z", color: "#00A3FF" },
+                    { name: "X", color: ChannelColors.X },
+                    { name: "Y", color: ChannelColors.Y },
+                    { name: "Z", color: ChannelColors.Z },
                 ];
             case AnimationEnum.ANIMATIONTYPE_QUATERNION:
                 return [
-                    { name: "X", color: "#DB3E3E" },
-                    { name: "Y", color: "#51E22D" },
-                    { name: "Z", color: "#00A3FF" },
-                    { name: "W", color: "#8700FF" },
+                    { name: "X", color: ChannelColors.X },
+                    { name: "Y", color: ChannelColors.Y },
+                    { name: "Z", color: ChannelColors.Z },
+                    { name: "W", color: ChannelColors.W },
                 ];
             default:
                 return [];
@@ -186,12 +187,8 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
                 </div>
                 <span className={styles.name}>{animation.name}</span>
                 <div className={`${styles.actions} ${isHovered ? styles.actionsVisible : ""}`}>
-                    <Tooltip content="Edit animation" relationship="label">
-                        <Button icon={SettingsRegular} appearance="transparent" onClick={handleGear} />
-                    </Tooltip>
-                    <Tooltip content="Delete animation" relationship="label">
-                        <Button icon={DeleteRegular} appearance="transparent" onClick={handleDelete} />
-                    </Tooltip>
+                    <Button icon={SettingsRegular} appearance="transparent" onClick={handleGear} title="Edit animation" />
+                    <Button icon={DeleteRegular} appearance="transparent" onClick={handleDelete} title="Delete animation" />
                 </div>
             </div>
             {isExpanded && getSubEntries().map((sub) => <AnimationSubEntry key={sub.name} animation={animation} subName={sub.name} color={sub.color} />)}

@@ -55,6 +55,7 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
     const { state, observables } = useCurveEditor();
     const svgRef = useRef<SVGSVGElement>(null);
     const [viewWidth, setViewWidth] = useState(width);
+    const [displayFrame, setDisplayFrame] = useState(state.activeFrame);
     const [, forceUpdate] = useState({});
 
     // Update view width on resize
@@ -69,7 +70,8 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
 
         const onResize = observables.onHostWindowResized.add(updateWidth);
         const onRangeUpdated = observables.onRangeUpdated.add(() => forceUpdate({}));
-        const onPlayheadMoved = observables.onPlayheadMoved.add(() => forceUpdate({}));
+        // Track playhead position during playback using local state to avoid full context re-renders
+        const onPlayheadMoved = observables.onPlayheadMoved.add((frame) => setDisplayFrame(frame));
 
         return () => {
             observables.onHostWindowResized.remove(onResize);
@@ -77,6 +79,13 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
             observables.onPlayheadMoved.remove(onPlayheadMoved);
         };
     }, [observables]);
+
+    // Sync display frame with state.activeFrame when not playing
+    useEffect(() => {
+        if (!state.isPlaying) {
+            setDisplayFrame(state.activeFrame);
+        }
+    }, [state.activeFrame, state.isPlaying]);
 
     // Compute frame ticks
     const frameTicks = useMemo(() => {
@@ -137,15 +146,15 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
         return lines;
     }, [state.activeAnimations, frameToX, styles.keyframeLine]);
 
-    // Render active frame marker
+    // Render active frame marker - uses displayFrame for smooth updates during playback
     const renderActiveFrame = useMemo(() => {
-        if (state.activeFrame === null || state.activeFrame === undefined) {
+        if (displayFrame === null || displayFrame === undefined) {
             return null;
         }
 
-        const x = frameToX(state.activeFrame);
+        const x = frameToX(displayFrame);
         return <line className={styles.activeFrameLine} x1={x} y1={0} x2={x} y2={40} />;
-    }, [state.activeFrame, frameToX, styles.activeFrameLine]);
+    }, [displayFrame, frameToX, styles.activeFrameLine]);
 
     const viewBox = `${-OFFSET_X} 0 ${viewWidth + OFFSET_X * 4} 40`;
 
