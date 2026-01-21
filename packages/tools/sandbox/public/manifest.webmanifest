@@ -1,6 +1,6 @@
 {
-    "name": "Babylon.js Sandbox V2",
-    "short_name": "Sandbox V2",
+    "name": "Babylon.js Sandbox",
+    "short_name": "Sandbox",
     "start_url": "/",
     "display": "standalone",
     "display_override": ["window-controls-overlay"],
