@@ -59,6 +59,9 @@ export class Sandbox extends React.Component<
     private _camera?: number;
     private _engine?: AbstractEngine;
 
+    // Stores files from Launch Queue until filesInput is ready
+    private _pendingLaunchFiles: File[] | null = null;
+
     /**
      * Constructs the Sandbox component
      * @param props Component props
@@ -163,59 +166,6 @@ export class Sandbox extends React.Component<
 
         // Set initial document title based on display mode
         this._updateDocumentTitle("");
-    }
-
-    // Stores files from Launch Queue until filesInput is ready
-    private _pendingLaunchFiles: File[] | null = null;
-
-    /**
-     * Sets up the Launch Queue consumer to capture files opened via PWA file handlers.
-     * Files are stored and processed once filesInput is ready.
-     */
-    private _setupLaunchQueueHandler() {
-        // Check if Launch Queue API is available (PWA file handlers)
-        if (!("launchQueue" in window)) {
-            return;
-        }
-
-        // Set consumer immediately to capture files
-        (window as Window & { launchQueue: ILaunchQueue }).launchQueue.setConsumer(async (launchParams) => {
-            if (!launchParams.files || launchParams.files.length === 0) {
-                return;
-            }
-
-            // Get File objects from file handles
-            const filePromises = launchParams.files.map(async (handle) => await handle.getFile());
-            const files = await Promise.all(filePromises);
-
-            // If filesInput is already ready, load immediately
-            if (this._globalState.filesInput) {
-                this._loadFilesIntoSandbox(files);
-            } else {
-                // Store for later when filesInput is ready
-                this._pendingLaunchFiles = files;
-            }
-        });
-
-        // When filesInput becomes ready, process any pending files
-        this._globalState.onFilesInputReady.addOnce(() => {
-            if (this._pendingLaunchFiles) {
-                this._loadFilesIntoSandbox(this._pendingLaunchFiles);
-                this._pendingLaunchFiles = null;
-            }
-        });
-    }
-
-    /**
-     * Loads files into the sandbox via filesInput
-     * @param files Array of File objects to load
-     */
-    private _loadFilesIntoSandbox(files: File[]) {
-        // Create a fake event that loadFiles expects
-        const fakeEvent = {
-            dataTransfer: { files: files },
-        };
-        this._globalState.filesInput.loadFiles(fakeEvent);
     }
 
     /**
@@ -369,6 +319,56 @@ export class Sandbox extends React.Component<
                 )}
             </div>
         );
+    }
+
+    /**
+     * Sets up the Launch Queue consumer to capture files opened via PWA file handlers.
+     * Files are stored and processed once filesInput is ready.
+     */
+    private _setupLaunchQueueHandler() {
+        // Check if Launch Queue API is available (PWA file handlers)
+        if (!("launchQueue" in window)) {
+            return;
+        }
+
+        // Set consumer immediately to capture files
+        (window as Window & { launchQueue: ILaunchQueue }).launchQueue.setConsumer(async (launchParams) => {
+            if (!launchParams.files || launchParams.files.length === 0) {
+                return;
+            }
+
+            // Get File objects from file handles
+            const filePromises = launchParams.files.map(async (handle) => await handle.getFile());
+            const files = await Promise.all(filePromises);
+
+            // If filesInput is already ready, load immediately
+            if (this._globalState.filesInput) {
+                this._loadFilesIntoSandbox(files);
+            } else {
+                // Store for later when filesInput is ready
+                this._pendingLaunchFiles = files;
+            }
+        });
+
+        // When filesInput becomes ready, process any pending files
+        this._globalState.onFilesInputReady.addOnce(() => {
+            if (this._pendingLaunchFiles) {
+                this._loadFilesIntoSandbox(this._pendingLaunchFiles);
+                this._pendingLaunchFiles = null;
+            }
+        });
+    }
+
+    /**
+     * Loads files into the sandbox via filesInput
+     * @param files Array of File objects to load
+     */
+    private _loadFilesIntoSandbox(files: File[]) {
+        // Create a fake event that loadFiles expects
+        const fakeEvent = {
+            dataTransfer: { files: files },
+        };
+        this._globalState.filesInput.loadFiles(fakeEvent);
     }
 
     /**
