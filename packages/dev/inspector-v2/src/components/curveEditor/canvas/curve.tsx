@@ -3,6 +3,7 @@ import type { Animation } from "core/Animations/animation";
 
 import { useCallback, useRef, useState } from "react";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
+import { GraphColors } from "../curveEditorColors";
 
 export type CurveKeyData = {
     /** Frame number */
@@ -271,6 +272,9 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
         const currentCurve = curveRef.current;
         onKeyFrameChanged(currentCurve.animation, keyIndex, currentCurve.component, constrainedFrame);
         onKeyValueChanged(currentCurve.animation, keyIndex, currentCurve.component, newValue);
+
+        // Trigger re-render to update the curve path
+        forceUpdateRef.current();
     }, []);
 
     // Handle pointer up on key point
@@ -438,7 +442,7 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
                                 y1={tangentResult.y}
                                 x2={tangentResult.inX}
                                 y2={tangentResult.inY}
-                                stroke="#FFD700"
+                                stroke={GraphColors.tangentHandle}
                                 strokeWidth={2}
                             />
                         );
@@ -448,8 +452,8 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
                                 cx={tangentResult.inX}
                                 cy={tangentResult.inY}
                                 r={5}
-                                fill="#FFD700"
-                                stroke="white"
+                                fill={GraphColors.tangentHandle}
+                                stroke={GraphColors.keypointStroke}
                                 strokeWidth={1}
                                 style={{ cursor: "pointer" }}
                             />
@@ -464,7 +468,7 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
                                 y1={tangentResult.y}
                                 x2={tangentResult.outX}
                                 y2={tangentResult.outY}
-                                stroke="#FFD700"
+                                stroke={GraphColors.tangentHandle}
                                 strokeWidth={2}
                             />
                         );
@@ -474,8 +478,8 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
                                 cx={tangentResult.outX}
                                 cy={tangentResult.outY}
                                 r={5}
-                                fill="#FFD700"
-                                stroke="white"
+                                fill={GraphColors.tangentHandle}
+                                stroke={GraphColors.keypointStroke}
                                 strokeWidth={1}
                                 style={{ cursor: "pointer" }}
                             />
@@ -490,8 +494,8 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
                     <polygon
                         key={`key-${index}`}
                         points={points}
-                        fill={isBeingDragged || isSelected ? "white" : curve.color}
-                        stroke={isSelected ? "#FFD700" : "white"}
+                        fill={isBeingDragged || isSelected ? GraphColors.keypointStroke : curve.color}
+                        stroke={isSelected ? GraphColors.selectedKeypoint : GraphColors.keypointStroke}
                         strokeWidth={isSelected ? 2 : 1}
                         style={{ cursor: "pointer" }}
                         onPointerDown={(e) => handleKeyPointerDown(e, index, key)}

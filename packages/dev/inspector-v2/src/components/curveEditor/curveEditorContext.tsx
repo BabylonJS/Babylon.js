@@ -383,6 +383,7 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
             }
 
             setActiveFrame(frame);
+            observables.current.onPlayheadMoved.notifyObservers(frame);
 
             if (!isPlaying) {
                 if (rootAnimationGroup) {

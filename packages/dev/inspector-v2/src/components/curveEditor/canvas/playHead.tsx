@@ -77,6 +77,7 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
         // the PlayHead component notifies observers but doesn't update context state).
         const onPlayheadMoved = observables.onPlayheadMoved.add((frame) => {
             setCurrentFrame(frame);
+            lastFrameRef.current = frame; // Keep lastFrameRef in sync to prevent reset on stop
             // Only update context if not playing - during playback, frame updates
             // come from our own RAF loop and shouldn't trigger context re-renders
             if (!state.isPlaying) {

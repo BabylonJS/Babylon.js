@@ -11,6 +11,7 @@ import { Quaternion } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 
 import { useCurveEditor } from "../curveEditorContext";
+import { useObservableState } from "../../../hooks/observableHooks";
 import { Curve, type CurveData } from "./curve";
 import { ChannelColors, ColorChannelColors, DefaultCurveColor, GraphColors } from "../curveEditorColors";
 
@@ -82,8 +83,10 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
     const [offsetY, setOffsetY] = useState(0);
     const [isPointerDown, setIsPointerDown] = useState(false);
     const [pointerStart, setPointerStart] = useState({ x: 0, y: 0 });
-    const [updateCounter, forceUpdate] = useState(0);
     const [selectedKey, setSelectedKey] = useState<{ curveId: string; keyIndex: number } | null>(null);
+
+    // Re-render when active animation or range changes - use counter to invalidate memoized curves
+    const animationVersion = useObservableState(() => Date.now(), observables.onActiveAnimationChanged, observables.onRangeUpdated);
 
     // Ensure dimensions are valid
     const safeWidth = Math.max(1, width);
@@ -92,16 +95,8 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
     const graphOffsetX = 30;
     const viewWidth = safeWidth - graphOffsetX;
 
-    // Subscribe to animation changes to force re-render
+    // Subscribe to action observables
     useEffect(() => {
-        const onActiveAnimationChanged = observables.onActiveAnimationChanged.add(() => {
-            forceUpdate((c) => c + 1);
-        });
-
-        const onRangeUpdated = observables.onRangeUpdated.add(() => {
-            forceUpdate((c) => c + 1);
-        });
-
         // Handle create or update key point
         const onCreateOrUpdateKeyPointRequired = observables.onCreateOrUpdateKeyPointRequired.add(() => {
             if (state.activeAnimations.length === 0) {
@@ -373,8 +368,6 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         });
 
         return () => {
-            observables.onActiveAnimationChanged.remove(onActiveAnimationChanged);
-            observables.onRangeUpdated.remove(onRangeUpdated);
             observables.onCreateOrUpdateKeyPointRequired.remove(onCreateOrUpdateKeyPointRequired);
             observables.onFrameRequired.remove(onFrameRequired);
             observables.onDeleteKeyActiveKeyPoints.remove(onDeleteKeyActiveKeyPoints);
@@ -643,7 +636,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         }
 
         return result;
-    }, [state.activeAnimations, state.activeChannels, updateCounter]);
+    }, [state.activeAnimations, state.activeChannels, animationVersion]);
 
     // Calculate value range
     const valueRange = useMemo(() => {

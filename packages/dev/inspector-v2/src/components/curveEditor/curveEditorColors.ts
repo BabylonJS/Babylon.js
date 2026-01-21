@@ -51,4 +51,10 @@ export const GraphColors = {
     valueAxisLabel: "#555555",
     /** Value axis background */
     valueAxisBackground: "#111111",
+    /** Selected keypoint color (gold) */
+    selectedKeypoint: "#FFD700",
+    /** Default keypoint stroke color */
+    keypointStroke: "#ffffff",
+    /** Tangent handle color */
+    tangentHandle: "#FFD700",
 } as const;

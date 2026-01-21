@@ -4,6 +4,7 @@ import { makeStyles } from "@fluentui/react-components";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useCurveEditor } from "../curveEditorContext";
+import { useObservableState } from "../../../hooks/observableHooks";
 
 const useStyles = makeStyles({
     root: {
@@ -56,7 +57,9 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
     const svgRef = useRef<SVGSVGElement>(null);
     const [viewWidth, setViewWidth] = useState(width);
     const [displayFrame, setDisplayFrame] = useState(state.activeFrame);
-    const [, forceUpdate] = useState({});
+
+    // Re-render when range updates
+    useObservableState(() => ({}), observables.onRangeUpdated);
 
     // Update view width on resize
     useEffect(() => {
@@ -69,13 +72,11 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
         updateWidth();
 
         const onResize = observables.onHostWindowResized.add(updateWidth);
-        const onRangeUpdated = observables.onRangeUpdated.add(() => forceUpdate({}));
         // Track playhead position during playback using local state to avoid full context re-renders
         const onPlayheadMoved = observables.onPlayheadMoved.add((frame) => setDisplayFrame(frame));
 
         return () => {
             observables.onHostWindowResized.remove(onResize);
-            observables.onRangeUpdated.remove(onRangeUpdated);
             observables.onPlayheadMoved.remove(onPlayheadMoved);
         };
     }, [observables]);

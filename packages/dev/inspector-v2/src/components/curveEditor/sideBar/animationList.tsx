@@ -3,13 +3,14 @@ import type { Animation } from "core/Animations/animation";
 import type { TargetedAnimation } from "core/Animations/animationGroup";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { ChevronDownRegular, ChevronRightRegular, SettingsRegular, DeleteRegular, CircleSmallFilled } from "@fluentui/react-icons";
 import { Animation as AnimationEnum } from "core/Animations/animation";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { useCurveEditor } from "../curveEditorContext";
 import { ChannelColors, ColorChannelColors } from "../curveEditorColors";
+import { useObservableState } from "../../../hooks/observableHooks";
 
 const useStyles = makeStyles({
     root: {
@@ -185,7 +186,9 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
                         <CircleSmallFilled />
                     )}
                 </div>
-                <span className={styles.name}>{animation.name}</span>
+                <span className={styles.name} title={animation.name}>
+                    {animation.name}
+                </span>
                 <div className={`${styles.actions} ${isHovered ? styles.actionsVisible : ""}`}>
                     <Button icon={SettingsRegular} appearance="transparent" onClick={handleGear} title="Edit animation" />
                     <Button icon={DeleteRegular} appearance="transparent" onClick={handleDelete} title="Delete animation" />
@@ -244,18 +247,8 @@ export const AnimationList: FunctionComponent = () => {
     const styles = useStyles();
     const { state, observables } = useCurveEditor();
 
-    const [, forceUpdate] = useState({});
-
-    // Subscribe to observables
-    useEffect(() => {
-        const onAnimationsLoaded = observables.onAnimationsLoaded.add(() => {
-            forceUpdate({});
-        });
-
-        return () => {
-            observables.onAnimationsLoaded.remove(onAnimationsLoaded);
-        };
-    }, [observables]);
+    // Re-render when animations are loaded or changed (e.g. animation deleted)
+    useObservableState(() => ({}), observables.onAnimationsLoaded, observables.onActiveAnimationChanged);
 
     // Get animations from target if available (for dynamically added animations), otherwise from state
     const animations = state.target?.animations ?? state.animations;

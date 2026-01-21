@@ -120,8 +120,20 @@ export const SideBar: FunctionComponent = () => {
 
             // Update target if exists
             const target = targetRef.current;
-            if (target) {
-                target.animations = (target.animations ?? []).filter((a: Animation) => a !== animation);
+            if (target && target.animations) {
+                target.animations = target.animations.filter((a: Animation) => a !== animation);
+            }
+
+            // Also update state.animations if it's an array we can filter
+            // This mutates the array in place since we can't setState on a prop
+            if (state.animations) {
+                const index = state.animations.findIndex((a) => {
+                    const anim = state.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation);
+                    return anim === animation;
+                });
+                if (index !== -1) {
+                    state.animations.splice(index, 1);
+                }
             }
 
             observables.onAnimationsLoaded.notifyObservers();
