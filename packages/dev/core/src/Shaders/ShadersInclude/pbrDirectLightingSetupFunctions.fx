@@ -132,4 +132,27 @@ preLightingInfo computeAreaPreLightingInfo(sampler2D ltc1, sampler2D ltc2, vec3 
     result.surfaceAlbedo = vec3(0.);
 	return result;
 }
+
+preLightingInfo computeAreaPreLightingInfoWithTexture(sampler2D ltc1, sampler2D ltc2, sampler2D emissionTexture, vec3 viewDirectionW, vec3 vNormal, vec3 vPosition, vec4 lightData, vec3 halfWidth, vec3 halfHeight, float roughness )
+{
+	preLightingInfo result;
+    result.lightOffset = lightData.xyz - vPosition;
+    result.lightDistanceSquared = dot(result.lightOffset, result.lightOffset);
+    // Roughness.
+    result.lightDistance = sqrt(result.lightDistanceSquared);
+
+	areaLightData data = computeAreaLightSpecularDiffuseFresnelWithEmission(ltc1, ltc2, emissionTexture, viewDirectionW, vNormal, vPosition, lightData.xyz, halfWidth, halfHeight, roughness);
+#ifdef SPECULARTERM
+    result.areaLightFresnel = data.Fresnel;
+    result.areaLightSpecular = data.Specular;
+#endif
+	result.areaLightDiffuse = data.Diffuse;
+
+    result.LdotV = 0.;
+    result.roughness = 0.;
+    result.diffuseRoughness = 0.;
+    result.surfaceAlbedo = vec3(0.);
+	return result;
+}
+
 #endif
