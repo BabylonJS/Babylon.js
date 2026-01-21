@@ -51,13 +51,9 @@ export class AreaLightTextureTools {
         this._renderer = new EffectRenderer(this._engine);
         this._scalingRange = new Vector2();
 
-        let kernelSize = this._blurSize;
-        let alpha = (kernelSize / 2.0) * this._alphaFactor;
-        this._kernelLibrary.push(this._generateGaussianKernel(kernelSize, alpha));
-
-        for (let i = 1; i < 512; i++) {
-            kernelSize = this._blurSize + i * 2;
-            alpha = (kernelSize / 2.0) * this._alphaFactor;
+        for (let i = 0; i < 512; i++) {
+            const kernelSize = this._blurSize + (i + 1) * 2;
+            const alpha = (kernelSize / 2.0) * this._alphaFactor;
             this._kernelLibrary.push(this._generateGaussianKernel(kernelSize, alpha));
         }
     }
