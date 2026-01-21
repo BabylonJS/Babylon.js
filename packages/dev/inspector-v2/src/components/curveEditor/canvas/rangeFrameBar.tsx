@@ -175,10 +175,8 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
                     );
                 })}
 
-                {/* Keyframe markers */}
                 {renderKeyframes}
 
-                {/* Active frame marker */}
                 {renderActiveFrame}
             </svg>
         </div>

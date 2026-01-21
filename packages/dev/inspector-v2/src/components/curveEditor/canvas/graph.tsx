@@ -929,10 +929,8 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                 onPointerUp={handlePointerUp}
                 onWheel={handleWheel}
             >
-                {/* Grid */}
                 {renderGrid()}
 
-                {/* Curves */}
                 {curves.map((curve) => {
                     const curveId = `${curve.animation.uniqueId}-${curve.component}`;
                     return (
@@ -966,7 +964,6 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                     );
                 })}
 
-                {/* Value Axis - rendered last to be on top */}
                 {renderValueAxis()}
             </svg>
         </div>

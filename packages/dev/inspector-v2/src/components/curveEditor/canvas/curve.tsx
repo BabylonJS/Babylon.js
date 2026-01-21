@@ -510,10 +510,8 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, frameToX, valueToY
 
     return (
         <g>
-            {/* Curve path */}
             <path d={generatePath()} fill="none" stroke={curve.color} strokeWidth={2} />
 
-            {/* Key points */}
             {renderKeyPoints()}
         </g>
     );
