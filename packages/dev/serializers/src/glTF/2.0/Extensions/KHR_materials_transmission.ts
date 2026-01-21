@@ -65,13 +65,15 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
         return additionalTextures;
     }
 
-    private _isExtensionEnabled(mat: PBRMaterial): boolean {
+    private _isExtensionEnabled(mat: Material): boolean {
         // This extension must not be used on a material that also uses KHR_materials_unlit
-        if (mat.unlit) {
-            return false;
+        if (mat instanceof OpenPBRMaterial && !mat.unlit) {
+            return mat.transmissionWeight > 0;
+        } else if (mat instanceof PBRMaterial && !mat.unlit) {
+            const subs = mat.subSurface;
+            return (subs.isRefractionEnabled && subs.refractionIntensity != undefined && subs.refractionIntensity != 0) || mat.subSurface.refractionIntensityTexture != null;
         }
-        const subs = mat.subSurface;
-        return (subs.isRefractionEnabled && subs.refractionIntensity != undefined && subs.refractionIntensity != 0) || mat.subSurface.refractionIntensityTexture != null;
+        return false;
     }
 
     /**
@@ -82,7 +84,10 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
      * @returns true if successful
      */
     public async postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
-        if (babylonMaterial instanceof PBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
+        if (!this._isExtensionEnabled(babylonMaterial)) {
+            return node;
+        }
+        if (babylonMaterial instanceof PBRMaterial) {
             this._wasUsed = true;
 
             const subSurface = babylonMaterial.subSurface;
@@ -109,7 +114,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
 
             node.extensions ||= {};
             node.extensions[NAME] = transmissionInfo;
-        } else if (babylonMaterial instanceof OpenPBRMaterial && babylonMaterial.transmissionWeight > 0) {
+        } else if (babylonMaterial instanceof OpenPBRMaterial) {
             this._wasUsed = true;
 
             const transmissionFactor = babylonMaterial.transmissionWeight;

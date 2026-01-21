@@ -8,6 +8,7 @@ const NAME = "KHR_materials_openpbr";
 
 /**
  * TODO: Add link to specification)
+ * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_openpbr implements IGLTFExporterExtensionV2 {

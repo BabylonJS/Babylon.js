@@ -38,6 +38,7 @@ function multiScatterToSingleScatterAlbedo(multiScatter: Color3): Vector3 {
 /**
  * TODO: In-progress specification
  * [Specification](https://github.com/KhronosGroup/glTF/blob/7ea427ed55d44427e83c0a6d1c87068b1a4151c5/extensions/2.0/Khronos/KHR_materials_volume_scatter/README.md)
+ * @experimental
  * @since 9.0.0
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
