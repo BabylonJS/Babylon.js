@@ -86,7 +86,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
             predicate: IsNodeParticleSystem,
             content: [
                 {
-                    section: "Blocks",
+                    section: "Inputs",
                     order: 3,
                     component: ({ context }) => <ParticleSystemNodeEditorProperties particleSystem={context} selectionService={selectionService} />,
                 },
