@@ -2,14 +2,18 @@ import type { PerformanceViewerCollector, Scene } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { Observable } from "core/Misc/observable";
 import { PerfCollectionStrategy } from "core/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import "core/Misc/PerformanceViewer/performanceViewerSceneExtension";
 import { PressureObserverWrapper } from "core/Misc/pressureObserverWrapper";
 import { Tools } from "core/Misc/tools";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
+import type { IPerfLayoutSize } from "../performanceViewer/graphSupportingTypes";
+import { PerformanceViewerPopup } from "../performanceViewer/performanceViewerPopup";
 
 const enum PerfMetadataCategory {
     Count = "Count",
@@ -42,10 +46,17 @@ const DefaultStrategiesList = [
     { strategyCallback: PerfCollectionStrategy.GpuFrameTimeStrategy(), category: PerfMetadataCategory.FrameSteps, hidden: true },
 ] as const;
 
+// arbitrary window size
+const InitialWindowSize = { width: 1024, height: 512 };
+const InitialGraphSize = { width: 724, height: 512 };
+
 export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoadedFromCsv, setIsLoadedFromCsv] = useState(false);
     const [performanceCollector, setPerformanceCollector] = useState<PerformanceViewerCollector | undefined>();
+    const [layoutObservable] = useState(() => new Observable<IPerfLayoutSize>());
+    const [returnToLiveObservable] = useState(() => new Observable<void>());
+    const childWindowRef = useRef<{ open: (options?: { defaultWidth?: number; defaultHeight?: number; title?: string }) => void; close: () => void }>(null);
 
     useEffect(() => {
         if (!isLoadedFromCsv) {
@@ -55,13 +66,31 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
                 addStrategies(performanceCollector);
             }
         }
-    }, [isLoadedFromCsv]);
+    }, [isLoadedFromCsv, performanceCollector]);
 
-    const startPerformanceViewerPopup = () => {
-        if (performanceCollector) {
-            // TODO
+    const onClosePerformanceViewer = useCallback(() => {
+        setIsLoadedFromCsv(false);
+        setIsOpen(false);
+    }, []);
+
+    const onResize = useCallback(
+        (childWindow: Window) => {
+            const width = childWindow?.innerWidth ?? 0;
+            const height = childWindow?.innerHeight ?? 0;
+            layoutObservable.notifyObservers({ width, height });
+        },
+        [layoutObservable]
+    );
+
+    const startPerformanceViewerPopup = useCallback(() => {
+        if (performanceCollector && childWindowRef.current) {
+            childWindowRef.current.open({
+                defaultWidth: InitialWindowSize.width,
+                defaultHeight: InitialWindowSize.height,
+                title: "Realtime Performance Viewer",
+            });
         }
-    };
+    }, [performanceCollector]);
 
     const onPerformanceButtonClick = () => {
         setIsOpen(true);
@@ -125,7 +154,19 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
         const perfCollector = scene.getPerfCollector();
         addStrategies(perfCollector);
         setPerformanceCollector(perfCollector);
-    }, []);
+    }, [scene]);
+
+    // Handle child window resize
+    useEffect(() => {
+        const handleResize = () => {
+            const win = window;
+            if (win) {
+                onResize(win);
+            }
+        };
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, [onResize]);
 
     return (
         <>
@@ -133,6 +174,17 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
             {!isOpen && <FileUploadLine label="Load Perf Viewer using CSV" accept=".csv" onClick={onLoadClick} />}
             <ButtonLine label="Export Perf to CSV" onClick={onExportClick} />
             {!isOpen && <ButtonLine label={performanceCollector?.isStarted ? "Stop Recording" : "Begin Recording"} onClick={onToggleRecording} />}
+            <ChildWindow id="performance-viewer" imperativeRef={childWindowRef} onOpenChange={(open) => !open && onClosePerformanceViewer()}>
+                {performanceCollector && (
+                    <PerformanceViewerPopup
+                        scene={scene}
+                        layoutObservable={layoutObservable}
+                        returnToLiveObservable={returnToLiveObservable}
+                        performanceCollector={performanceCollector}
+                        initialGraphSize={InitialGraphSize}
+                    />
+                )}
+            </ChildWindow>
         </>
     );
 };
