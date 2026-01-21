@@ -23,7 +23,7 @@ import { BoundProperty } from "../boundProperty";
  * @param props Component props.
  * @returns Render property lines.
  */
-export const ParticleSystemGeneralProperties: FunctionComponent<{ particleSystem: ParticleSystem | GPUParticleSystem; selectionService: ISelectionService }> = (props) => {
+export const ParticleSystemSystemProperties: FunctionComponent<{ particleSystem: ParticleSystem | GPUParticleSystem; selectionService: ISelectionService }> = (props) => {
     const { particleSystem: system, selectionService } = props;
     const isCpuParticleSystem = system instanceof ParticleSystem;
     const isNodeGenerated = isCpuParticleSystem && system.isNodeGenerated;

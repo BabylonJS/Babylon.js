@@ -3,13 +3,20 @@ import { ParticleSystem } from "core/Particles/particleSystem";
 import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import type { FunctionComponent } from "react";
 
+import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
 import { useCallback } from "react";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { BoundProperty } from "../boundProperty";
-import { useObservableArray } from "./useObservableArray";
+import { useObservableArray } from "../../../hooks/useObservableArray";
+
+const useStyles = makeStyles({
+    subsection: {
+        marginTop: tokens.spacingVerticalM,
+    },
+});
 
 /**
  * Display lifetime-related properties for a particle system.
@@ -31,6 +38,8 @@ export const ParticleSystemLifetimeProperties: FunctionComponent<{ particleSyste
     );
     const useLifeTimeGradients = (lifeTimeGradients?.length ?? 0) > 0;
 
+    const classes = useStyles();
+
     return (
         <>
             <BoundProperty component={NumberInputPropertyLine} label="Min lifetime" target={system} propertyKey="minLifeTime" min={0} step={0.1} />
@@ -47,25 +56,28 @@ export const ParticleSystemLifetimeProperties: FunctionComponent<{ particleSyste
             )}
 
             {useLifeTimeGradients && (
-                <FactorGradientList
-                    gradients={lifeTimeGradients}
-                    label="Lifetime Gradient"
-                    removeGradient={(gradient: FactorGradient) => {
-                        system.removeLifeTimeGradient(gradient.gradient);
-                        system.forceRefreshGradients();
-                    }}
-                    addGradient={(gradient?: FactorGradient) => {
-                        if (gradient) {
-                            system.addLifeTimeGradient(gradient.gradient, gradient.factor1, gradient.factor2);
-                        } else {
-                            system.addLifeTimeGradient(0, system.minLifeTime, system.maxLifeTime);
-                        }
-                        system.forceRefreshGradients();
-                    }}
-                    onChange={(_gradient: FactorGradient) => {
-                        system.forceRefreshGradients();
-                    }}
-                />
+                <>
+                    <Subtitle2 className={classes.subsection}>Lifetime Gradients</Subtitle2>
+                    <FactorGradientList
+                        gradients={lifeTimeGradients}
+                        label="Lifetime Gradient"
+                        removeGradient={(gradient: FactorGradient) => {
+                            system.removeLifeTimeGradient(gradient.gradient);
+                            system.forceRefreshGradients();
+                        }}
+                        addGradient={(gradient?: FactorGradient) => {
+                            if (gradient) {
+                                system.addLifeTimeGradient(gradient.gradient, gradient.factor1, gradient.factor2);
+                            } else {
+                                system.addLifeTimeGradient(0, system.minLifeTime, system.maxLifeTime);
+                            }
+                            system.forceRefreshGradients();
+                        }}
+                        onChange={(_gradient: FactorGradient) => {
+                            system.forceRefreshGradients();
+                        }}
+                    />
+                </>
             )}
 
             <BoundProperty component={NumberInputPropertyLine} label="Target stop duration" target={system} propertyKey="targetStopDuration" min={0} step={0.1} />

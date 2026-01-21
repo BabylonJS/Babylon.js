@@ -2,6 +2,7 @@ import type { FactorGradient } from "core/Misc";
 import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import type { FunctionComponent } from "react";
 
+import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { useCallback } from "react";
 
@@ -9,7 +10,13 @@ import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propert
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
 import { BoundProperty } from "../boundProperty";
-import { useObservableArray } from "./useObservableArray";
+import { useObservableArray } from "../../../hooks/useObservableArray";
+
+const useStyles = makeStyles({
+    subsection: {
+        marginTop: tokens.spacingVerticalM,
+    },
+});
 
 /**
  * Display size-related properties for a particle system.
@@ -41,6 +48,8 @@ export const ParticleSystemSizeProperties: FunctionComponent<{ particleSystem: P
     );
     const useSizeGradients = (sizeGradient?.length ?? 0) > 0;
 
+    const classes = useStyles();
+
     return (
         <>
             <BoundProperty component={NumberInputPropertyLine} label="Min size" target={system} propertyKey="minSize" min={0} step={0.1} />
@@ -61,25 +70,28 @@ export const ParticleSystemSizeProperties: FunctionComponent<{ particleSystem: P
             )}
 
             {useStartSizeGradients && (
-                <FactorGradientList
-                    gradients={startSizeGradient}
-                    label="Start Size Gradient"
-                    removeGradient={(gradient: FactorGradient) => {
-                        system.removeStartSizeGradient(gradient.gradient);
-                        system.forceRefreshGradients();
-                    }}
-                    addGradient={(gradient?: FactorGradient) => {
-                        if (gradient) {
-                            system.addStartSizeGradient(gradient.gradient, gradient.factor1, gradient.factor2);
-                        } else {
-                            system.addStartSizeGradient(0, system.minSize, system.maxSize);
-                        }
-                        system.forceRefreshGradients();
-                    }}
-                    onChange={(_gradient: FactorGradient) => {
-                        system.forceRefreshGradients();
-                    }}
-                />
+                <>
+                    <Subtitle2 className={classes.subsection}>Start Size Gradients</Subtitle2>
+                    <FactorGradientList
+                        gradients={startSizeGradient}
+                        label="Start Size Gradient"
+                        removeGradient={(gradient: FactorGradient) => {
+                            system.removeStartSizeGradient(gradient.gradient);
+                            system.forceRefreshGradients();
+                        }}
+                        addGradient={(gradient?: FactorGradient) => {
+                            if (gradient) {
+                                system.addStartSizeGradient(gradient.gradient, gradient.factor1, gradient.factor2);
+                            } else {
+                                system.addStartSizeGradient(0, system.minSize, system.maxSize);
+                            }
+                            system.forceRefreshGradients();
+                        }}
+                        onChange={(_gradient: FactorGradient) => {
+                            system.forceRefreshGradients();
+                        }}
+                    />
+                </>
             )}
 
             {!useSizeGradients && (
@@ -93,25 +105,28 @@ export const ParticleSystemSizeProperties: FunctionComponent<{ particleSystem: P
             )}
 
             {useSizeGradients && (
-                <FactorGradientList
-                    gradients={sizeGradient}
-                    label="Size Gradient"
-                    removeGradient={(gradient: FactorGradient) => {
-                        system.removeSizeGradient(gradient.gradient);
-                        system.forceRefreshGradients();
-                    }}
-                    addGradient={(gradient?: FactorGradient) => {
-                        if (gradient) {
-                            system.addSizeGradient(gradient.gradient, gradient.factor1, gradient.factor2);
-                        } else {
-                            system.addSizeGradient(0, system.minSize, system.maxSize);
-                        }
-                        system.forceRefreshGradients();
-                    }}
-                    onChange={(_gradient: FactorGradient) => {
-                        system.forceRefreshGradients();
-                    }}
-                />
+                <>
+                    <Subtitle2 className={classes.subsection}>Size Gradients</Subtitle2>
+                    <FactorGradientList
+                        gradients={sizeGradient}
+                        label="Size Gradient"
+                        removeGradient={(gradient: FactorGradient) => {
+                            system.removeSizeGradient(gradient.gradient);
+                            system.forceRefreshGradients();
+                        }}
+                        addGradient={(gradient?: FactorGradient) => {
+                            if (gradient) {
+                                system.addSizeGradient(gradient.gradient, gradient.factor1, gradient.factor2);
+                            } else {
+                                system.addSizeGradient(0, system.minSize, system.maxSize);
+                            }
+                            system.forceRefreshGradients();
+                        }}
+                        onChange={(_gradient: FactorGradient) => {
+                            system.forceRefreshGradients();
+                        }}
+                    />
+                </>
             )}
         </>
     );

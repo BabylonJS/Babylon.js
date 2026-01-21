@@ -7,7 +7,7 @@ import { SelectionServiceIdentity } from "../../selectionService";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 
-import { ParticleSystemGeneralProperties } from "../../../components/properties/particles/generalProperties";
+import { ParticleSystemSystemProperties } from "../../../components/properties/particles/systemProperties";
 import { ParticleSystemCommandProperties } from "../../../components/properties/particles/commandsProperties";
 import { ParticleSystemEmitterProperties } from "../../../components/properties/particles/emitterProperties";
 import { ParticleSystemSizeProperties } from "../../../components/properties/particles/sizeProperties";
@@ -43,14 +43,14 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // Note: section `order` is not globally sorted across different registrations, so call order matters.
 
         // Register sections for non-node-generated particle systems.
-        const particleSystemGeneralContent = propertiesService.addSectionContent({
-            key: "Particle System General Properties",
+        const particleSystemSystemContent = propertiesService.addSectionContent({
+            key: "Particle System System Properties",
             predicate: IsParticleSystem,
             content: [
                 {
-                    section: "General",
+                    section: "System",
                     order: 1,
-                    component: ({ context }) => <ParticleSystemGeneralProperties particleSystem={context} selectionService={selectionService} />,
+                    component: ({ context }) => <ParticleSystemSystemProperties particleSystem={context} selectionService={selectionService} />,
                 },
             ],
         });
@@ -172,7 +172,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
 
         return {
             dispose: () => {
-                particleSystemGeneralContent.dispose();
+                particleSystemSystemContent.dispose();
                 particleSystemCommandsContent.dispose();
                 particleSystemAttractorsContent.dispose();
                 particleSystemEmitterContent.dispose();

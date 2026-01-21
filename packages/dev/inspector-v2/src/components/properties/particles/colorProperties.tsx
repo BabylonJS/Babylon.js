@@ -3,6 +3,7 @@ import type { Color3Gradient } from "core/Misc/gradients";
 import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import type { FunctionComponent } from "react";
 
+import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
 import { useCallback } from "react";
 import { Color3 } from "core/Maths/math.color";
 import { ParticleSystem } from "core/Particles/particleSystem";
@@ -13,7 +14,13 @@ import { Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
-import { useObservableArray } from "./useObservableArray";
+import { useObservableArray } from "../../../hooks/useObservableArray";
+
+const useStyles = makeStyles({
+    subsection: {
+        marginTop: tokens.spacingVerticalM,
+    },
+});
 
 /**
  * Display color-related properties for a particle system.
@@ -67,6 +74,8 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
     const hasColorRemapGradients = (colorRemapGradients?.length ?? 0) > 0;
     const hasAlphaRemapGradients = (alphaRemapGradients?.length ?? 0) > 0;
 
+    const classes = useStyles();
+
     return (
         <>
             <BoundProperty component={Color4PropertyLine} label="Color 1" target={system} propertyKey="color1" />
@@ -85,26 +94,29 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
             )}
 
             {hasColorGradients && (
-                <Color4GradientList
-                    gradients={colorGradients}
-                    label="Color Gradient"
-                    removeGradient={(gradient: ColorGradient) => {
-                        system.removeColorGradient(gradient.gradient);
-                        system.forceRefreshGradients();
-                    }}
-                    addGradient={(gradient?: ColorGradient) => {
-                        if (gradient) {
-                            system.addColorGradient(gradient.gradient, gradient.color1, gradient.color2);
-                        } else {
-                            system.addColorGradient(0, system.color1, system.color1);
-                            system.addColorGradient(1, system.color2, system.color2);
-                        }
-                        system.forceRefreshGradients();
-                    }}
-                    onChange={(_gradient: ColorGradient) => {
-                        system.forceRefreshGradients();
-                    }}
-                />
+                <>
+                    <Subtitle2 className={classes.subsection}>Color Gradients</Subtitle2>
+                    <Color4GradientList
+                        gradients={colorGradients}
+                        label="Color Gradient"
+                        removeGradient={(gradient: ColorGradient) => {
+                            system.removeColorGradient(gradient.gradient);
+                            system.forceRefreshGradients();
+                        }}
+                        addGradient={(gradient?: ColorGradient) => {
+                            if (gradient) {
+                                system.addColorGradient(gradient.gradient, gradient.color1, gradient.color2);
+                            } else {
+                                system.addColorGradient(0, system.color1, system.color1);
+                                system.addColorGradient(1, system.color2, system.color2);
+                            }
+                            system.forceRefreshGradients();
+                        }}
+                        onChange={(_gradient: ColorGradient) => {
+                            system.forceRefreshGradients();
+                        }}
+                    />
+                </>
             )}
 
             {isCpuParticleSystem && <BoundProperty component={SwitchPropertyLine} label="Enable Ramp gradients" target={system} propertyKey="useRampGradients" />}
@@ -122,26 +134,29 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                     )}
 
                     {hasRampGradients && (
-                        <Color3GradientList
-                            gradients={rampGradients}
-                            label="Ramp Gradient"
-                            removeGradient={(gradient) => {
-                                system.removeRampGradient(gradient.gradient);
-                                system.forceRefreshGradients();
-                            }}
-                            addGradient={(gradient) => {
-                                if (gradient) {
-                                    system.addRampGradient(gradient.gradient, gradient.color);
-                                } else {
-                                    system.addRampGradient(0, Color3.Black());
-                                    system.addRampGradient(1, Color3.White());
-                                }
-                                system.forceRefreshGradients();
-                            }}
-                            onChange={() => {
-                                system.forceRefreshGradients();
-                            }}
-                        />
+                        <>
+                            <Subtitle2 className={classes.subsection}>Ramp Gradients</Subtitle2>
+                            <Color3GradientList
+                                gradients={rampGradients}
+                                label="Ramp Gradient"
+                                removeGradient={(gradient) => {
+                                    system.removeRampGradient(gradient.gradient);
+                                    system.forceRefreshGradients();
+                                }}
+                                addGradient={(gradient) => {
+                                    if (gradient) {
+                                        system.addRampGradient(gradient.gradient, gradient.color);
+                                    } else {
+                                        system.addRampGradient(0, Color3.Black());
+                                        system.addRampGradient(1, Color3.White());
+                                    }
+                                    system.forceRefreshGradients();
+                                }}
+                                onChange={() => {
+                                    system.forceRefreshGradients();
+                                }}
+                            />
+                        </>
                     )}
 
                     {!hasColorRemapGradients && (
@@ -155,25 +170,28 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                     )}
 
                     {hasColorRemapGradients && (
-                        <FactorGradientList
-                            gradients={colorRemapGradients}
-                            label="Color Remap Gradient"
-                            removeGradient={(gradient: FactorGradient) => {
-                                system.removeColorRemapGradient(gradient.gradient);
-                                system.forceRefreshGradients();
-                            }}
-                            addGradient={(gradient?: FactorGradient) => {
-                                if (gradient) {
-                                    system.addColorRemapGradient(gradient.gradient, gradient.factor1 ?? 0, gradient.factor2 ?? 1);
-                                } else {
-                                    system.addColorRemapGradient(0, 0, 1);
-                                }
-                                system.forceRefreshGradients();
-                            }}
-                            onChange={(_gradient: FactorGradient) => {
-                                system.forceRefreshGradients();
-                            }}
-                        />
+                        <>
+                            <Subtitle2 className={classes.subsection}>Color Remap Gradients</Subtitle2>
+                            <FactorGradientList
+                                gradients={colorRemapGradients}
+                                label="Color Remap Gradient"
+                                removeGradient={(gradient: FactorGradient) => {
+                                    system.removeColorRemapGradient(gradient.gradient);
+                                    system.forceRefreshGradients();
+                                }}
+                                addGradient={(gradient?: FactorGradient) => {
+                                    if (gradient) {
+                                        system.addColorRemapGradient(gradient.gradient, gradient.factor1 ?? 0, gradient.factor2 ?? 1);
+                                    } else {
+                                        system.addColorRemapGradient(0, 0, 1);
+                                    }
+                                    system.forceRefreshGradients();
+                                }}
+                                onChange={(_gradient: FactorGradient) => {
+                                    system.forceRefreshGradients();
+                                }}
+                            />
+                        </>
                     )}
 
                     {!hasAlphaRemapGradients && (
@@ -187,25 +205,28 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                     )}
 
                     {hasAlphaRemapGradients && (
-                        <FactorGradientList
-                            gradients={alphaRemapGradients}
-                            label="Alpha Remap Gradient"
-                            removeGradient={(gradient: FactorGradient) => {
-                                system.removeAlphaRemapGradient(gradient.gradient);
-                                system.forceRefreshGradients();
-                            }}
-                            addGradient={(gradient?: FactorGradient) => {
-                                if (gradient) {
-                                    system.addAlphaRemapGradient(gradient.gradient, gradient.factor1 ?? 0, gradient.factor2 ?? 1);
-                                } else {
-                                    system.addAlphaRemapGradient(0, 0, 1);
-                                }
-                                system.forceRefreshGradients();
-                            }}
-                            onChange={(_gradient: FactorGradient) => {
-                                system.forceRefreshGradients();
-                            }}
-                        />
+                        <>
+                            <Subtitle2 className={classes.subsection}>Alpha Remap Gradients</Subtitle2>
+                            <FactorGradientList
+                                gradients={alphaRemapGradients}
+                                label="Alpha Remap Gradient"
+                                removeGradient={(gradient: FactorGradient) => {
+                                    system.removeAlphaRemapGradient(gradient.gradient);
+                                    system.forceRefreshGradients();
+                                }}
+                                addGradient={(gradient?: FactorGradient) => {
+                                    if (gradient) {
+                                        system.addAlphaRemapGradient(gradient.gradient, gradient.factor1 ?? 0, gradient.factor2 ?? 1);
+                                    } else {
+                                        system.addAlphaRemapGradient(0, 0, 1);
+                                    }
+                                    system.forceRefreshGradients();
+                                }}
+                                onChange={(_gradient: FactorGradient) => {
+                                    system.forceRefreshGradients();
+                                }}
+                            />
+                        </>
                     )}
                 </>
             )}

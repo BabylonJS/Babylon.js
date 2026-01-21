@@ -2,6 +2,7 @@ import type { FactorGradient } from "core/index";
 import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import type { FunctionComponent } from "react";
 
+import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { useCallback } from "react";
 
@@ -9,7 +10,13 @@ import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { BoundProperty } from "../boundProperty";
-import { useObservableArray } from "./useObservableArray";
+import { useObservableArray } from "../../../hooks/useObservableArray";
+
+const useStyles = makeStyles({
+    subsection: {
+        marginTop: tokens.spacingVerticalM,
+    },
+});
 
 /**
  * Display emission-related properties for a particle system.
@@ -62,6 +69,8 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
     const useLimitVelocityGradients = (limitVelocityGradients?.length ?? 0) > 0;
     const useDragGradients = (dragGradients?.length ?? 0) > 0;
 
+    const classes = useStyles();
+
     return (
         <>
             <BoundProperty component={NumberInputPropertyLine} label="Emit rate" target={system} propertyKey="emitRate" min={0} step={1} />
@@ -77,25 +86,28 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
             )}
 
             {useEmitRateGradients && (
-                <FactorGradientList
-                    gradients={emitRateGradients}
-                    label="Emit Rate Gradient"
-                    removeGradient={(gradient: FactorGradient) => {
-                        system.removeEmitRateGradient(gradient.gradient);
-                        system.forceRefreshGradients();
-                    }}
-                    addGradient={(gradient?: FactorGradient) => {
-                        if (gradient) {
-                            system.addEmitRateGradient(gradient.gradient, gradient.factor1, gradient.factor2);
-                        } else {
-                            system.addEmitRateGradient(0, system.emitRate, system.emitRate);
-                        }
-                        system.forceRefreshGradients();
-                    }}
-                    onChange={(_gradient: FactorGradient) => {
-                        system.forceRefreshGradients();
-                    }}
-                />
+                <>
+                    <Subtitle2 className={classes.subsection}>Emit Rate Gradients</Subtitle2>
+                    <FactorGradientList
+                        gradients={emitRateGradients}
+                        label="Emit Rate Gradient"
+                        removeGradient={(gradient: FactorGradient) => {
+                            system.removeEmitRateGradient(gradient.gradient);
+                            system.forceRefreshGradients();
+                        }}
+                        addGradient={(gradient?: FactorGradient) => {
+                            if (gradient) {
+                                system.addEmitRateGradient(gradient.gradient, gradient.factor1, gradient.factor2);
+                            } else {
+                                system.addEmitRateGradient(0, system.emitRate, system.emitRate);
+                            }
+                            system.forceRefreshGradients();
+                        }}
+                        onChange={(_gradient: FactorGradient) => {
+                            system.forceRefreshGradients();
+                        }}
+                    />
+                </>
             )}
 
             <BoundProperty component={NumberInputPropertyLine} label="Min Emit Power" target={system} propertyKey="minEmitPower" min={0} step={0.1} />
