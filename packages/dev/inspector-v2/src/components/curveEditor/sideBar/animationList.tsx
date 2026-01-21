@@ -120,7 +120,8 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
     const handleGear = useCallback(
         (evt?: React.MouseEvent) => {
             evt?.stopPropagation();
-            observables.onEditAnimationRequired.notifyObservers(animation);
+            const anchor = evt?.currentTarget as HTMLElement;
+            observables.onEditAnimationRequired.notifyObservers({ animation, anchor });
         },
         [animation, observables]
     );

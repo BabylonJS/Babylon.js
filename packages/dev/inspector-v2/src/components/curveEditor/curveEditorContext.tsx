@@ -195,7 +195,7 @@ export type CurveEditorObservables = {
     /** Fired when animations are loaded */
     onAnimationsLoaded: Observable<void>;
     /** Fired when edit animation is required */
-    onEditAnimationRequired: Observable<Animation>;
+    onEditAnimationRequired: Observable<{ animation: Animation; anchor: HTMLElement }>;
     /** Fired when edit animation UI is closed */
     onEditAnimationUIClosed: Observable<void>;
     /** Fired when clip length is increased */

@@ -21,11 +21,20 @@ const useStyles = makeStyles({
 type PopoverWithIconProps = {
     icon: FluentIcon;
     trigger?: never;
+    positioningTarget?: never;
 };
 
 type PopoverWithTriggerProps = {
     icon?: never;
     trigger: ReactElement;
+    positioningTarget?: never;
+};
+
+type PopoverWithPositioningTargetProps = {
+    icon?: never;
+    trigger?: never;
+    /** External element to position the popover relative to (no trigger rendered) */
+    positioningTarget: HTMLElement | null;
 };
 
 type PopoverBaseProps = {
@@ -39,7 +48,7 @@ type PopoverBaseProps = {
     surfaceClassName?: string;
 };
 
-type PopoverProps = PopoverBaseProps & (PopoverWithIconProps | PopoverWithTriggerProps);
+type PopoverProps = PopoverBaseProps & (PopoverWithIconProps | PopoverWithTriggerProps | PopoverWithPositioningTargetProps);
 
 export const Popover = forwardRef<HTMLButtonElement, PropsWithChildren<PopoverProps>>((props, ref) => {
     const { children, open: controlledOpen, onOpenChange, positioning, surfaceClassName } = props;
@@ -55,6 +64,27 @@ export const Popover = forwardRef<HTMLButtonElement, PropsWithChildren<PopoverPr
         }
         onOpenChange?.(data.open);
     };
+
+    // When using positioningTarget, render without a trigger
+    if (props.positioningTarget !== undefined) {
+        const positioningConfig = positioning && typeof positioning === "object" ? positioning : {};
+        return (
+            <FluentPopover
+                open={popoverOpen}
+                onOpenChange={handleOpenChange}
+                positioning={{
+                    target: props.positioningTarget ?? undefined,
+                    position: "after",
+                    ...positioningConfig,
+                }}
+                trapFocus
+            >
+                <PopoverSurface className={surfaceClassName ?? classes.surface}>
+                    <div className={classes.content}>{children}</div>
+                </PopoverSurface>
+            </FluentPopover>
+        );
+    }
 
     return (
         <FluentPopover

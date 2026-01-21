@@ -7,7 +7,7 @@ import { PlayRegular, PreviousRegular, NextRegular, ArrowPreviousRegular, ArrowN
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
 import { useCurveEditor } from "./curveEditorContext";
-import { RangeSelector } from "./bottomBar/rangeSelector";
+import { RangeSelector } from "./rangeSelector";
 
 const useStyles = makeStyles({
     root: {

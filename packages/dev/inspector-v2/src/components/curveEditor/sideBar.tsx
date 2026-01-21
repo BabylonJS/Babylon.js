@@ -1,6 +1,6 @@
 import type { FunctionComponent } from "react";
 
-import { makeStyles, tokens, Dialog, DialogSurface, DialogBody, DialogTitle, DialogContent } from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AddRegular, ArrowDownloadRegular, SaveRegular } from "@fluentui/react-icons";
 import type { Animation } from "core/Animations/animation";
@@ -64,6 +64,10 @@ const useStyles = makeStyles({
         maxHeight: "500px",
         overflow: "auto",
     },
+    editPopoverSurface: {
+        padding: tokens.spacingHorizontalM,
+        maxWidth: "350px",
+    },
 });
 
 type PopoverType = "add" | "load" | "save" | "editAnimation" | null;
@@ -79,6 +83,7 @@ export const SideBar: FunctionComponent = () => {
     const [openPopover, setOpenPopover] = useState<PopoverType>(null);
     const [fps, setFps] = useState(60);
     const [editingAnimation, setEditingAnimation] = useState<Animation | null>(null);
+    const editAnchorRef = useRef<HTMLElement | null>(null);
 
     // Get FPS from animations
     useEffect(() => {
@@ -100,8 +105,9 @@ export const SideBar: FunctionComponent = () => {
 
     // Subscribe to edit animation request
     useEffect(() => {
-        const observer = observables.onEditAnimationRequired.add((animation: Animation) => {
+        const observer = observables.onEditAnimationRequired.add(({ animation, anchor }) => {
             setEditingAnimation(animation);
+            editAnchorRef.current = anchor;
             setOpenPopover("editAnimation");
         });
         return () => {
@@ -203,33 +209,28 @@ export const SideBar: FunctionComponent = () => {
                 <AnimationList />
             </div>
 
-            {/* Edit animation dialog - triggered from animation list gear icon */}
-            <Dialog
+            {/* Edit animation popover - triggered from animation list gear icon */}
+            <Popover
                 open={openPopover === "editAnimation" && editingAnimation !== null}
-                onOpenChange={(_, data) => {
-                    if (!data.open) {
+                onOpenChange={(open) => {
+                    if (!open) {
                         setOpenPopover(null);
                         setEditingAnimation(null);
                     }
                 }}
+                positioningTarget={editAnchorRef.current}
+                surfaceClassName={styles.editPopoverSurface}
             >
-                <DialogSurface>
-                    <DialogBody>
-                        <DialogTitle>Edit Animation</DialogTitle>
-                        <DialogContent>
-                            {editingAnimation && (
-                                <EditAnimationPanel
-                                    animation={editingAnimation}
-                                    onClose={() => {
-                                        setEditingAnimation(null);
-                                        setOpenPopover(null);
-                                    }}
-                                />
-                            )}
-                        </DialogContent>
-                    </DialogBody>
-                </DialogSurface>
-            </Dialog>
+                {editingAnimation && (
+                    <EditAnimationPanel
+                        animation={editingAnimation}
+                        onClose={() => {
+                            setEditingAnimation(null);
+                            setOpenPopover(null);
+                        }}
+                    />
+                )}
+            </Popover>
         </div>
     );
 };
