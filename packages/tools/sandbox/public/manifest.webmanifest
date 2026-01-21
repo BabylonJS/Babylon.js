@@ -1,7 +1,7 @@
 {
     "name": "Babylon.js Sandbox",
     "short_name": "Sandbox",
-    "start_url": "/",
+    "start_url": "./",
     "display": "standalone",
     "display_override": ["window-controls-overlay"],
     "background_color": "#2a2342",
@@ -53,7 +53,7 @@
     },
     "file_handlers": [
         {
-            "action": "/",
+            "action": "./",
             "accept": {
                 "model/gltf-binary": [".glb"],
                 "model/gltf+json": [".gltf"],
