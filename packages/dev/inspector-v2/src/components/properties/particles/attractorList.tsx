@@ -1,5 +1,6 @@
 import type { FunctionComponent } from "react";
 
+import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
 import { useCallback, useEffect, useState } from "react";
 
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -9,6 +10,7 @@ import type { Nullable } from "core/types";
 import type { ListItem } from "shared-ui-components/fluent/primitives/list";
 
 import { GizmoManager } from "core/Gizmos/gizmoManager";
+import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3 } from "core/Maths/math.color";
 import { Attractor } from "core/Particles/attractor";
@@ -17,6 +19,12 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { List } from "shared-ui-components/fluent/primitives/list";
 import { useResource } from "../../../hooks/resourceHooks";
 import { AttractorComponent } from "./attractor";
+
+const useStyles = makeStyles({
+    subsection: {
+        marginTop: tokens.spacingVerticalM,
+    },
+});
 
 type AttractorListProps = {
     scene: Scene;
@@ -38,7 +46,12 @@ function AttractorsToListItems(attractors: Nullable<Array<Attractor>>) {
 }
 
 const CreateGizmoManager = (scene: Scene) => {
-    const gizmoManager = new GizmoManager(scene);
+    const gizmoManager = new GizmoManager(
+        scene,
+        1,
+        UtilityLayerRenderer._CreateDefaultUtilityLayerFromScene(scene),
+        UtilityLayerRenderer._CreateDefaultKeepUtilityLayerFromScene(scene)
+    );
     gizmoManager.positionGizmoEnabled = true;
     gizmoManager.attachableMeshes = [];
     return gizmoManager;
@@ -80,12 +93,15 @@ export const AttractorList: FunctionComponent<AttractorListProps> = (props) => {
         setControlledImpostor(attached);
     };
 
+    const classes = useStyles();
+
     return (
         <>
             {items.length > 0 && (
                 <>
                     <Color3PropertyLine label="Attractor Debug Color" value={impostorColor} onChange={setImpostorColor} />
                     <SyncedSliderPropertyLine label="Attractor Debug Size" value={impostorScale} onChange={setImpostorScale} min={0} max={10} step={0.1} />
+                    <Subtitle2 className={classes.subsection}>Attractors list</Subtitle2>
                 </>
             )}
             <List

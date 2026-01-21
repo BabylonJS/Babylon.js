@@ -104,12 +104,23 @@ export class UtilityLayerRenderer implements IDisposable {
      */
     public static get DefaultKeepDepthUtilityLayer(): UtilityLayerRenderer {
         if (UtilityLayerRenderer._DefaultKeepDepthUtilityLayer == null) {
-            UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = new UtilityLayerRenderer(EngineStore.LastCreatedScene!);
-            UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
-            UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
-                UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = null;
-            });
+            return UtilityLayerRenderer._CreateDefaultKeepUtilityLayerFromScene(EngineStore.LastCreatedScene!);
         }
+        return UtilityLayerRenderer._DefaultKeepDepthUtilityLayer;
+    }
+
+    /**
+     * Creates an utility layer, and set it as a default utility layer (Depth map of the previous scene is not cleared before drawing on top of it)
+     * @param scene associated scene
+     * @internal
+     */
+    public static _CreateDefaultKeepUtilityLayerFromScene(scene: Scene): UtilityLayerRenderer {
+        UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = new UtilityLayerRenderer(scene);
+        UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
+        UtilityLayerRenderer._DefaultKeepDepthUtilityLayer.originalScene.onDisposeObservable.addOnce(() => {
+            UtilityLayerRenderer._DefaultKeepDepthUtilityLayer = null;
+        });
+
         return UtilityLayerRenderer._DefaultKeepDepthUtilityLayer;
     }
 
