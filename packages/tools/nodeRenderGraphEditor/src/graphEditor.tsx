@@ -364,7 +364,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             if (this.props.globalState.hostScene) {
                 // We wait for the graph to be ready only if the editor is linked to a host scene (most probabaly a playground).
                 // Else, the node render graph is a dummy one for editing purpose only.
-                await nodeRenderGraph.buildAsync();
+                await nodeRenderGraph.buildAsync(false, true, false);
             } else {
                 await nodeRenderGraph.buildAsync(false, false);
             }
