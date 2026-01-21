@@ -57,13 +57,13 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
                 useTargetAnimations={true}
             />
             <BoundProperty component={SyncedSliderPropertyLine} label="Speed Ratio" min={0} max={10} step={0.1} target={animationGroup} propertyKey="speedRatio" />
-            {currentFrameHolder ? (
+            {currentFrameHolder && currentFrame !== undefined ? (
                 <SyncedSliderPropertyLine
                     label="Current Frame"
                     min={animationGroup.from}
                     max={animationGroup.to}
                     step={(animationGroup.to - animationGroup.from) / 1000.0}
-                    value={currentFrame!}
+                    value={currentFrame}
                     onChange={(value) => {
                         if (!animationGroup.isPlaying) {
                             animationGroup.play(true);

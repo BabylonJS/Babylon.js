@@ -15,6 +15,7 @@ const useStyles = makeStyles({
         borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
         userSelect: "none",
         overflow: "hidden",
+        position: "relative",
     },
     tick: {
         position: "absolute",
@@ -66,12 +67,12 @@ export const FrameBar: FunctionComponent<FrameBarProps> = ({ width }) => {
         };
     }, [observables]);
 
-    // Generate tick marks
+    // Generate tick marks - use reference frames for full visible range
     const renderTicks = useCallback(() => {
         const ticks: JSX.Element[] = [];
-        const { fromKey, toKey } = state;
+        const { referenceMinFrame, referenceMaxFrame } = state;
 
-        const range = toKey - fromKey;
+        const range = referenceMaxFrame - referenceMinFrame;
         if (range <= 0 || viewWidth <= 0) {
             return ticks;
         }
@@ -90,11 +91,11 @@ export const FrameBar: FunctionComponent<FrameBarProps> = ({ width }) => {
             tickSpacing = 5;
         }
 
-        const startFrame = Math.floor(fromKey / tickSpacing) * tickSpacing;
-        const endFrame = Math.ceil(toKey / tickSpacing) * tickSpacing;
+        const startFrame = Math.floor(referenceMinFrame / tickSpacing) * tickSpacing;
+        const endFrame = Math.ceil(referenceMaxFrame / tickSpacing) * tickSpacing;
 
         for (let frame = startFrame; frame <= endFrame; frame += tickSpacing) {
-            const x = graphOffsetX + ((frame - fromKey) / range) * viewWidth * scale + offsetX;
+            const x = graphOffsetX + ((frame - referenceMinFrame) / range) * viewWidth * scale + offsetX;
 
             if (x >= graphOffsetX && x <= width) {
                 ticks.push(
@@ -107,10 +108,10 @@ export const FrameBar: FunctionComponent<FrameBarProps> = ({ width }) => {
         }
 
         return ticks;
-    }, [state.fromKey, state.toKey, viewWidth, width, scale, offsetX, styles]);
+    }, [state.referenceMinFrame, state.referenceMaxFrame, viewWidth, width, scale, offsetX, styles]);
 
     return (
-        <div className={styles.root} ref={containerRef} style={{ position: "relative" }}>
+        <div className={styles.root} ref={containerRef}>
             {renderTicks()}
         </div>
     );

@@ -1,15 +1,19 @@
 import type { FunctionComponent } from "react";
 
-import { makeStyles, tokens, Tooltip } from "@fluentui/react-components";
-import { useCallback, useEffect, useState } from "react";
-import { AddRegular, ArrowDownloadRegular, SaveRegular, EditRegular } from "@fluentui/react-icons";
+import { makeStyles, tokens } from "@fluentui/react-components";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AddRegular, ArrowDownloadRegular, SaveRegular } from "@fluentui/react-icons";
 import type { Animation } from "core/Animations/animation";
 import type { TargetedAnimation } from "core/Animations/animationGroup";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
+import { Popover } from "shared-ui-components/fluent/primitives/popover";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
 import { useCurveEditor } from "./curveEditorContext";
 import { AnimationList } from "./sideBar/animationList";
+import { AddAnimationPanel } from "./sideBar/addAnimationPanel";
+import { LoadAnimationPanel } from "./sideBar/loadAnimationPanel";
+import { SaveAnimationPanel } from "./sideBar/saveAnimationPanel";
 
 const useStyles = makeStyles({
     root: {
@@ -54,9 +58,14 @@ const useStyles = makeStyles({
         overflow: "auto",
         padding: tokens.spacingHorizontalS,
     },
+    popoverSurface: {
+        padding: tokens.spacingHorizontalM,
+        maxHeight: "500px",
+        overflow: "auto",
+    },
 });
 
-type Mode = "edit" | "add" | "load" | "save";
+type PopoverType = "add" | "load" | "save" | null;
 
 /**
  * Sidebar component for the curve editor with animation list and controls
@@ -64,9 +73,9 @@ type Mode = "edit" | "add" | "load" | "save";
  */
 export const SideBar: FunctionComponent = () => {
     const styles = useStyles();
-    const { state, observables } = useCurveEditor();
+    const { state, actions, observables } = useCurveEditor();
 
-    const [mode, setMode] = useState<Mode>("edit");
+    const [openPopover, setOpenPopover] = useState<PopoverType>(null);
     const [fps, setFps] = useState(60);
 
     // Get FPS from animations
@@ -80,11 +89,47 @@ export const SideBar: FunctionComponent = () => {
     // Subscribe to animations loaded
     useEffect(() => {
         const observer = observables.onAnimationsLoaded.add(() => {
-            setMode("edit");
+            setOpenPopover(null);
         });
         return () => {
             observables.onAnimationsLoaded.remove(observer);
         };
+    }, [observables]);
+
+    // Subscribe to delete animation request - use ref to access current state.target
+    const targetRef = useRef(state.target);
+    targetRef.current = state.target;
+
+    useEffect(() => {
+        const observer = observables.onDeleteAnimation.add((animation: Animation) => {
+            // Remove from active animations
+            actions.setActiveAnimations((prev) => prev.filter((a) => a !== animation));
+
+            // Update target if exists
+            const target = targetRef.current;
+            if (target && target.animations) {
+                target.animations = target.animations.filter((a: Animation) => a !== animation);
+            }
+
+            // Also update state.animations if it's an array we can filter
+            // This mutates the array in place since we can't setState on a prop
+            if (state.animations) {
+                const index = state.animations.findIndex((a) => {
+                    const anim = state.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation);
+                    return anim === animation;
+                });
+                if (index !== -1) {
+                    state.animations.splice(index, 1);
+                }
+            }
+
+            observables.onAnimationsLoaded.notifyObservers();
+            observables.onActiveAnimationChanged.notifyObservers({});
+        });
+        return () => {
+            observables.onDeleteAnimation.remove(observer);
+        };
+        // Note: We intentionally don't include actions in deps because setActiveAnimations is stable
     }, [observables]);
 
     const handleFpsChange = useCallback(
@@ -108,20 +153,32 @@ export const SideBar: FunctionComponent = () => {
             <div className={styles.menuBar}>
                 {!state.useTargetAnimations && (
                     <>
-                        <Tooltip content="Add new animation" relationship="label">
-                            <Button icon={AddRegular} appearance={mode === "add" ? "primary" : "subtle"} onClick={() => setMode("add")} />
-                        </Tooltip>
-                        <Tooltip content="Load animations" relationship="label">
-                            <Button icon={ArrowDownloadRegular} appearance={mode === "load" ? "primary" : "subtle"} onClick={() => setMode("load")} />
-                        </Tooltip>
+                        <Popover
+                            open={openPopover === "add"}
+                            onOpenChange={(open) => setOpenPopover(open ? "add" : null)}
+                            positioning="below-start"
+                            trigger={<Button icon={AddRegular} appearance={openPopover === "add" ? "primary" : "subtle"} title="Add new animation" />}
+                        >
+                            <AddAnimationPanel onClose={() => setOpenPopover(null)} />
+                        </Popover>
+                        <Popover
+                            open={openPopover === "load"}
+                            onOpenChange={(open) => setOpenPopover(open ? "load" : null)}
+                            positioning="below-start"
+                            trigger={<Button icon={ArrowDownloadRegular} appearance={openPopover === "load" ? "primary" : "subtle"} title="Load animations" />}
+                        >
+                            <LoadAnimationPanel onClose={() => setOpenPopover(null)} />
+                        </Popover>
                     </>
                 )}
-                <Tooltip content="Save current animations" relationship="label">
-                    <Button icon={SaveRegular} appearance={mode === "save" ? "primary" : "subtle"} onClick={() => setMode("save")} />
-                </Tooltip>
-                <Tooltip content="Edit animations" relationship="label">
-                    <Button icon={EditRegular} appearance={mode === "edit" ? "primary" : "subtle"} onClick={() => setMode("edit")} />
-                </Tooltip>
+                <Popover
+                    open={openPopover === "save"}
+                    onOpenChange={(open) => setOpenPopover(open ? "save" : null)}
+                    positioning="below-start"
+                    trigger={<Button icon={SaveRegular} appearance={openPopover === "save" ? "primary" : "subtle"} title="Save current animations" />}
+                >
+                    <SaveAnimationPanel onClose={() => setOpenPopover(null)} />
+                </Popover>
 
                 <div className={styles.fpsInput}>
                     <SpinButton className={styles.spinButton} value={fps} onChange={handleFpsChange} min={1} max={120} />
@@ -130,39 +187,8 @@ export const SideBar: FunctionComponent = () => {
             </div>
 
             <div className={styles.content}>
-                {mode === "edit" && <AnimationList />}
-                {mode === "add" && <AddAnimationPanel onClose={() => setMode("edit")} />}
-                {mode === "load" && <LoadAnimationPanel onClose={() => setMode("edit")} />}
-                {mode === "save" && <SaveAnimationPanel onClose={() => setMode("edit")} />}
+                <AnimationList />
             </div>
-        </div>
-    );
-};
-
-// Placeholder panels - these would be fully implemented
-const AddAnimationPanel: FunctionComponent<{ onClose: () => void }> = ({ onClose }) => {
-    return (
-        <div>
-            <Button appearance="subtle" onClick={onClose} label="Back" />
-            <p>Add animation panel - to be implemented</p>
-        </div>
-    );
-};
-
-const LoadAnimationPanel: FunctionComponent<{ onClose: () => void }> = ({ onClose }) => {
-    return (
-        <div>
-            <Button appearance="subtle" onClick={onClose} label="Back" />
-            <p>Load animation panel - to be implemented</p>
-        </div>
-    );
-};
-
-const SaveAnimationPanel: FunctionComponent<{ onClose: () => void }> = ({ onClose }) => {
-    return (
-        <div>
-            <Button appearance="subtle" onClick={onClose} label="Back" />
-            <p>Save animation panel - to be implemented</p>
         </div>
     );
 };
