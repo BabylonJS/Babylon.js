@@ -15,6 +15,7 @@ const useStyles = makeStyles({
         borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
         userSelect: "none",
         overflow: "hidden",
+        position: "relative",
     },
     tick: {
         position: "absolute",
@@ -110,7 +111,7 @@ export const FrameBar: FunctionComponent<FrameBarProps> = ({ width }) => {
     }, [state.referenceMinFrame, state.referenceMaxFrame, viewWidth, width, scale, offsetX, styles]);
 
     return (
-        <div className={styles.root} ref={containerRef} style={{ position: "relative" }}>
+        <div className={styles.root} ref={containerRef}>
             {renderTicks()}
         </div>
     );

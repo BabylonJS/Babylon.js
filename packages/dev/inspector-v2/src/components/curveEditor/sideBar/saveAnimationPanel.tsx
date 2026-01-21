@@ -45,6 +45,10 @@ const useStyles = makeStyles({
         color: tokens.colorNeutralForeground3,
         marginTop: tokens.spacingVerticalS,
     },
+    errorText: {
+        color: tokens.colorPaletteRedForeground1,
+        fontSize: tokens.fontSizeBase200,
+    },
 });
 
 type SaveAnimationPanelProps = {
@@ -160,7 +164,7 @@ export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({
                 <Button appearance="secondary" onClick={saveToFile} disabled={selectedAnimations.length === 0} label="Save to File" />
             </div>
 
-            {saveError && <span style={{ color: "var(--colorPaletteRedForeground1)", fontSize: "12px" }}>{saveError}</span>}
+            {saveError && <span className={styles.errorText}>{saveError}</span>}
             {snippetId && <div className={styles.snippetId}>Saved! Snippet ID: {snippetId}</div>}
         </div>
     );

@@ -61,6 +61,9 @@ const useStyles = makeStyles({
     subEntry: {
         paddingLeft: tokens.spacingHorizontalL,
     },
+    subEntryDisabled: {
+        opacity: 0.5,
+    },
     colorDot: {
         width: "8px",
         height: "8px",
@@ -229,7 +232,7 @@ const AnimationSubEntry: FunctionComponent<AnimationSubEntryProps> = ({ animatio
     }, [animation, color, isThisChannelActive, actions, observables]);
 
     return (
-        <div className={`${styles.entry} ${styles.subEntry}`} onClick={handleClick} style={{ opacity: isEnabled ? 1 : 0.5 }}>
+        <div className={`${styles.entry} ${styles.subEntry} ${!isEnabled ? styles.subEntryDisabled : ""}`} onClick={handleClick}>
             <div className={styles.colorDot} style={{ backgroundColor: color }} />
             <span className={styles.name}>{subName}</span>
         </div>

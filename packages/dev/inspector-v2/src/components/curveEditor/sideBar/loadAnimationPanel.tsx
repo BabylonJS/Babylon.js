@@ -1,11 +1,12 @@
 import type { FunctionComponent } from "react";
 
 import { makeStyles, tokens, Input, Label } from "@fluentui/react-components";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { Animation } from "core/Animations/animation";
 import { Tools } from "core/Misc/tools";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
+import { UploadButton } from "shared-ui-components/fluent/primitives/uploadButton";
 import { useCurveEditor } from "../curveEditorContext";
 
 const useStyles = makeStyles({
@@ -36,13 +37,14 @@ const useStyles = makeStyles({
     input: {
         flex: 1,
     },
-    fileInput: {
-        display: "none",
-    },
     snippetId: {
         fontSize: tokens.fontSizeBase200,
         color: tokens.colorNeutralForeground3,
         marginTop: tokens.spacingVerticalS,
+    },
+    errorText: {
+        color: tokens.colorPaletteRedForeground1,
+        fontSize: tokens.fontSizeBase200,
     },
 });
 
@@ -60,12 +62,29 @@ export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = ({
 
     const [snippetIdInput, setSnippetIdInput] = useState("");
     const [loadedSnippetId, setLoadedSnippetId] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [loadError, setLoadError] = useState<string | null>(null);
+
+    const loadAnimations = useCallback(
+        (animations: Animation[]) => {
+            // Update target
+            if (state.target) {
+                state.target.animations = animations;
+            }
+
+            // Update active animations
+            actions.setActiveAnimations(animations.length ? animations : []);
+
+            // Close first so AnimationList mounts, then notify
+            onClose();
+            observables.onAnimationsLoaded.notifyObservers();
+            observables.onActiveAnimationChanged.notifyObservers({});
+        },
+        [state.target, actions, observables, onClose]
+    );
 
     const loadFromFile = useCallback(
-        (evt: React.ChangeEvent<HTMLInputElement>) => {
-            const files = evt.target.files;
-            if (!files || !files.length) {
+        (files: FileList) => {
+            if (!files.length) {
                 return;
             }
 
@@ -81,29 +100,14 @@ export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = ({
                         animations.push(Animation.Parse(parsedAnimation));
                     }
 
-                    // Update target
-                    if (state.target) {
-                        state.target.animations = animations;
-                    }
-
-                    // Update active animations
-                    actions.setActiveAnimations(animations.length ? animations : []);
-
-                    // Close first so AnimationList mounts, then notify
-                    onClose();
-                    observables.onAnimationsLoaded.notifyObservers();
-                    observables.onActiveAnimationChanged.notifyObservers({});
+                    loadAnimations(animations);
                 },
                 undefined,
                 true
             );
-
-            evt.target.value = "";
         },
-        [state.target, actions, observables, onClose]
+        [loadAnimations]
     );
-
-    const [loadError, setLoadError] = useState<string | null>(null);
 
     const loadFromSnippetServer = useCallback(async () => {
         if (!snippetIdInput) {
@@ -117,27 +121,11 @@ export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = ({
             const animations = Array.isArray(result) ? (result as Animation[]) : [result as Animation];
 
             setLoadedSnippetId(snippetIdInput);
-
-            // Update target
-            if (state.target) {
-                state.target.animations = animations;
-            }
-
-            // Update active animations
-            actions.setActiveAnimations(animations.length ? animations : []);
-
-            // Close first so AnimationList mounts, then notify
-            onClose();
-            observables.onAnimationsLoaded.notifyObservers();
-            observables.onActiveAnimationChanged.notifyObservers({});
+            loadAnimations(animations);
         } catch (err) {
             setLoadError("Unable to load animations: " + err);
         }
-    }, [snippetIdInput, state.target, actions, observables, onClose]);
-
-    const handleBrowseClick = useCallback(() => {
-        fileInputRef.current?.click();
-    }, []);
+    }, [snippetIdInput, loadAnimations]);
 
     return (
         <div className={styles.root}>
@@ -151,13 +139,12 @@ export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = ({
                     <Input className={styles.input} placeholder="Snippet ID" value={snippetIdInput} onChange={(_, data) => setSnippetIdInput(data.value)} />
                     <Button appearance="primary" onClick={loadFromSnippetServer} disabled={!snippetIdInput.trim()} label="Load" />
                 </div>
-                {loadError && <span style={{ color: "var(--colorPaletteRedForeground1)", fontSize: "12px" }}>{loadError}</span>}
+                {loadError && <span className={styles.errorText}>{loadError}</span>}
             </div>
 
             <div className={styles.section}>
                 <Label>From File</Label>
-                <input ref={fileInputRef} type="file" accept=".json" className={styles.fileInput} onChange={loadFromFile} />
-                <Button appearance="subtle" onClick={handleBrowseClick} label="Browse..." />
+                <UploadButton appearance="subtle" onUpload={loadFromFile} accept=".json" label="Browse..." />
             </div>
 
             {loadedSnippetId && <div className={styles.snippetId}>Loaded Snippet ID: {loadedSnippetId}</div>}

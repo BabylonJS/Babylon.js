@@ -15,6 +15,12 @@ import { Canvas } from "./canvas/canvas";
 import { BottomBar } from "./bottomBar";
 
 const useStyles = makeStyles({
+    fluentProvider: {
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+    },
     root: {
         display: "flex",
         flexDirection: "column",
@@ -127,9 +133,10 @@ export type CurveEditorProps = {
  */
 export const CurveEditor: FunctionComponent<CurveEditorProps> = (props) => {
     const { scene, target, animations, rootAnimationGroup, title, useTargetAnimations } = props;
+    const styles = useStyles();
 
     return (
-        <FluentProvider theme={webDarkTheme} style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+        <FluentProvider theme={webDarkTheme} className={styles.fluentProvider}>
             <CurveEditorProvider
                 scene={scene}
                 target={target}

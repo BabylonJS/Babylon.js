@@ -26,6 +26,9 @@ const useStyles = makeStyles({
         alignItems: "center",
         gap: tokens.spacingHorizontalXXS,
     },
+    playBackwardIcon: {
+        transform: "scaleX(-1)",
+    },
     frameDisplay: {
         display: "flex",
         flexDirection: "row",
@@ -184,7 +187,7 @@ export const BottomBar: FunctionComponent = () => {
                 </Tooltip>
                 <Tooltip content="Play backward" relationship="label">
                     <FluentButton
-                        icon={<PlayRegular style={{ transform: "scaleX(-1)" }} />}
+                        icon={<PlayRegular className={styles.playBackwardIcon} />}
                         appearance={state.isPlaying && !state.forwardAnimation ? "primary" : "subtle"}
                         size="small"
                         disabled={!hasActiveAnimations}
