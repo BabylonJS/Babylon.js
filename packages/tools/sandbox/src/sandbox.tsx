@@ -364,11 +364,11 @@ export class Sandbox extends React.Component<
      * @param files Array of File objects to load
      */
     private _loadFilesIntoSandbox(files: File[]) {
-        // Create a fake event that loadFiles expects
-        const fakeEvent = {
+        // Create an event that loadFiles expects
+        const event = {
             dataTransfer: { files: files },
         };
-        this._globalState.filesInput.loadFiles(fakeEvent);
+        this._globalState.filesInput.loadFiles(event);
     }
 
     /**
