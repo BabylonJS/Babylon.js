@@ -1,5 +1,7 @@
 // Service worker for Babylon.js Sandbox PWA
 // Provides full offline support by caching app shell and Babylon.js libraries
+// The cache is versioned to allow for updates and we use a stale-while-revalidate strategy
+// (serve from cache immediately, then update in background)
 
 const CACHE_VERSION = "v1";
 const CACHE_NAME = `babylon-sandbox-${CACHE_VERSION}`;
