@@ -18,6 +18,7 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<ParticleInputBlock>>;
@@ -262,6 +263,20 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     )}
                     {!inputBlock.isContextual && !inputBlock.isSystemSource && (
                         <CheckBoxLineComponent label="Display in the Inspector" target={inputBlock} propertyName={"displayInInspector"}></CheckBoxLineComponent>
+                    )}
+                    {!inputBlock.isContextual && !inputBlock.isSystemSource && inputBlock.displayInInspector && (
+                        <TextInputLineComponent
+                            label="Group"
+                            propertyName="groupInInspector"
+                            target={inputBlock}
+                            lockObject={this.props.stateManager.lockObject}
+                            onChange={() => {
+                                this.forceUpdate();
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                            }}
+                            throttlePropertyChangedNotification={true}
+                        />
                     )}
                     {!inputBlock.isContextual && !inputBlock.isSystemSource && (
                         <CheckBoxLineComponent label="Visible on frame" target={inputBlock} propertyName={"visibleOnFrame"}></CheckBoxLineComponent>
