@@ -10,15 +10,15 @@ const APP_SHELL = ["./", "./index.html", "./index.js", "./manifest.webmanifest"]
 // Icons to pre-cache (key sizes for PWA installation)
 const ICONS = [
     // Android icons (required for PWA install)
-    "./android/android-launchericon-192-192.png",
-    "./android/android-launchericon-512-512.png",
+    "./icons/icon-192.png",
+    "./icons/icon-512.png",
     // Windows icons (taskbar, desktop & file associations)
-    "./windows11/Square44x44Logo.targetsize-256.png",
-    "./windows11/Square44x44Logo.targetsize-96.png",
-    "./windows11/Square44x44Logo.targetsize-48.png",
-    "./windows11/Square44x44Logo.targetsize-32.png",
-    "./windows11/Square44x44Logo.targetsize-24.png",
-    "./windows11/Square44x44Logo.targetsize-16.png",
+    "./icons/icon-256.png",
+    "./icons/icon-96.png",
+    "./icons/icon-48.png",
+    "./icons/icon-32.png",
+    "./icons/icon-24.png",
+    "./icons/icon-16.png",
 ];
 
 // External resources to cache

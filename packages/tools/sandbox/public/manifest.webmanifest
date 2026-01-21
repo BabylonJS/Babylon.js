@@ -8,42 +8,42 @@
     "theme_color": "#2a2342",
     "icons": [
         {
-            "src": "android/android-launchericon-512-512.png",
+            "src": "icons/icon-512.png",
             "sizes": "512x512",
             "purpose": "any"
         },
         {
-            "src": "windows11/Square44x44Logo.targetsize-256.png",
+            "src": "icons/icon-256.png",
             "sizes": "256x256",
             "purpose": "any"
         },
         {
-            "src": "android/android-launchericon-192-192.png",
+            "src": "icons/icon-192.png",
             "sizes": "192x192",
             "purpose": "any"
         },
         {
-            "src": "windows11/Square44x44Logo.targetsize-96.png",
+            "src": "icons/icon-96.png",
             "sizes": "96x96",
             "purpose": "any"
         },
         {
-            "src": "windows11/Square44x44Logo.targetsize-48.png",
+            "src": "icons/icon-48.png",
             "sizes": "48x48",
             "purpose": "any"
         },
         {
-            "src": "windows11/Square44x44Logo.targetsize-32.png",
+            "src": "icons/icon-32.png",
             "sizes": "32x32",
             "purpose": "any"
         },
         {
-            "src": "windows11/Square44x44Logo.targetsize-24.png",
+            "src": "icons/icon-24.png",
             "sizes": "24x24",
             "purpose": "any"
         },
         {
-            "src": "windows11/Square44x44Logo.targetsize-16.png",
+            "src": "icons/icon-16.png",
             "sizes": "16x16",
             "purpose": "any"
         }
@@ -63,19 +63,19 @@
             },
             "icons": [
                 {
-                    "src": "windows11/Square44x44Logo.targetsize-256.png",
+                    "src": "icons/icon-256.png",
                     "sizes": "256x256"
                 },
                 {
-                    "src": "windows11/Square44x44Logo.targetsize-48.png",
+                    "src": "icons/icon-48.png",
                     "sizes": "48x48"
                 },
                 {
-                    "src": "windows11/Square44x44Logo.targetsize-32.png",
+                    "src": "icons/icon-32.png",
                     "sizes": "32x32"
                 },
                 {
-                    "src": "windows11/Square44x44Logo.targetsize-16.png",
+                    "src": "icons/icon-16.png",
                     "sizes": "16x16"
                 }
             ]
