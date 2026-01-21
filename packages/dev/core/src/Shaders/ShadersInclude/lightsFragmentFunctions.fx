@@ -181,7 +181,6 @@ lightingInfo computeAreaLightingWithTexture(sampler2D ltc1, sampler2D ltc2, samp
 {
 	lightingInfo result;
 	areaLightData data = computeAreaLightSpecularDiffuseFresnelWithEmission(ltc1, ltc2, emissionTexture, viewDirectionW, vNormal, vPosition, lightPosition, halfWidth, halfHeight, roughness);
-	vec3 textureLight = vec3(1, 1, 1);
 
 #ifdef SPECULARTERM
 	vec3 fresnel = ( specularColor * data.Fresnel.x + ( vec3( 1.0 ) - specularColor ) * data.Fresnel.y );
