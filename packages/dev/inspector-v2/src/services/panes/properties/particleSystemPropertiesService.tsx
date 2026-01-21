@@ -17,13 +17,13 @@ import { ParticleSystemColorProperties } from "../../../components/properties/pa
 import { ParticleSystemRotationProperties } from "../../../components/properties/particles/rotationProperties";
 import { ParticleSystemSpritesheetProperties } from "../../../components/properties/particles/spritesheetProperties";
 import { ParticleSystemAttractorProperties } from "../../../components/properties/particles/attractorProperties";
-import { ParticleSystemNodeProperties } from "../../../components/properties/particles/nodeProperties";
+import { ParticleSystemNodeEditorProperties } from "../../../components/properties/particles/nodeEditorProperties";
 
 function IsParticleSystem(entity: unknown): entity is ParticleSystem | GPUParticleSystem {
     return entity instanceof ParticleSystem || entity instanceof GPUParticleSystem;
 }
 
-function isNodeParticleSystem(entity: unknown): entity is ParticleSystem {
+function IsNodeParticleSystem(entity: unknown): entity is ParticleSystem {
     return entity instanceof ParticleSystem && entity.isNodeGenerated;
 }
 
@@ -83,12 +83,12 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
 
         const particleSystemNodeContent = propertiesService.addSectionContent({
             key: "Particle System Node Properties",
-            predicate: isNodeParticleSystem,
+            predicate: IsNodeParticleSystem,
             content: [
                 {
                     section: "Blocks",
                     order: 3,
-                    component: ({ context }) => <ParticleSystemNodeProperties particleSystem={context} selectionService={selectionService} />,
+                    component: ({ context }) => <ParticleSystemNodeEditorProperties particleSystem={context} selectionService={selectionService} />,
                 },
             ],
         });

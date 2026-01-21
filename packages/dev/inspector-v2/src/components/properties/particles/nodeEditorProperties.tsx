@@ -72,7 +72,7 @@ const InputBlockPropertyLine: FunctionComponent<{ block: SafeInputBlock }> = (pr
  * @param props Component props.
  * @returns Render property lines.
  */
-export const ParticleSystemNodeProperties: FunctionComponent<{ particleSystem: ParticleSystem; selectionService: ISelectionService }> = (props) => {
+export const ParticleSystemNodeEditorProperties: FunctionComponent<{ particleSystem: ParticleSystem; selectionService: ISelectionService }> = (props) => {
     const { particleSystem: system } = props;
 
     const classes = useStyles();
