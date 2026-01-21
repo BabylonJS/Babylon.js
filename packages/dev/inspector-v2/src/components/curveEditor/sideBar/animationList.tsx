@@ -2,13 +2,17 @@ import type { FunctionComponent } from "react";
 import type { Animation } from "core/Animations/animation";
 import type { TargetedAnimation } from "core/Animations/animationGroup";
 
-import { makeStyles, tokens, Tooltip } from "@fluentui/react-components";
-import { useCallback, useEffect, useState } from "react";
+import { makeStyles, tokens } from "@fluentui/react-components";
+import { useCallback, useState } from "react";
 import { ChevronDownRegular, ChevronRightRegular, SettingsRegular, DeleteRegular, CircleSmallFilled } from "@fluentui/react-icons";
 import { Animation as AnimationEnum } from "core/Animations/animation";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
+import { Popover } from "shared-ui-components/fluent/primitives/popover";
 import { useCurveEditor } from "../curveEditorContext";
+import { ChannelColors, ColorChannelColors } from "../curveEditorColors";
+import { useObservableState } from "../../../hooks/observableHooks";
+import { EditAnimationPanel } from "./editAnimationPanel";
 
 const useStyles = makeStyles({
     root: {
@@ -61,6 +65,9 @@ const useStyles = makeStyles({
     subEntry: {
         paddingLeft: tokens.spacingHorizontalL,
     },
+    subEntryDisabled: {
+        opacity: 0.5,
+    },
     colorDot: {
         width: "8px",
         height: "8px",
@@ -84,6 +91,7 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
 
     const [isExpanded, setIsExpanded] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
 
     const isActive = state.activeAnimations.indexOf(animation) !== -1;
     const isExpandable = animation.dataType !== AnimationEnum.ANIMATIONTYPE_FLOAT;
@@ -112,13 +120,9 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
         setIsExpanded((prev) => !prev);
     }, []);
 
-    const handleGear = useCallback(
-        (evt?: React.MouseEvent) => {
-            evt?.stopPropagation();
-            observables.onEditAnimationRequired.notifyObservers(animation);
-        },
-        [animation, observables]
-    );
+    const handleEditOpenChange = useCallback((open: boolean) => {
+        setIsEditOpen(open);
+    }, []);
 
     const handleDelete = useCallback(
         (evt?: React.MouseEvent) => {
@@ -132,34 +136,34 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
         switch (animation.dataType) {
             case AnimationEnum.ANIMATIONTYPE_COLOR3:
                 return [
-                    { name: "Red", color: "#DB3E3E" },
-                    { name: "Green", color: "#51E22D" },
-                    { name: "Blue", color: "#00A3FF" },
+                    { name: "Red", color: ColorChannelColors.R },
+                    { name: "Green", color: ColorChannelColors.G },
+                    { name: "Blue", color: ColorChannelColors.B },
                 ];
             case AnimationEnum.ANIMATIONTYPE_COLOR4:
                 return [
-                    { name: "Red", color: "#DB3E3E" },
-                    { name: "Green", color: "#51E22D" },
-                    { name: "Blue", color: "#00A3FF" },
-                    { name: "Alpha", color: "#FFFFFF" },
+                    { name: "Red", color: ColorChannelColors.R },
+                    { name: "Green", color: ColorChannelColors.G },
+                    { name: "Blue", color: ColorChannelColors.B },
+                    { name: "Alpha", color: ColorChannelColors.A },
                 ];
             case AnimationEnum.ANIMATIONTYPE_VECTOR2:
                 return [
-                    { name: "X", color: "#DB3E3E" },
-                    { name: "Y", color: "#51E22D" },
+                    { name: "X", color: ChannelColors.X },
+                    { name: "Y", color: ChannelColors.Y },
                 ];
             case AnimationEnum.ANIMATIONTYPE_VECTOR3:
                 return [
-                    { name: "X", color: "#DB3E3E" },
-                    { name: "Y", color: "#51E22D" },
-                    { name: "Z", color: "#00A3FF" },
+                    { name: "X", color: ChannelColors.X },
+                    { name: "Y", color: ChannelColors.Y },
+                    { name: "Z", color: ChannelColors.Z },
                 ];
             case AnimationEnum.ANIMATIONTYPE_QUATERNION:
                 return [
-                    { name: "X", color: "#DB3E3E" },
-                    { name: "Y", color: "#51E22D" },
-                    { name: "Z", color: "#00A3FF" },
-                    { name: "W", color: "#8700FF" },
+                    { name: "X", color: ChannelColors.X },
+                    { name: "Y", color: ChannelColors.Y },
+                    { name: "Z", color: ChannelColors.Z },
+                    { name: "W", color: ChannelColors.W },
                 ];
             default:
                 return [];
@@ -181,14 +185,19 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
                         <CircleSmallFilled />
                     )}
                 </div>
-                <span className={styles.name}>{animation.name}</span>
-                <div className={`${styles.actions} ${isHovered ? styles.actionsVisible : ""}`}>
-                    <Tooltip content="Edit animation" relationship="label">
-                        <Button icon={SettingsRegular} appearance="transparent" onClick={handleGear} />
-                    </Tooltip>
-                    <Tooltip content="Delete animation" relationship="label">
-                        <Button icon={DeleteRegular} appearance="transparent" onClick={handleDelete} />
-                    </Tooltip>
+                <span className={styles.name} title={animation.name}>
+                    {animation.name}
+                </span>
+                <div className={`${styles.actions} ${isHovered || isEditOpen ? styles.actionsVisible : ""}`}>
+                    <Popover
+                        open={isEditOpen}
+                        onOpenChange={handleEditOpenChange}
+                        positioning="after"
+                        trigger={<Button icon={SettingsRegular} appearance="transparent" title="Edit animation" />}
+                    >
+                        <EditAnimationPanel animation={animation} onClose={() => setIsEditOpen(false)} />
+                    </Popover>
+                    <Button icon={DeleteRegular} appearance="transparent" onClick={handleDelete} title="Delete animation" />
                 </div>
             </div>
             {isExpanded && getSubEntries().map((sub) => <AnimationSubEntry key={sub.name} animation={animation} subName={sub.name} color={sub.color} />)}
@@ -229,7 +238,7 @@ const AnimationSubEntry: FunctionComponent<AnimationSubEntryProps> = ({ animatio
     }, [animation, color, isThisChannelActive, actions, observables]);
 
     return (
-        <div className={`${styles.entry} ${styles.subEntry}`} onClick={handleClick} style={{ opacity: isEnabled ? 1 : 0.5 }}>
+        <div className={`${styles.entry} ${styles.subEntry} ${!isEnabled ? styles.subEntryDisabled : ""}`} onClick={handleClick}>
             <div className={styles.colorDot} style={{ backgroundColor: color }} />
             <span className={styles.name}>{subName}</span>
         </div>
@@ -244,39 +253,17 @@ export const AnimationList: FunctionComponent = () => {
     const styles = useStyles();
     const { state, observables } = useCurveEditor();
 
-    const [isVisible, setIsVisible] = useState(true);
-    const [, forceUpdate] = useState({});
+    // Re-render when animations are loaded or changed (e.g. animation deleted)
+    useObservableState(() => ({}), observables.onAnimationsLoaded, observables.onActiveAnimationChanged);
 
-    // Subscribe to observables
-    useEffect(() => {
-        const onEditRequired = observables.onEditAnimationRequired.add(() => {
-            setIsVisible(false);
-        });
-
-        const onEditClosed = observables.onEditAnimationUIClosed.add(() => {
-            setIsVisible(true);
-        });
-
-        const onDelete = observables.onDeleteAnimation.add(() => {
-            forceUpdate({});
-        });
-
-        return () => {
-            observables.onEditAnimationRequired.remove(onEditRequired);
-            observables.onEditAnimationUIClosed.remove(onEditClosed);
-            observables.onDeleteAnimation.remove(onDelete);
-        };
-    }, [observables]);
-
-    if (!isVisible) {
-        return null;
-    }
+    // Get animations from target if available (for dynamically added animations), otherwise from state
+    const animations = state.target?.animations ?? state.animations;
 
     return (
         <div className={styles.root}>
-            {state.animations?.map((a: Animation | TargetedAnimation, i: number) => {
+            {animations?.map((a: Animation | TargetedAnimation, i: number) => {
                 const animation = state.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation);
-                return <AnimationEntry key={i} animation={animation} />;
+                return <AnimationEntry key={animation.uniqueId ?? i} animation={animation} />;
             })}
         </div>
     );

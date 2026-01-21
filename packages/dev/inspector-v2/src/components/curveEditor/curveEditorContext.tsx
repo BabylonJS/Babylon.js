@@ -5,7 +5,17 @@ import type { TargetedAnimation, AnimationGroup } from "core/Animations/animatio
 import type { Scene } from "core/scene";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { AnimationKeyInterpolation } from "core/Animations/animationKey";
-import type { KeyPoint } from "./graph/keyPoint";
+import type { CurveData } from "./canvas/curve";
+
+/**
+ * Represents a key point on a curve
+ */
+export type KeyPoint = {
+    /** The curve data this key point belongs to */
+    curve: CurveData;
+    /** The key index in the animation */
+    keyId: number;
+};
 
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Observable } from "core/Misc/observable";
@@ -90,6 +100,8 @@ export type CurveEditorActions = {
     setIsPlaying: Dispatch<SetStateAction<boolean>>;
     /** Set clip length */
     setClipLength: Dispatch<SetStateAction<number>>;
+    /** Set reference max frame */
+    setReferenceMaxFrame: Dispatch<SetStateAction<number>>;
     /** Set focused input */
     setFocusedInput: Dispatch<SetStateAction<boolean>>;
     /** Set active key points */
@@ -182,10 +194,6 @@ export type CurveEditorObservables = {
     onSelectionRectangleMoved: Observable<DOMRect>;
     /** Fired when animations are loaded */
     onAnimationsLoaded: Observable<void>;
-    /** Fired when edit animation is required */
-    onEditAnimationRequired: Observable<Animation>;
-    /** Fired when edit animation UI is closed */
-    onEditAnimationUIClosed: Observable<void>;
     /** Fired when clip length is increased */
     onClipLengthIncreased: Observable<number>;
     /** Fired when clip length is decreased */
@@ -288,8 +296,6 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
         onDeleteKeyActiveKeyPoints: new Observable(),
         onSelectionRectangleMoved: new Observable(),
         onAnimationsLoaded: new Observable(),
-        onEditAnimationRequired: new Observable(),
-        onEditAnimationUIClosed: new Observable(),
         onClipLengthIncreased: new Observable(),
         onClipLengthDecreased: new Observable(),
         onInterpolationModeSet: new Observable(),
@@ -371,6 +377,7 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
             }
 
             setActiveFrame(frame);
+            observables.current.onPlayheadMoved.notifyObservers(frame);
 
             if (!isPlaying) {
                 if (rootAnimationGroup) {
@@ -544,6 +551,7 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
             setToKey,
             setIsPlaying,
             setClipLength,
+            setReferenceMaxFrame,
             setFocusedInput,
             setActiveKeyPoints,
             setActiveChannels,

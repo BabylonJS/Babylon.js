@@ -6,7 +6,7 @@ import type { Scene } from "core/scene";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 
 import { makeStyles, tokens, FluentProvider, webDarkTheme } from "@fluentui/react-components";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { CurveEditorProvider, useCurveEditor } from "./curveEditorContext";
 import { TopBar } from "./topBar";
@@ -15,6 +15,12 @@ import { Canvas } from "./canvas/canvas";
 import { BottomBar } from "./bottomBar";
 
 const useStyles = makeStyles({
+    fluentProvider: {
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+    },
     root: {
         display: "flex",
         flexDirection: "column",
@@ -65,10 +71,13 @@ const useStyles = makeStyles({
 const CurveEditorContent: FunctionComponent = () => {
     const styles = useStyles();
     const { actions } = useCurveEditor();
+    const prepareRef = useRef(actions.prepare);
+    prepareRef.current = actions.prepare;
 
     useEffect(() => {
-        actions.prepare();
-    }, [actions]);
+        // Only run prepare once on mount
+        prepareRef.current();
+    }, []);
 
     // Handle window resize
     useEffect(() => {
@@ -124,9 +133,10 @@ export type CurveEditorProps = {
  */
 export const CurveEditor: FunctionComponent<CurveEditorProps> = (props) => {
     const { scene, target, animations, rootAnimationGroup, title, useTargetAnimations } = props;
+    const styles = useStyles();
 
     return (
-        <FluentProvider theme={webDarkTheme} style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+        <FluentProvider theme={webDarkTheme} className={styles.fluentProvider}>
             <CurveEditorProvider
                 scene={scene}
                 target={target}

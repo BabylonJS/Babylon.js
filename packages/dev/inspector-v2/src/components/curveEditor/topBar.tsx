@@ -1,8 +1,16 @@
 import type { FunctionComponent } from "react";
 
-import { makeStyles, tokens, Tooltip, Divider } from "@fluentui/react-components";
+import { makeStyles, tokens, Divider } from "@fluentui/react-components";
 import { useCallback, useEffect, useState } from "react";
-import { AddRegular, FullScreenMaximizeRegular, ArrowMinimizeRegular, LineHorizontal1Regular, ChevronDoubleRightRegular, ChevronDoubleLeftRegular } from "@fluentui/react-icons";
+import {
+    AddRegular,
+    DeleteRegular,
+    FullScreenMaximizeRegular,
+    ArrowMinimizeRegular,
+    LineHorizontal1Regular,
+    ChevronDoubleRightRegular,
+    ChevronDoubleLeftRegular,
+} from "@fluentui/react-icons";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
@@ -140,45 +148,55 @@ export const TopBar: FunctionComponent = () => {
 
             {/* Key Actions */}
             <div className={styles.buttonGroup}>
-                <Tooltip content="New key" relationship="label">
-                    <Button icon={AddRegular} appearance="subtle" disabled={!hasActiveAnimations} onClick={() => observables.onCreateOrUpdateKeyPointRequired.notifyObservers()} />
-                </Tooltip>
-                <Tooltip content="Frame canvas" relationship="label">
-                    <Button icon={FullScreenMaximizeRegular} appearance="subtle" onClick={() => observables.onFrameRequired.notifyObservers()} />
-                </Tooltip>
+                <Button
+                    icon={AddRegular}
+                    appearance="subtle"
+                    disabled={!hasActiveAnimations}
+                    onClick={() => observables.onCreateOrUpdateKeyPointRequired.notifyObservers()}
+                    title="New key"
+                />
+                <Button
+                    icon={DeleteRegular}
+                    appearance="subtle"
+                    disabled={!hasActiveKeyPoints}
+                    onClick={() => observables.onDeleteKeyActiveKeyPoints.notifyObservers()}
+                    title="Delete key"
+                />
+                <Button icon={FullScreenMaximizeRegular} appearance="subtle" onClick={() => observables.onFrameRequired.notifyObservers()} title="Frame canvas" />
             </div>
 
             <Divider vertical className={styles.divider} />
 
             {/* Tangent Actions */}
             <div className={styles.buttonGroup}>
-                <Tooltip content="Flatten tangent" relationship="label">
-                    <Button icon={ArrowMinimizeRegular} appearance="subtle" disabled={!hasActiveKeyPoints} onClick={() => observables.onFlattenTangentRequired.notifyObservers()} />
-                </Tooltip>
-                <Tooltip content="Linear tangent" relationship="label">
-                    <Button
-                        icon={LineHorizontal1Regular}
-                        appearance="subtle"
-                        disabled={!hasActiveKeyPoints}
-                        onClick={() => observables.onLinearTangentRequired.notifyObservers()}
-                    />
-                </Tooltip>
-                <Tooltip content="Break tangent" relationship="label">
-                    <Button
-                        icon={ChevronDoubleLeftRegular}
-                        appearance="subtle"
-                        disabled={!hasActiveKeyPoints}
-                        onClick={() => observables.onBreakTangentRequired.notifyObservers()}
-                    />
-                </Tooltip>
-                <Tooltip content="Unify tangent" relationship="label">
-                    <Button
-                        icon={ChevronDoubleRightRegular}
-                        appearance="subtle"
-                        disabled={!hasActiveKeyPoints}
-                        onClick={() => observables.onUnifyTangentRequired.notifyObservers()}
-                    />
-                </Tooltip>
+                <Button
+                    icon={ArrowMinimizeRegular}
+                    appearance="subtle"
+                    disabled={!hasActiveKeyPoints}
+                    onClick={() => observables.onFlattenTangentRequired.notifyObservers()}
+                    title="Flatten tangent"
+                />
+                <Button
+                    icon={LineHorizontal1Regular}
+                    appearance="subtle"
+                    disabled={!hasActiveKeyPoints}
+                    onClick={() => observables.onLinearTangentRequired.notifyObservers()}
+                    title="Linear tangent"
+                />
+                <Button
+                    icon={ChevronDoubleLeftRegular}
+                    appearance="subtle"
+                    disabled={!hasActiveKeyPoints}
+                    onClick={() => observables.onBreakTangentRequired.notifyObservers()}
+                    title="Break tangent"
+                />
+                <Button
+                    icon={ChevronDoubleRightRegular}
+                    appearance="subtle"
+                    disabled={!hasActiveKeyPoints}
+                    onClick={() => observables.onUnifyTangentRequired.notifyObservers()}
+                    title="Unify tangent"
+                />
             </div>
         </div>
     );

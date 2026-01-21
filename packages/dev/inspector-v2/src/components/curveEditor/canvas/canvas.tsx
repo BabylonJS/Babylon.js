@@ -4,6 +4,7 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 import { useEffect, useRef, useState } from "react";
 
 import { useCurveEditor } from "../curveEditorContext";
+import { useObservableState } from "../../../hooks/observableHooks";
 import { Graph } from "./graph";
 import { PlayHead } from "./playHead";
 import { FrameBar } from "./frameBar";
@@ -46,7 +47,9 @@ export const Canvas: FunctionComponent = () => {
     const { observables } = useCurveEditor();
     const containerRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-    const [, forceUpdate] = useState({});
+
+    // Re-render when active animation changes
+    useObservableState(() => ({}), observables.onActiveAnimationChanged);
 
     // Update dimensions on resize
     useEffect(() => {
@@ -71,17 +74,6 @@ export const Canvas: FunctionComponent = () => {
         return () => {
             observer.disconnect();
             observables.onHostWindowResized.remove(onResize);
-        };
-    }, [observables]);
-
-    // Subscribe to active animation changes
-    useEffect(() => {
-        const observer = observables.onActiveAnimationChanged.add(() => {
-            forceUpdate({});
-        });
-
-        return () => {
-            observables.onActiveAnimationChanged.remove(observer);
         };
     }, [observables]);
 
