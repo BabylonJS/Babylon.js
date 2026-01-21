@@ -71,7 +71,6 @@ export * from "./snapshotRenderingHelper";
 export * from "./observableCoroutine";
 export * from "./copyTextureToTexture";
 export * from "./areaLightsTextureTools";
-/** @deprecated Use individual exports */
 export { DumpTools, EncodeImageAsync } from "./dumpTools";
 export * from "./greasedLineTools";
 export * from "./equirectangularCapture";
