@@ -297,6 +297,9 @@
                 }
                 // Use this new normal to calculate a reflection vector to sample from.
                 reflectionCoords = vec3(reflectionMatrix * vec4(reflectionCoords, 0));
+                #ifdef REFLECTIONMAP_OPPOSITEZ
+                    reflectionCoords.z *= -1.0;
+                #endif
                 radianceSample = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
                 #ifdef RGBDREFLECTION
                     environmentRadiance.rgb += sample_weight * fromRGBD(radianceSample);

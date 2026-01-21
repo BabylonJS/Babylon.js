@@ -70,7 +70,7 @@
             {
                 preLightingInfo preInfoTrans = preInfo{X};
                 #ifdef SCATTERING
-                    preInfoTrans.roughness = roughness_alpha_modified_for_scatter;
+                    preInfoTrans.roughness = sqrt(sqrt(max(refractionAlphaG, 0.05)));
                 #else
                     preInfoTrans.roughness = transmission_roughness;
                 #endif
@@ -126,31 +126,33 @@
 
                 // Empirical scattered light contribution for transmission
                 // As roughness increases, we add a small ambient term to simulate scattering of internal reflections
-                slab_translucent += 0.025 * transmission_roughness * preInfoTrans.attenuation * lightColor{X}.rgb;
-                
+                slab_translucent = mix(slab_translucent, 0.25 * preInfoTrans.attenuation * lightColor{X}.rgb, clamp(1.0 - pow(baseGeoInfo.NdotV, refractionAlphaG), 0.0, 1.0));
+
                 #ifdef SCATTERING
                 if (transmission_depth>0.0) {
                     // Compute forward-scattered light that has been completely diffused. This will be used when
                     // scattering is very strong.
                     preInfoTrans.roughness = 1.0;
-                    vec3 diffused_forward_scattered_light = computeSpecularLighting(preInfoTrans, normalW, vec3(1.0), vec3(1.0), 1.0, lightColor0.rgb) * transmission_absorption;
+                    vec3 diffused_forward_scattered_light = computeSpecularLighting(preInfoTrans, normalW, vec3(1.0), vec3(1.0), 1.0, lightColor{X}.rgb) * transmission_absorption;
                     
                     // Compute back-scattered light
                     preInfoTrans.NdotL = max(dot(viewDirectionW, preInfoTrans.L), 0.0);
                     preInfoTrans.NdotV = 1.0;
                     preInfoTrans.H = normalize(viewDirectionW + preInfoTrans.L);
                     preInfoTrans.VdotH = clamp(dot(viewDirectionW, preInfoTrans.H), 0.0, 1.0);
-                    preInfoTrans.roughness = 0.025;
-                    vec3 back_scattered_light = computeSpecularLighting(preInfoTrans, viewDirectionW, vec3(1.0), vec3(1.0), 0.025, lightColor0.rgb);
+                    preInfoTrans.roughness = 0.3;
+                    vec3 back_scattered_light = computeSpecularLighting(preInfoTrans, viewDirectionW, vec3(1.0), vec3(1.0), 0.025, lightColor{X}.rgb);
                     // Direct Transmission (aka forward-scattered light from back side)
-                    vec3 forward_scattered_light = slab_translucent * transmission_absorption;
+                    // vec3 forward_scattered_light = mix(slab_translucent * transmission_absorption, additional_scattering, additional_scattering_scale);
+                    vec3 forward_scattered_light = (slab_translucent * transmission_absorption);
                     
                     // Use the diffuse lobe as the isotropic scattered light component
                     vec3 iso_scattered_light = slab_diffuse;
                     // Back Scattering
                     vec3 back_scattering = mix(forward_scattered_light, forward_scattered_light + back_scattered_light * absorption_at_mfp, max3(iso_scatter_density));
                     // Iso Scattering
-                    vec3 iso_scattering = mix(forward_scattered_light, diffused_forward_scattered_light + iso_scattered_light * multi_scatter_color, max3(iso_scatter_density));
+                    // vec3 iso_scattering = mix(forward_scattered_light, diffused_forward_scattered_light + iso_scattered_light * multi_scatter_color, max3(iso_scatter_density));
+                    vec3 iso_scattering = mix(forward_scattered_light, (diffused_forward_scattered_light + iso_scattered_light) * mix(transmission_scatter.rgb, multi_scatter_color, max3(iso_scatter_density)), max3(iso_scatter_density));
                     // Lerp between the three based on the anisotropy
                     slab_translucent = mix(back_scattering, iso_scattering, back_to_iso_scattering_blend);
                     slab_translucent = mix(slab_translucent, forward_scattered_light, iso_to_forward_scattering_blend);

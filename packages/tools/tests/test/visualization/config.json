@@ -3227,13 +3227,28 @@
             "excludedEngines": ["webgl1"]
         },
         {
-            "title": "OpenPBR Transmission Scatter Anisotropy - IBL",
+            "title": "OpenPBR Transmission Scatter Anisotropy Reflect - IBL",
             "playgroundId": "#GRQHVV#216",
             "excludedEngines": ["webgl1"]
         },
         {
-            "title": "OpenPBR Transmission Scatter Anisotropy - Analytic Lights",
+            "title": "OpenPBR Transmission Scatter Anisotropy Refract - IBL",
+            "playgroundId": "#GRQHVV#220",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Anisotropy Refract - Analytic Lights",
             "playgroundId": "#GRQHVV#217",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Anisotropy Reflect - Analytic Lights",
+            "playgroundId": "#GRQHVV#219",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Roughness - Analytic Lights",
+            "playgroundId": "#GRQHVV#218",
             "excludedEngines": ["webgl1"]
         },
         {

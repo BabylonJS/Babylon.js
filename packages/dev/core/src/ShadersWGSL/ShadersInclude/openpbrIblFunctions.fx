@@ -296,6 +296,9 @@
                 }
                 // Use this new normal to calculate a reflection vector to sample from.
                 reflectionCoords = (uniforms.reflectionMatrix * vec4f(reflectionCoords, 0.f)).xyz;
+                #ifdef REFLECTIONMAP_OPPOSITEZ
+                    reflectionCoords.z *= -1.0f;
+                #endif
                 radianceSample = textureSampleLevel(reflectionSampler, reflectionSamplerSampler, reflectionCoords, reflectionLOD);
                 #ifdef RGBDREFLECTION
                     accumulatedRadiance += vec3f(sample_weight) * fromRGBD(radianceSample);
