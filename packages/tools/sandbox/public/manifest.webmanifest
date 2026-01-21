@@ -17,5 +17,20 @@
             "sizes": "512x512",
             "type": "image/svg+xml"
         }
+    ],
+    "launch_handler": {
+        "client_mode": "navigate-existing"
+    },
+    "file_handlers": [
+        {
+            "action": "/",
+            "accept": {
+                "model/gltf-binary": [".glb"],
+                "model/gltf+json": [".gltf"],
+                "model/obj": [".obj"],
+                "application/x-ply": [".ply"],
+                "application/octet-stream": [".splat", ".spz", ".babylon"]
+            }
+        }
     ]
 }
