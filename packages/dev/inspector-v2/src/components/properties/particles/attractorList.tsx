@@ -1,5 +1,6 @@
 import type { FunctionComponent } from "react";
 
+import { makeStyles, Subtitle2, tokens } from "@fluentui/react-components";
 import { useCallback, useEffect, useState } from "react";
 
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -18,6 +19,12 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { List } from "shared-ui-components/fluent/primitives/list";
 import { useResource } from "../../../hooks/resourceHooks";
 import { AttractorComponent } from "./attractor";
+
+const useStyles = makeStyles({
+    subsection: {
+        marginTop: tokens.spacingVerticalM,
+    },
+});
 
 type AttractorListProps = {
     scene: Scene;
@@ -86,12 +93,15 @@ export const AttractorList: FunctionComponent<AttractorListProps> = (props) => {
         setControlledImpostor(attached);
     };
 
+    const classes = useStyles();
+
     return (
         <>
             {items.length > 0 && (
                 <>
                     <Color3PropertyLine label="Attractor Debug Color" value={impostorColor} onChange={setImpostorColor} />
                     <SyncedSliderPropertyLine label="Attractor Debug Size" value={impostorScale} onChange={setImpostorScale} min={0} max={10} step={0.1} />
+                    <Subtitle2 className={classes.subsection}>Attractors list</Subtitle2>
                 </>
             )}
             <List
