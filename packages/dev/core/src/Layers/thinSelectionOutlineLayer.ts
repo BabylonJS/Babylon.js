@@ -562,11 +562,8 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
      * @returns true if the mesh will be used
      */
     public override hasMesh(mesh: AbstractMesh): boolean {
-        if (!this._selection || !super.hasMesh(mesh)) {
-            return false;
-        }
-
-        return this._selection.indexOf(mesh) !== -1;
+        // we control selection as RTT render list
+        return super.hasMesh(mesh);
     }
 
     /** @internal */
