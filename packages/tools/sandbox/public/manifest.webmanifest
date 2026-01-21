@@ -3,6 +3,7 @@
     "short_name": "Sandbox V2",
     "start_url": "/",
     "display": "standalone",
+    "display_override": ["window-controls-overlay"],
     "background_color": "#2a2342",
     "theme_color": "#2a2342",
     "icons": [

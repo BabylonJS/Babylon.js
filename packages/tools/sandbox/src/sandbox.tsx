@@ -36,6 +36,10 @@ export class Sandbox extends React.Component<
          * error message
          */
         errorMessage: string;
+        /**
+         * current loaded file name
+         */
+        currentFileName: string;
     }
 > {
     private _globalState: GlobalState;
@@ -46,6 +50,10 @@ export class Sandbox extends React.Component<
     private _camera?: number;
     private _engine?: AbstractEngine;
 
+    /**
+     * Constructs the Sandbox component
+     * @param props Component props
+     */
     public constructor(props: ISandboxProps) {
         super(props);
         this._globalState = new GlobalState({ version: props.version, bundles: props.bundles });
@@ -53,16 +61,21 @@ export class Sandbox extends React.Component<
         this._dropTextRef = React.createRef();
         this._clickInterceptorRef = React.createRef();
 
-        this.state = { isFooterVisible: true, errorMessage: "" };
+        this.state = { isFooterVisible: true, errorMessage: "", currentFileName: "" };
 
         this.checkUrl();
 
         EnvironmentTools.HookWithEnvironmentChange(this._globalState);
 
+        // Update document title when display mode changes
+        window.matchMedia("(display-mode: window-controls-overlay)").addEventListener("change", () => {
+            this._updateDocumentTitle(this.state.currentFileName);
+        });
+
         // Events
         this._globalState.onSceneLoaded.add((info) => {
-            document.title = "Babylon.js - " + info.filename;
-            this.setState({ errorMessage: "" });
+            this.setState({ errorMessage: "", currentFileName: info.filename });
+            this._updateDocumentTitle(info.filename);
 
             this._globalState.currentScene = info.scene;
             if (
@@ -134,6 +147,9 @@ export class Sandbox extends React.Component<
 
             return true;
         };
+
+        // Set initial document title based on display mode
+        this._updateDocumentTitle("");
     }
 
     /**
@@ -202,7 +218,7 @@ export class Sandbox extends React.Component<
                         break;
                     }
                     case "kiosk": {
-                        this.state = { isFooterVisible: value.toLowerCase() === "true" ? false : true, errorMessage: "" };
+                        this.state = { isFooterVisible: value.toLowerCase() === "true" ? false : true, errorMessage: "", currentFileName: "" };
                         break;
                     }
                     case "skybox": {
@@ -249,8 +265,12 @@ export class Sandbox extends React.Component<
     }
 
     public override render() {
+        // In overlay mode, the titlebar shows the full title because the system only shows window controls, not the app name
+        const titleBarText = this.state.currentFileName ? `Babylon.js Sandbox - ${this.state.currentFileName}` : "Babylon.js Sandbox - View glTF, glb, obj and babylon files";
+
         return (
             <div id="root">
+                <div className="titlebar">{titleBarText}</div>
                 <span>
                     <p id="droptext" ref={this._dropTextRef}>
                         {this._globalState.reflector ? "" : "Drag and drop gltf, glb, obj, ply, splat, spz or babylon files to view them"}
@@ -283,6 +303,28 @@ export class Sandbox extends React.Component<
                 )}
             </div>
         );
+    }
+
+    /**
+     * Updates document.title based on display mode
+     * - Overlay mode: document.title is not used, we build the text ourselves
+     * - Standalone mode: system shows "App Name - document.title"
+     * - Browser mode: document.title shows full title
+     *
+     * @param filename current filename
+     */
+    private _updateDocumentTitle(filename: string) {
+        const defaultDescription = "View glTF, glb, obj and babylon files";
+        const isOverlay = window.matchMedia("(display-mode: window-controls-overlay)").matches;
+        const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+
+        if (isOverlay || isStandalone) {
+            // PWA mode: system prepends manifest app name, so just use filename or description
+            document.title = filename || defaultDescription;
+        } else {
+            // Browser mode: show full title with app name
+            document.title = filename ? `Babylon.js Sandbox - ${filename}` : `Babylon.js Sandbox - ${defaultDescription}`;
+        }
     }
 
     // Use the promise of this deferred to do something after the scene is loaded.

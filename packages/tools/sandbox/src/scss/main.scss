@@ -7,6 +7,7 @@ html {
     --button-hover-background: #162d3a;
     --font-size: 20px;
     --active-font-size: 22px;
+    --titlebar-height: env(titlebar-area-height, 0px);
 }
 
 html,
@@ -21,6 +22,30 @@ body,
     background: var(--background);
     font-family: "acumin-pro-condensed";
     font-weight: normal;
+}
+
+/* PWA Title Bar */
+.titlebar {
+    display: none;
+}
+
+@media (display-mode: window-controls-overlay) {
+    .titlebar {
+        position: fixed;
+        top: 0;
+        left: env(titlebar-area-x, 0);
+        width: env(titlebar-area-width, 100%);
+        height: env(titlebar-area-height, 32px);
+        background: var(--background);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding-left: 12px;
+        font-size: 14px;
+        -webkit-app-region: drag;
+        app-region: drag;
+        z-index: 1000;
+    }
 }
 
 .hidden {
