@@ -72,7 +72,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
     public override _options: Required<IThinSelectionOutlineLayerOptions>;
 
     /** @internal */
-    public readonly _meshUniqueIdToSelectionId: number[] = []; // map[mesh.uniqueId] = selectionId
+    public readonly _meshUniqueIdToSelectionId: number[] = [];
     /** @internal */
     public _selection: Nullable<AbstractMesh[]> = [];
     private _nextSelectionId = 1;
@@ -494,7 +494,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
                 // Selection ID
                 const selectionId = this._meshUniqueIdToSelectionId[renderingMesh.uniqueId];
-                if (selectionId !== undefined) {
+                if (!renderingMesh.hasInstances && !renderingMesh.isAnInstance && selectionId !== undefined) {
                     effect.setFloat("selectionId", selectionId);
                 }
             }
@@ -600,8 +600,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
      * @param meshOrGroup Meshes to add to the selection
      */
     public addSelection(meshOrGroup: AbstractMesh | AbstractMesh[]): void {
-        const selection = this._selection;
-        if (!selection) {
+        if (!this._selection) {
             return;
         }
 
@@ -615,77 +614,18 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
         for (let meshIndex = 0; meshIndex < group.length; ++meshIndex) {
             const mesh = group[meshIndex];
 
-            let hasInstancesInSelection = false;
-            if (mesh.hasInstances) {
-                for (let i = 0; i < selection.length; ++i) {
-                    const selMesh = selection[i];
-                    if (selMesh.isAnInstance && (selMesh as InstancedMesh).sourceMesh === mesh) {
-                        hasInstancesInSelection = true;
-                        break;
-                    }
-                }
-            }
+            this._selection.push(mesh); // add to render list
 
-            let sourceMeshInSelection: Nullable<Mesh> = null;
-            if (mesh.isAnInstance) {
+            if (mesh.hasInstances || mesh.isAnInstance) {
                 const sourceMesh = (mesh as InstancedMesh).sourceMesh ?? (mesh as Mesh);
-                for (let i = 0; i < selection.length; ++i) {
-                    const selMesh = selection[i];
-                    if (selMesh === sourceMesh) {
-                        sourceMeshInSelection = sourceMesh;
-                        break;
-                    }
-                }
-            }
 
-            selection.push(mesh); // add to render list
-
-            // Case 1: current mesh is instanced mesh, and its source mesh is already in selection
-            if (sourceMeshInSelection !== null) {
-                const sourceSelectionId = this._meshUniqueIdToSelectionId[sourceMeshInSelection.uniqueId];
-                // switch to use instance attribute for source mesh
-                if (sourceSelectionId !== undefined) {
-                    // delete source mesh selection id since we need to use instance attribute from now on
-                    this._meshUniqueIdToSelectionId[sourceMeshInSelection.uniqueId] = undefined!;
-                    // then set selection id attribute for source mesh
-                    sourceMeshInSelection.registerInstancedBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, 1); // todo: consider unregistering buffer on dispose
-                    sourceMeshInSelection.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] = sourceSelectionId;
+                if (sourceMesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] === undefined) {
+                    sourceMesh.registerInstancedBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, 1);
+                    // todo: consider unregistering buffer on dispose
                 }
 
-                // set selection id attribute for the instance mesh
                 mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] = nextId;
-            } else if (mesh.isAnInstance) {
-                // current mesh is instanced mesh, but its source mesh is not in selection so we don't use instancing for rendering
-                this._meshUniqueIdToSelectionId[mesh.uniqueId] = nextId;
-            }
-
-            // Case 2: current mesh has instances already in selection
-            if (hasInstancesInSelection) {
-                // assign selection id attribute for current mesh
-                (mesh as Mesh).registerInstancedBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, 1);
-                mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] = nextId;
-
-                // switch to use attribute for instanced meshes
-                for (let i = 0; i < selection.length; ++i) {
-                    const instancedMesh = selection[i];
-                    if (!instancedMesh.isAnInstance || (instancedMesh as InstancedMesh).sourceMesh !== mesh) {
-                        continue; // filter only instances of current mesh
-                    }
-
-                    const instanceSelectionId = this._meshUniqueIdToSelectionId[instancedMesh.uniqueId];
-                    if (instanceSelectionId !== undefined) {
-                        instancedMesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] = instanceSelectionId;
-                        // remove from uniqueId map since we are now using instance attribute
-                        this._meshUniqueIdToSelectionId[instancedMesh.uniqueId] = undefined!;
-                    }
-                }
-            } else if (mesh.hasInstances) {
-                // current mesh has instances, but no instances are in selection so we don't use instancing for rendering
-                this._meshUniqueIdToSelectionId[mesh.uniqueId] = nextId;
-            }
-
-            // Default case: normal mesh without instances
-            if (!mesh.hasInstances && !mesh.isAnInstance) {
+            } else {
                 this._meshUniqueIdToSelectionId[mesh.uniqueId] = nextId;
             }
         }
