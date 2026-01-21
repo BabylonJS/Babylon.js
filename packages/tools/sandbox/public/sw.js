@@ -4,8 +4,22 @@
 const CACHE_VERSION = "v1";
 const CACHE_NAME = `babylon-sandbox-${CACHE_VERSION}`;
 
-// App shell - files served from same origin
-const APP_SHELL = ["./", "./index.html", "./index.js", "./babylon.sandbox.js", "./manifest.webmanifest", "./icons/icon-192.svg", "./icons/icon-512.svg"];
+// App shell - core files required for offline startup
+const APP_SHELL = ["./", "./index.html", "./index.js", "./manifest.webmanifest"];
+
+// Icons to pre-cache (key sizes for PWA installation)
+const ICONS = [
+    // Android icons (required for PWA install)
+    "./android/android-launchericon-192-192.png",
+    "./android/android-launchericon-512-512.png",
+    // Windows icons (taskbar, desktop & file associations)
+    "./windows11/Square44x44Logo.targetsize-256.png",
+    "./windows11/Square44x44Logo.targetsize-96.png",
+    "./windows11/Square44x44Logo.targetsize-48.png",
+    "./windows11/Square44x44Logo.targetsize-32.png",
+    "./windows11/Square44x44Logo.targetsize-24.png",
+    "./windows11/Square44x44Logo.targetsize-16.png",
+];
 
 // External resources to cache
 const EXTERNAL_RESOURCES = [
@@ -37,20 +51,19 @@ self.addEventListener("install", (event) => {
             .then((cache) => {
                 // Cache app shell first (required)
                 return cache.addAll(APP_SHELL).then(() => {
-                    // Then cache external resources (best effort - don't fail install if these fail)
-                    return Promise.allSettled(
-                        EXTERNAL_RESOURCES.map((url) =>
-                            fetch(url, { mode: "cors" })
-                                .then((response) => {
-                                    if (response.ok) {
-                                        return cache.put(url, response);
-                                    }
-                                })
-                                .catch(() => {
-                                    // Silently ignore - external resources are best-effort
-                                })
-                        )
+                    // Cache icons (best effort - don't fail install if these fail)
+                    const iconPromises = ICONS.map((url) =>
+                        fetch(url)
+                            .then((response) => (response.ok ? cache.put(url, response) : undefined))
+                            .catch(() => {})
                     );
+                    // Then cache external resources (best effort - don't fail install if these fail)
+                    const externalPromises = EXTERNAL_RESOURCES.map((url) =>
+                        fetch(url, { mode: "cors" })
+                            .then((response) => (response.ok ? cache.put(url, response) : undefined))
+                            .catch(() => {})
+                    );
+                    return Promise.allSettled([...iconPromises, ...externalPromises]);
                 });
             })
             .then(() => self.skipWaiting())
