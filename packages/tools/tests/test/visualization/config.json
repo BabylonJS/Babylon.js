@@ -2,8 +2,50 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting modify",
+            "playgroundId": "#RKKCHG#15",
+            "renderCount": 15,
+            "referenceImage": "gsplat-splat-modify.png"
+        },
+        {
+            "title": "Gaussian Splatting PLY SH Reload",
+            "playgroundId": "#YMXPPW#1",
+            "referenceImage": "gsplat-ply-sh-reload.png"
+        },
+        {
+            "title": "Gaussian Splatting Depth",
+            "playgroundId": "#V80DRL#12",
+            "renderCount": 15,
+            "referenceImage": "gsplat-depth.png"
+        },
+        {
+            "title": "Gaussian Splatting Compressed ply SH",
+            "playgroundId": "#U8O4EP#1",
+            "renderCount": 15,
+            "referenceImage": "gsplat-compressedply-sh.png"
+        },
+        {
+            "title": "Gaussian Splatting SPZ SH",
+            "playgroundId": "#XSNFXP#2",
+            "renderCount": 15,
+            "referenceImage": "gsplat-spz-sh.png"
+        },
+        {
+            "title": "Gaussian Splatting Update Data",
+            "playgroundId": "#Q0LBM8#2",
+            "renderCount": 15,
+            "referenceImage": "gsplat-update-data.png"
+        },
+        {
+            "title": "Gaussian Splatting viewports",
+            "playgroundId": "#CG8GO3#1",
+            "renderCount": 15,
+            "referenceImage": "gsplat-viewports.png"
+        },
+        {
             "title": "Gaussian Splatting Shadows",
             "playgroundId": "#OE54M5#16",
+            "renderCount": 15,
             "referenceImage": "gsplat-shadows.png"
         },
         {
@@ -13,13 +55,13 @@
         },
         {
             "title": "SPZ v3 - Splat",
-            "playgroundId": "#V7CV8W#3",
+            "playgroundId": "#V7CV8W#4",
             "referenceImage": "gsplat-spz-v3.png"
         },
         {
             "title": "SOGS with SH",
             "playgroundId": "#QA2662#13",
-            "renderCount": 5,
+            "renderCount": 15,
             "errorRatio": 5,
             "referenceImage": "gsplat-sogs-sh.png"
         },
@@ -93,7 +135,7 @@
         },
         {
             "title": "OpenPBR Base Diffuse Roughness SH IBL",
-            "playgroundId": "#MXACV7#21",
+            "playgroundId": "#MXACV7#32",
             "renderCount": 2,
             "referenceImage": "openpbr_base_diffuse_roughness_spherical_harmonics.png"
         },
@@ -128,7 +170,8 @@
         {
             "title": "Gaussian Splatting NME",
             "playgroundId": "#WXWJKN#4",
-            "referenceImage": "gsplat-nme.png"
+            "referenceImage": "gsplat-nme.png",
+            "renderCount": 15
         },
         {
             "title": "Lattice",
@@ -150,7 +193,8 @@
         {
             "title": "Gaussian Splatting Loading",
             "playgroundId": "#CID4NN#204",
-            "referenceImage": "gsplat-loading.png"
+            "referenceImage": "gsplat-loading.png",
+            "renderCount": 15
         },
         {
             "title": "EXR Loader",
@@ -1624,8 +1668,7 @@
         },
         {
             "title": "Prepass SSAO + instances",
-            "renderCount": 10,
-            "playgroundId": "#YB006J#545",
+            "playgroundId": "#YB006J#795",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-instances.png"
         },
@@ -2543,7 +2586,7 @@
         },
         {
             "title": "IBL Voxel Shadowing",
-            "playgroundId": "#8R5SSE#628",
+            "playgroundId": "#8R5SSE#796",
             "referenceImage": "voxelShadows.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"],
@@ -2556,21 +2599,21 @@
         },
         {
             "title": "IBL Voxel Shadowing Right-Handed",
-            "playgroundId": "#8R5SSE#630",
+            "playgroundId": "#8R5SSE#797",
             "referenceImage": "voxelShadowsRightHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "IBL Voxel Shadowing Left-Handed",
-            "playgroundId": "#8R5SSE#629",
+            "playgroundId": "#8R5SSE#798",
             "referenceImage": "voxelShadowsLeftHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "IBL Screen-space Shadowing Left-Handed",
-            "playgroundId": "#8R5SSE#631",
+            "playgroundId": "#8R5SSE#799",
             "referenceImage": "ssShadowsLeftHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"],
@@ -2578,7 +2621,7 @@
         },
         {
             "title": "IBL Screen-space Shadowing Right-Handed",
-            "playgroundId": "#8R5SSE#632",
+            "playgroundId": "#8R5SSE#800",
             "referenceImage": "ssShadowsRightHanded.png",
             "renderCount": 15,
             "excludedEngines": ["webgl1"],
@@ -2596,161 +2639,196 @@
         },
         {
             "title": "FrameGraph nrge shadows",
-            "playgroundId": "#JWKDME#28",
+            "playgroundId": "#JWKDME#185",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge csm shadows",
-            "playgroundId": "#JWKDME#29",
+            "playgroundId": "#JWKDME#186",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge csm shadows with autoCalcDepthBounds",
-            "playgroundId": "#JWKDME#88",
+            "playgroundId": "#JWKDME#192",
             "renderCount": 10
         },
         {
             "title": "FrameGraph nrge custom rendering",
-            "playgroundId": "#1QCA2M#1",
+            "playgroundId": "#1QCA2M#35",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge depth of field",
-            "playgroundId": "#GAGVQO#3",
+            "playgroundId": "#GAGVQO#19",
             "errorRatio": 3
         },
         {
             "title": "FrameGraph nrge glow layer",
-            "playgroundId": "#IG8NRC#15",
+            "playgroundId": "#IG8NRC#84",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge highlight layer",
-            "playgroundId": "#QZYNMK#1",
+            "playgroundId": "#QZYNMK#3",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge SSR cube",
-            "playgroundId": "#PIZ1GK#2090",
+            "playgroundId": "#PIZ1GK#2386",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "FrameGraph nrge SSR HillValley",
-            "playgroundId": "#PIZ1GK#2091",
+            "playgroundId": "#PIZ1GK#2387",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "FrameGraph nrge SSR neon",
-            "playgroundId": "#Z6C5EF#1",
+            "playgroundId": "#Z6C5EF#5",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "FrameGraph nrge motion blur",
-            "playgroundId": "#YB006J#753",
+            "playgroundId": "#YB006J#793",
             "excludedEngines": ["webgl1"],
             "renderCount": 40
         },
         {
             "title": "FrameGraph nrge bounding boxes",
-            "playgroundId": "#IG8NRC#24",
+            "playgroundId": "#IG8NRC#85",
             "errorRatio": 14
         },
         {
             "title": "FrameGraph nrge frozen meshes",
-            "playgroundId": "#9SDNZF#32"
+            "playgroundId": "#9SDNZF#34"
         },
         {
             "title": "FrameGraph nrge TAA",
-            "playgroundId": "#IG8NRC#77",
+            "playgroundId": "#IG8NRC#87",
             "renderCount": 15
         },
         {
             "title": "FrameGraph nrge rig camera",
-            "playgroundId": "#ATL1CS#16"
+            "playgroundId": "#ATL1CS#19"
         },
         {
             "title": "FrameGraph nrge clustered lights",
-            "playgroundId": "#1QCA2M#12",
+            "playgroundId": "#1QCA2M#36",
             "excludedEngines": ["webgl1", "webgl2"]
         },
         {
             "title": "FrameGraph nrge clustered lights (simple)",
-            "playgroundId": "#1QCA2M#26"
+            "playgroundId": "#1QCA2M#37"
         },
         {
             "title": "FrameGraph nrge multiple post processes",
-            "playgroundId": "#SYQW69#1339"
+            "playgroundId": "#SYQW69#1363"
         },
         {
             "title": "FrameGraph nrge SSAO",
-            "playgroundId": "#SYQW69#1350",
+            "playgroundId": "#SYQW69#1368",
             "excludedEngines": ["webgl1", "webgpu"]
         },
         {
+            "title": "FrameGraph nrge volumetric lighting",
+            "playgroundId": "#3VH0AC#2"
+        },
+        {
+            "title": "FrameGraph nrge OIT",
+            "playgroundId": "#MIACY4#13",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "FrameGraph nrge OIT (Geometry renderer)",
+            "playgroundId": "#MIACY4#14",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "FrameGraph nrge multi-render targets",
+            "playgroundId": "#XSNYAU#160"
+        },
+        {
+            "title": "FrameGraph nrge transmission",
+            "playgroundId": "#ZNTBN2#10"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
-            "playgroundId": "#3LB017#1",
+            "playgroundId": "#3LB017#3",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph glow layer",
-            "playgroundId": "#9YU4C5#8",
+            "playgroundId": "#9YU4C5#111",
             "referenceImage": "FrameGraph-nrg-glow-layer.png",
             "errorRatio": 1
         },
         {
             "title": "FrameGraph highlight layer",
-            "playgroundId": "#PV8OLY#16"
+            "playgroundId": "#PV8OLY#33"
         },
         {
             "title": "FrameGraph custom rendering",
-            "playgroundId": "#RM56RY#15"
+            "playgroundId": "#RM56RY#25"
         },
         {
             "title": "FrameGraph gui bloom",
-            "playgroundId": "#RM56RY#16"
+            "playgroundId": "#RM56RY#26"
         },
         {
             "title": "FrameGraph image processing",
-            "playgroundId": "#PV8OLY#21"
+            "playgroundId": "#PV8OLY#34"
         },
         {
             "title": "FrameGraph motion blur screen based",
-            "playgroundId": "#YB006J#746",
+            "playgroundId": "#YB006J#787",
             "renderCount": 10
         },
         {
             "title": "FrameGraph motion blur object based",
-            "playgroundId": "#YB006J#747",
+            "playgroundId": "#YB006J#788",
             "renderCount": 10
         },
         {
             "title": "FrameGraph motion blur skinned",
-            "playgroundId": "#YB006J#749",
+            "playgroundId": "#YB006J#789",
             "renderCount": 40
         },
         {
             "title": "FrameGraph convolution post process",
-            "playgroundId": "#SYQW69#1318"
+            "playgroundId": "#SYQW69#1365"
         },
         {
             "title": "FrameGraph screen space curvature post process",
-            "playgroundId": "#SYQW69#1323",
+            "playgroundId": "#SYQW69#1366",
             "excludedEngines": ["webgl1", "webgpu"]
         },
         {
             "title": "FrameGraph sharpen post process",
-            "playgroundId": "#SYQW69#1329",
+            "playgroundId": "#SYQW69#1367",
             "errorRatio": 6
         },
         {
             "title": "FrameGraph custom post process",
-            "playgroundId": "#R33LVG"
+            "playgroundId": "#R33LVG#5"
         },
         {
             "title": "FrameGraph TAA reproject history",
-            "playgroundId": "#OWGOUN#14",
+            "playgroundId": "#OWGOUN#18",
             "renderCount": 40,
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "FrameGraph volumetric lighting",
+            "playgroundId": "#3VH0AC"
+        },
+        {
+            "title": "FrameGraph OIT",
+            "playgroundId": "#MIACY4#11",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "FrameGraph multi-render targets",
+            "playgroundId": "#XSNYAU#165"
         },
         {
             "title": "Render target texture with clustered lights",
@@ -2793,11 +2871,11 @@
         },
         {
             "title": "Specular Reflectance with IOR",
-            "playgroundId": "#KQYNYS#41"
+            "playgroundId": "#KQYNYS#58"
         },
         {
             "title": "Conductor Transmission",
-            "playgroundId": "#KQYNYS#15"
+            "playgroundId": "#KQYNYS#55"
         },
         {
             "title": "Furnace Test (Legacy) for Spec-Gloss",
@@ -2817,7 +2895,7 @@
         },
         {
             "title": "Specular reflectance models for IBL",
-            "playgroundId": "#GRQHVV#24"
+            "playgroundId": "#GRQHVV#169"
         },
         {
             "title": "Specular reflectance models for analytic lights",
@@ -2825,15 +2903,11 @@
         },
         {
             "title": "F82 Specular Roughness vs Weight",
-            "playgroundId": "#GRQHVV#22"
+            "playgroundId": "#GRQHVV#170"
         },
         {
             "title": "F82 Specular Metal vs Weight",
-            "playgroundId": "#GRQHVV#21"
-        },
-        {
-            "title": "Test code inlining",
-            "playgroundId": "#YG3BBF#51"
+            "playgroundId": "#GRQHVV#171"
         },
         {
             "title": "Sponza Clustered Lighting",
@@ -2846,6 +2920,10 @@
             "referenceImage": "sponza-clustered-lighting-viewports.png"
         },
         {
+            "title": "Test code inlining",
+            "playgroundId": "#YG3BBF#51"
+        },
+        {
             "title": "Sponza Clustered Lighting (node material std)",
             "playgroundId": "#QY98Z3#16"
         },
@@ -2854,66 +2932,99 @@
             "playgroundId": "#QY98Z3#17"
         },
         {
+            "title": "Clustered Lighting (lhs std material)",
+            "playgroundId": "#CSCJO2#59"
+        },
+        {
+            "title": "Clustered Lighting (lhs pbr material)",
+            "playgroundId": "#CSCJO2#60"
+        },
+        {
+            "title": "Clustered Lighting (lhs std nodematerial)",
+            "playgroundId": "#CSCJO2#64"
+        },
+        {
+            "title": "Clustered Lighting (lhs pbr nodematerial)",
+            "playgroundId": "#CSCJO2#62"
+        },
+        {
+            "title": "Clustered Lighting (rhs std material)",
+            "playgroundId": "#CSCJO2#69"
+        },
+        {
+            "title": "Clustered Lighting (rhs pbr material)",
+            "playgroundId": "#CSCJO2#70"
+        },
+        {
+            "title": "Clustered Lighting (rhs std nodematerial)",
+            "playgroundId": "#CSCJO2#71"
+        },
+        {
+            "title": "Clustered Lighting (rhs pbr nodematerial)",
+            "playgroundId": "#CSCJO2#72"
+        },
+        {
             "title": "Atmosphere Day",
             "playgroundId": "#VO1Z0C#14",
             "referenceImage": "atmosphere-day.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"],
+            "renderCount": 30
         },
         {
             "title": "Atmosphere Day (Planet Origin)",
             "playgroundId": "#VO1Z0C#30",
             "referenceImage": "atmosphere-day.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"],
+            "renderCount": 30
         },
         {
             "title": "Atmosphere Sunset",
             "playgroundId": "#VO1Z0C#15",
             "referenceImage": "atmosphere-sunset.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"],
+            "renderCount": 30
         },
         {
             "title": "Atmosphere Sunset (Planet Origin)",
             "playgroundId": "#VO1Z0C#31",
             "referenceImage": "atmosphere-sunset.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"],
+            "renderCount": 30
         },
         {
             "title": "Atmosphere Night",
             "playgroundId": "#VO1Z0C#13",
             "referenceImage": "atmosphere-night.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"],
+            "renderCount": 30
         },
         {
             "title": "Atmosphere Night (Planet Origin)",
             "playgroundId": "#VO1Z0C#32",
             "referenceImage": "atmosphere-night.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"],
+            "renderCount": 30
         },
         {
             "title": "Atmosphere Space View",
             "playgroundId": "#VO1Z0C#6",
             "referenceImage": "atmosphere-space-view.png",
-            "excludedEngines": ["webgl1", "webgpu"]
+            "excludedEngines": ["webgl1"],
+            "renderCount": 30
         },
         {
             "title": "OpenPBR IBL Reflectance with IOR",
-            "playgroundId": "#KQYNYS#46",
+            "playgroundId": "#KQYNYS#56",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR IBL F82 Specular Metal vs Weight",
-            "playgroundId": "#GRQHVV#25",
+            "playgroundId": "#GRQHVV#172",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR IBL F82 Specular Roughness vs Weight",
-            "playgroundId": "#GRQHVV#26",
+            "playgroundId": "#GRQHVV#173",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -2928,17 +3039,17 @@
         },
         {
             "title": "OpenPBR IBL Metalness vs Coat IOR",
-            "playgroundId": "#GRQHVV#38",
+            "playgroundId": "#GRQHVV#176",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR IBL Specular IOR vs Coat Weight",
-            "playgroundId": "#GRQHVV#40",
+            "playgroundId": "#GRQHVV#182",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR IBL Specular Roughness vs Coat Roughness",
-            "playgroundId": "#GRQHVV#41",
+            "playgroundId": "#GRQHVV#183",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -2963,17 +3074,17 @@
         },
         {
             "title": "OpenPBR IBL Normal and Coat Normal Mapping",
-            "playgroundId": "#GRQHVV#44",
+            "playgroundId": "#GRQHVV#184",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR IBL Coat Darkening",
-            "playgroundId": "#GRQHVV#46",
+            "playgroundId": "#GRQHVV#185",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR IBL Coat Darkening vs Coat IOR",
-            "playgroundId": "#GRQHVV#48",
+            "playgroundId": "#GRQHVV#181",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -2988,12 +3099,12 @@
         },
         {
             "title": "OpenPBR IBL Coat Color vs Coat Darkening",
-            "playgroundId": "#GRQHVV#50",
+            "playgroundId": "#GRQHVV#186",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR IBL Coat Color vs Coat IOR",
-            "playgroundId": "#GRQHVV#51",
+            "playgroundId": "#GRQHVV#187",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3018,32 +3129,32 @@
         },
         {
             "title": "OpenPBR IBL Anisotropy Metal",
-            "playgroundId": "#GRQHVV#62",
+            "playgroundId": "#GRQHVV#208",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR IBL Anisotropy Dielectric",
-            "playgroundId": "#GRQHVV#63",
+            "playgroundId": "#GRQHVV#210",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Anisotropy - glTF style",
-            "playgroundId": "#GRQHVV#67",
+            "playgroundId": "#GRQHVV#189",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Anisotropy - Realtime Filtered IBL",
-            "playgroundId": "#GRQHVV#71",
+            "playgroundId": "#GRQHVV#190",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Coat Anisotropy - IBL",
-            "playgroundId": "#GRQHVV#74",
+            "playgroundId": "#GRQHVV#193",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Coat Anisotropy - Realtime Filtered IBL",
-            "playgroundId": "#GRQHVV#76",
+            "playgroundId": "#GRQHVV#195",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3053,7 +3164,7 @@
         },
         {
             "title": "Specular Reflectance with IOR V2 Manifest",
-            "playgroundId": "#KQYNYS#49"
+            "playgroundId": "#KQYNYS#57"
         },
         {
             "title": "OpenPBR Coat Roughness vs Coat Ior - Analytic Lights",
@@ -3062,12 +3173,12 @@
         },
         {
             "title": "OpenPBR Coat Roughness vs Coat Ior - IBL",
-            "playgroundId": "#GRQHVV#81",
+            "playgroundId": "#GRQHVV#196",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Thin Film Weight VS IOR - IBL",
-            "playgroundId": "#GRQHVV#86",
+            "playgroundId": "#GRQHVV#197",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3082,22 +3193,22 @@
         },
         {
             "title": "OpenPBR Thin Film Thickness VS IOR - IBL",
-            "playgroundId": "#GRQHVV#89",
+            "playgroundId": "#GRQHVV#198",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Thin Film Weight VS IOR - Furnace Test",
-            "playgroundId": "#GRQHVV#90",
+            "playgroundId": "#GRQHVV#199",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Thin Film Thickness VS IOR - Furnace Test",
-            "playgroundId": "#GRQHVV#91",
+            "playgroundId": "#GRQHVV#200",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Thin Film Thickness VS IOR Metal - Furnace Test",
-            "playgroundId": "#GRQHVV#94",
+            "playgroundId": "#GRQHVV#201",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3112,23 +3223,23 @@
         },
         {
             "title": "OpenPBR Thin Film and Specular Weight Metals - IBL",
-            "playgroundId": "#GRQHVV#97",
+            "playgroundId": "#GRQHVV#202",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Thin Film and Specular Weight - IBL",
-            "playgroundId": "#GRQHVV#98",
+            "playgroundId": "#GRQHVV#203",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Thin Film Textures - IBL",
-            "playgroundId": "#GRQHVV#101",
+            "playgroundId": "#GRQHVV#174",
             "excludedEngines": ["webgl1"],
             "renderCount": 2
         },
         {
             "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - IBL",
-            "playgroundId": "#GRQHVV#111",
+            "playgroundId": "#GRQHVV#204",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3143,17 +3254,17 @@
         },
         {
             "title": "OpenPBR Fuzz Weight vs Coat Weight with Normal Maps - IBL",
-            "playgroundId": "#GRQHVV#108",
+            "playgroundId": "#GRQHVV#205",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - Realtime IBL",
-            "playgroundId": "#GRQHVV#110",
+            "playgroundId": "#GRQHVV#206",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - Furnace Test",
-            "playgroundId": "#GRQHVV#115",
+            "playgroundId": "#GRQHVV#207",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3254,6 +3365,15 @@
         {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458"
+        },
+        {
+            "title": "Lighting Volume",
+            "playgroundId": "#MU9P6L#1"
+        },
+        {
+            "title": "NME Particles with PositionW",
+            "playgroundId": "#RA18GJ#17",
+            "renderCount": 120
         }
     ]
 }

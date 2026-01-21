@@ -1,14 +1,15 @@
 import type { Scene } from "core/scene";
-import type { NodeParticleConnectionPoint } from "./nodeParticleBlockConnectionPoint";
-import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
-import type { Particle } from "../particle";
 import type { Nullable } from "core/types";
-import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
-import type { ThinParticleSystem } from "../thinParticleSystem";
-import { Color4 } from "core/Maths/math.color";
-import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { Particle } from "core/Particles/particle";
+import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+
+import { Color4 } from "core/Maths/math.color";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
+import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 
 /**
  * Class used to store node based geometry build state
@@ -114,9 +115,11 @@ export class NodeParticleBuildState {
                 return this.particleContext.position;
             case NodeParticleContextualSources.Direction:
                 return this.particleContext.direction;
+            case NodeParticleContextualSources.DirectionScale:
+                return this.particleContext._directionScale;
             case NodeParticleContextualSources.ScaledDirection:
-                this.particleContext.direction.scaleToRef(this.systemContext._directionScale, this.systemContext._scaledDirection);
-                return this.systemContext._scaledDirection;
+                this.particleContext.direction.scaleToRef(this.particleContext._directionScale, this.particleContext._scaledDirection);
+                return this.particleContext._scaledDirection;
             case NodeParticleContextualSources.Color:
                 return this.particleContext.color;
             case NodeParticleContextualSources.InitialColor:
@@ -131,6 +134,8 @@ export class NodeParticleBuildState {
                 return this.particleContext.angle;
             case NodeParticleContextualSources.Scale:
                 return this.particleContext.scale;
+            case NodeParticleContextualSources.Size:
+                return this.particleContext.size;
             case NodeParticleContextualSources.AgeGradient:
                 return this.particleContext.age / this.particleContext.lifeTime;
             case NodeParticleContextualSources.SpriteCellEnd:
@@ -147,8 +152,8 @@ export class NodeParticleBuildState {
                 this.particleContext.colorStep.scaleToRef(this.systemContext._scaledUpdateSpeed, this.systemContext._scaledColorStep);
                 return this.systemContext._scaledColorStep;
             case NodeParticleContextualSources.LocalPositionUpdated:
-                this.particleContext.direction.scaleToRef(this.systemContext._directionScale, this.systemContext._scaledDirection);
-                this.particleContext._localPosition!.addInPlace(this.systemContext._scaledDirection);
+                this.particleContext.direction.scaleToRef(this.particleContext._directionScale, this.particleContext._scaledDirection);
+                this.particleContext._localPosition!.addInPlace(this.particleContext._scaledDirection);
                 Vector3.TransformCoordinatesToRef(this.particleContext._localPosition!, this.systemContext._emitterWorldMatrix, this.particleContext.position);
                 return this.particleContext.position;
         }
@@ -201,7 +206,7 @@ export class NodeParticleBuildState {
      * @returns the value associated with the source
      */
     public getSystemValue(source: NodeParticleSystemSources) {
-        if (!this.particleContext || !this.systemContext) {
+        if (!this.systemContext) {
             return null;
         }
 

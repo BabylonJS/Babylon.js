@@ -2,10 +2,10 @@ import type { Nullable } from "../../types";
 import type { Effect } from "../../Materials/effect";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import type { IPipelineContext } from "../IPipelineContext";
-import type { NativeEngine } from "../nativeEngine";
 import type { NativeProgram } from "./nativeInterfaces";
 import type { AbstractEngine } from "../abstractEngine";
 import type { NativeShaderProcessingContext } from "./nativeShaderProcessingContext";
+import type { ThinNativeEngine } from "../thinNativeEngine";
 
 export class NativePipelineContext implements IPipelineContext {
     public isCompiled: boolean = false;
@@ -36,11 +36,11 @@ export class NativePipelineContext implements IPipelineContext {
         return null;
     }
 
-    private _engine: NativeEngine;
+    private _engine: ThinNativeEngine;
     private _valueCache: { [key: string]: any } = {};
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> };
 
-    constructor(engine: NativeEngine, isAsync: boolean, shaderProcessingContext: Nullable<NativeShaderProcessingContext>) {
+    constructor(engine: ThinNativeEngine, isAsync: boolean, shaderProcessingContext: Nullable<NativeShaderProcessingContext>) {
         this._engine = engine;
         this.isAsync = isAsync;
         this.shaderProcessingContext = shaderProcessingContext;
@@ -86,7 +86,7 @@ export class NativePipelineContext implements IPipelineContext {
     }
 
     public setEngine(engine: AbstractEngine): void {
-        this._engine = engine as NativeEngine;
+        this._engine = engine as ThinNativeEngine;
     }
 
     /**

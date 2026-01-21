@@ -169,8 +169,11 @@ export class TAAMaterialManager {
         }
     }
 
-    private _getPlugin(material: Material): TAAJitterMaterialPlugin {
-        let plugin = material.pluginManager?.getPlugin<TAAJitterMaterialPlugin>(TAAJitterMaterialPlugin.Name);
+    private _getPlugin(material: Material): Nullable<TAAJitterMaterialPlugin> {
+        if (!material.pluginManager) {
+            return null;
+        }
+        let plugin = material.pluginManager.getPlugin<TAAJitterMaterialPlugin>(TAAJitterMaterialPlugin.Name);
         if (!plugin) {
             plugin = new TAAJitterMaterialPlugin(material);
         }

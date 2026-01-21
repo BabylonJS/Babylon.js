@@ -1,12 +1,12 @@
 import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
 import { Color4, TmpColors } from "../../../Maths/math.color";
-import { FrameGraphTask } from "../../frameGraphTask";
+import { FrameGraphTaskMultiRenderTarget } from "../../frameGraphTaskMultiRenderTarget";
 import { backbufferColorTextureHandle } from "../../frameGraphTypes";
 
 /**
  * Task used to clear a texture.
  */
-export class FrameGraphClearTextureTask extends FrameGraphTask {
+export class FrameGraphClearTextureTask extends FrameGraphTaskMultiRenderTarget {
     /**
      * The color to clear the texture with.
      */
@@ -69,27 +69,42 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
         this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphClearTextureTask";
+    }
+
     public record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.targetTexture === undefined && this.depthTexture === undefined) {
             throw new Error(`FrameGraphClearTextureTask ${this.name}: targetTexture and depthTexture can't both be undefined.`);
         }
 
+        const textureManager = this._frameGraph.textureManager;
         const targetTextures = this.targetTexture !== undefined ? (Array.isArray(this.targetTexture) ? this.targetTexture : [this.targetTexture]) : undefined;
 
-        let textureSamples = 0;
-        let depthSamples = 0;
-
         if (this.targetTexture !== undefined) {
-            textureSamples = this._frameGraph.textureManager.getTextureDescription(targetTextures![0]).options.samples || 1;
-            this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, targetTextures![0]);
+            textureManager.resolveDanglingHandle(this.outputTexture, targetTextures![0]);
         }
         if (this.depthTexture !== undefined) {
-            depthSamples = this._frameGraph.textureManager.getTextureDescription(this.depthTexture).options.samples || 1;
-            this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
+            textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
         }
+        if (this.targetTexture !== undefined && this.depthTexture !== undefined) {
+            const targetDescription = textureManager.getTextureDescription(targetTextures![0]);
+            const depthDescription = textureManager.getTextureDescription(this.depthTexture);
 
-        if (textureSamples !== depthSamples && textureSamples !== 0 && depthSamples !== 0) {
-            throw new Error(`FrameGraphClearTextureTask ${this.name}: the depth texture and the target texture must have the same number of samples.`);
+            if (targetDescription.size.width !== depthDescription.size.width || targetDescription.size.height !== depthDescription.size.height) {
+                throw new Error(
+                    `FrameGraphClearTextureTask ${this.name}: the depth texture (size: ${depthDescription.size.width}x${depthDescription.size.height}) and the target texture (size: ${targetDescription.size.width}x${targetDescription.size.height}) must have the same dimensions.`
+                );
+            }
+
+            const textureSamples = targetDescription.options.samples || 1;
+            const depthSamples = depthDescription.options.samples || 1;
+
+            if (textureSamples !== depthSamples && textureSamples !== 0 && depthSamples !== 0) {
+                throw new Error(
+                    `FrameGraphClearTextureTask ${this.name}: the depth texture (${depthSamples} samples) and the target texture (${textureSamples} samples) must have the same number of samples.`
+                );
+            }
         }
 
         const attachments = this._frameGraph.engine.buildTextureLayout(
@@ -103,7 +118,15 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
 
         pass.setRenderTarget(targetTextures);
         pass.setRenderTargetDepth(this.depthTexture);
+        pass.setInitializeFunc(() => {
+            const renderTargetWrapper = pass.frameGraphRenderTarget.renderTargetWrapper;
+            if (renderTargetWrapper) {
+                renderTargetWrapper.disableAutomaticMSAAResolve = true;
+            }
+        });
         pass.setExecuteFunc((context) => {
+            this._updateLayerAndFaceIndices(pass);
+
             color.copyFrom(this.color);
             if (this.convertColorToLinearSpace) {
                 color.toLinearSpaceToRef(color);

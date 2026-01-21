@@ -30,6 +30,10 @@ export class FrameGraphMotionBlurTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinMotionBlurPostProcess(name, frameGraph.scene));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphMotionBlurTask";
+    }
+
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined) {
             throw new Error(`FrameGraphMotionBlurTask "${this.name}": sourceTexture is required`);

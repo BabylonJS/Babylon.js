@@ -1,7 +1,5 @@
-import { Clamp } from "./math.scalar.functions";
 import type { DeepImmutable } from "../types";
-import type { IQuaternionLike, IVector2Like, IVector3Like, IVector4Like } from "./math.like";
-import { Quaternion, Vector3 } from "./math.vector";
+import type { IVector2Like, IVector3Like, IVector4Like } from "./math.like";
 
 /**
  * Creates a string representation of the IVector2Like
@@ -106,6 +104,41 @@ export function Vector3ScaleInPlace<T extends IVector3Like>(vector: T, scale: nu
     return vector;
 }
 
+export function Vector3SubtractToRef<T extends IVector3Like>(a: DeepImmutable<IVector3Like>, b: DeepImmutable<IVector3Like>, result: T): T {
+    result.x = a.x - b.x;
+    result.y = a.y - b.y;
+    result.z = a.z - b.z;
+    return result;
+}
+
+export function Vector3CopyToRef<T extends IVector3Like>(source: IVector3Like, result: T): T {
+    result.x = source.x;
+    result.y = source.y;
+    result.z = source.z;
+    return result;
+}
+
+export function Vector3LerpToRef<T extends IVector3Like>(start: T, end: T, amount: number, result: T): T {
+    result.x = start.x + (end.x - start.x) * amount;
+    result.y = start.y + (end.y - start.y) * amount;
+    result.z = start.z + (end.z - start.z) * amount;
+    return result;
+}
+
+export function Vector3NormalizeToRef<T extends IVector3Like>(vector: DeepImmutable<T>, result: T): T {
+    const len = Vector3Length(vector);
+    if (len === 0) {
+        result.x = 0;
+        result.y = 0;
+        result.z = 0;
+    } else {
+        result.x = vector.x / len;
+        result.y = vector.y / len;
+        result.z = vector.z / len;
+    }
+    return result;
+}
+
 /**
  * Creates a string representation of the IVector3Like
  * @param vector defines the IVector3Like to stringify
@@ -134,40 +167,4 @@ export function Vector4Dot(a: DeepImmutable<IVector4Like>, b: DeepImmutable<IVec
  */
 export function Vector4ToFixed(vector: DeepImmutable<IVector4Like>, decimalCount: number): string {
     return `{X: ${vector.x.toFixed(decimalCount)} Y: ${vector.y.toFixed(decimalCount)} Z: ${vector.z.toFixed(decimalCount)} W: ${vector.w.toFixed(decimalCount)}}`;
-}
-
-/**
- * Returns the angle in radians between two quaternions
- * @param q1 defines the first quaternion
- * @param q2 defines the second quaternion
- * @returns the angle in radians between the two quaternions
- */
-export function GetAngleBetweenQuaternions(q1: DeepImmutable<IQuaternionLike>, q2: DeepImmutable<IQuaternionLike>): number {
-    return Math.acos(Clamp(Vector4Dot(q1, q2))) * 2;
-}
-
-/**
- * Creates a quaternion from two direction vectors
- * @param a defines the first direction vector
- * @param b defines the second direction vector
- * @returns the target quaternion
- */
-export function GetQuaternionFromDirections<T extends Vector3>(a: DeepImmutable<T>, b: DeepImmutable<T>): Quaternion {
-    const result = new Quaternion();
-    GetQuaternionFromDirectionsToRef(a, b, result);
-    return result;
-}
-
-/**
- * Creates a quaternion from two direction vectors
- * @param a defines the first direction vector
- * @param b defines the second direction vector
- * @param result defines the target quaternion
- * @returns the target quaternion
- */
-export function GetQuaternionFromDirectionsToRef<T extends Vector3, ResultT extends Quaternion>(a: DeepImmutable<T>, b: DeepImmutable<T>, result: ResultT): ResultT {
-    const axis = Vector3.Cross(a, b);
-    const angle = Math.acos(Clamp(Vector3Dot(a, b), -1, 1));
-    Quaternion.RotationAxisToRef(axis, angle, result);
-    return result;
 }

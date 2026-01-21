@@ -27,7 +27,7 @@ import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import type { IMaterialContext } from "./IMaterialContext";
-import type { IStencilState } from "../States/IStencilState";
+import type { IStencilStateProperties, IStencilState } from "../States/IStencilState";
 import type { DrawWrapper } from "../Materials/drawWrapper";
 import type { IDrawContext } from "./IDrawContext";
 import type { VertexBuffer } from "../Meshes/buffer";
@@ -51,7 +51,7 @@ import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _LoadFile } from "./abstractEngine.functions";
 import type { Material } from "core/Materials/material";
-import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
+import type { IInternalTextureLoader } from "../Materials/Textures/Loaders/internalTextureLoader";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -275,6 +275,9 @@ export abstract class AbstractEngine {
 
     /** @internal */
     protected _isWebGPU: boolean = false;
+
+    /** @internal */
+    public _enableGPUDebugMarkers: boolean = false;
 
     // Focus
     /** @internal */
@@ -1363,7 +1366,7 @@ export abstract class AbstractEngine {
         force?: boolean,
         reverseSide?: boolean,
         cullBackFaces?: boolean,
-        stencil?: IStencilState,
+        stencil?: IStencilState | IStencilStateProperties,
         zOffsetUnits?: number
     ): void;
 
@@ -1586,7 +1589,7 @@ export abstract class AbstractEngine {
             extension = extension.split("?")[0];
         }
 
-        const loaderPromise = _GetCompatibleTextureLoader(extension, mimeType);
+        const loaderPromise = AbstractEngine.GetCompatibleTextureLoader(extension, mimeType);
 
         if (scene) {
             scene.addPendingData(texture);
@@ -1919,14 +1922,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.37.0";
+        return "babylonjs@8.46.2";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.37.0";
+        return "8.46.2";
     }
 
     /**
@@ -2820,4 +2823,15 @@ export abstract class AbstractEngine {
      * @returns frame number
      */
     public static QueueNewFrame: (func: () => void, requester?: any) => number = QueueNewFrame;
+
+    /**
+     * @internal
+     * Function used to get the correct texture loader for a specific extension.
+     * @param extension defines the file extension of the file being loaded
+     * @param mimeType defines the optional mime type of the file being loaded
+     * @returns the IInternalTextureLoader or null if it wasn't found
+     */
+    public static GetCompatibleTextureLoader(_extension: string, _mimeType?: string): Nullable<Promise<IInternalTextureLoader>> {
+        return null;
+    }
 }

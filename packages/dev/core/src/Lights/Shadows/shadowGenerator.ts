@@ -1047,7 +1047,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
         this._shadowMap.onBeforeBindObservable.add(() => {
             this._currentSceneUBO = this._scene.getSceneUniformBuffer();
-            engine._debugPushGroup?.(`shadow map generation for pass id ${engine.currentRenderPassId}`, 1);
+            if (engine._enableGPUDebugMarkers) {
+                engine.restoreDefaultFramebuffer();
+                engine._debugPushGroup?.(`Shadow map generation for pass id ${engine.currentRenderPassId}`);
+            }
         });
 
         // Record Face Index before render.
@@ -1080,7 +1083,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.setColorWrite(true);
             }
             if (!this.useBlurExponentialShadowMap && !this.useBlurCloseExponentialShadowMap) {
-                engine._debugPopGroup?.(1);
+                engine._debugPopGroup?.();
                 return;
             }
             const shadowMap = this.getShadowMapForRendering();
@@ -1090,7 +1093,9 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.unBindFramebuffer(shadowMap.renderTarget!, true);
             }
 
-            engine._debugPopGroup?.(1);
+            if (engine._enableGPUDebugMarkers) {
+                engine._debugPopGroup?.();
+            }
         });
 
         // Clear according to the chosen filter.

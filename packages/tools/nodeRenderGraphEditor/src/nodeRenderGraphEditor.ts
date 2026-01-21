@@ -47,8 +47,6 @@ export class NodeRenderGraphEditor {
             }
         }
 
-        alert("Frame graph is currently in alpha phase, so don't use it in production code yet!");
-
         let hostElement = options.hostElement;
 
         if (!hostElement) {
@@ -67,7 +65,7 @@ export class NodeRenderGraphEditor {
         globalState.customSave = options.customSave;
         globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.stateManager.hostDocument = globalState.hostDocument;
-        globalState.noAutoFillExternalInputs = options.hostScene !== undefined && options.hostScene !== null;
+        globalState.noAutoFillExternalInputs = options.nodeRenderGraph.options.autoFillExternalInputs === false;
         globalState.customBlockDescriptions = options.customBlockDescriptions;
 
         const graphEditor = React.createElement(GraphEditor, {

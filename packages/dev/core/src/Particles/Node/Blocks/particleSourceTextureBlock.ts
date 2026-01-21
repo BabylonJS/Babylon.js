@@ -1,12 +1,26 @@
+import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
+import type { NodeParticleBuildState } from "../nodeParticleBuildState";
+import type { Nullable } from "core/types";
+import type { BaseTexture } from "../../../Materials/Textures/baseTexture";
+import type { ProceduralTexture } from "../../../Materials/Textures/Procedurals/proceduralTexture";
+
 import { Texture } from "core/Materials/Textures/texture";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../nodeParticleBuildState";
-import type { Nullable } from "core/types";
 import { TextureTools } from "core/Misc/textureTools";
-import type { BaseTexture } from "../../../Materials/Textures/baseTexture";
+
+/**
+ * Interface used to define texture data
+ */
+export interface INodeParticleTextureData {
+    /** Width of the texture in pixels */
+    width: number;
+    /** Height of the texture in pixels */
+    height: number;
+    /** RGBA pixel data */
+    data: Uint8ClampedArray;
+}
 
 /**
  * Block used to provide a texture for particles in a particle system
@@ -15,11 +29,13 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     private _url: string = "";
     private _textureDataUrl: string = "";
     private _sourceTexture: Nullable<BaseTexture> = null;
-    private _cachedData: Nullable<{
-        width: number;
-        height: number;
-        data: Uint8ClampedArray;
-    }> = null;
+    private _cachedData: Nullable<INodeParticleTextureData> = null;
+    private _clonedTextures: BaseTexture[] = [];
+
+    /**
+     * Gets or sets the strenght of the flow map effect
+     */
+    public invertY = true;
 
     /**
      * Indicates if the texture data should be serialized as a base64 string.
@@ -123,7 +139,6 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
             }>
         >((resolve, reject) => {
             if (!texture.isReady()) {
-                // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 texture.onLoadObservable.addOnce(async () => {
                     try {
                         this._cachedData = await this.extractTextureContentAsync();
@@ -136,19 +151,36 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                 return;
             }
             const size = texture.getSize();
-            TextureTools.GetTextureDataAsync(texture, size.width, size.height)
-                // eslint-disable-next-line github/no-then
-                .then((data) => {
-                    this._cachedData = {
-                        width: size.width,
-                        height: size.height,
-                        data: new Uint8ClampedArray(data),
-                    };
-                    texture.dispose();
-                    resolve(this._cachedData);
-                })
-                // eslint-disable-next-line github/no-then
-                .catch(reject);
+            if (texture.getContent) {
+                const proceduralTexture = texture as ProceduralTexture;
+                proceduralTexture
+                    .getContent()
+                    // eslint-disable-next-line github/no-then
+                    ?.then((data) => {
+                        this._cachedData = {
+                            width: size.width,
+                            height: size.height,
+                            data: data as Uint8ClampedArray,
+                        };
+                        resolve(this._cachedData);
+                    })
+                    // eslint-disable-next-line github/no-then
+                    .catch(reject);
+            } else {
+                TextureTools.GetTextureDataAsync(texture, size.width, size.height)
+                    // eslint-disable-next-line github/no-then
+                    .then((data) => {
+                        this._cachedData = {
+                            width: size.width,
+                            height: size.height,
+                            data: new Uint8ClampedArray(data),
+                        };
+                        texture.dispose();
+                        resolve(this._cachedData);
+                    })
+                    // eslint-disable-next-line github/no-then
+                    .catch(reject);
+            }
         });
     }
 
@@ -158,7 +190,38 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
      */
     public override _build(state: NodeParticleBuildState) {
         if (this._sourceTexture) {
-            this.texture._storedValue = this._sourceTexture;
+            // The same NodeParticleSystemSet can be built into multiple scenes/engines
+            // (original system scene, editor preview scene).
+            // Textures are engine-specific, so we need to handle cross-engine cases.
+            const sourceScene = this._sourceTexture.getScene?.();
+            const sourceEngine = sourceScene?.getEngine?.();
+            const targetEngine = state.scene.getEngine();
+
+            if (sourceEngine && sourceEngine !== targetEngine) {
+                // Cross-engine: recreate texture from URL if available, preserving invertY
+                const url = (this._sourceTexture as Texture).url || this._url;
+                if (url) {
+                    const invertY = (this._sourceTexture as Texture).invertY ?? this.invertY;
+                    const tex = new Texture(url, state.scene, undefined, invertY);
+                    this._copyTextureProperties(this._sourceTexture, tex);
+                    this._clonedTextures.push(tex);
+                    this.texture._storedValue = tex;
+                    return;
+                }
+                // No URL available - use the source texture directly as fallback
+                // This may not render correctly but avoids breaking completely
+                this.texture._storedValue = this._sourceTexture;
+                return;
+            }
+
+            // Same engine: clone works correctly and preserves all properties
+            const cloned = this._sourceTexture.clone();
+            if (cloned) {
+                this._clonedTextures.push(cloned);
+                this.texture._storedValue = cloned;
+            } else {
+                this.texture._storedValue = this._sourceTexture;
+            }
             return;
         }
 
@@ -168,18 +231,27 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
         }
 
         if (this._textureDataUrl) {
-            this.texture._storedValue = new Texture(this._textureDataUrl, state.scene);
+            const tex = new Texture(this._textureDataUrl, state.scene, undefined, this.invertY);
+            this._clonedTextures.push(tex);
+            this.texture._storedValue = tex;
             return;
         }
 
-        this.texture._storedValue = new Texture(this._url, state.scene);
+        const tex = new Texture(this._url, state.scene, undefined, this.invertY);
+        this._clonedTextures.push(tex);
+        this.texture._storedValue = tex;
     }
 
+    /**
+     * Serializes this block
+     * @returns the serialization object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.url = this.url;
         serializationObject.serializedCachedData = this.serializedCachedData;
+        serializationObject.invertY = this.invertY;
 
         if (this.serializedCachedData) {
             serializationObject.textureDataUrl = this.textureDataUrl;
@@ -188,25 +260,64 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes this block from a serialization object
+     * @param serializationObject the serialization object
+     */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         this.url = serializationObject.url;
         this.serializedCachedData = !!serializationObject.serializedCachedData;
+        this.invertY = !!serializationObject.invertY;
 
         if (serializationObject.textureDataUrl) {
             this.textureDataUrl = serializationObject.textureDataUrl;
         }
     }
 
+    /**
+     * Disposes the block and its associated resources
+     */
     public override dispose(): void {
-        if (!this._sourceTexture) {
-            if (this.texture._storedValue) {
-                this.texture._storedValue.dispose();
-                this.texture._storedValue = null;
-            }
+        // Dispose all cloned textures we created
+        for (const tex of this._clonedTextures) {
+            tex.dispose();
         }
+        this._clonedTextures = [];
+        this.texture._storedValue = null;
+        // Never dispose _sourceTexture - it's owned by the caller
         super.dispose();
+    }
+
+    /**
+     * Copies texture properties from source to target texture
+     * @param source - The source texture to copy properties from
+     * @param target - The target texture to copy properties to
+     */
+    private _copyTextureProperties(source: BaseTexture, target: BaseTexture): void {
+        // BaseTexture properties
+        target.hasAlpha = source.hasAlpha;
+        target.level = source.level;
+        target.coordinatesIndex = source.coordinatesIndex;
+        target.coordinatesMode = source.coordinatesMode;
+        target.wrapU = source.wrapU;
+        target.wrapV = source.wrapV;
+        target.wrapR = source.wrapR;
+        target.anisotropicFilteringLevel = source.anisotropicFilteringLevel;
+
+        // Texture-specific properties (if both are Texture instances)
+        const sourceTexture = source as Texture;
+        const targetTexture = target as Texture;
+        if (sourceTexture.uOffset !== undefined && targetTexture.uOffset !== undefined) {
+            targetTexture.uOffset = sourceTexture.uOffset;
+            targetTexture.vOffset = sourceTexture.vOffset;
+            targetTexture.uScale = sourceTexture.uScale;
+            targetTexture.vScale = sourceTexture.vScale;
+            targetTexture.uAng = sourceTexture.uAng;
+            targetTexture.vAng = sourceTexture.vAng;
+            targetTexture.wAng = sourceTexture.wAng;
+        }
     }
 }
 

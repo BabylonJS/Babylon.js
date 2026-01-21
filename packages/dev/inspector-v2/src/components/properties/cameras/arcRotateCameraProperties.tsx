@@ -93,12 +93,10 @@ export const ArcRotateCameraControlProperties: FunctionComponent<{ camera: ArcRo
 export const ArcRotateCameraCollisionProperties: FunctionComponent<{ camera: ArcRotateCamera }> = (props) => {
     const { camera } = props;
 
-    const collisionRadius = useProperty(camera, "collisionRadius");
-
     return (
         <>
             <BoundProperty component={SwitchPropertyLine} label="Check Collisions" target={camera} propertyKey="checkCollisions" />
-            <Vector3PropertyLine label="Collision Radius" value={collisionRadius} onChange={(val) => (camera.collisionRadius = val)} />
+            <BoundProperty component={Vector3PropertyLine} label="Collision Radius" target={camera} propertyKey="collisionRadius" />
         </>
     );
 };

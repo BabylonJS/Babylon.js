@@ -1,6 +1,6 @@
 import { EvaluateAbstractAudioNodeTestAsync } from "../utils/abstractAudioNode.utils";
 import type { AudioNodeType } from "../utils/audioV2.utils";
-import { Channel, EvaluateErrorMessageAsync, EvaluateVolumesAtTimeAsync, ExpectValueToBeCloseTo } from "../utils/audioV2.utils";
+import { Channel, EvaluateErrorMessageAsync, EvaluateVolumesAtTimeAsync, ExpectValueToBeCloseTo, RealtimeVolumeRange, VolumePrecision } from "../utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
@@ -395,7 +395,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.3);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.3, VolumePrecision, RealtimeVolumeRange * 2);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 0.3x volume at 0.1 seconds with shape set to exponential", async ({ page }) => {

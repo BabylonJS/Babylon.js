@@ -17,7 +17,7 @@
     // Diffuse Lobe
     #ifdef HEMILIGHT{X}
         slab_diffuse = computeHemisphericDiffuseLighting(preInfo{X}, lightColor{X}.rgb, light{X}.vLightGround);
-    #elif defined(AREALIGHT{X})
+    #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
         slab_diffuse = computeAreaDiffuseLighting(preInfo{X}, lightColor{X}.rgb);
     #else
         slab_diffuse = computeDiffuseLighting(preInfo{X}, lightColor{X}.rgb);
@@ -37,7 +37,7 @@
     #endif
 
     // Specular Lobe
-    #if AREALIGHT{X}
+    #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
         slab_glossy = computeAreaSpecularLighting(preInfo{X}, light{X}.vLightSpecular.rgb, baseConductorReflectance.F0, baseConductorReflectance.F90);
     #else
         {
@@ -169,7 +169,7 @@
     #endif
 
     // Metal Lobe
-    #if AREALIGHT{X}
+    #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
         slab_metal = computeAreaSpecularLighting(preInfo{X}, light{X}.vLightSpecular.rgb, baseConductorReflectance.F0, baseConductorReflectance.F90);
     #else
         {
@@ -198,7 +198,7 @@
     #endif
 
     // Coat Lobe
-    #if AREALIGHT{X}
+    #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
         slab_coat = computeAreaSpecularLighting(preInfoCoat{X}, light{X}.vLightSpecular.rgb, coatReflectance.F0, coatReflectance.F90);
     #else
         {

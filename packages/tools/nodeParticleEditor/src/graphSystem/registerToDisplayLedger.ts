@@ -11,6 +11,9 @@ import { TeleportInDisplayManager } from "./display/teleportInDisplayManager";
 import { ConditionDisplayManager } from "./display/conditionDisplayManager";
 import { TriggerDisplayManager } from "./display/triggerDisplayManager";
 
+/**
+ * Registers all display managers to the display ledger
+ */
 export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ParticleInputBlock"] = InputDisplayManager;
     DisplayLedger.RegisteredControls["ParticleTextureSourceBlock"] = TextureDisplayManager;
@@ -27,14 +30,19 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["UpdateDirectionBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateColorBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateScaleBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateSizeBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateAgeBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["AlignAngleBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["BasicUpdateSpriteBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateSpriteCellIndexBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateAngleBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["BasicPositionUpdateBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["BasicSpriteUpdateBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["BasicColorUpdateBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateAttractorBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["UpdateFlowMapBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateNoiseBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateRemapBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["SystemBlock"] = SystemDisplayManager;
     DisplayLedger.RegisteredControls["ParticleDebugBlock"] = DebugDisplayManager;
     DisplayLedger.RegisteredControls["ParticleElbowBlock"] = ElbowDisplayManager;

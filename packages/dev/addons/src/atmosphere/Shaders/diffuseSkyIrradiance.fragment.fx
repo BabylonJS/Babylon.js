@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 precision highp float;
 
@@ -7,17 +7,16 @@ const float DiffuseSkyIrradianceLutSampleCount = 32.0;
 
 #include<__decl__atmosphereFragment>
 
+uniform sampler2D transmittanceLut;
+uniform sampler2D multiScatteringLut;
+
 #include<core/helperFunctions>
 #include<depthFunctions>
 #include<atmosphereFunctions>
 
-uniform sampler2D transmittanceLut;
-uniform sampler2D multiScatteringLut;
-
 vec3 integrateForIrradiance(vec3 directionToLight, vec3 rayDirection, vec3 rayOrigin) {
-    vec3 radiance;
     vec3 transmittance;
-    integrateScatteredRadiance(
+    vec3 radiance = integrateScatteredRadiance(
         false, // isAerialPerspectiveLut
         1.,
         transmittanceLut,
@@ -30,7 +29,6 @@ vec3 integrateForIrradiance(vec3 directionToLight, vec3 rayDirection, vec3 rayOr
         100000000.,
         DiffuseSkyIrradianceLutSampleCount,
         -1., // No planet hit.
-        radiance,
         transmittance);
     return radiance;
 }
@@ -50,14 +48,12 @@ void main() {
     vec3 directionToLight = normalize(vec3(0., cosLightInclination, sinLightInclination));
     float radius = max(planetRadiusWithOffset, unit.y * atmosphereThickness + planetRadius);
     vec3 swappedDirectionToLight = vec3(directionToLight.x, directionToLight.z, directionToLight.y); // the irradiance function expects z-up.
-    vec3 irradiance =
-        PI *
-        irradiance(
-            swappedDirectionToLight,
-            vec2(radius, 0.),
-            1.,
-            vec3(1.),
-            vec3(1.));
+    vec3 irradiance = PI * irradiance(
+        swappedDirectionToLight,
+        vec2(radius, 0.),
+        1.,
+        vec3(1.),
+        vec3(1.));
 
     // Apply desaturation factor.
     float averageIrradiance = getLuminance(irradiance);

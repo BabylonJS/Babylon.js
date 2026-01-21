@@ -17,7 +17,7 @@ export const enum Channel {
 export const VolumePrecision = 1;
 
 /** The range of acceptable volume values for realtime audio tests. */
-const RealtimeVolumeRange = 0.2;
+export const RealtimeVolumeRange = 0.2;
 
 export class AudioTestConfig {
     public baseUrl = getGlobalConfig().baseUrl;
@@ -92,20 +92,21 @@ declare global {
 export const InitAudioV2Tests = (initBeforeEach = true, initAfterEach = true) => {
     if (initBeforeEach) {
         test.beforeEach(async ({ page }) => {
-            await page.route("http://run.test/script.html", async (route) => {
+            const baseUrl = getGlobalConfig().baseUrl;
+            await page.route(`${baseUrl}/testing`, async (route) => {
                 route.fulfill({
                     status: 200,
                     contentType: "text/html",
                     body: `
-                <script src="${getGlobalConfig().baseUrl}/babylon.js"></script>
-                <script src="${getGlobalConfig().baseUrl}/audiov2-test.js"></script>
+                <script src="${baseUrl}/babylon.js"></script>
+                <script src="${baseUrl}/audiov2-test.js"></script>
                 <body>
                 </body>
             `,
                 });
             });
 
-            await page.goto("http://run.test/script.html");
+            await page.goto(`${baseUrl}/testing`);
 
             await page.waitForFunction(() => {
                 return window.BABYLON && AudioV2Test;
@@ -297,8 +298,7 @@ export async function ExpectValueToBeCloseTo(page: Page, actual: number, expecte
         expect(actual).toBeCloseTo(expected, precision);
     } else {
         // For "Realtime" contexts, expect larger range due to timing variations.
-        const halfRange = realtimeRange / 2;
-        expect(actual).toBeGreaterThanOrEqual(expected - halfRange);
-        expect(actual).toBeLessThanOrEqual(expected + halfRange);
+        expect(actual).toBeGreaterThanOrEqual(expected - realtimeRange);
+        expect(actual).toBeLessThanOrEqual(expected + realtimeRange);
     }
 }

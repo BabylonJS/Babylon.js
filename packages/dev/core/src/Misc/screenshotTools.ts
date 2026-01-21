@@ -263,6 +263,8 @@ export async function CreateScreenshotWithResizeAsync(
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @param customizeTexture An optional callback that can be used to modify the render target texture before taking the screenshot. This can be used, for instance, to enable camera post-processes before taking the screenshot.
  * @param customDumpData The function to use to dump the data. If not provided, the default DumpData function will be used.
+ * @param timeoutInMilliseconds The maximum time to wait for the screenshot to be ready before calling the timeoutErrorCallback (default: 30000 ms)
+ * @param timeoutErrorCallback The callback that will be called if the screenshot could not be taken before the timeoutInMilliseconds
  */
 export function CreateScreenshotUsingRenderTarget(
     engine: AbstractEngine,
@@ -288,7 +290,9 @@ export function CreateScreenshotUsingRenderTarget(
         invertY?: boolean,
         toArrayBuffer?: boolean,
         quality?: number
-    ) => void
+    ) => void,
+    timeoutInMilliseconds = 30000,
+    timeoutErrorCallback?: () => void
 ): void {
     const scene = camera.getScene();
 
@@ -450,7 +454,10 @@ export function CreateScreenshotUsingRenderTarget(
                 engine.skipFrameRender = false;
                 engine.getRenderWidth = originalGetRenderWidth;
                 engine.getRenderHeight = originalGetRenderHeight;
-            }
+                timeoutErrorCallback?.();
+            },
+            undefined,
+            timeoutInMilliseconds
         );
     };
 
@@ -714,15 +721,7 @@ export async function CreateScreenshotForFrameGraphAsync(
      */
     engine.getCaps().parallelShaderCompile = undefined;
 
-    frameGraph.build();
-
-    // We don't want the frame graph to render while waiting for whenReadyAsync to complete
-    frameGraph.pausedExecution = true;
-
-    await frameGraph.whenReadyAsync();
-
-    // eslint-disable-next-line require-atomic-updates
-    frameGraph.pausedExecution = false;
+    await frameGraph.buildAsync();
 
     const numberOfFrames = numberOfFramesToRender ?? (textureManager.hasHistoryTextures ? 32 : 1);
 
@@ -752,9 +751,7 @@ export async function CreateScreenshotForFrameGraphAsync(
 
     textureManager.resetBackBufferTextures();
 
-    frameGraph.build();
-
-    await frameGraph.whenReadyAsync();
+    await frameGraph.buildAsync();
 
     // eslint-disable-next-line require-atomic-updates
     frameGraph.pausedExecution = pausedExecution;

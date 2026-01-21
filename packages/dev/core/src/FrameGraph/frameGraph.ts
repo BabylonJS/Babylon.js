@@ -10,9 +10,6 @@ import { _RetryWithInterval } from "core/Misc/timingTools";
 import { Logger } from "core/Misc/logger";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
-import "core/Engines/Extensions/engine.multiRender";
-import "core/Engines/WebGPU/Extensions/engine.multiRender";
-
 enum FrameGraphPassType {
     Normal = 0,
     Render = 1,
@@ -21,7 +18,6 @@ enum FrameGraphPassType {
 
 /**
  * Class used to implement a frame graph
- * @experimental
  */
 export class FrameGraph implements IDisposable {
     /**
@@ -34,8 +30,10 @@ export class FrameGraph implements IDisposable {
     private readonly _tasks: FrameGraphTask[] = [];
     private readonly _passContext: FrameGraphContext;
     private readonly _renderContext: FrameGraphRenderContext;
+    private readonly _initAsyncPromises: Promise<unknown>[] = [];
     private _currentProcessedTask: FrameGraphTask | null = null;
     private _whenReadyAsyncCancel: Nullable<() => void> = null;
+    private _importPromise: Promise<any>;
 
     /**
      * Name of the frame graph
@@ -104,6 +102,7 @@ export class FrameGraph implements IDisposable {
     ) {
         this._scene = scene;
         this._engine = scene.getEngine();
+        this._importPromise = this._engine.isWebGPU ? import("../Engines/WebGPU/Extensions/engine.multiRender") : import("../Engines/Extensions/engine.multiRender");
         this.textureManager = new FrameGraphTextureManager(this._engine, debugTextures, scene);
         this._passContext = new FrameGraphContext(this._engine, this.textureManager, scene);
         this._renderContext = new FrameGraphRenderContext(this._engine, this.textureManager, scene);
@@ -138,6 +137,17 @@ export class FrameGraph implements IDisposable {
     }
 
     /**
+     * Gets all tasks of a specific type, based on their class name
+     * @param taskClassName Class name(s) of the task(s) to get
+     * @returns The list of tasks of the specified type
+     */
+    public getTasksByClassName<T extends FrameGraphTask>(taskClassName: string | string[]): T[] {
+        return Array.isArray(taskClassName)
+            ? (this._tasks.filter((t) => taskClassName.includes(t.getClassName())) as T[])
+            : (this._tasks.filter((t) => t.getClassName() === taskClassName) as T[]);
+    }
+
+    /**
      * Adds a task to the frame graph
      * @param task Task to add
      */
@@ -147,6 +157,7 @@ export class FrameGraph implements IDisposable {
         }
 
         this._tasks.push(task);
+        this._initAsyncPromises.push(task.initAsync());
     }
 
     /**
@@ -203,14 +214,29 @@ export class FrameGraph implements IDisposable {
         return pass;
     }
 
+    /** @internal */
+    public async _whenAsynchronousInitializationDoneAsync(): Promise<void> {
+        if (this._initAsyncPromises.length > 0) {
+            await Promise.all(this._initAsyncPromises);
+            this._initAsyncPromises.length = 0;
+        }
+    }
+
     /**
      * Builds the frame graph.
      * This method should be called after all tasks have been added to the frame graph (FrameGraph.addTask) and before the graph is executed (FrameGraph.execute).
+     * @param waitForReadiness If true, the method will wait for the frame graph to be ready before returning (default is true)
      */
-    public build(): void {
+    public async buildAsync(waitForReadiness = true): Promise<void> {
         this.textureManager._releaseTextures(false);
 
+        this.pausedExecution = true;
+
         try {
+            await this._importPromise;
+
+            await this._whenAsynchronousInitializationDoneAsync();
+
             for (const task of this._tasks) {
                 task._reset();
 
@@ -233,12 +259,22 @@ export class FrameGraph implements IDisposable {
                 task.onTexturesAllocatedObservable.notifyObservers(this._renderContext);
             }
 
+            for (const task of this._tasks) {
+                task._initializePasses();
+            }
+
             this.onBuildObservable.notifyObservers(this);
+
+            if (waitForReadiness) {
+                await this.whenReadyAsync();
+            }
         } catch (e) {
             this._tasks.length = 0;
             this._currentProcessedTask = null;
             this.textureManager._isRecordingTask = false;
             throw e;
+        } finally {
+            this.pausedExecution = false;
         }
     }
 
@@ -256,14 +292,15 @@ export class FrameGraph implements IDisposable {
     }
 
     /**
-     * Returns a promise that resolves when the frame graph is ready to be executed
-     * This method must be called after the graph has been built (FrameGraph.build called)!
+     * Returns a promise that resolves when the frame graph is ready to be executed.
+     * In general, calling “await buildAsync()” should suffice, as this function also waits for readiness by default.
      * @param timeStep Time step in ms between retries (default is 16)
-     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 5000)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 10000)
      * @returns The promise that resolves when the graph is ready
      */
-    public async whenReadyAsync(timeStep = 16, maxTimeout = 5000): Promise<void> {
+    public async whenReadyAsync(timeStep = 16, maxTimeout = 10000): Promise<void> {
         let firstNotReadyTask: FrameGraphTask | null = null;
+
         return await new Promise((resolve, reject) => {
             this._whenReadyAsyncCancel = _RetryWithInterval(
                 () => {
@@ -315,7 +352,7 @@ export class FrameGraph implements IDisposable {
             return;
         }
 
-        this._renderContext.bindRenderTarget();
+        this._renderContext.restoreDefaultFramebuffer();
 
         this.textureManager._updateHistoryTextures();
 
@@ -323,7 +360,7 @@ export class FrameGraph implements IDisposable {
             task._execute();
         }
 
-        this._renderContext.bindRenderTarget(undefined, undefined, true); // restore default framebuffer
+        this._renderContext.restoreDefaultFramebuffer();
     }
 
     /**

@@ -5,7 +5,6 @@ import { Observable } from "core/Misc/observable";
 
 /**
  * Represents a task in a frame graph.
- * @experimental
  */
 export abstract class FrameGraphTask {
     protected readonly _frameGraph: FrameGraph;
@@ -42,14 +41,14 @@ export abstract class FrameGraphTask {
     }
 
     /**
-     * Gets the render passes of the task.
+     * Gets the passes of the task.
      */
     public get passes() {
         return this._passes;
     }
 
     /**
-     * Gets the disabled render passes of the task.
+     * Gets the disabled passes of the task.
      */
     public get passesDisabled() {
         return this._passesDisabled;
@@ -60,11 +59,32 @@ export abstract class FrameGraphTask {
      */
     public dependencies?: Set<FrameGraphTextureHandle>;
 
+    /** @internal */
+    public _disableDebugMarkers = false;
+
     /**
      * Records the task in the frame graph. Use this function to add content (render passes, ...) to the task.
      * @param skipCreationOfDisabledPasses If true, the disabled passe(s) won't be created.
      */
     public abstract record(skipCreationOfDisabledPasses?: boolean): void;
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName(): string {
+        return "FrameGraphTask";
+    }
+
+    /**
+     * This function is called once after the task has been added to the frame graph and before the frame graph is built for the first time.
+     * This allows you to initialize asynchronous resources, which is not possible in the constructor.
+     * @returns A promise that resolves when the initialization is complete.
+     */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    public initAsync(): Promise<unknown> {
+        return Promise.resolve();
+    }
 
     /**
      * An observable that is triggered after the textures have been allocated.
@@ -112,6 +132,12 @@ export abstract class FrameGraphTask {
 
     /** @internal */
     public _reset() {
+        for (const pass of this._passes) {
+            pass._dispose();
+        }
+        for (const pass of this._passesDisabled) {
+            pass._dispose();
+        }
         this._passes.length = 0;
         this._passesDisabled.length = 0;
     }
@@ -188,10 +214,10 @@ export abstract class FrameGraphTask {
                     throw new Error(`The output texture of the task "${this.name}" is different when it is enabled or disabled.`);
                 }
             }
-            if (outputDepthTexture !== disabledOutputDepthTexture) {
+            if (outputDepthTexture !== disabledOutputDepthTexture && disabledOutputDepthTexture !== null) {
                 throw new Error(`The output depth texture of the task "${this.name}" is different when it is enabled or disabled.`);
             }
-            if (outputObjectList !== disabledOutputObjectList) {
+            if (outputObjectList !== disabledOutputObjectList && disabledOutputObjectList !== null) {
                 throw new Error(`The output object list of the task "${this.name}" is different when it is enabled or disabled.`);
             }
         }
@@ -203,11 +229,38 @@ export abstract class FrameGraphTask {
 
         this.onBeforeTaskExecute.notifyObservers(this);
 
+        if (!this._disableDebugMarkers) {
+            this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
+        }
+
         for (const pass of passes) {
             pass._execute();
         }
 
+        if (!this._disableDebugMarkers) {
+            this._frameGraph.engine._debugPopGroup?.();
+        }
+
         this.onAfterTaskExecute.notifyObservers(this);
+    }
+
+    /** @internal */
+    public _initializePasses() {
+        if (!this._disableDebugMarkers) {
+            this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
+        }
+
+        for (const pass of this._passes) {
+            pass._initialize();
+        }
+
+        for (const pass of this._passesDisabled) {
+            pass._initialize();
+        }
+
+        if (!this._disableDebugMarkers) {
+            this._frameGraph.engine._debugPopGroup?.();
+        }
     }
 
     private _checkSameRenderTarget(src: Nullable<Nullable<InternalTexture>[]>, dst: Nullable<Nullable<InternalTexture>[]>) {

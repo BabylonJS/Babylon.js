@@ -1,16 +1,17 @@
-import type { FunctionComponent } from "react";
+import type { ComponentType, FunctionComponent } from "react";
 
 import type { BaseTexture } from "core/index";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import type { TextureEditorProps } from "../../textureEditor/textureEditor";
+import type { TexturePreviewImperativeRef } from "./texturePreview";
 
-import { useCallback } from "react";
+import { EditRegular } from "@fluentui/react-icons";
+import { useRef } from "react";
 
 import { Constants } from "core/Engines/constants";
-import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
-import { ReadFile } from "core/Misc/fileTools";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
+import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
@@ -18,65 +19,28 @@ import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propert
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { TextureUpload } from "shared-ui-components/fluent/hoc/textureUpload";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { FindTextureFormat, FindTextureType } from "./textureFormatUtils";
 import { TexturePreview } from "./texturePreview";
 
-export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseTexture }> = (props) => {
-    const { texture } = props;
+export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseTexture; textureEditor: ComponentType<TextureEditorProps> }> = (props) => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { texture, textureEditor: TextureEditor } = props;
 
-    const isUpdatable = texture instanceof Texture || texture instanceof CubeTexture;
+    const texturePreviewImperativeRef = useRef<TexturePreviewImperativeRef>(null);
 
-    const updateTexture = useCallback(
-        (file: File) => {
-            ReadFile(
-                file,
-                (data) => {
-                    const blob = new Blob([data], { type: "octet/stream" });
-
-                    const reader = new FileReader();
-                    reader.readAsDataURL(blob);
-                    reader.onloadend = () => {
-                        const base64data = reader.result as string;
-
-                        if (texture instanceof CubeTexture) {
-                            let extension: string | undefined = undefined;
-                            if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                                extension = ".dds";
-                            } else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                                extension = ".env";
-                            }
-
-                            texture.updateURL(base64data, extension);
-                        } else if (texture instanceof Texture) {
-                            texture.updateURL(base64data);
-                        }
-                    };
-                },
-                undefined,
-                true
-            );
-        },
-        [texture]
-    );
+    const childWindow = useRef<ChildWindow>(null);
 
     return (
         <>
-            <TexturePreview texture={texture} width={256} height={256} />
-            {/* TODO: This should probably be dynamically fetching a list of supported texture extensions. */}
-            {isUpdatable && (
-                <FileUploadLine
-                    label="Load Texture From File"
-                    accept=".jpg, .png, .tga, .dds, .env, .exr"
-                    onClick={(files) => {
-                        if (files.length > 0) {
-                            updateTexture(files[0]);
-                        }
-                    }}
-                />
-            )}
-            <ButtonLine label="Edit Texture (coming soon!)" onClick={() => {}} />
+            <TexturePreview imperativeRef={texturePreviewImperativeRef} texture={texture} />
+            <TextureUpload texture={texture} />
+            <ButtonLine label="Edit Texture" onClick={() => childWindow.current?.open()} icon={EditRegular} />
+            <ChildWindow id="Texture Editor" imperativeRef={childWindow}>
+                <TextureEditor texture={texture} onUpdate={async () => await texturePreviewImperativeRef.current?.refresh()} />
+            </ChildWindow>
         </>
     );
 };
@@ -120,6 +84,7 @@ export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: B
     const type = useProperty(internalTexture, "type") ?? NaN;
     const depth = useProperty(internalTexture, "depth");
     const useSRGBBuffer = useProperty(internalTexture, "_useSRGBBuffer");
+    const samples = useProperty(internalTexture, "samples") ?? "?";
 
     const displayFormat = FindTextureFormat(format === -1 ? Constants.TEXTUREFORMAT_RGBA : format);
     const displayType = FindTextureType(type === -1 ? Constants.TEXTURETYPE_UNSIGNED_BYTE : type);
@@ -145,6 +110,7 @@ export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: B
             <BooleanBadgePropertyLine label="Cube" value={texture.isCube} />
             <BooleanBadgePropertyLine label="Render Target" value={texture.isRenderTarget} />
             <BooleanBadgePropertyLine label="Mipmaps" value={!texture.noMipmap} />
+            <TextPropertyLine label="Samples" value={samples.toString()} />
             <BoundProperty component={SyncedSliderPropertyLine} label="UV Set" target={texture} propertyKey="coordinatesIndex" min={0} max={3} step={1} />
             <BoundProperty component={NumberDropdownPropertyLine} label="Mode" target={texture} propertyKey="coordinatesMode" options={CoordinatesMode} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Level" target={texture} propertyKey="level" min={0} max={2} step={0.01} />

@@ -36,13 +36,13 @@ import { ServiceContainer } from "./modularity/serviceContainer";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     app: {
         colorScheme: "light dark",
         flexGrow: 1,
         display: "flex",
         flexDirection: "column",
+        backgroundColor: tokens.colorTransparentBackground,
     },
     spinner: {
         flexGrow: 1,
@@ -287,11 +287,15 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
     const reactRoot = createRoot(containerElement);
     reactRoot.render(createElement(modularToolRootComponent));
 
+    let disposed = false;
     return {
         dispose: () => {
             // Unmount and restore the original container element display.
-            reactRoot.unmount();
-            containerElement.style.display = originalContainerElementDisplay;
+            if (!disposed) {
+                disposed = true;
+                reactRoot.unmount();
+                containerElement.style.display = originalContainerElementDisplay;
+            }
         },
     };
 }

@@ -22,5 +22,7 @@ export const enum DefaultCommandsOrder {
     AnimationGroupPlay = 900,
     FrameGraphPlay = 900,
     MeshBoundingBox = 1000,
+    GuiHighlight = 1000,
     MeshVisibility = 1100,
+    GuiVisibility = 1100,
 }

@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 precision highp float;
 precision highp sampler2D;
@@ -13,13 +13,13 @@ precision highp sampler2DArray;
 uniform sampler2DArray aerialPerspectiveLut;
 #endif
 
-#include<core/helperFunctions>
-#include<depthFunctions>
-#include<atmosphereFunctions>
-
 uniform sampler2D depthTexture;
 uniform sampler2D transmittanceLut;
 uniform sampler2D multiScatteringLut;
+
+#include<core/helperFunctions>
+#include<depthFunctions>
+#include<atmosphereFunctions>
 
 varying vec2 uv;
 varying vec3 positionOnNearPlane;
@@ -79,10 +79,9 @@ void main() {
             return;
         }
 
-        vec3 transmittance;
-        vec3 radiance;
         bool isAerialPerspectiveLut = clampedCameraRadius < atmosphereRadius;
-        integrateScatteredRadiance(
+        vec3 transmittance;
+        vec3 radiance = integrateScatteredRadiance(
             isAerialPerspectiveLut, // isAerialPerspectiveLut
             atmosphereExposure * lightIntensity,
             transmittanceLut,
@@ -94,7 +93,6 @@ void main() {
             100000000.,
             SkyViewLutSampleCount,
             distanceToSurface,
-            radiance,
             transmittance);
 
         float transparency = 1. - avg(transmittance);

@@ -1,24 +1,20 @@
+import type { Nullable } from "core/types";
 import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
-import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import type { Particle } from "core/Particles/particle";
+import type { INodeParticleTextureData, ParticleTextureSourceBlock } from "../particleSourceTextureBlock";
+
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
+import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 import { FlowMap } from "core/Particles/flowMap";
-import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
-import type { ParticleTextureSourceBlock } from "../particleSourceTextureBlock";
 
 /**
  * Block used to update particle position based on a flow map
  */
 export class UpdateFlowMapBlock extends NodeParticleBlock {
-    /**
-     * Gets or sets the strenght of the flow map effect
-     */
-    @editableInPropertyPage("strength", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
-    public strength = 1;
     /**
      * Create a new UpdateFlowMapBlock
      * @param name defines the block name
@@ -28,6 +24,7 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
 
         this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("flowMap", NodeParticleBlockConnectionPointTypes.Texture);
+        this.registerInput("strength", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
@@ -43,6 +40,13 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
      */
     public get flowMap(): NodeParticleConnectionPoint {
         return this._inputs[1];
+    }
+
+    /**
+     * Gets the strength input component
+     */
+    public get strength(): NodeParticleConnectionPoint {
+        return this._inputs[2];
     }
 
     /**
@@ -72,7 +76,7 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
         let flowMap: FlowMap;
 
         // eslint-disable-next-line github/no-then
-        void flowMapTexture.extractTextureContentAsync().then((textureContent) => {
+        void flowMapTexture.extractTextureContentAsync().then((textureContent: Nullable<INodeParticleTextureData>) => {
             if (!textureContent) {
                 return;
             }
@@ -85,8 +89,8 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
                 // If the flow map is not ready, we skip processing
                 return;
             }
-
-            flowMap._processParticle(particle, this.strength * system._tempScaledUpdateSpeed, matrix);
+            const strength = this.strength.getConnectedValue(state) as number;
+            flowMap._processParticle(particle, strength * system._tempScaledUpdateSpeed, matrix);
         };
 
         const flowMapProcessing = {
@@ -102,20 +106,6 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
         }
 
         this.output._storedValue = system;
-    }
-
-    public override serialize(): any {
-        const serializationObject = super.serialize();
-
-        serializationObject.strength = this.strength;
-
-        return serializationObject;
-    }
-
-    public override _deserialize(serializationObject: any) {
-        super._deserialize(serializationObject);
-
-        this.strength = serializationObject.strength;
     }
 }
 

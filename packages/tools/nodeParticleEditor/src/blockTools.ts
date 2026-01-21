@@ -6,9 +6,12 @@ import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "core/Particles/Node/Blocks/particleMathBlock";
+import { ParticleNumberMathBlock, ParticleNumberMathBlockOperations } from "core/Particles/Node/Blocks/particleNumberMathBlock";
+import { ParticleVectorMathBlock, ParticleVectorMathBlockOperations } from "core/Particles/Node/Blocks/particleVectorMathBlock";
 import { UpdateColorBlock } from "core/Particles/Node/Blocks/Update/updateColorBlock";
 import { ParticleLerpBlock } from "core/Particles/Node/Blocks/particleLerpBlock";
 import { UpdateScaleBlock } from "core/Particles/Node/Blocks/Update/updateScaleBlock";
+import { UpdateSizeBlock } from "core/Particles/Node/Blocks/Update/updateSizeBlock";
 import { ParticleGradientValueBlock } from "core/Particles/Node/Blocks/particleGradientValueBlock";
 import { ParticleGradientBlock } from "core/Particles/Node/Blocks/particleGradientBlock";
 import { ParticleConverterBlock } from "core/Particles/Node/Blocks/particleConverterBlock";
@@ -27,6 +30,8 @@ import { SetupSpriteSheetBlock } from "core/Particles/Node/Blocks/Emitters/setup
 import { BasicSpriteUpdateBlock } from "core/Particles/Node/Blocks/Update/basicSpriteUpdateBlock";
 import { UpdateSpriteCellIndexBlock } from "core/Particles/Node/Blocks/Update/updateSpriteCellIndexBlock";
 import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlowMapBlock";
+import { UpdateNoiseBlock } from "core/Particles/Node/Blocks/Update/updateNoiseBlock";
+import { UpdateRemapBlock } from "core/Particles/Node/Blocks/Update/updateRemapBlock";
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "core/Particles/Node/Blocks/Conditions/particleConditionBlock";
 import { CreateParticleBlock } from "core/Particles/Node/Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "core/Particles/Node/Blocks/Emitters/boxShapeBlock";
@@ -42,6 +47,8 @@ import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicCo
 import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
+import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
+import { ParticleClampBlock } from "core/Particles/Node/Blocks/particleClampBlock";
 
 /**
  * Static class for BlockTools
@@ -49,6 +56,8 @@ import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnel
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "ClampBlock":
+                return new ParticleClampBlock("Clamp");
             case "FresnelBlock":
                 return new ParticleFresnelBlock("Fresnel");
             case "LocalVariableBlock":
@@ -140,14 +149,20 @@ export class BlockTools {
                 return new UpdateColorBlock("Update color");
             case "UpdateScaleBlock":
                 return new UpdateScaleBlock("Update scale");
+            case "UpdateSizeBlock":
+                return new UpdateSizeBlock("Update size");
             case "UpdateAngleBlock":
                 return new UpdateAngleBlock("Update angle");
             case "UpdateAgeBlock":
                 return new UpdateAgeBlock("Update age");
             case "UpdateFlowMapBlock":
                 return new UpdateFlowMapBlock("Update flow map");
+            case "UpdateNoiseBlock":
+                return new UpdateNoiseBlock("Update noise");
             case "UpdateAttractorBlock":
                 return new UpdateAttractorBlock("Update attractor");
+            case "UpdateRemapBlock":
+                return new UpdateRemapBlock("Update remap");
             case "SystemBlock":
                 return new SystemBlock("System");
             case "TextureBlock":
@@ -176,6 +191,11 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.Direction;
                 return block;
             }
+            case "DirectionScaleBlock": {
+                const block = new ParticleInputBlock("Direction scale");
+                block.contextualValue = NodeParticleContextualSources.DirectionScale;
+                return block;
+            }
             case "ScaledDirectionBlock": {
                 const block = new ParticleInputBlock("Scaled direction");
                 block.contextualValue = NodeParticleContextualSources.ScaledDirection;
@@ -184,6 +204,11 @@ export class BlockTools {
             case "ScaleBlock": {
                 const block = new ParticleInputBlock("Scale");
                 block.contextualValue = NodeParticleContextualSources.Scale;
+                return block;
+            }
+            case "SizeBlock": {
+                const block = new ParticleInputBlock("Size");
+                block.contextualValue = NodeParticleContextualSources.Size;
                 return block;
             }
             case "ColorBlock": {
@@ -306,6 +331,26 @@ export class BlockTools {
                 block.operation = ParticleMathBlockOperations.Max;
                 return block;
             }
+            case "ModuloBlock": {
+                const block = new ParticleNumberMathBlock("Modulo");
+                block.operation = ParticleNumberMathBlockOperations.Modulo;
+                return block;
+            }
+            case "PowBlock": {
+                const block = new ParticleNumberMathBlock("Pow");
+                block.operation = ParticleNumberMathBlockOperations.Pow;
+                return block;
+            }
+            case "DotBlock": {
+                const block = new ParticleVectorMathBlock("Dot");
+                block.operation = ParticleVectorMathBlockOperations.Dot;
+                return block;
+            }
+            case "DistanceBlock": {
+                const block = new ParticleVectorMathBlock("Distance");
+                block.operation = ParticleVectorMathBlockOperations.Distance;
+                return block;
+            }
             case "ToDegreesBlock": {
                 const block = new ParticleTrigonometryBlock("To degrees");
                 block.operation = ParticleTrigonometryBlockOperations.ToDegrees;
@@ -413,6 +458,9 @@ export class BlockTools {
             }
             case "RandomBlock": {
                 return new ParticleRandomBlock("Random");
+            }
+            case "FloatToIntBlock": {
+                return new ParticleFloatToIntBlock("Float to Int");
             }
         }
 

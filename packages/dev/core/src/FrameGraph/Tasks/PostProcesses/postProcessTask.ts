@@ -5,9 +5,9 @@ import type {
     FrameGraphRenderPass,
     FrameGraphRenderContext,
     EffectWrapper,
-    IStencilState,
     IViewportLike,
     Nullable,
+    IStencilStateProperties,
 } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphTask } from "../../frameGraphTask";
@@ -37,7 +37,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
     /**
      * The stencil state to use for the post process (optional).
      */
-    public stencilState?: IStencilState;
+    public stencilState?: IStencilStateProperties;
 
     /**
      * The depth attachment texture to use for the post process (optional).
@@ -134,6 +134,10 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         return this.postProcess.isReady();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphPostProcessTask";
+    }
+
     public record(
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,
@@ -175,6 +179,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         pass.setRenderTarget(this.outputTexture);
         pass.setRenderTargetDepth(this.depthAttachmentTexture);
         pass.setExecuteFunc((context) => {
+            context.pushDebugGroup(`Apply post-process (${this.name})`);
             if (this.sourceTexture !== undefined) {
                 context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
             }
@@ -197,6 +202,8 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
                 this.depthTest,
                 this.viewport !== undefined
             );
+            context.restoreDefaultFramebuffer();
+            context.popDebugGroup();
         });
 
         if (!skipCreationOfDisabledPasses) {

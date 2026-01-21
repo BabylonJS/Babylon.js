@@ -5,6 +5,7 @@ import type { Nullable, FrameGraphContext, IFrameGraphPass, FrameGraphTask } fro
  */
 export class FrameGraphPass<T extends FrameGraphContext> implements IFrameGraphPass {
     private _executeFunc: (context: T) => void;
+    private _initFunc?: (context: T) => void;
 
     /**
      * Whether the pass is disabled. Disabled passes will be skipped during execution.
@@ -19,8 +20,17 @@ export class FrameGraphPass<T extends FrameGraphContext> implements IFrameGraphP
     ) {}
 
     /**
-     * Executes the pass.
-     * @param func The function to execute for the pass.
+     * Initializes the pass.
+     * This function is called once after the frame graph has been built
+     * @param func The function to initialize the pass.
+     */
+    public setInitializeFunc(func: (context: T) => void) {
+        this._initFunc = func;
+    }
+
+    /**
+     * Sets the function to execute when the pass is executed
+     * @param func The function to execute when the pass is executed
      */
     public setExecuteFunc(func: (context: T) => void) {
         this._executeFunc = func;
@@ -34,7 +44,15 @@ export class FrameGraphPass<T extends FrameGraphContext> implements IFrameGraphP
     }
 
     /** @internal */
+    public _initialize() {
+        this._initFunc?.(this._context);
+    }
+
+    /** @internal */
     public _isValid(): Nullable<string> {
         return this._executeFunc !== undefined ? null : "Execute function is not set (call setExecuteFunc to set it)";
     }
+
+    /** @internal */
+    public _dispose() {}
 }

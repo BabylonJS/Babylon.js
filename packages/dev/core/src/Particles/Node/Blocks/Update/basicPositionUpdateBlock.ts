@@ -12,7 +12,7 @@ import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
  */
 export class BasicPositionUpdateBlock extends NodeParticleBlock {
     /**
-     * Create a new UpdateScaleBlock
+     * Create a new BasicPositionUpdateBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -54,8 +54,8 @@ export class BasicPositionUpdateBlock extends NodeParticleBlock {
         const processPosition = (particle: Particle) => {
             state.particleContext = particle;
             state.systemContext = system;
-            particle.direction.scaleToRef(system._directionScale, system._scaledDirection);
-            particle.position.addInPlace(system._scaledDirection);
+            particle.direction.scaleToRef(particle._directionScale, particle._scaledDirection);
+            particle.position.addInPlace(particle._scaledDirection);
         };
 
         const positionProcessing = {

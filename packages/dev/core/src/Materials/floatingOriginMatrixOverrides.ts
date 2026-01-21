@@ -157,19 +157,20 @@ function GetOffsetMatrix(uniformName: string, mat: IMatrixLike): IMatrixLike {
             // Node material blocks uniforms are formatted u_BlockName, with trailing numbers if there are multiple blocks of the same name
             // Check u_ first so that we can early out for non-node material uniforms
             if (uniformName.startsWith("u_")) {
-                if (uniformName.startsWith("u_WorldViewProjection")) {
+                const lowercaseUniformName = uniformName.toLowerCase();
+                if (lowercaseUniformName.startsWith("u_worldviewprojection")) {
                     return OffsetWorldViewProjectionToRef(offset, mat, scene.getTransformMatrix(), scene.getViewMatrix(), scene.getProjectionMatrix(), TempFinalMat);
                 }
-                if (uniformName.startsWith("u_ViewProjection")) {
+                if (lowercaseUniformName.startsWith("u_viewprojection")) {
                     return OffsetViewProjectionToRef(offset, scene.getViewMatrix(), scene.getProjectionMatrix(), TempFinalMat);
                 }
-                if (uniformName.startsWith("u_WorldView")) {
+                if (lowercaseUniformName.startsWith("u_worldview")) {
                     return OffsetWorldViewToRef(offset, mat, scene.getViewMatrix(), TempFinalMat);
                 }
-                if (uniformName.startsWith("u_World")) {
+                if (lowercaseUniformName.startsWith("u_world")) {
                     return OffsetWorldToRef(offset, mat, TempFinalMat);
                 }
-                if (uniformName.startsWith("u_View")) {
+                if (lowercaseUniformName.startsWith("u_view")) {
                     return OffsetViewToRef(offset, mat, TempFinalMat);
                 }
             }

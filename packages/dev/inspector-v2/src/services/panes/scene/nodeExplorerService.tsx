@@ -19,6 +19,7 @@ import {
 } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
+import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { TransformNode } from "core/Meshes/transformNode";
@@ -46,7 +47,38 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Nodes",
             order: DefaultSectionsOrder.Nodes,
-            getRootEntities: () => scene.rootNodes,
+            getRootEntities: () => {
+                const rootNodes = [...scene.rootNodes];
+
+                // If any non-root node has a parent and that parent is not one of the node types shown in the Nodes section,
+                // then we should treat it as a root node, otherwise it won't show up anywhere in scene explorer.
+                // An example of this is when a Mesh or a TransformNode is parented under a Bone.
+                for (const node of [...scene.meshes, ...scene.transformNodes, ...scene.cameras, ...scene.lights]) {
+                    if (
+                        node.parent &&
+                        !(node.parent instanceof AbstractMesh) &&
+                        !(node.parent instanceof TransformNode) &&
+                        !(node.parent instanceof Camera) &&
+                        !(node.parent instanceof Light)
+                    ) {
+                        rootNodes.push(node);
+                    }
+                }
+
+                // Lights within a clustered light container are not included in Scene.lights or Scene.rootNodes.
+                // If they also have no parent, then they won't show up anywhere, so show them as root nodes.
+                for (const light of scene.lights) {
+                    if (light instanceof ClusteredLightContainer) {
+                        for (const childLight of light.lights) {
+                            if (!childLight.parent && !rootNodes.includes(childLight)) {
+                                rootNodes.push(childLight);
+                            }
+                        }
+                    }
+                }
+
+                return rootNodes;
+            },
             getEntityChildren: (node) => node.getChildren(),
             getEntityDisplayInfo: (node) => {
                 const onChangeObservable = new Observable<void>();
@@ -100,7 +132,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             getEntityMovedObservables: () => [nodeMovedObservable],
         });
 
-        const abstractMeshBoundingBoxCommandRegistration = sceneExplorerService.addCommand({
+        const abstractMeshBoundingBoxCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh && entity.getTotalVertices() > 0,
             order: DefaultCommandsOrder.MeshBoundingBox,
             getCommand: (mesh) => {
@@ -130,7 +162,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
         });
 
-        const abstractMeshVisibilityCommandRegistration = sceneExplorerService.addCommand({
+        const abstractMeshVisibilityCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh && entity.getTotalVertices() > 0,
             order: DefaultCommandsOrder.MeshVisibility,
             getCommand: (mesh) => {
@@ -160,7 +192,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
         });
 
-        const activeCameraCommandRegistration = sceneExplorerService.addCommand({
+        const activeCameraCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown) => entity instanceof Camera,
             order: DefaultCommandsOrder.CameraActive,
             getCommand: (camera) => {
@@ -194,7 +226,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
         });
 
         function addGizmoCommand<NodeT extends Node>(nodeClass: abstract new (...args: any[]) => NodeT, getGizmoRef: (node: NodeT) => IDisposable) {
-            return sceneExplorerService.addCommand({
+            return sceneExplorerService.addEntityCommand({
                 predicate: (entity: unknown): entity is NodeT => entity instanceof nodeClass,
                 order: DefaultCommandsOrder.GizmoActive,
                 getCommand: (node) => {
@@ -236,7 +268,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
         const cameraGizmoCommandRegistration = addGizmoCommand(Camera, gizmoService.getCameraGizmo.bind(gizmoService));
 
-        const lightEnabledCommandRegistration = sceneExplorerService.addCommand({
+        const lightEnabledCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown): entity is Light => entity instanceof Light,
             order: DefaultCommandsOrder.LightActive,
             getCommand: (light) => {

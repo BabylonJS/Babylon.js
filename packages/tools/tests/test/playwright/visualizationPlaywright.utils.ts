@@ -64,7 +64,7 @@ export const evaluatePlaywrightVisTests = async (
         page = await browser.newPage();
         await page.setViewportSize({ width: dimensions?.width || 600, height: dimensions?.height || 400 });
         await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
-            // waitUntil: "load", // for chrome should be "networkidle0"
+            // waitUntil: "load",
             timeout: 0,
         });
         await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
@@ -222,10 +222,11 @@ export const evaluateInitEngineForVisualization = async ({
             wasmPath: baseUrl + "/twgsl/twgsl.wasm",
         };
 
-        const options = {
+        const options: BABYLON.WebGPUEngineOptions = {
             enableAllFeatures: true,
             setMaximumLimits: true,
             antialias: false,
+            enableGPUDebugMarkers: false,
         };
 
         const engine = new BABYLON.WebGPUEngine(window.canvas, options);
@@ -240,6 +241,8 @@ export const evaluateInitEngineForVisualization = async ({
             useHighPrecisionFloats: true,
             disableWebGL2Support: engineName === "webgl1" ? true : false,
             forceSRGBBufferSupportState: true,
+            failIfMajorPerformanceCaveat: true,
+            powerPreference: "high-performance",
         });
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);

@@ -4,7 +4,7 @@ import type { Mesh } from "../../Meshes/mesh";
 import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import type { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
-import type { GaussianSplattingMesh } from "../../Meshes";
+import type { GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { MaterialDefines } from "../../Materials/materialDefines";
@@ -133,7 +133,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         return true;
     }
 
-    protected static _Attribs = [VertexBuffer.PositionKind, "splatIndex"];
+    protected static _Attribs = [VertexBuffer.PositionKind, "splatIndex0", "splatIndex1", "splatIndex2", "splatIndex3"];
     protected static _Samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2"];
     protected static _UniformBuffers = ["Scene", "Mesh"];
     protected static _Uniforms = [
@@ -148,8 +148,10 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "focal",
         "eyePosition",
         "kernelSize",
-        "viewDirectionFactor",
+        "alpha",
+        "depthValues",
     ];
+    private _sourceMesh: GaussianSplattingMesh | null = null;
     /**
      * Checks whether the material is ready to be rendered for a given mesh.
      * @param mesh The mesh to render
@@ -182,8 +184,12 @@ export class GaussianSplattingMaterial extends PushMaterial {
             return true;
         }
 
+        if (!this._sourceMesh) {
+            return false;
+        }
+
         const engine = scene.getEngine();
-        const gsMesh = mesh as GaussianSplattingMesh;
+        const gsMesh = this._sourceMesh;
 
         // Misc.
         PrepareDefinesForMisc(
@@ -271,6 +277,13 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     /**
+     * GaussianSplattingMaterial belongs to a single mesh
+     * @param mesh mesh this material belongs to
+     */
+    public setSourceMesh(mesh: GaussianSplattingMesh) {
+        this._sourceMesh = mesh;
+    }
+    /**
      * Bind material effect for a specific Gaussian Splatting mesh
      * @param mesh Gaussian splatting mesh
      * @param effect Splatting material or node material
@@ -280,11 +293,16 @@ export class GaussianSplattingMaterial extends PushMaterial {
         const engine = scene.getEngine();
         const camera = scene.activeCamera;
 
-        const renderWidth = engine.getRenderWidth();
-        const renderHeight = engine.getRenderHeight();
+        const renderWidth = engine.getRenderWidth() * camera!.viewport.width;
+        const renderHeight = engine.getRenderHeight() * camera!.viewport.height;
 
-        const gsMesh = mesh as GaussianSplattingMesh;
-        const gsMaterial = gsMesh.material as GaussianSplattingMaterial;
+        const gsMaterial = mesh.material as GaussianSplattingMaterial;
+
+        if (!gsMaterial._sourceMesh) {
+            return;
+        }
+
+        const gsMesh = gsMaterial._sourceMesh;
 
         // check if rigcamera, get number of rigs
         const numberOfRigs = camera?.rigParent?.rigCameras.length || 1;
@@ -310,8 +328,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         effect.setFloat2("focal", focal, focal);
-        effect.setVector3("viewDirectionFactor", gsMesh.viewDirectionFactor);
         effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
+        effect.setFloat("alpha", gsMaterial.alpha);
         scene.bindEyePosition(effect, "eyePosition", true);
 
         if (gsMesh.covariancesATexture) {
@@ -379,6 +397,84 @@ export class GaussianSplattingMaterial extends PushMaterial {
         this._afterBind(mesh, this._activeEffect, subMesh);
     }
 
+    protected static _BindEffectUniforms(gsMesh: GaussianSplattingMesh, gsMaterial: GaussianSplattingMaterial, shaderMaterial: ShaderMaterial, scene: Scene): void {
+        const engine = scene.getEngine();
+        const effect = shaderMaterial.getEffect()!;
+
+        gsMesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
+        shaderMaterial.bindView(effect);
+        shaderMaterial.bindViewProjection(effect);
+
+        const renderWidth = engine.getRenderWidth();
+        const renderHeight = engine.getRenderHeight();
+        effect.setFloat2("invViewport", 1 / renderWidth, 1 / renderHeight);
+
+        const projection = scene.getProjectionMatrix();
+        const t = projection.m[5];
+        const focal = (renderWidth * t) / 2.0;
+
+        effect.setFloat2("focal", focal, focal);
+        effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
+        effect.setFloat("alpha", gsMaterial.alpha);
+
+        let minZ: number, maxZ: number;
+
+        const camera = scene.activeCamera;
+        if (!camera) {
+            return;
+        }
+        const cameraIsOrtho = camera.mode === Camera.ORTHOGRAPHIC_CAMERA;
+        if (cameraIsOrtho) {
+            minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
+            maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
+        } else {
+            minZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? camera.minZ : engine.isNDCHalfZRange ? 0 : camera.minZ;
+            maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : camera.maxZ;
+        }
+
+        effect.setFloat2("depthValues", minZ, minZ + maxZ);
+
+        if (gsMesh.covariancesATexture) {
+            const textureSize = gsMesh.covariancesATexture.getSize();
+            effect.setFloat2("dataTextureSize", textureSize.width, textureSize.height);
+
+            effect.setTexture("covariancesATexture", gsMesh.covariancesATexture);
+            effect.setTexture("covariancesBTexture", gsMesh.covariancesBTexture);
+            effect.setTexture("centersTexture", gsMesh.centersTexture);
+            effect.setTexture("colorsTexture", gsMesh.colorsTexture);
+        }
+    }
+
+    /**
+     * Create a depth rendering material for a Gaussian Splatting mesh
+     * @param scene scene it belongs to
+     * @param shaderLanguage GLSL or WGSL
+     * @returns depth rendering shader material
+     */
+    public makeDepthRenderingMaterial(scene: Scene, shaderLanguage: ShaderLanguage): ShaderMaterial {
+        const shaderMaterial = new ShaderMaterial(
+            "gaussianSplattingDepthRender",
+            scene,
+            {
+                vertex: "gaussianSplattingDepth",
+                fragment: "gaussianSplattingDepth",
+            },
+            {
+                attributes: GaussianSplattingMaterial._Attribs,
+                uniforms: GaussianSplattingMaterial._Uniforms,
+                samplers: GaussianSplattingMaterial._Samplers,
+                uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
+                shaderLanguage: shaderLanguage,
+                defines: ["#define DEPTH_RENDER"],
+            }
+        );
+        shaderMaterial.onBindObservable.add((mesh: AbstractMesh) => {
+            const gsMaterial = mesh.material as GaussianSplattingMaterial;
+            const gsMesh = mesh as GaussianSplattingMesh;
+            GaussianSplattingMaterial._BindEffectUniforms(gsMesh, gsMaterial, shaderMaterial, scene);
+        });
+        return shaderMaterial;
+    }
     protected static _MakeGaussianSplattingShadowDepthWrapper(scene: Scene, shaderLanguage: ShaderLanguage): ShadowDepthWrapper {
         const shaderMaterial = new ShaderMaterial(
             "gaussianSplattingDepth",
@@ -401,34 +497,10 @@ export class GaussianSplattingMaterial extends PushMaterial {
         });
 
         shaderMaterial.onBindObservable.add((mesh: AbstractMesh) => {
-            const effect = shaderMaterial.getEffect()!;
             const gsMaterial = mesh.material as GaussianSplattingMaterial;
             const gsMesh = mesh as GaussianSplattingMesh;
 
-            mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
-            shaderMaterial.bindView(effect);
-            shaderMaterial.bindViewProjection(effect);
-
-            const shadowmapWidth = scene.getEngine().getRenderWidth();
-            const shadowmapHeight = scene.getEngine().getRenderHeight();
-            effect.setFloat2("invViewport", 1 / shadowmapWidth, 1 / shadowmapHeight);
-
-            const projection = scene.getProjectionMatrix();
-            const t = projection.m[5];
-            const focal = (shadowmapWidth * t) / 2.0;
-
-            effect.setFloat2("focal", focal, focal);
-            effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
-
-            if (gsMesh.covariancesATexture) {
-                const textureSize = gsMesh.covariancesATexture.getSize();
-                effect.setFloat2("dataTextureSize", textureSize.width, textureSize.height);
-
-                effect.setTexture("covariancesATexture", gsMesh.covariancesATexture);
-                effect.setTexture("covariancesBTexture", gsMesh.covariancesBTexture);
-                effect.setTexture("centersTexture", gsMesh.centersTexture);
-                effect.setTexture("colorsTexture", gsMesh.colorsTexture);
-            }
+            GaussianSplattingMaterial._BindEffectUniforms(gsMesh, gsMaterial, shaderMaterial, scene);
         });
 
         return shadowDepthWrapper;

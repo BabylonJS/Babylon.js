@@ -29,6 +29,11 @@ import type { IColor4Like } from "../Maths/math.like";
 import { IsExponentOfTwo, Mix } from "./tools.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import type { INative } from "../Engines/Native/nativeInterfaces";
+import { NativeTraceLevel } from "../Engines/Native/nativeInterfaces";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _native: INative;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare function importScripts(...urls: string[]): void;
@@ -570,16 +575,29 @@ export class Tools {
         return await Tools.LoadScriptAsync(scriptUrl);
     }
 
-    /**
-     * This function is used internally by babylon components to load a script (identified by an url). When the url returns, the
-     * content of this file is added into a new script element, attached to the DOM (body element)
-     * @param scriptUrl defines the url of the script to load
-     * @param onSuccess defines the callback called when the script is loaded
-     * @param onError defines the callback to call if an error occurs
-     * @param scriptId defines the id of the script element
-     * @param useModule defines if we should use the module strategy to load the script
-     */
-    public static LoadScript(scriptUrl: string, onSuccess?: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string, useModule = false) {
+    private static _LoadScriptNative(scriptUrl: string, onSuccess?: () => void, onError?: (message?: string, exception?: any) => void) {
+        if (_native) {
+            Tools.LoadFile(
+                scriptUrl,
+                (data) => {
+                    Function(data as string).apply(null);
+                    if (onSuccess) {
+                        onSuccess();
+                    }
+                },
+                undefined,
+                undefined,
+                false,
+                (_request, exception) => {
+                    if (onError) {
+                        onError("LoadScript Error", exception);
+                    }
+                }
+            );
+        }
+    }
+
+    private static _LoadScriptWeb(scriptUrl: string, onSuccess?: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string, useModule = false) {
         if (typeof importScripts === "function") {
             try {
                 importScripts(scriptUrl);
@@ -621,6 +639,18 @@ export class Tools {
 
         head.appendChild(script);
     }
+
+    /**
+     * This function is used internally by babylon components to load a script (identified by an url). When the url returns, the
+     * content of this file is added into a new script element, attached to the DOM (body element)
+     * @param scriptUrl defines the url of the script to load
+     * @param onSuccess defines the callback called when the script is loaded
+     * @param onError defines the callback to call if an error occurs
+     * @param scriptId defines the id of the script element
+     * @param useModule defines if we should use the module strategy to load the script
+     */
+    public static LoadScript: (scriptUrl: string, onSuccess?: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string, useModule?: boolean) => void =
+        typeof _native === "undefined" ? this._LoadScriptWeb : this._LoadScriptNative;
 
     /**
      * Load an asynchronous script (identified by an url). When the url returns, the
@@ -1328,24 +1358,39 @@ export class Tools {
 
     private static _Performance: Performance;
 
+    private static readonly _NativePerformanceCounterHandles = new Map<string, unknown>();
+
     /**
      * Sets the current performance log level
      */
     public static set PerformanceLogLevel(level: number) {
         if ((level & Tools.PerformanceUserMarkLogLevel) === Tools.PerformanceUserMarkLogLevel) {
-            Tools.StartPerformanceCounter = Tools._StartUserMark;
-            Tools.EndPerformanceCounter = Tools._EndUserMark;
+            if (_native?.enablePerformanceLogging) {
+                _native.enablePerformanceLogging(NativeTraceLevel.Mark);
+                Tools.StartPerformanceCounter = Tools._StartMarkNative;
+                Tools.EndPerformanceCounter = Tools._EndMarkNative;
+            } else {
+                Tools.StartPerformanceCounter = Tools._StartUserMark;
+                Tools.EndPerformanceCounter = Tools._EndUserMark;
+            }
             return;
         }
 
         if ((level & Tools.PerformanceConsoleLogLevel) === Tools.PerformanceConsoleLogLevel) {
-            Tools.StartPerformanceCounter = Tools._StartPerformanceConsole;
-            Tools.EndPerformanceCounter = Tools._EndPerformanceConsole;
+            if (_native?.enablePerformanceLogging) {
+                _native.enablePerformanceLogging(NativeTraceLevel.Log);
+                Tools.StartPerformanceCounter = Tools._StartMarkNative;
+                Tools.EndPerformanceCounter = Tools._EndMarkNative;
+            } else {
+                Tools.StartPerformanceCounter = Tools._StartPerformanceConsole;
+                Tools.EndPerformanceCounter = Tools._EndPerformanceConsole;
+            }
             return;
         }
 
         Tools.StartPerformanceCounter = Tools._StartPerformanceCounterDisabled;
         Tools.EndPerformanceCounter = Tools._EndPerformanceCounterDisabled;
+        _native?.disablePerformanceLogging?.();
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1396,6 +1441,29 @@ export class Tools {
         Tools._EndUserMark(counterName, condition);
 
         console.timeEnd(counterName);
+    }
+
+    private static _StartMarkNative(counterName: string, condition = true): void {
+        if (condition && _native?.startPerformanceCounter) {
+            if (Tools._NativePerformanceCounterHandles.has(counterName)) {
+                Tools.Warn(`Performance counter with name ${counterName} is already started.`);
+            } else {
+                const handle = _native.startPerformanceCounter(counterName);
+                Tools._NativePerformanceCounterHandles.set(counterName, handle);
+            }
+        }
+    }
+
+    private static _EndMarkNative(counterName: string, condition = true): void {
+        if (condition && _native?.endPerformanceCounter) {
+            const handle = Tools._NativePerformanceCounterHandles.get(counterName);
+            if (handle) {
+                _native.endPerformanceCounter(handle);
+                Tools._NativePerformanceCounterHandles.delete(counterName);
+            } else {
+                Tools.Warn(`Performance counter with name ${counterName} was not started.`);
+            }
+        }
     }
 
     /**

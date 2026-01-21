@@ -19,6 +19,10 @@ export class FrameGraphBlurTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinBlurPostProcess(name, frameGraph.engine, new Vector2(1, 0), 10));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphBlurTask";
+    }
+
     public override record(
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,

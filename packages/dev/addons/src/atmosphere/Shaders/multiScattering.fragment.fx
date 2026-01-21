@@ -1,20 +1,19 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
-#define RENDER_MULTI_SCATTERING 1
+#define RENDER_MULTI_SCATTERING
+#define COMPUTE_MULTI_SCATTERING
 
 precision highp float;
 
-#define COMPUTE_MULTI_SCATTERING 1
-
 #include<__decl__atmosphereFragment>
+
+uniform sampler2D transmittanceLut;
 
 #include<core/helperFunctions>
 #include<atmosphereFunctions>
 
 varying vec2 uv;
-
-uniform sampler2D transmittanceLut;
 
 void main() {
 

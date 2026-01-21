@@ -240,6 +240,9 @@ export const commonDevWebpackConfiguration = (
               }
             : undefined,
         plugins,
+        performance: {
+            hints: false,
+        },
     };
 };
 
@@ -367,6 +370,9 @@ export const commonUMDWebpackConfiguration = (options: {
                 includeCSS: true,
                 mode: options.mode || "development",
             }),
+        },
+        performance: {
+            hints: false,
         },
         ...options.extendedWebpackConfig,
     } as Configuration;

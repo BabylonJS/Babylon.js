@@ -36,6 +36,34 @@ struct Splat {
 #endif
 };
 
+float getSplatIndex(int localIndex)
+{
+    float splatIndex;
+    switch (localIndex)
+    {
+        case 0: splatIndex = splatIndex0.x; break;
+        case 1: splatIndex = splatIndex0.y; break;
+        case 2: splatIndex = splatIndex0.z; break;
+        case 3: splatIndex = splatIndex0.w; break;
+
+        case 4: splatIndex = splatIndex1.x; break;
+        case 5: splatIndex = splatIndex1.y; break;
+        case 6: splatIndex = splatIndex1.z; break;
+        case 7: splatIndex = splatIndex1.w; break;
+
+        case 8: splatIndex = splatIndex2.x; break;
+        case 9: splatIndex = splatIndex2.y; break;
+        case 10: splatIndex = splatIndex2.z; break;
+        case 11: splatIndex = splatIndex2.w; break;
+
+        case 12: splatIndex = splatIndex3.x; break;
+        case 13: splatIndex = splatIndex3.y; break;
+        case 14: splatIndex = splatIndex3.z; break;
+        case 15: splatIndex = splatIndex3.w; break;
+    }
+    return splatIndex;
+}
+
 Splat readSplat(float splatIndex)
 {
     Splat splat;
@@ -216,9 +244,7 @@ vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 
         );
     }
 
-    mat3 invy = mat3(1, 0, 0, 0, -1, 0, 0, 0, 1);
-
-    mat3 T = invy * transpose(mat3(modelView)) * J;
+    mat3 T = transpose(mat3(modelView)) * J;
     mat3 cov2d = transpose(T) * Vrk * T;
 
 #if COMPENSATION

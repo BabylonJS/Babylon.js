@@ -53,7 +53,7 @@ export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISc
             getEntityRemovedObservables: () => [scene.onAnimationGroupRemovedObservable],
         });
 
-        const animationPlayPauseCommandRegistration = sceneExplorerService.addCommand({
+        const animationPlayPauseCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown) => entity instanceof AnimationGroup,
             order: DefaultCommandsOrder.AnimationGroupPlay,
             getCommand: (animationGroup) => {

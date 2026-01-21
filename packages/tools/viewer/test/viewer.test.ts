@@ -9,7 +9,7 @@ const viewerUrl =
 
 async function attachViewerElement(page: Page, viewerHtml: string) {
     await page.goto(viewerUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "load",
     });
 
     await page.evaluate((viewerHtml) => {

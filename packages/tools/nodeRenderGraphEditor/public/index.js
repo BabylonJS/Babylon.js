@@ -127,7 +127,7 @@ checkBabylonVersionAsync().then(() => {
 
                     try {
                         let xmlHttp = new XMLHttpRequest();
-                        xmlHttp.onreadystatechange = function () {
+                        xmlHttp.onreadystatechange = async function () {
                             if (xmlHttp.readyState == 4) {
                                 if (xmlHttp.status == 200) {
                                     let snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
@@ -138,7 +138,7 @@ checkBabylonVersionAsync().then(() => {
                                     } else {
                                         nodeRenderGraph.parseSerializedObject(serializationObject);
                                         try {
-                                            nodeRenderGraph.build();
+                                            await nodeRenderGraph.buildAsync();
                                         } catch (err) {
                                             // Swallow the error here
                                         }
@@ -218,7 +218,11 @@ checkBabylonVersionAsync().then(() => {
                 let engine;
 
                 if (useWebGPU && (await BABYLON.WebGPUEngine.IsSupportedAsync)) {
-                    engine = new BABYLON.WebGPUEngine(canvas);
+                    engine = new BABYLON.WebGPUEngine(canvas, {
+                        enableGPUDebugMarkers: true,
+                        enableAllFeatures: true,
+                        setMaximumLimits: true,
+                    });
                     await engine.initAsync();
                 } else {
                     localStorage.setItem("Engine", 0);
@@ -233,7 +237,7 @@ checkBabylonVersionAsync().then(() => {
 
                 nodeRenderGraph = new BABYLON.NodeRenderGraph("node", scene);
                 nodeRenderGraph.setToDefault();
-                nodeRenderGraph.build();
+                await nodeRenderGraph.buildAsync();
 
                 showEditor();
             } else {

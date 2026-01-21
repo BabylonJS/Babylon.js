@@ -481,6 +481,19 @@ export class PhysicsBody {
     }
 
     /**
+     * Applies a torque to the physics body.
+     *
+     * @param torque The torque vector.
+     * @param instanceIndex For a instanced body, the instance to where the torque should be applied. If not specified, the torque is applied to all instances.
+     *
+     * This method is useful for applying a torque to a physics body, which can be used to simulate rotational forces such as motors,
+     * angular momentum, and rotational dynamics. This can be used to create realistic physics simulations in a game or other application.
+     */
+    public applyTorque(torque: Vector3, instanceIndex?: number): void {
+        this._physicsPlugin.applyTorque(this, torque, instanceIndex);
+    }
+
+    /**
      * Applies a force to the physics object.
      *
      * @param force The force vector.

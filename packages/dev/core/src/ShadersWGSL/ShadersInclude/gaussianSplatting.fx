@@ -20,6 +20,97 @@ struct Splat {
 #endif
 };
 
+fn getSplatIndex(localIndex: i32, splatIndex0: vec4f, splatIndex1: vec4f, splatIndex2: vec4f, splatIndex3: vec4f) -> f32 {
+    var splatIndex: f32;
+    switch (localIndex)
+    {
+        case 0:
+        {
+            splatIndex = splatIndex0.x;
+            break;
+        }
+        case 1:
+        {
+            splatIndex = splatIndex0.y;
+            break;
+        }
+        case 2:
+        {
+            splatIndex = splatIndex0.z;
+            break;
+        }
+        case 3:
+        {
+            splatIndex = splatIndex0.w;
+            break;
+        }
+
+        case 4:
+        {
+            splatIndex = splatIndex1.x;
+            break;
+        }
+        case 5:
+        {
+            splatIndex = splatIndex1.y;
+            break;
+        }
+        case 6:
+        {
+            splatIndex = splatIndex1.z;
+            break;
+        }
+        case 7:
+        {
+            splatIndex = splatIndex1.w;
+            break;
+        }
+
+        case 8:
+        {
+            splatIndex = splatIndex2.x;
+            break;
+        }
+        case 9:
+        {
+            splatIndex = splatIndex2.y;
+            break;
+        }
+        case 10:
+        {
+            splatIndex = splatIndex2.z;
+            break;
+        }
+        case 11:
+        {
+            splatIndex = splatIndex2.w;
+            break;
+        }
+
+        case 12:
+        {
+            splatIndex = splatIndex3.x;
+            break;
+        }
+        case 13:
+        {
+            splatIndex = splatIndex3.y;
+            break;
+        }
+        case 14:
+        {
+            splatIndex = splatIndex3.z;
+            break;
+        }
+        default:
+        {
+            splatIndex = splatIndex3.w;
+            break;
+        }
+    }
+    return splatIndex;
+}
+
 fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     var splat: Splat;
     let splatUV = getDataUV(splatIndex, dataTextureSize);
@@ -206,13 +297,7 @@ fn gaussianSplatting(
         );
     }
 
-    let invy = mat3x3<f32>(
-        1.0, 0.0, 0.0,
-        0.0, -1.0, 0.0,
-        0.0, 0.0, 1.0
-    );
-
-    let T = invy * transpose(mat3x3<f32>(
+    let T = transpose(mat3x3<f32>(
         modelView[0].xyz,
         modelView[1].xyz,
         modelView[2].xyz)) * J;

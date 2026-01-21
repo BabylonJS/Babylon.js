@@ -28,10 +28,21 @@ export interface ISoundSourceOptions extends IAbstractAudioOutNodeOptions, ISpat
  * Abstract class representing a sound in the audio engine.
  */
 export abstract class AbstractSoundSource extends AbstractAudioOutNode {
+    private readonly _spatialAutoUpdate: boolean = true;
+    private readonly _spatialMinUpdateTime: number = 0;
     private _outBus: Nullable<PrimaryAudioBus> = null;
+    private _spatial: Nullable<AbstractSpatialAudio> = null;
 
-    protected constructor(name: string, engine: AudioEngineV2, nodeType: AudioNodeType = AudioNodeType.HAS_OUTPUTS) {
+    protected constructor(name: string, engine: AudioEngineV2, options: Partial<ISoundSourceOptions>, nodeType: AudioNodeType = AudioNodeType.HAS_OUTPUTS) {
         super(name, engine, nodeType);
+
+        if (typeof options.spatialAutoUpdate === "boolean") {
+            this._spatialAutoUpdate = options.spatialAutoUpdate;
+        }
+
+        if (typeof options.spatialMinUpdateTime === "number") {
+            this._spatialMinUpdateTime = options.spatialMinUpdateTime;
+        }
     }
 
     /**
@@ -48,7 +59,10 @@ export abstract class AbstractSoundSource extends AbstractAudioOutNode {
         }
 
         if (this._outBus) {
-            this._outBus.onDisposeObservable.removeCallback(this._onOutBusDisposed);
+            if (this._onOutBusDisposed) {
+                this._outBus.onDisposeObservable.removeCallback(this._onOutBusDisposed);
+                this._onOutBusDisposed = null;
+            }
             if (!this._disconnect(this._outBus)) {
                 throw new Error("Disconnect failed");
             }
@@ -57,6 +71,9 @@ export abstract class AbstractSoundSource extends AbstractAudioOutNode {
         this._outBus = outBus;
 
         if (this._outBus) {
+            this._onOutBusDisposed = () => {
+                this._outBus = null;
+            };
             this._outBus.onDisposeObservable.add(this._onOutBusDisposed);
             if (!this._connect(this._outBus)) {
                 throw new Error("Connect failed");
@@ -65,9 +82,14 @@ export abstract class AbstractSoundSource extends AbstractAudioOutNode {
     }
 
     /**
-     * The spatial features of the sound.
+     * The spatial audio features.
      */
-    public abstract spatial: AbstractSpatialAudio;
+    public get spatial(): AbstractSpatialAudio {
+        if (this._spatial) {
+            return this._spatial;
+        }
+        return this._initSpatialProperty();
+    }
 
     /**
      * The stereo features of the sound.
@@ -80,10 +102,35 @@ export abstract class AbstractSoundSource extends AbstractAudioOutNode {
     public override dispose(): void {
         super.dispose();
 
+        this._spatial?.dispose();
+        this._spatial = null;
+
+        if (this._outBus && this._onOutBusDisposed) {
+            this._outBus.onDisposeObservable.removeCallback(this._onOutBusDisposed);
+            this._onOutBusDisposed = null;
+        }
         this._outBus = null;
     }
 
-    private _onOutBusDisposed = () => {
-        this._outBus = null;
-    };
+    protected abstract _createSpatialProperty(autoUpdate: boolean, minUpdateTime: number): AbstractSpatialAudio;
+
+    protected _initSpatialProperty(): AbstractSpatialAudio {
+        return (this._spatial = this._createSpatialProperty(this._spatialAutoUpdate, this._spatialMinUpdateTime));
+    }
+
+    private _onOutBusDisposed: Nullable<() => void> = null;
+
+    /** @internal */
+    public get _isSpatial(): boolean {
+        return this._spatial !== null;
+    }
+
+    public set _isSpatial(value: boolean) {
+        if (value && !this._spatial) {
+            this._initSpatialProperty();
+        } else if (!value && this._spatial) {
+            this._spatial.dispose();
+            this._spatial = null;
+        }
+    }
 }

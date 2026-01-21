@@ -178,6 +178,8 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
 
     public AREALIGHTNOROUGHTNESS = true;
 
+    public POSITIONW_AS_VARYING = false;
+
     /**
      * Creates a new NodeMaterialDefines
      */
@@ -1537,6 +1539,10 @@ export class NodeMaterial extends NodeMaterialBase {
             b.prepareDefines(defines, this, mesh, useInstances, subMesh);
         }
 
+        for (const d in this._sharedData.defines) {
+            defines[d] = this._sharedData.defines[d];
+        }
+
         // Need to recompile?
         if (defines.isDirty) {
             const lightDisposed = defines._areLightsDisposed;
@@ -1700,8 +1706,8 @@ export class NodeMaterial extends NodeMaterialBase {
             }
         }
 
-        // Check if Area Lights have LTC texture.
-        if (defines["AREALIGHTUSED"]) {
+        // Check if lights are ready
+        if (defines["AREALIGHTUSED"] || defines["CLUSTLIGHT_BATCH"]) {
             for (let index = 0; index < mesh.lightSources.length; index++) {
                 if (!mesh.lightSources[index]._isReady()) {
                     return false;
@@ -2345,6 +2351,14 @@ export class NodeMaterial extends NodeMaterialBase {
             this.clear();
         }
 
+        const id = this.id;
+        const uniqueId = this.uniqueId;
+
+        SerializationHelper.ParseProperties(source, this, this.getScene(), rootUrl);
+
+        this.id = id;
+        this.uniqueId = uniqueId;
+
         const map: { [key: number]: NodeMaterialBlock } = {};
 
         // Create blocks
@@ -2445,7 +2459,6 @@ export class NodeMaterial extends NodeMaterialBase {
      * @deprecated Please use the parseSerializedObject method instead
      */
     public loadFromSerialization(source: any, rootUrl: string = "", merge = false) {
-        SerializationHelper.ParseProperties(source, this, this.getScene(), rootUrl);
         this.parseSerializedObject(source, rootUrl, merge);
     }
 
@@ -2459,11 +2472,13 @@ export class NodeMaterial extends NodeMaterialBase {
         const serializationObject = this.serialize();
 
         const clone = SerializationHelper.Clone(() => new NodeMaterial(name, this.getScene(), this.options), this);
-        clone.id = name;
-        clone.name = name;
 
         clone.parseSerializedObject(serializationObject);
+
+        clone.id = name;
+        clone.name = name;
         clone._buildId = this._buildId;
+
         clone.build(false, !shareEffect);
 
         return clone;
@@ -2538,10 +2553,12 @@ export class NodeMaterial extends NodeMaterialBase {
         options?: Partial<INodeMaterialOptions>
     ): Promise<NodeMaterial> {
         const material = targetMaterial ?? new NodeMaterial(name, scene, options);
+        const finalName = material.name;
 
         const data = await scene._loadFileAsync(url);
         const serializationObject = JSON.parse(data);
         material.parseSerializedObject(serializationObject, rootUrl, undefined, urlRewriter);
+        material.name = finalName; // in case it was changed during parse
         if (!skipBuild) {
             material.build();
         }

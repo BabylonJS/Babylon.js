@@ -142,8 +142,9 @@ export class Geometry implements IGetSetVerticesData {
      * @param vertexData defines the VertexData used to get geometry data
      * @param updatable defines if geometry must be updatable (false by default)
      * @param mesh defines the mesh that will be associated with the geometry
+     * @param totalVertices defines the total number of vertices (optional)
      */
-    constructor(id: string, scene?: Scene, vertexData?: VertexData, updatable: boolean = false, mesh: Nullable<Mesh> = null) {
+    constructor(id: string, scene?: Scene, vertexData?: VertexData, updatable: boolean = false, mesh: Nullable<Mesh> = null, totalVertices: Nullable<number> = null) {
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         if (!this._scene) {
             return;
@@ -157,10 +158,14 @@ export class Geometry implements IGetSetVerticesData {
         this._indices = [];
         this._updatable = updatable;
 
+        if (totalVertices !== null) {
+            this._totalVertices = totalVertices;
+        }
+
         // vertexData
         if (vertexData) {
             this.setAllVerticesData(vertexData, updatable);
-        } else {
+        } else if (totalVertices === null) {
             this._totalVertices = 0;
         }
 
@@ -1115,6 +1120,7 @@ export class Geometry implements IGetSetVerticesData {
      * Vertex buffers will not store CPU data anymore (this will prevent picking, collisions or physics to work correctly)
      */
     public clearCachedData(): void {
+        this._totalIndices = this._indices.length; // save the current value so that getTotalIndices can still work
         this._indices = [];
         this._resetPointsArrayCache();
 

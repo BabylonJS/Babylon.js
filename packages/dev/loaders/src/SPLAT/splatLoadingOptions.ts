@@ -1,3 +1,5 @@
+import type { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+
 /**
  * Options for loading Gaussian Splatting and PLY files
  */
@@ -21,4 +23,14 @@ export type SPLATLoadingOptions = {
      * @example import * as fflate from 'fflate';
      */
     fflate?: unknown;
+
+    /**
+     * Disable automatic camera limits from being applied if they exist in the splat file
+     */
+    disableAutoCameraLimits?: boolean;
+
+    /**
+     * Mesh that will be used to load data instead of creating a new one
+     */
+    gaussianSplattingMesh?: GaussianSplattingMesh;
 };

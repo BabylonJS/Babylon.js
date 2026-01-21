@@ -2952,6 +2952,7 @@ export class ThinEngine extends AbstractEngine {
         let label: string | undefined;
         let createMSAATexture = false;
         let comparisonFunction = 0;
+        let isCube = false;
         if (options !== undefined && typeof options === "object") {
             generateMipMaps = !!options.generateMipMaps;
             createMipMaps = !!options.createMipMaps;
@@ -2963,6 +2964,7 @@ export class ThinEngine extends AbstractEngine {
             label = options.label;
             createMSAATexture = !!options.createMSAATexture;
             comparisonFunction = options.comparisonFunction || 0;
+            isCube = !!options.isCube;
         } else {
             generateMipMaps = !!options;
         }
@@ -2991,7 +2993,7 @@ export class ThinEngine extends AbstractEngine {
         const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
         const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
         const filters = this._getSamplingParameters(samplingMode, (generateMipMaps || createMipMaps) && !isDepthTexture);
-        const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : depth !== 0 ? gl.TEXTURE_3D : gl.TEXTURE_2D;
+        const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : depth !== 0 ? gl.TEXTURE_3D : isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
         const sizedFormat = isDepthTexture
             ? this._getInternalFormatFromDepthTextureFormat(format, true, hasStencil)
             : this._getRGBABufferInternalSizedFormat(type, format, useSRGBBuffer);
@@ -3007,6 +3009,11 @@ export class ThinEngine extends AbstractEngine {
         } else if (depth !== 0) {
             texture.is3D = true;
             gl.texImage3D(target, 0, sizedFormat, width, height, depth, 0, internalFormat, textureType, null);
+        } else if (isCube) {
+            texture.isCube = true;
+            for (let face = 0; face < 6; face++) {
+                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, sizedFormat, width, height, 0, internalFormat, textureType, null);
+            }
         } else {
             gl.texImage2D(target, 0, sizedFormat, width, height, 0, internalFormat, textureType, null);
         }
@@ -3418,7 +3425,13 @@ export class ThinEngine extends AbstractEngine {
         if (texture.generateMipMaps) {
             const webGLHardwareTexture = texture._hardwareTexture as WebGLHardwareTexture;
             if (!webGLHardwareTexture.memoryAllocated) {
-                gl.texStorage2D(gl.TEXTURE_2D, Math.floor(Math.log2(Math.max(width, height))) + 1, internalFormat, texture.width, texture.height);
+                gl.texStorage2D(
+                    texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D,
+                    Math.floor(Math.log2(Math.max(width, height))) + 1,
+                    internalFormat,
+                    texture.width,
+                    texture.height
+                );
                 webGLHardwareTexture.memoryAllocated = true;
             }
             this._gl.compressedTexSubImage2D(target, lod, 0, 0, width, height, internalFormat, data);
@@ -4615,7 +4628,7 @@ export class ThinEngine extends AbstractEngine {
                 const tempcanvas = AbstractEngine._CreateCanvas(1, 1);
                 const gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
-                this._IsSupported = gl != null && !!window.WebGLRenderingContext;
+                this._IsSupported = gl != null && !!globalThis.WebGLRenderingContext;
             } catch (e) {
                 this._IsSupported = false;
             }

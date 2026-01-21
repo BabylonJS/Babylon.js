@@ -7,35 +7,38 @@ import type { InteractivityEvent, InteractivityGraphToFlowGraphParser } from "./
 import type { IGLTF } from "../../glTFLoaderInterfaces";
 import { FlowGraphTypes, getAnimationTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
 
-interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
+interface IGLTFToFlowGraphMappingObject {
     /**
      * The name of the property in the FlowGraph block.
      */
     name: string;
+
     /**
      * The type of the property in the glTF specs.
      * If not provided will be inferred.
      */
     gltfType?: string;
+
     /**
      * The type of the property in the FlowGraph block.
      * If not defined it equals the glTF type.
      */
     flowGraphType?: string;
+
     /**
      * A function that transforms the data from the glTF to the FlowGraph block.
      */
-    dataTransformer?: (data: I[], parser: InteractivityGraphToFlowGraphParser) => O[];
+    dataTransformer?: (data: any, parser: InteractivityGraphToFlowGraphParser) => any;
+
+    /**
+     * If the property can contain multiple values.
+     */
+    isArray?: boolean;
+
     /**
      * If the property is in the options passed to the constructor of the block.
      */
     inOptions?: boolean;
-
-    /**
-     * If the property is a pointer to a value.
-     * This will add an extra JsonPointerParser block to the graph.
-     */
-    isPointer?: boolean;
 
     /**
      * If the property is an index to a value.
@@ -53,7 +56,7 @@ interface IGLTFToFlowGraphMappingObject<I = any, O = any> {
     /**
      * Used in configuration values. If defined, this will be the default value, if no value is provided.
      */
-    defaultValue?: O;
+    defaultValue?: any;
 }
 
 export interface IGLTFToFlowGraphMapping {
@@ -271,7 +274,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 throw new Error("Receive event should have a single configuration object, the event itself");
             }
             const eventConfiguration = gltfBlock.configuration["event"];
-            const eventId = eventConfiguration.value[0];
+            const eventId = eventConfiguration.value?.[0];
             if (typeof eventId !== "number") {
                 throw new Error("Event id should be a number");
             }
@@ -300,7 +303,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 Logger.Error("Receive event should have a single configuration object, the event itself");
                 return { valid: false, error: "Receive event should have a single configuration object, the event itself" };
             }
-            const eventId = eventConfiguration.value[0];
+            const eventId = eventConfiguration.value?.[0];
             if (typeof eventId !== "number") {
                 Logger.Error("Event id should be a number");
                 return { valid: false, error: "Event id should be a number" };
@@ -319,7 +322,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 throw new Error("Receive event should have a single configuration object, the event itself");
             }
             const eventConfiguration = gltfBlock.configuration["event"];
-            const eventId = eventConfiguration.value[0];
+            const eventId = eventConfiguration.value?.[0];
             if (typeof eventId !== "number") {
                 throw new Error("Event id should be a number");
             }
@@ -954,7 +957,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "flow/switch": {
         blocks: [FlowGraphBlockNames.Switch],
         configuration: {
-            cases: { name: "cases", inOptions: true, defaultValue: [] },
+            cases: { name: "cases", isArray: true, inOptions: true, defaultValue: [] },
         },
         inputs: {
             values: {
@@ -963,20 +966,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
         validation(gltfBlock) {
-            if (gltfBlock.configuration && gltfBlock.configuration.cases) {
-                const cases = gltfBlock.configuration.cases.value;
-                const onlyIntegers = cases.every((caseValue) => {
+            const cases = gltfBlock.configuration?.cases;
+            if (cases && cases.value) {
+                const onlyIntegers = cases.value.every((caseValue) => {
                     // case value should be an integer. Since Number.isInteger(1.0) is true, we need to check if toString has only digits.
                     return typeof caseValue === "number" && /^-?\d+$/.test(caseValue.toString());
                 });
                 if (!onlyIntegers) {
                     Logger.Warn("Switch cases should be integers. Using empty array instead.");
-                    gltfBlock.configuration.cases.value = [] as number[];
+                    cases.value = [] as number[];
                     return { valid: true };
                 }
                 // check for duplicates
-                const uniqueCases = new Set(cases);
-                gltfBlock.configuration.cases.value = Array.from(uniqueCases) as number[];
+                const uniqueCases = new Set(cases.value);
+                cases.value = Array.from(uniqueCases) as number[];
             }
             return { valid: true };
         },
@@ -1074,7 +1077,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         validation(gltfBlock) {
             // check that the configuration value is an integer
-            if (typeof gltfBlock.configuration?.inputFlows?.value[0] !== "number") {
+            if (typeof gltfBlock.configuration?.inputFlows?.value?.[0] !== "number") {
                 gltfBlock.configuration = gltfBlock.configuration || {
                     inputFlows: { value: [0] },
                 };
@@ -1119,7 +1122,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 inOptions: true,
                 isVariable: true,
                 dataTransformer(index, parser) {
-                    return [parser.getVariableName(index[0])];
+                    return parser.getVariableName(index);
                 },
             },
         },
@@ -1127,28 +1130,14 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "variable/set": {
         blocks: [FlowGraphBlockNames.SetVariable],
         configuration: {
-            variable: {
-                name: "variable",
-                gltfType: "number",
-                flowGraphType: "string",
-                inOptions: true,
-                isVariable: true,
-                dataTransformer(index: number[], parser): string[] {
-                    return [parser.getVariableName(index[0])];
-                },
-            },
-        },
-    },
-    "variable/setMultiple": {
-        blocks: [FlowGraphBlockNames.SetVariable],
-        configuration: {
             variables: {
                 name: "variables",
                 gltfType: "number",
                 flowGraphType: "string",
                 inOptions: true,
-                dataTransformer(index: number[][], parser): string[][] {
-                    return [index[0].map((i) => parser.getVariableName(i))];
+                isArray: true,
+                dataTransformer(index: number[], parser): string[] {
+                    return index.map((i) => parser.getVariableName(i));
                 },
             },
         },
@@ -1176,19 +1165,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 inOptions: true,
                 isVariable: true,
                 dataTransformer(index, parser) {
-                    return [parser.getVariableName(index[0])];
+                    return parser.getVariableName(index);
                 },
             },
             useSlerp: {
                 name: "animationType",
                 inOptions: true,
                 defaultValue: false,
-                dataTransformer: (value) => {
-                    if (value[0] === true) {
-                        return [FlowGraphTypes.Quaternion];
-                    } else {
-                        return [undefined];
-                    }
+                dataTransformer(value) {
+                    return value === true ? FlowGraphTypes.Quaternion : undefined;
                 },
             },
         },
@@ -1243,16 +1228,16 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         extraProcessor(gltfBlock, _declaration, _mapping, parser, serializedObjects) {
             // is useSlerp is used, animationType should be set to be quaternion!
             const serializedValueInterpolation = serializedObjects[0];
-            const propertyIndex = gltfBlock.configuration?.variable.value[0];
+            const propertyIndex = gltfBlock.configuration?.variable.value?.[0];
             if (typeof propertyIndex !== "number") {
                 Logger.Error("Variable index is not defined for variable interpolation block");
                 throw new Error("Variable index is not defined for variable interpolation block");
             }
             const variable = parser.arrays.staticVariables[propertyIndex];
             // if not set by useSlerp
-            if (typeof serializedValueInterpolation.config.animationType.value === "undefined") {
-                // get the value type
-                parser.arrays.staticVariables;
+            if (typeof serializedValueInterpolation.config?.animationType?.value === "undefined") {
+                serializedValueInterpolation.config ||= {};
+                serializedValueInterpolation.config.animationType ||= {};
                 serializedValueInterpolation.config.animationType.value = getAnimationTypeByFlowGraphType(variable.type);
             }
 
@@ -1261,9 +1246,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             serializedGetVariable.config ||= {};
             serializedGetVariable.config.variable ||= {};
             serializedGetVariable.config.variable.value = parser.getVariableName(propertyIndex);
-
-            // get the control points from the easing block
-            serializedObjects[3].config ||= {};
 
             return serializedObjects;
         },
@@ -1571,7 +1553,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/switch": {
         blocks: [FlowGraphBlockNames.DataSwitch],
         configuration: {
-            cases: { name: "cases", inOptions: true, defaultValue: [] },
+            cases: { name: "cases", isArray: true, inOptions: true, defaultValue: [] },
         },
         inputs: {
             values: {
@@ -1579,20 +1561,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
         validation(gltfBlock) {
-            if (gltfBlock.configuration && gltfBlock.configuration.cases) {
-                const cases = gltfBlock.configuration.cases.value;
-                const onlyIntegers = cases.every((caseValue) => {
+            const cases = gltfBlock.configuration?.cases;
+            if (cases && cases.value) {
+                const onlyIntegers = cases.value.every((caseValue) => {
                     // case value should be an integer. Since Number.isInteger(1.0) is true, we need to check if toString has only digits.
                     return typeof caseValue === "number" && /^-?\d+$/.test(caseValue.toString());
                 });
                 if (!onlyIntegers) {
                     Logger.Warn("Switch cases should be integers. Using empty array instead.");
-                    gltfBlock.configuration.cases.value = [] as number[];
+                    cases.value = [] as number[];
                     return { valid: true };
                 }
                 // check for duplicates
-                const uniqueCases = new Set(cases);
-                gltfBlock.configuration.cases.value = Array.from(uniqueCases) as number[];
+                const uniqueCases = new Set(cases.value);
+                cases.value = Array.from(uniqueCases) as number[];
             }
             return { valid: true };
         },

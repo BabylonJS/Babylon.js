@@ -265,7 +265,7 @@ export class Node {
      * @returns True if the node was updated, false otherwise.
      */
     public update(frame: number, isParentUpdated = false, isReset = false): boolean {
-        let isUpdated = false || isReset;
+        let isUpdated = isReset;
 
         if (this.isAnimated) {
             for (let i = 0; i < this._animationsFunctions.length; i++) {

@@ -149,6 +149,8 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 case NodeParticleContextualSources.Lifetime:
                 case NodeParticleContextualSources.Angle:
                 case NodeParticleContextualSources.AgeGradient:
+                case NodeParticleContextualSources.Size:
+                case NodeParticleContextualSources.DirectionScale:
                     this._type = NodeParticleBlockConnectionPointTypes.Float;
                     break;
                 case NodeParticleContextualSources.SpriteCellEnd:

@@ -753,7 +753,6 @@ type ModelInternal = Model & {
 };
 
 /**
- * @experimental
  * Provides an experience for viewing a single 3D model.
  * @remarks
  * The Viewer is not tied to a specific UI framework and can be used with Babylon.js in a browser or with Babylon Native.
@@ -2524,22 +2523,30 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Return world and canvas coordinates of an hot spot
-     * @param query mesh index and surface information to query the hot spot positions
-     * @param result Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types
-     * @returns true if hotspot found
+     * Return world and canvas coordinates of an hot spot.
+     * @param query mesh index and surface information to query the hot spot positions.
+     * @param result Query a Hot Spot and does the conversion for Babylon Hot spot to a more generic HotSpotPositions, without Vector types.
+     * @returns true if hotspot found.
      */
     public getHotSpotToRef(query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean {
-        return this._activeModel?.getHotSpotToRef(query, result) ?? false;
+        return this._getHotSpotToRef(
+            this._loadedModels.flatMap((model) => model.assetContainer.meshes),
+            query,
+            result
+        );
     }
 
-    protected _getHotSpotToRef(assetContainer: Nullable<AssetContainer>, query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult): boolean {
+    protected _getHotSpotToRef(
+        ...args: [...([assetContainer: Nullable<AssetContainer>] | [meshes: Nullable<AbstractMesh[]>]), query: Readonly<ViewerHotSpotQuery>, result: ViewerHotSpotResult]
+    ): boolean {
+        const [meshesOrAssetContainer, query, result] = args;
+        const meshes = Array.isArray(meshesOrAssetContainer) ? meshesOrAssetContainer : meshesOrAssetContainer?.meshes;
         const worldNormal = this._tempVectors[2];
         const worldPos = this._tempVectors[1];
         const screenPos = this._tempVectors[0];
 
         if (query.type === "surface") {
-            const mesh = assetContainer?.meshes[query.meshIndex];
+            const mesh = meshes?.[query.meshIndex];
             if (!mesh) {
                 return false;
             }
@@ -2574,10 +2581,10 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Get hotspot world and screen values from a named hotspot
-     * @param name slot of the hot spot
-     * @param result resulting world and screen positions
-     * @returns world position, world normal and screen space coordinates
+     * Get hotspot world and screen values from a named hotspot.
+     * @param name slot of the hot spot.
+     * @param result resulting world and screen positions.
+     * @returns world position, world normal and screen space coordinates.
      */
     public queryHotSpot(name: string, result: ViewerHotSpotResult): boolean {
         return this._queryHotSpot(name, result) != null;
@@ -2751,6 +2758,9 @@ export class Viewer implements IDisposable {
 
                     this._sceneMutated = false;
                     this._scene.render();
+
+                    // NOTE: this logic to adjust camera parameters based on radius is copied in renderingZone.tsx (for sandbox).
+                    // Please keep them in sync.
 
                     // Update the camera panning sensitivity based on the camera's distance from the target.
                     this._camera.panningSensibility = 5000 / this._camera.radius;

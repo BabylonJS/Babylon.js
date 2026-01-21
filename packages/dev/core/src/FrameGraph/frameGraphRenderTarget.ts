@@ -2,7 +2,6 @@ import type { FrameGraphTextureHandle, FrameGraphTextureManager, IMultiRenderTar
 
 /**
  * @internal
- * @experimental
  */
 export class FrameGraphRenderTarget {
     protected readonly _textureManager: FrameGraphTextureManager;
@@ -63,6 +62,8 @@ export class FrameGraphRenderTarget {
                     );
                 }
 
+                texture.incrementReferences();
+
                 this._renderTargetWrapper.setTexture(texture, i, false);
             }
 
@@ -93,5 +94,9 @@ export class FrameGraphRenderTarget {
         }
 
         return this._renderTargetDepth === other._renderTargetDepth;
+    }
+
+    public dispose() {
+        this._renderTargetWrapper?.dispose();
     }
 }

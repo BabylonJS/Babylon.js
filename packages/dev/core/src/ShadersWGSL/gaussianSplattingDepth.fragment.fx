@@ -1,7 +1,10 @@
 #include<gaussianSplattingFragmentDeclaration>
-#include<shadowMapFragmentExtraDeclaration>
 varying vPosition: vec2f;
 varying vColor: vec4f;
+
+#ifdef DEPTH_RENDER
+varying vDepthMetric: f32;
+#endif
 
 // move discard logic to a function to avoid early return issues and parsing/compilation errors with last '}
 fn checkDiscard(inPosition: vec2f, inColor: vec4f) -> vec4f {
@@ -12,11 +15,15 @@ fn checkDiscard(inPosition: vec2f, inColor: vec4f) -> vec4f {
         discard;
     }
 #else
-    if (A < -1.) {
+    if (A < -inColor.a) {
         discard;
     }
 #endif
+#ifdef DEPTH_RENDER
+    return vec4f(fragmentInputs.vDepthMetric, 0.0, 0.0, 1.0);
+#else
     return vec4f(inColor.rgb, alpha);
+#endif
 }
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
