@@ -76,10 +76,6 @@ export class CubeMapToSphericalPolynomialTools {
         const gammaSpace = texture.gammaSpace;
         // Always read as RGBA.
         const format = Constants.TEXTUREFORMAT_RGBA;
-        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-        if (texture.textureType == Constants.TEXTURETYPE_FLOAT || texture.textureType == Constants.TEXTURETYPE_HALF_FLOAT) {
-            type = Constants.TEXTURETYPE_FLOAT;
-        }
 
         return new Promise((resolve) => {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
@@ -93,7 +89,7 @@ export class CubeMapToSphericalPolynomialTools {
                     front,
                     back,
                     format,
-                    type,
+                    type: left instanceof Float32Array ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE,
                     gammaSpace,
                 };
 
