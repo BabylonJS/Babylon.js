@@ -124,25 +124,28 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
             )}
 
             {useVelocityGradients && (
-                <FactorGradientList
-                    gradients={velocityGradients}
-                    label="Velocity Gradient"
-                    removeGradient={(gradient: FactorGradient) => {
-                        system.removeVelocityGradient(gradient.gradient);
-                        system.forceRefreshGradients();
-                    }}
-                    addGradient={(gradient?: FactorGradient) => {
-                        if (gradient) {
-                            system.addVelocityGradient(gradient.gradient, gradient.factor1, gradient.factor2);
-                        } else {
-                            system.addVelocityGradient(0, 1, 1);
-                        }
-                        system.forceRefreshGradients();
-                    }}
-                    onChange={(_gradient: FactorGradient) => {
-                        system.forceRefreshGradients();
-                    }}
-                />
+                <>
+                    <Subtitle2 className={classes.subsection}>Velocity Gradients</Subtitle2>
+                    <FactorGradientList
+                        gradients={velocityGradients}
+                        label="Velocity Gradient"
+                        removeGradient={(gradient: FactorGradient) => {
+                            system.removeVelocityGradient(gradient.gradient);
+                            system.forceRefreshGradients();
+                        }}
+                        addGradient={(gradient?: FactorGradient) => {
+                            if (gradient) {
+                                system.addVelocityGradient(gradient.gradient, gradient.factor1, gradient.factor2);
+                            } else {
+                                system.addVelocityGradient(0, 1, 1);
+                            }
+                            system.forceRefreshGradients();
+                        }}
+                        onChange={(_gradient: FactorGradient) => {
+                            system.forceRefreshGradients();
+                        }}
+                    />
+                </>
             )}
 
             {!useLimitVelocityGradients && (
@@ -156,25 +159,28 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
             )}
 
             {useLimitVelocityGradients && (
-                <FactorGradientList
-                    gradients={limitVelocityGradients}
-                    label="Limit Velocity Gradient"
-                    removeGradient={(gradient: FactorGradient) => {
-                        system.removeLimitVelocityGradient(gradient.gradient);
-                        system.forceRefreshGradients();
-                    }}
-                    addGradient={(gradient?: FactorGradient) => {
-                        if (gradient) {
-                            system.addLimitVelocityGradient(gradient.gradient, gradient.factor1, gradient.factor2);
-                        } else {
-                            system.addLimitVelocityGradient(0, 1, 1);
-                        }
-                        system.forceRefreshGradients();
-                    }}
-                    onChange={(_gradient: FactorGradient) => {
-                        system.forceRefreshGradients();
-                    }}
-                />
+                <>
+                    <Subtitle2 className={classes.subsection}>Limit Velocity Gradients</Subtitle2>
+                    <FactorGradientList
+                        gradients={limitVelocityGradients}
+                        label="Limit Velocity Gradient"
+                        removeGradient={(gradient: FactorGradient) => {
+                            system.removeLimitVelocityGradient(gradient.gradient);
+                            system.forceRefreshGradients();
+                        }}
+                        addGradient={(gradient?: FactorGradient) => {
+                            if (gradient) {
+                                system.addLimitVelocityGradient(gradient.gradient, gradient.factor1, gradient.factor2);
+                            } else {
+                                system.addLimitVelocityGradient(0, 1, 1);
+                            }
+                            system.forceRefreshGradients();
+                        }}
+                        onChange={(_gradient: FactorGradient) => {
+                            system.forceRefreshGradients();
+                        }}
+                    />
+                </>
             )}
 
             {!useDragGradients && (
@@ -188,25 +194,28 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
             )}
 
             {useDragGradients && (
-                <FactorGradientList
-                    gradients={dragGradients}
-                    label="Drag Gradient"
-                    removeGradient={(gradient: FactorGradient) => {
-                        system.removeDragGradient(gradient.gradient);
-                        system.forceRefreshGradients();
-                    }}
-                    addGradient={(gradient?: FactorGradient) => {
-                        if (gradient) {
-                            system.addDragGradient(gradient.gradient, gradient.factor1, gradient.factor2);
-                        } else {
-                            system.addDragGradient(0, 1, 1);
-                        }
-                        system.forceRefreshGradients();
-                    }}
-                    onChange={(_gradient: FactorGradient) => {
-                        system.forceRefreshGradients();
-                    }}
-                />
+                <>
+                    <Subtitle2 className={classes.subsection}>Drag Gradients</Subtitle2>
+                    <FactorGradientList
+                        gradients={dragGradients}
+                        label="Drag Gradient"
+                        removeGradient={(gradient: FactorGradient) => {
+                            system.removeDragGradient(gradient.gradient);
+                            system.forceRefreshGradients();
+                        }}
+                        addGradient={(gradient?: FactorGradient) => {
+                            if (gradient) {
+                                system.addDragGradient(gradient.gradient, gradient.factor1, gradient.factor2);
+                            } else {
+                                system.addDragGradient(0, 1, 1);
+                            }
+                            system.forceRefreshGradients();
+                        }}
+                        onChange={(_gradient: FactorGradient) => {
+                            system.forceRefreshGradients();
+                        }}
+                    />
+                </>
             )}
         </>
     );
