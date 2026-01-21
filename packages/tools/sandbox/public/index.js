@@ -11,7 +11,6 @@ if ("serviceWorker" in navigator) {
 
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
-        // eslint-disable-next-line no-undef
         let urlToLoad = typeof globalThis !== "undefined" && globalThis.__babylonSnapshotTimestamp__ ? url + "?t=" + globalThis.__babylonSnapshotTimestamp__ : url;
         const script = document.createElement("script");
         script.src = urlToLoad;
@@ -146,13 +145,10 @@ let checkBabylonVersionAsync = function () {
     }).then(() => {
         // if local, set the default base URL
         if (snapshot) {
-            // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot;
         } else if (version) {
-            // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://cdn.babylonjs.com/v" + version;
         } else if (activeVersion === "local") {
-            // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
         }
 

@@ -83,7 +83,8 @@ self.addEventListener("activate", (event) => {
     );
 });
 
-// Fetch: network-first for online, cache fallback for offline
+// Fetch: stale-while-revalidate strategy
+// Serve from cache immediately, then update cache in background
 self.addEventListener("fetch", (event) => {
     const url = new URL(event.request.url);
 
@@ -103,31 +104,39 @@ self.addEventListener("fetch", (event) => {
     }
 
     event.respondWith(
-        // Try network first
-        fetch(event.request)
-            .then((response) => {
-                // Cache successful responses for future offline use
-                if (response.ok) {
-                    const responseClone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseClone);
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.match(event.request).then((cachedResponse) => {
+                // Start network fetch in background (don't await)
+                const fetchPromise = fetch(event.request)
+                    .then((networkResponse) => {
+                        // Update cache with fresh version
+                        if (networkResponse.ok) {
+                            cache.put(event.request, networkResponse.clone());
+                        }
+                        return networkResponse;
+                    })
+                    .catch(() => {
+                        // Network failed, return null (we'll use cache or fallback)
+                        return null;
                     });
+
+                // Return cached response immediately if available
+                if (cachedResponse) {
+                    return cachedResponse;
                 }
-                return response;
-            })
-            .catch(() => {
-                // Network failed, try cache
-                return caches.match(event.request).then((cachedResponse) => {
-                    if (cachedResponse) {
-                        return cachedResponse;
+
+                // No cache, wait for network
+                return fetchPromise.then((networkResponse) => {
+                    if (networkResponse) {
+                        return networkResponse;
                     }
-                    // No cache, return offline page for navigation requests
+                    // Network failed and no cache - return fallback
                     if (event.request.mode === "navigate") {
-                        return caches.match("./index.html");
+                        return cache.match("./index.html");
                     }
-                    // Return a simple error response for other requests
                     return new Response("Offline", { status: 503, statusText: "Service Unavailable" });
                 });
-            })
+            });
+        })
     );
 });
