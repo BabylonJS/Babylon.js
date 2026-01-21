@@ -1,8 +1,8 @@
 import type { FunctionComponent } from "react";
 
-import { makeStyles, tokens, Button as FluentButton } from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { PlayRegular, PreviousRegular, NextRegular, ArrowPreviousRegular, ArrowNextRegular, RecordStopRegular } from "@fluentui/react-icons";
+import { PlayRegular, PreviousRegular, NextRegular, ArrowPreviousRegular, ArrowNextRegular, RecordStopRegular, TriangleLeftRegular } from "@fluentui/react-icons";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
@@ -25,9 +25,6 @@ const useStyles = makeStyles({
         flexDirection: "row",
         alignItems: "center",
         gap: tokens.spacingHorizontalXXS,
-    },
-    playBackwardIcon: {
-        transform: "scaleX(-1)",
     },
     frameDisplay: {
         display: "flex",
@@ -72,22 +69,20 @@ type MediaControlsProps = {
     onNextKey: () => void;
     onFirstFrame: () => void;
     onLastFrame: () => void;
-    playBackwardIconClass: string;
 };
 
 /**
  * Memoized media controls component to prevent re-renders during playback
  */
 const MediaControls = memo<MediaControlsProps>(
-    ({ hasActiveAnimations, isPlaying, forwardAnimation, onPlayForward, onPlayBackward, onStop, onPrevKey, onNextKey, onFirstFrame, onLastFrame, playBackwardIconClass }) => {
+    ({ hasActiveAnimations, isPlaying, forwardAnimation, onPlayForward, onPlayBackward, onStop, onPrevKey, onNextKey, onFirstFrame, onLastFrame }) => {
         return (
             <>
                 <Button icon={PreviousRegular} appearance="subtle" disabled={!hasActiveAnimations} onClick={onFirstFrame} title="First frame" />
                 <Button icon={ArrowPreviousRegular} appearance="subtle" disabled={!hasActiveAnimations} onClick={onPrevKey} title="Previous key" />
-                <FluentButton
-                    icon={<PlayRegular className={playBackwardIconClass} />}
+                <Button
+                    icon={TriangleLeftRegular}
                     appearance={isPlaying && !forwardAnimation ? "primary" : "subtle"}
-                    size="small"
                     disabled={!hasActiveAnimations}
                     onClick={onPlayBackward}
                     title="Play backward"
@@ -240,7 +235,6 @@ export const BottomBar: FunctionComponent = () => {
 
     return (
         <div className={styles.root}>
-            {/* Media controls */}
             <div className={styles.mediaControls}>
                 <MediaControls
                     hasActiveAnimations={hasActiveAnimations}
@@ -253,7 +247,6 @@ export const BottomBar: FunctionComponent = () => {
                     onNextKey={handleNextKey}
                     onFirstFrame={handleFirstFrame}
                     onLastFrame={handleLastFrame}
-                    playBackwardIconClass={styles.playBackwardIcon}
                 />
             </div>
 
@@ -263,10 +256,8 @@ export const BottomBar: FunctionComponent = () => {
                 <SpinButton className={styles.spinButton} value={displayFrame} onChange={handleFrameChange} min={state.fromKey} max={state.toKey} disabled={!hasActiveAnimations} />
             </div>
 
-            {/* Range selector */}
             <RangeSelector />
 
-            {/* Clip length */}
             <div className={styles.clipLengthSection}>
                 <span className={styles.frameLabel}>Clip Length:</span>
                 <SpinButton className={styles.spinButton} value={clipLength} onChange={handleClipLengthChange} min={1} disabled={!hasActiveAnimations} />
