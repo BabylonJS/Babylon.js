@@ -84,7 +84,6 @@ export const EditAnimationPanel: FunctionComponent<EditAnimationPanelProps> = ({
 
         // Notify observers
         observables.onAnimationsLoaded.notifyObservers();
-        observables.onEditAnimationUIClosed.notifyObservers();
 
         onClose();
     }, [isValid, name, property, loopMode, animation, observables, onClose]);
@@ -109,7 +108,13 @@ export const EditAnimationPanel: FunctionComponent<EditAnimationPanelProps> = ({
 
                 <div className={styles.row}>
                     <Label>Loop Mode</Label>
-                    <Dropdown value={getLoopModeLabel(loopMode)} selectedOptions={[loopMode.toString()]} onOptionSelect={(_, data) => setLoopMode(Number(data.optionValue))}>
+                    <Dropdown
+                        value={getLoopModeLabel(loopMode)}
+                        selectedOptions={[loopMode.toString()]}
+                        onOptionSelect={(_, data) => setLoopMode(Number(data.optionValue))}
+                        positioning="below"
+                        inlinePopup
+                    >
                         {LOOP_MODES.map((mode) => (
                             <Option key={mode.value} value={mode.value.toString()}>
                                 {mode.label}

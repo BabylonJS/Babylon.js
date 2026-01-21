@@ -194,10 +194,6 @@ export type CurveEditorObservables = {
     onSelectionRectangleMoved: Observable<DOMRect>;
     /** Fired when animations are loaded */
     onAnimationsLoaded: Observable<void>;
-    /** Fired when edit animation is required */
-    onEditAnimationRequired: Observable<{ animation: Animation; anchor: HTMLElement }>;
-    /** Fired when edit animation UI is closed */
-    onEditAnimationUIClosed: Observable<void>;
     /** Fired when clip length is increased */
     onClipLengthIncreased: Observable<number>;
     /** Fired when clip length is decreased */
@@ -300,8 +296,6 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
         onDeleteKeyActiveKeyPoints: new Observable(),
         onSelectionRectangleMoved: new Observable(),
         onAnimationsLoaded: new Observable(),
-        onEditAnimationRequired: new Observable(),
-        onEditAnimationUIClosed: new Observable(),
         onClipLengthIncreased: new Observable(),
         onClipLengthDecreased: new Observable(),
         onInterpolationModeSet: new Observable(),

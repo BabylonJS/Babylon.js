@@ -12,7 +12,6 @@ import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
 import { useCurveEditor } from "./curveEditorContext";
 import { AnimationList } from "./sideBar/animationList";
 import { AddAnimationPanel } from "./sideBar/addAnimationPanel";
-import { EditAnimationPanel } from "./sideBar/editAnimationPanel";
 import { LoadAnimationPanel } from "./sideBar/loadAnimationPanel";
 import { SaveAnimationPanel } from "./sideBar/saveAnimationPanel";
 
@@ -64,13 +63,9 @@ const useStyles = makeStyles({
         maxHeight: "500px",
         overflow: "auto",
     },
-    editPopoverSurface: {
-        padding: tokens.spacingHorizontalM,
-        maxWidth: "350px",
-    },
 });
 
-type PopoverType = "add" | "load" | "save" | "editAnimation" | null;
+type PopoverType = "add" | "load" | "save" | null;
 
 /**
  * Sidebar component for the curve editor with animation list and controls
@@ -82,8 +77,6 @@ export const SideBar: FunctionComponent = () => {
 
     const [openPopover, setOpenPopover] = useState<PopoverType>(null);
     const [fps, setFps] = useState(60);
-    const [editingAnimation, setEditingAnimation] = useState<Animation | null>(null);
-    const editAnchorRef = useRef<HTMLElement | null>(null);
 
     // Get FPS from animations
     useEffect(() => {
@@ -100,18 +93,6 @@ export const SideBar: FunctionComponent = () => {
         });
         return () => {
             observables.onAnimationsLoaded.remove(observer);
-        };
-    }, [observables]);
-
-    // Subscribe to edit animation request
-    useEffect(() => {
-        const observer = observables.onEditAnimationRequired.add(({ animation, anchor }) => {
-            setEditingAnimation(animation);
-            editAnchorRef.current = anchor;
-            setOpenPopover("editAnimation");
-        });
-        return () => {
-            observables.onEditAnimationRequired.remove(observer);
         };
     }, [observables]);
 
@@ -208,29 +189,6 @@ export const SideBar: FunctionComponent = () => {
             <div className={styles.content}>
                 <AnimationList />
             </div>
-
-            {/* Edit animation popover - triggered from animation list gear icon */}
-            <Popover
-                open={openPopover === "editAnimation" && editingAnimation !== null}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setOpenPopover(null);
-                        setEditingAnimation(null);
-                    }
-                }}
-                positioningTarget={editAnchorRef.current}
-                surfaceClassName={styles.editPopoverSurface}
-            >
-                {editingAnimation && (
-                    <EditAnimationPanel
-                        animation={editingAnimation}
-                        onClose={() => {
-                            setEditingAnimation(null);
-                            setOpenPopover(null);
-                        }}
-                    />
-                )}
-            </Popover>
         </div>
     );
 };

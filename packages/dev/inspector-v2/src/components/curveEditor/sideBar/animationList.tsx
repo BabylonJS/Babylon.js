@@ -8,9 +8,11 @@ import { ChevronDownRegular, ChevronRightRegular, SettingsRegular, DeleteRegular
 import { Animation as AnimationEnum } from "core/Animations/animation";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
+import { Popover } from "shared-ui-components/fluent/primitives/popover";
 import { useCurveEditor } from "../curveEditorContext";
 import { ChannelColors, ColorChannelColors } from "../curveEditorColors";
 import { useObservableState } from "../../../hooks/observableHooks";
+import { EditAnimationPanel } from "./editAnimationPanel";
 
 const useStyles = makeStyles({
     root: {
@@ -89,6 +91,7 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
 
     const [isExpanded, setIsExpanded] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
 
     const isActive = state.activeAnimations.indexOf(animation) !== -1;
     const isExpandable = animation.dataType !== AnimationEnum.ANIMATIONTYPE_FLOAT;
@@ -117,14 +120,9 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
         setIsExpanded((prev) => !prev);
     }, []);
 
-    const handleGear = useCallback(
-        (evt?: React.MouseEvent) => {
-            evt?.stopPropagation();
-            const anchor = evt?.currentTarget as HTMLElement;
-            observables.onEditAnimationRequired.notifyObservers({ animation, anchor });
-        },
-        [animation, observables]
-    );
+    const handleEditOpenChange = useCallback((open: boolean) => {
+        setIsEditOpen(open);
+    }, []);
 
     const handleDelete = useCallback(
         (evt?: React.MouseEvent) => {
@@ -190,8 +188,15 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
                 <span className={styles.name} title={animation.name}>
                     {animation.name}
                 </span>
-                <div className={`${styles.actions} ${isHovered ? styles.actionsVisible : ""}`}>
-                    <Button icon={SettingsRegular} appearance="transparent" onClick={handleGear} title="Edit animation" />
+                <div className={`${styles.actions} ${isHovered || isEditOpen ? styles.actionsVisible : ""}`}>
+                    <Popover
+                        open={isEditOpen}
+                        onOpenChange={handleEditOpenChange}
+                        positioning="after"
+                        trigger={<Button icon={SettingsRegular} appearance="transparent" title="Edit animation" />}
+                    >
+                        <EditAnimationPanel animation={animation} onClose={() => setIsEditOpen(false)} />
+                    </Popover>
                     <Button icon={DeleteRegular} appearance="transparent" onClick={handleDelete} title="Delete animation" />
                 </div>
             </div>
