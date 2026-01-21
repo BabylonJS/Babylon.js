@@ -1,14 +1,120 @@
-// Minimal service worker for PWA installability
-// This is the minimum needed for the browser to recognize the app as a PWA
+// Service worker for Babylon.js Sandbox PWA
+// Provides full offline support by caching app shell and Babylon.js libraries
 
-self.addEventListener("install", () => {
-    self.skipWaiting();
+const CACHE_VERSION = "v1";
+const CACHE_NAME = `babylon-sandbox-${CACHE_VERSION}`;
+
+// App shell - files served from same origin
+const APP_SHELL = ["./", "./index.html", "./index.js", "./babylon.sandbox.js", "./manifest.webmanifest", "./icons/icon-192.svg", "./icons/icon-512.svg"];
+
+// External resources to cache
+const EXTERNAL_RESOURCES = [
+    // Fonts
+    "https://use.typekit.net/cta4xsb.css",
+
+    // Physics engines
+    "https://cdn.babylonjs.com/ammo.js",
+    "https://cdn.babylonjs.com/havok/HavokPhysics_umd.js",
+    "https://cdn.babylonjs.com/cannon.js",
+    "https://cdn.babylonjs.com/Oimo.js",
+
+    // Babylon.js core libraries (preview/latest)
+    "https://preview.babylonjs.com/babylon.js",
+    "https://preview.babylonjs.com/addons/babylonjs.addons.min.js",
+    "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
+    "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js",
+    "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js",
+    "https://preview.babylonjs.com/gui/babylon.gui.min.js",
+    "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js",
+    "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js",
+];
+
+// Install: cache app shell and external resources (do not fail on external resources)
+self.addEventListener("install", (event) => {
+    event.waitUntil(
+        caches
+            .open(CACHE_NAME)
+            .then((cache) => {
+                // Cache app shell first (required)
+                return cache.addAll(APP_SHELL).then(() => {
+                    // Then cache external resources (best effort - don't fail install if these fail)
+                    return Promise.allSettled(
+                        EXTERNAL_RESOURCES.map((url) =>
+                            fetch(url, { mode: "cors" })
+                                .then((response) => {
+                                    if (response.ok) {
+                                        return cache.put(url, response);
+                                    }
+                                })
+                                .catch(() => {
+                                    // Silently ignore - external resources are best-effort
+                                })
+                        )
+                    );
+                });
+            })
+            .then(() => self.skipWaiting())
+    );
 });
 
+// Activate: clean up old caches
 self.addEventListener("activate", (event) => {
-    event.waitUntil(self.clients.claim());
+    event.waitUntil(
+        caches
+            .keys()
+            .then((cacheNames) => {
+                // Delete all caches that are not the current version
+                return Promise.all(cacheNames.filter((name) => name.startsWith("babylon-sandbox-") && name !== CACHE_NAME).map((name) => caches.delete(name)));
+            })
+            .then(() => self.clients.claim())
+    );
 });
 
-self.addEventListener("fetch", () => {
-    // Let all requests go to the network normally
+// Fetch: network-first for online, cache fallback for offline
+self.addEventListener("fetch", (event) => {
+    const url = new URL(event.request.url);
+
+    // Skip non-GET requests
+    if (event.request.method !== "GET") {
+        return;
+    }
+
+    // Skip browser extensions, data URLs, etc.
+    if (!url.protocol.startsWith("http")) {
+        return;
+    }
+
+    // Skip analytics
+    if (url.hostname.includes("google")) {
+        return;
+    }
+
+    event.respondWith(
+        // Try network first
+        fetch(event.request)
+            .then((response) => {
+                // Cache successful responses for future offline use
+                if (response.ok) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseClone);
+                    });
+                }
+                return response;
+            })
+            .catch(() => {
+                // Network failed, try cache
+                return caches.match(event.request).then((cachedResponse) => {
+                    if (cachedResponse) {
+                        return cachedResponse;
+                    }
+                    // No cache, return offline page for navigation requests
+                    if (event.request.mode === "navigate") {
+                        return caches.match("./index.html");
+                    }
+                    // Return a simple error response for other requests
+                    return new Response("Offline", { status: 503, statusText: "Service Unavailable" });
+                });
+            })
+    );
 });
