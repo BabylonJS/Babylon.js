@@ -300,7 +300,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _worker: Nullable<Worker> = null;
     private _modelViewMatrix = Matrix.Identity();
     private _viewMatrix = Matrix.Identity();
-    private _depthMix: BigInt64Array = new BigInt64Array(0);
+    private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
     private _readyToDisplay = false;
     private _covariancesATexture: Nullable<BaseTexture> = null;
