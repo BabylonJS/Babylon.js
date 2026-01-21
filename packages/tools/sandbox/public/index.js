@@ -101,7 +101,11 @@ const isVersionGreaterOrEqual = function (version1, version2) {
 let checkBabylonVersionAsync = function () {
     let activeVersion = "dist";
 
-    if (window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1) {
+    // Check if running as installed PWA (standalone mode)
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+
+    // Use local only when on localhost, not in standalone PWA mode, and ?dist not specified
+    if (window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1 && !isStandalone) {
         activeVersion = "local";
     }
 
