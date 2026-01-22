@@ -161,6 +161,11 @@ export class PreviewManager {
             }
         }
 
+        // Only build new systems if we found matching ones to replace
+        if (map.size === 0) {
+            return;
+        }
+
         const newSet = await this._nodeParticleSystemSet.buildAsync(scene);
         for (const [reference, emitter] of map) {
             const particleSystem = (newSet.systems as ParticleSystem[]).find((ps) => ps._blockReference === reference);
@@ -180,7 +185,7 @@ export class PreviewManager {
             this._particleSystemSet.dispose();
         }
 
-        if (this._nodeParticleSystemSet) {
+        if (this._globalState.disposeOnClose && this._nodeParticleSystemSet) {
             this._nodeParticleSystemSet.dispose();
         }
 

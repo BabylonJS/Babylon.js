@@ -390,6 +390,9 @@ const useStyles = makeStyles({
         flexDirection: "row",
         alignItems: "center",
         height: "36px",
+        backgroundColor: tokens.colorNeutralBackground1,
+        color: tokens.colorNeutralForeground1,
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
     },
     paneHeaderText: {
         flex: 1,
@@ -417,6 +420,12 @@ const useStyles = makeStyles({
         borderTopLeftRadius: tokens.borderRadiusMedium,
         borderTopRightRadius: tokens.borderRadiusMedium,
     },
+    selectedTab: {
+        backgroundColor: tokens.colorNeutralBackground1,
+        color: tokens.colorNeutralForeground1,
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
+        borderBottom: "none",
+    },
     unselectedTab: {
         backgroundColor: "transparent",
     },
@@ -424,7 +433,7 @@ const useStyles = makeStyles({
         backgroundColor: "transparent",
     },
     selectedTabIcon: {
-        color: tokens.colorNeutralForeground1,
+        color: "inherit",
     },
     resizer: {
         width: "8px",
@@ -525,14 +534,12 @@ const PaneHeader: FunctionComponent<{ id: string; title: string; dockOptions: Ma
     const classes = useStyles();
 
     return (
-        <Theme invert>
-            <div className={classes.paneHeaderDiv}>
-                <Subtitle2Stronger className={classes.paneHeaderText}>{title}</Subtitle2Stronger>
-                <DockMenu sidePaneId={id} dockOptions={dockOptions}>
-                    <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
-                </DockMenu>
-            </div>
-        </Theme>
+        <div className={classes.paneHeaderDiv}>
+            <Subtitle2Stronger className={classes.paneHeaderText}>{title}</Subtitle2Stronger>
+            <DockMenu sidePaneId={id} dockOptions={dockOptions}>
+                <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
+            </DockMenu>
+        </div>
     );
 };
 
@@ -631,7 +638,7 @@ const SidePaneTab: FunctionComponent<
     const useTeachingMoment = useMemo(() => MakePopoverTeachingMoment(`Pane/${location}/${title ?? id}`), [title, id]);
     const teachingMoment = useTeachingMoment(suppressTeachingMoment);
 
-    const tabClass = mergeClasses(classes.tab, isSelected ? undefined : classes.unselectedTab);
+    const tabClass = mergeClasses(classes.tab, isSelected ? classes.selectedTab : classes.unselectedTab);
 
     return (
         <>
@@ -641,7 +648,7 @@ const SidePaneTab: FunctionComponent<
                 title={title ?? "Extension"}
                 description={`The "${title ?? id}" extension can be accessed here.`}
             />
-            <Theme className={tabClass} invert={isSelected}>
+            <div className={tabClass}>
                 <DockMenu openOnContext sidePaneId={id} dockOptions={dockOptions}>
                     <ToolbarRadioButton
                         ref={teachingMoment.targetRef}
@@ -656,7 +663,7 @@ const SidePaneTab: FunctionComponent<
                         }}
                     />
                 </DockMenu>
-            </Theme>
+            </div>
         </>
     );
 };
