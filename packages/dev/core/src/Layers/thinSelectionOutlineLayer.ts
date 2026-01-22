@@ -96,7 +96,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             camera: null,
             renderingGroupId: -1,
             forceGLSL: false,
-            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            mainTextureType: Constants.TEXTURETYPE_HALF_FLOAT,
             mainTextureFormat: Constants.TEXTUREFORMAT_RG,
             ...options,
         };

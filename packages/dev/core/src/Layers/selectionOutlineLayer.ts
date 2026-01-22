@@ -117,7 +117,7 @@ export class SelectionOutlineLayer extends EffectLayer {
 
         // Adapt options
         this._options = {
-            mainTextureRatio: 0.5,
+            mainTextureRatio: 1.0,
             mainTextureFixedSize: 0,
             alphaBlendingMode: Constants.ALPHA_COMBINE,
             camera: null,
