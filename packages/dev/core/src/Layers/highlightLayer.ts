@@ -238,6 +238,7 @@ export class HighlightLayer extends EffectLayer {
             camera: null,
             renderingGroupId: -1,
             mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            mainTextureFormat: Constants.TEXTUREFORMAT_RGBA,
             forceGLSL: false,
             isStroke: false,
             ...options,
