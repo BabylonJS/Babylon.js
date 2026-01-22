@@ -174,9 +174,9 @@ export class SelectionOutlineLayer extends EffectLayer {
             const prePassRenderer = this._scene._prePassRenderer!;
             effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
 
-            const mainTextureCreatedSize = this._mainTextureCreatedSize;
-            this._thinEffectLayer.textureWidth = mainTextureCreatedSize.width;
-            this._thinEffectLayer.textureHeight = mainTextureCreatedSize.height;
+            const mainTextureDesiredSize = this._mainTextureDesiredSize;
+            this._thinEffectLayer.textureWidth = mainTextureDesiredSize.width;
+            this._thinEffectLayer.textureHeight = mainTextureDesiredSize.height;
         };
 
         this._thinEffectLayer._createTextureAndPostProcesses();
