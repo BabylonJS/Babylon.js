@@ -29,6 +29,7 @@
         "mini-css-extract-plugin": "^2.4.3",
         "monaco-editor": "^0.55.1",
         "monaco-editor-webpack-plugin": "^7.1.0",
+        "string-replace-loader": "^3.3.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-refresh": "^0.17.0",

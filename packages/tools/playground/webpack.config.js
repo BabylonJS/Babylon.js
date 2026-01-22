@@ -4,6 +4,8 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const webpackTools = require("@dev/build-tools").webpackTools;
 const path = require("path");
 
+const nonacoEditorRegEx = new RegExp('node_modules/monaco-editor');
+
 module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const BUILD_ID = process.env.BUILD_BUILDID || process.env.BUILD_SOURCEVERSION || String(Date.now());
@@ -52,6 +54,40 @@ module.exports = (env) => {
                         test: /\.svg$/,
                         use: ["@svgr/webpack"],
                     },
+                    {
+                        test: /\.js$/,
+                        include: nonacoEditorRegEx,
+                        loader: 'string-replace-loader',
+                        options: {
+                            multiple: [
+                                {
+                                    // initialValidationRegex
+                                    search: /\(\?<=(\['"\\s\])\)/g,
+                                    replace: '(?:$1|^)',
+                                    flags: 'g'
+                                },
+                                {
+                                    // wordBoundaryToMaintain
+                                    search: /\(\?<=(\\\\\.)\)/g,
+                                    replace: '(?:$1|^)',
+                                    flags: 'g'
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        test: /\.js$/,
+                        include: nonacoEditorRegEx,
+                        use: {
+                            loader: "ts-loader",
+                            options: {
+                                transpileOnly: true,
+                                compilerOptions: {
+                                    target: "ES2021",
+                                }
+                            }
+                        }
+                    }
                 ],
                 tsOptions: {
                     compilerOptions: {
