@@ -759,6 +759,22 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Gets the refraction background texture
+     * @returns The refraction background texture or null
+     */
+    public get refractionBackgroundTexture(): Nullable<BaseTexture> {
+        return this._material.subSurface.refractionTexture;
+    }
+
+    /**
+     * Sets the refraction background texture
+     * @param value The refraction background texture or null
+     */
+    public set refractionBackgroundTexture(value: Nullable<BaseTexture>) {
+        this._material.subSurface.refractionTexture = value;
+    }
+
+    /**
      * Configures transmission for thin-surface transmission (KHR_materials_transmission).
      * Sets up the material for proper thin-surface transmission behavior.
      */

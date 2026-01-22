@@ -321,7 +321,10 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns Promise that resolves to the appropriate adapter
      * @internal
      */
-    public _getOrCreateMaterialAdapter(material: Material): IMaterialLoadingAdapter {
+    public _getOrCreateMaterialAdapter(material: Nullable<Material>): Nullable<IMaterialLoadingAdapter> {
+        if (!material) {
+            return null;
+        }
         let adapter = this._materialAdapterCache.get(material);
         if (!adapter) {
             if (this._pbrMaterialImpl) {
@@ -2189,7 +2192,7 @@ export class GLTFLoader implements IGLTFLoader {
         const promises = new Array<Promise<unknown>>();
         const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
 
-        if (properties) {
+        if (properties && adapter) {
             // Set base color and alpha using adapter
             if (properties.baseColorFactor) {
                 adapter.baseColor = Color3.FromArray(properties.baseColorFactor);
@@ -2297,11 +2300,13 @@ export class GLTFLoader implements IGLTFLoader {
         // Create the material adapter and set some default properties.
         // We don't need to wait for the promise to resolve here.
         const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
-        adapter.transparencyAsAlphaCoverage = this._parent.transparencyAsCoverage;
+        if (adapter) {
+            adapter.transparencyAsAlphaCoverage = this._parent.transparencyAsCoverage;
 
-        // Set default metallic and roughness values
-        adapter.baseMetalness = 1.0;
-        adapter.specularRoughness = 1.0;
+            // Set default metallic and roughness values
+            adapter.baseMetalness = 1.0;
+            adapter.specularRoughness = 1.0;
+        }
 
         return babylonMaterial;
     }
@@ -2360,7 +2365,7 @@ export class GLTFLoader implements IGLTFLoader {
      */
     public loadMaterialBasePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
         const promises = new Array<Promise<unknown>>();
-        const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
+        const adapter = this._getOrCreateMaterialAdapter(babylonMaterial)!;
 
         // Set emission color using adapter
         adapter.emissionColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
@@ -2439,7 +2444,7 @@ export class GLTFLoader implements IGLTFLoader {
             throw new Error(`${context}: Material type not supported`);
         }
 
-        const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
+        const adapter = this._getOrCreateMaterialAdapter(babylonMaterial)!;
         const baseColorTexture = adapter.baseColorTexture;
 
         const alphaMode = material.alphaMode || MaterialAlphaMode.OPAQUE;

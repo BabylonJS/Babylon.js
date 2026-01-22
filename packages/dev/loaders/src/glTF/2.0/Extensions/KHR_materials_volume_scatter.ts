@@ -100,7 +100,7 @@ export class KHR_materials_volume_scatter implements IGLTFLoaderExtension {
 
         // If transparency isn't enabled already, this extension shouldn't do anything.
         // i.e. it requires either the KHR_materials_transmission or KHR_materials_diffuse_transmission extensions.
-        if (adapter.transmissionWeight === 0 && adapter.subsurfaceWeight === 0) {
+        if (!adapter || (adapter.transmissionWeight === 0 && adapter.subsurfaceWeight === 0)) {
             return Promise.resolve();
         }
 

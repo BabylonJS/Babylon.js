@@ -766,6 +766,22 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Gets the refraction background texture
+     * @returns The refraction background texture or null
+     */
+    public get refractionBackgroundTexture(): Nullable<BaseTexture> {
+        return this._material.backgroundRefractionTexture;
+    }
+
+    /**
+     * Sets the refraction background texture
+     * @param value The refraction background texture or null
+     */
+    public set refractionBackgroundTexture(value: Nullable<BaseTexture>) {
+        this._material.backgroundRefractionTexture = value;
+    }
+
+    /**
      * Sets the thickness texture.
      * @param value The thickness texture or null
      */

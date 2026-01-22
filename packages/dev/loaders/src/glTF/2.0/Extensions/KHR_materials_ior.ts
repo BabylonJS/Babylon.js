@@ -77,8 +77,10 @@ export class KHR_materials_ior implements IGLTFLoaderExtension {
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadIorPropertiesAsync(context: string, properties: IKHRMaterialsIor, babylonMaterial: Material): Promise<void> {
         const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
-        const indexOfRefraction = properties.ior !== undefined ? properties.ior : KHR_materials_ior._DEFAULT_IOR;
-        adapter.specularIor = indexOfRefraction;
+        if (adapter) {
+            const indexOfRefraction = properties.ior !== undefined ? properties.ior : KHR_materials_ior._DEFAULT_IOR;
+            adapter.specularIor = indexOfRefraction;
+        }
 
         return Promise.resolve();
     }

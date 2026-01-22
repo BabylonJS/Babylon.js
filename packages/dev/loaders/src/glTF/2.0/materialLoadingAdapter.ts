@@ -288,6 +288,11 @@ export interface IMaterialLoadingAdapter {
     transmissionDispersionScale: number;
 
     /**
+     * The refraction background texture
+     */
+    refractionBackgroundTexture: Nullable<BaseTexture>;
+
+    /**
      * Configures transmission for thin-surface transmission (KHR_materials_transmission)
      */
     configureTransmission(): void;

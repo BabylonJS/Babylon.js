@@ -45,7 +45,7 @@ export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, async (extraContext, extra) => {
             if (extra) {
-                const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
+                const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial)!;
                 const promise = this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
 
                 const useExactSrgbConversions = babylonMaterial.getScene().getEngine().useExactSrgbConversions;
