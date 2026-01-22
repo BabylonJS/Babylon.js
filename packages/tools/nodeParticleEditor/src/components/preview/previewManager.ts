@@ -145,6 +145,7 @@ export class PreviewManager {
     }
 
     private async _reconnectEmittersAsync(scene: Scene) {
+        const systemsToReplace: ParticleSystem[] = [];
         const map = new Map<number, Nullable<AbstractMesh | Vector3>>();
 
         for (const ps of scene.particleSystems) {
@@ -155,8 +156,7 @@ export class PreviewManager {
                 const reference = particleSystem._blockReference;
                 const emitter = particleSystem.emitter;
 
-                particleSystem.dispose();
-
+                systemsToReplace.push(particleSystem);
                 map.set(reference, emitter);
             }
         }
@@ -166,7 +166,20 @@ export class PreviewManager {
             return;
         }
 
-        const newSet = await this._nodeParticleSystemSet.buildAsync(scene);
+        // Build new systems first - if this fails, we keep the old systems intact
+        let newSet: ParticleSystemSet;
+        try {
+            newSet = await this._nodeParticleSystemSet.buildAsync(scene);
+        } catch {
+            // Build failed, keep old systems in their current state
+            return;
+        }
+
+        // Only dispose old systems after successful build
+        for (const particleSystem of systemsToReplace) {
+            particleSystem.dispose();
+        }
+
         for (const [reference, emitter] of map) {
             const particleSystem = (newSet.systems as ParticleSystem[]).find((ps) => ps._blockReference === reference);
             if (particleSystem) {
