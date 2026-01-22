@@ -585,7 +585,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 (mesh as Mesh).removeVerticesData(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName);
             }
         }
-        this._selection.length = 0;
+        this._selection = [];
         this._meshUniqueIdToSelectionId.length = 0;
 
         this._nextSelectionId = 1;

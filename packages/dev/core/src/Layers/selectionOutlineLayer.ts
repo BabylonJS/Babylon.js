@@ -278,6 +278,7 @@ export class SelectionOutlineLayer extends EffectLayer {
      */
     public clearSelection(): void {
         this._thinEffectLayer.clearSelection();
+        this._mainTexture.renderList = this._thinEffectLayer._selection; // update render list
     }
 
     /**
