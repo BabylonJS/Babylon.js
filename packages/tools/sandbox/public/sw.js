@@ -28,6 +28,9 @@ const EXTERNAL_RESOURCES = [
     // Fonts
     "https://use.typekit.net/cta4xsb.css",
 
+    // Babylon.js CDN version timestamp (used for cache-busting)
+    "https://cdn.babylonjs.com/timestamp.js",
+
     // Physics engines
     "https://cdn.babylonjs.com/ammo.js",
     "https://cdn.babylonjs.com/havok/HavokPhysics_umd.js",
@@ -107,7 +110,21 @@ self.addEventListener("fetch", (event) => {
 
     event.respondWith(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.match(event.request).then((cachedResponse) => {
+            const cacheMatchPromise = cache.match(event.request).then((response) => {
+                if (response) {
+                    return response;
+                }
+
+                // For external resources, try matching without query string (for cache-busting URLs like timestamp.js?t=xxx)
+                const requestUrl = new URL(event.request.url);
+                const urlWithoutQuery = requestUrl.origin + requestUrl.pathname;
+                if (requestUrl.search && !requestUrl.hostname.includes(self.location.hostname)) {
+                    return cache.match(urlWithoutQuery);
+                }
+                return null;
+            });
+
+            return cacheMatchPromise.then((cachedResponse) => {
                 // Start network fetch in background (don't await)
                 const fetchPromise = fetch(event.request)
                     .then((networkResponse) => {
