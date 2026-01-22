@@ -324,6 +324,12 @@ export class Sandbox extends React.Component<
                         </button>
                     </div>
                 )}
+                {/* 
+                  Folder Access Prompt: This dialog is required because the File System Access API 
+                  (showDirectoryPicker) can only be called from a direct user gesture (click/tap).
+                  The PWA launch queue callback is async and not considered a user gesture, so we 
+                  must show this UI to get a user click before requesting folder access.
+                */}
                 {this.state.showFolderAccessPrompt && (
                     <div id="folderAccessPrompt">
                         <div className="prompt-content">
