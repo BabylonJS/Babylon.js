@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const webpackTools = require("@dev/build-tools").webpackTools;
 const path = require("path");
 
-const nonacoEditorRegEx = new RegExp('node_modules/monaco-editor');
+const monacoEditorRegEx = new RegExp('node_modules/monaco-editor');
 
 module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
@@ -56,7 +56,7 @@ module.exports = (env) => {
                     },
                     {
                         test: /\.js$/,
-                        include: nonacoEditorRegEx,
+                        include: monacoEditorRegEx,
                         loader: 'string-replace-loader',
                         options: {
                             multiple: [
@@ -77,7 +77,7 @@ module.exports = (env) => {
                     },
                     {
                         test: /\.js$/,
-                        include: nonacoEditorRegEx,
+                        include: monacoEditorRegEx,
                         use: {
                             loader: "ts-loader",
                             options: {
