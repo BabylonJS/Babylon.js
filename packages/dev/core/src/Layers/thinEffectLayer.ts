@@ -106,6 +106,11 @@ export interface IThinEffectLayerOptions {
     mainTextureType?: number;
 
     /**
+     * The format of the main texture. Default: TEXTUREFORMAT_RGBA
+     */
+    mainTextureFormat?: number;
+
+    /**
      * Alpha blending mode used to apply the blur. Default depends of the implementation. Default: ALPHA_COMBINE
      */
     alphaBlendingMode?: number;
@@ -384,6 +389,7 @@ export class ThinEffectLayer {
             mainTextureRatio: 0.5,
             mainTextureFixedSize: 0,
             mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            mainTextureFormat: Constants.TEXTUREFORMAT_RGBA,
             alphaBlendingMode: Constants.ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
