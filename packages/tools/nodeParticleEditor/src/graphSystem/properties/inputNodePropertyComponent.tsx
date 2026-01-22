@@ -230,7 +230,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         }}
                         propertyName={""}
                     />
-                    {!inputBlock.isContextual && !inputBlock.isSystemSource && this.renderValue(this.props.stateManager.data as GlobalState)}
                     {inputBlock.isContextual && (
                         <OptionsLine
                             label="Contextual value"
@@ -262,11 +261,14 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         />
                     )}
                     {!inputBlock.isContextual && !inputBlock.isSystemSource && (
-                        <CheckBoxLineComponent label="Display in the Inspector" target={inputBlock} propertyName={"displayInInspector"}></CheckBoxLineComponent>
+                        <CheckBoxLineComponent label="Visible on frame" target={inputBlock} propertyName={"visibleOnFrame"}></CheckBoxLineComponent>
+                    )}
+                    {!inputBlock.isContextual && !inputBlock.isSystemSource && (
+                        <CheckBoxLineComponent label="Display in the Inspector" target={inputBlock} propertyName={"displayInInspector"} onValueChanged={() => this.forceUpdate()} />
                     )}
                     {!inputBlock.isContextual && !inputBlock.isSystemSource && inputBlock.displayInInspector && (
                         <TextInputLineComponent
-                            label="Group"
+                            label="Inspector Group"
                             propertyName="groupInInspector"
                             target={inputBlock}
                             lockObject={this.props.stateManager.lockObject}
@@ -278,9 +280,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             throttlePropertyChangedNotification={true}
                         />
                     )}
-                    {!inputBlock.isContextual && !inputBlock.isSystemSource && (
-                        <CheckBoxLineComponent label="Visible on frame" target={inputBlock} propertyName={"visibleOnFrame"}></CheckBoxLineComponent>
-                    )}
+                    {!inputBlock.isContextual && !inputBlock.isSystemSource && this.renderValue(this.props.stateManager.data as GlobalState)}
                 </LineContainerComponent>
             </div>
         );

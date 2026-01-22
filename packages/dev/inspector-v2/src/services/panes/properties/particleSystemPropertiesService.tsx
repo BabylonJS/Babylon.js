@@ -187,6 +187,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 particleSystemSystemContent.dispose();
                 particleSystemCommandsContent.dispose();
                 particleSystemAttractorsContent.dispose();
+                particleSystemNodeContent.dispose();
                 particleSystemEmitterContent.dispose();
                 particleSystemEmissionContent.dispose();
                 particleSystemSizeContent.dispose();
