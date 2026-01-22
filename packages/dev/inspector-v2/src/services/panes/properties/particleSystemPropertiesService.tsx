@@ -17,9 +17,14 @@ import { ParticleSystemColorProperties } from "../../../components/properties/pa
 import { ParticleSystemRotationProperties } from "../../../components/properties/particles/rotationProperties";
 import { ParticleSystemSpritesheetProperties } from "../../../components/properties/particles/spritesheetProperties";
 import { ParticleSystemAttractorProperties } from "../../../components/properties/particles/attractorProperties";
+import { ParticleSystemNodeEditorProperties } from "../../../components/properties/particles/nodeEditorProperties";
 
 function IsParticleSystem(entity: unknown): entity is ParticleSystem | GPUParticleSystem {
     return entity instanceof ParticleSystem || entity instanceof GPUParticleSystem;
+}
+
+function IsNodeParticleSystem(entity: unknown): entity is ParticleSystem {
+    return entity instanceof ParticleSystem && entity.isNodeGenerated;
 }
 
 function IsNonNodeCPUParticleSystem(entity: unknown): entity is ParticleSystem {
@@ -72,6 +77,18 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                     section: "Attractors",
                     order: 3,
                     component: ({ context }) => <ParticleSystemAttractorProperties particleSystem={context} />,
+                },
+            ],
+        });
+
+        const particleSystemNodeContent = propertiesService.addSectionContent({
+            key: "Particle System Node Properties",
+            predicate: IsNodeParticleSystem,
+            content: [
+                {
+                    section: "Inputs",
+                    order: 3,
+                    component: ({ context }) => <ParticleSystemNodeEditorProperties particleSystem={context} selectionService={selectionService} />,
                 },
             ],
         });
@@ -170,6 +187,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 particleSystemSystemContent.dispose();
                 particleSystemCommandsContent.dispose();
                 particleSystemAttractorsContent.dispose();
+                particleSystemNodeContent.dispose();
                 particleSystemEmitterContent.dispose();
                 particleSystemEmissionContent.dispose();
                 particleSystemSizeContent.dispose();
