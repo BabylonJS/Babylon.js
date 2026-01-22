@@ -602,6 +602,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                     mesh._userInstancedBuffersStorage = undefined!;
                 }
             }
+            delete mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
         }
         this._selection = [];
         this._meshUniqueIdToSelectionId.length = 0;
@@ -639,14 +640,6 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
                 if (sourceMesh.instancedBuffers?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] === undefined) {
                     sourceMesh.registerInstancedBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, 1);
-                } else {
-                    // already registered, invalidate vao to force it sync
-                    const vaos = sourceMesh._userInstancedBuffersStorage!.vertexArrayObjects;
-                    if (vaos?.[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName]) {
-                        // invalidate VAO is very important to keep sync between VAO and vertex buffers
-                        (this._engine as ThinEngine).releaseVertexArrayObject(vaos[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName]);
-                        delete vaos[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
-                    }
                 }
 
                 mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] = nextId;
