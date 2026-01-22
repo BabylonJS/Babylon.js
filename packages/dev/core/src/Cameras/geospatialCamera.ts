@@ -515,10 +515,59 @@ export class GeospatialCamera extends Camera {
                 // Only update if the center is looking toward the origin (dot product > 0) to avoid a center on the opposite side of globe
                 if (dotProduct > 0) {
                     const newRadius = Vector3Distance(this.position, newCenter.pickedPoint);
-                    this._setOrientation(this._yaw, this._pitch, newRadius, newCenter.pickedPoint);
+                    // Compute yaw/pitch that preserve current lookAt direction at the new center
+                    const { yaw, pitch } = this._computeYawPitchFromLookAt(this._lookAtVector, newCenter.pickedPoint);
+                    this._setOrientation(yaw, pitch, newRadius, newCenter.pickedPoint);
                 }
             }
         }
+    }
+
+    /**
+     * Given a lookAt direction and center, compute the yaw and pitch angles that would produce that lookAt.
+     * This is the inverse of the lookAt calculation in _setOrientation.
+     */
+    private _computeYawPitchFromLookAt(lookAt: Vector3, center: DeepImmutable<IVector3Like>): { yaw: number; pitch: number } {
+        // Compute local basis at center
+        const east = TmpVectors.Vector3[5];
+        const north = TmpVectors.Vector3[6];
+        const up = TmpVectors.Vector3[7];
+        ComputeLocalBasisToRefs(center as Vector3, east, north, up);
+
+        // lookAt = horiz*sinPitch - up*cosPitch
+        // where horiz = north*cosYaw + east*sinYaw
+        //
+        // The vertical component of lookAt (along up) gives us cosPitch:
+        // lookAt · up = -cosPitch
+        const lookDotUp = Vector3Dot(lookAt, up);
+        const cosPitch = -lookDotUp;
+
+        // Clamp cosPitch to valid range to avoid NaN from acos
+        const clampedCosPitch = Clamp(cosPitch, -1, 1);
+        const pitch = Math.acos(clampedCosPitch);
+
+        // The horizontal component gives us yaw
+        // lookHorizontal = lookAt + up*cosPitch = horiz*sinPitch
+        const lookHorizontal = TmpVectors.Vector3[8];
+        lookHorizontal.copyFrom(lookAt).addInPlace(up.scale(cosPitch));
+
+        const sinPitch = Math.sin(pitch);
+        if (Math.abs(sinPitch) < Epsilon) {
+            // Looking straight down or up, yaw is undefined - keep current
+            return { yaw: this._yaw, pitch };
+        }
+
+        // horiz = lookHorizontal / sinPitch = north*cosYaw + east*sinYaw
+        const horiz = lookHorizontal.scaleInPlace(1 / sinPitch);
+
+        // cosYaw = horiz · north, sinYaw = horiz · east
+        const cosYaw = Vector3Dot(horiz, north);
+        const sinYaw = Vector3Dot(horiz, east);
+
+        const yawScale = this._scene.useRightHandedSystem ? 1 : -1;
+        const yaw = Math.atan2(sinYaw, cosYaw) * yawScale;
+
+        return { yaw, pitch };
     }
 
     /**
