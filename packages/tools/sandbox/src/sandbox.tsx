@@ -11,6 +11,7 @@ import type { Scene } from "core/scene";
 import { CreateScreenshotAsync } from "core/Misc/screenshotTools";
 import type { IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
 import { Color3, Color4 } from "core/Maths/math";
+import { FilesInputStore } from "core/Misc/filesInputStore";
 
 import "./scss/main.scss";
 import fullScreenLogo from "./img/logo-fullscreen.svg";
@@ -49,6 +50,10 @@ export class Sandbox extends React.Component<
          * current loaded file name
          */
         currentFileName: string;
+        /**
+         * Show folder access prompt for files with dependencies
+         */
+        showFolderAccessPrompt: boolean;
     }
 > {
     private _globalState: GlobalState;
@@ -61,6 +66,8 @@ export class Sandbox extends React.Component<
 
     // Stores files from Launch Queue until filesInput is ready
     private _pendingLaunchFiles: File[] | null = null;
+    // Stores info for folder access prompt
+    private _pendingFolderAccessFile: File | null = null;
 
     /**
      * Constructs the Sandbox component
@@ -73,7 +80,7 @@ export class Sandbox extends React.Component<
         this._dropTextRef = React.createRef();
         this._clickInterceptorRef = React.createRef();
 
-        this.state = { isFooterVisible: true, errorMessage: "", currentFileName: "" };
+        this.state = { isFooterVisible: true, errorMessage: "", currentFileName: "", showFolderAccessPrompt: false };
 
         this.checkUrl();
 
@@ -234,7 +241,7 @@ export class Sandbox extends React.Component<
                         break;
                     }
                     case "kiosk": {
-                        this.state = { isFooterVisible: value.toLowerCase() === "true" ? false : true, errorMessage: "", currentFileName: "" };
+                        this.state = { isFooterVisible: value.toLowerCase() === "true" ? false : true, errorMessage: "", currentFileName: "", showFolderAccessPrompt: false };
                         break;
                     }
                     case "skybox": {
@@ -317,8 +324,69 @@ export class Sandbox extends React.Component<
                         </button>
                     </div>
                 )}
+                {this.state.showFolderAccessPrompt && (
+                    <div id="folderAccessPrompt">
+                        <div className="prompt-content">
+                            <p>
+                                The file <strong>{this._pendingFolderAccessFile?.name}</strong> may reference external files (textures, etc.).
+                            </p>
+                            <p>Would you like to grant access to the containing folder so all referenced files can be loaded?</p>
+                            <div className="prompt-buttons">
+                                <button type="button" onClick={async () => await this._handleFolderAccessClickAsync(true)}>
+                                    Select Folder
+                                </button>
+                                <button type="button" onClick={async () => await this._handleFolderAccessClickAsync(false)}>
+                                    Load Without
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
+    }
+
+    /**
+     * Handles user clicking to grant folder access
+     *
+     * @param grantAccess Whether the user granted access to the folder
+     */
+    private async _handleFolderAccessClickAsync(grantAccess: boolean) {
+        const file = this._pendingFolderAccessFile;
+        this._pendingFolderAccessFile = null;
+        this.setState({ showFolderAccessPrompt: false });
+
+        if (!file) {
+            return;
+        }
+
+        if (grantAccess) {
+            try {
+                const dirHandle = await (window as unknown as { showDirectoryPicker: () => Promise<FileSystemDirectoryHandle> }).showDirectoryPicker();
+                // Recursively collect all files from the directory and subdirectories
+                const collectFilesAsync = async (handle: FileSystemDirectoryHandle, relativePath: string = "") => {
+                    // Use values() method to iterate - cast needed as TypeScript types may be incomplete
+                    const entries = (handle as unknown as { values: () => AsyncIterable<FileSystemHandle> }).values();
+                    for await (const entry of entries) {
+                        if (entry.kind === "file") {
+                            const entryFile = await (entry as FileSystemFileHandle).getFile();
+                            // Register file directly in FilesInputStore with its relative path
+                            // This is how the loaders will look it up
+                            const filePath = (relativePath + entryFile.name).toLowerCase();
+                            FilesInputStore.FilesToLoad[filePath] = entryFile;
+                        } else if (entry.kind === "directory") {
+                            await collectFilesAsync(entry as FileSystemDirectoryHandle, relativePath + entry.name + "/");
+                        }
+                    }
+                };
+                await collectFilesAsync(dirHandle);
+            } catch {
+                // User cancelled - proceed with just the original file
+            }
+        }
+
+        // Only pass the main file to load - dependencies are already registered in FilesInputStore
+        this._loadFileWhenReady([file]);
     }
 
     /**
@@ -337,26 +405,41 @@ export class Sandbox extends React.Component<
                 return;
             }
 
-            // Get File objects from file handles
-            const filePromises = launchParams.files.map(async (handle) => await handle.getFile());
-            const files = await Promise.all(filePromises);
+            const fileHandle = launchParams.files[0];
+            const file = await fileHandle.getFile();
+            const extension = file.name.split(".").pop()?.toLowerCase();
 
-            // If filesInput is already ready, load immediately
-            if (this._globalState.filesInput) {
-                this._loadFilesIntoSandbox(files);
+            // File types that may have external dependencies (textures, .bin files, etc.)
+            const typesWithDependencies = ["gltf", "obj", "babylon"];
+
+            // If file type may have dependencies, show prompt for folder access
+            if (extension && typesWithDependencies.includes(extension) && "showDirectoryPicker" in window) {
+                this._pendingFolderAccessFile = file;
+                this.setState({ showFolderAccessPrompt: true });
             } else {
-                // Store for later when filesInput is ready
-                this._pendingLaunchFiles = files;
+                // Load single file directly
+                this._loadFileWhenReady([file]);
             }
         });
+    }
 
-        // When filesInput becomes ready, process any pending files
-        this._globalState.onFilesInputReady.addOnce(() => {
-            if (this._pendingLaunchFiles) {
-                this._loadFilesIntoSandbox(this._pendingLaunchFiles);
-                this._pendingLaunchFiles = null;
-            }
-        });
+    /**
+     * Loads files when filesInput is ready
+     *
+     * @param files Array of File objects to load
+     */
+    private _loadFileWhenReady(files: File[]) {
+        if (this._globalState.filesInput) {
+            this._loadFilesIntoSandbox(files);
+        } else {
+            this._pendingLaunchFiles = files;
+            this._globalState.onFilesInputReady.addOnce(() => {
+                if (this._pendingLaunchFiles) {
+                    this._loadFilesIntoSandbox(this._pendingLaunchFiles);
+                    this._pendingLaunchFiles = null;
+                }
+            });
+        }
     }
 
     /**
