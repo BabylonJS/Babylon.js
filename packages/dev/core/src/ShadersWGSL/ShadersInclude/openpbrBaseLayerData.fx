@@ -72,7 +72,7 @@ var geometry_thickness: f32 = 0.0;
 #endif
 
 #if defined(ANISOTROPIC) || defined(FUZZ) || defined(REFRACTED_BACKGROUND)
-    let noise = textureSample(blueNoiseSampler, blueNoiseSamplerSampler, fragmentInputs.position.xy / 256.0).xyz;
+    let noise = vec3f(2.0) * textureSample(blueNoiseSampler, blueNoiseSamplerSampler, fragmentInputs.position.xy / 256.0).xyz - vec3f(1.0);
 #endif
 
 #if defined(SPECULAR_ROUGHNESS_FROM_METALNESS_TEXTURE_GREEN) && defined(BASE_METALNESS)

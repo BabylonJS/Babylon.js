@@ -297,7 +297,7 @@
             // at low blurriness since it represents the transmitted light that is in front of the IBL.
             // At high blurriness, the refraction from the environment will be coming from more directions
             // and so we want to include more of this indirect lighting.
-            environmentRefraction *= max(refractionAlphaG * refractionAlphaG - 0.1, 0.0);
+            environmentRefraction *= max(roughness_alpha_modified_for_scatter * roughness_alpha_modified_for_scatter - 0.1, 0.0);
         #endif
 
         #ifdef SCATTERING

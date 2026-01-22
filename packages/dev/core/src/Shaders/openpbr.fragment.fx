@@ -249,7 +249,7 @@ void main(void) {
             vec3 iso_scatter_transmittance = pow(exp(-extinction_coeff * geometry_thickness), vec3(0.2));
             vec3 iso_scatter_density = clamp(vec3(1.0) - iso_scatter_transmittance, 0.0, 1.0);
             
-            // Refration roughness is modified by the density of the scattering and also by the anisotropy.
+            // Refraction roughness is modified by the density of the scattering and also by the anisotropy.
             float roughness_alpha_modified_for_scatter = min(refractionAlphaG + (1.0 - abs(transmission_scatter_anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 1.0);
             roughness_alpha_modified_for_scatter = pow(roughness_alpha_modified_for_scatter, 6.0);
             roughness_alpha_modified_for_scatter = clamp(roughness_alpha_modified_for_scatter, refractionAlphaG, 1.0);

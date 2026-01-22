@@ -187,7 +187,7 @@
         #endif
 
         // _____________________________ Levels _____________________________________
-        // environmentRadiance.rgb *= reflectionInfos.xxx;
+        environmentRadiance = vec4f(environmentRadiance.rgb * reflectionInfos.x, environmentRadiance.a);
         return environmentRadiance.rgb;
     }
 
