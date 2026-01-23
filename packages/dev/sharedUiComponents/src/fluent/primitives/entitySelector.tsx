@@ -71,7 +71,7 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
         return getEntities()
             .filter((e) => e.uniqueId !== undefined && (!filter || filter(e)))
             .map((entity) => ({
-                label: getName(entity).toString(),
+                label: getName(entity)?.toString() || "",
                 value: entity.uniqueId.toString(),
             }))
             .sort((a, b) => a.label.localeCompare(b.label));
