@@ -54,6 +54,7 @@ export class BabylonFileLoaderConfiguration {
 let TempIndexContainer: { [key: string]: Node } = {};
 let TempMaterialIndexContainer: { [key: string]: Material } = {};
 let TempMorphTargetManagerIndexContainer: { [key: string]: MorphTargetManager } = {};
+let TempSkeletonIndexContainer: { [key: string]: Skeleton } = {};
 
 const ParseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
     if (!parsedData.materials) {
@@ -153,6 +154,14 @@ const FindMaterial = (materialId: any, scene: Scene) => {
     }
 
     return TempMaterialIndexContainer[materialId];
+};
+
+const FindSkeleton = (skeletonId: any, scene: Scene) => {
+    if (typeof skeletonId !== "number") {
+        return scene.getLastSkeletonById(skeletonId);
+    }
+
+    return TempSkeletonIndexContainer[skeletonId];
 };
 
 /**
@@ -356,6 +365,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
             for (index = 0, cache = parsedData.skeletons.length; index < cache; index++) {
                 const parsedSkeleton = parsedData.skeletons[index];
                 const skeleton = Skeleton.Parse(parsedSkeleton, scene);
+                TempSkeletonIndexContainer[parsedSkeleton.uniqueId ?? parsedSkeleton.id] = skeleton;
                 container.skeletons.push(skeleton);
                 skeleton._parentContainer = container;
                 log += index === 0 ? "\n\tSkeletons:" : "";
@@ -573,7 +583,15 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
             }
         }
 
-        // link skeleton transform nodes
+        // link meshes with skeletons
+        for (const mesh of scene.meshes) {
+            if (mesh._waitingSkeletonId !== null) {
+                mesh.skeleton = FindSkeleton(mesh._waitingSkeletonId, scene);
+                mesh._waitingSkeletonId = null;
+            }
+        }
+
+        // link bones to transform nodes
         for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
             const skeleton = scene.skeletons[index];
             if (skeleton._hasWaitingData) {
@@ -663,6 +681,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         TempIndexContainer = {};
         TempMaterialIndexContainer = {};
         TempMorphTargetManagerIndexContainer = {};
+        TempSkeletonIndexContainer = {};
 
         if (!addToScene) {
             // Removes any breadcrumb left during the loading like geometries
@@ -732,7 +751,6 @@ RegisterSceneLoaderPlugin({
                 }
             }
             if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
-                const loadedSkeletonsIds = [];
                 const loadedMaterialsIds: string[] = [];
                 const loadedMaterialsUniqueIds: string[] = [];
                 const loadedMorphTargetManagerIds: number[] = [];
@@ -849,14 +867,14 @@ RegisterSceneLoaderPlugin({
                             parsedData.skeletons !== undefined &&
                             parsedData.skeletons !== null
                         ) {
-                            const skeletonAlreadyLoaded = loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1;
-                            if (!skeletonAlreadyLoaded) {
+                            if (!TempSkeletonIndexContainer[parsedMesh.skeletonId]) {
                                 for (let skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {
                                     const parsedSkeleton = parsedData.skeletons[skeletonIndex];
-                                    if (parsedSkeleton.id === parsedMesh.skeletonId) {
+                                    const parsedSkeletonId = parsedSkeleton.uniqueId ?? parsedSkeleton.id;
+                                    if (parsedSkeletonId === parsedMesh.skeletonId) {
                                         const skeleton = Skeleton.Parse(parsedSkeleton, scene);
+                                        TempSkeletonIndexContainer[parsedSkeletonId] = skeleton;
                                         skeletons.push(skeleton);
-                                        loadedSkeletonsIds.push(parsedSkeleton.id);
                                         log += "\n\tSkeleton " + skeleton.toString(fullDetails);
                                     }
                                 }
@@ -957,7 +975,15 @@ RegisterSceneLoaderPlugin({
                     }
                 }
 
-                // link skeleton transform nodes
+                // link meshes with skeletons
+                for (const mesh of scene.meshes) {
+                    if (mesh._waitingSkeletonId !== null) {
+                        mesh.skeleton = FindSkeleton(mesh._waitingSkeletonId, scene);
+                        mesh._waitingSkeletonId = null;
+                    }
+                }
+
+                // link bones to transform nodes
                 for (let index = 0, cache = scene.skeletons.length; index < cache; index++) {
                     const skeleton = scene.skeletons[index];
                     if (skeleton._hasWaitingData) {
@@ -1023,6 +1049,7 @@ RegisterSceneLoaderPlugin({
             }
             TempMaterialIndexContainer = {};
             TempMorphTargetManagerIndexContainer = {};
+            TempSkeletonIndexContainer = {};
         }
 
         return false;

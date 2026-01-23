@@ -4047,7 +4047,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Skeleton
         if (this.skeleton) {
-            serializationObject.skeletonId = this.skeleton.id;
+            serializationObject.skeletonId = this.skeleton.uniqueId;
             serializationObject.numBoneInfluencers = this.numBoneInfluencers;
         }
 
@@ -4522,7 +4522,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Skeleton
         if (parsedMesh.skeletonId !== undefined && parsedMesh.skeletonId !== null) {
-            mesh.skeleton = scene.getLastSkeletonById(parsedMesh.skeletonId);
+            mesh._waitingSkeletonId = parsedMesh.skeletonId;
             if (parsedMesh.numBoneInfluencers) {
                 mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
             }

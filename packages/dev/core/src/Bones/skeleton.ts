@@ -743,6 +743,7 @@ export class Skeleton implements IAnimatable {
 
         serializationObject.name = this.name;
         serializationObject.id = this.id;
+        serializationObject.uniqueId = this.uniqueId;
 
         if (this.dimensionsAtRest) {
             serializationObject.dimensionsAtRest = this.dimensionsAtRest.asArray();
