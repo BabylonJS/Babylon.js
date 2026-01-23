@@ -364,6 +364,14 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                 skeleton._parentContainer = container;
                 log += index === 0 ? "\n\tSkeletons:" : "";
                 log += "\n\t\t" + skeleton.toString(fullDetails);
+
+                // Bones - add to TempIndexContainer to later connect animations -> bones
+                for (let boneIndex = 0; boneIndex < parsedSkeleton.bones.length; boneIndex++) {
+                    const parsedBone = parsedSkeleton.bones[boneIndex];
+                    const bone = skeleton.bones[boneIndex]; // This was instantiated in Skeleton.Parse
+                    TempIndexContainer[parsedBone.uniqueId] = bone;
+                    // TODO: Can this bones array be sparse? I.e., have an undefined entry?
+                }
             }
         }
 

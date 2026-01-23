@@ -766,6 +766,7 @@ export class Skeleton implements IAnimatable {
                 index: bone.getIndex(),
                 name: bone.name,
                 id: bone.id,
+                uniqueId: bone.uniqueId,
                 matrix: bone.getBindMatrix().asArray(),
                 rest: bone.getRestMatrix().asArray(),
                 linkedTransformNodeId: bone.getTransformNode()?.uniqueId,
