@@ -45,6 +45,7 @@ import { Engine } from "core/Engines/engine";
 import { Animation } from "core/Animations/animation";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
+import type { SolidParticleSystem } from "core/Particles/solidParticleSystem";
 const DontSerializeTextureContent = true;
 
 export class PreviewManager {
@@ -69,7 +70,7 @@ export class PreviewManager {
     private _lightParent: TransformNode;
     private _postprocess: Nullable<PostProcess>;
     private _proceduralTexture: Nullable<ProceduralTexture>;
-    private _particleSystem: Nullable<IParticleSystem>;
+    private _particleSystem: Nullable<IParticleSystem | SolidParticleSystem>;
     private _layer: Nullable<Layer>;
     private _hdrSkyBox: Mesh;
     private _hdrTexture: CubeTexture;
@@ -389,7 +390,8 @@ export class PreviewManager {
             case NodeMaterialModes.Particle: {
                 this._camera.radius = this._globalState.previewType === PreviewType.Explosion ? 50 : this._globalState.previewType === PreviewType.DefaultParticleSystem ? 6 : 20;
                 this._camera.upperRadiusLimit = 5000;
-                this._globalState.particleSystemBlendMode = this._particleSystem?.blendMode ?? ParticleSystem.BLENDMODE_STANDARD;
+                this._globalState.particleSystemBlendMode =
+                    (this._particleSystem instanceof ParticleSystem ? this._particleSystem.blendMode : null) ?? ParticleSystem.BLENDMODE_STANDARD;
                 break;
             }
             case NodeMaterialModes.GaussianSplatting: {
@@ -454,9 +456,11 @@ export class PreviewManager {
             this._engine.releaseEffects();
 
             if (this._particleSystem) {
-                this._particleSystem.onBeforeDrawParticlesObservable.clear();
-                this._particleSystem.onDisposeObservable.clear();
-                this._particleSystem.stop();
+                if (this._particleSystem instanceof ParticleSystem) {
+                    this._particleSystem.onBeforeDrawParticlesObservable.clear();
+                    this._particleSystem.onDisposeObservable.clear();
+                    this._particleSystem.stop();
+                }
                 this._particleSystem.dispose();
                 this._particleSystem = null;
             }
@@ -631,12 +635,16 @@ export class PreviewManager {
         ParticleHelper.CreateAsync(name, this._scene).then((set) => {
             for (let i = 0; i < set.systems.length; ++i) {
                 if (i == systemIndex) {
-                    this._particleSystem = set.systems[i];
-                    this._particleSystem.disposeOnStop = true;
-                    this._particleSystem.onDisposeObservable.add(() => {
-                        this._loadParticleSystem(particleNumber, systemIndex, false);
-                    });
-                    this._particleSystem.start();
+                    const system = set.systems[i];
+                    // Only handle ParticleSystem (which implements IParticleSystem), skip SolidParticleSystem
+                    if (system instanceof ParticleSystem) {
+                        this._particleSystem = system;
+                        this._particleSystem.disposeOnStop = true;
+                        this._particleSystem.onDisposeObservable.add(() => {
+                            this._loadParticleSystem(particleNumber, systemIndex, false);
+                        });
+                        this._particleSystem.start();
+                    }
                 } else {
                     set.systems[i].dispose();
                 }
@@ -720,17 +728,19 @@ export class PreviewManager {
                 case NodeMaterialModes.Particle: {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
 
-                    this._particleSystem!.onBeforeDrawParticlesObservable.clear();
+                    if (this._particleSystem instanceof ParticleSystem) {
+                        this._particleSystem.onBeforeDrawParticlesObservable.clear();
 
-                    this._particleSystem!.onBeforeDrawParticlesObservable.add((effect) => {
-                        const textureBlock = tempMaterial.getBlockByPredicate((block) => block instanceof ParticleTextureBlock);
-                        if (textureBlock && (textureBlock as ParticleTextureBlock).texture && effect) {
-                            effect.setTexture("diffuseSampler", (textureBlock as ParticleTextureBlock).texture);
-                        }
-                    });
-                    tempMaterial.createEffectForParticles(this._particleSystem!);
+                        this._particleSystem.onBeforeDrawParticlesObservable.add((effect) => {
+                            const textureBlock = tempMaterial.getBlockByPredicate((block) => block instanceof ParticleTextureBlock);
+                            if (textureBlock && (textureBlock as ParticleTextureBlock).texture && effect) {
+                                effect.setTexture("diffuseSampler", (textureBlock as ParticleTextureBlock).texture);
+                            }
+                        });
+                        tempMaterial.createEffectForParticles(this._particleSystem);
 
-                    this._particleSystem!.blendMode = this._globalState.particleSystemBlendMode;
+                        this._particleSystem.blendMode = this._globalState.particleSystemBlendMode;
+                    }
 
                     if (this._material) {
                         this._material.dispose();

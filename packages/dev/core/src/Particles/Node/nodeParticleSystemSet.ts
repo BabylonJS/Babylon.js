@@ -12,16 +12,26 @@ import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import { ParticleInputBlock } from "./Blocks/particleInputBlock";
+import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
-import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
-import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
+import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "./Blocks/particleTrigonometryBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
+import { ParticleSystem } from "core/Particles/particleSystem";
+import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
+import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
+import type { Nullable } from "core/types";
 import type { Color4 } from "core/Maths/math.color";
-import type { Nullable } from "../../types";
+import { SolidParticleSystemBlock } from "./Blocks/SolidParticle/solidParticleSystemBlock";
+import { MeshSourceBlock } from "./Blocks/SolidParticle/meshSourceBlock";
+import { CreateSolidParticleBlock } from "./Blocks/SolidParticle/createSolidParticleBlock";
+import { UpdateSolidParticlePositionBlock } from "./Blocks/SolidParticle/updateSolidParticlePositionBlock";
+import { ParticleConverterBlock } from "./Blocks/particleConverterBlock";
+import { VertexData } from "core/Meshes/mesh.vertexData";
+import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
 
 // declare NODEPARTICLEEDITOR namespace for compilation issue
 declare let NODEPARTICLEEDITOR: any;
@@ -47,7 +57,7 @@ export interface INodeParticleEditorOptions {
  * PG: #ZT509U#1
  */
 export class NodeParticleSystemSet {
-    private _systemBlocks: SystemBlock[] = [];
+    private _systemBlocks: (SystemBlock | SolidParticleSystemBlock)[] = [];
     private _buildId: number = 0;
 
     /** Define the Url to load node editor script */
@@ -92,7 +102,7 @@ export class NodeParticleSystemSet {
     /**
      * Gets the system blocks
      */
-    public get systemBlocks(): SystemBlock[] {
+    public get systemBlocks(): (SystemBlock | SolidParticleSystemBlock)[] {
         return this._systemBlocks;
     }
 
@@ -271,13 +281,13 @@ export class NodeParticleSystemSet {
                 state.verbose = verbose;
 
                 const system = block.createSystem(state);
-                system._source = this;
-                system._blockReference = block._internalId;
-
+                if (system instanceof ParticleSystem) {
+                    system._source = this;
+                    system._blockReference = block._internalId;
+                }
+                output.systems.push(system);
                 // Errors
                 state.emitErrors();
-
-                output.systems.push(system);
             }
 
             this.onBuildObservable.notifyObservers(this);
@@ -336,6 +346,45 @@ export class NodeParticleSystemSet {
         textureBlock.url = Tools.GetAssetUrl("https://assets.babylonjs.com/core/textures/flare.png");
 
         this._systemBlocks.push(system);
+    }
+
+    public setToDefaultSps() {
+        this.clear();
+        this.editorData = null;
+
+        // Mesh source with a tiny box shape so something renders immediately
+        const meshSource = new MeshSourceBlock("Mesh Source");
+        const defaultMeshData = VertexData.CreateBox({ size: 0.5 });
+        meshSource.setCustomVertexData(defaultMeshData, "Box");
+
+        // Time input for movement
+        const timeInput = new ParticleInputBlock("Time", NodeParticleBlockConnectionPointTypes.Float);
+        timeInput.systemSource = NodeParticleSystemSources.Time;
+
+        // Sin for oscillating movement (back and forth)
+        const sinBlock = new ParticleTrigonometryBlock("Sin");
+        sinBlock.operation = ParticleTrigonometryBlockOperations.Sin;
+        timeInput.output.connectTo(sinBlock.input);
+
+        // Position vector for update - uses sin for oscillating movement
+        const positionVector = new ParticleConverterBlock("Position");
+        sinBlock.output.connectTo(positionVector.xIn);
+
+        // Create solid particle
+        const createParticleBlock = new CreateSolidParticleBlock("Create Solid Particle");
+        createParticleBlock.count.value = 1;
+        meshSource.mesh.connectTo(createParticleBlock.mesh);
+
+        // Update position - this will loop automatically as updateParticle is called each frame
+        const updatePositionBlock = new UpdateSolidParticlePositionBlock("Update Position");
+        createParticleBlock.solidParticle.connectTo(updatePositionBlock.solidParticle);
+        positionVector.xyzOut.connectTo(updatePositionBlock.position);
+
+        // System block creates the SPS - can accept SolidParticle directly
+        const systemBlock = new SolidParticleSystemBlock("SPS System");
+        updatePositionBlock.output.connectTo(systemBlock.solidParticle);
+
+        this._systemBlocks.push(systemBlock);
     }
 
     /**

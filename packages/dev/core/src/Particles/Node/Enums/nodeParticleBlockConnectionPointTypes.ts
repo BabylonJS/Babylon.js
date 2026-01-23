@@ -28,12 +28,16 @@ export enum NodeParticleBlockConnectionPointTypes {
     Color4Gradient = 0x0800,
     /** System */
     System = 0x1000,
+    /** Solid Particle */
+    SolidParticle = 0x2000,
+    /** Mesh */
+    Mesh = 0x8000,
     /** Detect type based on connection */
-    AutoDetect = 0x2000,
+    AutoDetect = 0x20000,
     /** Output type that will be defined by input type */
-    BasedOnInput = 0x4000,
+    BasedOnInput = 0x40000,
     /** Undefined */
-    Undefined = 0x8000,
+    Undefined = 0x80000,
     /** Bitmask of all types */
-    All = 0xffff,
+    All = 0x1ffff,
 }

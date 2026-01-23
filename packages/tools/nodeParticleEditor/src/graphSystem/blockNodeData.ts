@@ -77,7 +77,7 @@ export class BlockNodeData implements INodeData {
     public isConnectedToOutput() {
         const block = this.data;
 
-        return block.isDebug || block.isAnAncestorOfType("SystemBlock");
+        return block.isDebug || block.isAnAncestorOfType("SystemBlock") || block.isAnAncestorOfType("SolidParticleSystemBlock");
     }
 
     public dispose() {

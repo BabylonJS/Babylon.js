@@ -45,4 +45,10 @@ export enum NodeParticleContextualSources {
     Size = 0x0019,
     /** Direction Scale */
     DirectionScale = 0x0020,
+    /** Solid Particle Index */
+    SolidParticleIndex = 0x0021,
+    /** Solid Particle Scaling */
+    SolidParticleScaling = 0x0023,
+    /** Solid Particle Rotation */
+    SolidParticleRotation = 0x0024,
 }

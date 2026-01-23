@@ -28,6 +28,8 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { NodeParticleSystemSet } from "core/Particles";
+import { NodeParticleModes } from "../../nodeParticleModes";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -202,12 +204,46 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         NodeParticleSystemSet.ParseFromSnippetAsync(snippedId, nodeParticleSet)
             .then(async () => {
+                if (nodeParticleSet.editorData?.mode !== undefined && nodeParticleSet.editorData?.mode !== null) {
+                    this.props.globalState.mode = nodeParticleSet.editorData.mode;
+                    this.props.globalState.onResetRequiredObservable.notifyObservers(true);
+                } else {
+                    this.props.globalState.mode = NodeParticleModes.Particle;
+                }
+
                 await nodeParticleSet.buildAsync(this.props.globalState.hostScene);
                 this.props.globalState.onClearUndoStack.notifyObservers();
             })
             .catch((err) => {
                 this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node particle system set: " + err);
             });
+    }
+
+    changeMode(value: NodeParticleModes, force = false, loadDefault = true): boolean {
+        if (this.props.globalState.mode === value) {
+            return false;
+        }
+
+        if (!force && !this.props.globalState.hostDocument.defaultView!.confirm("Are your sure? You will lose your current changes (if any) if they are not saved!")) {
+            return false;
+        }
+
+        if (loadDefault) {
+            switch (value) {
+                case NodeParticleModes.Particle:
+                    this.props.globalState.nodeParticleSet.setToDefault();
+                    break;
+                case NodeParticleModes.SolidParticle:
+                    this.props.globalState.nodeParticleSet.setToDefaultSps();
+                    break;
+            }
+        }
+
+        this.props.globalState.mode = value;
+        this.props.globalState.onResetRequiredObservable.notifyObservers(true);
+        this.props.globalState.onClearUndoStack.notifyObservers();
+
+        return true;
     }
 
     override render() {
@@ -253,6 +289,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div>
                     <LineContainerComponent title="GENERAL">
                         <TextInputLineComponent label="Name" lockObject={this.props.globalState.lockObject} target={this.props.globalState.nodeParticleSet} propertyName="name" />
+                        <OptionsLine
+                            label="Mode"
+                            options={[
+                                { label: "Particle", value: NodeParticleModes.Particle },
+                                { label: "Solid Particle", value: NodeParticleModes.SolidParticle },
+                            ]}
+                            target={this.props.globalState}
+                            propertyName="mode"
+                            noDirectUpdate={true}
+                            onSelect={(value: number | string) => this.changeMode(value as NodeParticleModes)}
+                        />
                         <TextLineComponent label="Version" value={Engine.Version} />
                         <TextLineComponent
                             label="Help"
