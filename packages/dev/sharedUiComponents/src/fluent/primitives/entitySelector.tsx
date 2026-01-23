@@ -99,12 +99,12 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
                 {onChange &&
                     (defaultValue !== undefined ? (
                         // If the defaultValue is specified, then allow resetting to the default
-                        <Tooltip content={"Unlink"} relationship="label">
+                        <Tooltip content="Unlink" relationship="label">
                             <Button icon={LinkDismissRegular} onClick={() => onChange(defaultValue)} />
                         </Tooltip>
                     ) : (
                         // Otherwise, just allow editing to a new value
-                        <Tooltip content={"Edit Link"} relationship="label">
+                        <Tooltip content="Edit Link" relationship="label">
                             <Button icon={LinkEditRegular} onClick={() => setIsEditing(true)} />
                         </Tooltip>
                     ))}
