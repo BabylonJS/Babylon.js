@@ -4,6 +4,7 @@ import { GlobalState } from "./globalState";
 import { RenderingZone } from "./components/renderingZone";
 import { ReflectorZone } from "./components/reflectorZone";
 import { Footer } from "./components/footer";
+import { WelcomeDialog } from "./components/welcomeDialog";
 import { EnvironmentTools } from "./tools/environmentTools";
 import { Vector3 } from "core/Maths/math.vector";
 import { Deferred } from "core/Misc/deferred";
@@ -25,6 +26,12 @@ interface ILaunchParams {
 
 interface ILaunchQueue {
     setConsumer(consumer: (params: ILaunchParams) => void): void;
+}
+
+// Type for PWA install prompt event
+interface IBeforeInstallPromptEvent extends Event {
+    prompt(): Promise<void>;
+    userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
 interface ISandboxProps {
@@ -54,6 +61,14 @@ export class Sandbox extends React.Component<
          * Show folder access prompt for files with dependencies
          */
         showFolderAccessPrompt: boolean;
+        /**
+         * Show welcome dialog for 3D Viewer users
+         */
+        showWelcomeDialog: boolean;
+        /**
+         * Whether PWA can be installed
+         */
+        canInstallPwa: boolean;
     }
 > {
     private _globalState: GlobalState;
@@ -68,6 +83,8 @@ export class Sandbox extends React.Component<
     private _pendingLaunchFiles: File[] | null = null;
     // Stores info for folder access prompt
     private _pendingFolderAccessFile: File | null = null;
+    // Stores the PWA install prompt event
+    private _deferredInstallPrompt: IBeforeInstallPromptEvent | null = null;
 
     /**
      * Constructs the Sandbox component
@@ -80,11 +97,18 @@ export class Sandbox extends React.Component<
         this._dropTextRef = React.createRef();
         this._clickInterceptorRef = React.createRef();
 
-        this.state = { isFooterVisible: true, errorMessage: "", currentFileName: "", showFolderAccessPrompt: false };
+        this.state = { isFooterVisible: true, errorMessage: "", currentFileName: "", showFolderAccessPrompt: false, showWelcomeDialog: false, canInstallPwa: false };
 
         this.checkUrl();
 
         EnvironmentTools.HookWithEnvironmentChange(this._globalState);
+
+        // Listen for PWA install prompt
+        window.addEventListener("beforeinstallprompt", (e) => {
+            e.preventDefault();
+            this._deferredInstallPrompt = e as IBeforeInstallPromptEvent;
+            this.setState({ canInstallPwa: true });
+        });
 
         // Update document title when display mode changes
         window.matchMedia("(display-mode: window-controls-overlay)").addEventListener("change", () => {
@@ -183,6 +207,30 @@ export class Sandbox extends React.Component<
         this._engine = engine;
     };
 
+    /**
+     * Handles the PWA install button click
+     */
+    private _handleInstallClickAsync = async () => {
+        if (!this._deferredInstallPrompt) {
+            return;
+        }
+
+        await this._deferredInstallPrompt.prompt();
+        const { outcome } = await this._deferredInstallPrompt.userChoice;
+
+        if (outcome === "accepted") {
+            this._deferredInstallPrompt = null;
+            this.setState({ canInstallPwa: false, showWelcomeDialog: false });
+        }
+    };
+
+    /**
+     * Closes the welcome dialog
+     */
+    private _handleWelcomeClose = () => {
+        this.setState({ showWelcomeDialog: false });
+    };
+
     checkUrl() {
         const set3DCommerceMode = () => {
             document.title = "Babylon.js Sandbox for 3D Commerce";
@@ -209,6 +257,21 @@ export class Sandbox extends React.Component<
                 switch (name.toLowerCase()) {
                     case "3dcommerce": {
                         set3DCommerceMode();
+                        break;
+                    }
+                    case "from": {
+                        // Handle special source modes
+                        if (value.toLowerCase() === "3dviewer") {
+                            // Set Studio environment for 3D Viewer mode
+                            EnvironmentTools.SkyboxPath = EnvironmentTools.Skyboxes[2]; // Studio
+                            // Load default Yeti model
+                            this._globalState.assetUrl = "https://assets.babylonjs.com/meshes/YetiSmall.glb";
+                            // Show welcome dialog only if not already running as PWA
+                            const isPwa = window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: window-controls-overlay)").matches;
+                            if (!isPwa) {
+                                this.state = { ...this.state, showWelcomeDialog: true };
+                            }
+                        }
                         break;
                     }
                     case "asset":
@@ -241,7 +304,14 @@ export class Sandbox extends React.Component<
                         break;
                     }
                     case "kiosk": {
-                        this.state = { isFooterVisible: value.toLowerCase() === "true" ? false : true, errorMessage: "", currentFileName: "", showFolderAccessPrompt: false };
+                        this.state = {
+                            isFooterVisible: value.toLowerCase() === "true" ? false : true,
+                            errorMessage: "",
+                            currentFileName: "",
+                            showFolderAccessPrompt: false,
+                            showWelcomeDialog: false,
+                            canInstallPwa: false,
+                        };
                         break;
                     }
                     case "skybox": {
@@ -347,6 +417,9 @@ export class Sandbox extends React.Component<
                             </div>
                         </div>
                     </div>
+                )}
+                {this.state.showWelcomeDialog && (
+                    <WelcomeDialog onInstall={this._handleInstallClickAsync} onClose={this._handleWelcomeClose} canInstall={this.state.canInstallPwa} />
                 )}
             </div>
         );
