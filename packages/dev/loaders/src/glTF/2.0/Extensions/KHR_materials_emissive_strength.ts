@@ -70,9 +70,7 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
     private _loadEmissiveProperties(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material): void {
         if (properties.emissiveStrength !== undefined) {
             const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
-            if (adapter) {
-                adapter.emissionLuminance = properties.emissiveStrength;
-            }
+            adapter.emissionLuminance = properties.emissiveStrength;
         }
     }
 }

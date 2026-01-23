@@ -7,7 +7,7 @@ import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 const NAME = "KHR_materials_openpbr";
 
 /**
- * TODO: Add link to specification)
+ * TODO: Add link to specification) Specification still being drafted
  * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention

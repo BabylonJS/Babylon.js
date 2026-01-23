@@ -170,15 +170,17 @@ class TransmissionHelper {
         // we need to defer the processing because _addMesh may be called as part as an instance mesh creation, in which case some
         // internal properties are not setup yet, like _sourceMesh (needed when doing mesh.material below)
         Tools.SetImmediate(() => {
-            const adapter = this._loader._getOrCreateMaterialAdapter(mesh.material);
-            if (adapter && adapter.transmissionWeight > 0) {
-                adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
-                if (this._transparentMeshesCache.indexOf(mesh) === -1) {
-                    this._transparentMeshesCache.push(mesh);
-                }
-            } else {
-                if (this._opaqueMeshesCache.indexOf(mesh) === -1) {
-                    this._opaqueMeshesCache.push(mesh);
+            if (mesh.material) {
+                const adapter = this._loader._getOrCreateMaterialAdapter(mesh.material);
+                if (adapter.transmissionWeight > 0) {
+                    adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
+                    if (this._transparentMeshesCache.indexOf(mesh) === -1) {
+                        this._transparentMeshesCache.push(mesh);
+                    }
+                } else {
+                    if (this._opaqueMeshesCache.indexOf(mesh) === -1) {
+                        this._opaqueMeshesCache.push(mesh);
+                    }
                 }
             }
         });
@@ -286,9 +288,11 @@ class TransmissionHelper {
         });
 
         for (const mesh of this._transparentMeshesCache) {
-            const adapter = this._loader._getOrCreateMaterialAdapter(mesh.material);
-            if (adapter && adapter.transmissionWeight > 0) {
-                adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
+            if (mesh.material) {
+                const adapter = this._loader._getOrCreateMaterialAdapter(mesh.material);
+                if (adapter.transmissionWeight > 0) {
+                    adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
+                }
             }
         }
     }

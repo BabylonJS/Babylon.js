@@ -70,7 +70,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadClearCoatPropertiesAsync(context: string, properties: IKHRMaterialsClearcoat, babylonMaterial: Material): Promise<void> {
-        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial)!;
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         const promises = new Array<Promise<any>>();
 
         // Set non-texture properties immediately

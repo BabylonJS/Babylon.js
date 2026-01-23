@@ -67,7 +67,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             // Handle the EXT_materials_specular_edge_color sub-extension
             // https://github.com/KhronosGroup/glTF/blob/2a1111b88f052cbd3e2d82abb9faee56e7494904/extensions/2.0/Vendor/EXT_materials_specular_edge_color/README.md
             const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
-            if (adapter && extension.extensions && extension.extensions.EXT_materials_specular_edge_color) {
+            if (extension.extensions && extension.extensions.EXT_materials_specular_edge_color) {
                 const specularEdgeColorExtension = extension.extensions.EXT_materials_specular_edge_color as IEXTMaterialsSpecularEdgeColor;
                 if (specularEdgeColorExtension.specularEdgeColorEnabled) {
                     adapter.enableSpecularEdgeColor(true);
@@ -80,7 +80,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadSpecularPropertiesAsync(context: string, properties: IKHRMaterialsSpecular, babylonMaterial: Material): Promise<void> {
-        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial)!;
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         const promises = new Array<Promise<any>>();
 
         // Set non-texture properties immediately
