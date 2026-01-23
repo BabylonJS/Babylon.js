@@ -130,6 +130,9 @@ const LoadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
 };
 
 const FindNode = (nodeId: any, instanceIndex: any, scene: Scene) => {
+    // Back-compat: nodeId can represent either an id (string) or a uniqueId (number).
+    // If we think it's a uniqueId, use it with TempIndexContainer, which tracks uniqueIds from the parsed file. 
+    // Otherwise, assume it's an id and search the scene for *a* match.
     const node = typeof nodeId !== "number" ? scene.getLastEntryById(nodeId) : TempIndexContainer[nodeId];
     if (node && instanceIndex !== undefined && instanceIndex !== null) {
         const instance = (node as Mesh).instances[parseInt(instanceIndex)];
@@ -589,9 +592,9 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                 if (skeleton.bones != null) {
                     for (const bone of skeleton.bones) {
                         if (bone._waitingTransformNodeId) {
-                            const linkTransformNode = scene.getLastEntryById(bone._waitingTransformNodeId) as TransformNode;
+                            const linkTransformNode = FindNode(bone._waitingTransformNodeId, null, scene);
                             if (linkTransformNode) {
-                                bone.linkTransformNode(linkTransformNode);
+                                bone.linkTransformNode(linkTransformNode as TransformNode);
                             }
                             bone._waitingTransformNodeId = null;
                         }
@@ -981,9 +984,9 @@ RegisterSceneLoaderPlugin({
                         if (skeleton.bones != null) {
                             for (const bone of skeleton.bones) {
                                 if (bone._waitingTransformNodeId) {
-                                    const linkTransformNode = scene.getLastEntryById(bone._waitingTransformNodeId) as TransformNode;
+                                    const linkTransformNode = parsedIdToNodeMap.get(parseInt(bone._waitingTransformNodeId)) ?? scene.getLastEntryById(bone._waitingTransformNodeId);
                                     if (linkTransformNode) {
-                                        bone.linkTransformNode(linkTransformNode);
+                                        bone.linkTransformNode(linkTransformNode as TransformNode);
                                     }
                                     bone._waitingTransformNodeId = null;
                                 }
