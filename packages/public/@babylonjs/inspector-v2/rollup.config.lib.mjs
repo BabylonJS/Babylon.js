@@ -4,8 +4,6 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import alias from "@rollup/plugin-alias";
 import path from "path";
 
-const warningCodesToIgnore = ["THIS_IS_UNDEFINED"];
-
 const commonConfig = {
     input: "../../../dev/inspector-v2/src/index.ts",
     external: (id) => {
@@ -49,10 +47,13 @@ const jsConfig = {
         nodeResolve({ mainFields: ["browser", "module", "main"] }),
     ],
     onwarn(warning, warn) {
-        if (!warningCodesToIgnore.includes(warning.code)) {
-            // Treat all other warnings as errors.
-            throw new Error(warning.message);
+        // Ignore warning over "this" being undefined in ES when converting gif.js from UMD to ES.
+        if (warning.code === "THIS_IS_UNDEFINED" && warning.loc && warning.loc.file && warning.loc.file.endsWith("node_modules/gif.js.optimized/dist/gif.js")) {
+            return;
         }
+
+        // Treat all other warnings as errors.
+        throw new Error(warning.message);
     },
 };
 
