@@ -135,6 +135,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ColorStepBlock: "Contextual block to get the expected color step of a particle",
         ScaledColorStepBlock: "Contextual block to get the expected scaled color step of a particle",
         ClampBlock: "Block used to limit a value to a range between minimum and maximum values",
+        NLerpBlock: "Block used to normalize lerp between 2 values",
+        SmoothStepBlock: "Block used to smooth step a value",
+        StepBlock: "Block used to step a value",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -280,7 +283,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "VectorLengthBlock",
             ],
             Logical: ["EqualBlock", "NotEqualBlock", "LessThanBlock", "LessOrEqualBlock", "GreaterThanBlock", "GreaterOrEqualBlock", "XorBlock", "OrBlock", "AndBlock"],
-            Interpolation: ["LerpBlock", "GradientValueBlock", "GradientBlock"],
+            Interpolation: ["LerpBlock", "GradientValueBlock", "GradientBlock", "NLerpBlock", "SmoothStepBlock", "StepBlock"],
             Misc: ["ConverterBlock", "RandomBlock", "DebugBlock", "ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "LocalVariableBlock", "FresnelBlock"],
             System_Nodes: ["SystemBlock", "TimeBlock", "DeltaBlock", "EmitterPositionBlock", "CameraPositionBlock"],
             Contextual: [
