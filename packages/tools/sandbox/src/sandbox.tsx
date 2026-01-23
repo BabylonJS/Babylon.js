@@ -284,8 +284,8 @@ export class Sandbox extends React.Component<
                         // Handle special source modes
                         if (value.toLowerCase() === "3dviewer") {
                             // Set Studio environment for 3D Viewer mode
-                            EnvironmentTools.SkyboxPath = EnvironmentTools.Skyboxes[2]; // Studio
-                            // Load default Yeti model
+                            EnvironmentTools.SkyboxPath = EnvironmentTools.Skyboxes[2];
+                            // Load the welcome Yeti model
                             this._globalState.assetUrl = "https://assets.babylonjs.com/meshes/YetiSmall.glb";
                             // Keep drop text visible so users know they can drag files
                             this._isViewerWelcomeMode = true;

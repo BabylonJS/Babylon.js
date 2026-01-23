@@ -22,7 +22,7 @@ export const WelcomeDialog: React.FC<IWelcomeDialogProps> = (props) => {
                 <img src={logo} alt="Babylon.js Logo" className="welcome-logo" />
                 <h1>Welcome to the Babylon.js Sandbox</h1>
                 <p>
-                    Welcome to the Babylon Sandbox, a powerful tool for viewing 3D models. Drag and drop your 3D object to view it, explore animations, change the lighting and
+                    Welcome to the Babylon.js Sandbox, a powerful tool for viewing 3D models. Drag and drop your 3D object to view it, explore animations, change the lighting and
                     more!
                 </p>
                 {props.canInstall && (
