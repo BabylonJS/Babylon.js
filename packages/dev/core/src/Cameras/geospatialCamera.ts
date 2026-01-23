@@ -163,30 +163,17 @@ export class GeospatialCamera extends Camera {
         // Refresh local basis at center (treat these as read-only for the whole call)
         ComputeLocalBasisToRefs(this._center, this._tempEast, this._tempNorth, this._tempUp);
 
-        // Trig
-        const yawScale = this._scene.useRightHandedSystem ? 1 : -1;
-        const cosYaw = Math.cos(this._yaw * yawScale);
-        const sinYaw = Math.sin(this._yaw * yawScale);
-        const sinPitch = Math.sin(this._pitch); // horizontal weight
-        const cosPitch = Math.cos(this._pitch); // vertical weight (toward center)
+        // Compute lookAt from yaw/pitch
+        ComputeLookAtFromYawPitch(this._yaw, this._pitch, this._center, this._scene.useRightHandedSystem, this._lookAtVector);
 
-        // Temps
-        const horiz = TmpVectors.Vector3[0];
-        const t1 = TmpVectors.Vector3[1];
-        const t2 = TmpVectors.Vector3[2];
-        const right = TmpVectors.Vector3[3];
-
-        // horizontalDirection = North*cosYaw + East*sinYaw  (avoids mutating _temp basis vectors)
-        horiz.copyFrom(this._tempNorth).scaleInPlace(cosYaw).addInPlace(t1.copyFrom(this._tempEast).scaleInPlace(sinYaw));
-
-        // look = horiz*sinPitch - Up*cosPitch
-        this._lookAtVector.copyFrom(horiz).scaleInPlace(sinPitch).addInPlace(t2.copyFrom(this._tempUp).scaleInPlace(-cosPitch)).normalize(); // keep it unit
-
-        // Build an orthonormal up vector for the camera
+        // Build an orthonormal up aligned with geocentric Up
         // When looking straight down (pitch ≈ 0), lookAt is parallel to Up, so use the horizontal direction as the camera's up.
+        const right = TmpVectors.Vector3[10];
         Vector3.CrossToRef(this._tempUp, this._lookAtVector, right);
         if (right.lengthSquared() < Epsilon) {
-            // Looking straight down (or up) - use horiz as the up reference
+            // Looking straight down (or up) - recompute horiz for fallback
+            const horiz = TmpVectors.Vector3[11];
+            ComputeHorizFromYawToRef(this._yaw, this._tempEast, this._tempNorth, this._scene.useRightHandedSystem, horiz);
             // right = cross(horiz, lookAt)
             Vector3.CrossToRef(horiz, this._lookAtVector, right);
         }
@@ -521,89 +508,20 @@ export class GeospatialCamera extends Camera {
 
                 // Only update if the center is looking toward the origin (dot product > 0) to avoid a center on the opposite side of globe
                 if (dotProduct > 0) {
-                    // Update center and radius directly without recomputing lookAt/position/upVector
-                    // since we want to preserve the current orientation exactly
-                    this._updateCenterAndRadiusPreservingOrientation(newCenter.pickedPoint);
+                    // Compute the new radius as distance from camera position to new center
+                    const newRadius = Vector3Distance(this._position, newCenter.pickedPoint);
+
+                    // Only update if the new center is in front of the camera
+                    if (newRadius > Epsilon) {
+                        // Compute yaw/pitch that correspond to current lookAt at new center
+                        const { yaw, pitch } = ComputeYawPitchFromLookAt(this._lookAtVector, newCenter.pickedPoint, this._scene.useRightHandedSystem, this._yaw);
+
+                        // Call _setOrientation with the computed yaw/pitch and new center
+                        this._setOrientation(yaw, pitch, newRadius, newCenter.pickedPoint);
+                    }
                 }
             }
         }
-    }
-
-    /**
-     * Updates center and radius while preserving the current lookAt direction, position, and upVector.
-     * Also updates yaw/pitch to reflect the new local basis at the new center.
-     *
-     * The new center is projected onto the lookAt ray to ensure the view direction doesn't change.
-     * This prevents jiggle that would occur if the picked surface point wasn't exactly along the lookAt.
-     */
-    private _updateCenterAndRadiusPreservingOrientation(newCenter: Vector3): void {
-        // Project the new center onto the lookAt ray to preserve exact view direction.
-        // newCenter might not be exactly on the lookAt ray due to surface curvature or raycast precision.
-        // center = position + lookAt * t, where t = dot(newCenter - position, lookAt)
-        const toNewCenter = TmpVectors.Vector3[0];
-        newCenter.subtractToRef(this._position, toNewCenter);
-        const t = Vector3Dot(toNewCenter, this._lookAtVector);
-
-        // Only update if the projection is in front of the camera (t > 0)
-        if (t > Epsilon) {
-            // Compute the projected center point: position + lookAt * t
-            const projectedCenter = TmpVectors.Vector3[1];
-            this._lookAtVector.scaleToRef(t, projectedCenter);
-            projectedCenter.addInPlace(this._position);
-
-            // Update center and radius
-            this._center.copyFrom(projectedCenter);
-            this._radius = t;
-
-            // Compute yaw/pitch that correspond to current lookAt at new center
-            // (so that yaw/pitch remain accurate if user queries them)
-            this._computeYawPitchFromLookAtInPlace(this._lookAtVector, projectedCenter);
-        }
-    }
-
-    /**
-     * Given a lookAt direction and center, compute the yaw and pitch angles that would produce that lookAt.
-     * Updates _yaw and _pitch in place. This is the inverse of the lookAt calculation in _setOrientation.
-     */
-    private _computeYawPitchFromLookAtInPlace(lookAt: Vector3, center: DeepImmutable<IVector3Like>): void {
-        // Compute local basis at center
-        const east = TmpVectors.Vector3[5];
-        const north = TmpVectors.Vector3[6];
-        const up = TmpVectors.Vector3[7];
-        ComputeLocalBasisToRefs(center as Vector3, east, north, up);
-
-        // lookAt = horiz*sinPitch - up*cosPitch
-        // where horiz = north*cosYaw + east*sinYaw
-        //
-        // The vertical component of lookAt (along up) gives us cosPitch:
-        // lookAt · up = -cosPitch
-        const lookDotUp = Vector3Dot(lookAt, up);
-        const cosPitch = -lookDotUp;
-
-        // Clamp cosPitch to valid range to avoid NaN from acos
-        const clampedCosPitch = Clamp(cosPitch, -1, 1);
-        this._pitch = Math.acos(clampedCosPitch);
-
-        // The horizontal component gives us yaw
-        // lookHorizontal = lookAt + up*cosPitch = horiz*sinPitch
-        const lookHorizontal = TmpVectors.Vector3[8];
-        lookHorizontal.copyFrom(lookAt).addInPlace(up.scale(cosPitch));
-
-        const sinPitch = Math.sin(this._pitch);
-        if (Math.abs(sinPitch) < Epsilon) {
-            // Looking straight down or up, yaw is undefined - keep current
-            return;
-        }
-
-        // horiz = lookHorizontal / sinPitch = north*cosYaw + east*sinYaw
-        const horiz = lookHorizontal.scaleInPlace(1 / sinPitch);
-
-        // cosYaw = horiz · north, sinYaw = horiz · east
-        const cosYaw = Vector3Dot(horiz, north);
-        const sinYaw = Vector3Dot(horiz, east);
-
-        const yawScale = this._scene.useRightHandedSystem ? 1 : -1;
-        this._yaw = Math.atan2(sinYaw, cosYaw) * yawScale;
     }
 
     /**
@@ -646,4 +564,119 @@ export class GeospatialCamera extends Camera {
     override detachControl(): void {
         this.inputs.detachElement();
     }
+}
+
+/**
+ * Compute the horizontal direction from yaw angle given east and north basis vectors.
+ * @param yaw - The yaw angle in radians
+ * @param east - The east basis vector
+ * @param north - The north basis vector
+ * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
+ * @param result - The vector to store the result in
+ * @returns The horizontal direction vector (same as result)
+ */
+export function ComputeHorizFromYawToRef(
+    yaw: number,
+    east: DeepImmutable<IVector3Like>,
+    north: DeepImmutable<IVector3Like>,
+    useRightHandedSystem: boolean,
+    result: Vector3
+): Vector3 {
+    const yawScale = useRightHandedSystem ? 1 : -1;
+    const cosYaw = Math.cos(yaw * yawScale);
+    const sinYaw = Math.sin(yaw * yawScale);
+
+    // horiz = north * cosYaw + east * sinYaw
+    const t1 = TmpVectors.Vector3[4];
+    result
+        .copyFrom(north as Vector3)
+        .scaleInPlace(cosYaw)
+        .addInPlace(t1.copyFrom(east as Vector3).scaleInPlace(sinYaw));
+    return result;
+}
+
+/**
+ * Compute the lookAt direction vector from yaw and pitch angles at a given center point.
+ * This is the forward formula used by GeospatialCamera._setOrientation.
+ * @param yaw - The yaw angle in radians (0 = north, π/2 = east)
+ * @param pitch - The pitch angle in radians (0 = looking at planet center, π/2 = looking at horizon)
+ * @param center - The center point on the globe
+ * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
+ * @param result - The vector to store the result in
+ * @returns The normalized lookAt direction vector (same as result)
+ */
+export function ComputeLookAtFromYawPitch(yaw: number, pitch: number, center: DeepImmutable<IVector3Like>, useRightHandedSystem: boolean, result: Vector3): Vector3 {
+    const east = TmpVectors.Vector3[0];
+    const north = TmpVectors.Vector3[1];
+    const up = TmpVectors.Vector3[2];
+    ComputeLocalBasisToRefs(center as Vector3, east, north, up);
+
+    const sinPitch = Math.sin(pitch);
+    const cosPitch = Math.cos(pitch);
+
+    // horiz = north * cosYaw + east * sinYaw
+    const horiz = TmpVectors.Vector3[3];
+    ComputeHorizFromYawToRef(yaw, east, north, useRightHandedSystem, horiz);
+
+    // lookAt = horiz * sinPitch - up * cosPitch
+    const t2 = TmpVectors.Vector3[5];
+    result.copyFrom(horiz).scaleInPlace(sinPitch).addInPlace(t2.copyFrom(up).scaleInPlace(-cosPitch));
+    return result.normalize();
+}
+
+/**
+ * Given a lookAt direction and center, compute the yaw and pitch angles that would produce that lookAt.
+ * This is the inverse of ComputeLookAtFromYawPitch.
+ * @param lookAt - The normalized lookAt direction vector
+ * @param center - The center point on the globe
+ * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
+ * @param currentYaw - The current yaw value to use as fallback when pitch is near 0 (looking straight down/up)
+ * @returns The computed yaw and pitch angles
+ */
+export function ComputeYawPitchFromLookAt(
+    lookAt: DeepImmutable<IVector3Like>,
+    center: DeepImmutable<IVector3Like>,
+    useRightHandedSystem: boolean,
+    currentYaw: number = 0
+): { yaw: number; pitch: number } {
+    // Compute local basis at center
+    const east = TmpVectors.Vector3[6];
+    const north = TmpVectors.Vector3[7];
+    const up = TmpVectors.Vector3[8];
+    ComputeLocalBasisToRefs(center as Vector3, east, north, up);
+
+    // lookAt = horiz*sinPitch - up*cosPitch
+    // where horiz = north*cosYaw + east*sinYaw
+    //
+    // The vertical component of lookAt (along up) gives us cosPitch:
+    // lookAt · up = -cosPitch
+    const lookDotUp = Vector3Dot(lookAt, up);
+    const cosPitch = -lookDotUp;
+
+    // Clamp cosPitch to valid range to avoid NaN from acos
+    const clampedCosPitch = Clamp(cosPitch, -1, 1);
+    const pitch = Math.acos(clampedCosPitch);
+
+    // The horizontal component gives us yaw
+    // lookHorizontal = lookAt + up*cosPitch = horiz*sinPitch
+    const lookHorizontal = TmpVectors.Vector3[9];
+    lookHorizontal.copyFrom(lookAt as Vector3).addInPlace(up.scale(cosPitch));
+
+    const sinPitch = Math.sin(pitch);
+    if (Math.abs(sinPitch) < Epsilon) {
+        // Looking straight down or up, yaw is undefined - keep current
+        return { yaw: currentYaw, pitch };
+    }
+
+    // horiz = lookHorizontal / sinPitch = north*cosYaw + east*sinYaw
+    const horiz = lookHorizontal.scaleInPlace(1 / sinPitch);
+
+    // cosYaw = horiz · north, sinYaw = horiz · east
+    const cosYaw = Vector3Dot(horiz, north);
+    const sinYaw = Vector3Dot(horiz, east);
+
+    const yawScale = useRightHandedSystem ? 1 : -1;
+    const yaw = Math.atan2(sinYaw, cosYaw) * yawScale;
+
+    return { yaw, pitch };
 }
