@@ -68,6 +68,8 @@ export class Sandbox extends React.Component<
     private _pendingLaunchFiles: File[] | null = null;
     // Stores info for folder access prompt
     private _pendingFolderAccessFile: File | null = null;
+    // Stores the file handle for folder access (to start picker in same directory)
+    private _pendingFolderAccessFileHandle: FileSystemFileHandle | null = null;
 
     /**
      * Constructs the Sandbox component
@@ -359,7 +361,9 @@ export class Sandbox extends React.Component<
      */
     private async _handleFolderAccessClickAsync(grantAccess: boolean) {
         const file = this._pendingFolderAccessFile;
+        const fileHandle = this._pendingFolderAccessFileHandle;
         this._pendingFolderAccessFile = null;
+        this._pendingFolderAccessFileHandle = null;
         this.setState({ showFolderAccessPrompt: false });
 
         if (!file) {
@@ -368,7 +372,14 @@ export class Sandbox extends React.Component<
 
         if (grantAccess) {
             try {
-                const dirHandle = await (window as unknown as { showDirectoryPicker: () => Promise<FileSystemDirectoryHandle> }).showDirectoryPicker();
+                // Start the directory picker in the same folder as the file
+                const pickerOptions: { startIn?: FileSystemFileHandle } = {};
+                if (fileHandle) {
+                    pickerOptions.startIn = fileHandle;
+                }
+                const dirHandle = await (
+                    window as unknown as { showDirectoryPicker: (options?: { startIn?: FileSystemFileHandle }) => Promise<FileSystemDirectoryHandle> }
+                ).showDirectoryPicker(pickerOptions);
                 // Recursively collect all files from the directory and subdirectories
                 const collectFilesAsync = async (handle: FileSystemDirectoryHandle, relativePath: string = "") => {
                     // Use values() method to iterate - cast needed as TypeScript types may be incomplete
@@ -421,6 +432,7 @@ export class Sandbox extends React.Component<
             // If file type may have dependencies, show prompt for folder access
             if (extension && typesWithDependencies.includes(extension) && "showDirectoryPicker" in window) {
                 this._pendingFolderAccessFile = file;
+                this._pendingFolderAccessFileHandle = fileHandle;
                 this.setState({ showFolderAccessPrompt: true });
             } else {
                 // Load single file directly
