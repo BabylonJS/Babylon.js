@@ -4,6 +4,8 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import alias from "@rollup/plugin-alias";
 import path from "path";
 
+const warningCodesToIgnore = ["THIS_IS_UNDEFINED"];
+
 const commonConfig = {
     input: "../../../dev/inspector-v2/src/index.ts",
     external: (id) => {
@@ -47,8 +49,10 @@ const jsConfig = {
         nodeResolve({ mainFields: ["browser", "module", "main"] }),
     ],
     onwarn(warning, warn) {
-        // Treat all warnings as errors.
-        throw new Error(warning.message);
+        if (!warningCodesToIgnore.includes(warning.code)) {
+            // Treat all other warnings as errors.
+            throw new Error(warning.message);
+        }
     },
 };
 
