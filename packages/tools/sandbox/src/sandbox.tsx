@@ -69,6 +69,10 @@ export class Sandbox extends React.Component<
          * Whether PWA can be installed
          */
         canInstallPwa: boolean;
+        /**
+         * Supported file extensions from registered scene loader plugins
+         */
+        supportedExtensions: string;
     }
 > {
     private _globalState: GlobalState;
@@ -85,11 +89,10 @@ export class Sandbox extends React.Component<
     private _pendingFolderAccessFile: File | null = null;
     // Stores the file handle for folder access (to start picker in same directory)
     private _pendingFolderAccessFileHandle: FileSystemFileHandle | null = null;
-<<<<<<< HEAD
     // Stores the PWA install prompt event
     private _deferredInstallPrompt: IBeforeInstallPromptEvent | null = null;
-=======
->>>>>>> master
+    // Whether we're in 3D Viewer welcome mode (show drop text even with default model)
+    private _isViewerWelcomeMode = false;
 
     /**
      * Constructs the Sandbox component
@@ -102,7 +105,15 @@ export class Sandbox extends React.Component<
         this._dropTextRef = React.createRef();
         this._clickInterceptorRef = React.createRef();
 
-        this.state = { isFooterVisible: true, errorMessage: "", currentFileName: "", showFolderAccessPrompt: false, showWelcomeDialog: false, canInstallPwa: false };
+        this.state = {
+            isFooterVisible: true,
+            errorMessage: "",
+            currentFileName: "",
+            showFolderAccessPrompt: false,
+            showWelcomeDialog: false,
+            canInstallPwa: false,
+            supportedExtensions: this._getSupportedExtensions(),
+        };
 
         this.checkUrl();
 
@@ -135,7 +146,12 @@ export class Sandbox extends React.Component<
                 this._logoRef.current!.className = "";
             } else {
                 this._logoRef.current!.className = "hidden";
-                this._dropTextRef.current!.className = "hidden";
+                // Keep drop text visible in 3D Viewer welcome mode so users know they can drag files
+                if (!this._isViewerWelcomeMode) {
+                    this._dropTextRef.current!.className = "hidden";
+                }
+                // Reset welcome mode after first load so subsequent file drops hide the text
+                this._isViewerWelcomeMode = false;
             }
 
             if (this._clearColor) {
@@ -271,6 +287,8 @@ export class Sandbox extends React.Component<
                             EnvironmentTools.SkyboxPath = EnvironmentTools.Skyboxes[2]; // Studio
                             // Load default Yeti model
                             this._globalState.assetUrl = "https://assets.babylonjs.com/meshes/YetiSmall.glb";
+                            // Keep drop text visible so users know they can drag files
+                            this._isViewerWelcomeMode = true;
                             // Show welcome dialog only if not already running as PWA
                             const isPwa = window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: window-controls-overlay)").matches;
                             if (!isPwa) {
@@ -316,6 +334,7 @@ export class Sandbox extends React.Component<
                             showFolderAccessPrompt: false,
                             showWelcomeDialog: false,
                             canInstallPwa: false,
+                            supportedExtensions: this._getSupportedExtensions(),
                         };
                         break;
                     }
@@ -362,6 +381,38 @@ export class Sandbox extends React.Component<
         }
     }
 
+    /**
+     * Gets the supported file extensions from registered scene loader plugins.
+     * Falls back to a hardcoded list if GetRegisteredSceneLoaderPluginMetadata is not available (older Babylon versions).
+     * @returns A formatted string of supported extensions like "gltf, glb, obj or babylon"
+     */
+    private _getSupportedExtensions(): string {
+        const fallbackExtensions = "gltf, glb, obj, stl, ply, splat, spz or babylon";
+
+        // GetRegisteredSceneLoaderPluginMetadata may not exist in older versions
+        const babylonNamespace = BABYLON as any;
+        if (typeof babylonNamespace.GetRegisteredSceneLoaderPluginMetadata !== "function") {
+            return fallbackExtensions;
+        }
+
+        try {
+            const plugins: Array<{ extensions: Array<{ extension: string }> }> = babylonNamespace.GetRegisteredSceneLoaderPluginMetadata();
+            const extensions = plugins.flatMap((plugin) => plugin.extensions.map((ext) => ext.extension.replace(".", "").toLowerCase())).sort();
+
+            if (extensions.length === 0) {
+                return fallbackExtensions;
+            }
+
+            // Format: "ext1, ext2, ext3 or ext4"
+            if (extensions.length === 1) {
+                return extensions[0];
+            }
+            return extensions.slice(0, -1).join(", ") + " or " + extensions[extensions.length - 1];
+        } catch {
+            return fallbackExtensions;
+        }
+    }
+
     public override render() {
         // In overlay mode, the titlebar shows the full title because the system only shows window controls, not the app name
         const titleBarText = this.state.currentFileName ? `Babylon.js Sandbox - ${this.state.currentFileName}` : "Babylon.js Sandbox - View glTF, glb, obj and babylon files";
@@ -371,7 +422,7 @@ export class Sandbox extends React.Component<
                 <div className="titlebar">{titleBarText}</div>
                 <span>
                     <p id="droptext" ref={this._dropTextRef}>
-                        {this._globalState.reflector ? "" : "Drag and drop gltf, glb, obj, ply, splat, spz or babylon files to view them"}
+                        {this._globalState.reflector ? "" : `Drag and drop ${this.state.supportedExtensions} files to view them`}
                     </p>
                     {this._globalState.reflector ? (
                         <ReflectorZone globalState={this._globalState} expanded={!this.state.isFooterVisible} />
