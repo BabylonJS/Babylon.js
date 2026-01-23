@@ -85,8 +85,11 @@ export class Sandbox extends React.Component<
     private _pendingFolderAccessFile: File | null = null;
     // Stores the file handle for folder access (to start picker in same directory)
     private _pendingFolderAccessFileHandle: FileSystemFileHandle | null = null;
+<<<<<<< HEAD
     // Stores the PWA install prompt event
     private _deferredInstallPrompt: IBeforeInstallPromptEvent | null = null;
+=======
+>>>>>>> master
 
     /**
      * Constructs the Sandbox component

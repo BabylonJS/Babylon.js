@@ -27,8 +27,8 @@ function IsNodeParticleSystem(entity: unknown): entity is ParticleSystem {
     return entity instanceof ParticleSystem && entity.isNodeGenerated;
 }
 
-function IsNonNodeCPUParticleSystem(entity: unknown): entity is ParticleSystem {
-    return entity instanceof ParticleSystem && !entity.isNodeGenerated;
+function IsCPUParticleSystem(entity: unknown): entity is ParticleSystem {
+    return entity instanceof ParticleSystem;
 }
 
 function IsNonNodeParticleSystem(entity: unknown): entity is ParticleSystem | GPUParticleSystem {
@@ -71,24 +71,12 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
         // The Attractors section must not be visible at all (including the accordion entry) for CPU systems.
         const particleSystemAttractorsContent = propertiesService.addSectionContent({
             key: "Particle System Attractors Properties",
-            predicate: IsNonNodeCPUParticleSystem,
+            predicate: IsCPUParticleSystem,
             content: [
                 {
                     section: "Attractors",
                     order: 3,
                     component: ({ context }) => <ParticleSystemAttractorProperties particleSystem={context} />,
-                },
-            ],
-        });
-
-        const particleSystemNodeContent = propertiesService.addSectionContent({
-            key: "Particle System Node Properties",
-            predicate: IsNodeParticleSystem,
-            content: [
-                {
-                    section: "Inputs",
-                    order: 3,
-                    component: ({ context }) => <ParticleSystemNodeEditorProperties particleSystem={context} selectionService={selectionService} />,
                 },
             ],
         });
@@ -182,12 +170,23 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
             ],
         });
 
+        const particleSystemNodeContent = propertiesService.addSectionContent({
+            key: "Node Particle System Inputs Properties",
+            predicate: IsNodeParticleSystem,
+            content: [
+                {
+                    section: "Inputs",
+                    order: 12,
+                    component: ({ context }) => <ParticleSystemNodeEditorProperties particleSystem={context} selectionService={selectionService} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
                 particleSystemSystemContent.dispose();
                 particleSystemCommandsContent.dispose();
                 particleSystemAttractorsContent.dispose();
-                particleSystemNodeContent.dispose();
                 particleSystemEmitterContent.dispose();
                 particleSystemEmissionContent.dispose();
                 particleSystemSizeContent.dispose();
@@ -195,6 +194,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 particleSystemColorContent.dispose();
                 particleSystemRotationContent.dispose();
                 particleSystemSpritesheetContent.dispose();
+                particleSystemNodeContent.dispose();
             },
         };
     },
