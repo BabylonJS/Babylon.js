@@ -28,10 +28,10 @@ export const DefaultInspectorExtensionFeed = new BuiltInsExtensionFeed("Inspecto
     },
     {
         name: "Capture Tools",
-        description: "Adds new features to enable capturing screenshots, GIFs, videos, and more.",
-        keywords: ["capture", "screenshot", "gif", "video", "tools"],
+        description: "Capture screenshots, videos, and more.",
+        keywords: ["capture", "screenshot", "image", "video", "record", "gif", "tools", "equirectangular", "replay", "delta"],
         ...BabylonWebResources,
-        author: { name: "Alex Chuber", forumUserName: "alexchuber" },
+        author: { name: "Babylon.js", forumUserName: "" },
         getExtensionModuleAsync: async () => await import("../services/panes/tools/captureService"),
     },
     {
