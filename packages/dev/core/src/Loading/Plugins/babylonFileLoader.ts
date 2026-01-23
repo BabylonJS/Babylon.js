@@ -129,23 +129,14 @@ const LoadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
     }
 };
 
-const FindParent = (parentId: any, parentInstanceIndex: any, scene: Scene) => {
-    if (typeof parentId !== "number") {
-        const parentEntry = scene.getLastEntryById(parentId);
-        if (parentEntry && parentInstanceIndex !== undefined && parentInstanceIndex !== null) {
-            const instance = (parentEntry as Mesh).instances[parseInt(parentInstanceIndex)];
-            return instance;
-        }
-        return parentEntry;
-    }
-
-    const parent = TempIndexContainer[parentId];
-    if (parent && parentInstanceIndex !== undefined && parentInstanceIndex !== null) {
-        const instance = (parent as Mesh).instances[parseInt(parentInstanceIndex)];
+const FindNode = (nodeId: any, instanceIndex: any, scene: Scene) => {
+    const node = typeof nodeId !== "number" ? scene.getLastEntryById(nodeId) : TempIndexContainer[nodeId];
+    if (node && instanceIndex !== undefined && instanceIndex !== null) {
+        const instance = (node as Mesh).instances[parseInt(instanceIndex)];
         return instance;
     }
 
-    return parent;
+    return node;
 };
 
 const FindMaterial = (materialId: any, scene: Scene) => {
@@ -523,7 +514,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         for (index = 0, cache = scene.cameras.length; index < cache; index++) {
             const camera = scene.cameras[index];
             if (camera._waitingParentId !== null) {
-                camera.parent = FindParent(camera._waitingParentId, camera._waitingParentInstanceIndex, scene);
+                camera.parent = FindNode(camera._waitingParentId, camera._waitingParentInstanceIndex, scene);
                 camera._waitingParentId = null;
                 camera._waitingParentInstanceIndex = null;
             }
@@ -532,7 +523,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         for (index = 0, cache = scene.lights.length; index < cache; index++) {
             const light = scene.lights[index];
             if (light && light._waitingParentId !== null) {
-                light.parent = FindParent(light._waitingParentId, light._waitingParentInstanceIndex, scene);
+                light.parent = FindNode(light._waitingParentId, light._waitingParentInstanceIndex, scene);
                 light._waitingParentId = null;
                 light._waitingParentInstanceIndex = null;
             }
@@ -542,7 +533,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
             const transformNode = scene.transformNodes[index];
             if (transformNode._waitingParentId !== null) {
-                transformNode.parent = FindParent(transformNode._waitingParentId, transformNode._waitingParentInstanceIndex, scene);
+                transformNode.parent = FindNode(transformNode._waitingParentId, transformNode._waitingParentInstanceIndex, scene);
                 transformNode._waitingParentId = null;
                 transformNode._waitingParentInstanceIndex = null;
             }
@@ -550,7 +541,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             const mesh = scene.meshes[index];
             if (mesh._waitingParentId !== null) {
-                mesh.parent = FindParent(mesh._waitingParentId, mesh._waitingParentInstanceIndex, scene);
+                mesh.parent = FindNode(mesh._waitingParentId, mesh._waitingParentInstanceIndex, scene);
                 mesh._waitingParentId = null;
                 mesh._waitingParentInstanceIndex = null;
             }
