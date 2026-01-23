@@ -24,7 +24,8 @@ export const FrameGraphTaskProperties: FunctionComponent<{ frameGraph: FrameGrap
                             label={i + 1 + ". " + task.name}
                             target={frameGraph.tasks[i]}
                             propertyKey="disabled"
-                            invertedMode={true}
+                            convertTo={(v) => !v}
+                            convertFrom={(v) => !v}
                         ></BoundProperty>
                     );
                 })}
