@@ -6,7 +6,6 @@ import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/prop
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import type { GLTFExtensionOptionsType, GLTFLoaderOptionsType } from "../../../services/panes/tools/import/gltfLoaderOptionsService";
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
-import { tokens } from "@fluentui/react-components";
 import { BoundProperty } from "../../properties/boundProperty";
 
 const AnimationStartModeOptions: DropdownOption<number>[] = [
@@ -69,8 +68,9 @@ export const GLTFExtensionOptionsTool: FunctionComponent<{
         <PropertyLine
             label="Extension Options"
             expandByDefault={false}
+            indentExpandedContent={true}
             expandedContent={
-                <div style={{ paddingLeft: tokens.spacingHorizontalM }}>
+                <>
                     <BoundProperty
                         label="EXT_lights_image_based"
                         component={SwitchPropertyLine}
@@ -167,7 +167,7 @@ export const GLTFExtensionOptionsTool: FunctionComponent<{
                     <BoundProperty component={SwitchPropertyLine} label="MSFT_minecraftMesh" target={extensionOptions["MSFT_minecraftMesh"]} propertyKey="enabled" />
                     <BoundProperty component={SwitchPropertyLine} label="MSFT_sRGBFactors" target={extensionOptions["MSFT_sRGBFactors"]} propertyKey="enabled" />
                     <BoundProperty component={SwitchPropertyLine} label="MSFT_audio_emitter" target={extensionOptions["MSFT_audio_emitter"]} propertyKey="enabled" />
-                </div>
+                </>
             }
         />
     );
