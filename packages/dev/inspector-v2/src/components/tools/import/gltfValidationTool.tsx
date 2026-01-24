@@ -7,7 +7,7 @@ import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
 export const GLTFValidationTool: FunctionComponent<{ validationResults: IGLTFValidationResults }> = ({ validationResults }) => {
     const openValidationDetails = useCallback(() => {
-        const win = window.open("", "_blank");
+        const win = window.open("", "gltfValidationResults");
         if (win) {
             // TODO: format this better and use generator registry (https://github.com/KhronosGroup/glTF-Generator-Registry)
             win.document.title = `${validationResults.uri} - glTF Validation Results`;
@@ -19,6 +19,7 @@ export const GLTFValidationTool: FunctionComponent<{ validationResults: IGLTFVal
             const textNode = win.document.createTextNode(JSON.stringify(validationResults, null, 2));
             code.append(textNode);
             pre.append(code);
+            win.document.body.innerHTML = ""; // Clear previous content when reusing window
             win.document.body.append(pre);
             win.focus();
         }
