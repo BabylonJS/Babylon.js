@@ -521,7 +521,6 @@ export class EffectWrapper {
         const useWebGPU = this.options.engine.isWebGPU && !EffectWrapper.ForceGLSL;
 
         this._gatherImports(useWebGPU, this._importPromises);
-
         if (extraInitializations !== undefined) {
             extraInitializations(useWebGPU, this._importPromises);
         }
