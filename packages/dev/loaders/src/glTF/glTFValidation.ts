@@ -126,6 +126,7 @@ export class GLTFValidation {
     private static _OnValidatedObservable: Nullable<Observable<GLTF2.IGLTFValidationResults>> = null;
     /**
      * Observable event fired when new validation results are available.
+     * @internal
      */
     public static get OnValidatedObservable(): Observable<GLTF2.IGLTFValidationResults> {
         if (!this._OnValidatedObservable) {
