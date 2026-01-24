@@ -27,8 +27,7 @@ export const ScreenshotTool: FunctionComponent<{ scene: Scene }> = ({ scene }) =
         const sizeToUse: IScreenshotSize = { ...screenshotSize };
 
         if (camera) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            CreateScreenshotAsync(scene.getEngine(), camera, sizeToUse, undefined, undefined, undefined, undefined, true);
+            await CreateScreenshotAsync(scene.getEngine(), camera, sizeToUse, undefined, undefined, undefined, undefined, true);
         }
     }, [scene, screenshotSize]);
 
