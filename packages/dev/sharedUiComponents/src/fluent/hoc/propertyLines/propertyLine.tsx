@@ -56,6 +56,9 @@ const usePropertyLineStyles = makeStyles({
     expandedContentDiv: {
         overflow: "hidden",
     },
+    expandedContentDivIndented: {
+        paddingLeft: tokens.spacingHorizontalM,
+    },
 });
 
 type BasePropertyLineProps = {
@@ -99,7 +102,7 @@ type NonNullableProperty = {
     ignoreNullable?: false;
 };
 
-// Only expect optional expandByDefault prop if expandedContent is defined
+// Only expect optional expandByDefault or indentExpandedContent prop if expandedContent is defined
 type ExpandableProperty = {
     /**
      * If supplied, an 'expand' icon will be shown which, when clicked, renders this component within the property line.
@@ -110,6 +113,11 @@ type ExpandableProperty = {
      * If true, the expanded content will be shown by default.
      */
     expandByDefault?: boolean;
+
+    /**
+     * If true, the expanded content will be indented to the right.
+     */
+    indentExpandedContent?: boolean;
 };
 
 // If expanded content is undefined, don't expect expandByDefault prop
@@ -205,7 +213,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
             </div>
             {expandedContent && (
                 <Collapse visible={!!expanded}>
-                    <div className={classes.expandedContentDiv}>{expandedContent}</div>
+                    <div className={mergeClasses(classes.expandedContentDiv, props.indentExpandedContent ? classes.expandedContentDivIndented : undefined)}>{expandedContent}</div>
                 </Collapse>
             )}
         </LineContainer>

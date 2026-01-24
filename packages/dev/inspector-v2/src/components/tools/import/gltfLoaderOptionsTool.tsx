@@ -27,8 +27,9 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
         <PropertyLine
             label="Loader Options"
             expandByDefault={false}
+            indentExpandedContent={true}
             expandedContent={
-                <div style={{ paddingLeft: tokens.spacingHorizontalM }}>
+                <>
                     <BoundProperty component={SwitchPropertyLine} label="Always compute bounding box" target={loaderOptions} propertyKey="alwaysComputeBoundingBox" />
                     <BoundProperty component={SwitchPropertyLine} label="Always compute skeleton root node" target={loaderOptions} propertyKey="alwaysComputeSkeletonRootNode" />
                     <BoundProperty
@@ -55,7 +56,7 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
                     <BoundProperty component={SwitchPropertyLine} label="Transparency as coverage" target={loaderOptions} propertyKey="transparencyAsCoverage" />
                     <BoundProperty component={SwitchPropertyLine} label="Use clip plane" target={loaderOptions} propertyKey="useClipPlane" />
                     <BoundProperty component={SwitchPropertyLine} label="Use sRGB buffers" target={loaderOptions} propertyKey="useSRGBBuffers" />
-                </div>
+                </>
             }
         />
     );
