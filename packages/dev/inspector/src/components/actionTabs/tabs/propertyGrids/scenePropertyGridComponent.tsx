@@ -30,6 +30,7 @@ import "core/Physics/physicsEngineComponent";
 import "core/Physics/v1/physicsEngineComponent";
 import "core/Physics/v1/physicsEngineComponent";
 import { Logger } from "core/Misc/logger";
+import { Color4 } from "core/Maths/math.color";
 
 interface IScenePropertyGridComponentProps {
     globalState: GlobalState;
@@ -42,6 +43,7 @@ interface IScenePropertyGridComponentProps {
 export class ScenePropertyGridComponent extends React.Component<IScenePropertyGridComponentProps> {
     private _storedEnvironmentTexture: Nullable<BaseTexture>;
     private _renderingModeGroupObservable = new Observable<RadioButtonLineComponent>();
+    private _backgroundTransparent = false;
 
     constructor(props: IScenePropertyGridComponentProps) {
         super(props);
@@ -51,6 +53,33 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
         const scene = this.props.scene;
         scene.forcePointsCloud = point;
         scene.forceWireframe = wireframe;
+    }
+
+    setBackgroundTransparent(transparent: boolean) {
+        const scene = this.props.scene;
+        const tempColor = scene.clearColor.clone();
+        const skyBoxMesh = scene.getMeshById("hdrSkyBox");
+        const skyBoxVisible = skyBoxMesh?.isVisible || false;
+        const skyBoxEnable = skyBoxMesh?.isEnabled() || false;
+        const renderCanvasDom = this.props.scene.getEngine().getRenderingCanvas();
+        if (transparent) {
+            scene.clearColor = new Color4(tempColor.r, tempColor.g, tempColor.b, 0);
+            skyBoxMesh?.setEnabled(false);
+            if (renderCanvasDom) {
+                renderCanvasDom.style.background = "var(--background-transparent)";
+            }
+        } else {
+            scene.clearColor = new Color4(tempColor.r, tempColor.g, tempColor.b, 1);
+            if (skyBoxMesh) {
+                skyBoxMesh.isVisible = skyBoxVisible;
+                skyBoxMesh.setEnabled(skyBoxEnable);
+            }
+            if (renderCanvasDom) {
+                renderCanvasDom.style.background = "";
+            }
+        }
+
+        this._backgroundTransparent = transparent;
     }
 
     switchIBL() {
@@ -184,6 +213,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         propertyName="clearColor"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <CheckBoxLineComponent label="transparent" target={scene} isSelected={this._backgroundTransparent} onSelect={(value) => this.setBackgroundTransparent(value)} />
                     <CheckBoxLineComponent
                         label="Clear color enabled"
                         target={scene}
