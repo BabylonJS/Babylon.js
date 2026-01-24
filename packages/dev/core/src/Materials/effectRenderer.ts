@@ -501,6 +501,8 @@ export class EffectWrapper {
         this._postConstructor(this.options.blockCompilation, defines, this.options.extraInitializations);
     }
 
+    protected _gatherImports(_useWebGPU = false, _list: Promise<any>[]) {}
+
     private _importPromises: Array<Promise<any>> = [];
 
     /** @internal */
@@ -517,6 +519,8 @@ export class EffectWrapper {
         }
 
         const useWebGPU = this.options.engine.isWebGPU && !EffectWrapper.ForceGLSL;
+
+        this._gatherImports(useWebGPU, this._importPromises);
 
         if (extraInitializations !== undefined) {
             extraInitializations(useWebGPU, this._importPromises);
