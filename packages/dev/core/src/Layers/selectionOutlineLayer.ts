@@ -184,6 +184,17 @@ export class SelectionOutlineLayer extends EffectLayer {
         this._postProcesses = [];
 
         this._mainTexture.samples = this._options.mainTextureSamples;
+        this._mainTexture.onAfterUnbindObservable.add(() => {
+            // glow layer and highlight layer both call this._scene.postProcessManager.directRender
+            // when you call this._scene.postProcessManager.directRender, it has 4 side effects:
+            // 1. binds the framebuffer
+            // 2. setAlphaMode(ALPHA_DISABLE)
+            // 3. setDepthBuffer(true)
+            // 4. setDepthWrite(true)
+            // glow layer and highlight layer are restore framebuffer and depends on other side effects
+            // but for now 3 and 4 are not needed to resolve the state management issue, so we just restore alpha mode
+            this._scene.getEngine().setAlphaMode(Constants.ALPHA_DISABLE);
+        });
     }
 
     /**
