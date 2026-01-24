@@ -35,7 +35,7 @@ export const GLTFValidationServiceDefinition: ServiceDefinition<[], [IToolsServi
                 }, GLTFValidation.OnValidatedObservable);
 
                 if (!validationState) {
-                    return <MessageBar intent="info" title="" message="Reload the file to see validation results" />;
+                    return <MessageBar intent="info" message="Reload the file to see validation results" />;
                 }
 
                 return <GLTFValidationTool validationResults={validationState} />;

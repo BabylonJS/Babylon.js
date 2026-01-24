@@ -11,7 +11,7 @@ const useClasses = makeStyles({
 });
 
 type MessageBarProps = {
-    message?: string;
+    message: string;
     title?: string;
     docLink?: string;
     intent: "info" | "success" | "warning" | "error";

@@ -99,7 +99,7 @@ export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsSe
             component: () => {
                 return (
                     <>
-                        <MessageBar intent="info" title="" message="Reload the file for changes to take effect" />
+                        <MessageBar intent="info" message="Reload the file for changes to take effect" />
                         <GLTFLoaderOptionsTool loaderOptions={CurrentLoaderOptions} />
                         <GLTFExtensionOptionsTool extensionOptions={CurrentExtensionOptions} />
                     </>
