@@ -2,7 +2,6 @@ import type { FrameGraphTextureHandle, FrameGraphTextureManager, IMultiRenderTar
 
 /**
  * @internal
- * @experimental
  */
 export class FrameGraphRenderTarget {
     protected readonly _textureManager: FrameGraphTextureManager;

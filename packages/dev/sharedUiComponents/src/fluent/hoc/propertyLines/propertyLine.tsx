@@ -1,11 +1,11 @@
-import { Body1, InfoLabel, Checkbox, makeStyles, Body1Strong, tokens, mergeClasses, Tooltip } from "@fluentui/react-components";
+import { Body1, Checkbox, makeStyles, tokens, mergeClasses, Tooltip } from "@fluentui/react-components";
 import {
     ChevronCircleDown20Regular,
     ChevronCircleDown16Regular,
     ChevronCircleRight16Regular,
     ChevronCircleRight20Regular,
+    CopyRegular,
     Copy16Regular,
-    Copy20Regular,
 } from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
@@ -16,7 +16,8 @@ import type { PrimitiveProps } from "../../primitives/primitive";
 import { Link } from "../../primitives/link";
 import { ToggleButton } from "../../primitives/toggleButton";
 import { Button } from "../../primitives/button";
-import { CustomTokens } from "../../primitives/utils";
+import { CustomTokens, TokenMap } from "../../primitives/utils";
+import { InfoLabel } from "../../primitives/infoLabel";
 
 const usePropertyLineStyles = makeStyles({
     baseLine: {
@@ -30,15 +31,6 @@ const usePropertyLineStyles = makeStyles({
         flex: "1 1 0", // grow=1, shrink =1, basis = 0 initial size before
         minWidth: CustomTokens.labelMinWidth,
         textAlign: "left",
-    },
-    labelSlot: {
-        display: "flex",
-        minWidth: 0,
-    },
-    labelText: {
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
     },
     rightContent: {
         flex: "0 1 auto",
@@ -67,6 +59,12 @@ const usePropertyLineStyles = makeStyles({
     checkbox: {
         display: "flex",
         alignItems: "center",
+        marginRight: tokens.spacingHorizontalXS,
+    },
+    checkboxIndicator: {
+        margin: TokenMap.px2,
+        width: TokenMap.px12,
+        height: TokenMap.px12,
     },
 });
 
@@ -149,7 +147,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     const [expanded, setExpanded] = useState("expandByDefault" in props ? props.expandByDefault : false);
     const cachedVal = useRef(nullable ? props.value : null);
 
-    const description = props.docLink ? <Link url={props.docLink} value={props.description ?? "Docs"} /> : props.description;
+    const description = props.docLink ? <Link url={props.docLink} value={props.description ?? "Docs"} /> : props.description ? <Body1>{props.description}</Body1> : undefined;
 
     // Process children to handle nullable state -- creating component in disabled state with default value in lieu of null value
     const processedChildren =
@@ -165,16 +163,8 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     return (
         <LineContainer ref={ref}>
             <div className={classes.baseLine}>
-                <InfoLabel
-                    size={size}
-                    className={classes.infoLabel}
-                    label={{ className: classes.labelSlot }}
-                    info={description ? <div className={classes.infoPopup}>{description}</div> : undefined}
-                    title={label}
-                >
-                    <Body1Strong className={classes.labelText}>{label}</Body1Strong>
-                </InfoLabel>
-                <div className={classes.rightContent}>
+                <InfoLabel className={classes.infoLabel} htmlFor="property" info={description} label={label} flexLabel />
+                <div className={classes.rightContent} id="property">
                     {expandedContent && (
                         <ToggleButton
                             title="Expand/Collapse property"
@@ -191,6 +181,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                         <Tooltip relationship="label" content={props.value == null ? "Enable property" : "Disable property (set to null)"}>
                             <Checkbox
                                 className={classes.checkbox}
+                                indicator={{ className: classes.checkboxIndicator }}
                                 checked={!(props.value == null)}
                                 onChange={(_, data) => {
                                     if (data.checked) {
@@ -211,7 +202,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                             className={classes.copy}
                             title="Copy to clipboard"
                             appearance="transparent"
-                            icon={size === "small" ? Copy16Regular : Copy20Regular}
+                            icon={size === "small" ? Copy16Regular : CopyRegular}
                             onClick={() => copyCommandToClipboard(onCopy())}
                         />
                     )}
@@ -236,6 +227,12 @@ const useLineStyles = makeStyles({
         justifyContent: "center",
         paddingTop: tokens.spacingVerticalXXS,
         paddingBottom: tokens.spacingVerticalXXS,
+        borderTop: `1px solid transparent`,
+        borderBottom: `1px solid transparent`,
+        ":hover": {
+            borderTopColor: tokens.colorNeutralStroke2,
+            borderBottomColor: tokens.colorNeutralStroke2,
+        },
     },
     containerSmall: {
         minHeight: CustomTokens.lineHeightSmall,

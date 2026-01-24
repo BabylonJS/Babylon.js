@@ -1137,6 +1137,20 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
+     * Applies a torque to a physics body.
+     * @param body - The physics body to apply the torque to.
+     * @param torque - The torque vector.
+     * @param instanceIndex - The index of the instance to apply the torque to. If not specified, the torque will be applied to all instances.
+     *
+     * This method is useful for applying a torque to a physics body.
+     * This can be used to simulate rotational forces such as motors, angular momentum, and rotational dynamics.
+     */
+    public applyTorque(body: PhysicsBody, torque: Vector3, instanceIndex?: number): void {
+        torque.scaleToRef(this.getTimeStep(), this._tmpVec3[0]);
+        this.applyAngularImpulse(body, this._tmpVec3[0], instanceIndex);
+    }
+
+    /**
      * Sets the angular velocity of a physics body.
      *
      * @param body - The physics body to set the angular velocity of.

@@ -4,6 +4,21 @@ import { kebabize } from "./utils.js";
 export type BuildType = /*"lts" | */ "umd" | "esm" | "es6" | "namespace";
 const privatePackages: DevPackageName[] = ["shared-ui-components"];
 export const declarationsOnlyPackages: DevPackageName[] = ["babylonjs-gltf2interface"];
+
+/**
+ * ES packages that are bundled and should not have sub-paths appended when importing.
+ * For these packages, any import like `package/subpath` should be transformed to just `package`.
+ */
+export const bundledESPackages: DevPackageName[] = [
+    "node-editor",
+    "node-geometry-editor",
+    "node-render-graph-editor",
+    "node-particle-editor",
+    "gui-editor",
+    "inspector",
+    "inspector-v2",
+];
+
 export type DevPackageName =
     | "core"
     | "gui"
