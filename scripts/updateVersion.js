@@ -26,7 +26,7 @@ async function runCommand(command) {
     });
 }
 
-const getNewVersion = () => {
+const getCurrentVersion = () => {
     // get @dev/core package.json
     const rawdata = fs.readFileSync(path.join(baseDirectory, "packages", "public", "umd", "babylonjs", "package.json"), "utf-8");
     const packageJson = JSON.parse(rawdata);
@@ -75,6 +75,20 @@ const updateSinceTag = (version) => {
     runCommand("npx prettier --write packages/public/**/package.json");
 };
 
+// Update the babylon dependencies array (dep, dev, peer...) in place to the new version
+const updateDependencies = (version, dependencies) => {
+    let changed = false;
+    if (dependencies) {
+        Object.keys(dependencies).forEach((dependency) => {
+            if (dependency.startsWith("babylonjs") || dependency.startsWith("@babylonjs")) {
+                dependencies[dependency] = version;
+                changed = true;
+            }
+        });
+    }
+    return changed;
+};
+
 const updatePeerDependencies = async (version) => {
     // get all package.json files in the dev folder
     const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json"));
@@ -84,15 +98,7 @@ const updatePeerDependencies = async (version) => {
             const data = fs.readFileSync(file, "utf-8").replace(/\r/gm, "");
             const packageJson = JSON.parse(data);
             // check each peer dependency, if it is babylon, update it with the new version
-            let changed = false;
-            if (packageJson.peerDependencies) {
-                Object.keys(packageJson.peerDependencies).forEach((dependency) => {
-                    if (dependency.startsWith("babylonjs") || dependency.startsWith("@babylonjs")) {
-                        packageJson.peerDependencies[dependency] = version;
-                        changed = true;
-                    }
-                });
-            }
+            const changed = updateDependencies(packageJson.peerDependencies);
             if (changed) {
                 console.log(`Updating Babylon peerDependencies in ${file} to ${version}`);
                 // write file
@@ -104,15 +110,61 @@ const updatePeerDependencies = async (version) => {
     });
 };
 
+const updateVersion = async (version) => {
+    // get all package.json files in the dev folder
+    const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json"));
+    files.forEach((file) => {
+        try {
+            // get the package.json as js objects
+            const data = fs.readFileSync(file, "utf-8").replace(/\r/gm, "");
+            const packageJson = JSON.parse(data);
+
+            const name = packageJson.name;
+            if (!packageJson.private && (name.startsWith("babylonjs") || name.startsWith("@babylonjs"))) {
+                // if not private bump the revision.
+                packageJson.version = version;
+            }
+
+            // And lets update the devDependencies/dependencies
+            updateDependencies(packageJson.devDependencies);
+            updateDependencies(packageJson.dependencies);
+
+            console.log(`Updating Babylon package json version in ${file} to ${version}`);
+
+            // write file
+            fs.writeFileSync(file, JSON.stringify(packageJson, null, 4));
+        } catch (e) {
+            console.log(e);
+        }
+    });
+};
+
 async function runTagsUpdate() {
+    // Gets the current version to update
+    const previousVersion = getCurrentVersion();
+    let [major, minor, revision] = previousVersion.split(".");
+
+    // Update accordingly
+    if (config.versionDefinition === "major") {
+        major++;
+    } else if (config.versionDefinition === "minor") {
+        minor++;
+    } else {
+        revision++;
+    }
+
+    // Gets the new version
+    const version = [major, minor, revision].join(".");
+
+    // update package-json
+    updateVersion(version);
     await runCommand(
         `npx lerna version ${config.versionDefinition} --yes --no-push --conventional-prerelease --force-publish --no-private --no-git-tag-version ${
             config.preid ? "--preid " + config.preid : ""
         }`
     );
-    // update package-json
-    const version = getNewVersion();
-    // // update engine version
+
+    // update engine version
     await updateEngineVersion(version);
     // generate changelog
     await generateChangelog(version);
