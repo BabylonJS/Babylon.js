@@ -2646,22 +2646,52 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
+     * An event triggered when the scene ready checks has timed out.
+     */
+    public onReadyTimeoutObservable = new Observable<Scene>();
+
+    /**
+     * Duration in milliseconds to wait before triggering the onReadyTimeoutObservable event.
+     */
+    public onReadyTimeoutDuration = 2 * 60 * 1000; // 2 minutes by default
+
+    private _timeoutChecksStartTime: number = 0;
+
+    private _clearReadynessChecksData() {
+        this._timeoutChecksStartTime = 0;
+        this.onReadyTimeoutObservable.clear();
+
+        this.onReadyObservable.clear();
+        this._executeWhenReadyTimeoutId = null;
+    }
+
+    /**
      * @internal
      */
     public _checkIsReady(checkRenderTargets = false) {
         this._registerTransientComponents();
 
-        if (this.isReady(checkRenderTargets)) {
-            this.onReadyObservable.notifyObservers(this);
-
-            this.onReadyObservable.clear();
-            this._executeWhenReadyTimeoutId = null;
+        // Starts counting time from the first check for timeout purposes
+        if (this._timeoutChecksStartTime === 0) {
+            this._timeoutChecksStartTime = PrecisionDate.Now;
+        }
+        // Check for timeout
+        else if (this.onReadyTimeoutDuration > 0 && PrecisionDate.Now - this._timeoutChecksStartTime > this.onReadyTimeoutDuration) {
+            this.onReadyTimeoutObservable.notifyObservers(this);
+            this._clearReadynessChecksData();
             return;
         }
 
+        // Check for readyness
+        if (this.isReady(checkRenderTargets)) {
+            this.onReadyObservable.notifyObservers(this);
+            this._clearReadynessChecksData();
+            return;
+        }
+
+        // Clean up if the scene was disposed in the meantime
         if (this._isDisposed) {
-            this.onReadyObservable.clear();
-            this._executeWhenReadyTimeoutId = null;
+            this._clearReadynessChecksData();
             return;
         }
 
@@ -2978,8 +3008,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             if (!toRemove.parent) {
                 toRemove._removeFromSceneRootNodes();
             }
+
+            this.onLightRemovedObservable.notifyObservers(toRemove);
         }
-        this.onLightRemovedObservable.notifyObservers(toRemove);
         return index;
     }
 

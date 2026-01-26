@@ -13,6 +13,8 @@ import type { _WebAudioEngine } from "../webAudioEngine";
  */
 const MinRampDuration = 0.000001;
 
+let Warn = true;
+
 /** @internal */
 export class _WebAudioParameterComponent {
     private _rampEndTime: number = 0;
@@ -63,12 +65,12 @@ export class _WebAudioParameterComponent {
             return;
         }
 
-        const shape = typeof options?.shape === "string" ? options.shape : AudioParameterRampShape.Linear;
+        this._param.cancelScheduledValues(0);
 
+        const shape = typeof options?.shape === "string" ? options.shape : AudioParameterRampShape.Linear;
         const startTime = this._engine.currentTime;
 
         if (shape === AudioParameterRampShape.None) {
-            this._param.cancelScheduledValues(0);
             this._param.value = this._targetValue = value;
             this._rampEndTime = startTime;
             return;
@@ -83,9 +85,14 @@ export class _WebAudioParameterComponent {
             return;
         }
 
-        this._param.cancelScheduledValues(0);
-        this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, Number.isFinite(this._param.value) ? this._param.value : 0, value), startTime, duration);
-
-        this._rampEndTime = startTime + duration;
+        try {
+            this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, Number.isFinite(this._param.value) ? this._param.value : 0, value), startTime, duration);
+            this._rampEndTime = startTime + duration;
+        } catch (e) {
+            if (Warn) {
+                Logger.Warn(`Audio parameter ramping failed: ${(e as Error).message}`);
+                Warn = false;
+            }
+        }
     }
 }

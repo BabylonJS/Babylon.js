@@ -218,27 +218,32 @@ export class LightingVolume {
         if (this._engine.isWebGPU) {
             this._uBuffer!.updateMatrix("invViewProjMatrix", this._shadowGenerator.getTransformMatrix().invertToRef(TmpVectors.Matrix[0]));
 
-            this._engine._debugPushGroup?.(`Update lighting volume (${this._name})`, 1);
+            if (this._engine._enableGPUDebugMarkers) {
+                this._engine.restoreDefaultFramebuffer();
+                this._engine._debugPushGroup?.(`Update lighting volume (${this._name})`);
+            }
 
             if (this._needUpdateGeometry()) {
                 this._fullUpdateUBO(true);
 
                 const dispatchSize = Math.ceil((this._tesselation + 1) / 32);
 
-                this._engine._debugPushGroup?.(`Update vertices of other planes`, 1);
+                this._engine._debugPushGroup?.(`Update vertices of other planes`);
                 this._cs2!.dispatch(dispatchSize, 1, 1);
-                this._engine._debugPopGroup?.(1);
+                this._engine._debugPopGroup?.();
             } else {
                 this._fullUpdateUBO();
             }
 
             const dispatchSize = Math.ceil((this._tesselation + 1) / 8);
 
-            this._engine._debugPushGroup?.(`Update vertices of far plane`, 1);
+            this._engine._debugPushGroup?.(`Update vertices of far plane`);
             this._cs!.dispatch(dispatchSize, dispatchSize, 1);
-            this._engine._debugPopGroup?.(1);
+            this._engine._debugPopGroup?.();
 
-            this._engine._debugPopGroup?.(1);
+            if (this._engine._enableGPUDebugMarkers) {
+                this._engine._debugPopGroup?.();
+            }
 
             this._firstUpdate = false;
         } else {

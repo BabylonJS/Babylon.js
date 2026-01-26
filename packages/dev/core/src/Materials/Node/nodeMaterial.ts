@@ -178,6 +178,8 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
 
     public AREALIGHTNOROUGHTNESS = true;
 
+    public POSITIONW_AS_VARYING = false;
+
     /**
      * Creates a new NodeMaterialDefines
      */
@@ -1535,6 +1537,10 @@ export class NodeMaterial extends NodeMaterialBase {
 
         for (const b of this._sharedData.blocksWithDefines) {
             b.prepareDefines(defines, this, mesh, useInstances, subMesh);
+        }
+
+        for (const d in this._sharedData.defines) {
+            defines[d] = this._sharedData.defines[d];
         }
 
         // Need to recompile?

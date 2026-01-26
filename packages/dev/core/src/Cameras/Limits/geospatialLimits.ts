@@ -1,10 +1,8 @@
 import { Epsilon } from "../../Maths/math.constants";
 /**
- * Limits for geospatial cameras with altitude/radius synchronization
+ * Limits for geospatial camera
  */
 export class GeospatialLimits {
-    private _altitudeMin: number = Epsilon;
-    private _altitudeMax: number;
     private _planetRadius: number;
     private _radiusMin: number = Epsilon;
     private _radiusMax: number = Infinity;
@@ -28,40 +26,10 @@ export class GeospatialLimits {
     public pinchToPanMax: number = 20;
 
     /**
-     * @param planetRadius The radius of the planet (used for altitude/radius conversions)
+     * @param planetRadius The radius of the planet
      */
     constructor(planetRadius: number) {
         this._planetRadius = planetRadius;
-    }
-
-    /**
-     * Gets the minimum altitude (height above planet surface)
-     */
-    public get altitudeMin(): number {
-        return this._altitudeMin;
-    }
-
-    /**
-     * Sets the minimum altitude and syncs it with radius
-     */
-    public set altitudeMin(value: number) {
-        this._altitudeMin = value;
-        this._radiusMin = this._planetRadius + value;
-    }
-
-    /**
-     * Gets the maximum altitude (height above planet surface)
-     */
-    public get altitudeMax(): number {
-        return this._altitudeMax;
-    }
-
-    /**
-     * Sets the maximum altitude and syncs it with radius
-     */
-    public set altitudeMax(value: number) {
-        this._altitudeMax = value;
-        this._radiusMax = this._planetRadius + value;
     }
 
     public get radiusMin(): number {
@@ -69,11 +37,10 @@ export class GeospatialLimits {
     }
 
     /**
-     * Sets the minimum radius and syncs it with altitude
+     * Sets the minimum radius
      */
     public set radiusMin(value: number) {
         this._radiusMin = value;
-        this._altitudeMin = value - this._planetRadius;
     }
 
     public get radiusMax(): number {
@@ -81,11 +48,10 @@ export class GeospatialLimits {
     }
 
     /**
-     * Sets the maximum radius and syncs it with altitude
+     * Sets the maximum radius
      */
     public set radiusMax(value: number) {
         this._radiusMax = value;
-        this._altitudeMax = value - this._planetRadius;
     }
 
     /**
@@ -98,8 +64,5 @@ export class GeospatialLimits {
     /** Sets the planet radius and updates the radius limits to maintain current altitude */
     public set planetRadius(value: number) {
         this._planetRadius = value;
-        // Update radius limits to maintain current altitude
-        this._radiusMin = value + this._altitudeMin;
-        this._radiusMax = value + this._altitudeMax;
     }
 }

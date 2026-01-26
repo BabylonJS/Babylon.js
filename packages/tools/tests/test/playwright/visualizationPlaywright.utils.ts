@@ -222,10 +222,11 @@ export const evaluateInitEngineForVisualization = async ({
             wasmPath: baseUrl + "/twgsl/twgsl.wasm",
         };
 
-        const options = {
+        const options: BABYLON.WebGPUEngineOptions = {
             enableAllFeatures: true,
             setMaximumLimits: true,
             antialias: false,
+            enableGPUDebugMarkers: false,
         };
 
         const engine = new BABYLON.WebGPUEngine(window.canvas, options);
@@ -240,6 +241,8 @@ export const evaluateInitEngineForVisualization = async ({
             useHighPrecisionFloats: true,
             disableWebGL2Support: engineName === "webgl1" ? true : false,
             forceSRGBBufferSupportState: true,
+            failIfMajorPerformanceCaveat: true,
+            powerPreference: "high-performance",
         });
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);

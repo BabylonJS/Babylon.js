@@ -485,7 +485,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             action: () => {
                 const newNodeRenderGraph = new NodeRenderGraph(getUniqueName("Frame Graph"), scene);
                 newNodeRenderGraph.setToDefault();
-                newNodeRenderGraph.build();
+                void newNodeRenderGraph.buildAsync();
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newNodeRenderGraph);
             },
         });

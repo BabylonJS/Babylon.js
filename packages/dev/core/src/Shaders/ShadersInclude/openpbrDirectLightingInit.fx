@@ -23,7 +23,7 @@
         #elif defined(DIRLIGHT{X})
             preInfo{X} = computeDirectionalPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
             preInfoCoat{X} = computeDirectionalPreLightingInfo(light{X}.vLightData, viewDirectionW, coatNormalW);
-        #elif defined(AREALIGHT{X}) && defined(AREALIGHTSUPPORTED)
+        #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
             preInfo{X} = computeAreaPreLightingInfo(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, normalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, specular_roughness);
             preInfoCoat{X} = computeAreaPreLightingInfo(areaLightsLTC1Sampler, areaLightsLTC2Sampler, viewDirectionW, coatNormalW, vPositionW, light{X}.vLightData, light{X}.vLightWidth.xyz, light{X}.vLightHeight.xyz, coat_roughness);
         #endif
@@ -80,7 +80,10 @@
 
         // Simulates Light radius for diffuse and spec term
         // clear coat is using a dedicated roughness
-        #if defined(HEMILIGHT{X}) || defined(AREALIGHT{X})
+        #if defined(HEMILIGHT{X})
+            preInfo{X}.roughness = specular_roughness;
+            preInfoCoat{X}.roughness = coat_roughness;
+        #elif defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
             preInfo{X}.roughness = specular_roughness;
             preInfoCoat{X}.roughness = coat_roughness;
         #else

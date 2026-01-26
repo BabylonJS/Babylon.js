@@ -11,11 +11,21 @@ import type { Scene } from "core/scene";
 import { CreateScreenshotAsync } from "core/Misc/screenshotTools";
 import type { IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
 import { Color3, Color4 } from "core/Maths/math";
+import { FilesInputStore } from "core/Misc/filesInputStore";
 
 import "./scss/main.scss";
 import fullScreenLogo from "./img/logo-fullscreen.svg";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
+
+// Types for PWA Launch Queue API (file handlers)
+interface ILaunchParams {
+    files: FileSystemFileHandle[];
+}
+
+interface ILaunchQueue {
+    setConsumer(consumer: (params: ILaunchParams) => void): void;
+}
 
 interface ISandboxProps {
     version: string;
@@ -36,6 +46,14 @@ export class Sandbox extends React.Component<
          * error message
          */
         errorMessage: string;
+        /**
+         * current loaded file name
+         */
+        currentFileName: string;
+        /**
+         * Show folder access prompt for files with dependencies
+         */
+        showFolderAccessPrompt: boolean;
     }
 > {
     private _globalState: GlobalState;
@@ -46,6 +64,17 @@ export class Sandbox extends React.Component<
     private _camera?: number;
     private _engine?: AbstractEngine;
 
+    // Stores files from Launch Queue until filesInput is ready
+    private _pendingLaunchFiles: File[] | null = null;
+    // Stores info for folder access prompt
+    private _pendingFolderAccessFile: File | null = null;
+    // Stores the file handle for folder access (to start picker in same directory)
+    private _pendingFolderAccessFileHandle: FileSystemFileHandle | null = null;
+
+    /**
+     * Constructs the Sandbox component
+     * @param props Component props
+     */
     public constructor(props: ISandboxProps) {
         super(props);
         this._globalState = new GlobalState({ version: props.version, bundles: props.bundles });
@@ -53,16 +82,21 @@ export class Sandbox extends React.Component<
         this._dropTextRef = React.createRef();
         this._clickInterceptorRef = React.createRef();
 
-        this.state = { isFooterVisible: true, errorMessage: "" };
+        this.state = { isFooterVisible: true, errorMessage: "", currentFileName: "", showFolderAccessPrompt: false };
 
         this.checkUrl();
 
         EnvironmentTools.HookWithEnvironmentChange(this._globalState);
 
+        // Update document title when display mode changes
+        window.matchMedia("(display-mode: window-controls-overlay)").addEventListener("change", () => {
+            this._updateDocumentTitle(this.state.currentFileName);
+        });
+
         // Events
         this._globalState.onSceneLoaded.add((info) => {
-            document.title = "Babylon.js - " + info.filename;
-            this.setState({ errorMessage: "" });
+            this.setState({ errorMessage: "", currentFileName: info.filename });
+            this._updateDocumentTitle(info.filename);
 
             this._globalState.currentScene = info.scene;
             if (
@@ -134,6 +168,13 @@ export class Sandbox extends React.Component<
 
             return true;
         };
+
+        // Handle files opened via PWA file handler (double-click from OS)
+        // Set up launch queue consumer early to capture files, then process when filesInput is ready
+        this._setupLaunchQueueHandler();
+
+        // Set initial document title based on display mode
+        this._updateDocumentTitle("");
     }
 
     /**
@@ -202,7 +243,7 @@ export class Sandbox extends React.Component<
                         break;
                     }
                     case "kiosk": {
-                        this.state = { isFooterVisible: value.toLowerCase() === "true" ? false : true, errorMessage: "" };
+                        this.state = { isFooterVisible: value.toLowerCase() === "true" ? false : true, errorMessage: "", currentFileName: "", showFolderAccessPrompt: false };
                         break;
                     }
                     case "skybox": {
@@ -249,8 +290,12 @@ export class Sandbox extends React.Component<
     }
 
     public override render() {
+        // In overlay mode, the titlebar shows the full title because the system only shows window controls, not the app name
+        const titleBarText = this.state.currentFileName ? `Babylon.js Sandbox - ${this.state.currentFileName}` : "Babylon.js Sandbox - View glTF, glb, obj and babylon files";
+
         return (
             <div id="root">
+                <div className="titlebar">{titleBarText}</div>
                 <span>
                     <p id="droptext" ref={this._dropTextRef}>
                         {this._globalState.reflector ? "" : "Drag and drop gltf, glb, obj, ply, splat, spz or babylon files to view them"}
@@ -281,8 +326,172 @@ export class Sandbox extends React.Component<
                         </button>
                     </div>
                 )}
+                {/* 
+                  Folder Access Prompt: This dialog is required because the File System Access API 
+                  (showDirectoryPicker) can only be called from a direct user gesture (click/tap).
+                  The PWA launch queue callback is async and not considered a user gesture, so we 
+                  must show this UI to get a user click before requesting folder access.
+                */}
+                {this.state.showFolderAccessPrompt && (
+                    <div id="folderAccessPrompt">
+                        <div className="prompt-content">
+                            <p>
+                                The file <strong>{this._pendingFolderAccessFile?.name}</strong> may reference external files (textures, etc.).
+                            </p>
+                            <p>Would you like to grant access to the containing folder so all referenced files can be loaded?</p>
+                            <div className="prompt-buttons">
+                                <button type="button" onClick={async () => await this._handleFolderAccessClickAsync(true)}>
+                                    Select Folder
+                                </button>
+                                <button type="button" onClick={async () => await this._handleFolderAccessClickAsync(false)}>
+                                    Load Without
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
+    }
+
+    /**
+     * Handles user clicking to grant folder access
+     *
+     * @param grantAccess Whether the user granted access to the folder
+     */
+    private async _handleFolderAccessClickAsync(grantAccess: boolean) {
+        const file = this._pendingFolderAccessFile;
+        const fileHandle = this._pendingFolderAccessFileHandle;
+        this._pendingFolderAccessFile = null;
+        this._pendingFolderAccessFileHandle = null;
+        this.setState({ showFolderAccessPrompt: false });
+
+        if (!file) {
+            return;
+        }
+
+        if (grantAccess) {
+            try {
+                // Start the directory picker in the same folder as the file
+                const pickerOptions: { startIn?: FileSystemFileHandle } = {};
+                if (fileHandle) {
+                    pickerOptions.startIn = fileHandle;
+                }
+                const dirHandle = await (
+                    window as unknown as { showDirectoryPicker: (options?: { startIn?: FileSystemFileHandle }) => Promise<FileSystemDirectoryHandle> }
+                ).showDirectoryPicker(pickerOptions);
+                // Recursively collect all files from the directory and subdirectories
+                const collectFilesAsync = async (handle: FileSystemDirectoryHandle, relativePath: string = "") => {
+                    // Use values() method to iterate - cast needed as TypeScript types may be incomplete
+                    const entries = (handle as unknown as { values: () => AsyncIterable<FileSystemHandle> }).values();
+                    for await (const entry of entries) {
+                        if (entry.kind === "file") {
+                            const entryFile = await (entry as FileSystemFileHandle).getFile();
+                            // Register file directly in FilesInputStore with its relative path
+                            // This is how the loaders will look it up
+                            const filePath = (relativePath + entryFile.name).toLowerCase();
+                            FilesInputStore.FilesToLoad[filePath] = entryFile;
+                        } else if (entry.kind === "directory") {
+                            await collectFilesAsync(entry as FileSystemDirectoryHandle, relativePath + entry.name + "/");
+                        }
+                    }
+                };
+                await collectFilesAsync(dirHandle);
+            } catch {
+                // User cancelled - proceed with just the original file
+            }
+        }
+
+        // Only pass the main file to load - dependencies are already registered in FilesInputStore
+        this._loadFileWhenReady([file]);
+    }
+
+    /**
+     * Sets up the Launch Queue consumer to capture files opened via PWA file handlers.
+     * Files are stored and processed once filesInput is ready.
+     */
+    private _setupLaunchQueueHandler() {
+        // Check if Launch Queue API is available (PWA file handlers)
+        if (!("launchQueue" in window)) {
+            return;
+        }
+
+        // Set consumer immediately to capture files
+        (window as Window & { launchQueue: ILaunchQueue }).launchQueue.setConsumer(async (launchParams) => {
+            if (!launchParams.files || launchParams.files.length === 0) {
+                return;
+            }
+
+            const fileHandle = launchParams.files[0];
+            const file = await fileHandle.getFile();
+            const extension = file.name.split(".").pop()?.toLowerCase();
+
+            // File types that may have external dependencies (textures, .bin files, etc.)
+            const typesWithDependencies = ["gltf", "obj", "babylon"];
+
+            // If file type may have dependencies, show prompt for folder access
+            if (extension && typesWithDependencies.includes(extension) && "showDirectoryPicker" in window) {
+                this._pendingFolderAccessFile = file;
+                this._pendingFolderAccessFileHandle = fileHandle;
+                this.setState({ showFolderAccessPrompt: true });
+            } else {
+                // Load single file directly
+                this._loadFileWhenReady([file]);
+            }
+        });
+    }
+
+    /**
+     * Loads files when filesInput is ready
+     *
+     * @param files Array of File objects to load
+     */
+    private _loadFileWhenReady(files: File[]) {
+        if (this._globalState.filesInput) {
+            this._loadFilesIntoSandbox(files);
+        } else {
+            this._pendingLaunchFiles = files;
+            this._globalState.onFilesInputReady.addOnce(() => {
+                if (this._pendingLaunchFiles) {
+                    this._loadFilesIntoSandbox(this._pendingLaunchFiles);
+                    this._pendingLaunchFiles = null;
+                }
+            });
+        }
+    }
+
+    /**
+     * Loads files into the sandbox via filesInput
+     * @param files Array of File objects to load
+     */
+    private _loadFilesIntoSandbox(files: File[]) {
+        // Create the event that loadFiles expects
+        const event = {
+            dataTransfer: { files: files },
+        };
+        this._globalState.filesInput.loadFiles(event);
+    }
+
+    /**
+     * Updates document.title based on display mode
+     * - Overlay mode: document.title is not used, we build the text ourselves
+     * - Standalone mode: system shows "App Name - document.title"
+     * - Browser mode: document.title shows full title
+     *
+     * @param filename current filename
+     */
+    private _updateDocumentTitle(filename: string) {
+        const defaultDescription = "View glTF, glb, obj and babylon files";
+        const isOverlay = window.matchMedia("(display-mode: window-controls-overlay)").matches;
+        const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+
+        if (isOverlay || isStandalone) {
+            // PWA mode: system prepends manifest app name, so just use filename or description
+            document.title = filename || defaultDescription;
+        } else {
+            // Browser mode: show full title with app name
+            document.title = filename ? `Babylon.js Sandbox - ${filename}` : `Babylon.js Sandbox - ${defaultDescription}`;
+        }
     }
 
     // Use the promise of this deferred to do something after the scene is loaded.

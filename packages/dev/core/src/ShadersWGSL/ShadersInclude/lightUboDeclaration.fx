@@ -15,7 +15,7 @@
 			vSliceData: vec2f,
 			vSliceRanges: array<vec4f, CLUSTLIGHT_SLICES>,
 		#endif
-		#if defined(AREALIGHT{X})
+		#if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 			vLightWidth: vec4f,
 			vLightHeight: vec4f,
 		#endif
@@ -28,6 +28,11 @@ var<uniform> light{X} : Light{X};
 #ifdef IESLIGHTTEXTURE{X}
 	var iesLightTexture{X}Sampler: sampler;
 	var iesLightTexture{X}: texture_2d<f32>;
+#endif
+
+#ifdef RECTAREALIGHTEMISSIONTEXTURE{X}
+	var rectAreaLightEmissionTexture{X}Sampler: sampler;
+	var rectAreaLightEmissionTexture{X}: texture_2d<f32>;
 #endif
 
 #ifdef PROJECTEDLIGHTTEXTURE{X}

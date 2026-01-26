@@ -98,6 +98,11 @@ export class NodeMaterialBuildStateSharedData {
     public animatedInputs: InputBlock[] = [];
 
     /**
+     * Defines to inject in the vertex and fragment shaders
+     */
+    public defines: { [key: string]: string } = {};
+
+    /**
      * Configurations used to format the generated code
      */
     public formatConfig = {

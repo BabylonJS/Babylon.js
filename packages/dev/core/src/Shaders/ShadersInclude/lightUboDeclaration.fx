@@ -16,7 +16,7 @@
 			vec2 vSliceData;
 			vec2 vSliceRanges[CLUSTLIGHT_SLICES];
 		#endif
-		#if defined(AREALIGHT{X})
+		#if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
 			vec4 vLightWidth;
 			vec4 vLightHeight;
 		#endif
@@ -25,6 +25,9 @@
 	} light{X};
 #ifdef IESLIGHTTEXTURE{X}
 	uniform sampler2D iesLightTexture{X};
+#endif
+#ifdef RECTAREALIGHTEMISSIONTEXTURE{X}
+	uniform sampler2D rectAreaLightEmissionTexture{X};
 #endif
 #ifdef PROJECTEDLIGHTTEXTURE{X}
 	uniform mat4 textureProjectionMatrix{X};

@@ -42,3 +42,13 @@ export const AlphaModeOptions = [
     { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
     { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
 ].concat(CommonBlendModes);
+
+/**
+ * Used to populate the billboardMode dropdown for particle systems.
+ */
+export const ParticleBillboardModeOptions = [
+    { label: "All", value: ParticleSystem.BILLBOARDMODE_ALL },
+    { label: "Y", value: ParticleSystem.BILLBOARDMODE_Y },
+    { label: "Stretched", value: ParticleSystem.BILLBOARDMODE_STRETCHED },
+    { label: "Stretched Local", value: ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL },
+];

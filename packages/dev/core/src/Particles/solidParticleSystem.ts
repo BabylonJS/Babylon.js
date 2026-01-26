@@ -18,6 +18,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { MultiMaterial } from "../Materials/multiMaterial";
 import type { PickingInfo } from "../Collisions/pickingInfo";
 import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces of this big mesh.
@@ -179,6 +180,7 @@ export class SolidParticleSystem implements IDisposable {
      * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the bounding sphere radius by in order to reduce it for instance.
      * * computeBoundingBox (optional boolean, default false): if the bounding box of the entire SPS will be computed (for occlusion detection, for example). If it is false, the bounding box will be the bounding box of the first particle.
      * * autoFixFaceOrientation (optional boolean, default false): if the particle face orientations will be flipped for transformations that change orientation (scale (-1, 1, 1), for example)
+     * * camera (optional Camera) : the camera to use with the particule system. If not provided, use the scene active camera.
      * @param options.updatable
      * @param options.isPickable
      * @param options.enableDepthSort
@@ -190,6 +192,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param options.enableMultiMaterial
      * @param options.computeBoundingBox
      * @param options.autoFixFaceOrientation
+     * @param options.camera
      * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
      */
     constructor(
@@ -207,11 +210,12 @@ export class SolidParticleSystem implements IDisposable {
             enableMultiMaterial?: boolean;
             computeBoundingBox?: boolean;
             autoFixFaceOrientation?: boolean;
+            camera?: TargetCamera;
         }
     ) {
         this.name = name;
         this._scene = scene || EngineStore.LastCreatedScene;
-        this._camera = <TargetCamera>scene.activeCamera;
+        this._camera = options && options.camera ? options.camera : <TargetCamera>scene.activeCamera;
         this._pickable = options ? <boolean>options.isPickable : false;
         this._depthSort = options ? <boolean>options.enableDepthSort : false;
         this._multimaterialEnabled = options ? <boolean>options.enableMultiMaterial : false;
@@ -779,7 +783,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param options.storage
      * @returns the number of shapes in the system
      */
-    public addShape(mesh: Mesh, nb: number, options?: { positionFunction?: any; vertexFunction?: any; storage?: [] }): number {
+    public addShape(mesh: AbstractMesh, nb: number, options?: { positionFunction?: any; vertexFunction?: any; storage?: [] }): number {
         const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         const meshInd = <IndicesArray>mesh.getIndices();
         const meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
@@ -1130,15 +1134,16 @@ export class SolidParticleSystem implements IDisposable {
             this.mesh.computeWorldMatrix(true);
             this.mesh._worldMatrix.invertToRef(invertedMatrix);
         }
+        const camera = this._camera ? this._camera : this._scene.activeCamera ? this._scene.activeCamera : this._scene.cameras[0];
         // if the particles will always face the camera
         if (this.billboard) {
             // compute the camera position and un-rotate it by the current mesh rotation
             const tmpVector0 = tempVectors[0];
-            this._camera.getDirectionToRef(Axis.Z, tmpVector0);
+            camera.getDirectionToRef(Axis.Z, tmpVector0);
             Vector3.TransformNormalToRef(tmpVector0, invertedMatrix, camAxisZ);
             camAxisZ.normalize();
             // same for camera up vector extracted from the cam view matrix
-            const view = this._camera.getViewMatrix(true);
+            const view = camera.getViewMatrix(true);
             Vector3.TransformNormalFromFloatsToRef(view.m[1], view.m[5], view.m[9], invertedMatrix, camAxisY);
             Vector3.CrossToRef(camAxisY, camAxisZ, camAxisX);
             camAxisY.normalize();
@@ -1147,7 +1152,7 @@ export class SolidParticleSystem implements IDisposable {
 
         // if depthSort, compute the camera global position in the mesh local system
         if (this._depthSort) {
-            Vector3.TransformCoordinatesToRef(this._camera.globalPosition, invertedMatrix, camInvertedPosition); // then un-rotate the camera
+            Vector3.TransformCoordinatesToRef(camera.globalPosition, invertedMatrix, camInvertedPosition); // then un-rotate the camera
         }
 
         Matrix.IdentityToRef(rotMatrix);
