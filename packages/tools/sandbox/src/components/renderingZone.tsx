@@ -26,7 +26,6 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
-import { GLTFValidation } from "loaders/glTF/glTFValidation";
 
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
