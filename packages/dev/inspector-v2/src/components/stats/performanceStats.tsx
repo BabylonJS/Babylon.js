@@ -13,7 +13,7 @@ import { Tools } from "core/Misc/tools";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
-import type { IPerfLayoutSize } from "../performanceViewer/graphSupportingTypes";
+import type { PerfLayoutSize } from "../performanceViewer/graphSupportingTypes";
 import { PerformanceViewerPopup } from "../performanceViewer/performanceViewerPopup";
 
 const enum PerfMetadataCategory {
@@ -55,7 +55,7 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
     const [isOpen, setIsOpen] = useState(false);
     const [isLoadedFromCsv, setIsLoadedFromCsv] = useState(false);
     const [performanceCollector, setPerformanceCollector] = useState<PerformanceViewerCollector | undefined>();
-    const [layoutObservable] = useState(() => new Observable<IPerfLayoutSize>());
+    const [layoutObservable] = useState(() => new Observable<PerfLayoutSize>());
     const [returnToLiveObservable] = useState(() => new Observable<void>());
     const childWindowRef = useRef<{ open: (options?: { defaultWidth?: number; defaultHeight?: number; title?: string }) => void; close: () => void }>(null);
 

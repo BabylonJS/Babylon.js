@@ -2,7 +2,7 @@ import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/per
 import type { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 import type { FunctionComponent } from "react";
-import type { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
+import type { PerfLayoutSize, VisibleRangeChangedObservableProps } from "./graphSupportingTypes";
 import type { Vector2 } from "core/Maths/math.vector";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
@@ -43,7 +43,7 @@ const useStyles = makeStyles({
 
 interface IPerformanceViewerPopupProps {
     scene: Scene;
-    layoutObservable: Observable<IPerfLayoutSize>;
+    layoutObservable: Observable<PerfLayoutSize>;
     returnToLiveObservable: Observable<void>;
     performanceCollector: PerformanceViewerCollector;
     initialGraphSize?: Vector2;
@@ -52,7 +52,7 @@ interface IPerformanceViewerPopupProps {
 export const PerformanceViewerPopup: FunctionComponent<IPerformanceViewerPopupProps> = (props) => {
     const { scene, layoutObservable, returnToLiveObservable, performanceCollector, initialGraphSize } = props;
     const classes = useStyles();
-    const [onVisibleRangeChangedObservable] = useState(() => new BabylonObservable<IVisibleRangeChangedObservableProps>());
+    const [onVisibleRangeChangedObservable] = useState(() => new BabylonObservable<VisibleRangeChangedObservableProps>());
 
     const onReturnToPlayheadClick = () => {
         returnToLiveObservable.notifyObservers();

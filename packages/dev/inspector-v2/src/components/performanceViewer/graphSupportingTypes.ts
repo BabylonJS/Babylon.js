@@ -4,93 +4,93 @@ import type { Observable } from "core/Misc/observable";
 /**
  * Defines a structure to hold max, min and a optional current.
  */
-export interface IPerfMinMax {
+export type PerfMinMax = {
     min: number;
     max: number;
     current?: number;
-}
+};
 
 /**
  * Defines structure of the object which contains information related to panning.
  */
-export interface IPerfMousePanningPosition {
+export type PerfMousePanningPosition = {
     xPos: number;
     delta: number;
-}
+};
 
 /**
  * Defines structure of the object which contains information regarding the bounds of each dataset we want to consider.
  */
-export interface IPerfIndexBounds {
+export type PerfIndexBounds = {
     start: number;
     end: number;
-}
+};
 
-export interface IPerfLayoutSize {
+export type PerfLayoutSize = {
     width: number;
     height: number;
-}
+};
 
 /**
  * Defines the structure of the meta object for the tooltip that appears when hovering over a performance graph!
  */
-export interface IPerfTooltip {
+export type PerfTooltip = {
     text: string;
     color: string;
-}
+};
 
 /**
  * Defines the structure of a cache object used to store the result of measureText().
  */
-export interface IPerfTextMeasureCache {
+export type PerfTextMeasureCache = {
     text: string;
     width: number;
-}
+};
 
 /**
  * Defines a structure defining the available space in a drawable area.
  */
-export interface IGraphDrawableArea {
+export type GraphDrawableArea = {
     top: number;
     left: number;
     bottom: number;
     right: number;
-}
+};
 
 /**
  * Defines the structure representing necessary ticker information.
  */
-export interface IPerfTicker extends IPerfMinMax {
+export type PerfTicker = PerfMinMax & {
     id: string;
     text: string;
-}
+};
 
-export interface IVisibleRangeChangedObservableProps {
-    valueMap: Map<string, IPerfMinMax>;
-}
+export type VisibleRangeChangedObservableProps = {
+    valueMap: Map<string, PerfMinMax>;
+};
 
 /**
  * Defines what settings our canvas graphing service accepts
  */
-export interface ICanvasGraphServiceSettings {
+export type CanvasGraphServiceSettings = {
     datasets: IPerfDatasets;
-    onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
-}
+    onVisibleRangeChangedObservable?: Observable<VisibleRangeChangedObservableProps>;
+};
 
 /**
  * Defines the structure representing the preprocessable tooltip information.
  */
-export interface ITooltipPreprocessedInformation {
+export type TooltipPreprocessedInformation = {
     xForActualTimestamp: number;
     numberOfTooltipItems: number;
     longestText: string;
     focusedId: string;
-}
+};
 
-export interface IPerfTooltipHoverPosition {
+export type PerfTooltipHoverPosition = {
     xPos: number;
     yPos: number;
-}
+};
 
 /**
  * Defines the supported timestamp units.

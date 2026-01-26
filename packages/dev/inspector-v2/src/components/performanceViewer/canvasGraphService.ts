@@ -1,16 +1,16 @@
 import type {
-    ICanvasGraphServiceSettings,
-    IPerfMinMax,
-    IGraphDrawableArea,
-    IPerfMousePanningPosition,
-    IPerfIndexBounds,
-    IPerfTooltip,
-    IPerfTextMeasureCache,
-    IPerfLayoutSize,
-    IPerfTicker,
-    ITooltipPreprocessedInformation,
-    IPerfTooltipHoverPosition,
-    IVisibleRangeChangedObservableProps,
+    CanvasGraphServiceSettings,
+    PerfMinMax,
+    GraphDrawableArea,
+    PerfMousePanningPosition,
+    PerfIndexBounds,
+    PerfTooltip,
+    PerfTextMeasureCache,
+    PerfLayoutSize,
+    PerfTicker,
+    TooltipPreprocessedInformation,
+    PerfTooltipHoverPosition,
+    VisibleRangeChangedObservableProps,
 } from "./graphSupportingTypes";
 import { TimestampUnit } from "./graphSupportingTypes";
 import type { IPerfDatasets, IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
@@ -139,20 +139,20 @@ export class CanvasGraphService {
     private _height: number;
     private _sizeOfWindow: number = 300;
     private _ticks: number[];
-    private _panPosition: IPerfMousePanningPosition | null;
+    private _panPosition: PerfMousePanningPosition | null;
     private _position: number | null;
-    private _datasetBounds: IPerfIndexBounds;
-    private _globalTimeMinMax: IPerfMinMax;
-    private _hoverPosition: IPerfTooltipHoverPosition | null;
-    private _drawableArea: IGraphDrawableArea;
+    private _datasetBounds: PerfIndexBounds;
+    private _globalTimeMinMax: PerfMinMax;
+    private _hoverPosition: PerfTooltipHoverPosition | null;
+    private _drawableArea: GraphDrawableArea;
     private _axisHeight: number;
-    private _tooltipItems: IPerfTooltip[];
-    private _tooltipTextCache: IPerfTextMeasureCache;
-    private _tickerTextCache: IPerfTextMeasureCache;
-    private _tickerItems: IPerfTicker[];
-    private _preprocessedTooltipInfo: ITooltipPreprocessedInformation;
+    private _tooltipItems: PerfTooltip[];
+    private _tooltipTextCache: PerfTextMeasureCache;
+    private _tickerTextCache: PerfTextMeasureCache;
+    private _tickerItems: PerfTicker[];
+    private _preprocessedTooltipInfo: TooltipPreprocessedInformation;
     private _numberOfTickers: number;
-    private _onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
+    private _onVisibleRangeChangedObservable?: Observable<VisibleRangeChangedObservableProps>;
 
     private readonly _addonFontLineHeight: number;
     private readonly _defaultLineHeight: number;
@@ -173,7 +173,7 @@ export class CanvasGraphService {
      * @param canvas a pointer to the canvas dom element we would like to write to.
      * @param settings settings for our service.
      */
-    constructor(canvas: HTMLCanvasElement, settings: ICanvasGraphServiceSettings) {
+    constructor(canvas: HTMLCanvasElement, settings: CanvasGraphServiceSettings) {
         this._ctx = canvas.getContext && canvas.getContext("2d");
         this._width = canvas.width;
         this._height = canvas.height;
@@ -226,7 +226,7 @@ export class CanvasGraphService {
      * Update the canvas graph service with the new height and width of the canvas.
      * @param size The new size of the canvas.
      */
-    public resize(size: IPerfLayoutSize) {
+    public resize(size: PerfLayoutSize) {
         const { _ctx: ctx } = this;
         const { width, height } = size;
 
@@ -338,7 +338,7 @@ export class CanvasGraphService {
         for (let idOffset = 0; idOffset < this.datasets.ids.length; idOffset++) {
             const id = this.datasets.ids[idOffset];
 
-            let valueMinMax: IPerfMinMax | undefined;
+            let valueMinMax: PerfMinMax | undefined;
             let prevPoint = this._prevPointById.get(id);
             let prevValue = this._prevValueById.get(id);
             let ticker = false;
@@ -434,7 +434,7 @@ export class CanvasGraphService {
         this._drawTooltip(this._hoverPosition, this._drawableArea);
     }
 
-    private _drawTickers(drawableArea: IGraphDrawableArea, bounds: IPerfIndexBounds) {
+    private _drawTickers(drawableArea: GraphDrawableArea, bounds: PerfIndexBounds) {
         const { _ctx: ctx } = this;
 
         if (!ctx) {
@@ -444,7 +444,7 @@ export class CanvasGraphService {
         // create the ticker objects for each of the non hidden items.
         let longestText: string = "";
         this._numberOfTickers = 0;
-        const valueMap = new Map<string, IPerfMinMax>();
+        const valueMap = new Map<string, PerfMinMax>();
         for (let idOffset = 0; idOffset < this.datasets.ids.length; idOffset++) {
             const id = this.datasets.ids[idOffset];
             if (this.metadata.get(id)?.hidden) {
@@ -534,7 +534,7 @@ export class CanvasGraphService {
      * @param timeMinMax the minimum and maximum for the time axis.
      * @param drawableArea the current allocated drawable area.
      */
-    private _drawTimeAxis(timeMinMax: IPerfMinMax, drawableArea: IGraphDrawableArea) {
+    private _drawTimeAxis(timeMinMax: PerfMinMax, drawableArea: GraphDrawableArea) {
         const { _ctx: ctx } = this;
 
         if (!ctx) {
@@ -636,7 +636,7 @@ export class CanvasGraphService {
      * @param minMax the minimum and maximum values of the axis
      * @param spaceAvailable the total amount of space we have allocated to our axis
      */
-    private _generateTicks(minMax: IPerfMinMax, spaceAvailable: number) {
+    private _generateTicks(minMax: PerfMinMax, spaceAvailable: number) {
         const { min, max } = minMax;
         const minTickSpacing = 40;
 
@@ -696,7 +696,7 @@ export class CanvasGraphService {
      * @param offset
      * @returns the min and max of the array.
      */
-    private _getMinMax(bounds: IPerfIndexBounds, offset: number): IPerfMinMax {
+    private _getMinMax(bounds: PerfIndexBounds, offset: number): PerfMinMax {
         let min = Infinity,
             max = 0;
 
@@ -735,7 +735,7 @@ export class CanvasGraphService {
      * @param shouldFlipValue if we should use a [1, 0] scale instead of a [0, 1] scale.
      * @returns the pixel coordinate of the value in a single axis.
      */
-    private _getPixelForNumber(num: number, minMax: IPerfMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
+    private _getPixelForNumber(num: number, minMax: PerfMinMax, startingPixel: number, spaceAvailable: number, shouldFlipValue: boolean) {
         const { min, max } = minMax;
         // Perform a min-max normalization to rescale the value onto a [0, 1] scale given the min and max of the dataset.
         let normalizedValue = Math.abs(max - min) > 0.001 ? (num - min) / (max - min) : 0.5;
@@ -795,7 +795,7 @@ export class CanvasGraphService {
     /**
      * Debounced processing and drawing of tooltip.
      */
-    private _debouncedTooltip = Debounce((pos: IPerfTooltipHoverPosition | null, drawableArea: IGraphDrawableArea) => {
+    private _debouncedTooltip = Debounce((pos: PerfTooltipHoverPosition | null, drawableArea: GraphDrawableArea) => {
         this._preprocessTooltip(pos, drawableArea);
         this._drawTooltip(pos, drawableArea);
     }, TooltipDebounceTime);
@@ -860,7 +860,7 @@ export class CanvasGraphService {
      * @param pos the position of our mouse.
      * @param drawableArea the remaining drawable area.
      */
-    private _preprocessTooltip(pos: IPerfTooltipHoverPosition | null, drawableArea: IGraphDrawableArea) {
+    private _preprocessTooltip(pos: PerfTooltipHoverPosition | null, drawableArea: GraphDrawableArea) {
         const { _ctx: ctx } = this;
 
         if (pos === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
@@ -884,7 +884,7 @@ export class CanvasGraphService {
         const closestIndex = this._getClosestPointToTimestamp(inferredTimestamp);
         let actualTimestamp: number = 0;
         let closestLineId: string = "";
-        let closestLineValueMinMax: IPerfMinMax = { min: 0, max: 0 };
+        let closestLineValueMinMax: PerfMinMax = { min: 0, max: 0 };
         let closestLineDistance: number = Number.POSITIVE_INFINITY;
 
         for (let idOffset = 0; idOffset < this.datasets.ids.length; idOffset++) {
@@ -902,7 +902,7 @@ export class CanvasGraphService {
             const valueAtClosestPointIndex = this.datasets.startingIndices.at(closestIndex) + PerformanceViewerCollector.SliceDataOffset + idOffset;
             const valueAtClosestPoint = this.datasets.data.at(valueAtClosestPointIndex);
 
-            let valueMinMax: IPerfMinMax | undefined;
+            let valueMinMax: PerfMinMax | undefined;
 
             // we would have already calculated  the min and max while getting the tickers, so use those, and get first one.
             for (let i = 0; i < this._numberOfTickers; i++) {
@@ -994,7 +994,7 @@ export class CanvasGraphService {
      * @param pos the position of the mouse cursor in pixels (x, y).
      * @param drawableArea  the available area we can draw in.
      */
-    private _drawTooltip(pos: IPerfTooltipHoverPosition | null, drawableArea: IGraphDrawableArea) {
+    private _drawTooltip(pos: PerfTooltipHoverPosition | null, drawableArea: GraphDrawableArea) {
         const { _ctx: ctx } = this;
 
         if (pos === null || !ctx || !ctx.canvas || this._getNumberOfSlices() === 0) {
@@ -1089,7 +1089,7 @@ export class CanvasGraphService {
      * @param shouldFlip if we should use a [1, 0] scale instead of a [0, 1] scale.
      * @returns number corresponding to pixel position
      */
-    private _getNumberFromPixel(pixel: number, minMax: IPerfMinMax, startingPixel: number, endingPixel: number, shouldFlip: boolean): number {
+    private _getNumberFromPixel(pixel: number, minMax: PerfMinMax, startingPixel: number, endingPixel: number, shouldFlip: boolean): number {
         // normalize pixel to range [0, 1].
         let normalizedPixelPosition = (pixel - startingPixel) / (endingPixel - startingPixel);
 
@@ -1231,7 +1231,7 @@ export class CanvasGraphService {
      * @param drawableArea The remaining drawable area.
      * @param scaleFactor The Percentage between 0.0 and 1.0 of the canvas the data gets drawn on.
      */
-    private _drawPlayheadRegion(drawableArea: IGraphDrawableArea, scaleFactor: number) {
+    private _drawPlayheadRegion(drawableArea: GraphDrawableArea, scaleFactor: number) {
         const { _ctx: ctx } = this;
 
         if (!ctx || scaleFactor >= StopDrawingPlayheadThreshold) {

@@ -2,7 +2,7 @@ import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
 import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
 import type { Observable } from "core/Misc/observable";
 import type { FunctionComponent } from "react";
-import type { IPerfMinMax, IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
+import type { PerfMinMax, VisibleRangeChangedObservableProps } from "./graphSupportingTypes";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
@@ -87,7 +87,7 @@ const useStyles = makeStyles({
 
 interface IPerformanceSidebarProps {
     collector: PerformanceViewerCollector;
-    onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
+    onVisibleRangeChangedObservable?: Observable<VisibleRangeChangedObservableProps>;
 }
 
 export const PerformanceSidebar: FunctionComponent<IPerformanceSidebarProps> = (props) => {
@@ -103,13 +103,13 @@ export const PerformanceSidebar: FunctionComponent<IPerformanceSidebarProps> = (
     // List of ordered categories
     const [metadataCategories, setMetadataCategories] = useState<string[]>();
     // Min/Max/Current values of the ids
-    const [valueMap, setValueMap] = useState<Map<string, IPerfMinMax>>();
+    const [valueMap, setValueMap] = useState<Map<string, PerfMinMax>>();
 
     useEffect(() => {
         if (!onVisibleRangeChangedObservable) {
             return;
         }
-        const observer = (observedProps: IVisibleRangeChangedObservableProps) => {
+        const observer = (observedProps: VisibleRangeChangedObservableProps) => {
             setValueMap(observedProps.valueMap);
         };
         onVisibleRangeChangedObservable.add(observer);

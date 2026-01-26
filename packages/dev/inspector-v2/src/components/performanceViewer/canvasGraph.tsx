@@ -1,7 +1,7 @@
 import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
 import type { Observable } from "core/Misc/observable";
 import type { FunctionComponent } from "react";
-import type { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
+import type { PerfLayoutSize, VisibleRangeChangedObservableProps } from "./graphSupportingTypes";
 import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
 import type { Scene } from "core/scene";
 import type { Vector2 } from "core/Maths/math.vector";
@@ -20,16 +20,16 @@ const useStyles = makeStyles({
     },
 });
 
-interface ICanvasGraphProps {
+interface CanvasGraphProps {
     scene: Scene;
     collector: PerformanceViewerCollector;
-    layoutObservable?: Observable<IPerfLayoutSize>;
+    layoutObservable?: Observable<PerfLayoutSize>;
     returnToPlayheadObservable?: Observable<void>;
-    onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
+    onVisibleRangeChangedObservable?: Observable<VisibleRangeChangedObservableProps>;
     initialGraphSize?: Vector2;
 }
 
-export const CanvasGraph: FunctionComponent<ICanvasGraphProps> = (props) => {
+export const CanvasGraph: FunctionComponent<CanvasGraphProps> = (props) => {
     const { collector, scene, layoutObservable, returnToPlayheadObservable, onVisibleRangeChangedObservable, initialGraphSize } = props;
     const classes = useStyles();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -53,7 +53,7 @@ export const CanvasGraph: FunctionComponent<ICanvasGraphProps> = (props) => {
             return;
         }
 
-        const layoutUpdated = (newSize: IPerfLayoutSize) => {
+        const layoutUpdated = (newSize: PerfLayoutSize) => {
             if (!canvasRef.current) {
                 return;
             }
