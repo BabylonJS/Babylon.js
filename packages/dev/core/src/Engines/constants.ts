@@ -15,7 +15,7 @@ export class Constants {
      */
     public static readonly ALPHA_COMBINE = 2;
     /**
-     * Defines that alpha blending is COLOR=(1 - SRC) * DEST, ALPHA=SRC_ALPHA - DEST_ALPHA
+     * Defines that alpha blending is COLOR=(1 - SRC) * DEST, ALPHA=SRC_ALPHA + DEST_ALPHA
      * Subtracts source from destination, leading to darker results
      * */
     public static readonly ALPHA_SUBTRACT = 3;

@@ -19,6 +19,7 @@ import type { Scene } from "core/scene";
 import { AnimationPropertiesOverride } from "core/Animations/animationPropertiesOverride";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
+import { CurveEditorButton } from "../../curveEditor/curveEditorButton";
 
 export interface IAnimationRangeContainer {
     getAnimationRanges(): Nullable<AnimationRange>[];
@@ -115,6 +116,12 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
                             >
                                 <Badge appearance="filled">{animations.length}</Badge>
                             </PropertyLine>
+                            <CurveEditorButton
+                                scene={scene}
+                                target={entity as IAnimatable}
+                                animations={animations}
+                                title={(entity as { name?: string }).name ?? "Animation Curve Editor"}
+                            />
                             {mainAnimatable && (
                                 <>
                                     <PropertyLine

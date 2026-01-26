@@ -241,6 +241,8 @@ export const evaluateInitEngineForVisualization = async ({
             useHighPrecisionFloats: true,
             disableWebGL2Support: engineName === "webgl1" ? true : false,
             forceSRGBBufferSupportState: true,
+            failIfMajorPerformanceCaveat: true,
+            powerPreference: "high-performance",
         });
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);
