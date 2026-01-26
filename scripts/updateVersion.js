@@ -161,12 +161,6 @@ async function runTagsUpdate() {
 
     // update package-json
     updateVersion(version);
-    await runCommand(
-        `npx lerna version ${config.versionDefinition} --yes --no-push --conventional-prerelease --force-publish --no-private --no-git-tag-version ${
-            config.preid ? "--preid " + config.preid : ""
-        }`
-    );
-
     // update engine version
     await updateEngineVersion(version);
     // generate changelog
