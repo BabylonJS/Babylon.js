@@ -164,6 +164,9 @@ float turbulence( vec3 p ) {
     return t;
 }
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+varying float vViewDepth;
+#endif
 
 #define CUSTOM_VERTEX_DEFINITIONS
 

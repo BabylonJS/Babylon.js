@@ -1,11 +1,11 @@
 import type { Nullable } from "../../types";
 import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
-import type { NativeEngine } from "../nativeEngine";
 import type { NativeFramebuffer } from "./nativeInterfaces";
+import type { ThinNativeEngine } from "../thinNativeEngine";
 
 export class NativeRenderTargetWrapper extends RenderTargetWrapper {
-    public override readonly _engine: NativeEngine;
+    public override readonly _engine: ThinNativeEngine;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private __framebuffer: Nullable<NativeFramebuffer> = null;
@@ -34,7 +34,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         this.__framebufferDepthStencil = framebufferDepthStencil;
     }
 
-    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: NativeEngine) {
+    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: ThinNativeEngine) {
         super(isMulti, isCube, size, engine);
         this._engine = engine;
     }

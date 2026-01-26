@@ -20,6 +20,10 @@ import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coro
 import { EngineStore } from "core/Engines/engineStore";
 import type { Camera } from "core/Cameras/camera";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
+import type { INative } from "core/Engines/Native/nativeInterfaces";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _native: INative;
 
 interface IDelayedTextureUpdate {
     covA: Uint16Array;
@@ -327,10 +331,30 @@ export class GaussianSplattingMesh extends Mesh {
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
 
     private static readonly _DefaultViewUpdateThreshold = 1e-4;
+
     /**
      * Cosine value of the angle threshold to update view dependent splat sorting. Default is 0.0001.
      */
     public viewUpdateThreshold: number = GaussianSplattingMesh._DefaultViewUpdateThreshold;
+
+    protected _disableDepthSort = false;
+    /**
+     * If true, disables depth sorting of the splats (default: false)
+     */
+    public get disableDepthSort() {
+        return this._disableDepthSort;
+    }
+    public set disableDepthSort(value: boolean) {
+        if (!this._disableDepthSort && value) {
+            this._worker?.terminate();
+            this._worker = null;
+            this._disableDepthSort = true;
+        } else if (this._disableDepthSort && !value) {
+            this._disableDepthSort = false;
+            this._sortIsDirty = true;
+            this._instanciateWorker();
+        }
+    }
 
     /**
      * View direction factor used to compute the SH view direction in the shader.
@@ -568,40 +592,44 @@ export class GaussianSplattingMesh extends Mesh {
             }
         });
 
-        if ((forced || outdated) && this._worker && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
-            // array of cameras used for rendering
-            const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
-            // list view infos for active cameras
-            const activeViewInfos: ICameraViewInfo[] = [];
-            cameras.forEach((camera) => {
-                const cameraId = camera.uniqueId;
+        // array of cameras used for rendering
+        const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
+        // list view infos for active cameras
+        const activeViewInfos: ICameraViewInfo[] = [];
+        cameras.forEach((camera) => {
+            if (!camera) {
+                return;
+            }
+            const cameraId = camera.uniqueId;
 
-                const cameraViewInfos = this._cameraViewInfos.get(cameraId);
-                if (cameraViewInfos) {
-                    activeViewInfos.push(cameraViewInfos);
-                } else {
-                    // mesh doesn't exist yet for this camera
-                    const cameraMesh = new Mesh(this.name + "_cameraMesh_" + cameraId, this._scene);
-                    // not visible with inspector or the scene graph
-                    cameraMesh.reservedDataStore = { hidden: true };
-                    cameraMesh.setEnabled(false);
-                    cameraMesh.material = this.material;
-                    GaussianSplattingMesh._MakeSplatGeometryForMesh(cameraMesh);
+            const cameraViewInfos = this._cameraViewInfos.get(cameraId);
+            if (cameraViewInfos) {
+                activeViewInfos.push(cameraViewInfos);
+            } else {
+                // mesh doesn't exist yet for this camera
+                const cameraMesh = new Mesh(this.name + "_cameraMesh_" + cameraId, this._scene);
+                // not visible with inspector or the scene graph
+                cameraMesh.reservedDataStore = { hidden: true };
+                cameraMesh.setEnabled(false);
+                cameraMesh.material = this.material;
+                GaussianSplattingMesh._MakeSplatGeometryForMesh(cameraMesh);
 
-                    const newViewInfos: ICameraViewInfo = {
-                        camera: camera,
-                        cameraDirection: new Vector3(0, 0, 0),
-                        mesh: cameraMesh,
-                        frameIdLastUpdate: frameId,
-                        splatIndexBufferSet: false,
-                    };
-                    activeViewInfos.push(newViewInfos);
-                    this._cameraViewInfos.set(cameraId, newViewInfos);
-                }
-            });
-            // sort view infos by last updated frame id: first item is the least recently updated
-            activeViewInfos.sort((a, b) => a.frameIdLastUpdate - b.frameIdLastUpdate);
+                const newViewInfos: ICameraViewInfo = {
+                    camera: camera,
+                    cameraDirection: new Vector3(0, 0, 0),
+                    mesh: cameraMesh,
+                    frameIdLastUpdate: frameId,
+                    splatIndexBufferSet: false,
+                };
+                activeViewInfos.push(newViewInfos);
+                this._cameraViewInfos.set(cameraId, newViewInfos);
+            }
+        });
+        // sort view infos by last updated frame id: first item is the least recently updated
+        activeViewInfos.sort((a, b) => a.frameIdLastUpdate - b.frameIdLastUpdate);
 
+        const hasSortFunction = this._worker || (_native && _native.sortSplats) || this._disableDepthSort;
+        if ((forced || outdated) && hasSortFunction && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
             // view infos sorted by least recent updated frame id
             activeViewInfos.forEach((cameraViewInfos) => {
                 const camera = cameraViewInfos.camera;
@@ -613,17 +641,38 @@ export class GaussianSplattingMesh extends Mesh {
                     cameraViewInfos.cameraDirection.copyFrom(cameraDirection);
                     cameraViewInfos.frameIdLastUpdate = frameId;
                     this._canPostToWorker = false;
-                    this._worker!.postMessage(
-                        {
-                            view: this._modelViewMatrix.m,
-                            depthMix: this._depthMix,
-                            useRightHandedSystem: this._scene.useRightHandedSystem,
-                            cameraId: camera.uniqueId,
-                        },
-                        [this._depthMix.buffer]
-                    );
+                    if (this._worker) {
+                        this._worker!.postMessage(
+                            {
+                                view: this._modelViewMatrix.m,
+                                depthMix: this._depthMix,
+                                useRightHandedSystem: this._scene.useRightHandedSystem,
+                                cameraId: camera.uniqueId,
+                            },
+                            [this._depthMix.buffer]
+                        );
+                    } else if (_native && _native.sortSplats) {
+                        _native.sortSplats(this._modelViewMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
+                        if (cameraViewInfos.splatIndexBufferSet) {
+                            cameraViewInfos.mesh.thinInstanceBufferUpdated("splatIndex");
+                        } else {
+                            cameraViewInfos.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
+                            cameraViewInfos.splatIndexBufferSet = true;
+                        }
+                        this._canPostToWorker = true;
+                        this._readyToDisplay = true;
+                    }
                 }
             });
+        } else if (this._disableDepthSort) {
+            activeViewInfos.forEach((cameraViewInfos) => {
+                if (!cameraViewInfos.splatIndexBufferSet) {
+                    cameraViewInfos.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
+                    cameraViewInfos.splatIndexBufferSet = true;
+                }
+            });
+            this._canPostToWorker = true;
+            this._readyToDisplay = true;
         }
     }
     /**
@@ -1410,6 +1459,7 @@ export class GaussianSplattingMesh extends Mesh {
         newGS._modelViewMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
         newGS._readyToDisplay = false;
+        newGS._disableDepthSort = this._disableDepthSort;
         newGS._instanciateWorker();
 
         const binfo = this.getBoundingInfo();
@@ -1436,7 +1486,7 @@ export class GaussianSplattingMesh extends Mesh {
                 const cameraId = e.data.cameraId;
                 const viewProj = e.data.view;
 
-                const vertexCountPadded = (positions.length + 15) & ~0xf;
+                const vertexCountPadded = (positions.length / 4 + 15) & ~0xf;
                 if (!positions || !viewProj) {
                     // Sanity check, it shouldn't happen!
                     throw new Error("positions or view is not defined!");
@@ -1576,7 +1626,9 @@ export class GaussianSplattingMesh extends Mesh {
             this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions!, sh: sh };
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
-            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+            if (this._worker) {
+                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            }
 
             this._postToWorker(true);
         } else {
@@ -1662,7 +1714,9 @@ export class GaussianSplattingMesh extends Mesh {
             // sort will be dirty here as just finished filled positions will not be sorted
             const positions = Float32Array.from(this._splatPositions);
             const vertexCount = this._vertexCount;
-            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+            if (this._worker) {
+                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            }
             this._sortIsDirty = true;
         } else {
             const paddedVertexCount = (vertexCount + 15) & ~0xf;
@@ -1721,6 +1775,9 @@ export class GaussianSplattingMesh extends Mesh {
         const paddedVertexCount = (vertexCount + 15) & ~0xf;
         if (!this._splatIndex || vertexCount > this._splatIndex.length) {
             this._splatIndex = new Float32Array(paddedVertexCount);
+            for (let i = 0; i < paddedVertexCount; i++) {
+                this._splatIndex[i] = i;
+            }
 
             // update meshes for knowns cameras
             this._cameraViewInfos.forEach((cameraViewInfos) => {
@@ -1759,7 +1816,15 @@ export class GaussianSplattingMesh extends Mesh {
         if (!this._vertexCount) {
             return;
         }
+        if (this._disableDepthSort) {
+            return;
+        }
         this._updateSplatIndexBuffer(this._vertexCount);
+
+        // no worker in native
+        if (_native) {
+            return;
+        }
 
         // Start the worker thread
         this._worker?.terminate();

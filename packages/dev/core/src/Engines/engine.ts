@@ -1,7 +1,6 @@
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
 import { EngineStore } from "./engineStore";
 import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
@@ -34,6 +33,8 @@ import "./AbstractEngine/abstractEngine.states";
 import "./AbstractEngine/abstractEngine.stencil";
 import "./AbstractEngine/abstractEngine.renderPass";
 import "./AbstractEngine/abstractEngine.texture";
+import "./AbstractEngine/abstractEngine.loadFile";
+import "./AbstractEngine/abstractEngine.textureLoaders";
 
 import type { PostProcess } from "../PostProcesses/postProcess";
 import { AbstractEngine } from "./abstractEngine";
@@ -540,33 +541,6 @@ export class Engine extends ThinEngine {
         const gl = this._gl;
 
         gl.disable(gl.SCISSOR_TEST);
-    }
-
-    /**
-     * @internal
-     */
-    public async _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: false): Promise<string>;
-    public async _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: true): Promise<ArrayBuffer>;
-
-    /**
-     * @internal
-     */
-    public async _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
-        return await new Promise((resolve, reject) => {
-            this._loadFile(
-                url,
-                (data) => {
-                    resolve(data);
-                },
-                undefined,
-                offlineProvider,
-                useArrayBuffer,
-                (request, exception) => {
-                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                    reject(exception);
-                }
-            );
-        });
     }
 
     /**

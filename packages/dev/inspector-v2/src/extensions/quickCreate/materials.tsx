@@ -5,18 +5,9 @@ import type { Scene } from "core/scene";
 import { useState } from "react";
 import type { FunctionComponent } from "react";
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import { makeStyles, tokens } from "@fluentui/react-components";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SettingsPopover } from "./settingsPopover";
-
-const useStyles = makeStyles({
-    section: {
-        display: "flex",
-        flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
-    },
-    row: { display: "flex", alignItems: "center", gap: "4px" },
-});
+import { QuickCreateSection, QuickCreateRow } from "./quickCreateLayout";
 
 type MaterialsContentProps = {
     scene: Scene;
@@ -28,8 +19,6 @@ type MaterialsContentProps = {
  * @returns React component
  */
 export const MaterialsContent: FunctionComponent<MaterialsContentProps> = ({ scene }) => {
-    const classes = useStyles();
-
     // Node Material state
     const [nodeMaterialName, setNodeMaterialName] = useState("Node Material");
     const [nodeMaterialSnippetId, setNodeMaterialSnippetId] = useState("");
@@ -63,34 +52,34 @@ export const MaterialsContent: FunctionComponent<MaterialsContentProps> = ({ sce
     };
 
     return (
-        <div className={classes.section}>
+        <QuickCreateSection>
             {/* Node Material */}
-            <div className={classes.row}>
+            <QuickCreateRow>
                 <Button onClick={handleCreateNodeMaterialAsync} label="Node Material" />
                 <SettingsPopover>
                     <TextInputPropertyLine label="Name" value={nodeMaterialName} onChange={(value) => setNodeMaterialName(value)} />
                     <TextInputPropertyLine label="Snippet ID" value={nodeMaterialSnippetId} onChange={(value) => setNodeMaterialSnippetId(value)} />
                     <Button appearance="primary" onClick={handleCreateNodeMaterialAsync} label="Create" />
                 </SettingsPopover>
-            </div>
+            </QuickCreateRow>
 
             {/* PBR Material */}
-            <div className={classes.row}>
+            <QuickCreateRow>
                 <Button onClick={handleCreatePBRMaterial} label="PBR Material" />
                 <SettingsPopover>
                     <TextInputPropertyLine label="Name" value={pbrMaterialName} onChange={(value) => setPbrMaterialName(value)} />
                     <Button appearance="primary" onClick={handleCreatePBRMaterial} label="Create" />
                 </SettingsPopover>
-            </div>
+            </QuickCreateRow>
 
             {/* Standard Material */}
-            <div className={classes.row}>
+            <QuickCreateRow>
                 <Button onClick={handleCreateStandardMaterial} label="Standard Material" />
                 <SettingsPopover>
                     <TextInputPropertyLine label="Name" value={standardMaterialName} onChange={(value) => setStandardMaterialName(value)} />
                     <Button appearance="primary" onClick={handleCreateStandardMaterial} label="Create" />
                 </SettingsPopover>
-            </div>
-        </div>
+            </QuickCreateRow>
+        </QuickCreateSection>
     );
 };

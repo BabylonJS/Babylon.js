@@ -3,9 +3,10 @@ import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodePartic
 import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 import type { ParticleGradientValueBlock } from "./particleGradientValueBlock";
 
+import { Constants } from "../../../Engines/constants";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
@@ -26,11 +27,11 @@ export class SystemBlock extends NodeParticleBlock {
         notifiers: { rebuild: true },
         embedded: true,
         options: [
-            { label: "OneOne", value: BaseParticleSystem.BLENDMODE_ONEONE },
-            { label: "Standard", value: BaseParticleSystem.BLENDMODE_STANDARD },
-            { label: "Add", value: BaseParticleSystem.BLENDMODE_ADD },
-            { label: "Multiply", value: BaseParticleSystem.BLENDMODE_MULTIPLY },
-            { label: "MultiplyAdd", value: BaseParticleSystem.BLENDMODE_MULTIPLYADD },
+            { label: "Blend Mode OneOne", value: BaseParticleSystem.BLENDMODE_ONEONE },
+            { label: "Blend Mode Standard", value: BaseParticleSystem.BLENDMODE_STANDARD },
+            { label: "Blend Mode Add", value: BaseParticleSystem.BLENDMODE_ADD },
+            { label: "Blend Mode Multiply", value: BaseParticleSystem.BLENDMODE_MULTIPLY },
+            { label: "Blend Mode MultiplyAdd", value: BaseParticleSystem.BLENDMODE_MULTIPLYADD },
         ],
     })
     public blendMode = BaseParticleSystem.BLENDMODE_ONEONE;
@@ -78,6 +79,21 @@ export class SystemBlock extends NodeParticleBlock {
     public isBillboardBased = true;
 
     /**
+     * Gets or sets the billboard mode for the particle system
+     */
+    @editableInPropertyPage("Billboard mode", PropertyTypeForEdition.List, "ADVANCED", {
+        notifiers: { rebuild: true },
+        embedded: true,
+        options: [
+            { label: "Billboard Mode All", value: Constants.PARTICLES_BILLBOARDMODE_ALL },
+            { label: "Billboard Mode Y", value: Constants.PARTICLES_BILLBOARDMODE_Y },
+            { label: "Billboard Mode Stretched", value: Constants.PARTICLES_BILLBOARDMODE_STRETCHED },
+            { label: "Billboard Mode Stretched Local", value: Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL },
+        ],
+    })
+    public billBoardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
+
+    /**
      * Gets or sets a boolean indicating if the system coordinate space is local or global
      */
     @editableInPropertyPage("Is local", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
@@ -116,6 +132,7 @@ export class SystemBlock extends NodeParticleBlock {
         this.registerInput("onStart", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("onEnd", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("rampGradient", NodeParticleBlockConnectionPointTypes.Color4, true);
+        this.registerInput("emitterPosition", NodeParticleBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
     }
 
@@ -191,6 +208,13 @@ export class SystemBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the emitterPosition input component
+     */
+    public get emitterPosition(): NodeParticleConnectionPoint {
+        return this._inputs[9];
+    }
+
+    /**
      * Gets the system output component
      */
     public get system(): NodeParticleConnectionPoint {
@@ -220,10 +244,12 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem._targetStopDuration = (this.targetStopDuration.getConnectedValue(state) as number) ?? 0;
         particleSystem.startDelay = this.startDelay;
         particleSystem.isBillboardBased = this.isBillboardBased;
+        particleSystem.billboardMode = this.billBoardMode;
         particleSystem.translationPivot = (this.translationPivot.getConnectedValue(state) as Vector2) || Vector2.Zero();
         particleSystem.textureMask = this.textureMask.getConnectedValue(state) ?? new Color4(1, 1, 1, 1);
         particleSystem.isLocal = this.isLocal;
         particleSystem.disposeOnStop = this.disposeOnStop;
+        particleSystem.emitter = (this.emitterPosition.getConnectedValue(state) as Vector3) ?? Vector3.Zero();
 
         // The emit rate can vary if it is connected to another block like a gradient
         particleSystem._calculateEmitRate = () => {
@@ -312,6 +338,7 @@ export class SystemBlock extends NodeParticleBlock {
         serializationObject.preWarmCycles = this.preWarmCycles;
         serializationObject.preWarmStepOffset = this.preWarmStepOffset;
         serializationObject.isBillboardBased = this.isBillboardBased;
+        serializationObject.billBoardMode = this.billBoardMode;
         serializationObject.isLocal = this.isLocal;
         serializationObject.disposeOnStop = this.disposeOnStop;
         serializationObject.doNoStart = this.doNoStart;
@@ -333,6 +360,7 @@ export class SystemBlock extends NodeParticleBlock {
         this.preWarmCycles = serializationObject.preWarmCycles ?? 0;
         this.preWarmStepOffset = serializationObject.preWarmStepOffset ?? 0;
         this.isBillboardBased = serializationObject.isBillboardBased ?? true;
+        this.billBoardMode = serializationObject.billBoardMode ?? Constants.PARTICLES_BILLBOARDMODE_ALL;
         this.isLocal = serializationObject.isLocal ?? false;
         this.disposeOnStop = serializationObject.disposeOnStop ?? false;
         this.doNoStart = !!serializationObject.doNoStart;

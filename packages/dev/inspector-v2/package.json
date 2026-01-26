@@ -26,6 +26,7 @@
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",
         "@pmmmwh/react-refresh-webpack-plugin": "^0.6.0",
+        "@tools/gui-editor": "1.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
         "html-webpack-plugin": "^5.5.0",

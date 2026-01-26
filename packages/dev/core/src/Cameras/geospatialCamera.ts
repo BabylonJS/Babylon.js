@@ -52,6 +52,8 @@ export class GeospatialCamera extends Camera {
     private _collisionVelocity: Vector3 = new Vector3();
     /** Public option to customize the collision offset applied each frame - vs the one calculated using internal CollisionCoordinator */
     public perFrameCollisionOffset: Vector3 = new Vector3();
+    /** Enable or disable collision checking for this camera. Default is false. */
+    public checkCollisions: boolean = false;
 
     constructor(name: string, scene: Scene, options: CameraOptions, pickPredicate?: MeshPredicate) {
         super(name, new Vector3(), scene);
@@ -192,7 +194,9 @@ export class GeospatialCamera extends Camera {
         this._tempPosition.copyFrom(this._center).addInPlace(this._tempVect);
 
         // Recalculate collisionOffset to be applied later when viewMatrix is calculated (allowing camera users to modify the value in afterCheckInputsObservable)
-        this.perFrameCollisionOffset = this._getCollisionOffset(this._tempPosition);
+        if (this.checkCollisions) {
+            this.perFrameCollisionOffset = this._getCollisionOffset(this._tempPosition);
+        }
 
         this._position.copyFrom(this._tempPosition);
 
@@ -379,7 +383,7 @@ export class GeospatialCamera extends Camera {
         }
     }
 
-    private _getCenterAndRadiusFromZoomToPoint(targetPoint: Vector3, distance: number, newCenterResult: Vector3): number {
+    private _getCenterAndRadiusFromZoomToPoint(targetPoint: DeepImmutable<IVector3Like>, distance: number, newCenterResult: Vector3): number {
         const directionToTarget = Vector3SubtractToRef(targetPoint, this._position, TmpVectors.Vector3[0]);
         const distanceToTarget = directionToTarget.length();
 
@@ -419,10 +423,10 @@ export class GeospatialCamera extends Camera {
         }
         if (pickedPoint) {
             // Zoom toward the picked point under cursor
-            this._zoomToPoint(pickedPoint, zoomDelta);
+            this.zoomToPoint(pickedPoint, zoomDelta);
         } else {
             // Zoom along lookAt vector (fallback when no surface under cursor)
-            this._zoomAlongLookAt(zoomDelta);
+            this.zoomAlongLookAt(zoomDelta);
         }
     }
 
@@ -448,13 +452,13 @@ export class GeospatialCamera extends Camera {
         }
     }
 
-    private _zoomToPoint(targetPoint: Vector3, distance: number) {
+    public zoomToPoint(targetPoint: DeepImmutable<IVector3Like>, distance: number) {
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(targetPoint, distance, this._tempCenter);
         // Apply the new orientation
         this._setOrientation(this._yaw, this._pitch, newRadius, this._tempCenter);
     }
 
-    private _zoomAlongLookAt(distance: number) {
+    public zoomAlongLookAt(distance: number) {
         // Clamp radius to limits
         const requestedRadius = this._radius - distance;
         const newRadius = Clamp(requestedRadius, this.limits.radiusMin, this.limits.radiusMax);
@@ -523,9 +527,13 @@ export class GeospatialCamera extends Camera {
      * @returns
      */
     protected _getCollisionOffset(newPosition: Vector3): Vector3 {
-        const coordinator = this.getScene().collisionCoordinator;
         const collisionOffset = TmpVectors.Vector3[6].setAll(0);
-        if (!coordinator || !this._scene.collisionsEnabled) {
+        if (!this.checkCollisions || !this._scene.collisionsEnabled) {
+            return collisionOffset;
+        }
+
+        const coordinator = this.getScene().collisionCoordinator;
+        if (!coordinator) {
             return collisionOffset;
         }
 
