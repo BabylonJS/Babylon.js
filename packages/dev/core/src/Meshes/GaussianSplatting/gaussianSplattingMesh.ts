@@ -1560,7 +1560,7 @@ export class GaussianSplattingMesh extends Mesh {
                     depthFactor = 1;
                 }
 
-                if (partMatrices) {
+                if (partMatrices && partIndices) {
                     // If there are rig node matrices, we use them instead of the global model view proj
 
                     // Precompute modelViewProj for each rig node
