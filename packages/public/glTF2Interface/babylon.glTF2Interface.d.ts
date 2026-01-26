@@ -1169,6 +1169,7 @@ declare module BABYLON.GLTF2 {
     interface IKHRMaterialsVolumeScatter {
         scatterAnisotropy?: number;
         multiscatterColor?: number[];
+        multiscatterColorTexture?: ITextureInfo;
     }
 
     /**

@@ -51,7 +51,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
 
         if (babylonMaterial instanceof PBRMaterial) {
             if (this._isExtensionEnabled(babylonMaterial)) {
-                if (babylonMaterial.subSurface.refractionIntensityTexture) {
+                if (babylonMaterial.subSurface.refractionIntensityTexture && babylonMaterial.subSurface.useGltfStyleTextures) {
                     additionalTextures.push(babylonMaterial.subSurface.refractionIntensityTexture);
                 }
                 return additionalTextures;
@@ -71,7 +71,10 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
             return mat.transmissionWeight > 0;
         } else if (mat instanceof PBRMaterial && !mat.unlit) {
             const subs = mat.subSurface;
-            return (subs.isRefractionEnabled && subs.refractionIntensity != undefined && subs.refractionIntensity != 0) || mat.subSurface.refractionIntensityTexture != null;
+            return (
+                (subs.isRefractionEnabled && subs.refractionIntensity != undefined && subs.refractionIntensity != 0) ||
+                (subs.refractionIntensityTexture != null && subs.useGltfStyleTextures)
+            );
         }
         return false;
     }
@@ -97,13 +100,10 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 transmissionFactor: transmissionFactor,
             };
 
-            if (babylonMaterial.subSurface.refractionIntensityTexture != null) {
-                this._exporter._materialNeedsUVsSet.add(babylonMaterial);
-            }
-
             if (subSurface.refractionIntensityTexture) {
                 if (subSurface.useGltfStyleTextures) {
-                    const transmissionTexture = await this._exporter._materialExporter.exportTextureAsync(subSurface.refractionIntensityTexture);
+                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                    const transmissionTexture = this._exporter._materialExporter.getTextureInfo(subSurface.refractionIntensityTexture);
                     if (transmissionTexture) {
                         transmissionInfo.transmissionTexture = transmissionTexture;
                     }
@@ -125,7 +125,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
 
             if (babylonMaterial.transmissionWeightTexture) {
                 this._exporter._materialNeedsUVsSet.add(babylonMaterial);
-                const transmissionTexture = await this._exporter._materialExporter.exportTextureAsync(babylonMaterial.transmissionWeightTexture);
+                const transmissionTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.transmissionWeightTexture);
                 if (transmissionTexture) {
                     transmissionInfo.transmissionTexture = transmissionTexture;
                 }

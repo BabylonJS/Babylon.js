@@ -7,7 +7,7 @@ import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 const NAME = "KHR_materials_openpbr";
 
 /**
- * TODO: Add link to specification) Specification still being drafted
+ * TODO: Add link to specification. Specification still being drafted.
  * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -22,8 +22,6 @@ export class KHR_materials_openpbr implements IGLTFExporterExtensionV2 {
     public required = false;
 
     private _wasUsed = false;
-
-    constructor(exporter: GLTFExporter) {}
 
     public dispose() {}
 
@@ -53,4 +51,4 @@ export class KHR_materials_openpbr implements IGLTFExporterExtensionV2 {
     }
 }
 
-GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_openpbr(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_openpbr());

@@ -34,12 +34,12 @@ export class KHR_materials_volume_scatter implements IGLTFExporterExtensionV2 {
     /** Defines whether this extension is required */
     public required = false;
 
-    // private _exporter: GLTFExporter;
+    private _exporter: GLTFExporter;
 
     private _wasUsed = false;
 
     constructor(exporter: GLTFExporter) {
-        // this._exporter = exporter;
+        this._exporter = exporter;
     }
 
     public dispose() {}
@@ -124,6 +124,14 @@ export class KHR_materials_volume_scatter implements IGLTFExporterExtensionV2 {
                     scatterAnisotropy: babylonMaterial.transmissionScatterAnisotropy,
                 };
 
+                if (babylonMaterial.transmissionScatterTexture) {
+                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                    const transmissionTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.transmissionScatterTexture);
+                    if (transmissionTexture) {
+                        volumeInfo.multiscatterColorTexture = transmissionTexture;
+                    }
+                }
+
                 node.extensions = node.extensions || {};
                 node.extensions[NAME] = volumeInfo;
 
@@ -144,4 +152,4 @@ export class KHR_materials_volume_scatter implements IGLTFExporterExtensionV2 {
     }
 }
 
-GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_volume_scatter(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_volume_scatter(exporter), 101);
