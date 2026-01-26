@@ -294,6 +294,10 @@ export class AssetContainer extends AbstractAssetContainer {
             for (const texture of this.textures) {
                 texture._rebuild();
             }
+
+            for (const spriteManager of this.spriteManagers) {
+                spriteManager.rebuild();
+            }
         });
     }
 
@@ -1070,6 +1074,12 @@ export class AssetContainer extends AbstractAssetContainer {
             morphTargetManager.dispose();
         }
         this.morphTargetManagers.length = 0;
+
+        const spriteManagers = this.spriteManagers.slice(0);
+        for (const spriteManager of spriteManagers) {
+            spriteManager.dispose();
+        }
+        this.spriteManagers.length = 0;
 
         if (this.environmentTexture) {
             this.environmentTexture.dispose();

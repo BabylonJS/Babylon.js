@@ -21,7 +21,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 
 import type { Ray } from "../Culling/ray";
-import { IAssetContainer } from "../IAssetContainer";
+import type { IAssetContainer } from "../IAssetContainer";
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect
 declare const Reflect: any;
