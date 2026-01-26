@@ -4,6 +4,7 @@ import type { FunctionComponent } from "react";
 import type { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
 import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
 import type { Scene } from "core/scene";
+import type { Vector2 } from "core/Maths/math.vector";
 
 import { makeStyles } from "@fluentui/react-components";
 import { useEffect, useRef } from "react";
@@ -25,7 +26,7 @@ interface ICanvasGraphProps {
     layoutObservable?: Observable<IPerfLayoutSize>;
     returnToPlayheadObservable?: Observable<void>;
     onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
-    initialGraphSize?: { width: number; height: number };
+    initialGraphSize?: Vector2;
 }
 
 export const CanvasGraph: FunctionComponent<ICanvasGraphProps> = (props) => {
@@ -39,8 +40,8 @@ export const CanvasGraph: FunctionComponent<ICanvasGraphProps> = (props) => {
         }
 
         if (initialGraphSize) {
-            canvasRef.current.width = initialGraphSize.width;
-            canvasRef.current.height = initialGraphSize.height;
+            canvasRef.current.width = initialGraphSize.x;
+            canvasRef.current.height = initialGraphSize.y;
         }
 
         let cs: CanvasGraphService | undefined;

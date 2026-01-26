@@ -3,6 +3,7 @@ import type { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 import type { FunctionComponent } from "react";
 import type { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
+import type { Vector2 } from "core/Maths/math.vector";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useState } from "react";
@@ -45,7 +46,7 @@ interface IPerformanceViewerPopupProps {
     layoutObservable: Observable<IPerfLayoutSize>;
     returnToLiveObservable: Observable<void>;
     performanceCollector: PerformanceViewerCollector;
-    initialGraphSize?: { width: number; height: number };
+    initialGraphSize?: Vector2;
 }
 
 export const PerformanceViewerPopup: FunctionComponent<IPerformanceViewerPopupProps> = (props) => {

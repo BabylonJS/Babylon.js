@@ -1,4 +1,5 @@
 import type { PerformanceViewerCollector, Scene } from "core/index";
+import { Vector2 } from "core/Maths/math.vector";
 
 import type { FunctionComponent } from "react";
 
@@ -48,7 +49,7 @@ const DefaultStrategiesList = [
 
 // arbitrary window size
 const InitialWindowSize = { width: 1024, height: 512 };
-const InitialGraphSize = { width: 724, height: 512 };
+const InitialGraphSize = new Vector2(724, 512);
 
 export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {
     const [isOpen, setIsOpen] = useState(false);
