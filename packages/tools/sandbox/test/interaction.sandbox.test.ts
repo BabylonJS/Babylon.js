@@ -87,6 +87,6 @@ test("inspector is opened when clicking on the button", async ({ page }) => {
     // click the "Inspector" button
     await page.getByTitle("Display inspector").click();
     await expect(page.locator("#babylon-inspector-container")).toBeVisible();
-    // check snapshot of the rendering canvas (the full page includes Inspector, which has a lot of asynchrony and animation, making it hard to get a stable screenshot)
-    await expect(page.locator("#renderCanvas")).toHaveScreenshot({ maxDiffPixels: 3000 });
+    // check snapshot of the page
+    await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });
