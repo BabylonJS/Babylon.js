@@ -20,14 +20,14 @@ const useStyles = makeStyles({
     },
 });
 
-interface CanvasGraphProps {
+type CanvasGraphProps = {
     scene: Scene;
     collector: PerformanceViewerCollector;
     layoutObservable?: Observable<PerfLayoutSize>;
     returnToPlayheadObservable?: Observable<void>;
     onVisibleRangeChangedObservable?: Observable<VisibleRangeChangedObservableProps>;
     initialGraphSize?: Vector2;
-}
+};
 
 export const CanvasGraph: FunctionComponent<CanvasGraphProps> = (props) => {
     const { collector, scene, layoutObservable, returnToPlayheadObservable, onVisibleRangeChangedObservable, initialGraphSize } = props;
