@@ -40,7 +40,7 @@ var shTexture1: texture_2d<u32>;
 var shTexture2: texture_2d<u32>;
 #endif
 #if IS_COMPOUND
-var partIndicesTexture: texture_2d<u32>;
+var partIndicesTexture: texture_2d<f32>;
 #endif
 // Output
 varying vColor: vec4f;

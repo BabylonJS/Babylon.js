@@ -88,7 +88,7 @@ Splat readSplat(float splatIndex)
     splat.sh2 = texelFetch(shTexture2, splatUVint, 0);
 #endif
 #if IS_COMPOUND
-    splat.partIndex = texelFetch(partIndicesTexture, splatUVint, 0).x;
+    splat.partIndex = uint(texture2D(partIndicesTexture, splatUV).r * 255.0 + 0.5);
 #endif
     return splat;
 }

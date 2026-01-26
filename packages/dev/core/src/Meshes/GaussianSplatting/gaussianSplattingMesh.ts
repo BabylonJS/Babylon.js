@@ -31,7 +31,7 @@ interface IDelayedTextureUpdate {
     colors: Uint8Array;
     centers: Float32Array;
     sh?: Uint8Array[];
-    partIndices?: Uint32Array;
+    partIndices?: Uint8Array;
 }
 interface IUpdateOptions {
     flipY?: boolean;
@@ -313,7 +313,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _splatsData: Nullable<ArrayBuffer> = null;
     private _shData: Nullable<Uint8Array[]> = null;
     private _partIndicesTexture: Nullable<BaseTexture> = null;
-    private _partIndices: Nullable<Uint32Array> = null;
+    private _partIndices: Nullable<Uint8Array> = null;
     private _partMatrices: Matrix[] = [];
     private _textureSize: Vector2 = new Vector2(0, 0);
     private readonly _keepInRam: boolean = false;
@@ -1506,7 +1506,7 @@ export class GaussianSplattingMesh extends Mesh {
         let depthMix: BigInt64Array;
         let indices: Uint32Array;
         let floatMix: Float32Array;
-        let partIndices: Uint32Array;
+        let partIndices: Uint8Array;
         let partMatrices: Float32Array[];
 
         function multiplyMatrices(matrix1: Float32Array, matrix2: Float32Array): Float32Array {
@@ -1676,7 +1676,7 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     // NB: partIndices is assumed to be padded to a round texture size
-    private _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[], partIndices?: Uint32Array): void {
+    private _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[], partIndices?: Uint8Array): void {
         const textureSize = this._getTextureSize(this._vertexCount);
         // Update the textures
         const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
@@ -1720,8 +1720,8 @@ export class GaussianSplattingMesh extends Mesh {
 
             // Handle compound data, if any
             if (partIndices && !this._partIndicesTexture) {
-                const buffer = new Uint32Array(partIndices);
-                this._partIndicesTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_R_INTEGER);
+                const buffer = new Uint8Array(partIndices);
+                this._partIndicesTexture = createTextureFromDataU8(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RED);
                 this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                 this._partIndicesTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
             }
@@ -1754,8 +1754,8 @@ export class GaussianSplattingMesh extends Mesh {
             }
 
             if (partIndices) {
-                const buffer = new Uint32Array(partIndices);
-                this._partIndicesTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_R_INTEGER);
+                const buffer = new Uint8Array(partIndices);
+                this._partIndicesTexture = createTextureFromDataU8(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RED);
                 this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                 this._partIndicesTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
             }
@@ -1774,7 +1774,7 @@ export class GaussianSplattingMesh extends Mesh {
         }
     }
 
-    private *_updateData(data: ArrayBuffer, isAsync: boolean, sh?: Uint8Array[], partIndices?: Uint32Array, options: IUpdateOptions = { flipY: false }): Coroutine<void> {
+    private *_updateData(data: ArrayBuffer, isAsync: boolean, sh?: Uint8Array[], partIndices?: Uint8Array, options: IUpdateOptions = { flipY: false }): Coroutine<void> {
         // if a covariance texture is present, then it's not a creation but an update
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
@@ -1810,7 +1810,7 @@ export class GaussianSplattingMesh extends Mesh {
         // Ensure that partMatrices.length is at least the maximum part index + 1
         if (partIndices) {
             // We always keep part indices in RAM because they are needed for sorting
-            this._partIndices = new Uint32Array(textureLength);
+            this._partIndices = new Uint8Array(textureLength);
             this._partIndices.set(partIndices);
 
             let maxPartIndex = -1;
@@ -1877,10 +1877,10 @@ export class GaussianSplattingMesh extends Mesh {
      * Update asynchronously the buffer
      * @param data array buffer containing center, color, orientation and scale of splats
      * @param sh optional array of uint8 array for SH data
-     * @param partIndices optional array of uint32 for rig node indices
+     * @param partIndices optional array of uint8 for rig node indices
      * @returns a promise
      */
-    public async updateDataAsync(data: ArrayBuffer, sh?: Uint8Array[], partIndices?: Uint32Array): Promise<void> {
+    public async updateDataAsync(data: ArrayBuffer, sh?: Uint8Array[], partIndices?: Uint8Array): Promise<void> {
         return await runCoroutineAsync(this._updateData(data, true, sh, partIndices), createYieldingScheduler());
     }
 
@@ -1890,9 +1890,9 @@ export class GaussianSplattingMesh extends Mesh {
      * @param data array that contain all the datas
      * @param sh optional array of uint8 array for SH data
      * @param options optional informations on how to treat data (needs to be 3rd for backward compatibility)
-     * @param partIndices optional array of uint32 for rig node indices
+     * @param partIndices optional array of uint8 for rig node indices
      */
-    public updateData(data: ArrayBuffer, sh?: Uint8Array[], options: IUpdateOptions = { flipY: true }, partIndices?: Uint32Array): void {
+    public updateData(data: ArrayBuffer, sh?: Uint8Array[], options: IUpdateOptions = { flipY: true }, partIndices?: Uint8Array): void {
         runCoroutineSync(this._updateData(data, false, sh, partIndices, options));
     }
 
@@ -1936,7 +1936,7 @@ export class GaussianSplattingMesh extends Mesh {
         lineStart: number,
         lineCount: number,
         sh?: Uint8Array[],
-        partIndices?: Uint32Array
+        partIndices?: Uint8Array
     ): void {
         const updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
             (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
@@ -1962,7 +1962,7 @@ export class GaussianSplattingMesh extends Mesh {
             }
         }
         if (partIndices && this._partIndicesTexture) {
-            const partIndicesView = new Uint32Array(partIndices.buffer, texelStart, texelCount);
+            const partIndicesView = new Uint8Array(partIndices.buffer, texelStart, texelCount);
             updateTextureFromData(this._partIndicesTexture, partIndicesView, textureSize.x, lineStart, lineCount);
         }
     }
@@ -1991,7 +1991,7 @@ export class GaussianSplattingMesh extends Mesh {
         );
 
         const positions = Float32Array.from(this._splatPositions!);
-        const partIndices = this._partIndices ? new Uint32Array(this._partIndices) : null;
+        const partIndices = this._partIndices ? new Uint8Array(this._partIndices) : null;
         const partMatrices = this._partMatrices.map(matrix => new Float32Array(matrix.m));
 
         this._worker.postMessage({ positions }, [positions.buffer]);
@@ -2208,19 +2208,19 @@ export class GaussianSplattingMesh extends Mesh {
             }
         }
     
-        // Concatenate partIndices (Uint32Array)
+        // Concatenate partIndices (Uint8Array)
         let newPartIndex = this.partCount;
         let partIndicesA = this.partIndices;
         if (!partIndicesA) {
-            partIndicesA = new Uint32Array(splatCountA);
+            partIndicesA = new Uint8Array(splatCountA);
             //newPartIndex = splatCountA > 0 ? 1 : 0;
             newPartIndex = 1;
         }
         if (partIndicesA.length < splatCountA) {
             throw new Error(`partIndices length (${partIndicesA.length}) should be at least vertexCount (${splatCountA}) in the current mesh`);
         }
-        const partIndicesB = new Uint32Array(splatCountB).fill(newPartIndex);
-        const mergedPartIndices = new Uint32Array(splatCountA + splatCountB);
+        const partIndicesB = new Uint8Array(splatCountB).fill(newPartIndex);
+        const mergedPartIndices = new Uint8Array(splatCountA + splatCountB);
         mergedPartIndices.set(partIndicesA.slice(0, splatCountA), 0);
         mergedPartIndices.set(partIndicesB, splatCountA);
         

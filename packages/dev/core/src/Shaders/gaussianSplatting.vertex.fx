@@ -38,7 +38,7 @@ uniform highp usampler2D shTexture2;
 #endif
 
 #if IS_COMPOUND
-uniform highp usampler2D partIndicesTexture;
+uniform sampler2D partIndicesTexture;
 #endif
 
 // Output

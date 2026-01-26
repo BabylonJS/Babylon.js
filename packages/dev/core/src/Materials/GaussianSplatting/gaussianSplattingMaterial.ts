@@ -50,7 +50,7 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
     public SH_DEGREE = 0;
     public COMPENSATION = false;
     public IS_COMPOUND = false;
-    public MAX_PART_COUNT = 16;
+    public MAX_PART_COUNT = 16; // Can be up to 256, then we'll need to change the partIndices texture format to uint16
 
     /**
      * Constructor of the defines.

@@ -132,7 +132,7 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     splat.sh2 = textureLoad(shTexture2, splatUVi32, 0);
 #endif
 #if IS_COMPOUND
-    splat.partIndex = textureLoad(partIndicesTexture, splatUVi32, 0).x;
+    splat.partIndex = u32(textureLoad(partIndicesTexture, splatUVi32, 0).r * 255.0 + 0.5);
 #endif
     return splat;
 }
