@@ -665,7 +665,6 @@ export class GaussianSplattingMesh extends Mesh {
                     cameraViewInfos.frameIdLastUpdate = frameId;
                     this._canPostToWorker = false;
                     if (this._worker) {
-                        console.log("postMessage to worker, depthMix length", this._depthMix.length);
                         this._worker!.postMessage(
                             {
                                 view: this._modelViewMatrix.m,
@@ -1525,7 +1524,6 @@ export class GaussianSplattingMesh extends Mesh {
         self.onmessage = (e: any) => {
             // updated on init
             if (e.data.positions) {
-                console.log("onmessage from worker, positions length", e.data.positions?.length);
                 positions = e.data.positions;
             }
             // update on rig node changed
@@ -1538,7 +1536,6 @@ export class GaussianSplattingMesh extends Mesh {
             }
             // update on view changed
             else {
-                console.log("onmessage from worker, depthMix length", e.data.depthMix?.length);
                 const cameraId = e.data.cameraId;
                 const globalModelViewProj = e.data.view;
                 const viewProj = e.data.viewOnly;
@@ -1552,11 +1549,6 @@ export class GaussianSplattingMesh extends Mesh {
                 depthMix = e.data.depthMix;
                 indices = new Uint32Array(depthMix.buffer);
                 floatMix = new Float32Array(depthMix.buffer);
-
-                if (depthMix.length < vertexCountPadded) {
-                    // Sanity check, it shouldn't happen!
-                    //throw new Error(`depthMix length (${depthMix.length}) mismatch with vertexCountPadded (${vertexCountPadded})!`);
-                }
 
                 // Sort
                 for (let j = 0; j < vertexCountPadded; j++) {
@@ -1592,12 +1584,6 @@ export class GaussianSplattingMesh extends Mesh {
 
                 depthMix.sort();
 
-                const uniqueIndices = new Set();
-                for (let j = 0; j < vertexCountPadded; j++) {
-                    uniqueIndices.add(indices[2 * j]);
-                }
-                console.log("Unique splat indices after sort:", uniqueIndices.size, "out of vertexCountPadded", vertexCountPadded);
-                
                 self.postMessage({ depthMix, cameraId }, [depthMix.buffer]);
             }
         };
@@ -1735,7 +1721,6 @@ export class GaussianSplattingMesh extends Mesh {
             // Handle compound data, if any
             if (partIndices && !this._partIndicesTexture) {
                 const buffer = new Uint32Array(partIndices);
-                console.log("CREATE (for update) texture with size", textureSize.x, textureSize.y);
                 this._partIndicesTexture = createTextureFromDataU32(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_R_INTEGER);
                 this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
                 this._partIndicesTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
@@ -1805,7 +1790,6 @@ export class GaussianSplattingMesh extends Mesh {
         }
 
         const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
-        console.log("vertexCount", vertexCount, "old vertexCount", this._vertexCount); // TMP
         if (vertexCount != this._vertexCount) {
             this._updateSplatIndexBuffer(vertexCount);
         }
@@ -1938,7 +1922,6 @@ export class GaussianSplattingMesh extends Mesh {
 
         // Update depthMix
         if (!this._depthMix || vertexCount > this._depthMix.length) {
-            console.log("resize depthMix to", paddedVertexCount);
             this._depthMix = new BigInt64Array(paddedVertexCount);
         }
         
@@ -1960,7 +1943,6 @@ export class GaussianSplattingMesh extends Mesh {
         };
 
         const textureSize = this._getTextureSize(this._vertexCount);
-        console.log("updateSubTextures", textureSize.x, textureSize.y, "vertex count", this._vertexCount);
         const covBSItemSize = this._useRGBACovariants ? 4 : 2;
         const texelStart = lineStart * textureSize.x;
         const texelCount = lineCount * textureSize.x;
@@ -1980,15 +1962,7 @@ export class GaussianSplattingMesh extends Mesh {
             }
         }
         if (partIndices && this._partIndicesTexture) {
-            console.log("UPDATE", texelStart, texelCount, "lineStart", lineStart, "lineCount", lineCount);
             const partIndicesView = new Uint32Array(partIndices.buffer, texelStart, texelCount);
-            const nullIndices = [];
-            for (let i = 0; i < partIndicesView.length; i++) {
-                if (partIndicesView[i] == 0) {
-                    nullIndices.push(i);
-                }
-            }
-            console.log("BB nullIndices", nullIndices);
             updateTextureFromData(this._partIndicesTexture, partIndicesView, textureSize.x, lineStart, lineCount);
         }
     }
@@ -2030,7 +2004,6 @@ export class GaussianSplattingMesh extends Mesh {
 
             // If the vertex count changed, we discard this result and trigger a new sort
             if (e.data.depthMix.length != vertexCountPadded) {
-                console.log(`depthMix length changed (${e.data.depthMix.length} -> ${vertexCountPadded}), discarding result and triggering a new sort`);
                 this._canPostToWorker = true;
                 this._postToWorker(true);
                 this._sortIsDirty = false;
@@ -2186,8 +2159,6 @@ export class GaussianSplattingMesh extends Mesh {
         const splatCountB = other._vertexCount;
         const splatsDataB = other.splatsData;
         const shDataB = other.shData;
-
-        console.log(`Merging ${splatCountA} splats with ${splatCountB} new splats`);
     
         const mergedShDataLength = Math.max(shDataA?.length || 0, shDataB?.length || 0);
         const hasMergedShData = shDataA !== null && shDataB !== null;

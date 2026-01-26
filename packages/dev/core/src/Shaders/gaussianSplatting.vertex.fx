@@ -63,12 +63,6 @@ void main () {
     vec4 worldPos = splatWorld * vec4(splat.center.xyz, 1.0);
 
     vColor = splat.color;
-    if (splat.partIndex == 0u) {
-        vColor = vec4(1.0, 0.0, 0.0, 1.0); // TMP
-    }
-    if (splatIndex > 294912.0) {
-        vColor = vec4(0.0, 1.0, 0.0, 1.0); // TMP
-    }
     vPosition = position.xy;
 
 #if SH_DEGREE > 0
