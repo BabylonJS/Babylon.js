@@ -1,5 +1,6 @@
 import { GeospatialCameraInputsManager } from "./geospatialCameraInputsManager";
-import { Vector2, Vector3, Matrix, TmpVectors, Quaternion } from "../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors, Quaternion } from "../Maths/math.vector";
+import type { Vector2 } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
 import { Camera } from "./camera";
 import type { Scene } from "../scene";
