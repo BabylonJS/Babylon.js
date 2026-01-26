@@ -6,7 +6,7 @@ import type { AbstractMesh } from "../abstractMesh";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Matrix, TmpVectors, Vector2, Vector3 } from "core/Maths/math.vector";
-import type { Quaternion } from "core/Maths/math.vector";
+import { Quaternion } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
@@ -2214,8 +2214,8 @@ export class GaussianSplattingMesh extends Mesh {
         let partIndicesA = this.partIndices;
         if (!partIndicesA) {
             partIndicesA = new Uint8Array(splatCountA);
-            //newPartIndex = splatCountA > 0 ? 1 : 0;
-            newPartIndex = 1;
+            newPartIndex = splatCountA > 0 ? 1 : 0;
+            //newPartIndex = 1;
         }
         if (partIndicesA.length < splatCountA) {
             throw new Error(`partIndices length (${partIndicesA.length}) should be at least vertexCount (${splatCountA}) in the current mesh`);
@@ -2238,8 +2238,15 @@ export class GaussianSplattingMesh extends Mesh {
         }
         const placeholderMesh = new Mesh(other.name, this.getScene());
 
+        placeholderMesh.onAfterWorldMatrixUpdateObservable.add(() => {
+            this.setWorldMatrixForPart(newPartIndex, placeholderMesh.getWorldMatrix());
+        });
+
         // Directly set the world matrix using freezeWorldMatrix
-        placeholderMesh.freezeWorldMatrix(partWorldMatrix);
+        const quaternion = new Quaternion();
+        partWorldMatrix.decompose(placeholderMesh.scaling, quaternion, placeholderMesh.position);
+        placeholderMesh.rotationQuaternion = quaternion;
+        placeholderMesh.computeWorldMatrix(true);
         placeholderMesh.metadata = { partIndex: newPartIndex };
 
         return placeholderMesh;
