@@ -50,7 +50,7 @@ const updateEngineVersion = async (version) => {
 
 const updateSinceTag = (version) => {
     // get all typescript files in the dev folder
-    const files = glob.globSync(path.join(baseDirectory, "packages", "dev", "**", "*.ts"));
+    const files = glob.globSync(path.join(baseDirectory, "packages", "dev", "**", "*.ts").replace(/\\/g, "/"));
     files.forEach((file) => {
         try {
             // check if file contains @since\n
@@ -89,16 +89,16 @@ const updateDependencies = (version, dependencies) => {
     return changed;
 };
 
-const updatePeerDependencies = async (version) => {
+const updatePeerDependencies = (version) => {
     // get all package.json files in the dev folder
-    const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json"));
+    const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json").replace(/\\/g, "/"));
     files.forEach((file) => {
         try {
             // check if file contains @since\n
             const data = fs.readFileSync(file, "utf-8").replace(/\r/gm, "");
             const packageJson = JSON.parse(data);
             // check each peer dependency, if it is babylon, update it with the new version
-            const changed = updateDependencies(packageJson.peerDependencies);
+            const changed = updateDependencies(version, packageJson.peerDependencies);
             if (changed) {
                 console.log(`Updating Babylon peerDependencies in ${file} to ${version}`);
                 // write file
@@ -110,9 +110,9 @@ const updatePeerDependencies = async (version) => {
     });
 };
 
-const updateVersion = async (version) => {
+const updateVersion = (version) => {
     // get all package.json files in the dev folder
-    const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json"));
+    const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json").replace(/\\/g, "/"));
     files.forEach((file) => {
         try {
             // get the package.json as js objects
@@ -126,8 +126,8 @@ const updateVersion = async (version) => {
             }
 
             // And lets update the devDependencies/dependencies
-            updateDependencies(packageJson.devDependencies);
-            updateDependencies(packageJson.dependencies);
+            updateDependencies(version, packageJson.devDependencies);
+            updateDependencies(version, packageJson.dependencies);
 
             console.log(`Updating Babylon package json version in ${file} to ${version}`);
 
@@ -169,7 +169,7 @@ async function runTagsUpdate() {
     updateSinceTag(version);
     // if major, update peer dependencies
     if (config.versionDefinition === "major") {
-        await updatePeerDependencies(`^${version}`);
+        updatePeerDependencies(`^${version}`);
     }
     if (dryRun) {
         console.log("skipping", `git commit -m "Version update ${version}"`);
