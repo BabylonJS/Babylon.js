@@ -2149,9 +2149,10 @@ export class GaussianSplattingMesh extends Mesh {
      * Add another mesh to this mesh, as a new part. This makes the current mesh a compound, if not already.
      * NB: The current mesh needs to be loaded with keepInRam: true.
      * @param other - The other mesh to add. This must be loaded with keepInRam: true.
+     * @param disposeOther - Whether to dispose the other mesh after adding it to the current mesh.
      * @returns a placeholder mesh that can be used to manipulate the part transform
      */
-    public addPart(other: GaussianSplattingMesh): Mesh {
+    public addPart(other: GaussianSplattingMesh, disposeOther: boolean = true): Mesh {
         const splatCountA = this._vertexCount;
         const splatsDataA = splatCountA == 0 ? new ArrayBuffer(0) : this.splatsData;
         const shDataA = this.shData;
@@ -2232,7 +2233,9 @@ export class GaussianSplattingMesh extends Mesh {
 
         // Create a placeholder mesh to manipulate the part transform
         // Remove splats from the original mesh
-        other.dispose();
+        if (disposeOther) {
+            other.dispose();
+        }
         const placeholderMesh = new Mesh(other.name, this.getScene());
 
         // Directly set the world matrix using freezeWorldMatrix
