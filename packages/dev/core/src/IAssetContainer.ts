@@ -21,7 +21,7 @@ import type { EffectLayer } from "./Layers/effectLayer";
 import type { ReflectionProbe } from "./Probes/reflectionProbe";
 import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
-import type { SpriteManager } from "./Sprites/spriteManager";
+import type { ISpriteManager } from "./Sprites/spriteManager";
 /**
  * Interface defining container for the different elements composing a scene.
  * This class is dynamically extended by the different components of the scene increasing
@@ -163,7 +163,7 @@ export interface IAssetContainer {
     /**
      * The list of sprite managers added to the scene
      */
-    spriteManagers: SpriteManager[];
+    spriteManagers?: ISpriteManager[];
 
     /**
      * @returns all meshes, lights, cameras, transformNodes and bones

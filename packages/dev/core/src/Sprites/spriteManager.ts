@@ -700,7 +700,7 @@ export class SpriteManager implements ISpriteManager {
             this._scene._onSpriteManagerRemovedObservable?.notifyObservers(this);
         }
 
-        if (this._parentContainer) {
+        if (this._parentContainer && this._parentContainer.spriteManagers) {
             const index = this._parentContainer.spriteManagers.indexOf(this);
             if (index > -1) {
                 this._parentContainer.spriteManagers.splice(index, 1);
