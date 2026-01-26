@@ -39,3 +39,6 @@ export * from "./particleFresnelBlock";
 export * from "./particleNumberMathBlock";
 export * from "./particleVectorMathBlock";
 export * from "./particleClampBlock";
+export * from "./particleNLerpBlock";
+export * from "./particleSmoothStepBlock";
+export * from "./particleStepBlock";

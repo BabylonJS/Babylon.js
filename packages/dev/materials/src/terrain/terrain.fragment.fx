@@ -100,6 +100,9 @@ vec3 perturbNormal(vec3 viewDir, vec3 mixColor)
 }
 #endif
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+varying float vViewDepth;
+#endif
 
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
