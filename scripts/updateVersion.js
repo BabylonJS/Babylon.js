@@ -147,8 +147,11 @@ async function runTagsUpdate() {
     // Update accordingly
     if (config.versionDefinition === "major") {
         major++;
+        minor = 0;
+        revision = 0;
     } else if (config.versionDefinition === "minor") {
         minor++;
+        revision = 0;
     } else {
         revision++;
     }
