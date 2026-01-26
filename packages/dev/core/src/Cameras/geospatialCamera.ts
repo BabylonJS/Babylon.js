@@ -1,5 +1,5 @@
 import { GeospatialCameraInputsManager } from "./geospatialCameraInputsManager";
-import { Vector3, Matrix, TmpVectors, Quaternion } from "../Maths/math.vector";
+import { Vector2, Vector3, Matrix, TmpVectors, Quaternion } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
 import { Camera } from "./camera";
 import type { Scene } from "../scene";
@@ -19,20 +19,6 @@ import type { Animation } from "../Animations/animation";
 type CameraOptions = {
     planetRadius: number; // Radius of the planet
 };
-
-/**
- * Represents yaw and pitch angles for geospatial camera orientation
- */
-export interface YawPitch {
-    yaw: number;
-    pitch: number;
-}
-
-/**
- * Temporary YawPitch object for allocation-free operations.
- * @internal
- */
-export const TmpYawPitch: YawPitch = { yaw: 0, pitch: 0 };
 
 /**
  * @experimental
@@ -531,11 +517,11 @@ export class GeospatialCamera extends Camera {
                     // Only update if the new center is in front of the camera
                     if (newRadius > Epsilon) {
                         // Compute yaw/pitch that correspond to current lookAt at new center
-                        const yawPitch = TmpYawPitch;
+                        const yawPitch = TmpVectors.Vector2[0];
                         ComputeYawPitchFromLookAtToRef(this._lookAtVector, newCenter.pickedPoint, this._scene.useRightHandedSystem, this._yaw, yawPitch);
 
                         // Call _setOrientation with the computed yaw/pitch and new center
-                        this._setOrientation(yawPitch.yaw, yawPitch.pitch, newRadius, newCenter.pickedPoint);
+                        this._setOrientation(yawPitch.x, yawPitch.y, newRadius, newCenter.pickedPoint);
                     }
                 }
             }
@@ -624,10 +610,10 @@ export function ComputeLookAtFromYawPitchToRef(yaw: number, pitch: number, cente
  * @param center - The center point on the globe
  * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
  * @param currentYaw - The current yaw value to use as fallback when pitch is near 0 (looking straight down/up)
- * @param result - The YawPitch object to store the result in
- * @returns The result YawPitch object
+ * @param result - The Vector2 to store the result in (x = yaw, y = pitch)
+ * @returns The result Vector2
  */
-export function ComputeYawPitchFromLookAtToRef(lookAt: Vector3, center: Vector3, useRightHandedSystem: boolean, currentYaw: number, result: YawPitch): YawPitch {
+export function ComputeYawPitchFromLookAtToRef(lookAt: Vector3, center: Vector3, useRightHandedSystem: boolean, currentYaw: number, result: Vector2): Vector2 {
     // Compute local basis at center
     const east = TmpVectors.Vector3[6];
     const north = TmpVectors.Vector3[7];
@@ -656,8 +642,8 @@ export function ComputeYawPitchFromLookAtToRef(lookAt: Vector3, center: Vector3,
     const sinPitch = Math.sin(pitch);
     if (Math.abs(sinPitch) < Epsilon) {
         // Looking straight down or up, yaw is undefined - keep current
-        result.yaw = currentYaw;
-        result.pitch = pitch;
+        result.x = currentYaw;
+        result.y = pitch;
         return result;
     }
 
@@ -672,7 +658,7 @@ export function ComputeYawPitchFromLookAtToRef(lookAt: Vector3, center: Vector3,
     const sinYaw = -Vector3Dot(horiz, east);
 
     const yawScale = useRightHandedSystem ? 1 : -1;
-    result.yaw = Math.atan2(sinYaw, cosYaw) * yawScale;
-    result.pitch = pitch;
+    result.x = Math.atan2(sinYaw, cosYaw) * yawScale;
+    result.y = pitch;
     return result;
 }

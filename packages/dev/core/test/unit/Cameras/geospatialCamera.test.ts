@@ -1,6 +1,6 @@
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { ComputeLocalBasisToRefs } from "core/Cameras/geospatialCameraMovement";
-import { ComputeLookAtFromYawPitchToRef, ComputeYawPitchFromLookAtToRef, GeospatialCamera, type YawPitch } from "core/Cameras/geospatialCamera";
+import { ComputeLookAtFromYawPitchToRef, ComputeYawPitchFromLookAtToRef, GeospatialCamera } from "core/Cameras/geospatialCamera";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 
@@ -187,7 +187,7 @@ describe("GeospatialCamera", () => {
         it("should be the inverse of the forward yaw/pitch calculation (right-handed)", () => {
             const center = new Vector3(6371, 0, 0); // Equator, 0° lon
             const lookAt = new Vector3();
-            const result: YawPitch = { yaw: 0, pitch: 0 };
+            const result = new Vector2();
 
             const testCases = [
                 { yaw: 0, pitch: Math.PI / 4 },
@@ -202,9 +202,9 @@ describe("GeospatialCamera", () => {
                 ComputeLookAtFromYawPitchToRef(yaw, pitch, center, true, lookAt);
                 ComputeYawPitchFromLookAtToRef(lookAt, center, true, 0, result);
 
-                expect(result.pitch).toBeCloseTo(pitch, 5);
+                expect(result.y).toBeCloseTo(pitch, 5);
                 // Yaw can wrap around, so compare the angular difference
-                const yawDiff = Math.abs(result.yaw - yaw);
+                const yawDiff = Math.abs(result.x - yaw);
                 const yawDiffWrapped = Math.min(yawDiff, 2 * Math.PI - yawDiff);
                 expect(yawDiffWrapped).toBeLessThan(0.0001);
             }
@@ -213,7 +213,7 @@ describe("GeospatialCamera", () => {
         it("should be the inverse of the forward yaw/pitch calculation (left-handed)", () => {
             const center = new Vector3(6371, 0, 0); // Equator, 0° lon
             const lookAt = new Vector3();
-            const result: YawPitch = { yaw: 0, pitch: 0 };
+            const result = new Vector2();
 
             const testCases = [
                 { yaw: 0, pitch: Math.PI / 4 },
@@ -225,8 +225,8 @@ describe("GeospatialCamera", () => {
                 ComputeLookAtFromYawPitchToRef(yaw, pitch, center, false, lookAt);
                 ComputeYawPitchFromLookAtToRef(lookAt, center, false, 0, result);
 
-                expect(result.pitch).toBeCloseTo(pitch, 5);
-                const yawDiff = Math.abs(result.yaw - yaw);
+                expect(result.y).toBeCloseTo(pitch, 5);
+                const yawDiff = Math.abs(result.x - yaw);
                 const yawDiffWrapped = Math.min(yawDiff, 2 * Math.PI - yawDiff);
                 expect(yawDiffWrapped).toBeLessThan(0.0001);
             }
@@ -240,7 +240,7 @@ describe("GeospatialCamera", () => {
                 new Vector3(-6371, 0, 0), // Equator, 180° lon
             ];
             const lookAt = new Vector3();
-            const result: YawPitch = { yaw: 0, pitch: 0 };
+            const result = new Vector2();
 
             for (const center of centers) {
                 const yaw = Math.PI / 4;
@@ -249,8 +249,8 @@ describe("GeospatialCamera", () => {
                 ComputeLookAtFromYawPitchToRef(yaw, pitch, center, true, lookAt);
                 ComputeYawPitchFromLookAtToRef(lookAt, center, true, 0, result);
 
-                expect(result.pitch).toBeCloseTo(pitch, 5);
-                const yawDiff = Math.abs(result.yaw - yaw);
+                expect(result.y).toBeCloseTo(pitch, 5);
+                const yawDiff = Math.abs(result.x - yaw);
                 const yawDiffWrapped = Math.min(yawDiff, 2 * Math.PI - yawDiff);
                 expect(yawDiffWrapped).toBeLessThan(0.0001);
             }
@@ -263,14 +263,14 @@ describe("GeospatialCamera", () => {
             // When pitch ≈ 0, lookAt points straight down at the center (parallel to -up)
             const up = center.clone().normalize();
             const lookAt = up.scale(-1); // Looking straight down
-            const result: YawPitch = { yaw: 0, pitch: 0 };
+            const result = new Vector2();
 
             ComputeYawPitchFromLookAtToRef(lookAt, center, true, currentYaw, result);
 
             // Pitch should be near 0
-            expect(result.pitch).toBeLessThan(0.01);
+            expect(result.y).toBeLessThan(0.01);
             // Yaw should fall back to currentYaw since it's undefined at pitch=0
-            expect(result.yaw).toBeCloseTo(currentYaw, 5);
+            expect(result.x).toBeCloseTo(currentYaw, 5);
         });
 
         it("should handle pitch near π/2 (looking at horizon)", () => {
@@ -278,13 +278,13 @@ describe("GeospatialCamera", () => {
             const yaw = Math.PI / 4;
             const pitch = Math.PI / 2 - 0.001; // Just below horizon
             const lookAt = new Vector3();
-            const result: YawPitch = { yaw: 0, pitch: 0 };
+            const result = new Vector2();
 
             ComputeLookAtFromYawPitchToRef(yaw, pitch, center, true, lookAt);
             ComputeYawPitchFromLookAtToRef(lookAt, center, true, 0, result);
 
-            expect(result.pitch).toBeCloseTo(pitch, 3);
-            const yawDiff = Math.abs(result.yaw - yaw);
+            expect(result.y).toBeCloseTo(pitch, 3);
+            const yawDiff = Math.abs(result.x - yaw);
             const yawDiffWrapped = Math.min(yawDiff, 2 * Math.PI - yawDiff);
             expect(yawDiffWrapped).toBeLessThan(0.001);
         });
@@ -295,7 +295,7 @@ describe("GeospatialCamera", () => {
             const engine = new NullEngine();
             const scene = new Scene(engine);
             const camera = new GeospatialCamera("testCam", scene, { planetRadius: 6371 });
-            const result: YawPitch = { yaw: 0, pitch: 0 };
+            const result = new Vector2();
 
             const testCases = [
                 { yaw: 0, pitch: Math.PI / 4 },
@@ -313,8 +313,8 @@ describe("GeospatialCamera", () => {
                 // Use ComputeYawPitchFromLookAtToRef to recover yaw/pitch
                 ComputeYawPitchFromLookAtToRef(lookAt, camera.center, scene.useRightHandedSystem, camera.yaw, result);
 
-                expect(result.pitch).toBeCloseTo(camera.pitch, 4);
-                const yawDiff = Math.abs(result.yaw - camera.yaw);
+                expect(result.y).toBeCloseTo(camera.pitch, 4);
+                const yawDiff = Math.abs(result.x - camera.yaw);
                 const yawDiffWrapped = Math.min(yawDiff, 2 * Math.PI - yawDiff);
                 expect(yawDiffWrapped).toBeLessThan(0.0001);
             }
