@@ -1,6 +1,6 @@
 import { Vector3 } from "core/Maths/math.vector";
 import { ComputeLocalBasisToRefs } from "core/Cameras/geospatialCameraMovement";
-import { ComputeLookAtFromYawPitch, ComputeYawPitchFromLookAt, GeospatialCamera } from "core/Cameras/geospatialCamera";
+import { ComputeLookAtFromYawPitchToRef, ComputeYawPitchFromLookAtToRef, GeospatialCamera, type YawPitch } from "core/Cameras/geospatialCamera";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 
@@ -170,9 +170,9 @@ describe("GeospatialCamera", () => {
     });
 
     // ============================================
-    // UNIT TESTS: ComputeYawPitchFromLookAt (exported function)
+    // UNIT TESTS: ComputeYawPitchFromLookAtToRef (exported function)
     // ============================================
-    describe("ComputeYawPitchFromLookAt", () => {
+    describe("ComputeYawPitchFromLookAtToRef", () => {
         /**
          * Tests the inverse calculation: given a lookAt direction and center,
          * compute the yaw and pitch that would produce that lookAt.
@@ -181,12 +181,13 @@ describe("GeospatialCamera", () => {
          *   horiz = north * cos(yaw) + east * sin(yaw)
          *   lookAt = horiz * sin(pitch) - up * cos(pitch)
          *
-         * ComputeYawPitchFromLookAt should be the inverse of this.
+         * ComputeYawPitchFromLookAtToRef should be the inverse of this.
          */
 
         it("should be the inverse of the forward yaw/pitch calculation (right-handed)", () => {
             const center = new Vector3(6371, 0, 0); // Equator, 0° lon
             const lookAt = new Vector3();
+            const result: YawPitch = { yaw: 0, pitch: 0 };
 
             const testCases = [
                 { yaw: 0, pitch: Math.PI / 4 },
@@ -198,8 +199,8 @@ describe("GeospatialCamera", () => {
             ];
 
             for (const { yaw, pitch } of testCases) {
-                ComputeLookAtFromYawPitch(yaw, pitch, center, true, lookAt);
-                const result = ComputeYawPitchFromLookAt(lookAt, center, true, 0);
+                ComputeLookAtFromYawPitchToRef(yaw, pitch, center, true, lookAt);
+                ComputeYawPitchFromLookAtToRef(lookAt, center, true, 0, result);
 
                 expect(result.pitch).toBeCloseTo(pitch, 5);
                 // Yaw can wrap around, so compare the angular difference
@@ -212,6 +213,7 @@ describe("GeospatialCamera", () => {
         it("should be the inverse of the forward yaw/pitch calculation (left-handed)", () => {
             const center = new Vector3(6371, 0, 0); // Equator, 0° lon
             const lookAt = new Vector3();
+            const result: YawPitch = { yaw: 0, pitch: 0 };
 
             const testCases = [
                 { yaw: 0, pitch: Math.PI / 4 },
@@ -220,8 +222,8 @@ describe("GeospatialCamera", () => {
             ];
 
             for (const { yaw, pitch } of testCases) {
-                ComputeLookAtFromYawPitch(yaw, pitch, center, false, lookAt);
-                const result = ComputeYawPitchFromLookAt(lookAt, center, false, 0);
+                ComputeLookAtFromYawPitchToRef(yaw, pitch, center, false, lookAt);
+                ComputeYawPitchFromLookAtToRef(lookAt, center, false, 0, result);
 
                 expect(result.pitch).toBeCloseTo(pitch, 5);
                 const yawDiff = Math.abs(result.yaw - yaw);
@@ -238,13 +240,14 @@ describe("GeospatialCamera", () => {
                 new Vector3(-6371, 0, 0), // Equator, 180° lon
             ];
             const lookAt = new Vector3();
+            const result: YawPitch = { yaw: 0, pitch: 0 };
 
             for (const center of centers) {
                 const yaw = Math.PI / 4;
                 const pitch = Math.PI / 4;
 
-                ComputeLookAtFromYawPitch(yaw, pitch, center, true, lookAt);
-                const result = ComputeYawPitchFromLookAt(lookAt, center, true, 0);
+                ComputeLookAtFromYawPitchToRef(yaw, pitch, center, true, lookAt);
+                ComputeYawPitchFromLookAtToRef(lookAt, center, true, 0, result);
 
                 expect(result.pitch).toBeCloseTo(pitch, 5);
                 const yawDiff = Math.abs(result.yaw - yaw);
@@ -260,8 +263,9 @@ describe("GeospatialCamera", () => {
             // When pitch ≈ 0, lookAt points straight down at the center (parallel to -up)
             const up = center.clone().normalize();
             const lookAt = up.scale(-1); // Looking straight down
+            const result: YawPitch = { yaw: 0, pitch: 0 };
 
-            const result = ComputeYawPitchFromLookAt(lookAt, center, true, currentYaw);
+            ComputeYawPitchFromLookAtToRef(lookAt, center, true, currentYaw, result);
 
             // Pitch should be near 0
             expect(result.pitch).toBeLessThan(0.01);
@@ -274,9 +278,10 @@ describe("GeospatialCamera", () => {
             const yaw = Math.PI / 4;
             const pitch = Math.PI / 2 - 0.001; // Just below horizon
             const lookAt = new Vector3();
+            const result: YawPitch = { yaw: 0, pitch: 0 };
 
-            ComputeLookAtFromYawPitch(yaw, pitch, center, true, lookAt);
-            const result = ComputeYawPitchFromLookAt(lookAt, center, true, 0);
+            ComputeLookAtFromYawPitchToRef(yaw, pitch, center, true, lookAt);
+            ComputeYawPitchFromLookAtToRef(lookAt, center, true, 0, result);
 
             expect(result.pitch).toBeCloseTo(pitch, 3);
             const yawDiff = Math.abs(result.yaw - yaw);
@@ -286,10 +291,11 @@ describe("GeospatialCamera", () => {
 
         it("should produce consistent results with GeospatialCamera._setOrientation roundtrip", () => {
             // This is an integration test: set yaw/pitch on camera, then verify
-            // that ComputeYawPitchFromLookAt can recover those values
+            // that ComputeYawPitchFromLookAtToRef can recover those values
             const engine = new NullEngine();
             const scene = new Scene(engine);
             const camera = new GeospatialCamera("testCam", scene, { planetRadius: 6371 });
+            const result: YawPitch = { yaw: 0, pitch: 0 };
 
             const testCases = [
                 { yaw: 0, pitch: Math.PI / 4 },
@@ -304,8 +310,8 @@ describe("GeospatialCamera", () => {
                 // Get the lookAt direction from camera's internal state
                 const lookAt = camera.center.subtract(camera.position).normalize();
 
-                // Use ComputeYawPitchFromLookAt to recover yaw/pitch
-                const result = ComputeYawPitchFromLookAt(lookAt, camera.center, scene.useRightHandedSystem, camera.yaw);
+                // Use ComputeYawPitchFromLookAtToRef to recover yaw/pitch
+                ComputeYawPitchFromLookAtToRef(lookAt, camera.center, scene.useRightHandedSystem, camera.yaw, result);
 
                 expect(result.pitch).toBeCloseTo(camera.pitch, 4);
                 const yawDiff = Math.abs(result.yaw - camera.yaw);
