@@ -18,8 +18,8 @@ uniform float kernelSize;
 uniform vec3 eyePosition;
 uniform float alpha;
 
-#if USE_RIG
-uniform mat4 rigNodeWorld[MAX_RIG_NODE_COUNT];
+#if IS_COMPOUND
+uniform mat4 partWorld[MAX_PART_COUNT];
 #endif
 
 uniform sampler2D covariancesATexture;
@@ -37,8 +37,8 @@ uniform highp usampler2D shTexture1;
 uniform highp usampler2D shTexture2;
 #endif
 
-#if USE_RIG
-uniform highp usampler2D rigNodeIndexTexture;
+#if IS_COMPOUND
+uniform highp usampler2D partIndicesTexture;
 #endif
 
 // Output
@@ -46,7 +46,6 @@ varying vec4 vColor;
 varying vec2 vPosition;
 
 #include<gaussianSplatting>
-#include<gaussianSplattingRig>
 
 void main () {
     float splatIndex = getSplatIndex(int(position.z + 0.5));
@@ -54,9 +53,9 @@ void main () {
     vec3 covA = splat.covA.xyz;
     vec3 covB = vec3(splat.covA.w, splat.covB.xy);
 
-#if USE_RIG
-    // In case of rig, each splat may have a different world transform
-    mat4 splatWorld = getRigNodeWorld(splat.rigNodeIndex);
+#if IS_COMPOUND
+    // In case of compound, each splat may have a different world transform, depending on the part it belongs to
+    mat4 splatWorld = getPartWorld(splat.partIndex);
 #else
     mat4 splatWorld = world;
 #endif
@@ -64,6 +63,12 @@ void main () {
     vec4 worldPos = splatWorld * vec4(splat.center.xyz, 1.0);
 
     vColor = splat.color;
+    if (splat.partIndex == 0u) {
+        vColor = vec4(1.0, 0.0, 0.0, 1.0); // TMP
+    }
+    if (splatIndex > 294912.0) {
+        vColor = vec4(0.0, 1.0, 0.0, 1.0); // TMP
+    }
     vPosition = position.xy;
 
 #if SH_DEGREE > 0

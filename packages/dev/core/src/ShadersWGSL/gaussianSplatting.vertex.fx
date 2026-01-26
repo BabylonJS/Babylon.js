@@ -21,8 +21,8 @@ uniform kernelSize: f32;
 uniform eyePosition: vec3f;
 uniform alpha: f32;
 
-#if USE_RIG
-uniform rigNodeWorld: array<mat4x4<f32>, MAX_RIG_NODE_COUNT>;
+#if IS_COMPOUND
+uniform partWorld: array<mat4x4<f32>, MAX_PART_COUNT>;
 #endif
 
 // textures
@@ -39,15 +39,14 @@ var shTexture1: texture_2d<u32>;
 #if SH_DEGREE > 2
 var shTexture2: texture_2d<u32>;
 #endif
-#if USE_RIG
-var rigNodeIndexTexture: texture_2d<u32>;
+#if IS_COMPOUND
+var partIndicesTexture: texture_2d<u32>;
 #endif
 // Output
 varying vColor: vec4f;
 varying vPosition: vec2f;
 
 #include<gaussianSplatting>
-#include<gaussianSplattingRig>
 
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
@@ -58,9 +57,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
     var covA: vec3f = splat.covA.xyz;
     var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);
 
-#if USE_RIG
-    // In case of rig, each splat may have a different world transform
-    let splatWorld: mat4x4f = getRigNodeWorld(splat.rigNodeIndex);
+#if IS_COMPOUND
+    // In case of compound, each splat may have a different world transform, depending on the part it belongs to
+    let splatWorld: mat4x4f = getPartWorld(splat.partIndex);
 #else
     let splatWorld: mat4x4f = mesh.world;
 #endif
