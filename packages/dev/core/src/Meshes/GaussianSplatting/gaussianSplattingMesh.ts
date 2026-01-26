@@ -297,7 +297,7 @@ export interface PLYHeader {
 export class GaussianSplattingMesh extends Mesh {
     private _vertexCount = 0;
     private _worker: Nullable<Worker> = null;
-    private _modelViewMatrix = Matrix.Identity();
+    private _modelViewProjectionMatrix = Matrix.Identity();
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
     private _readyToDisplay = false;
@@ -570,11 +570,11 @@ export class GaussianSplattingMesh extends Mesh {
         const cameraProjectionMatrix = camera.getProjectionMatrix();
         const cameraViewProjectionMatrix = TmpVectors.Matrix[0];
         cameraViewMatrix.multiplyToRef(cameraProjectionMatrix, cameraViewProjectionMatrix);
-        this.getWorldMatrix().multiplyToRef(cameraViewProjectionMatrix, this._modelViewMatrix);
+        this.getWorldMatrix().multiplyToRef(cameraViewProjectionMatrix, this._modelViewProjectionMatrix);
 
         // return vector used to compute distance to camera
         const localDirection = TmpVectors.Vector3[1];
-        localDirection.set(this._modelViewMatrix.m[8], this._modelViewMatrix.m[9], this._modelViewMatrix.m[10]);
+        localDirection.set(this._modelViewProjectionMatrix.m[8], this._modelViewProjectionMatrix.m[9], this._modelViewProjectionMatrix.m[10]);
         localDirection.normalize();
 
         return localDirection;
@@ -644,15 +644,14 @@ export class GaussianSplattingMesh extends Mesh {
                     if (this._worker) {
                         this._worker!.postMessage(
                             {
-                                view: this._modelViewMatrix.m,
+                                modelViewProjection: this._modelViewProjectionMatrix.m,
                                 depthMix: this._depthMix,
-                                useRightHandedSystem: this._scene.useRightHandedSystem,
                                 cameraId: camera.uniqueId,
                             },
                             [this._depthMix.buffer]
                         );
                     } else if (_native && _native.sortSplats) {
-                        _native.sortSplats(this._modelViewMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
+                        _native.sortSplats(this._modelViewProjectionMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
                         if (cameraViewInfos.splatIndexBufferSet) {
                             cameraViewInfos.mesh.thinInstanceBufferUpdated("splatIndex");
                         } else {
@@ -1456,7 +1455,7 @@ export class GaussianSplattingMesh extends Mesh {
         newGS.makeGeometryUnique();
         newGS._vertexCount = this._vertexCount;
         newGS._copyTextures(this);
-        newGS._modelViewMatrix = Matrix.Identity();
+        newGS._modelViewProjectionMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
         newGS._readyToDisplay = false;
         newGS._disableDepthSort = this._disableDepthSort;
@@ -1484,12 +1483,12 @@ export class GaussianSplattingMesh extends Mesh {
             // udpate on view changed
             else {
                 const cameraId = e.data.cameraId;
-                const viewProj = e.data.view;
+                const modelViewProjection = e.data.modelViewProjection;
 
                 const vertexCountPadded = (positions.length / 4 + 15) & ~0xf;
-                if (!positions || !viewProj) {
+                if (!positions || !modelViewProjection) {
                     // Sanity check, it shouldn't happen!
-                    throw new Error("positions or view is not defined!");
+                    throw new Error("positions or modelViewProjection matrix is not defined!");
                 }
 
                 depthMix = e.data.depthMix;
@@ -1501,13 +1500,9 @@ export class GaussianSplattingMesh extends Mesh {
                     indices[2 * j] = j;
                 }
 
-                let depthFactor = -1;
-                if (e.data.useRightHandedSystem) {
-                    depthFactor = 1;
-                }
-
                 for (let j = 0; j < vertexCountPadded; j++) {
-                    floatMix[2 * j + 1] = 10000 + (viewProj[2] * positions[4 * j + 0] + viewProj[6] * positions[4 * j + 1] + viewProj[10] * positions[4 * j + 2]) * depthFactor;
+                    floatMix[2 * j + 1] =
+                        10000 - (modelViewProjection[2] * positions[4 * j + 0] + modelViewProjection[6] * positions[4 * j + 1] + modelViewProjection[10] * positions[4 * j + 2]);
                 }
 
                 depthMix.sort();
