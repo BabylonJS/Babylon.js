@@ -46,6 +46,9 @@ varying vec3 vNormalW;
 #include<fogVertexDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+varying float vViewDepth;
+#endif
 
 #define CUSTOM_VERTEX_DEFINITIONS
 

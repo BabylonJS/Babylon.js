@@ -14,7 +14,7 @@ export const TextPropertyLine: FunctionComponent<PropertyLineProps<string> & Imm
     const { value, title } = props;
     return (
         <PropertyLine {...props}>
-            <Body1 title={title}>{value}</Body1>
+            <Body1 title={title}>{value ?? ""}</Body1>
         </PropertyLine>
     );
 };
