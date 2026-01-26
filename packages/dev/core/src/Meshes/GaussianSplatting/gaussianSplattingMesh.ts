@@ -1554,7 +1554,7 @@ export class GaussianSplattingMesh extends Mesh {
                 for (let j = 0; j < vertexCountPadded; j++) {
                     indices[2 * j] = j;
                 }
-                
+
                 let depthFactor = -1;
                 if (e.data.useRightHandedSystem) {
                     depthFactor = 1;
@@ -1696,7 +1696,7 @@ export class GaussianSplattingMesh extends Mesh {
         };
 
         const firstTime = this._covariancesATexture === null;
-        const textureSizeChanged = this._textureSize.y < textureSize.y
+        const textureSizeChanged = this._textureSize.y < textureSize.y;
 
         if (!firstTime && !textureSizeChanged) {
             this._delayedTextureUpdate = { covA, covB, colors: colorArray, centers: this._splatPositions!, sh, partIndices };
@@ -1924,7 +1924,7 @@ export class GaussianSplattingMesh extends Mesh {
         if (!this._depthMix || vertexCount > this._depthMix.length) {
             this._depthMix = new BigInt64Array(paddedVertexCount);
         }
-        
+
         this.forcedInstanceCount = paddedVertexCount >> 4;
     }
 
@@ -1992,7 +1992,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         const positions = Float32Array.from(this._splatPositions!);
         const partIndices = this._partIndices ? new Uint8Array(this._partIndices) : null;
-        const partMatrices = this._partMatrices.map(matrix => new Float32Array(matrix.m));
+        const partMatrices = this._partMatrices.map((matrix) => new Float32Array(matrix.m));
 
         this._worker.postMessage({ positions }, [positions.buffer]);
         this._worker.postMessage({ partIndices });
@@ -2009,7 +2009,7 @@ export class GaussianSplattingMesh extends Mesh {
                 this._sortIsDirty = false;
                 return;
             }
-            
+
             this._depthMix = e.data.depthMix;
             const cameraId = e.data.cameraId;
 
@@ -2155,11 +2155,11 @@ export class GaussianSplattingMesh extends Mesh {
         const splatCountA = this._vertexCount;
         const splatsDataA = splatCountA == 0 ? new ArrayBuffer(0) : this.splatsData;
         const shDataA = this.shData;
-    
+
         const splatCountB = other._vertexCount;
         const splatsDataB = other.splatsData;
         const shDataB = other.shData;
-    
+
         const mergedShDataLength = Math.max(shDataA?.length || 0, shDataB?.length || 0);
         const hasMergedShData = shDataA !== null && shDataB !== null;
 
@@ -2186,14 +2186,14 @@ export class GaussianSplattingMesh extends Mesh {
         const mergedSplatsData = new Uint8Array(splatsDataA.byteLength + splatsDataB.byteLength);
         mergedSplatsData.set(new Uint8Array(splatsDataA), 0);
         mergedSplatsData.set(new Uint8Array(splatsDataB), splatsDataA.byteLength);
-    
+
         let mergedShData: Uint8Array[] | undefined = undefined;
         if (hasMergedShData) {
             // Note: We need to calculate the texture size and pad accordingly
             // Each SH texture texel stores 16 bytes (4 RGBA uint32 components)
             const bytesPerTexel = 16;
             const totalSplatCount = splatCountA + splatCountB;
-            
+
             mergedShData = [];
             for (let i = 0; i < mergedShDataLength; i++) {
                 const mergedShDataItem = new Uint8Array(totalSplatCount * bytesPerTexel);
@@ -2207,7 +2207,7 @@ export class GaussianSplattingMesh extends Mesh {
                 mergedShData.push(mergedShDataItem);
             }
         }
-    
+
         // Concatenate partIndices (Uint8Array)
         let newPartIndex = this.partCount;
         let partIndicesA = this.partIndices;
@@ -2223,9 +2223,9 @@ export class GaussianSplattingMesh extends Mesh {
         const mergedPartIndices = new Uint8Array(splatCountA + splatCountB);
         mergedPartIndices.set(partIndicesA.slice(0, splatCountA), 0);
         mergedPartIndices.set(partIndicesB, splatCountA);
-        
+
         this.updateData(mergedSplatsData.buffer, mergedShData, { flipY: false }, mergedPartIndices);
-    
+
         // Merge part matrices (TODO)
         const partWorldMatrix = other.getWorldMatrix();
         this.setWorldMatrixForPart(newPartIndex, partWorldMatrix);
@@ -2234,11 +2234,11 @@ export class GaussianSplattingMesh extends Mesh {
         // Remove splats from the original mesh
         other.dispose();
         const placeholderMesh = new Mesh(other.name, this.getScene());
-        
+
         // Directly set the world matrix using freezeWorldMatrix
         placeholderMesh.freezeWorldMatrix(partWorldMatrix);
         placeholderMesh.metadata = { partIndex: newPartIndex };
 
-        return placeholderMesh
+        return placeholderMesh;
     }
 }
