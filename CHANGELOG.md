@@ -1,5 +1,19 @@
 # Changelog
 
+## 8.47.0
+
+### Core
+
+- Add CPU/GPU/NPE properties and reorganize code - by [VicenteCartas](https://github.com/VicenteCartas) ([#17628](https://github.com/BabylonJS/Babylon.js/pull/17628))
+- Initial implementation of Area Lights emission texture. - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#17698](https://github.com/BabylonJS/Babylon.js/pull/17698))
+- Materialupdate - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#17701](https://github.com/BabylonJS/Babylon.js/pull/17701))
+- Fix materials alphamode clone - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#17699](https://github.com/BabylonJS/Babylon.js/pull/17699))
+- WebGPU support for atmosphere add-on - by [kircher1](https://github.com/kircher1) ([#17560](https://github.com/BabylonJS/Babylon.js/pull/17560))
+- Add apply torque physics v2 - by [BarthPaleologue](https://github.com/BarthPaleologue) ([#17697](https://github.com/BabylonJS/Babylon.js/pull/17697))
+- ConvertCubeMapTextureToSphericalPolynomial: Fix wrong calculated polynomials - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17696](https://github.com/BabylonJS/Babylon.js/pull/17696))
+- Fix copy-paste error in voxel shadow shader - by [MiiBond](https://github.com/MiiBond) ([#17695](https://github.com/BabylonJS/Babylon.js/pull/17695))
+- fix(ImageProcessingBlock): use 1.0 for alpha when vec3 input with convertInputToLinearSpace - by [bgaborg](https://github.com/bgaborg) ([#17693](https://github.com/BabylonJS/Babylon.js/pull/17693))
+
 ## 8.46.2
 
 ## 8.46.1
