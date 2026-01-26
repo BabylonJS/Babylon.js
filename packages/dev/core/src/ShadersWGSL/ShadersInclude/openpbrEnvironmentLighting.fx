@@ -195,7 +195,9 @@
     var slab_coat_ibl: vec3f = vec3f(0., 0., 0.);
 
     slab_diffuse_ibl = baseDiffuseEnvironmentLight * uniforms.vLightingIntensity.z;
-    slab_diffuse_ibl *= aoOut.ambientOcclusionColor;
+    #ifdef AMBIENT_OCCLUSION
+        specular_ambient_occlusion = compute_specular_occlusion(baseGeoInfo.NdotV, base_metalness, ambient_occlusion.x, specular_roughness);
+    #endif
 
     // Add the specular environment light
     slab_glossy_ibl = baseSpecularEnvironmentLight * uniforms.vLightingIntensity.z;
@@ -207,7 +209,10 @@
     var coatAbsorption = vec3f(1.0);
     if (coat_weight > 0.0) {
         slab_coat_ibl = coatEnvironmentLight * uniforms.vLightingIntensity.z;
-        
+        #ifdef AMBIENT_OCCLUSION
+            coat_specular_ambient_occlusion = compute_specular_occlusion(coatGeoInfo.NdotV, 0.0, ambient_occlusion.x, coat_roughness);
+        #endif
+
         // __________ Coat Darkening _____________
         // Hemisphere-averaged Fresnel (empirical approximation)
         let hemisphere_avg_fresnel: f32 = coatReflectance.F0 + 0.5f * (1.0f - coatReflectance.F0);
@@ -238,7 +243,7 @@
     }
 
     #ifdef FUZZ
-        let slab_fuzz_ibl = fuzzEnvironmentLight * uniforms.vLightingIntensity.z;
+        var slab_fuzz_ibl = fuzzEnvironmentLight * uniforms.vLightingIntensity.z;
     #endif
 
     var slab_translucent_base_ibl: vec3f = slab_translucent_background.rgb * transmission_absorption;
@@ -374,15 +379,21 @@
 
     // _____________________________ IBL Material Layer Composition ______________________________________
     #define CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION
+    slab_diffuse_ibl *= ambient_occlusion;
+    slab_metal_ibl *= specular_ambient_occlusion;
+    slab_glossy_ibl *= specular_ambient_occlusion;
+    slab_coat_ibl *= coat_specular_ambient_occlusion;
+
     let material_opaque_base_ibl: vec3f = mix(slab_diffuse_ibl, slab_subsurface_ibl, subsurface_weight);
     let material_dielectric_base_ibl: vec3f = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
     let material_dielectric_gloss_ibl: vec3f = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     let material_base_substrate_ibl: vec3f = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     let material_coated_base_ibl: vec3f = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3f(1.0f));
     #ifdef FUZZ
-    material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3(1.0), fuzz_color);
+        slab_fuzz_ibl *= ambient_occlusion;
+        material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3f(1.0f), fuzz_color);
     #else
-    material_surface_ibl = material_coated_base_ibl;
+        material_surface_ibl = material_coated_base_ibl;
     #endif
     
 #endif

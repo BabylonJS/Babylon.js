@@ -186,7 +186,10 @@
     vec3 slab_coat_ibl = vec3(0., 0., 0.);
 
     slab_diffuse_ibl = baseDiffuseEnvironmentLight * vLightingIntensity.z;
-    slab_diffuse_ibl *= aoOut.ambientOcclusionColor;
+    
+    #ifdef AMBIENT_OCCLUSION
+        specular_ambient_occlusion = compute_specular_occlusion(baseGeoInfo.NdotV, base_metalness, ambient_occlusion.x, specular_roughness);
+    #endif
 
     // Add the specular environment light
     slab_glossy_ibl = baseSpecularEnvironmentLight * vLightingIntensity.z;
@@ -200,6 +203,10 @@
     vec3 coatAbsorption = vec3(1.0);
     if (coat_weight > 0.0) {
         slab_coat_ibl = coatEnvironmentLight * vLightingIntensity.z;
+
+        #ifdef AMBIENT_OCCLUSION
+            coat_specular_ambient_occlusion = compute_specular_occlusion(coatGeoInfo.NdotV, 0.0, ambient_occlusion.x, coat_roughness);
+        #endif
         
         // __________ Coat Darkening _____________
         // Hemisphere-averaged Fresnel (empirical approximation)
@@ -364,12 +371,19 @@
 
     // _____________________________ IBL Material Layer Composition ______________________________________
     #define CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION
+
+    slab_diffuse_ibl *= ambient_occlusion;
+    slab_metal_ibl *= specular_ambient_occlusion;
+    slab_glossy_ibl *= specular_ambient_occlusion;
+    slab_coat_ibl *= coat_specular_ambient_occlusion;
+
     vec3 material_opaque_base_ibl = mix(slab_diffuse_ibl, slab_subsurface_ibl, subsurface_weight);
     vec3 material_dielectric_base_ibl = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
     vec3 material_dielectric_gloss_ibl = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3(1.0));
     #ifdef FUZZ
+    slab_fuzz_ibl *= ambient_occlusion;
     material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3(1.0), fuzz_color);
     #else
     material_surface_ibl = material_coated_base_ibl;

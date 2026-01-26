@@ -63,7 +63,7 @@ precision highp float;
 #include<openpbrDielectricReflectance>
 #include<openpbrConductorReflectance>
 
-#include<openpbrBlockAmbientOcclusion>
+#include<openpbrAmbientOcclusionFunctions>
 #include<openpbrGeometryInfo>
 #include<openpbrIblFunctions>
 
@@ -102,6 +102,9 @@ void main(void) {
     // _____________________________ Read Fuzz Layer properties ______________________
     #include<openpbrFuzzLayerData>
 
+    // _____________________________ Read AO Properties _______________________________
+    #include<openpbrAmbientOcclusionData>
+
     // TEMP
     float subsurface_weight = 0.0;
 
@@ -110,20 +113,6 @@ void main(void) {
     #include<depthPrePass>
 
     #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
-
-    // _____________________________ AO  _______________________________
-    ambientOcclusionOutParams aoOut;
-
-#ifdef AMBIENT_OCCLUSION
-    vec3 ambientOcclusionFromTexture = texture2D(ambientOcclusionSampler, vAmbientOcclusionUV + uvOffset).rgb;
-#endif
-
-    aoOut = ambientOcclusionBlock(
-    #ifdef AMBIENT_OCCLUSION
-        ambientOcclusionFromTexture,
-        vAmbientOcclusionInfos
-    #endif
-    );
 
     // _____________________________ Compute Geometry info for coat layer _________________________
     #ifdef ANISOTROPIC_COAT

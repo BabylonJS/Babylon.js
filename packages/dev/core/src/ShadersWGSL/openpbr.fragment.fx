@@ -47,7 +47,7 @@
 #include<openpbrDielectricReflectance>
 #include<openpbrConductorReflectance>
 
-#include<openpbrBlockAmbientOcclusion>
+#include<openpbrAmbientOcclusionFunctions>
 #include<openpbrGeometryInfo>
 #include<openpbrIblFunctions>
 
@@ -87,6 +87,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // _____________________________ Read Fuzz Layer properties ______________________
     #include<openpbrFuzzLayerData>
 
+    // _____________________________ Read AO Properties _______________________________
+    #include<openpbrAmbientOcclusionData>
+
     // TEMP
     var subsurface_weight: f32 = 0.0f;
 
@@ -95,20 +98,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #include<depthPrePass>
 
     #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
-
-    // _____________________________ AO  _______________________________
-    var aoOut: ambientOcclusionOutParams;
-
-#ifdef AMBIENT_OCCLUSION
-    var ambientOcclusionFromTexture: vec3f = textureSample(ambientOcclusionSampler, ambientOcclusionSamplerSampler, fragmentInputs.vAmbientOcclusionUV + uvOffset).rgb;
-#endif
-
-    aoOut = ambientOcclusionBlock(
-    #ifdef AMBIENT_OCCLUSION
-        ambientOcclusionFromTexture,
-        uniforms.vAmbientOcclusionInfos
-    #endif
-    );
 
     // _____________________________ Compute Geometry info for coat layer _________________________
     #ifdef ANISOTROPIC_COAT
