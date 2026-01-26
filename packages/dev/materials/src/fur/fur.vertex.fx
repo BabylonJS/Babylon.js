@@ -71,6 +71,9 @@ float Rand(vec3 rv) {
 	return fract(sin(x) * 43758.5453);
 }
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+varying float vViewDepth;
+#endif
 
 #define CUSTOM_VERTEX_DEFINITIONS
 

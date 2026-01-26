@@ -2,6 +2,7 @@ import type { ComponentProps, ComponentType } from "react";
 
 import { forwardRef, useMemo } from "react";
 
+import { ErrorBoundary } from "../errorBoundary";
 import { usePropertyChangedNotifier } from "../../contexts/propertyContext";
 import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
 import { GetPropertyDescriptor } from "../../instrumentation/propertyInstrumentation";
@@ -23,7 +24,7 @@ type BaseBoundPropertyProps<TargetT extends object, PropertyKeyT extends keyof T
     component: ComponentT;
     target: TargetT | null | undefined;
     propertyKey: PropertyKeyT;
-    /** Optional path from the root object to the property, used for generating the onCopy string */
+    /** Optional propertyPath used to generate the copyString if path to property is not equal to entity.target */
     propertyPath?: string;
     convertTo?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
     convertFrom?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
@@ -135,7 +136,11 @@ function BoundPropertyImpl<TargetT extends object, PropertyKeyT extends keyof Ta
     }
 
     // Target is guaranteed to be non-null here, pass to core implementation.
-    return <BoundPropertyCore {...rest} target={target} ref={ref} />;
+    return (
+        <ErrorBoundary name={`BoundProperty:${String(props.propertyKey)}`}>
+            <BoundPropertyCore {...rest} target={target} ref={ref} />
+        </ErrorBoundary>
+    );
 }
 
 // Custom generic forwardRef function (this is needed because using forwardRef with BoundPropertyImpl does not properly resolve Generic types)
@@ -160,25 +165,40 @@ function CreateGenericForwardRef<T extends (...args: any[]) => any>(render: T) {
 export const BoundProperty = CreateGenericForwardRef(BoundPropertyImpl);
 
 /**
+ * Mutually exclusive propertyPath or functionPath - one required
+ */
+type RequiredPropertyPath = { propertyPath: string; functionPath?: never } | { functionPath: string; propertyPath?: never };
+/**
  * Props for Property component - a simpler version of BoundProperty that only handles onCopy functionality
  * Pass in the full propertyPath from entity to property (e.g. "meshes[0].position.x") to ensure copyString is accurate
+ * Use functionPath for function-based properties (e.g. "setEnabled" generates "debugNode.setEnabled(value)")
  */
 export type PropertyProps<ComponentT extends ComponentType<any>> = Omit<ComponentProps<ComponentT>, "onCopy"> & {
     component: ComponentT;
-    propertyPath: string;
-};
+} & RequiredPropertyPath;
 
 function GetOnCopyString(value: unknown, propertyPath: string) {
     const valueStr = GenerateCopyString(value);
     return `globalThis.debugNode.${propertyPath} = ${valueStr};`;
 }
 
+function GetOnCopyStringFunc(value: unknown, functionPath: string) {
+    const valueStr = GenerateCopyString(value);
+    return `globalThis.debugNode.${functionPath}(${valueStr});`;
+}
+
 function PropertyImpl<ComponentT extends ComponentType<any>>(props: PropertyProps<ComponentT>, ref?: any) {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { component: Component, propertyPath, value, ...rest } = props as PropertyProps<ComponentT> & { value?: unknown };
+    const {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        component: Component,
+        propertyPath,
+        functionPath,
+        value,
+        ...rest
+    } = props as PropertyProps<ComponentT> & { value?: unknown; propertyPath?: string; functionPath?: string };
 
     const propsToSend = {
-        onCopy: () => GetOnCopyString(value, propertyPath),
+        onCopy: () => (functionPath ? GetOnCopyStringFunc(value, functionPath) : GetOnCopyString(value, propertyPath!)),
         ...rest,
         ref,
         value,

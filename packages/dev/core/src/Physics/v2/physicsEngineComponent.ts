@@ -36,6 +36,12 @@ declare module "../../Meshes/transformNode" {
          */
         applyAngularImpulse(angularImpulse: Vector3): TransformNode;
 
+        /** Apply a physic torque to the mesh
+         * @param torque defines the torque to apply
+         * @returns the current mesh
+         */
+        applyTorque(torque: Vector3): TransformNode;
+
         /** @internal */
         _disposePhysicsObserver: Nullable<Observer<Node>>;
     }
@@ -103,5 +109,19 @@ TransformNode.prototype.applyAngularImpulse = function (angularImpulse: Vector3)
         throw new Error("No Physics Body for TransformNode");
     }
     this.physicsBody.applyAngularImpulse(angularImpulse);
+    return this;
+};
+
+/**
+ * Apply a physic torque to the mesh
+ * @param torque defines the torque to apply
+ * @returns the current mesh
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
+ */
+TransformNode.prototype.applyTorque = function (torque: Vector3): TransformNode {
+    if (!this.physicsBody) {
+        throw new Error("No Physics Body for TransformNode");
+    }
+    this.physicsBody.applyTorque(torque);
     return this;
 };
