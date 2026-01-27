@@ -220,7 +220,7 @@ declare module "../../abstractEngine" {
             invertY: boolean,
             compression: Nullable<string>,
             textureType: number,
-            mipLevel: number
+            mipLevel?: number
         ): void;
     }
 }

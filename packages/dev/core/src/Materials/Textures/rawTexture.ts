@@ -29,6 +29,7 @@ export class RawTexture extends Texture {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @param waitDataToBeReady If set to true Rawtexture will wait data to be set in order to be flaged as ready.
+     * @param mipLevelCount defines the number of mip levels to allocate for the texture
      */
     constructor(
         data: Nullable<ArrayBufferView>,

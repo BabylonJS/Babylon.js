@@ -122,6 +122,11 @@ export class InternalTexture extends TextureSampler {
     public override set useMipMaps(value: Nullable<boolean>) {
         this._useMipMaps = value;
     }
+    /**
+     * Gets the number of mip levels for this texture.
+     * Note: This property has the correct value only if the texture was created through
+     * `createRawTexture` or `createRawTexture2DArray`.
+     */
     public mipLevelCount: number = 1;
     /**
      * Gets the number of samples used by the texture (WebGL2+ only)
