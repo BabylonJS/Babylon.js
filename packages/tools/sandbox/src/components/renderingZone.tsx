@@ -177,6 +177,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         filesInput.monitorElementForDragNDrop(this._canvas);
 
         this.props.globalState.filesInput = filesInput;
+        this.props.globalState.onFilesInputReady.notifyObservers();
 
         window.addEventListener("keydown", (event) => {
             // Press R to reload

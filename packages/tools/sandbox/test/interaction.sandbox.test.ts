@@ -50,6 +50,7 @@ test("dropping an image to the sandbox", async ({ page }) => {
     // wait for #babylonjsLoadingDiv to be hidden
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await page.waitForLoadState("networkidle");
     // check snapshot of the page
     await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });
@@ -65,6 +66,7 @@ test("loading a model using query parameters", async ({ page }) => {
     // wait for #babylonjsLoadingDiv to be hidden
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await page.waitForLoadState("networkidle");
     // check snapshot of the page
     await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });
@@ -81,6 +83,7 @@ test("inspector is opened when clicking on the button", async ({ page }) => {
     // wait for #babylonjsLoadingDiv to be hidden
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await page.waitForLoadState("networkidle");
 
     // click the "Inspector" button
     await page.getByTitle("Display inspector").click();

@@ -12,6 +12,7 @@ import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
+import { CurveEditorButton } from "../../curveEditor/curveEditorButton";
 
 interface ICurrentFrameHolder {
     currentFrame: number;
@@ -20,6 +21,7 @@ interface ICurrentFrameHolder {
 export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup: AnimationGroup }> = (props) => {
     const { animationGroup } = props;
     const targetedAnimations = animationGroup.targetedAnimations;
+    const scene = animationGroup.getScene();
     let currentFrameHolder: ICurrentFrameHolder | undefined = undefined;
 
     if (targetedAnimations.length > 0) {
@@ -46,14 +48,22 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
         <>
             <ButtonLine label={isPlaying ? "Pause" : "Play"} onClick={() => (isPlaying ? animationGroup.pause() : animationGroup.play(true))} />
             <ButtonLine label="Stop" onClick={() => animationGroup.stop()} />
+            <CurveEditorButton
+                scene={scene}
+                target={null}
+                animations={targetedAnimations}
+                rootAnimationGroup={animationGroup}
+                title={animationGroup.name}
+                useTargetAnimations={true}
+            />
             <BoundProperty component={SyncedSliderPropertyLine} label="Speed Ratio" min={0} max={10} step={0.1} target={animationGroup} propertyKey="speedRatio" />
-            {currentFrameHolder ? (
+            {currentFrameHolder && currentFrame !== undefined ? (
                 <SyncedSliderPropertyLine
                     label="Current Frame"
                     min={animationGroup.from}
                     max={animationGroup.to}
                     step={(animationGroup.to - animationGroup.from) / 1000.0}
-                    value={currentFrame!}
+                    value={currentFrame}
                     onChange={(value) => {
                         if (!animationGroup.isPlaying) {
                             animationGroup.play(true);

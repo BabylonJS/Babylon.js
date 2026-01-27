@@ -727,6 +727,16 @@
             "referenceImage": "areaLightsStandardMaterial.png"
         },
         {
+            "title": "Textured - Area Lights - Standard Material",
+            "playgroundId": "#T7FXR8#103",
+            "referenceImage": "textureAreaLightStandard.png"
+        },
+        {
+            "title": "Textured - Area Lights - PBR",
+            "playgroundId": "#T7FXR8#102",
+            "referenceImage": "texturedAreaLightsPBR.png"
+        },
+        {
             "title": "Area Lights - PBR",
             "playgroundId": "#T7FXR8#12",
             "referenceImage": "areaLightsPBRMaterial.png"

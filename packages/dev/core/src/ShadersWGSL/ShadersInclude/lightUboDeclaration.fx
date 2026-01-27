@@ -30,6 +30,11 @@ var<uniform> light{X} : Light{X};
 	var iesLightTexture{X}: texture_2d<f32>;
 #endif
 
+#ifdef RECTAREALIGHTEMISSIONTEXTURE{X}
+	var rectAreaLightEmissionTexture{X}Sampler: sampler;
+	var rectAreaLightEmissionTexture{X}: texture_2d<f32>;
+#endif
+
 #ifdef PROJECTEDLIGHTTEXTURE{X}
 	uniform textureProjectionMatrix{X}: mat4x4f;
 	var projectionLightTexture{X}Sampler: sampler;

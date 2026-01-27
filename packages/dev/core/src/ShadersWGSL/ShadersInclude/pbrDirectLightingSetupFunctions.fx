@@ -111,4 +111,25 @@ fn computeAreaPreLightingInfo(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:t
     return result;
 }
 
+fn computeAreaPreLightingInfoWithTexture(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_2d<f32>, ltc2Sampler:sampler, emissionTexture:texture_2d<f32>, emissionTextureSampler:sampler, viewDirectionW: vec3f, vNormal:vec3f, vPosition:vec3f, lightCenter:vec3f, halfWidth:vec3f,  halfHeight:vec3f, roughness:f32) -> preLightingInfo {
+    var result: preLightingInfo;
+    result.lightOffset = lightCenter - vPosition;
+    result.lightDistanceSquared = dot(result.lightOffset, result.lightOffset);
+    // Roughness.
+    result.lightDistance = sqrt(result.lightDistanceSquared);
+
+    var data: areaLightData = computeAreaLightSpecularDiffuseFresnelWithEmission(ltc1, ltc1Sampler, ltc2, ltc2Sampler, emissionTexture, emissionTextureSampler, viewDirectionW, vNormal, vPosition, lightCenter, halfWidth, halfHeight, roughness);
+    #ifdef SPECULARTERM
+    result.areaLightFresnel = data.Fresnel;
+    result.areaLightSpecular = data.Specular;
+    #endif
+    result.areaLightDiffuse = data.Diffuse;
+
+    result.LdotV = 0.;
+    result.roughness = 0.;
+    result.diffuseRoughness = 0.;
+    result.surfaceAlbedo = vec3f(0.);
+    return result;
+}
+
 #endif

@@ -38,9 +38,8 @@
         "glob": "^12.0.0",
         "globals": "^16.0.0",
         "jest": "^29.7.0",
-        "jest-environment-jsdom": "^29.5.0",
+        "jest-environment-jsdom": "^30.2.0",
         "jest-junit": "~13.2.0",
-        "lerna": "^9.0.3",
         "mini-css-extract-plugin": "~2.6.0",
         "nx": "^22.2.3",
         "prettier": "^3.0.3",
@@ -55,7 +54,7 @@
         "webpack-cli": "6.0.1"
     },
     "optionalDependencies": {
-        "canvas": "~2.11.0"
+        "canvas": "~3.2.1"
     },
     "workspaces": [
         "packages/**/*"

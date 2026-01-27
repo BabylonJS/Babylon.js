@@ -1,4 +1,4 @@
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, makeStyles, tokens } from "@fluentui/react-components";
 import { ArrowMoveFilled, EyeFilled, EyeOffFilled } from "@fluentui/react-icons";
 import { FontAsset } from "addons/msdfText/fontAsset";
 import { TextRenderer } from "addons/msdfText/textRenderer";
@@ -8,16 +8,16 @@ import { Color4 } from "core/Maths/math.color";
 import { Matrix } from "core/Maths/math.vector";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
-import type { Attractor } from "core/Particles/attractor";
 import type { Scene } from "core/scene";
 import { useCallback, useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 import { SyncedSliderInput } from "shared-ui-components/fluent/primitives/syncedSlider";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { useAsyncResource, useResource } from "../../../hooks/resourceHooks";
+import type { IAttractorData } from "./attractorAdapter";
 
 type AttractorProps = {
-    attractor: Attractor;
+    attractorData: IAttractorData;
     id: number;
     impostorScale: number;
     impostorColor: Color3;
@@ -36,12 +36,17 @@ const useAttractorStyles = makeStyles({
         padding: `${tokens.spacingVerticalXS} 0px`,
         borderBottom: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
     },
+    strengthLabel: {
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+    },
 });
 
-const CreateImpostor = (id: number, scene: Scene, attractor: Attractor, initialScale: number, initialMaterial: StandardMaterial) => {
+const CreateImpostor = (id: number, scene: Scene, attractorData: IAttractorData, initialScale: number, initialMaterial: StandardMaterial) => {
     const impostor = CreateSphere("Attractor impostor #" + id, { diameter: 1 }, scene);
     impostor.scaling.setAll(initialScale);
-    impostor.position.copyFrom(attractor.position);
+    impostor.position.copyFrom(attractorData.position);
     impostor.material = initialMaterial;
     impostor.reservedDataStore = { hidden: true };
     return impostor;
@@ -65,18 +70,27 @@ async function CreateTextRendererAsync(id: number, scene: Scene, impostor: Abstr
  * @returns
  */
 export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => {
-    const { attractor, id, impostorScale, impostorMaterial, impostorColor, scene, onControl, isControlled } = props;
+    const { attractorData, id, impostorScale, impostorMaterial, impostorColor, scene, onControl, isControlled } = props;
     const classes = useAttractorStyles();
-    const [shown, setShown] = useState(true);
+    // For read-only attractors (Node particles), start hidden by default
+    const [shown, setShown] = useState(!attractorData.isReadOnly);
 
     // We only want to recreate the impostor mesh and associated if id, scene, or attractor/impostor changes
-    const impostor = useResource(useCallback(() => CreateImpostor(id, scene, attractor, impostorScale, impostorMaterial), [id, scene, attractor]));
+    const impostor = useResource(useCallback(() => CreateImpostor(id, scene, attractorData, impostorScale, impostorMaterial), [id, scene, attractorData]));
     const label = useAsyncResource(useCallback(async () => await CreateTextRendererAsync(id, scene, impostor, impostorColor), [id, scene, impostor]));
 
+    // Set initial visibility based on whether it should be shown
+    useEffect(() => {
+        impostor.visibility = shown ? 1 : 0;
+    }, [impostor, shown]);
+
     // If impostor, color, or label change, recreate the observer function so that it isnt hooked to old state
+    // For read-only attractors, don't sync position back (it can't be moved)
     useEffect(() => {
         const onAfterRender = scene.onAfterRenderObservable.add(() => {
-            attractor.position.copyFrom(impostor.position);
+            if (!attractorData.isReadOnly) {
+                attractorData.position.copyFrom(impostor.position);
+            }
             if (label) {
                 label.color = Color4.FromColor3(impostorColor);
                 label.render(scene.getViewMatrix(), scene.getProjectionMatrix());
@@ -85,7 +99,7 @@ export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => 
         return () => {
             onAfterRender.remove();
         };
-    }, [impostor, scene, label, impostorColor]);
+    }, [impostor, scene, label, impostorColor, attractorData]);
 
     // If impostor or impostorScale change, update impostor scaling
     useEffect(() => {
@@ -94,23 +108,29 @@ export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => 
 
     return (
         <div className={classes.container}>
-            <SyncedSliderInput value={attractor.strength} onChange={(value) => (attractor.strength = value)} min={-10} max={10} step={0.1} />
+            {attractorData.isReadOnly ? (
+                <Body1 className={classes.strengthLabel}>Strength: {attractorData.strength !== null ? attractorData.strength : "Dynamic"}</Body1>
+            ) : (
+                <SyncedSliderInput value={attractorData.strength!} onChange={(value) => attractorData.setStrength(value)} min={-10} max={10} step={0.1} />
+            )}
             <ToggleButton
                 title="Show / hide particle attractor."
                 checkedIcon={EyeFilled}
                 uncheckedIcon={EyeOffFilled}
                 value={shown}
                 onChange={(show: boolean) => {
-                    show ? (impostor.visibility = 1) : (impostor.visibility = 0);
+                    impostor.visibility = show ? 1 : 0;
                     setShown(show);
                 }}
             />
-            <ToggleButton
-                title="Add / remove position gizmo from particle attractor"
-                checkedIcon={ArrowMoveFilled}
-                value={isControlled(impostor)}
-                onChange={(control: boolean) => onControl(control ? impostor : undefined)}
-            />
+            {!attractorData.isReadOnly && (
+                <ToggleButton
+                    title="Add / remove position gizmo from particle attractor"
+                    checkedIcon={ArrowMoveFilled}
+                    value={isControlled(impostor)}
+                    onChange={(control: boolean) => onControl(control ? impostor : undefined)}
+                />
+            )}
         </div>
     );
 };

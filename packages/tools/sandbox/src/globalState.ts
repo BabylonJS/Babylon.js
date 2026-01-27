@@ -13,6 +13,7 @@ export class GlobalState {
     public onRequestClickInterceptor = new Observable<void>();
     public onClickInterceptorClicked = new Observable<void>();
     public glTFLoaderExtensions: { [key: string]: import("loaders/glTF/index").IGLTFLoaderExtension } = {};
+    public onFilesInputReady = new Observable<void>();
 
     public filesInput: FilesInput;
     public isDebugLayerEnabled = false;

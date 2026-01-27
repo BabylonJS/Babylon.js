@@ -49,6 +49,9 @@ import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVe
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
 import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
 import { ParticleClampBlock } from "core/Particles/Node/Blocks/particleClampBlock";
+import { ParticleNLerpBlock } from "core/Particles/Node/Blocks/particleNLerpBlock";
+import { ParticleSmoothStepBlock } from "core/Particles/Node/Blocks/particleSmoothStepBlock";
+import { ParticleStepBlock } from "core/Particles/Node/Blocks/particleStepBlock";
 
 /**
  * Static class for BlockTools
@@ -56,6 +59,12 @@ import { ParticleClampBlock } from "core/Particles/Node/Blocks/particleClampBloc
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "NLerpBlock":
+                return new ParticleNLerpBlock("NLerp");
+            case "StepBlock":
+                return new ParticleStepBlock("Step");
+            case "SmoothStepBlock":
+                return new ParticleSmoothStepBlock("SmoothStep");
             case "ClampBlock":
                 return new ParticleClampBlock("Clamp");
             case "FresnelBlock":

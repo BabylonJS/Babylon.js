@@ -22,6 +22,8 @@ export interface INodeEditorOptions {
     customSave?: { label: string; action: (data: string) => Promise<void> };
     customLoadObservable?: Observable<any>;
     backgroundColor?: Color4;
+    /** If true, the node particle system set will be disposed when the editor is closed (default: true) */
+    disposeOnClose?: boolean;
 }
 
 /**
@@ -65,6 +67,7 @@ export class NodeParticleEditor {
         globalState.customSave = options.customSave;
         globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.stateManager.hostDocument = globalState.hostDocument;
+        globalState.disposeOnClose = options.disposeOnClose ?? true;
         if (options.backgroundColor) {
             globalState.backgroundColor = options.backgroundColor;
         }

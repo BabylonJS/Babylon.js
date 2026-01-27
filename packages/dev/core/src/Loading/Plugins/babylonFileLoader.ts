@@ -505,6 +505,8 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
             for (let index = 0, cache = parsedData.spriteManagers.length; index < cache; index++) {
                 const parsedSpriteManager = parsedData.spriteManagers[index];
                 const spriteManager = SpriteManager.Parse(parsedSpriteManager, scene, rootUrl);
+                container.spriteManagers.push(spriteManager);
+                spriteManager._parentContainer = container;
                 log += "\n\t\tSpriteManager " + spriteManager.name;
             }
         }

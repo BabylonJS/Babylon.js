@@ -48,8 +48,8 @@ export type ListItem<T> = {
 type ListProps<T> = {
     items: ListItem<T>[];
     renderItem: (item: ListItem<T>, index: number) => ReactNode;
-    onDelete: (item: ListItem<T>, index: number) => void;
-    onAdd: (item?: ListItem<T>) => void;
+    onDelete?: (item: ListItem<T>, index: number) => void;
+    onAdd?: (item?: ListItem<T>) => void;
     addButtonLabel?: string;
 };
 
@@ -66,17 +66,19 @@ export function List<T>(props: ListProps<T>): ReactElement {
 
     return (
         <div>
-            <ButtonLine label={addButtonLabel} icon={AddRegular} onClick={() => props.onAdd()} />
+            {onAdd && <ButtonLine label={addButtonLabel} icon={AddRegular} onClick={() => onAdd()} />}
 
             <div className={classes.list}>
                 {sortedItems.map((item: ListItem<T>, index: number) => (
                     <div key={item.id} className={classes.item}>
                         <Body1Strong className={classes.itemId}>#{index}</Body1Strong>
                         <div className={classes.itemContent}>{renderItem(item, items.indexOf(sortedItems[index]))}</div>
-                        <div className={classes.iconContainer}>
-                            <CopyRegular onClick={() => onAdd(item)} />
-                            <DeleteRegular onClick={() => onDelete(item, items.indexOf(sortedItems[index]))} />
-                        </div>
+                        {(onAdd || onDelete) && (
+                            <div className={classes.iconContainer}>
+                                {onAdd && <CopyRegular onClick={() => onAdd(item)} />}
+                                {onDelete && <DeleteRegular onClick={() => onDelete(item, items.indexOf(sortedItems[index]))} />}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>

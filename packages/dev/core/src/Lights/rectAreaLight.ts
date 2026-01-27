@@ -1,11 +1,15 @@
-import { Vector3 } from "../Maths/math.vector";
-import { Node } from "../node";
-import { Light } from "./light";
+import { Vector3 } from "core/Maths/math.vector";
+import { Node } from "core/node";
+import { Light } from "core/Lights/light";
 import type { Effect } from "core/Materials/effect";
 import { RegisterClass } from "core/Misc/typeStore";
-import { serialize } from "../Misc/decorators";
+import { serialize } from "core/Misc/decorators";
 import type { Scene } from "core/scene";
-import { AreaLight } from "./areaLight";
+import { AreaLight } from "core/Lights/areaLight";
+import type { Nullable } from "core/types";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Texture } from "core/Materials/Textures/texture";
+import { Constants } from "core/Engines/constants";
 
 Node.AddNodeConstructor("Light_Type_4", (name, scene) => {
     return () => new RectAreaLight(name, Vector3.Zero(), 1, 1, scene);
@@ -21,6 +25,36 @@ export class RectAreaLight extends AreaLight {
     protected readonly _pointTransformedPosition: Vector3;
     protected readonly _pointTransformedWidth: Vector3;
     protected readonly _pointTransformedHeight: Vector3;
+    private _emissionTextureTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * Gets Rect Area Light emission texture. (Note: This texture needs pre-processing! Use AreaLightTextureTools to pre-process the texture).
+     */
+    public get emissionTexture(): Nullable<BaseTexture> {
+        return this._emissionTextureTexture;
+    }
+
+    /**
+     * Sets Rect Area Light emission texture. (Note: This texture needs pre-processing! Use AreaLightTextureTools to pre-process the texture).
+     */
+    public set emissionTexture(value: Nullable<BaseTexture>) {
+        if (this._emissionTextureTexture === value) {
+            return;
+        }
+
+        this._emissionTextureTexture = value;
+
+        if (this._emissionTextureTexture) {
+            this._emissionTextureTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            this._emissionTextureTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        }
+
+        if (this._emissionTextureTexture && RectAreaLight._IsTexture(this._emissionTextureTexture)) {
+            this._emissionTextureTexture.onLoadObservable.addOnce(() => {
+                this._markMeshesAsLightDirty();
+            });
+        }
+    }
 
     /**
      * Rect Area Light width.
@@ -108,6 +142,10 @@ export class RectAreaLight extends AreaLight {
         return false;
     }
 
+    private static _IsTexture(texture: BaseTexture): texture is Texture {
+        return (texture as Texture).onLoadObservable !== undefined;
+    }
+
     /**
      * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).
      * @param effect The effect to update
@@ -143,6 +181,16 @@ export class RectAreaLight extends AreaLight {
         return this;
     }
 
+    public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
+        super.transferTexturesToEffect(effect, lightIndex);
+
+        if (this._emissionTextureTexture && this._emissionTextureTexture.isReady()) {
+            effect.setTexture("rectAreaLightEmissionTexture" + lightIndex, this._emissionTextureTexture);
+        }
+
+        return this;
+    }
+
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
         const offset = this._scene.floatingOriginOffset;
 
@@ -157,6 +205,16 @@ export class RectAreaLight extends AreaLight {
             effect.setFloat3(lightDataUniformName, this.position.x - offset.x, this.position.y - offset.y, this.position.z - offset.z);
         }
         return this;
+    }
+
+    /**
+     * Prepares the list of defines specific to the light type.
+     * @param defines the list of defines
+     * @param lightIndex defines the index of the light for the effect
+     */
+    public override prepareLightSpecificDefines(defines: any, lightIndex: number): void {
+        super.prepareLightSpecificDefines(defines, lightIndex);
+        defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex] = this._emissionTextureTexture && this._emissionTextureTexture.isReady() ? true : false;
     }
 }
 

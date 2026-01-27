@@ -219,7 +219,6 @@ export class AlphaState {
                 break;
             case Constants.ALPHA_SUBTRACT:
                 this.setAlphaBlendFunctionParameters(0, Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_COLOR, 1, 1, targetIndex);
-                equation = Constants.GL_ALPHA_EQUATION_SUBTRACT;
                 break;
             case Constants.ALPHA_MULTIPLY:
                 this.setAlphaBlendFunctionParameters(Constants.GL_ALPHA_FUNCTION_DST_COLOR, 0, 1, 1, targetIndex);

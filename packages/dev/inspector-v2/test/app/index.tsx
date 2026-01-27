@@ -37,6 +37,8 @@ import "node-geometry-editor/legacy/legacy";
 import "node-particle-editor/legacy/legacy";
 import "node-render-graph-editor/legacy/legacy";
 
+import "node-particle-editor/legacy/legacy"; // Ensure node particle editor legacy code is imported
+
 // Register scene loader plugins.
 registerBuiltInLoaders();
 

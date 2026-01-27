@@ -4,9 +4,13 @@ var hostElement = document.getElementById("host-element");
 
 const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
 
+// Register service worker for PWA
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
+}
+
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
-        // eslint-disable-next-line no-undef
         let urlToLoad = typeof globalThis !== "undefined" && globalThis.__babylonSnapshotTimestamp__ ? url + "?t=" + globalThis.__babylonSnapshotTimestamp__ : url;
         const script = document.createElement("script");
         script.src = urlToLoad;
@@ -96,7 +100,11 @@ const isVersionGreaterOrEqual = function (version1, version2) {
 let checkBabylonVersionAsync = function () {
     let activeVersion = "dist";
 
-    if (window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1) {
+    // Check if running as installed PWA (standalone mode)
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+
+    // Use local only when on localhost, not in standalone PWA mode, and ?dist not specified
+    if (window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1 && !isStandalone) {
         activeVersion = "local";
     }
 
@@ -137,13 +145,10 @@ let checkBabylonVersionAsync = function () {
     }).then(() => {
         // if local, set the default base URL
         if (snapshot) {
-            // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot;
         } else if (version) {
-            // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://cdn.babylonjs.com/v" + version;
         } else if (activeVersion === "local") {
-            // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
         }
 

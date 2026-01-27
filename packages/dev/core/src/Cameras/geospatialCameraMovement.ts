@@ -62,6 +62,7 @@ export class GeospatialCameraMovement extends CameraMovement {
         this.rotationInertia = 0;
         this.rotationXSpeed = Math.PI / 500; // Move 1/500th of a half circle per pixel
         this.rotationYSpeed = Math.PI / 500; // Move 1/500th of a half circle per pixel
+        this.zoomSpeed = 2; // Base zoom speed; actual speed is scaled based on altitude
     }
 
     public startDrag(pointerX: number, pointerY: number) {

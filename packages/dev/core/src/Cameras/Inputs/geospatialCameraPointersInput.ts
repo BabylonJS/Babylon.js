@@ -83,7 +83,8 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
                     // Scale zoom by distance to picked point
                     const distanceToPoint = this.camera.position.subtract(pickResult.pickedPoint).length();
                     const zoomDistance = pinchDelta * distanceToPoint * 0.005;
-                    this.camera.zoomToPoint(pickResult.pickedPoint, zoomDistance);
+                    const clampedZoom = this.camera.limits.clampZoomDistance(zoomDistance, this.camera.radius, distanceToPoint);
+                    this.camera.zoomToPoint(pickResult.pickedPoint, clampedZoom);
                     return;
                 }
             }
@@ -91,7 +92,8 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
 
         // Fallback: scale zoom by camera radius along lookat vector
         const zoomDistance = pinchDelta * this.camera.radius * 0.005;
-        this.camera.zoomAlongLookAt(zoomDistance);
+        const clampedZoom = this.camera.limits.clampZoomDistance(zoomDistance, this.camera.radius);
+        this.camera.zoomAlongLookAt(clampedZoom);
     }
 
     /**

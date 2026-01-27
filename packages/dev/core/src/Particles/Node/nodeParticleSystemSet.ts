@@ -36,6 +36,8 @@ export interface INodeParticleEditorOptions {
     /** Additional configuration for the NPE */
     nodeEditorConfig?: {
         backgroundColor?: Color4;
+        /** If true, the node particle system set will be disposed when the editor is closed (default: true) */
+        disposeOnClose?: boolean;
     };
 }
 

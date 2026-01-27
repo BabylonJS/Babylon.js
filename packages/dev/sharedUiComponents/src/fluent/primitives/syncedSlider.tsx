@@ -68,7 +68,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
     const { infoLabel, ...passthroughProps } = props;
     const classes = useSyncedSliderStyles();
     const { size } = useContext(ToolContext);
-    const [value, setValue] = useState<number>(props.value);
+    const [value, setValue] = useState<number>(props.value ?? 0);
     const pendingValueRef = useRef<number>(undefined);
     const isDraggingRef = useRef(false);
 
@@ -80,7 +80,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
     const step = props.step ?? 1;
 
     useEffect(() => {
-        !isDraggingRef.current && setValue(props.value ?? ""); // Update local state when props.value changes as long as user is not actively dragging
+        !isDraggingRef.current && setValue(props.value ?? 0); // Update local state when props.value changes as long as user is not actively dragging
     }, [props.value]);
 
     const handleSliderChange = (_: ChangeEvent<HTMLInputElement>, data: SliderOnChangeData) => {

@@ -18,11 +18,11 @@ type StringifiedPropertyLineProps = PropertyLineProps<number> &
  */
 export const StringifiedPropertyLine: FunctionComponent<StringifiedPropertyLineProps> = (props) => {
     StringifiedPropertyLine.displayName = "StringifiedPropertyLine";
-    const value = props.precision !== undefined ? props.value.toFixed(props.precision) : props.value.toLocaleString();
+    const value = props.precision !== undefined ? props.value?.toFixed(props.precision) : props.value?.toLocaleString();
     const withUnits = props.units ? `${value} ${props.units}` : value;
     return (
         <PropertyLine {...props}>
-            <Body1 title={props.title}>{withUnits}</Body1>
+            <Body1 title={props.title}>{withUnits ?? ""}</Body1>
         </PropertyLine>
     );
 };

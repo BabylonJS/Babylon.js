@@ -71,7 +71,7 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
         return getEntities()
             .filter((e) => e.uniqueId !== undefined && (!filter || filter(e)))
             .map((entity) => ({
-                label: getName(entity).toString(),
+                label: getName(entity)?.toString() || "",
                 value: entity.uniqueId.toString(),
             }))
             .sort((a, b) => a.label.localeCompare(b.label));
@@ -99,10 +99,14 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
                 {onChange &&
                     (defaultValue !== undefined ? (
                         // If the defaultValue is specified, then allow resetting to the default
-                        <Button icon={LinkDismissRegular} onClick={() => onChange(defaultValue)} />
+                        <Tooltip content="Unlink" relationship="label">
+                            <Button icon={LinkDismissRegular} onClick={() => onChange(defaultValue)} />
+                        </Tooltip>
                     ) : (
                         // Otherwise, just allow editing to a new value
-                        <Button icon={LinkEditRegular} onClick={() => setIsEditing(true)} />
+                        <Tooltip content="Edit Link" relationship="label">
+                            <Button icon={LinkEditRegular} onClick={() => setIsEditing(true)} />
+                        </Tooltip>
                     ))}
             </div>
         );

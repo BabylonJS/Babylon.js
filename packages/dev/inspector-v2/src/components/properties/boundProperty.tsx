@@ -2,6 +2,7 @@ import type { ComponentProps, ComponentType } from "react";
 
 import { forwardRef, useMemo } from "react";
 
+import { ErrorBoundary } from "../errorBoundary";
 import { usePropertyChangedNotifier } from "../../contexts/propertyContext";
 import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
 import { GetPropertyDescriptor } from "../../instrumentation/propertyInstrumentation";
@@ -135,7 +136,11 @@ function BoundPropertyImpl<TargetT extends object, PropertyKeyT extends keyof Ta
     }
 
     // Target is guaranteed to be non-null here, pass to core implementation.
-    return <BoundPropertyCore {...rest} target={target} ref={ref} />;
+    return (
+        <ErrorBoundary name={`BoundProperty:${String(props.propertyKey)}`}>
+            <BoundPropertyCore {...rest} target={target} ref={ref} />
+        </ErrorBoundary>
+    );
 }
 
 // Custom generic forwardRef function (this is needed because using forwardRef with BoundPropertyImpl does not properly resolve Generic types)
