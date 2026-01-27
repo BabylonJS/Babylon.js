@@ -47,7 +47,7 @@
 #include<openpbrDielectricReflectance>
 #include<openpbrConductorReflectance>
 
-#include<openpbrBlockAmbientOcclusion>
+#include<openpbrAmbientOcclusionFunctions>
 #include<openpbrGeometryInfo>
 #include<openpbrIblFunctions>
 
@@ -76,6 +76,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // ______________________ Read Base properties & Opacity ______________________________
     #include<openpbrBaseLayerData>
 
+    // _____________________________ Read Transmission Layer properties ______________________
+    #include<openpbrTransmissionLayerData>
+
     // _____________________________ Read Coat Layer properties ______________________
     #include<openpbrCoatLayerData>
 
@@ -84,29 +87,17 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // _____________________________ Read Fuzz Layer properties ______________________
     #include<openpbrFuzzLayerData>
 
+    // _____________________________ Read AO Properties _______________________________
+    #include<openpbrAmbientOcclusionData>
+
     // TEMP
     var subsurface_weight: f32 = 0.0f;
-    var transmission_weight: f32 = 0.0f;
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
     #include<depthPrePass>
 
     #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
-
-    // _____________________________ AO  _______________________________
-    var aoOut: ambientOcclusionOutParams;
-
-#ifdef AMBIENT_OCCLUSION
-    var ambientOcclusionFromTexture: vec3f = textureSample(ambientOcclusionSampler, ambientOcclusionSamplerSampler, fragmentInputs.vAmbientOcclusionUV + uvOffset).rgb;
-#endif
-
-    aoOut = ambientOcclusionBlock(
-    #ifdef AMBIENT_OCCLUSION
-        ambientOcclusionFromTexture,
-        uniforms.vAmbientOcclusionInfos
-    #endif
-    );
 
     // _____________________________ Compute Geometry info for coat layer _________________________
     #ifdef ANISOTROPIC_COAT
@@ -173,18 +164,95 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Base Metallic
     let baseConductorReflectance: ReflectanceParams = conductorReflectance(base_color, specular_color, specular_weight);
 
+    var transmission_absorption: vec3f = vec3f(1.0f);
+    #if defined(REFRACTED_BACKGROUND) || defined(REFRACTED_ENVIRONMENT) || defined(REFRACTED_LIGHTS)
+        #ifdef DISPERSION
+            var refractedViewVectors: array<vec3f, 3>;
+            let iorDispersionSpread: f32 = transmission_dispersion_scale / transmission_dispersion_abbe_number * (specular_ior - 1.0f);
+            let dispersion_iors: vec3f = vec3f(specular_ior - iorDispersionSpread, specular_ior, specular_ior + iorDispersionSpread);
+            for (var i: i32 = 0; i < 3; i++) {
+                refractedViewVectors[i] = double_refract(-viewDirectionW, normalW, dispersion_iors[i]);    
+            }
+        #else
+            let refractedViewVector: vec3f = double_refract(-viewDirectionW, normalW, specular_ior);
+        #endif
+        // Transmission blurriness is affected by IOR so we scale the roughness accordingly
+        let transmission_roughness: f32 = specular_roughness * clamp(4.0f * (specular_ior - 1.0f), 0.001f, 1.0f);
+
+        var extinction_coeff: vec3f = vec3f(0.0f);
+        var scatter_coeff: vec3f = vec3f(0.0f);
+        var absorption_coeff: vec3f = vec3f(0.0f);
+        var ss_albedo: vec3f = vec3f(0.0f);
+        var multi_scatter_color: vec3f = vec3f(1.0f);
+        // Absorption is volumetric if transmission depth is > 0.
+        // Otherwise, absorption is considered instantaneous at the surface.
+        if (transmission_depth > 0.0f) {
+            // Figure out coefficients based on OpenPBR spec.
+            let invDepth: vec3f = vec3f(1.f / maxEps(transmission_depth));
+            extinction_coeff = -log(transmission_color.rgb) * invDepth;
+            scatter_coeff = transmission_scatter.rgb * invDepth;
+            absorption_coeff = extinction_coeff - scatter_coeff.rgb;
+            let minCoeff: f32 = min3(absorption_coeff);
+            if (minCoeff < 0.0f) {
+                absorption_coeff -= vec3f(minCoeff);
+            }
+            // Set extinction coefficient after shifting the absorption to be non-negative.
+            extinction_coeff = absorption_coeff + scatter_coeff;
+            ss_albedo = scatter_coeff / (extinction_coeff);
+            multi_scatter_color = singleScatterToMultiScatterAlbedo(ss_albedo);
+
+            transmission_absorption = exp(-absorption_coeff * geometry_thickness);
+        } else {
+            // We'll account for double-absorption here, assuming light enters and then exits the
+            // volume before reaching the eye. 
+            transmission_absorption = transmission_color.rgb * transmission_color.rgb;
+        }
+
+        let refractionAlphaG: f32 = transmission_roughness * transmission_roughness;
+        #ifdef SCATTERING
+            // Transmission Scattering
+            let back_to_iso_scattering_blend: f32 = min(1.0f + transmission_scatter_anisotropy, 1.0f);
+            let iso_to_forward_scattering_blend: f32 = max(transmission_scatter_anisotropy, 0.0f);
+
+            // The 0.2 exponent is an empirical fit to match reference renderers - check if it works broadly
+            let iso_scatter_transmittance: vec3f = pow(exp(-extinction_coeff * geometry_thickness), vec3f(0.2f));
+            let iso_scatter_density: vec3f = clamp(vec3f(1.0f) - iso_scatter_transmittance, vec3f(0.0f), vec3f(1.0f));
+            
+            // Refration roughness is modified by the density of the scattering and also by the anisotropy.
+            var roughness_alpha_modified_for_scatter: f32 = min(refractionAlphaG + (1.0f - abs(transmission_scatter_anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 1.0f);
+            roughness_alpha_modified_for_scatter = pow(roughness_alpha_modified_for_scatter, 6.0f);
+            roughness_alpha_modified_for_scatter = clamp(roughness_alpha_modified_for_scatter, refractionAlphaG, 1.0f);
+        #else
+            let roughness_alpha_modified_for_scatter: f32 = refractionAlphaG;
+        #endif
+        
+        // Calculated viewable distance based on reduced extinction and use that to
+        // determine absorption at mean free path.
+        let transport_mfp: vec3f = vec3f(2.0f) / scatter_coeff;
+        let absorption_at_mfp: vec3f = exp(-absorption_coeff * transport_mfp);
+    #endif
+    // __________________ Transmitted Light From Background Refraction ___________________________
+    #include<openpbrBackgroundTransmission>
+
     // ________________________ Environment (IBL) Lighting ____________________________
     var material_surface_ibl: vec3f = vec3f(0.f, 0.f, 0.f);
     #include<openpbrEnvironmentLighting>
 
     // __________________________ Direct Lighting ____________________________
     var material_surface_direct: vec3f = vec3f(0.f, 0.f, 0.f);
+    // The refracted background is basically an environment contribution so it's
+    // included in the environment lighting section above. However, if we don't
+    // have IBL enabled, we still need to compute the refracted background here and
+    // will split it between all the lights.
+    #ifdef REFLECTION
+        slab_translucent_background = vec4f(0.f, 0.f, 0.f, 1.f);
+    #else
+        slab_translucent_background /= f32(LIGHTCOUNT); // Average the background contribution over the number of lights
+    #endif
     #if defined(LIGHT0)
         var aggShadow: f32 = 0.f;
-        var numLights: f32 = 0.f;
         #include<openpbrDirectLightingInit>[0..maxSimultaneousLights]
         #include<openpbrDirectLighting>[0..maxSimultaneousLights]
-        
     #endif
 
     // _________________________ Emissive Lighting _______________________________

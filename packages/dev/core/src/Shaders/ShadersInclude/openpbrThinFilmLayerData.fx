@@ -17,4 +17,6 @@ float thin_film_ior = vThinFilmIor;
 #ifdef THIN_FILM_THICKNESS
     thin_film_thickness *= thinFilmThicknessFromTexture;
 #endif
+// Scalar used to scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
+float thin_film_ior_scale = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
 #endif

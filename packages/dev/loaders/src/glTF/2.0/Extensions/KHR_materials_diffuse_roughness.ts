@@ -21,7 +21,7 @@ declare module "../../glTFFileLoader" {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/fdee35425ae560ea378092e38977216d63a094ec/extensions/2.0/Khronos/KHR_materials_diffuse_roughness/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/b102d2d2b40d44a8776800bb2bf85e218853c17d/extensions/2.0/Khronos/KHR_materials_diffuse_roughness/README.md)
  * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
