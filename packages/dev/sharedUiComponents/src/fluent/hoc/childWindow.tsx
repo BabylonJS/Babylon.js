@@ -1,7 +1,7 @@
 import type { GriffelRenderer } from "@fluentui/react-components";
 import type { FunctionComponent, PropsWithChildren, Ref } from "react";
 
-import { createDOMRenderer, FluentProvider, makeStyles, Portal, RendererProvider } from "@fluentui/react-components";
+import { createDOMRenderer, FluentProvider, Portal, RendererProvider } from "@fluentui/react-components";
 import { useCallback, useEffect, useImperativeHandle, useState } from "react";
 
 import { Logger } from "core/Misc/logger";
@@ -27,15 +27,6 @@ function ToFeaturesString(options: ChildWindowOptions) {
 
     return features.map((feature) => `${feature.key}=${feature.value}`).join(",");
 }
-
-const useStyles = makeStyles({
-    container: {
-        display: "flex",
-        flexGrow: 1,
-        flexDirection: "column",
-        overflow: "hidden",
-    },
-});
 
 export type ChildWindowOptions = {
     /**
@@ -108,7 +99,6 @@ export type ChildWindowProps = {
  */
 export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>> = (props) => {
     const { id, children, onOpenChange, imperativeRef: imperativeRef } = props;
-    const classes = useStyles();
 
     const [windowState, setWindowState] = useState<{ mountNode: HTMLElement; renderer: GriffelRenderer }>();
     const [childWindow, setChildWindow] = useState<Window>();
@@ -268,7 +258,16 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
             {/* RenderProvider manages Fluent style/class state. */}
             <RendererProvider renderer={renderer} targetDocument={mountNode.ownerDocument}>
                 {/* Fluent Provider is needed for managing other Fluent state and applying the current theme mode. */}
-                <FluentProvider className={classes.container} applyStylesToPortals={false} targetDocument={mountNode.ownerDocument}>
+                <FluentProvider
+                    style={{
+                        display: "flex",
+                        flexGrow: 1,
+                        flexDirection: "column",
+                        overflow: "hidden",
+                    }}
+                    applyStylesToPortals={false}
+                    targetDocument={mountNode.ownerDocument}
+                >
                     {children}
                 </FluentProvider>
             </RendererProvider>

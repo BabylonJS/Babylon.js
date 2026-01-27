@@ -70,7 +70,6 @@ export const ToolsServiceDefinition: ServiceDefinition<[IToolsService], [IShellS
 
         /**
          * Left TODO: Implement the following sections from toolsTabComponent.tsx
-         * - GLTF Validator (see glTFComponent.tsx) (consider putting in Import tools)
          * - GIF (consider putting in Capture Tools)
          * - Replay (consider putting in Capture Tools)
          */
