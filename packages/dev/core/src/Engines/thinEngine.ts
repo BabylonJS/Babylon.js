@@ -93,8 +93,9 @@ export interface EngineOptions extends AbstractEngineOptions, WebGLContextAttrib
     failIfMajorPerformanceCaveat?: boolean;
 
     /**
-     * If sRGB Buffer support is not set during construction, use this value to force a specific state
-     * This is added due to an issue when processing textures in chrome/edge/firefox
+     * If sRGB buffer support is not set during construction, use this value to force a specific state
+     * This was originally added to mitigate an issue when processing textures in chrome/edge/firefox.
+     * The browser issue has since been fixed. This option remains for backward compatibility.
      * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
      */
     forceSRGBBufferSupportState?: boolean;

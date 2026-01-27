@@ -12,12 +12,14 @@ const BabylonWebResources = {
  * Well-known default built in extensions for the Inspector.
  */
 export const DefaultInspectorExtensionFeed = new BuiltInsExtensionFeed("Inspector", [
-    // {
-    //     name: "Asset Creation",
-    //     description: "Adds new features to enable creating Babylon assets such as node materials, flow graphs, and more.",
-    //     keywords: ["creation"],
-    //     getExtensionModuleAsync: async () => await import("../services/creationToolsService"),
-    // },
+    {
+        name: "Quick Creation Tools (Preview)",
+        description: "Adds a new panel for easy creation of various Babylon assets. This is a WIP extension...expect changes!",
+        keywords: ["creation", "tools"],
+        ...BabylonWebResources,
+        author: { name: "Babylon.js", forumUserName: "" },
+        getExtensionModuleAsync: async () => await import("../extensions/quickCreate/quickCreateToolsService"),
+    },
     {
         name: "Export Tools",
         description: "Adds new features to enable exporting Babylon assets such as .gltf, .glb, .babylon, and more.",
@@ -43,11 +45,11 @@ export const DefaultInspectorExtensionFeed = new BuiltInsExtensionFeed("Inspecto
         getExtensionModuleAsync: async () => await import("../services/panes/tools/import/importService"),
     },
     {
-        name: "Quick Creation Tools (Preview)",
-        description: "Adds a new panel for easy creation of various Babylon assets. This is a WIP extension...expect changes!",
-        keywords: ["creation", "tools"],
+        name: "Reflector",
+        description: "Connects to the Reflector Bridge for real-time scene synchronization with the Babylon.js Sandbox.",
+        keywords: ["reflector", "bridge", "sync", "sandbox", "tools"],
         ...BabylonWebResources,
         author: { name: "Babylon.js", forumUserName: "" },
-        getExtensionModuleAsync: async () => await import("../extensions/quickCreate/quickCreateToolsService"),
+        getExtensionModuleAsync: async () => await import("../services/panes/tools/reflectorService"),
     },
 ]);

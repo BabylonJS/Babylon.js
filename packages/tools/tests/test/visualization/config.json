@@ -2975,52 +2975,52 @@
         },
         {
             "title": "Atmosphere Day",
-            "playgroundId": "#VO1Z0C#14",
+            "playgroundId": "#VO1Z0C#34",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Day (Planet Origin)",
-            "playgroundId": "#VO1Z0C#30",
+            "playgroundId": "#VO1Z0C#35",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Sunset",
-            "playgroundId": "#VO1Z0C#15",
+            "playgroundId": "#VO1Z0C#36",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Sunset (Planet Origin)",
             "playgroundId": "#VO1Z0C#31",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Night",
             "playgroundId": "#VO1Z0C#13",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Night (Planet Origin)",
             "playgroundId": "#VO1Z0C#32",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Space View",
             "playgroundId": "#VO1Z0C#6",
             "referenceImage": "atmosphere-space-view.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "OpenPBR IBL Reflectance with IOR",

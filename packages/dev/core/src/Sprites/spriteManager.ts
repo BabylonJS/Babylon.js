@@ -21,6 +21,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 
 import type { Ray } from "../Culling/ray";
+import type { IAssetContainer } from "../IAssetContainer";
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect
 declare const Reflect: any;
@@ -133,6 +134,9 @@ export interface SpriteManagerOptions {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/sprites
  */
 export class SpriteManager implements ISpriteManager {
+    /** @internal */
+    public _parentContainer: Nullable<IAssetContainer> = null;
+
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
 
@@ -694,6 +698,14 @@ export class SpriteManager implements ISpriteManager {
             const index = this._scene.spriteManagers.indexOf(this);
             this._scene.spriteManagers.splice(index, 1);
             this._scene._onSpriteManagerRemovedObservable?.notifyObservers(this);
+        }
+
+        if (this._parentContainer && this._parentContainer.spriteManagers) {
+            const index = this._parentContainer.spriteManagers.indexOf(this);
+            if (index > -1) {
+                this._parentContainer.spriteManagers.splice(index, 1);
+            }
+            this._parentContainer = null;
         }
 
         // Callback
