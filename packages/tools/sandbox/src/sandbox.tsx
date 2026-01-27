@@ -18,7 +18,8 @@ import "./scss/main.scss";
 import fullScreenLogo from "./img/logo-fullscreen.svg";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
-import { GetRegisteredSceneLoaderPluginMetadata } from "core/Loading/sceneLoader";
+
+declare const BABYLON: typeof import("core/index");
 
 // Types for PWA Launch Queue API (file handlers)
 interface ILaunchParams {
@@ -394,7 +395,7 @@ export class Sandbox extends React.Component<
         const fallbackExtensions = "babylon, gltf, glb, obj, ply, sog, splat, spz or stl";
 
         try {
-            const plugins = GetRegisteredSceneLoaderPluginMetadata();
+            const plugins = BABYLON.GetRegisteredSceneLoaderPluginMetadata();
             let extensions = plugins.flatMap((plugin) => plugin.extensions.map((ext) => ext.extension.replace(".", "").toLowerCase())).sort();
             extensions = extensions.filter((ext) => ext !== "json"); // The splat loader registers .json, but that is covered by the sog format and json files are too generic
 
