@@ -246,11 +246,11 @@
         var slab_fuzz_ibl = fuzzEnvironmentLight * uniforms.vLightingIntensity.z;
     #endif
 
-    var slab_translucent_base_ibl: vec3f = slab_translucent_background.rgb * transmission_absorption;
+    var slab_translucent_base_ibl: vec3f = vec3f(0.0f, 0.0f, 0.0f);
     #ifdef REFRACTED_ENVIRONMENT
         
         #ifdef ANISOTROPIC_BASE
-            var environmentRefraction: vec3f = sampleRadianceAnisotropic(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+            var forwardScatteredEnvironmentLight: vec3f = sampleRadianceAnisotropic(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
                 , baseGeoInfo
                 , normalW
                 , viewDirectionW
@@ -265,7 +265,7 @@
                 #endif
             );
         #else
-            var environmentRefraction: vec3f = vec3f(0., 0., 0.);
+            var forwardScatteredEnvironmentLight: vec3f = vec3f(0., 0., 0.);
             #ifdef DISPERSION
                 for (var i: i32 = 0; i < 3; i++) {
                     var iblRefractionCoords: vec3f = refractedViewVectors[i];
@@ -281,7 +281,7 @@
 
             iblRefractionCoords = (uniforms.reflectionMatrix * vec4f(iblRefractionCoords, 0.0f)).xyz;
             #ifdef DISPERSION
-                environmentRefraction[i] = sampleRadiance(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                forwardScatteredEnvironmentLight[i] = sampleRadiance(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
                     , baseGeoInfo
                     , reflectionSampler
                     , reflectionSamplerSampler
@@ -291,7 +291,7 @@
                     #endif
                 )[i];
             #else
-                environmentRefraction = sampleRadiance(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                forwardScatteredEnvironmentLight = sampleRadiance(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
                     , baseGeoInfo
                     , reflectionSampler
                     , reflectionSamplerSampler
@@ -311,7 +311,7 @@
             // at low blurriness since it represents the transmitted light that is in front of the IBL.
             // At high blurriness, the refraction from the environment will be coming from more directions
             // and so we want to include more of this indirect lighting.
-            environmentRefraction *= max(roughness_alpha_modified_for_scatter * roughness_alpha_modified_for_scatter - 0.1f, 0.0f);
+            forwardScatteredEnvironmentLight = max(slab_translucent_background.rgb, mix(slab_translucent_background.rgb, forwardScatteredEnvironmentLight, roughness_alpha_modified_for_scatter));
         #endif
 
         #ifdef SCATTERING
@@ -355,7 +355,7 @@
 
             if (transmission_depth>0.0f) {
                 // Direct Transmission (aka forward-scattered light from back side)
-                let forward_scattered_light: vec3f = environmentRefraction * transmission_absorption;
+                let forward_scattered_light: vec3f = forwardScatteredEnvironmentLight * transmission_absorption;
                 // Back Scattering
                 let back_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
                 // Iso Scattering
@@ -365,10 +365,10 @@
                 slab_translucent_base_ibl = mix(back_scattered_light, iso_scattered_light, back_to_iso_scattering_blend);
                 slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend);
             } else {
-                slab_translucent_base_ibl += environmentRefraction.rgb;
+                slab_translucent_base_ibl += forwardScatteredEnvironmentLight.rgb;
             }
         #else
-            slab_translucent_base_ibl += environmentRefraction * transmission_absorption;
+            slab_translucent_base_ibl += forwardScatteredEnvironmentLight * transmission_absorption;
         #endif
     #endif
 

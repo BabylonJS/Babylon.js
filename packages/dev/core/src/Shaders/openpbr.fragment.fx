@@ -235,7 +235,7 @@ void main(void) {
             float iso_to_forward_scattering_blend = max(transmission_scatter_anisotropy, 0.0);
 
             // The 0.2 exponent is an empirical fit to match reference renderers - check if it works broadly
-            vec3 iso_scatter_transmittance = pow(exp(-extinction_coeff * geometry_thickness), vec3(0.2));
+            vec3 iso_scatter_transmittance = pow(exp(-scatter_coeff * geometry_thickness), vec3(0.2));
             vec3 iso_scatter_density = clamp(vec3(1.0) - iso_scatter_transmittance, 0.0, 1.0);
             
             // Refraction roughness is modified by the density of the scattering and also by the anisotropy.
