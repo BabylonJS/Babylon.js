@@ -3,7 +3,8 @@ import type { Nullable } from "core/types";
 import type { Material } from "core/Materials/material";
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
-import type { IMaterial } from "../glTFLoaderInterfaces";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsVolumeScatter } from "babylonjs-gltf2interface";
@@ -120,7 +121,19 @@ export class KHR_materials_volume_scatter implements IGLTFLoaderExtension {
             // The scattering coefficient in OpenPBR is defined as per unit distance, so we need to scale it back up by the depth.
             scatteringCoefficient.scaleInPlace(adapter.transmissionDepth);
             adapter.transmissionScatter.set(scatteringCoefficient.x, scatteringCoefficient.y, scatteringCoefficient.z);
+
+            // Load texture if present
+            let texturePromise: Promise<Nullable<BaseTexture>> = Promise.resolve(null);
+            if (extension.multiscatterColorTexture) {
+                (extension.multiscatterColorTexture as ITextureInfo).nonColorData = true;
+                texturePromise = this._loader.loadTextureInfoAsync(`${context}/multiscatterColorTexture`, extension.multiscatterColorTexture, (texture: BaseTexture) => {
+                    texture.name = `${babylonMaterial.name} (Transmission)`;
+                    adapter.transmissionWeightTexture = texture;
+                });
+            }
             adapter.transmissionScatterAnisotropy = scatterAnisotropy;
+            // eslint-disable-next-line github/no-then
+            return texturePromise.then(() => {});
         }
         // Subsurface volume
         if (adapter.subsurfaceWeight > 0) {

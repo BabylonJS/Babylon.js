@@ -697,7 +697,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Sets the attenuation distance for volume scattering.
+     * Sets the attenuation distance for volume.
      * @param value The attenuation distance value
      */
     public set transmissionDepth(value: number) {
@@ -706,6 +706,17 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         } else if (this.subsurfaceWeight > 0) {
             this._material.subSurface.diffusionDistance.multiplyInPlace(new Color3(value, value, value));
         }
+    }
+
+    /**
+     * Gets the attenuation distance for volume.
+     * @returns The attenuation distance value
+     */
+    public get transmissionDepth(): number {
+        if (this.transmissionWeight > 0) {
+            return this._material.subSurface.tintColorAtDistance;
+        }
+        return 0;
     }
 
     /**
@@ -721,11 +732,34 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Sets the attenuation color (mapped to PBR subSurface.tintColor).
+     * @returns The attenuation color as a Color3
+     */
+    public get transmissionColor(): Color3 {
+        if (this.transmissionWeight > 0) {
+            return this._material.subSurface.tintColor;
+        } else if (this.subsurfaceWeight > 0) {
+            return this._material.subSurface.diffusionDistance;
+        }
+        return new Color3(0, 0, 0);
+    }
+
+    /**
      * Sets the transmission scatter coefficient.
      * @param value The scatter coefficient as a Color3
      */
     public set transmissionScatter(value: Color3) {
-        // this._material.subSurface.scatterColor = value;
+        // TODO convert from scatter coefficient to diffusion distance
+        this._material.subSurface.diffusionDistance = value;
+    }
+
+    /**
+     * Sets the transmission scatter coefficient.
+     * @returns The scatter coefficient as a Color3
+     */
+    public get transmissionScatter(): Color3 {
+        // TODO convert from diffusion distance to scatter coefficient
+        return this._material.subSurface.diffusionDistance;
     }
 
     /**
