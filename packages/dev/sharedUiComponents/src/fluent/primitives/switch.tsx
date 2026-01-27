@@ -19,12 +19,7 @@ const useSwitchStyles = makeStyles({
     },
 });
 
-export type SwitchProps = PrimitiveProps<boolean> & {
-    /**
-     * If true, inverts the switch logic (checked becomes unchecked and vice versa) - only for display purposes!
-     */
-    invertedMode?: boolean;
-};
+export type SwitchProps = PrimitiveProps<boolean>;
 
 /**
  * This is a primitive fluent boolean switch component whose only knowledge is the shared styling across all tools
@@ -44,7 +39,7 @@ export const Switch: FunctionComponent<SwitchProps> = (props) => {
     }, [props.value]);
 
     const onChange = (event: ChangeEvent<HTMLInputElement>, _: SwitchOnChangeData) => {
-        props.onChange && props.onChange(props.invertedMode ? !event.target.checked : event.target.checked);
+        props.onChange && props.onChange(event.target.checked);
         setChecked(event.target.checked);
     };
 
@@ -52,7 +47,7 @@ export const Switch: FunctionComponent<SwitchProps> = (props) => {
         <FluentSwitch
             className={mergeClasses(classes.switch, size === "small" && classes.switchSmall)}
             indicator={{ className: classes.indicator }}
-            checked={props.invertedMode ? !checked : checked}
+            checked={checked}
             disabled={props.disabled}
             onChange={onChange}
         />
