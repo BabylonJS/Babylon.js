@@ -86,7 +86,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 premultipliedAlpha: false,
                 preserveDrawingBuffer: true,
                 antialias: antialias,
-                forceSRGBBufferSupportState: this.props.globalState.commerceMode,
             });
         }
 
