@@ -62,27 +62,30 @@ export const GIFCaptureTool = MakeLazyComponent(
                     }
                 });
 
-                gifRef.current.on("finished", (blob: Blob) => {
-                    // Runs after rendering is complete
-                    Tools.Download(blob, "record.gif");
-                    setRecordingState(RecordingState.Idle);
-                    gifRef.current = null;
-                });
-
                 captureObserverRef.current = captureObserver;
             }, [scene, targetWidth, frequency]);
 
             const stopRecording = useCallback(() => {
                 if (captureObserverRef.current !== null) {
+                    // Remove the frame capture observer
                     scene.onAfterRenderObservable.remove(captureObserverRef.current);
                     captureObserverRef.current = null;
                 }
 
-                setRecordingState(RecordingState.Rendering);
+                // Restore previous hardware scaling
+                scene.getEngine().setHardwareScalingLevel(previousRenderingScaleRef.current);
 
                 if (gifRef.current) {
+                    gifRef.current.on("finished", (blob: Blob) => {
+                        // Download the rendered GIF
+                        Tools.Download(blob, "recording.gif");
+                        setRecordingState(RecordingState.Idle);
+                        gifRef.current = null;
+                    });
+
+                    // Start rendering the GIF
+                    setRecordingState(RecordingState.Rendering);
                     gifRef.current.render();
-                    scene.getEngine().setHardwareScalingLevel(previousRenderingScaleRef.current);
                 }
             }, []);
 
@@ -107,6 +110,7 @@ export const GIFCaptureTool = MakeLazyComponent(
                     <Collapse visible={recordingState === RecordingState.Idle}>
                         <SyncedSliderPropertyLine
                             label="Resolution"
+                            description="The pixel width of the output. The height will be adjusted accordingly to maintain the aspect ratio."
                             value={targetWidth}
                             onChange={(value) => setTargetWidth(Math.floor(value ?? 512))}
                             min={128}
@@ -115,6 +119,7 @@ export const GIFCaptureTool = MakeLazyComponent(
                         />
                         <SyncedSliderPropertyLine
                             label="Frequency (ms)"
+                            description="The time interval in milliseconds between each capture of the scene."
                             value={frequency}
                             onChange={(value) => setFrequency(Math.floor(value ?? 200))}
                             min={50}
