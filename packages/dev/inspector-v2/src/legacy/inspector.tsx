@@ -1,5 +1,4 @@
 import type {
-    IDisposable,
     IExplorerAdditionalChild,
     IInspectorContextMenuItem,
     IInspectorContextMenuType,
@@ -9,7 +8,7 @@ import type {
     WritableObject,
 } from "core/index";
 import type { EntityBase } from "../components/scene/sceneExplorer";
-import type { InspectorOptions as InspectorV2Options } from "../inspector";
+import type { InspectorOptions as InspectorV2Options, InspectorToken } from "../inspector";
 import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IGizmoService } from "../services/gizmoService";
@@ -288,7 +287,7 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
  * @deprecated This class only exists for backward compatibility. Use the module-level ShowInspector function instead.
  */
 export class Inspector {
-    private static _CurrentInstance: Nullable<{ scene: Scene; options: Partial<InspectorV2Options>; disposeToken: IDisposable }> = null;
+    private static _CurrentInstance: Nullable<{ scene: Scene; options: Partial<InspectorV2Options>; disposeToken: InspectorToken }> = null;
     private static _PopupToggler: Nullable<(side: "left" | "right") => void> = null;
     private static _SectionHighlighter: Nullable<(sectionIds: readonly string[]) => void> = null;
     private static _SidePaneOpenCounter: Nullable<() => number> = null;
@@ -449,11 +448,12 @@ export class Inspector {
             options,
             disposeToken: ShowInspector(scene, options),
         };
+
+        this._CurrentInstance.disposeToken.onDisposed.addOnce(() => (this._CurrentInstance = null));
     }
 
     public static Hide() {
         this._CurrentInstance?.disposeToken.dispose();
-        this._CurrentInstance = null;
     }
 
     // @ts-expect-error TS6133: This is private, but used by debugLayer (same as Inspector v1).
