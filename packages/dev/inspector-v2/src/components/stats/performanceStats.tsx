@@ -1,10 +1,11 @@
-import type { PerformanceViewerCollector, Scene } from "core/index";
-import { Vector2 } from "core/Maths/math.vector";
-
 import type { FunctionComponent } from "react";
 
+import type { PerformanceViewerCollector, Scene } from "core/index";
+
+import { ArrowDownloadRegular, RecordRegular, StopRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { Vector2 } from "core/Maths/math.vector";
 import { Observable } from "core/Misc/observable";
 import { PerfCollectionStrategy } from "core/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
 import "core/Misc/PerformanceViewer/performanceViewerSceneExtension";
@@ -14,7 +15,30 @@ import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import type { PerfLayoutSize } from "../performanceViewer/graphSupportingTypes";
-import { PerformanceViewerPopup } from "../performanceViewer/performanceViewerPopup";
+import { PerformanceViewer } from "../performanceViewer/performanceViewer";
+
+function AddStrategies(perfCollector: PerformanceViewerCollector) {
+    perfCollector.addCollectionStrategies(...DefaultStrategiesList);
+    if (PressureObserverWrapper.IsAvailable) {
+        // Do not enable for now as the Pressure API does not
+        // report factors at the moment.
+        // perfCollector.addCollectionStrategies({
+        //     strategyCallback: PerfCollectionStrategy.ThermalStrategy(),
+        //     category: IPerfMetadataCategory.FrameSteps,
+        //     hidden: true,
+        // });
+        // perfCollector.addCollectionStrategies({
+        //     strategyCallback: PerfCollectionStrategy.PowerSupplyStrategy(),
+        //     category: IPerfMetadataCategory.FrameSteps,
+        //     hidden: true,
+        // });
+        perfCollector.addCollectionStrategies({
+            strategyCallback: PerfCollectionStrategy.PressureStrategy(),
+            category: PerfMetadataCategory.FrameSteps,
+            hidden: true,
+        });
+    }
+}
 
 const enum PerfMetadataCategory {
     Count = "Count",
@@ -53,18 +77,20 @@ const InitialGraphSize = new Vector2(724, 512);
 
 export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
     const [isLoadedFromCsv, setIsLoadedFromCsv] = useState(false);
     const [performanceCollector, setPerformanceCollector] = useState<PerformanceViewerCollector | undefined>();
     const [layoutObservable] = useState(() => new Observable<PerfLayoutSize>());
     const [returnToLiveObservable] = useState(() => new Observable<void>());
-    const childWindowRef = useRef<{ open: (options?: { defaultWidth?: number; defaultHeight?: number; title?: string }) => void; close: () => void }>(null);
+    const childWindowRef = useRef<ChildWindow>(null);
 
     useEffect(() => {
         if (!isLoadedFromCsv) {
             if (performanceCollector) {
+                setIsRecording(false);
                 performanceCollector.stop();
                 performanceCollector.clear(false);
-                addStrategies(performanceCollector);
+                AddStrategies(performanceCollector);
             }
         }
     }, [isLoadedFromCsv, performanceCollector]);
@@ -95,6 +121,7 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
 
     const onPerformanceButtonClick = () => {
         setIsOpen(true);
+        setIsRecording(true);
         performanceCollector?.start(true);
         startPerformanceViewerPopup();
     };
@@ -104,11 +131,13 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
             // reopen window and load data!
             setIsOpen(false);
             setIsLoadedFromCsv(true);
+            setIsRecording(false);
             performanceCollector?.stop();
             const isValid = performanceCollector?.loadFromFileData(data);
             if (!isValid) {
-                // if our data isnt valid we close the window.
+                // if our data isn't valid we close the window.
                 setIsOpen(false);
+                setIsRecording(true);
                 performanceCollector?.start(true);
             } else {
                 startPerformanceViewerPopup();
@@ -121,39 +150,20 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
     };
 
     const onToggleRecording = () => {
-        if (!performanceCollector?.isStarted) {
-            performanceCollector?.start(true);
-        } else {
-            performanceCollector?.stop();
-        }
-    };
-
-    const addStrategies = (perfCollector: PerformanceViewerCollector) => {
-        perfCollector.addCollectionStrategies(...DefaultStrategiesList);
-        if (PressureObserverWrapper.IsAvailable) {
-            // Do not enable for now as the Pressure API does not
-            // report factors at the moment.
-            // perfCollector.addCollectionStrategies({
-            //     strategyCallback: PerfCollectionStrategy.ThermalStrategy(),
-            //     category: IPerfMetadataCategory.FrameSteps,
-            //     hidden: true,
-            // });
-            // perfCollector.addCollectionStrategies({
-            //     strategyCallback: PerfCollectionStrategy.PowerSupplyStrategy(),
-            //     category: IPerfMetadataCategory.FrameSteps,
-            //     hidden: true,
-            // });
-            perfCollector.addCollectionStrategies({
-                strategyCallback: PerfCollectionStrategy.PressureStrategy(),
-                category: PerfMetadataCategory.FrameSteps,
-                hidden: true,
-            });
+        if (performanceCollector) {
+            if (!performanceCollector.isStarted) {
+                setIsRecording(true);
+                performanceCollector.start(true);
+            } else {
+                setIsRecording(false);
+                performanceCollector.stop();
+            }
         }
     };
 
     useEffect(() => {
         const perfCollector = scene.getPerfCollector();
-        addStrategies(perfCollector);
+        AddStrategies(perfCollector);
         setPerformanceCollector(perfCollector);
     }, [scene]);
 
@@ -173,11 +183,11 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
         <>
             {!isOpen && <ButtonLine label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />}
             {!isOpen && <FileUploadLine label="Load Perf Viewer using CSV" accept=".csv" onClick={onLoadClick} />}
-            <ButtonLine label="Export Perf to CSV" onClick={onExportClick} />
-            {!isOpen && <ButtonLine label={performanceCollector?.isStarted ? "Stop Recording" : "Begin Recording"} onClick={onToggleRecording} />}
+            <ButtonLine label="Export Perf to CSV" icon={ArrowDownloadRegular} onClick={onExportClick} />
+            {!isOpen && <ButtonLine label={isRecording ? "Stop Recording" : "Begin Recording"} icon={isRecording ? StopRegular : RecordRegular} onClick={onToggleRecording} />}
             <ChildWindow id="performance-viewer" imperativeRef={childWindowRef} onOpenChange={(open) => !open && onClosePerformanceViewer()}>
                 {performanceCollector && (
-                    <PerformanceViewerPopup
+                    <PerformanceViewer
                         scene={scene}
                         layoutObservable={layoutObservable}
                         returnToLiveObservable={returnToLiveObservable}

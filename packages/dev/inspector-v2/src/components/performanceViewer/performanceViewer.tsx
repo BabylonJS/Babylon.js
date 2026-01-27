@@ -41,7 +41,7 @@ const useStyles = makeStyles({
     },
 });
 
-interface IPerformanceViewerPopupProps {
+interface IPerformanceViewerProps {
     scene: Scene;
     layoutObservable: Observable<PerfLayoutSize>;
     returnToLiveObservable: Observable<void>;
@@ -49,7 +49,7 @@ interface IPerformanceViewerPopupProps {
     initialGraphSize?: Vector2;
 }
 
-export const PerformanceViewerPopup: FunctionComponent<IPerformanceViewerPopupProps> = (props) => {
+export const PerformanceViewer: FunctionComponent<IPerformanceViewerProps> = (props) => {
     const { scene, layoutObservable, returnToLiveObservable, performanceCollector, initialGraphSize } = props;
     const classes = useStyles();
     const [onVisibleRangeChangedObservable] = useState(() => new BabylonObservable<VisibleRangeChangedObservableProps>());
