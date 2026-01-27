@@ -5,7 +5,7 @@ import type { Scene } from "core/scene";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { CameraRegular } from "@fluentui/react-icons";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
-import { CreateScreenshotAsync } from "core/Misc/screenshotTools";
+import { CreateScreenshotUsingRenderTargetAsync } from "core/Misc/screenshotTools";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 
@@ -16,11 +16,12 @@ export const ScreenshotTool: FunctionComponent<{ scene: Scene }> = ({ scene }) =
     const [height, setHeight] = useState<number>(512);
 
     const captureScreenshot = useCallback(async () => {
+        const engine = scene.getEngine();
         const camera = scene.frameGraph ? FrameGraphUtils.FindMainCamera(scene.frameGraph) : scene.activeCamera;
         const screenshotSize = useCustomSize ? { width, height, precision } : { precision };
 
         if (camera) {
-            await CreateScreenshotAsync(scene.getEngine(), camera, screenshotSize, undefined, undefined, undefined, undefined, true);
+            await CreateScreenshotUsingRenderTargetAsync(engine, camera, screenshotSize, "image/png", undefined, undefined, "screenshot.png");
         }
     }, [useCustomSize, precision, width, height, scene]);
 
