@@ -1,27 +1,38 @@
 import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
 import type { Observable } from "core/Misc/observable";
-import type { Vector2 } from "core/Maths/math.vector";
-import * as React from "react";
-import { useEffect, useRef } from "react";
-import { CanvasGraphService } from "./canvasGraphService";
-import type { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
+import type { FunctionComponent } from "react";
+import type { PerfLayoutSize, VisibleRangeChangedObservableProps } from "./graphSupportingTypes";
 import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
 import type { Scene } from "core/scene";
+import type { Vector2 } from "core/Maths/math.vector";
+
+import { makeStyles } from "@fluentui/react-components";
+import { useEffect, useRef } from "react";
+
+import { CanvasGraphService } from "./canvasGraphService";
 import { Logger } from "core/Misc/logger";
 
-interface ICanvasGraphComponentProps {
-    id: string;
+const useStyles = makeStyles({
+    canvas: {
+        flexGrow: 1,
+        width: "100%",
+        height: "100%",
+    },
+});
+
+type CanvasGraphProps = {
     scene: Scene;
     collector: PerformanceViewerCollector;
-    layoutObservable?: Observable<IPerfLayoutSize>;
+    layoutObservable?: Observable<PerfLayoutSize>;
     returnToPlayheadObservable?: Observable<void>;
-    onVisibleRangeChangedObservable?: Observable<IVisibleRangeChangedObservableProps>;
+    onVisibleRangeChangedObservable?: Observable<VisibleRangeChangedObservableProps>;
     initialGraphSize?: Vector2;
-}
+};
 
-export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props: ICanvasGraphComponentProps) => {
-    const { id, collector, scene, layoutObservable, returnToPlayheadObservable, onVisibleRangeChangedObservable, initialGraphSize } = props;
-    const canvasRef: React.MutableRefObject<HTMLCanvasElement | null> = useRef(null);
+export const CanvasGraph: FunctionComponent<CanvasGraphProps> = (props) => {
+    const { collector, scene, layoutObservable, returnToPlayheadObservable, onVisibleRangeChangedObservable, initialGraphSize } = props;
+    const classes = useStyles();
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
     useEffect(() => {
         if (!canvasRef.current) {
@@ -38,11 +49,11 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
         try {
             cs = new CanvasGraphService(canvasRef.current, { datasets: collector.datasets, onVisibleRangeChangedObservable });
         } catch (error) {
-            Logger.Error(error);
+            Logger.Error(error as string);
             return;
         }
 
-        const layoutUpdated = (newSize: IPerfLayoutSize) => {
+        const layoutUpdated = (newSize: PerfLayoutSize) => {
             if (!canvasRef.current) {
                 return;
             }
@@ -79,7 +90,7 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
             scene.onAfterRenderObservable.removeCallback(dataUpdated);
             collector.metadataObservable.removeCallback(metaUpdated);
         };
-    }, [canvasRef]);
+    }, [canvasRef, collector, scene, layoutObservable, returnToPlayheadObservable, onVisibleRangeChangedObservable, initialGraphSize]);
 
-    return <canvas id={id} ref={canvasRef}></canvas>;
+    return <canvas className={classes.canvas} ref={canvasRef}></canvas>;
 };

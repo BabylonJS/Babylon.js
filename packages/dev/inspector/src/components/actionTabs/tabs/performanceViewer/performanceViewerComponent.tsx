@@ -1,4 +1,5 @@
 import { Observable } from "core/Misc/observable";
+import { Vector2 } from "core/Maths/math.vector";
 import type { Scene } from "core/scene";
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -22,7 +23,7 @@ interface IPerformanceViewerComponentProps {
 
 // arbitrary window size
 const InitialWindowSize = { width: 1024, height: 512 };
-const InitialGraphSize = { width: 724, height: 512 };
+const InitialGraphSize = new Vector2(724, 512);
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export enum IPerfMetadataCategory {
