@@ -1,9 +1,5 @@
-uniform mat4 view;
-uniform mat4 viewProjection;
-uniform vec4 vEyePosition;
-#ifdef MULTIVIEW
-	mat4 viewProjectionR;
-#endif
+// Scene uniforms (view, viewProjection, etc.) are included via sceneVertexDeclaration or sceneUboDeclaration
+#include<sceneVertexDeclaration>
 
 #ifdef BASE_COLOR
 uniform vec2 vBaseColorInfos;
@@ -59,6 +55,26 @@ uniform mat4 specularRoughnessMatrix;
 #ifdef SPECULAR_ROUGHNESS_ANISOTROPY
 uniform vec2 vSpecularRoughnessAnisotropyInfos;
 uniform mat4 specularRoughnessAnisotropyMatrix;
+#endif
+
+#ifdef TRANSMISSION_WEIGHT
+uniform vec2 vTransmissionWeightInfos;
+uniform mat4 transmissionWeightMatrix;
+#endif
+
+#ifdef TRANSMISSION_COLOR
+uniform vec2 vTransmissionColorInfos;
+uniform mat4 transmissionColorMatrix;
+#endif
+
+#ifdef TRANSMISSION_DEPTH
+uniform vec2 vTransmissionDepthInfos;
+uniform mat4 transmissionDepthMatrix;
+#endif
+
+#ifdef TRANSMISSION_DISPERSION_SCALE
+uniform vec2 vTransmissionDispersionScaleInfos;
+uniform mat4 transmissionDispersionScaleMatrix;
 #endif
 
 #ifdef COAT_WEIGHT
@@ -134,6 +150,11 @@ uniform mat4 thinFilmThicknessMatrix;
 #ifdef GEOMETRY_OPACITY
 uniform mat4 geometryOpacityMatrix;
 uniform vec2 vGeometryOpacityInfos;
+#endif
+
+#ifdef GEOMETRY_THICKNESS
+uniform mat4 geometryThicknessMatrix;
+uniform vec2 vGeometryThicknessInfos;
 #endif
 
 #ifdef POINTSIZE

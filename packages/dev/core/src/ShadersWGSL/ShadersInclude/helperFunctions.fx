@@ -155,6 +155,15 @@ fn pow5(value: f32) -> f32 {
     return sq * sq * value;
 }
 
+// refract assuming entry and exit of a unit sphere with IOR eta.
+// This is an approximation of true refraction (which would require true ray casting)
+// I and N should be unit length, normalized vectors
+fn double_refract(I: vec3f, N: vec3f, eta: f32) -> vec3f {
+  let Tfront: vec3f = refract(I, N, 1.0/eta);
+  let Nback: vec3f = normalize(reflect(N, Tfront));
+  return refract(Tfront, -Nback, eta);
+}
+
 // Returns the saturated luminance. Assumes input color is linear encoded, not gamma-corrected.
 fn getLuminance(color: vec3f) -> f32
 {
@@ -228,4 +237,17 @@ fn sqrtClamped(value: f32) -> f32 {
 
 fn avg(value: vec3f) -> f32 {
     return dot(value, vec3f(0.333333333));
+}
+
+fn singleScatterToMultiScatterAlbedo(rho_ss: vec3f) -> vec3f {
+  let s: vec3f = sqrt(max(vec3f(1.0) - rho_ss, vec3f(0.0)));
+  return (vec3f(1.0) - s) * (vec3f(1.0) - vec3f(0.139) * s) / (vec3f(1.0) + vec3f(1.17) * s);
+}
+
+fn min3(v: vec3f) -> f32 {
+    return min(v.x, min(v.y, v.z));
+}
+
+fn max3(v: vec3f) -> f32 {
+    return max(v.x, max(v.y, v.z));
 }
