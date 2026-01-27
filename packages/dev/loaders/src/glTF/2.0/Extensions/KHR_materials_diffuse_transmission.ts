@@ -79,7 +79,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
         const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         adapter.configureSubsurface();
         adapter.subsurfaceWeight = extension.diffuseTransmissionFactor ?? 0;
-        adapter.subsurfaceColor = extension.diffuseTransmissionColorFactor !== undefined ? Color3.FromArray(extension.diffuseTransmissionColorFactor) : Color3.White();
+        adapter.subsurfaceConstantTint = extension.diffuseTransmissionColorFactor !== undefined ? Color3.FromArray(extension.diffuseTransmissionColorFactor) : Color3.White();
 
         const promises = new Array<Promise<any>>();
 
@@ -97,7 +97,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTransmissionColorTexture`, extension.diffuseTransmissionColorTexture).then((texture: BaseTexture) => {
                     texture.name = `${babylonMaterial.name} (Diffuse Transmission Color)`;
-                    adapter.subsurfaceColorTexture = texture;
+                    adapter.subsurfaceConstantTintTexture = texture;
                 })
             );
         }

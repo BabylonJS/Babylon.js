@@ -76,11 +76,12 @@ export class KHR_materials_dispersion implements IGLTFLoaderExtension {
 
         // If transparency isn't enabled already, this extension shouldn't do anything.
         // i.e. it requires either the KHR_materials_transmission or KHR_materials_diffuse_transmission extensions.
-        if (adapter.transmissionWeight > 0 || !extension.dispersion) {
+        if (adapter.transmissionWeight == 0 || !extension.dispersion) {
             return Promise.resolve();
         }
 
-        adapter.transmissionDispersionAbbeNumber = 20.0 / extension.dispersion;
+        adapter.transmissionDispersionAbbeNumber = 20.0;
+        adapter.transmissionDispersionScale = extension.dispersion;
 
         return Promise.resolve();
     }

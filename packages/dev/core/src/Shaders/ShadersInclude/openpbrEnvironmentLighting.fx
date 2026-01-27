@@ -49,6 +49,8 @@
             , viewDirectionW
             , vPositionW
             , noise
+            , false // isRefraction
+            , 1.0 // ior (not used for reflection)
             , reflectionSampler
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
@@ -89,6 +91,8 @@
                 , viewDirectionW
                 , vPositionW
                 , noise
+                , false // isRefraction
+                , 1.0 // ior (not used for reflection)
                 , reflectionSampler
                 #ifdef REALTIME_FILTERING
                     , vReflectionFilteringInfo
@@ -154,14 +158,12 @@
     float dielectricIblFresnel = getReflectanceFromBRDFLookup(vec3(baseDielectricReflectance.F0), vec3(baseDielectricReflectance.F90), baseGeoInfo.environmentBrdf).r;
     vec3 dielectricIblColoredFresnel = dielectricIblFresnel * specular_color;
     #ifdef THIN_FILM
-        // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
-        float thinFilmIorScale = clamp(2.0 * abs(thin_film_ior - 1.0), 0.0, 1.0);
         vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseDielectricReflectance.coloredF0);
         // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
         // closer to path-tracing reference.
         float thin_film_desaturation_scale = (thin_film_ior - 1.0) * sqrt(thin_film_thickness * 0.001 * baseGeoInfo.NdotV);
         thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3(dot(thinFilmDielectricFresnel, vec3(0.3333))), thin_film_desaturation_scale);
-        dielectricIblColoredFresnel = mix(dielectricIblColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thinFilmIorScale);
+        dielectricIblColoredFresnel = mix(dielectricIblColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thin_film_ior_scale);
     #endif
 
     // Conductor IBL Fresnel
@@ -169,7 +171,7 @@
     #ifdef THIN_FILM
         vec3 thinFilmConductorFresnel = specular_weight * evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseConductorReflectance.coloredF0);
         thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3(dot(thinFilmConductorFresnel, vec3(0.3333))), thin_film_desaturation_scale);
-        conductorIblFresnel = mix(conductorIblFresnel, thinFilmConductorFresnel, thin_film_weight * thinFilmIorScale);
+        conductorIblFresnel = mix(conductorIblFresnel, thinFilmConductorFresnel, thin_film_weight * thin_film_ior_scale);
     #endif
 
     // Coat IBL Fresnel
@@ -184,7 +186,10 @@
     vec3 slab_coat_ibl = vec3(0., 0., 0.);
 
     slab_diffuse_ibl = baseDiffuseEnvironmentLight * vLightingIntensity.z;
-    slab_diffuse_ibl *= aoOut.ambientOcclusionColor;
+    
+    #ifdef AMBIENT_OCCLUSION
+        specular_ambient_occlusion = compute_specular_occlusion(baseGeoInfo.NdotV, base_metalness, ambient_occlusion.x, specular_roughness);
+    #endif
 
     // Add the specular environment light
     slab_glossy_ibl = baseSpecularEnvironmentLight * vLightingIntensity.z;
@@ -198,6 +203,10 @@
     vec3 coatAbsorption = vec3(1.0);
     if (coat_weight > 0.0) {
         slab_coat_ibl = coatEnvironmentLight * vLightingIntensity.z;
+
+        #ifdef AMBIENT_OCCLUSION
+            coat_specular_ambient_occlusion = compute_specular_occlusion(coatGeoInfo.NdotV, 0.0, ambient_occlusion.x, coat_roughness);
+        #endif
         
         // __________ Coat Darkening _____________
         // Hemisphere-averaged Fresnel (empirical approximation)
@@ -232,20 +241,149 @@
         vec3 slab_fuzz_ibl = fuzzEnvironmentLight * vLightingIntensity.z;
     #endif
 
+    vec3 slab_translucent_base_ibl = slab_translucent_background.rgb * transmission_absorption;
+    #ifdef REFRACTED_ENVIRONMENT
+        
+        #ifdef ANISOTROPIC_BASE
+            vec3 environmentRefraction = sampleRadianceAnisotropic(roughness_alpha_modified_for_scatter, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                , baseGeoInfo
+                , normalW
+                , viewDirectionW
+                , vPositionW
+                , noise
+                , true // isRefraction
+                , specular_ior // Used for refraction
+                , reflectionSampler
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                #endif
+            );
+        #else
+            vec3 environmentRefraction = vec3(0., 0., 0.);
+            #ifdef DISPERSION
+                for (int i = 0; i < 3; i++) {
+                    vec3 iblRefractionCoords = refractedViewVectors[i];
+            #else
+                vec3 iblRefractionCoords = refractedViewVector;
+            #endif
+            #ifdef REFRACTED_ENVIRONMENT_OPPOSITEZ
+                iblRefractionCoords.z *= -1.0;
+            #endif
+            #ifdef REFRACTED_ENVIRONMENT_LOCAL_CUBE
+                iblRefractionCoords = parallaxCorrectNormal(vPositionW, refractedViewVector, refractionSize, refractionPosition);
+            #endif
+
+            iblRefractionCoords = vec3(reflectionMatrix * vec4(iblRefractionCoords, 0));
+            #ifdef DISPERSION
+                environmentRefraction[i] = sampleRadiance(roughness_alpha_modified_for_scatter, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                    , baseGeoInfo
+                    , reflectionSampler
+                    , iblRefractionCoords
+                    #ifdef REALTIME_FILTERING
+                        , vReflectionFilteringInfo
+                    #endif
+                )[i];
+            #else
+                environmentRefraction = sampleRadiance(roughness_alpha_modified_for_scatter, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                    , baseGeoInfo
+                    , reflectionSampler
+                    , iblRefractionCoords
+                    #ifdef REALTIME_FILTERING
+                        , vReflectionFilteringInfo
+                    #endif
+                );
+            #endif
+            #ifdef DISPERSION
+                }
+            #endif
+            // environmentRefraction *= transmission_absorption;
+        #endif
+        #ifdef REFRACTED_BACKGROUND
+            // Scale the refraction so that we only see it at higher roughnesses
+            // This is because we're adding this to the refraction map which should take priority
+            // at low blurriness since it represents the transmitted light that is in front of the IBL.
+            // At high blurriness, the refraction from the environment will be coming from more directions
+            // and so we want to include more of this indirect lighting.
+            environmentRefraction *= max(roughness_alpha_modified_for_scatter * roughness_alpha_modified_for_scatter - 0.1, 0.0);
+        #endif
+
+        #ifdef SCATTERING
+            // Isotropic Scattering
+            
+            #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
+                vec3 scatterVector = mix(vReflectionDominantDirection, normalW, max3(iso_scatter_density));
+            #else
+                vec3 scatterVector = normalW;
+            #endif
+
+            // Backscattering can be approximated by sampling IBL along the view vector.
+            scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
+            vec3 scatteredEnvironmentLight = sampleIrradiance(
+                scatterVector
+                #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
+                    , vEnvironmentIrradiance
+                #endif
+                #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
+                    , reflectionMatrix
+                #endif
+                #ifdef USEIRRADIANCEMAP
+                    , irradianceSampler
+                    #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                        , vReflectionDominantDirection
+                    #endif
+                #endif
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                    #ifdef IBL_CDF_FILTERING
+                        , icdfSampler
+                    #endif
+                #endif
+                , vReflectionInfos
+                , viewDirectionW
+                , 1.0
+                , multi_scatter_color
+            );
+
+            if (transmission_depth>0.0) {
+                // Direct Transmission (aka forward-scattered light from back side)
+                vec3 forward_scattered_light = environmentRefraction * transmission_absorption;
+                // Back Scattering
+                vec3 back_scattered_light = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
+                // Iso Scattering
+                vec3 iso_scattered_light = mix(forward_scattered_light, scatteredEnvironmentLight * multi_scatter_color, iso_scatter_density);
+
+                // Lerp between the three based on the anisotropy
+                slab_translucent_base_ibl = mix(back_scattered_light, iso_scattered_light, back_to_iso_scattering_blend);
+                slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend);
+            } else {
+                slab_translucent_base_ibl += environmentRefraction.rgb;
+            }
+        #else
+            slab_translucent_base_ibl += environmentRefraction * transmission_absorption;
+        #endif
+    #endif
+
     // TEMP
     vec3 slab_subsurface_ibl = vec3(0., 0., 0.);
-    vec3 slab_translucent_base_ibl = vec3(0., 0., 0.);
+    
     
     slab_diffuse_ibl *= base_color.rgb;
 
     // _____________________________ IBL Material Layer Composition ______________________________________
     #define CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION
+
+    slab_diffuse_ibl *= ambient_occlusion;
+    slab_metal_ibl *= specular_ambient_occlusion;
+    slab_glossy_ibl *= specular_ambient_occlusion;
+    slab_coat_ibl *= coat_specular_ambient_occlusion;
+
     vec3 material_opaque_base_ibl = mix(slab_diffuse_ibl, slab_subsurface_ibl, subsurface_weight);
     vec3 material_dielectric_base_ibl = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
     vec3 material_dielectric_gloss_ibl = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3(1.0));
     #ifdef FUZZ
+    slab_fuzz_ibl *= ambient_occlusion;
     material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3(1.0), fuzz_color);
     #else
     material_surface_ibl = material_coated_base_ibl;

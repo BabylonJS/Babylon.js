@@ -276,7 +276,7 @@
 
             if (alphaG == 0.) {
                 #ifdef GAMMA_INPUT
-                    c = toLinearSpace(c);
+                    c = toLinearSpaceVec3(c);
                 #endif
                 return c;
             } else {
@@ -315,7 +315,7 @@
 
                         var c: vec3f = textureSampleLevel(inputTexture, inputSampler, tbn * L, mipLevel).rgb;
                         #ifdef GAMMA_INPUT
-                            c = toLinearSpace(c);
+                            c = toLinearSpaceVec3(c);
                         #endif
                         result += c * NoL;
                     }
@@ -341,25 +341,15 @@
             inputBitangent: vec3f,     // Surface bitangent vector
             inputNormal: vec3f,        // Surface normal vector
             filteringInfo: vec2f,
-            noiseInput: vec2f          // [-1,1] noise value per pixel for sample jittering
+            noiseInput: vec2f,          // [-1,1] noise value per pixel for sample jittering
+            isRefraction: bool,
+            ior: f32 // Index of refraction for refraction calculations
         ) -> vec3f {
             var V: vec3f = inputView;
             var N: vec3f = inputNormal;
             var T: vec3f = inputTangent;
             var B: vec3f = inputBitangent;
 
-            // Calculate reflection vector
-            // inputView is from surface to eye, so incident direction is -V
-            var R: vec3f = reflect(-V, N);
-            var c: vec3f = textureSample(inputTexture, inputSampler, R).rgb;
-
-            // Early exit for perfectly smooth surfaces
-            if (alphaTangent == 0.f && alphaBitangent == 0.f) {
-                #if GAMMA_INPUT
-                    c = toLinearSpace(c);
-                #endif
-                return c;
-            }
             // Anisotropic implementation using proper half-vector importance sampling
             // We sample half-vectors from the anisotropic GGX distribution and compute
             // the corresponding light directions for environment map lookup
@@ -368,8 +358,12 @@
             var maxLevel: f32 = filteringInfo.y;
             var dim0: f32 = filteringInfo.x;
 
+            // Clamp alphas to avoid division by zero
+            let clampedAlphaT: f32 = max(alphaTangent, MINIMUMVARIANCE);
+            let clampedAlphaB: f32 = max(alphaBitangent, MINIMUMVARIANCE);
+
             // Compute effective dimension scaled by anisotropy for proper solid angle
-            var effectiveDim: f32 = dim0 * sqrt(alphaTangent * alphaBitangent);
+            var effectiveDim: f32 = dim0 * sqrt(clampedAlphaT * clampedAlphaB);
             var omegaP: f32 = (4.f * PI) / (6.f * effectiveDim * effectiveDim);
             let noiseScale: f32 = clamp(log2(f32(NUM_SAMPLES)) / 12.0f, 0.0f, 1.0f);
             var weight: f32 = 0.f;
@@ -382,14 +376,19 @@
                 Xi = fract(Xi + noiseInput * mix(0.5f, 0.015f, noiseScale)); // Wrap around to stay in [0,1] range
                 
                 // Generate anisotropic half vector using importance sampling
-                var H_tangent: vec3f = hemisphereImportanceSampleDggxAnisotropic(Xi, alphaTangent, alphaBitangent);
+                var H_tangent: vec3f = hemisphereImportanceSampleDggxAnisotropic(Xi, clampedAlphaT, clampedAlphaB);
                 
                 // Transform half vector from tangent space to world space
                 var H: vec3f = normalize(H_tangent.x * T + H_tangent.y * B + H_tangent.z * N);
 
                 // Calculate light direction by reflecting view vector around half vector
-                // V is surface-to-eye, L will be surface-to-light (perfect for environment sampling)
-                var L: vec3f = normalize(2.0f * dot(V, H) * H - V);
+                // V is surface-to-eye, L will be surface-to-light
+                var L: vec3f;
+                if (isRefraction) {
+                    L = refract(-V, H, 1.0 / ior);
+                } else {
+                    L = reflect(-V, H);
+                }
 
                 // Calculate dot products
                 var NoH: f32 = max(dot(N, H), 0.001f);
@@ -399,7 +398,7 @@
                 if (NoL > 0.f) {
                     // Calculate PDF following isotropic pattern: 4/D(H)
                     var pdf_inversed: f32 = 4. / normalDistributionFunction_BurleyGGX_Anisotropic(
-                        H_tangent.z, H_tangent.x, H_tangent.y, vec2(alphaTangent, alphaBitangent)
+                        H_tangent.z, H_tangent.x, H_tangent.y, vec2f(clampedAlphaT, clampedAlphaB)
                     );
 
                     var omegaS: f32 = NUM_SAMPLES_FLOAT_INVERSED * pdf_inversed;
@@ -411,7 +410,7 @@
 
                     var c: vec3f = textureSampleLevel(inputTexture, inputSampler, L, mipLevel).rgb;
                     #if GAMMA_INPUT
-                        c = toLinearSpace(c);
+                        c = toLinearSpaceVec3(c);
                     #endif
                     result += c * NoL;
                 }
