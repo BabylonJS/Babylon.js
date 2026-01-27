@@ -433,21 +433,8 @@ export class GeospatialCamera extends Camera {
             return 0;
         }
 
-        if (zoomDelta > 0) {
-            // Zooming IN - respect radiusMin as distance to surface
-            if (pickedPoint) {
-                const pickDistance = Vector3Distance(this._position, pickedPoint);
-                // Don't zoom past the picked surface point + radiusMin
-                const maxZoomToSurface = pickDistance - this.limits.radiusMin;
-                return Math.min(zoomDelta, Math.max(0, maxZoomToSurface));
-            }
-
-            return zoomDelta;
-        } else {
-            // Zooming OUT - respect radiusMax
-            const maxZoomOut = this.limits.radiusMax - this._radius;
-            return Math.max(zoomDelta, -Math.max(0, maxZoomOut));
-        }
+        const distanceToTarget = pickedPoint ? Vector3Distance(this._position, pickedPoint) : undefined;
+        return this.limits.clampZoomDistance(zoomDelta, this._radius, distanceToTarget);
     }
 
     public zoomToPoint(targetPoint: DeepImmutable<IVector3Like>, distance: number) {
