@@ -215,7 +215,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             let iso_to_forward_scattering_blend: f32 = max(transmission_scatter_anisotropy, 0.0f);
 
             // The 0.2 exponent is an empirical fit to match reference renderers - check if it works broadly
-            let iso_scatter_transmittance: vec3f = pow(exp(-extinction_coeff * geometry_thickness), vec3f(0.2f));
+            let iso_scatter_transmittance: vec3f = pow(exp(-scatter_coeff * geometry_thickness), vec3f(0.2f));
             let iso_scatter_density: vec3f = clamp(vec3f(1.0f) - iso_scatter_transmittance, vec3f(0.0f), vec3f(1.0f));
             
             // Refration roughness is modified by the density of the scattering and also by the anisotropy.
