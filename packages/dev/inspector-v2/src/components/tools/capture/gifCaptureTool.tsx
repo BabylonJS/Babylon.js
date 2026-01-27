@@ -8,6 +8,7 @@ import { Tools } from "core/Misc/tools";
 import { Label } from "@fluentui/react-components";
 import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
 import type { Nullable } from "core/types";
+import type gif from "gif.js.optimized";
 
 export const GIFCaptureTool = MakeLazyComponent(
     async () => {
@@ -23,7 +24,7 @@ export const GIFCaptureTool = MakeLazyComponent(
             const [isRendering, setIsRendering] = useState(false);
             const [targetWidth, setTargetWidth] = useState(512);
             const [frequency, setFrequency] = useState(200);
-            const gifRef = useRef<Nullable<InstanceType<typeof gif>>>(null);
+            const gifRef = useRef<Nullable<gif>>(null);
             const captureObserverRef = useRef<any>(null);
             const previousRenderingScaleRef = useRef<number>(1);
 
