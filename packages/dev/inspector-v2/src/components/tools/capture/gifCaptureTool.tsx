@@ -10,6 +10,12 @@ import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyCo
 import type { Nullable } from "core/types";
 import type gif from "gif.js.optimized";
 
+enum RecordingState {
+    Idle,
+    Recording,
+    Rendering,
+}
+
 export const GIFCaptureTool = MakeLazyComponent(
     async () => {
         const gif = (await import("gif.js.optimized")).default;
@@ -20,8 +26,7 @@ export const GIFCaptureTool = MakeLazyComponent(
         const workerUrl = URL.createObjectURL(workerBlob);
 
         return ({ scene }: { scene: Scene }) => {
-            const [isRecording, setIsRecording] = useState(false);
-            const [isRendering, setIsRendering] = useState(false);
+            const [recordingState, setRecordingState] = useState<RecordingState>(RecordingState.Idle);
             const [targetWidth, setTargetWidth] = useState(512);
             const [frequency, setFrequency] = useState(200);
             const gifRef = useRef<Nullable<gif>>(null);
@@ -29,7 +34,7 @@ export const GIFCaptureTool = MakeLazyComponent(
             const previousRenderingScaleRef = useRef<number>(1);
 
             const startRecording = useCallback(() => {
-                setIsRecording(true);
+                setRecordingState(RecordingState.Recording);
 
                 const engine = scene.getEngine();
                 const canvas = engine.getRenderingCanvas();
@@ -58,8 +63,9 @@ export const GIFCaptureTool = MakeLazyComponent(
                 });
 
                 gifRef.current.on("finished", (blob: Blob) => {
+                    // Runs after rendering is complete
                     Tools.Download(blob, "record.gif");
-                    setIsRendering(false);
+                    setRecordingState(RecordingState.Idle);
                     gifRef.current = null;
                 });
 
@@ -72,8 +78,7 @@ export const GIFCaptureTool = MakeLazyComponent(
                     captureObserverRef.current = null;
                 }
 
-                setIsRecording(false);
-                setIsRendering(true);
+                setRecordingState(RecordingState.Rendering);
 
                 if (gifRef.current) {
                     gifRef.current.render();
@@ -82,18 +87,24 @@ export const GIFCaptureTool = MakeLazyComponent(
             }, []);
 
             const handleButtonClick = useCallback(() => {
-                if (isRecording) {
+                if (recordingState === RecordingState.Recording) {
                     stopRecording();
-                } else {
+                } else if (recordingState === RecordingState.Idle) {
                     startRecording();
                 }
-            }, [isRecording, startRecording, stopRecording]);
+            }, [recordingState, startRecording, stopRecording]);
 
             return (
                 <>
-                    {isRendering && <Label>Creating the GIF file...</Label>}
-                    {!isRendering && <ButtonLine label={isRecording ? "Stop" : "Record GIF"} icon={isRecording ? RecordStopRegular : RecordRegular} onClick={handleButtonClick} />}
-                    <Collapse visible={!isRendering && !isRecording}>
+                    {recordingState === RecordingState.Rendering && <Label>Creating the GIF file...</Label>}
+                    {recordingState !== RecordingState.Rendering && (
+                        <ButtonLine
+                            label={recordingState === RecordingState.Recording ? "Stop" : "Record GIF"}
+                            icon={recordingState === RecordingState.Recording ? RecordStopRegular : RecordRegular}
+                            onClick={handleButtonClick}
+                        />
+                    )}
+                    <Collapse visible={recordingState === RecordingState.Idle}>
                         <SyncedSliderPropertyLine
                             label="Resolution"
                             value={targetWidth}
