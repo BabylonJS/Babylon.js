@@ -605,11 +605,15 @@ export class GaussianSplattingMesh extends Mesh {
         const cameraProjectionMatrix = camera.getProjectionMatrix();
         const cameraViewProjectionMatrix = TmpVectors.Matrix[0];
         cameraViewMatrix.multiplyToRef(cameraProjectionMatrix, cameraViewProjectionMatrix);
-        this.getWorldMatrix().multiplyToRef(cameraViewProjectionMatrix, this._modelViewProjectionMatrix);
+        this._viewProjectionMatrix.copyFrom(cameraViewProjectionMatrix);
+
+        const modelViewMatrix = TmpVectors.Matrix[1];
+        this.getWorldMatrix().multiplyToRef(cameraViewMatrix, modelViewMatrix);
+        modelViewMatrix.multiplyToRef(cameraProjectionMatrix, this._modelViewProjectionMatrix);
 
         // return vector used to compute distance to camera
         const localDirection = TmpVectors.Vector3[1];
-        localDirection.set(this._modelViewProjectionMatrix.m[8], this._modelViewProjectionMatrix.m[9], this._modelViewProjectionMatrix.m[10]);
+        localDirection.set(modelViewMatrix.m[2], modelViewMatrix.m[6], modelViewMatrix.m[10]);
         localDirection.normalize();
 
         return localDirection;
