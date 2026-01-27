@@ -1,17 +1,17 @@
-import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
-import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
-import type { Observable } from "core/Misc/observable";
 import type { FunctionComponent } from "react";
-import type { PerfMinMax, VisibleRangeChangedObservableProps } from "./graphSupportingTypes";
-
-import { makeStyles, tokens } from "@fluentui/react-components";
-import { useEffect, useState } from "react";
 
 import type { Color4 } from "core/Maths/math.color";
+import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
+import type { Observable } from "core/Misc/observable";
+import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
+import type { PerfMinMax, VisibleRangeChangedObservableProps } from "./graphSupportingTypes";
+
+import { Body1, makeStyles, mergeClasses, Subtitle2Stronger, tokens } from "@fluentui/react-components";
+import { useEffect, useState } from "react";
+
 import { Color3 } from "core/Maths/math.color";
-import { AbstractEngine } from "core/Engines/abstractEngine";
-import { Checkbox } from "shared-ui-components/fluent/primitives/checkbox";
 import { ColorPickerPopup } from "shared-ui-components/fluent/primitives/colorPicker";
+import { Switch } from "shared-ui-components/fluent/primitives/switch";
 
 const useStyles = makeStyles({
     sidebar: {
@@ -28,26 +28,16 @@ const useStyles = makeStyles({
         display: "grid",
         width: "100%",
         minHeight: "30px",
-        fontSize: "14px",
-        padding: "2.5px 0px",
+        padding: `${tokens.spacingVerticalXXS} 0`,
         alignItems: "center",
     },
     header: {
-        color: tokens.colorNeutralForegroundOnBrand,
-        backgroundColor: tokens.colorBrandBackground,
-        gridTemplateColumns: "10px 9fr 1fr 10px",
-    },
-    versionHeader: {
-        backgroundColor: tokens.colorNeutralBackground3,
         color: tokens.colorNeutralForeground1,
-        gridTemplateColumns: "10px 1fr 1fr 10px",
-        fontSize: "14px",
-        minHeight: "35px",
+        backgroundColor: tokens.colorBrandBackground,
+        gridTemplateColumns: "10px 9fr 1fr 8px",
     },
     categoryHeader: {
         backgroundColor: tokens.colorNeutralBackground4,
-        textTransform: "uppercase",
-        fontSize: "14px",
         minHeight: "30px",
     },
     categoryColumn2: {
@@ -60,7 +50,7 @@ const useStyles = makeStyles({
     },
     measure: {
         color: tokens.colorNeutralForeground1,
-        gridTemplateColumns: "18px 6fr 1fr",
+        gridTemplateColumns: "4px 6fr 1fr 10px",
     },
     measureOdd: {
         backgroundColor: tokens.colorNeutralBackground2,
@@ -70,7 +60,7 @@ const useStyles = makeStyles({
     },
     measureCategory: {
         display: "grid",
-        gridTemplateColumns: "18px 7px 18px 10px 1fr",
+        gridTemplateColumns: "auto 7px 18px 10px 1fr",
         gridColumn: "2",
         alignItems: "center",
     },
@@ -82,6 +72,7 @@ const useStyles = makeStyles({
     },
     measureValue: {
         gridColumn: "3",
+        textAlign: "right",
     },
 });
 
@@ -175,18 +166,13 @@ export const PerformanceSidebar: FunctionComponent<IPerformanceSidebarProps> = (
                 metadataCategories.map((category) => (
                     <div key={`category-${category || "version"}`}>
                         {category ? (
-                            <div className={`${classes.sidebarItem} ${classes.header} ${classes.categoryHeader}`} key={`header-${category}`}>
-                                <span className={classes.categoryColumn2}>{category}</span>
+                            <div className={mergeClasses(classes.sidebarItem, classes.header, classes.categoryHeader)} key={`header-${category}`}>
+                                <Subtitle2Stronger className={classes.categoryColumn2}>{category}</Subtitle2Stronger>
                                 <div className={classes.categoryColumn3}>
-                                    <Checkbox value={metadataCategoryChecked?.get(category) === metadataCategoryId?.get(category)?.length} onChange={onCheckAllChange(category)} />
+                                    <Switch value={metadataCategoryChecked?.get(category) === metadataCategoryId?.get(category)?.length} onChange={onCheckAllChange(category)} />
                                 </div>
                             </div>
-                        ) : (
-                            <div className={`${classes.sidebarItem} ${classes.versionHeader}`} key={"header-version"}>
-                                <span className={classes.categoryColumn2}>Version:</span>
-                                <span className={classes.categoryColumn3}>{AbstractEngine.Version}</span>
-                            </div>
-                        )}
+                        ) : null}
                         {metadataCategoryId?.get(category)?.map((id, index) => {
                             const metadata = metadataMap?.get(id);
                             const range = valueMap?.get(id);
@@ -194,14 +180,14 @@ export const PerformanceSidebar: FunctionComponent<IPerformanceSidebarProps> = (
                                 metadata && (
                                     <div
                                         key={`perf-sidebar-item-${id}`}
-                                        className={`${classes.sidebarItem} ${classes.measure} ${index % 2 === 0 ? classes.measureEven : classes.measureOdd}`}
+                                        className={mergeClasses(classes.sidebarItem, classes.measure, index % 2 === 0 ? classes.measureEven : classes.measureOdd)}
                                     >
                                         <div className={classes.measureCategory}>
-                                            <Checkbox value={!metadata.hidden} onChange={onCheckChange(id)} />
+                                            <Switch value={!metadata.hidden} onChange={onCheckChange(id)} />
                                             <div className={classes.measureColorPicker}>
                                                 <ColorPickerPopup value={Color3.FromHexString(metadata.color ?? "#000")} onChange={onColorChange(id)} />
                                             </div>
-                                            <span className={classes.measureLabel}>{id}</span>
+                                            <Body1 className={classes.measureLabel}>{id}</Body1>
                                         </div>
                                         {range && <div className={classes.measureValue}> {((range.min + range.max) / 2).toFixed(2)} </div>}
                                     </div>
