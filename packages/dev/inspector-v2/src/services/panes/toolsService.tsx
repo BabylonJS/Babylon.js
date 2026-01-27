@@ -68,10 +68,6 @@ export const ToolsServiceDefinition: ServiceDefinition<[IToolsService], [IShellS
             }
         });
 
-        /**
-         * Left TODO: Implement the following sections from toolsTabComponent.tsx
-         */
-
         return {
             addSection: (section) => sectionsCollection.add(section),
             addSectionContent: (content) => sectionContentCollection.add(content),
