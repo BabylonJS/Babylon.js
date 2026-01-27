@@ -1,7 +1,8 @@
+import type { IObserver } from "core/Misc";
 import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
 import { SceneLoader } from "core/Loading/sceneLoader";
-import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
-import type { GLTFFileLoader, IGLTFLoaderExtension } from "loaders/glTF/glTFFileLoader";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
+import type { GLTFFileLoader, IGLTFLoaderExtension, GLTFLoaderDefaultOptions } from "loaders/glTF/glTFFileLoader";
 import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/glTFFileLoader";
 import type { IToolsService } from "../../toolsService";
 import { ToolsServiceIdentity } from "../../toolsService";
@@ -25,7 +26,7 @@ const CurrentLoaderOptions = {
     transparencyAsCoverage: false,
     useClipPlane: false,
     useSRGBBuffers: false,
-};
+} satisfies SceneLoaderPluginOptions["gltf"];
 
 export type GLTFLoaderOptionsType = typeof CurrentLoaderOptions;
 
@@ -61,7 +62,7 @@ const CurrentExtensionOptions = {
     MSFT_minecraftMesh: { enabled: true },
     MSFT_sRGBFactors: { enabled: true },
     MSFT_audio_emitter: { enabled: true },
-};
+} satisfies SceneLoaderPluginOptions["gltf"]["extensionOptions"];
 
 export type GLTFExtensionOptionsType = typeof CurrentExtensionOptions;
 
@@ -75,18 +76,14 @@ export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsSe
                 const loader = plugin as GLTFFileLoader;
 
                 // Apply loader settings
-                for (const key in CurrentLoaderOptions) {
-                    (loader as any)[key] = CurrentLoaderOptions[key as keyof GLTFLoaderOptionsType];
-                }
+                Object.assign(loader, CurrentLoaderOptions);
 
                 // Subscribe to extension loading
                 loader.onExtensionLoadedObservable.add((extension: IGLTFLoaderExtension) => {
                     const extensionOptions = CurrentExtensionOptions[extension.name as keyof GLTFExtensionOptionsType];
                     if (extensionOptions) {
                         // Apply extension settings
-                        for (const key in extensionOptions) {
-                            (extension as any)[key] = extensionOptions[key as keyof typeof extensionOptions];
-                        }
+                        Object.assign(extension, extensionOptions);
                     }
                 });
             }
