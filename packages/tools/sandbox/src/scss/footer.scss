@@ -8,14 +8,14 @@
     font-size: 0;
     display: grid;
     grid-template-rows: 100%;
-    grid-template-columns: 201px 1fr 390px;
+    grid-template-columns: 201px 1fr 210px;
 
     &.long {
-        grid-template-columns: 201px 1fr 460px;
+        grid-template-columns: 201px 1fr 280px;
     }
 
     &.longer {
-        grid-template-columns: 201px 1fr 530px;
+        grid-template-columns: 201px 1fr 350px;
     }
 
     .footerLeft {
@@ -203,47 +203,19 @@
                 filter: alpha(opacity=0);
             }
         }
-
-        .inspector-toggle {
-            position: relative;
-            background-position: center right;
-            background-repeat: no-repeat;
-            background-color: #9b85ff;
-            width: 180px;
-            height: var(--footer-height);
-            cursor: pointer;
-            display: grid;
-            align-content: center;
-            justify-content: center;
-            padding: 0 16px;
-            font-size: var(--font-size);
-            color: white;
-            text-align: center;
-            white-space: nowrap;
-            box-sizing: border-box;
-            border-top-left-radius: 14px;
-
-            &:hover {
-                background-color: var(--button-hover-color);
-            }
-
-            &:active {
-                background-color: var(--button-hover-background);
-            }
-        }
     }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .footer {
-        grid-template-columns: 0px 1fr 300px;
+        grid-template-columns: 0px 1fr 150px;
 
         &.long {
-            grid-template-columns: 0px 1fr 350px;
+            grid-template-columns: 0px 1fr 200px;
         }
 
         &.longer {
-            grid-template-columns: 0px 1fr 400px;
+            grid-template-columns: 0px 1fr 250px;
         }
 
         .dropup {
@@ -256,13 +228,6 @@
             &.long {
                 width: 100px;
                 grid-template-columns: var(--footer-height) calc(100px - var(--footer-height));
-            }
-        }
-
-        .footerRight {
-            .inspector-toggle {
-                width: 150px;
-                padding: 0 8px;
             }
         }
     }
