@@ -10,8 +10,8 @@ export class GeospatialLimits {
     /** Gets the minimum pitch angle (angle from horizon) -- 0 means looking straight down at planet */
     public pitchMin: number = Epsilon;
 
-    /**  Gets the maximum pitch angle (angle from horizon) -- Pi/1 means looking at horizon */
-    public pitchMax: number = Math.PI / 2;
+    /**  Gets the maximum pitch angle (angle from horizon) -- Pi/2 means looking at horizon */
+    public pitchMax: number = Math.PI / 2 - Epsilon;
 
     /** Gets the minimum yaw angle (rotation around up axis) */
     public yawMin: number = -Infinity;
@@ -30,6 +30,7 @@ export class GeospatialLimits {
      */
     constructor(planetRadius: number) {
         this._planetRadius = planetRadius;
+        this.radiusMax = planetRadius * 4;
     }
 
     public get radiusMin(): number {

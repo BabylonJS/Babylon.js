@@ -50,6 +50,7 @@ test("dropping an image to the sandbox", async ({ page }) => {
     // wait for #babylonjsLoadingDiv to be hidden
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await page.waitForLoadState("networkidle");
     // check snapshot of the rendering canvas (the full page includes Inspector, which has a lot of asynchrony and animation, making it hard to get a stable screenshot)
     await expect(page.locator("#renderCanvas")).toHaveScreenshot({ maxDiffPixels: 3000 });
     // but still check that the inspector is displayed
@@ -67,6 +68,7 @@ test("loading a model using query parameters", async ({ page }) => {
     // wait for #babylonjsLoadingDiv to be hidden
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await page.waitForLoadState("networkidle");
     // check snapshot of the page
     await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });
@@ -83,6 +85,7 @@ test("inspector is opened when clicking on the button", async ({ page }) => {
     // wait for #babylonjsLoadingDiv to be hidden
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await page.waitForLoadState("networkidle");
 
     // click the "Inspector" button
     await page.getByTitle("Display inspector").click();
