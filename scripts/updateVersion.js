@@ -90,7 +90,7 @@ const updateDependencies = (version, dependencies) => {
 };
 
 const updatePeerDependencies = (version) => {
-    // get all package.json files in the dev folder
+    // get all package.json files in the public folder
     const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json").replace(/\\/g, "/"));
     files.forEach((file) => {
         try {
@@ -111,7 +111,7 @@ const updatePeerDependencies = (version) => {
 };
 
 const updateVersion = (version) => {
-    // get all package.json files in the dev folder
+    // get all package.json files in the public folder
     const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json").replace(/\\/g, "/"));
     files.forEach((file) => {
         try {
@@ -139,7 +139,7 @@ const updateVersion = (version) => {
     });
 };
 
-async function runTagsUpdate() {
+async function main() {
     // Gets the current version to update
     const previousVersion = getCurrentVersion();
     let [major, minor, revision] = previousVersion.split(".");
@@ -184,5 +184,5 @@ if (!branchName) {
     console.log("Please provide a branch name");
     process.exit(1);
 } else {
-    runTagsUpdate();
+    main();
 }
