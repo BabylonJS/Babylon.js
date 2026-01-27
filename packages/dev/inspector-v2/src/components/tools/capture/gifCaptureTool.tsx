@@ -1,5 +1,5 @@
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { Scene } from "core/scene";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
@@ -9,12 +9,15 @@ import { Label } from "@fluentui/react-components";
 import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
 import type { Nullable } from "core/types";
 import type gif from "gif.js.optimized";
+import type { Observer } from "core/Misc/observable";
 
-enum RecordingState {
-    Idle,
-    Recording,
-    Rendering,
-}
+type RecordingState = "Idle" | "Recording" | "Rendering";
+
+type RecordingResources = {
+    gif: gif;
+    captureObserver: Observer<Scene>;
+    previousHardwareScaling: number;
+};
 
 export const GIFCaptureTool = MakeLazyComponent(
     async () => {
@@ -26,15 +29,18 @@ export const GIFCaptureTool = MakeLazyComponent(
         const workerUrl = URL.createObjectURL(workerBlob);
 
         return ({ scene }: { scene: Scene }) => {
-            const [recordingState, setRecordingState] = useState<RecordingState>(RecordingState.Idle);
+            const [recordingState, setRecordingState] = useState<RecordingState>("Idle");
+            const [recordingResources, setRecordingResources] = useState<Nullable<RecordingResources>>(null);
             const [targetWidth, setTargetWidth] = useState(512);
             const [frequency, setFrequency] = useState(200);
-            const gifRef = useRef<Nullable<gif>>(null);
-            const captureObserverRef = useRef<any>(null);
-            const previousRenderingScaleRef = useRef<number>(1);
 
             const startRecording = useCallback(() => {
-                setRecordingState(RecordingState.Recording);
+                if (recordingState !== "Idle") {
+                    return;
+                }
+
+                // Set state immediately to recording so future button clicks don't start multiple recordings
+                setRecordingState("Recording");
 
                 const engine = scene.getEngine();
                 const canvas = engine.getRenderingCanvas();
@@ -42,77 +48,75 @@ export const GIFCaptureTool = MakeLazyComponent(
                     return;
                 }
 
-                gifRef.current = new gif({
+                const gifInstance = new gif({
                     workers: 2,
                     quality: 10,
                     workerScript: workerUrl,
                 });
 
                 // Adjust hardware scaling to match desired width
-                previousRenderingScaleRef.current = engine.getHardwareScalingLevel();
+                const previousHardwareScaling = engine.getHardwareScalingLevel();
                 engine.setHardwareScalingLevel(engine.getRenderWidth() / (targetWidth * globalThis.devicePixelRatio) || 1);
 
                 // Capture frames after each render using onEndFrameObservable (TODO: better method for this)
                 let lastCaptureTime = 0;
                 const captureObserver = scene.onAfterRenderObservable.add(() => {
                     const now = Date.now();
-                    if (now - lastCaptureTime >= frequency && gifRef.current) {
+                    if (now - lastCaptureTime >= frequency && gifInstance) {
                         lastCaptureTime = now;
-                        gifRef.current.addFrame(canvas, { delay: 1, copy: true });
+                        gifInstance.addFrame(canvas, { delay: 1, copy: true });
                     }
                 });
 
-                captureObserverRef.current = captureObserver;
-            }, [scene, targetWidth, frequency]);
+                setRecordingResources({
+                    gif: gifInstance,
+                    captureObserver: captureObserver,
+                    previousHardwareScaling: previousHardwareScaling,
+                });
+            }, [recordingState, setRecordingState, setRecordingResources, scene, targetWidth, frequency]);
 
             const stopRecording = useCallback(() => {
-                if (captureObserverRef.current !== null) {
-                    // Remove the frame capture observer
-                    scene.onAfterRenderObservable.remove(captureObserverRef.current);
-                    captureObserverRef.current = null;
+                if (recordingState !== "Recording") {
+                    return;
                 }
 
-                // Restore previous hardware scaling
-                scene.getEngine().setHardwareScalingLevel(previousRenderingScaleRef.current);
+                if (!recordingResources) {
+                    return;
+                }
 
-                if (gifRef.current) {
-                    gifRef.current.on("finished", (blob: Blob) => {
+                // Remove the frame capture observer
+                scene.onAfterRenderObservable.remove(recordingResources.captureObserver);
+
+                // Restore previous hardware scaling
+                scene.getEngine().setHardwareScalingLevel(recordingResources.previousHardwareScaling);
+
+                if (recordingResources.gif) {
+                    recordingResources.gif.on("finished", (blob: Blob) => {
                         // Download the rendered GIF
                         Tools.Download(blob, "recording.gif");
-                        setRecordingState(RecordingState.Idle);
-                        gifRef.current = null;
+
+                        // Reset state
+                        setRecordingState("Idle");
+                        setRecordingResources(null);
                     });
 
                     // Start rendering the GIF
-                    setRecordingState(RecordingState.Rendering);
-                    gifRef.current.render();
+                    setRecordingState("Rendering");
+                    recordingResources.gif.render();
                 }
-            }, []);
-
-            const handleButtonClick = useCallback(() => {
-                if (recordingState === RecordingState.Recording) {
-                    stopRecording();
-                } else if (recordingState === RecordingState.Idle) {
-                    startRecording();
-                }
-            }, [recordingState, startRecording, stopRecording]);
+            }, [recordingState, setRecordingState, recordingResources, setRecordingResources, scene]);
 
             return (
                 <>
-                    {recordingState === RecordingState.Rendering && <Label>Creating the GIF file...</Label>}
-                    {recordingState !== RecordingState.Rendering && (
-                        <ButtonLine
-                            label={recordingState === RecordingState.Recording ? "Stop" : "Record GIF"}
-                            icon={recordingState === RecordingState.Recording ? RecordStopRegular : RecordRegular}
-                            onClick={handleButtonClick}
-                        />
-                    )}
-                    <Collapse visible={recordingState === RecordingState.Idle}>
+                    {recordingState === "Idle" && <ButtonLine label="Record GIF" icon={RecordRegular} onClick={startRecording} />}
+                    {recordingState === "Recording" && <ButtonLine label="Stop" icon={RecordStopRegular} onClick={stopRecording} />}
+                    {recordingState === "Rendering" && <Label>Creating the GIF file...</Label>}
+                    <Collapse visible={recordingState === "Idle"}>
                         <SyncedSliderPropertyLine
                             label="Resolution"
                             description="The pixel width of the output. The height will be adjusted accordingly to maintain the aspect ratio."
                             value={targetWidth}
-                            onChange={(value) => setTargetWidth(Math.floor(value ?? 512))}
+                            onChange={(value) => setTargetWidth(Math.floor(value))}
                             min={128}
                             max={2048}
                             step={128}
@@ -121,7 +125,7 @@ export const GIFCaptureTool = MakeLazyComponent(
                             label="Frequency (ms)"
                             description="The time interval in milliseconds between each capture of the scene."
                             value={frequency}
-                            onChange={(value) => setFrequency(Math.floor(value ?? 200))}
+                            onChange={(value) => setFrequency(Math.floor(value))}
                             min={50}
                             max={1000}
                             step={50}
