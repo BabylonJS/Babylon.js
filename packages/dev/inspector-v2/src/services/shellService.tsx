@@ -43,6 +43,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Observable } from "core/Misc/observable";
 import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { ErrorBoundary } from "../components/errorBoundary";
 import { TeachingMoment } from "../components/teachingMoment";
 import { Theme } from "../components/theme";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
@@ -389,6 +390,9 @@ const useStyles = makeStyles({
         flexDirection: "row",
         alignItems: "center",
         height: "36px",
+        backgroundColor: tokens.colorNeutralBackground1,
+        color: tokens.colorNeutralForeground1,
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
     },
     paneHeaderText: {
         flex: 1,
@@ -416,6 +420,12 @@ const useStyles = makeStyles({
         borderTopLeftRadius: tokens.borderRadiusMedium,
         borderTopRightRadius: tokens.borderRadiusMedium,
     },
+    selectedTab: {
+        backgroundColor: tokens.colorNeutralBackground1,
+        color: tokens.colorNeutralForeground1,
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
+        borderBottom: "none",
+    },
     unselectedTab: {
         backgroundColor: "transparent",
     },
@@ -423,7 +433,7 @@ const useStyles = makeStyles({
         backgroundColor: "transparent",
     },
     selectedTabIcon: {
-        color: tokens.colorNeutralForeground1,
+        color: "inherit",
     },
     resizer: {
         width: "8px",
@@ -524,14 +534,12 @@ const PaneHeader: FunctionComponent<{ id: string; title: string; dockOptions: Ma
     const classes = useStyles();
 
     return (
-        <Theme invert>
-            <div className={classes.paneHeaderDiv}>
-                <Subtitle2Stronger className={classes.paneHeaderText}>{title}</Subtitle2Stronger>
-                <DockMenu sidePaneId={id} dockOptions={dockOptions}>
-                    <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
-                </DockMenu>
-            </div>
-        </Theme>
+        <div className={classes.paneHeaderDiv}>
+            <Subtitle2Stronger className={classes.paneHeaderText}>{title}</Subtitle2Stronger>
+            <DockMenu sidePaneId={id} dockOptions={dockOptions}>
+                <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
+            </DockMenu>
+        </div>
     );
 };
 
@@ -630,7 +638,7 @@ const SidePaneTab: FunctionComponent<
     const useTeachingMoment = useMemo(() => MakePopoverTeachingMoment(`Pane/${location}/${title ?? id}`), [title, id]);
     const teachingMoment = useTeachingMoment(suppressTeachingMoment);
 
-    const tabClass = mergeClasses(classes.tab, isSelected ? undefined : classes.unselectedTab);
+    const tabClass = mergeClasses(classes.tab, isSelected ? classes.selectedTab : classes.unselectedTab);
 
     return (
         <>
@@ -640,7 +648,7 @@ const SidePaneTab: FunctionComponent<
                 title={title ?? "Extension"}
                 description={`The "${title ?? id}" extension can be accessed here.`}
             />
-            <Theme className={tabClass} invert={isSelected}>
+            <div className={tabClass}>
                 <DockMenu openOnContext sidePaneId={id} dockOptions={dockOptions}>
                     <ToolbarRadioButton
                         ref={teachingMoment.targetRef}
@@ -655,7 +663,7 @@ const SidePaneTab: FunctionComponent<
                         }}
                     />
                 </DockMenu>
-            </Theme>
+            </div>
         </>
     );
 };
@@ -968,7 +976,9 @@ function usePane(
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
                                 {topPanes.map((pane) => (
                                     <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== topSelectedTab.key ? classes.unselectedPane : undefined)}>
-                                        <pane.content />
+                                        <ErrorBoundary name={pane.title}>
+                                            <pane.content />
+                                        </ErrorBoundary>
                                     </div>
                                 ))}
                             </>
@@ -999,7 +1009,9 @@ function usePane(
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
                                 {bottomPanes.map((pane) => (
                                     <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== bottomSelectedTab.key ? classes.unselectedPane : undefined)}>
-                                        <pane.content />
+                                        <ErrorBoundary name={pane.title}>
+                                            <pane.content />
+                                        </ErrorBoundary>
                                     </div>
                                 ))}
                             </>
@@ -1341,7 +1353,9 @@ export function MakeShellServiceDefinition({
                             {/* Render the main/central content. */}
                             <div className={classes.centralContent}>
                                 {centralContents.map((entry) => (
-                                    <entry.component key={entry.key} />
+                                    <ErrorBoundary key={entry.key} name={entry.key}>
+                                        <entry.component />
+                                    </ErrorBoundary>
                                 ))}
                                 {toolbarMode === "compact" && (
                                     <>

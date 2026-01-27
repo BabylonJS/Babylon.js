@@ -298,8 +298,8 @@ export interface PLYHeader {
 export class GaussianSplattingMesh extends Mesh {
     private _vertexCount = 0;
     private _worker: Nullable<Worker> = null;
-    private _modelViewMatrix = Matrix.Identity();
-    private _viewMatrix = Matrix.Identity();
+    private _modelViewProjectionMatrix = Matrix.Identity();
+    private _viewProjectionMatrix = Matrix.Identity();
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
     private _readyToDisplay = false;
@@ -336,6 +336,13 @@ export class GaussianSplattingMesh extends Mesh {
 
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
+
+    private static readonly _DefaultViewUpdateThreshold = 1e-4;
+
+    /**
+     * Cosine value of the angle threshold to update view dependent splat sorting. Default is 0.0001.
+     */
+    public viewUpdateThreshold: number = GaussianSplattingMesh._DefaultViewUpdateThreshold;
 
     protected _disableDepthSort = false;
     /**
@@ -594,13 +601,15 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     public _getCameraDirection(camera: Camera): Vector3 {
-        const cameraMatrix = camera.getViewMatrix();
-        this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
-        this._viewMatrix.copyFrom(cameraMatrix);
+        const cameraViewMatrix = camera.getViewMatrix();
+        const cameraProjectionMatrix = camera.getProjectionMatrix();
+        const cameraViewProjectionMatrix = TmpVectors.Matrix[0];
+        cameraViewMatrix.multiplyToRef(cameraProjectionMatrix, cameraViewProjectionMatrix);
+        this.getWorldMatrix().multiplyToRef(cameraViewProjectionMatrix, this._modelViewProjectionMatrix);
 
         // return vector used to compute distance to camera
         const localDirection = TmpVectors.Vector3[1];
-        localDirection.set(this._modelViewMatrix.m[2], this._modelViewMatrix.m[6], this._modelViewMatrix.m[10]);
+        localDirection.set(this._modelViewProjectionMatrix.m[8], this._modelViewProjectionMatrix.m[9], this._modelViewProjectionMatrix.m[10]);
         localDirection.normalize();
 
         return localDirection;
@@ -623,6 +632,9 @@ export class GaussianSplattingMesh extends Mesh {
         // list view infos for active cameras
         const activeViewInfos: ICameraViewInfo[] = [];
         cameras.forEach((camera) => {
+            if (!camera) {
+                return;
+            }
             const cameraId = camera.uniqueId;
 
             const cameraViewInfos = this._cameraViewInfos.get(cameraId);
@@ -660,23 +672,22 @@ export class GaussianSplattingMesh extends Mesh {
 
                 const previousCameraDirection = cameraViewInfos.cameraDirection;
                 const dot = Vector3.Dot(cameraDirection, previousCameraDirection);
-                if ((forced || Math.abs(dot - 1) >= 0.01) && this._canPostToWorker) {
+                if ((forced || Math.abs(dot - 1) >= this.viewUpdateThreshold) && this._canPostToWorker) {
                     cameraViewInfos.cameraDirection.copyFrom(cameraDirection);
                     cameraViewInfos.frameIdLastUpdate = frameId;
                     this._canPostToWorker = false;
                     if (this._worker) {
                         this._worker!.postMessage(
                             {
-                                view: this._modelViewMatrix.m,
-                                viewOnly: this._viewMatrix.m,
+                                modelViewProjection: this._modelViewProjectionMatrix.m,
+                                viewProjection: this._viewProjectionMatrix.m,
                                 depthMix: this._depthMix,
-                                useRightHandedSystem: this._scene.useRightHandedSystem,
                                 cameraId: camera.uniqueId,
                             },
                             [this._depthMix.buffer]
                         );
                     } else if (_native && _native.sortSplats) {
-                        _native.sortSplats(this._modelViewMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
+                        _native.sortSplats(this._modelViewProjectionMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
                         if (cameraViewInfos.splatIndexBufferSet) {
                             cameraViewInfos.mesh.thinInstanceBufferUpdated("splatIndex");
                         } else {
@@ -1486,7 +1497,8 @@ export class GaussianSplattingMesh extends Mesh {
         newGS.makeGeometryUnique();
         newGS._vertexCount = this._vertexCount;
         newGS._copyTextures(this);
-        newGS._modelViewMatrix = Matrix.Identity();
+        newGS._modelViewProjectionMatrix = Matrix.Identity();
+        newGS._viewProjectionMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
         newGS._readyToDisplay = false;
         newGS._disableDepthSort = this._disableDepthSort;
@@ -1537,13 +1549,13 @@ export class GaussianSplattingMesh extends Mesh {
             // update on view changed
             else {
                 const cameraId = e.data.cameraId;
-                const globalModelViewProj = e.data.view;
-                const viewProj = e.data.viewOnly;
+                const globalModelViewProjection = e.data.modelViewProjection;
+                const viewProjection = e.data.viewProjection;
 
                 const vertexCountPadded = (positions.length / 4 + 15) & ~0xf;
-                if (!positions || !viewProj) {
+                if (!positions || !globalModelViewProjection) {
                     // Sanity check, it shouldn't happen!
-                    throw new Error("positions or view is not defined!");
+                    throw new Error("positions or modelViewProjection matrix is not defined!");
                 }
 
                 depthMix = e.data.depthMix;
@@ -1564,7 +1576,7 @@ export class GaussianSplattingMesh extends Mesh {
                     // If there are rig node matrices, we use them instead of the global model view proj
 
                     // Precompute modelViewProj for each rig node
-                    const modelViewProjs = partMatrices.map((model) => multiplyMatrices(viewProj, model));
+                    const modelViewProjs = partMatrices.map((model) => multiplyMatrices(viewProjection, model));
 
                     // NB: For performance reasons, we assume that part indices are valid
                     const length = partIndices.length;
@@ -1576,7 +1588,7 @@ export class GaussianSplattingMesh extends Mesh {
                     }
                 } else {
                     // If there are no rig node matrices, we use the global model view proj
-                    const mvp = globalModelViewProj;
+                    const mvp = globalModelViewProjection;
                     for (let j = 0; j < vertexCountPadded; j++) {
                         floatMix[2 * j + 1] = 10000 + (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) * depthFactor;
                     }

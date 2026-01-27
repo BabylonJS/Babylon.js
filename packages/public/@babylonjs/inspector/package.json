@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "8.45.5",
+    "version": "8.47.0",
     "module": "dist/babylon.inspector.bundle.js",
     "main": "dist/babylon.inspector.bundle.js",
     "esnext": "dist/babylon.inspector.bundle.js",
@@ -34,13 +34,13 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/addons": "^8.45.5",
-        "@babylonjs/core": "^8.45.5",
-        "@babylonjs/gui": "^8.45.5",
-        "@babylonjs/gui-editor": "^8.45.5",
-        "@babylonjs/loaders": "^8.45.5",
-        "@babylonjs/materials": "^8.45.5",
-        "@babylonjs/serializers": "^8.45.5",
+        "@babylonjs/addons": "^8.47.0",
+        "@babylonjs/core": "^8.47.0",
+        "@babylonjs/gui": "^8.47.0",
+        "@babylonjs/gui-editor": "^8.47.0",
+        "@babylonjs/loaders": "^8.47.0",
+        "@babylonjs/materials": "^8.47.0",
+        "@babylonjs/serializers": "^8.47.0",
         "@dev/inspector": "1.0.0",
         "@lts/gui": "1.0.0",
         "react": "^18.2.0",

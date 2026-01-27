@@ -13,22 +13,24 @@ const useGradientStyles = makeStyles({
     container: {
         display: "flex",
         alignItems: "center",
-        gap: tokens.spacingHorizontalS,
+        gap: tokens.spacingHorizontalXS, // Reduced gap
         width: "100%",
+        minWidth: 0,
+        overflow: "hidden",
     },
-    // Wrapper for factor spin buttons - fixed size
+    // Wrapper for factor spin buttons - fixed width, doesn't grow
     valueWrapper: {
-        flex: "0 0 auto", // Don't grow, natural size
+        flex: "0 0 auto", // Fixed size, no grow, no shrink
     },
     // Wrapper for color pickers - fixed size since they're just swatches
     colorWrapper: {
         flex: "0 0 auto",
         alignContent: "center",
     },
-    // Wrapper for the step slider - grows to fill remaining space
+    // Wrapper for the step slider - takes remaining space and can shrink
     stepSliderWrapper: {
         flex: "1 1 0", // Grow to fill available space
-        minWidth: 0,
+        minWidth: "100px", // Minimum to fit slider + spinbutton
     },
 });
 
@@ -89,6 +91,7 @@ const Gradient: FunctionComponent<PrimitiveProps<GradientProps<number | Color3 |
                     value={gradient.step}
                     onChange={(val) => gradientChange({ ...gradient, step: val })}
                     compact={hasNumericValues}
+                    growSlider={!hasNumericValues}
                 />
             </div>
         </div>

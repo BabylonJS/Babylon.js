@@ -12,7 +12,7 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import { SkyMaterial } from "materials/sky/skyMaterial";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 import { MultiMaterialChildrenProperties } from "../../../components/properties/materials/multiMaterialProperties";
-import { NodeMaterialGeneralProperties } from "../../../components/properties/materials/nodeMaterialProperties";
+import { NodeMaterialGeneralProperties, NodeMaterialInputProperties } from "../../../components/properties/materials/nodeMaterialProperties";
 import { NormalMapProperties } from "../../../components/properties/materials/normalMapProperties";
 import {
     OpenPBRMaterialBaseProperties,
@@ -247,6 +247,10 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 {
                     section: "General",
                     component: ({ context }) => <NodeMaterialGeneralProperties material={context} />,
+                },
+                {
+                    section: "Inputs",
+                    component: ({ context }) => <NodeMaterialInputProperties material={context} />,
                 },
             ],
         });

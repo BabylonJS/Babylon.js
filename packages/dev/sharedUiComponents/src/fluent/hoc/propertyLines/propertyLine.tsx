@@ -4,8 +4,8 @@ import {
     ChevronCircleDown16Regular,
     ChevronCircleRight16Regular,
     ChevronCircleRight20Regular,
+    CopyRegular,
     Copy16Regular,
-    Copy20Regular,
 } from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
@@ -16,7 +16,7 @@ import type { PrimitiveProps } from "../../primitives/primitive";
 import { Link } from "../../primitives/link";
 import { ToggleButton } from "../../primitives/toggleButton";
 import { Button } from "../../primitives/button";
-import { CustomTokens } from "../../primitives/utils";
+import { CustomTokens, TokenMap } from "../../primitives/utils";
 import { InfoLabel } from "../../primitives/infoLabel";
 
 const usePropertyLineStyles = makeStyles({
@@ -59,6 +59,12 @@ const usePropertyLineStyles = makeStyles({
     checkbox: {
         display: "flex",
         alignItems: "center",
+        marginRight: tokens.spacingHorizontalXS,
+    },
+    checkboxIndicator: {
+        margin: TokenMap.px2,
+        width: TokenMap.px12,
+        height: TokenMap.px12,
     },
 });
 
@@ -175,6 +181,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                         <Tooltip relationship="label" content={props.value == null ? "Enable property" : "Disable property (set to null)"}>
                             <Checkbox
                                 className={classes.checkbox}
+                                indicator={{ className: classes.checkboxIndicator }}
                                 checked={!(props.value == null)}
                                 onChange={(_, data) => {
                                     if (data.checked) {
@@ -195,7 +202,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                             className={classes.copy}
                             title="Copy to clipboard"
                             appearance="transparent"
-                            icon={size === "small" ? Copy16Regular : Copy20Regular}
+                            icon={size === "small" ? Copy16Regular : CopyRegular}
                             onClick={() => copyCommandToClipboard(onCopy())}
                         />
                     )}
@@ -220,6 +227,12 @@ const useLineStyles = makeStyles({
         justifyContent: "center",
         paddingTop: tokens.spacingVerticalXXS,
         paddingBottom: tokens.spacingVerticalXXS,
+        borderTop: `1px solid transparent`,
+        borderBottom: `1px solid transparent`,
+        ":hover": {
+            borderTopColor: tokens.colorNeutralStroke2,
+            borderBottomColor: tokens.colorNeutralStroke2,
+        },
     },
     containerSmall: {
         minHeight: CustomTokens.lineHeightSmall,
