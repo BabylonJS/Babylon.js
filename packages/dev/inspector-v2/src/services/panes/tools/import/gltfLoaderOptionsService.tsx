@@ -1,32 +1,25 @@
-import type { IObserver } from "core/Misc";
-import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
-import { SceneLoader } from "core/Loading/sceneLoader";
 import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
-import type { GLTFFileLoader, IGLTFLoaderExtension, GLTFLoaderDefaultOptions } from "loaders/glTF/glTFFileLoader";
-import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/glTFFileLoader";
+import type { GLTFFileLoader, IGLTFLoaderExtension } from "loaders/glTF/glTFFileLoader";
+import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
 import type { IToolsService } from "../../toolsService";
-import { ToolsServiceIdentity } from "../../toolsService";
+
+import { SceneLoader } from "core/Loading/sceneLoader";
+import { GLTFLoaderDefaultOptions } from "loaders/glTF/glTFFileLoader";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { GLTFExtensionOptionsTool, GLTFLoaderOptionsTool } from "../../../../components/tools/import/gltfLoaderOptionsTool";
+import { ToolsServiceIdentity } from "../../toolsService";
 
 export const GLTFLoaderServiceIdentity = Symbol("GLTFLoaderService");
 
-const CurrentLoaderOptions = {
-    alwaysComputeBoundingBox: false,
-    alwaysComputeSkeletonRootNode: false,
-    animationStartMode: GLTFLoaderAnimationStartMode.FIRST,
-    capturePerformanceCounters: false,
-    compileMaterials: false,
-    compileShadowGenerators: false,
-    coordinateSystemMode: GLTFLoaderCoordinateSystemMode.AUTO,
-    createInstances: true,
-    loggingEnabled: false,
-    loadAllMaterials: false,
-    targetFps: 60,
-    transparencyAsCoverage: false,
-    useClipPlane: false,
-    useSRGBBuffers: false,
-} satisfies SceneLoaderPluginOptions["gltf"];
+// Options exposed in Inspector includes all the properties from the default loader options (GLTFLoaderDefaultOptions)
+// plus some options that only exist directly on the GLTFFileLoader class itself.
+const CurrentLoaderOptions = Object.assign(
+    {
+        capturePerformanceCounters: false,
+        loggingEnabled: false,
+    } satisfies Pick<GLTFFileLoader, "capturePerformanceCounters" | "loggingEnabled">,
+    GLTFLoaderDefaultOptions
+);
 
 export type GLTFLoaderOptionsType = typeof CurrentLoaderOptions;
 
