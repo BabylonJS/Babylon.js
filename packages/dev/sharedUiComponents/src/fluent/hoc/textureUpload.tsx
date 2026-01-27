@@ -88,12 +88,9 @@ export const TextureUpload: FunctionComponent<TextureUploadProps> = (props) => {
                         const url = URL.createObjectURL(blob);
                         const extension = file.name.split(".").pop()?.toLowerCase();
 
-                        // Revoke the object URL after texture loads to prevent memory leak
-                        const revokeUrl = () => URL.revokeObjectURL(url);
-
                         const newTexture = cubeOnly
-                            ? new CubeTexture(url, scene, [], false, undefined, revokeUrl, undefined, undefined, false, extension ? "." + extension : undefined)
-                            : new Texture(url, scene, false, false, undefined, revokeUrl);
+                            ? new CubeTexture(url, scene, [], false, undefined, undefined, undefined, undefined, false, extension ? "." + extension : undefined)
+                            : new Texture(url, scene, false, false, undefined, undefined);
 
                         onChange(newTexture);
                     }
