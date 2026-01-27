@@ -17,7 +17,7 @@ const AnimationGroupLoadingModes = [
     { label: "NoSync", value: SceneLoaderAnimationGroupLoadingMode.NoSync },
 ] as const satisfies DropdownOption<number>[];
 
-export const ImportAnimationsTools: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+export const GLTFAnimationImportTool: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
     const [importDefaults, setImportDefaults] = useState({
         overwriteAnimations: true,
         animationGroupLoadingMode: SceneLoaderAnimationGroupLoadingMode.Clean,
