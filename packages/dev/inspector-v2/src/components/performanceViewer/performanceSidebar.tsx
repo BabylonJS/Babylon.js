@@ -169,7 +169,6 @@ export const PerformanceSidebar: FunctionComponent<IPerformanceSidebarProps> = (
                             <div className={mergeClasses(classes.sidebarItem, classes.header, classes.categoryHeader)} key={`header-${category}`}>
                                 <Subtitle2Stronger className={classes.categoryColumn2}>{category}</Subtitle2Stronger>
                                 <div className={classes.categoryColumn3}>
-                                    {/* <Checkbox value={metadataCategoryChecked?.get(category) === metadataCategoryId?.get(category)?.length} onChange={onCheckAllChange(category)} /> */}
                                     <Switch value={metadataCategoryChecked?.get(category) === metadataCategoryId?.get(category)?.length} onChange={onCheckAllChange(category)} />
                                 </div>
                             </div>
@@ -184,7 +183,6 @@ export const PerformanceSidebar: FunctionComponent<IPerformanceSidebarProps> = (
                                         className={mergeClasses(classes.sidebarItem, classes.measure, index % 2 === 0 ? classes.measureEven : classes.measureOdd)}
                                     >
                                         <div className={classes.measureCategory}>
-                                            {/* <Checkbox value={!metadata.hidden} onChange={onCheckChange(id)} /> */}
                                             <Switch value={!metadata.hidden} onChange={onCheckChange(id)} />
                                             <div className={classes.measureColorPicker}>
                                                 <ColorPickerPopup value={Color3.FromHexString(metadata.color ?? "#000")} onChange={onColorChange(id)} />
