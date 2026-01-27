@@ -387,7 +387,7 @@ export class Sandbox extends React.Component<
      * @returns A formatted string of supported extensions like "gltf, glb, obj or babylon"
      */
     private _getSupportedExtensions(): string {
-        const fallbackExtensions = "gltf, glb, obj, stl, ply, splat, spz or babylon";
+        const fallbackExtensions = "babylon, gltf, glb, obj, ply, sog, splat, spz or stl";
 
         // GetRegisteredSceneLoaderPluginMetadata may not exist in older versions
         const babylonNamespace = BABYLON as any;
@@ -397,7 +397,8 @@ export class Sandbox extends React.Component<
 
         try {
             const plugins: Array<{ extensions: Array<{ extension: string }> }> = babylonNamespace.GetRegisteredSceneLoaderPluginMetadata();
-            const extensions = plugins.flatMap((plugin) => plugin.extensions.map((ext) => ext.extension.replace(".", "").toLowerCase())).sort();
+            let extensions = plugins.flatMap((plugin) => plugin.extensions.map((ext) => ext.extension.replace(".", "").toLowerCase())).sort();
+            extensions = extensions.filter((ext) => ext !== "json"); // The splat loader registers .json, but that is covered by the sog format and json files are too generic
 
             if (extensions.length === 0) {
                 return fallbackExtensions;
