@@ -245,7 +245,7 @@ export class ClusteredLightContainer extends Light {
         this._proxyMaterial.alphaMode = Constants.ALPHA_ADD;
         this._proxyMaterial.sideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
 
-        this._proxyMesh = CreatePlane("ProxyMesh", { size: 2 });
+        this._proxyMesh = CreatePlane("ProxyMesh", { size: 2 }, this._scene);
         // Make sure it doesn't render for the default scene
         this._scene.removeMesh(this._proxyMesh);
         this._proxyMesh.material = this._proxyMaterial;

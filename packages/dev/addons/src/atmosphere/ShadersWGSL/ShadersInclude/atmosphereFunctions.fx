@@ -34,6 +34,7 @@ const AerialPerspectiveLutSize: vec3f = vec3f(16.0, 64.0, NumAerialPerspectiveLu
 
 const AerialPerspectiveLutKMPerSlice: f32 = 4.0;
 const AerialPerspectiveLutRangeKM: f32 = AerialPerspectiveLutKMPerSlice * NumAerialPerspectiveLutLayers;
+const TransmittanceSampleCount: i32 = 128;
 
 const TransmittanceLutSize: vec2f = vec2f(256.0, 64.0);
 const TransmittanceLutDomainInUVSpace: vec2f = (TransmittanceLutSize - vec2f(1.0, 1.0)) / TransmittanceLutSize;
@@ -43,6 +44,75 @@ const TransmittanceLutHalfTexelSize: vec2f = vec2f(0.5, 0.5) / TransmittanceLutS
 const TransmittanceHorizonRange: f32 = 2.0 * TransmittanceLutHalfTexelSize.x;
 const TransmittanceMaxUnoccludedU: f32 = 1.0 - 0.5 * TransmittanceHorizonRange;
 const TransmittanceMinOccludedU: f32 = 1.0 + 0.5 * TransmittanceHorizonRange;
+
+fn uvToUnit(uv: vec2f, domainInUVSpace: vec2f, halfTexelSize: vec2f) -> vec2f {
+    return (uv - halfTexelSize) / domainInUVSpace;
+}
+
+fn computeOzoneDensity(normalizedViewHeight: f32) -> f32 {
+    // Heights are normalized against a 100KM thick atmosphere.
+    let MinOzoneDensity: f32 = 0.135;
+    let OneMinusMinOzoneDensity: f32 = 1.0 - MinOzoneDensity;
+    let OzoneStartHeight: f32 = 0.15; // Ramp up density from here to peak.
+    let PeakOzoneHeight: f32 = 0.25;
+    let MaxOzoneHeight: f32 = 0.6;
+    let InverseRampupDistance: f32 = 1.0 / (PeakOzoneHeight - OzoneStartHeight);
+    let InverseRampdownDistance: f32 = 1.0 / (MaxOzoneHeight - PeakOzoneHeight);
+    let lowerAtmosphereDensity = MinOzoneDensity + OneMinusMinOzoneDensity * max(0.0, normalizedViewHeight - OzoneStartHeight) * InverseRampupDistance;
+    let sqrtUpperAtmosphereDensity = max(0.0, 1.0 - (normalizedViewHeight - PeakOzoneHeight) * InverseRampdownDistance);
+    let upperAtmosphereDensity = sqrtUpperAtmosphereDensity * sqrtUpperAtmosphereDensity;
+    return select(upperAtmosphereDensity, lowerAtmosphereDensity, normalizedViewHeight < PeakOzoneHeight);
+}
+
+fn sampleMediumRGB(
+    viewHeight: f32,
+    scatteringRayleigh: ptr<function, vec3f>,
+    scatteringMie: ptr<function, vec3f>,
+    extinction: ptr<function, vec3f>,
+    scattering: ptr<function, vec3f>
+) {
+    let normalizedViewHeight = saturate(viewHeight * atmosphere.inverseAtmosphereThickness);
+
+    let densityMie = exp(-83.333 * normalizedViewHeight);
+    let densityRayleigh = exp(-12.5 * normalizedViewHeight);
+    let densityOzone = computeOzoneDensity(normalizedViewHeight);
+
+    *scatteringRayleigh = densityRayleigh * atmosphere.peakRayleighScattering;
+    *scatteringMie = densityMie * atmosphere.peakMieScattering;
+    *scattering = *scatteringMie + *scatteringRayleigh;
+
+    let extinctionRayleigh = *scatteringRayleigh;
+    let extinctionMie = densityMie * atmosphere.peakMieExtinction;
+    let extinctionOzone = densityOzone * atmosphere.peakOzoneAbsorption;
+    *extinction = extinctionRayleigh + extinctionMie + extinctionOzone;
+}
+
+fn computeTransmittance(rayOriginGlobal: vec3f, rayDirection: vec3f, tMax: f32, sampleCount: i32) -> vec3f {
+    // Simpler version of integrateScatteredRadiance,
+    // computing transmittance between origin and a point at tMax distance away along rayDirection.
+
+    var opticalDepth: vec3f = vec3f(0.0);
+
+    var t: f32 = 0.0;
+    let sampleSegmentWeight = tMax / f32(sampleCount);
+    let sampleSegmentT: f32 = 0.3;
+    for (var s: i32 = 0; s < sampleCount; s += 1) {
+        let newT = sampleSegmentWeight * (f32(s) + sampleSegmentT);
+        let dt = newT - t;
+        t = newT;
+
+        var scatteringRayleigh: vec3f;
+        var scatteringMie: vec3f;
+        var extinction: vec3f;
+        var scattering: vec3f;
+        let samplePositionGlobal = rayOriginGlobal + t * rayDirection;
+        sampleMediumRGB(length(samplePositionGlobal) - atmosphere.planetRadius, &scatteringRayleigh, &scatteringMie, &extinction, &scattering);
+
+        opticalDepth += extinction * dt;
+    }
+
+    return exp(-opticalDepth);
+}
 
 #if defined(SAMPLE_TRANSMITTANCE_LUT) || !defined(EXCLUDE_RAY_MARCHING_FUNCTIONS)
 
@@ -173,3 +243,43 @@ fn sampleAerialPerspectiveLut(
 
     return false;
 }
+
+#if RENDER_TRANSMITTANCE
+
+fn getTransmittanceParameters(uv: vec2f, radius: ptr<function, f32>, cosAngleLightToZenith: ptr<function, f32>, distanceToAtmosphereEdge: ptr<function, f32>) {
+    let unit = uvToUnit(uv, TransmittanceLutDomainInUVSpace, TransmittanceLutHalfTexelSize);
+
+    // Compute the position's radius from center of planet.
+    let distanceToHorizon = unit.y * atmosphere.horizonDistanceToAtmosphereEdge;
+    let distanceToHorizonSquared = distanceToHorizon * distanceToHorizon;
+    *radius = sqrtClamped(distanceToHorizonSquared + atmosphere.planetRadiusSquared);
+
+    // Compute the distance to the atmosphere edge from the position towards the light.
+    let minDistanceToAtmosphereEdge = atmosphere.atmosphereRadius - *radius;
+    let maxDistanceToAtmosphereEdge = distanceToHorizon + atmosphere.horizonDistanceToAtmosphereEdge;
+    *distanceToAtmosphereEdge = minDistanceToAtmosphereEdge + unit.x * (maxDistanceToAtmosphereEdge - minDistanceToAtmosphereEdge);
+    let distanceToAtmosphereEdgeSquared = *distanceToAtmosphereEdge * *distanceToAtmosphereEdge;
+
+    // Compute cosine of the zenith angle to the light for this position.
+    *cosAngleLightToZenith = select(
+        (atmosphere.horizonDistanceToAtmosphereEdgeSquared - distanceToAtmosphereEdgeSquared - distanceToHorizonSquared) / (2.0 * *radius * *distanceToAtmosphereEdge),
+        1.0,
+        *distanceToAtmosphereEdge <= 0.0
+    );
+    *cosAngleLightToZenith = clamp(*cosAngleLightToZenith, -1.0, 1.0);
+}
+
+fn renderTransmittance(uv: vec2f) -> vec4f {
+    var radius: f32;
+    var cosAngleLightToZenith: f32;
+    var distanceToAtmosphereEdgeAlongAngle: f32;
+    getTransmittanceParameters(uv, &radius, &cosAngleLightToZenith, &distanceToAtmosphereEdgeAlongAngle);
+
+    let sinAngleLightToZenith = sqrtClamped(1.0 - cosAngleLightToZenith * cosAngleLightToZenith);
+    let directionToLight = normalize(vec3f(0.0, cosAngleLightToZenith, sinAngleLightToZenith));
+
+    let transmittance = computeTransmittance(vec3f(0.0, radius, 0.0), directionToLight, distanceToAtmosphereEdgeAlongAngle, TransmittanceSampleCount);
+    return vec4f(transmittance, avg(transmittance));
+}
+
+#endif

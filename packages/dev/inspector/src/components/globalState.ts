@@ -56,6 +56,7 @@ export class GlobalState {
         KHR_materials_transmission: { enabled: true },
         KHR_materials_diffuse_transmission: { enabled: true },
         KHR_materials_volume: { enabled: true },
+        KHR_materials_volume_scatter: { enabled: true },
         KHR_materials_dispersion: { enabled: true },
         KHR_lights_punctual: { enabled: true },
         EXT_lights_area: { enabled: true },

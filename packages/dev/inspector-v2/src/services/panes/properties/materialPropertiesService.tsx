@@ -16,12 +16,13 @@ import { NodeMaterialGeneralProperties, NodeMaterialInputProperties } from "../.
 import { NormalMapProperties } from "../../../components/properties/materials/normalMapProperties";
 import {
     OpenPBRMaterialBaseProperties,
-    OpenPBRMaterialCoatProperties,
-    OpenPBRMaterialEmissionProperties,
-    OpenPBRMaterialFuzzProperties,
-    OpenPBRMaterialGeometryProperties,
     OpenPBRMaterialSpecularProperties,
+    OpenPBRMaterialTransmissionProperties,
+    OpenPBRMaterialCoatProperties,
+    OpenPBRMaterialFuzzProperties,
+    OpenPBRMaterialEmissionProperties,
     OpenPBRMaterialThinFilmProperties,
+    OpenPBRMaterialGeometryProperties,
 } from "../../../components/properties/materials/openpbrMaterialProperties";
 import {
     PBRBaseMaterialAdvancedProperties,
@@ -194,6 +195,10 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 {
                     section: "Specular",
                     component: ({ context }) => <OpenPBRMaterialSpecularProperties material={context} />,
+                },
+                {
+                    section: "Transmission",
+                    component: ({ context }) => <OpenPBRMaterialTransmissionProperties material={context} />,
                 },
                 {
                     section: "Coat",

@@ -2,7 +2,7 @@
 {
     vec3 slab_diffuse = vec3(0., 0., 0.);
     vec3 slab_subsurface = vec3(0., 0., 0.);
-    vec3 slab_translucent = vec3(0., 0., 0.);
+    vec3 slab_translucent = slab_translucent_background.rgb;
     vec3 slab_glossy = vec3(0., 0., 0.);
     float specularFresnel = 0.0;
     vec3 specularColoredFresnel = vec3(0., 0., 0.);
@@ -24,8 +24,6 @@
     #ifdef PROJECTEDLIGHTTEXTURE{X}
         slab_diffuse *= computeProjectionTextureDiffuseLighting(projectionLightTexture{X}, textureProjectionMatrix{X}, vPositionW);
     #endif
-
-    numLights += 1.0;
 
     #ifdef FUZZ
         float fuzzNdotH = max(dot(fuzzNormalW, preInfo{X}.H), 0.0);
@@ -50,19 +48,123 @@
                 // Also computeSpecularLighting does some iridescence work using these values that we don't want.
                 slab_glossy = computeSpecularLighting(preInfo{X}, normalW, vec3(1.0), vec3(1.0), specular_roughness, lightColor{X}.rgb);
             #endif
-            float NdotH = dot(normalW, preInfo{X}.H);
-            specularFresnel = fresnelSchlickGGX(NdotH, baseDielectricReflectance.F0, baseDielectricReflectance.F90);
+            specularFresnel = fresnelSchlickGGX(preInfo{X}.VdotH, baseDielectricReflectance.F0, baseDielectricReflectance.F90);
             specularColoredFresnel = specularFresnel * specular_color;
+            
             #ifdef THIN_FILM
                 // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
-                float thinFilmIorScale = clamp(2.0 * abs(thin_film_ior - 1.0), 0.0, 1.0);
                 vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseDielectricReflectance.coloredF0);
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3(dot(thinFilmDielectricFresnel, vec3(0.3333))), thin_film_desaturation_scale);
-                specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thinFilmIorScale);
+                specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thin_film_ior_scale);
             #endif
         }
+    #endif
+
+    // Refraction Lobe
+    #ifdef REFRACTED_LIGHTS
+        #if AREALIGHT{X}
+            // TODO
+        #else
+            {
+                preLightingInfo preInfoTrans = preInfo{X};
+                #ifdef SCATTERING
+                    preInfoTrans.roughness = sqrt(sqrt(max(refractionAlphaG, 0.05)));
+                #else
+                    preInfoTrans.roughness = transmission_roughness;
+                #endif
+                // On the side of the surface facing away from the light, we'll modify
+                // the VdotH used for the Fresnel calculation. This is to avoid the maxed-out
+                // Fresnel from obscuring the transmitted light.
+                if (preInfoTrans.NdotLUnclamped <= 0.0) {
+                    specularFresnel = 0.0;
+                    specularColoredFresnel = specularFresnel * specular_color;
+                }
+
+                #ifdef ANISOTROPIC_BASE
+                    preInfoTrans.NdotL = max(dot(-normalW, preInfoTrans.L), 0.0);
+                #else
+                    preInfoTrans.NdotL = max(dot(-normalW, preInfoTrans.L) * 0.5 + 0.5, 0.0);
+                #endif
+
+                #ifdef DISPERSION
+                    // This is a hack to try to boost the separation of the dispersion effect.
+                    // Especially with refraction, this effect is very subtle and we might question
+                    // if it's needed for analytical lights at all...
+                    float diff = min(dispersion_iors[2] - dispersion_iors[0], max(dispersion_iors[0] - 1.0, 1.0));
+                    dispersion_iors[2] += diff;
+                    dispersion_iors[0] -= diff;
+                    for (int i = 0; i < 3; i++) {
+                        float eta = 1.0 / dispersion_iors[i];
+                #else
+                    float eta = 1.0 / specular_ior;
+                #endif
+                    preInfoTrans.H = -normalize( preInfoTrans.L + min(eta, 0.95) * viewDirectionW);
+                    preInfoTrans.VdotH = clamp(dot(viewDirectionW, preInfoTrans.H), 0.0, 1.0);
+                
+                #ifdef DISPERSION
+                    slab_translucent[i] += 
+                #else
+                    slab_translucent += 
+                #endif
+                #ifdef ANISOTROPIC_BASE
+                    computeAnisotropicSpecularLighting(preInfoTrans, viewDirectionW, normalW, 
+                        baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 
+                        roughness_alpha_modified_for_scatter, lightColor{X}.rgb
+                #else
+                    // We're passing in vec3(1.0) for both F0 and F90 here because the actual Fresnel is computed below
+                    // Also computeSpecularLighting does some legacy iridescence work using these values that we don't want.
+                    computeSpecularLighting(preInfoTrans, normalW, vec3(1.0), vec3(1.0), roughness_alpha_modified_for_scatter, lightColor{X}.rgb
+                #endif
+                #ifdef DISPERSION
+                    )[i];
+                }
+                #else
+                    );
+                #endif
+
+                // Empirical scattered light contribution for transmission
+                // As roughness increases, we add a small ambient term to simulate scattering of internal reflections
+                slab_translucent = mix(slab_translucent, 0.25 * preInfoTrans.attenuation * lightColor{X}.rgb, clamp(1.0 - pow(baseGeoInfo.NdotV, refractionAlphaG), 0.0, 1.0));
+
+                #ifdef SCATTERING
+                if (transmission_depth>0.0) {
+                    // Compute forward-scattered light that has been completely diffused. This will be used when
+                    // scattering is very strong.
+                    preInfoTrans.roughness = 1.0;
+                    vec3 diffused_forward_scattered_light = computeSpecularLighting(preInfoTrans, normalW, vec3(1.0), vec3(1.0), 1.0, lightColor{X}.rgb) * transmission_absorption;
+                    
+                    // Compute back-scattered light
+                    preInfoTrans.NdotL = max(dot(viewDirectionW, preInfoTrans.L), 0.0);
+                    preInfoTrans.NdotV = 1.0;
+                    preInfoTrans.H = normalize(viewDirectionW + preInfoTrans.L);
+                    preInfoTrans.VdotH = clamp(dot(viewDirectionW, preInfoTrans.H), 0.0, 1.0);
+                    preInfoTrans.roughness = 0.3;
+                    vec3 back_scattered_light = computeSpecularLighting(preInfoTrans, viewDirectionW, vec3(1.0), vec3(1.0), 0.025, lightColor{X}.rgb);
+                    // Direct Transmission (aka forward-scattered light from back side)
+                    // vec3 forward_scattered_light = mix(slab_translucent * transmission_absorption, additional_scattering, additional_scattering_scale);
+                    vec3 forward_scattered_light = (slab_translucent * transmission_absorption);
+                    
+                    // Use the diffuse lobe as the isotropic scattered light component
+                    vec3 iso_scattered_light = slab_diffuse;
+                    // Back Scattering
+                    vec3 back_scattering = mix(forward_scattered_light, forward_scattered_light + back_scattered_light * absorption_at_mfp, max3(iso_scatter_density));
+                    // Iso Scattering
+                    // vec3 iso_scattering = mix(forward_scattered_light, diffused_forward_scattered_light + iso_scattered_light * multi_scatter_color, max3(iso_scatter_density));
+                    vec3 iso_scattering = mix(forward_scattered_light, (diffused_forward_scattered_light + iso_scattered_light) * mix(transmission_scatter.rgb, multi_scatter_color, max3(iso_scatter_density)), max3(iso_scatter_density));
+                    // Lerp between the three based on the anisotropy
+                    slab_translucent = mix(back_scattering, iso_scattering, back_to_iso_scattering_blend);
+                    slab_translucent = mix(slab_translucent, forward_scattered_light, iso_to_forward_scattering_blend);
+                }
+                #else
+                
+                // Simple transmission without scattering
+                slab_translucent *= transmission_absorption;
+                
+                #endif
+            }
+        #endif
     #endif
 
     // Metal Lobe
@@ -79,13 +181,11 @@
             #endif
 
             #ifdef THIN_FILM
-                // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
-                float thinFilmIorScale = clamp(2.0 * abs(thin_film_ior - 1.0), 0.0, 1.0);
                 vec3 thinFilmConductorFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseConductorReflectance.coloredF0);
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3(dot(thinFilmConductorFresnel, vec3(0.3333))), thin_film_desaturation_scale);
-                coloredFresnel = mix(coloredFresnel, specular_weight * thinFilmIorScale * thinFilmConductorFresnel, thin_film_weight);
+                coloredFresnel = mix(coloredFresnel, specular_weight * thin_film_ior_scale * thinFilmConductorFresnel, thin_film_weight);
             #endif
 
             #ifdef ANISOTROPIC_BASE
@@ -111,7 +211,7 @@
                 slab_coat = computeSpecularLighting(preInfoCoat{X}, coatNormalW, vec3(coatReflectance.F0), vec3(1.0), coat_roughness, lightColor{X}.rgb);
             #endif
 
-            float NdotH = dot(coatNormalW, preInfoCoat{X}.H);
+            float NdotH = max(dot(coatNormalW, preInfoCoat{X}.H), 0.0);
             coatFresnel = fresnelSchlickGGX(NdotH, coatReflectance.F0, coatReflectance.F90);
         }
     #endif
