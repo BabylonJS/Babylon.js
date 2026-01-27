@@ -18,6 +18,7 @@ import "./scss/main.scss";
 import fullScreenLogo from "./img/logo-fullscreen.svg";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
+import { GetRegisteredSceneLoaderPluginMetadata } from "core/Loading/sceneLoader";
 
 // Types for PWA Launch Queue API (file handlers)
 interface ILaunchParams {
@@ -115,7 +116,7 @@ export class Sandbox extends React.Component<
             supportedExtensions: this._getSupportedExtensions(),
         };
 
-        this.checkUrl();
+        this._checkUrl();
 
         EnvironmentTools.HookWithEnvironmentChange(this._globalState);
 
@@ -252,7 +253,10 @@ export class Sandbox extends React.Component<
         this.setState({ showWelcomeDialog: false });
     };
 
-    checkUrl() {
+    /**
+     * Checks URL parameters to set modes and load assets
+     */
+    private _checkUrl = () => {
         const set3DCommerceMode = () => {
             document.title = "Babylon.js Sandbox for 3D Commerce";
             this._globalState.commerceMode = true;
@@ -379,7 +383,7 @@ export class Sandbox extends React.Component<
                 }
             }
         }
-    }
+    };
 
     /**
      * Gets the supported file extensions from registered scene loader plugins.
@@ -389,14 +393,8 @@ export class Sandbox extends React.Component<
     private _getSupportedExtensions(): string {
         const fallbackExtensions = "babylon, gltf, glb, obj, ply, sog, splat, spz or stl";
 
-        // GetRegisteredSceneLoaderPluginMetadata may not exist in older versions
-        const babylonNamespace = BABYLON as any;
-        if (typeof babylonNamespace.GetRegisteredSceneLoaderPluginMetadata !== "function") {
-            return fallbackExtensions;
-        }
-
         try {
-            const plugins: Array<{ extensions: Array<{ extension: string }> }> = babylonNamespace.GetRegisteredSceneLoaderPluginMetadata();
+            const plugins = GetRegisteredSceneLoaderPluginMetadata();
             let extensions = plugins.flatMap((plugin) => plugin.extensions.map((ext) => ext.extension.replace(".", "").toLowerCase())).sort();
             extensions = extensions.filter((ext) => ext !== "json"); // The splat loader registers .json, but that is covered by the sog format and json files are too generic
 

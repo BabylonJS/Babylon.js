@@ -1,4 +1,4 @@
-import * as React from "react";
+import type { FunctionComponent } from "react";
 import logo from "../img/logo-fullscreen.svg";
 
 import "../scss/welcomeDialog.scss";
@@ -15,7 +15,7 @@ interface IWelcomeDialogProps {
  * @param props component properties
  * @returns welcome dialog component
  */
-export const WelcomeDialog: React.FC<IWelcomeDialogProps> = (props) => {
+export const WelcomeDialog: FunctionComponent<IWelcomeDialogProps> = (props) => {
     return (
         <div className="welcome-dialog-overlay">
             <div className="welcome-dialog">
