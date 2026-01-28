@@ -94,6 +94,9 @@ void main(void) {
     // _____________________________ Read Transmission Layer properties ______________________
     #include<openpbrTransmissionLayerData>
 
+    // _____________________________ Read Subsurface Layer properties ______________________
+    #include<openpbrSubsurfaceLayerData>
+
     // _____________________________ Read Coat Layer properties ______________________
     #include<openpbrCoatLayerData>
 
@@ -104,9 +107,6 @@ void main(void) {
 
     // _____________________________ Read AO Properties _______________________________
     #include<openpbrAmbientOcclusionData>
-
-    // TEMP
-    float subsurface_weight = 0.0;
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
@@ -206,7 +206,7 @@ void main(void) {
         vec3 multi_scatter_color = vec3(1.0);
         // Absorption is volumetric if transmission depth is > 0.
         // Otherwise, absorption is considered instantaneous at the surface.
-        if (transmission_depth > 0.0) {
+        #ifdef TRANSMISSION_SLAB
             // Figure out coefficients based on OpenPBR spec.
             vec3 invDepth = vec3(1. / maxEps(transmission_depth));
             extinction_coeff = -log(transmission_color.rgb) * invDepth;
@@ -222,11 +222,48 @@ void main(void) {
             multi_scatter_color = singleScatterToMultiScatterAlbedo(ss_albedo);
 
             transmission_absorption = exp(-absorption_coeff * geometry_thickness);
-        } else {
+        #else
             // We'll account for double-absorption here, assuming light enters and then exits the
             // volume before reaching the eye. 
             transmission_absorption = transmission_color.rgb * transmission_color.rgb;
-        }
+        #endif
+        
+        #ifdef SUBSURFACE_SLAB
+            // Figure out subsurface scattering contribution
+            // vec3 subsurface_extinction_coeff = vec3(0.0);
+            // vec3 subsurface_scatter_coeff = vec3(0.0);
+            // vec3 subsurface_absorption_coeff = vec3(0.0);
+            vec3 mfp = subsurface_radius_scale * vec3(subsurface_radius);
+            extinction_coeff = vec3(1.0) / maxEps(mfp);
+
+            // Convert subsurface color to single scatter albedo and then to coefficients
+            ss_albedo = multiScatterToSingleScatterAlbedo(subsurface_color);
+            scatter_coeff = ss_albedo * extinction_coeff;
+            absorption_coeff = extinction_coeff - scatter_coeff.rgb;
+            float minCoeff = min3(absorption_coeff);
+            if (minCoeff < 0.0) {
+                absorption_coeff -= vec3(minCoeff);
+            }
+            // Set extinction coefficient after shifting the absorption to be non-negative.
+            extinction_coeff = absorption_coeff + scatter_coeff;
+            transmission_absorption = exp(-absorption_coeff * geometry_thickness);
+            //     vec3 subsurface_invDepth = vec3(1. / maxEps(subsurface_radius));
+            //     subsurface_extinction_coeff = -log(subsurface_color.rgb) * subsurface_invDepth;
+            //     subsurface_scatter_coeff = subsurface_extinction_coeff * subsurface_weight;
+            //     subsurface_absorption_coeff = subsurface_extinction_coeff - subsurface_scatter_coeff;
+            //     float minSubsurfaceCoeff = min3(subsurface_absorption_coeff);
+            //     if (minSubsurfaceCoeff < 0.0) {
+            //         subsurface_absorption_coeff -= vec3(minSubsurfaceCoeff);
+            //     }
+            //     // Set extinction coefficient after shifting the absorption to be non-negative.
+            //     subsurface_extinction_coeff = subsurface_absorption_coeff + subsurface_scatter_coeff;
+            // #endif
+
+            // // Add subsurface scattering coeffs to transmission coeffs
+            // scatter_coeff += subsurface_scatter_coeff;
+            // extinction_coeff += subsurface_extinction_coeff;
+            // absorption_coeff += subsurface_absorption_coeff;
+        #endif
 
         float refractionAlphaG = transmission_roughness * transmission_roughness;
         #ifdef SCATTERING

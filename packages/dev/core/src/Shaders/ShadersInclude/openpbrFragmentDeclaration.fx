@@ -11,6 +11,11 @@ uniform vec3 vTransmissionScatter;
 uniform float vTransmissionScatterAnisotropy;
 uniform float vTransmissionDispersionScale;
 uniform float vTransmissionDispersionAbbeNumber;
+uniform float vSubsurfaceWeight;
+uniform vec3 vSubsurfaceColor;
+uniform float vSubsurfaceRadius;
+uniform vec3 vSubsurfaceRadiusScale;
+uniform float vSubsurfaceScatterAnisotropy;
 uniform float vCoatWeight;
 uniform vec3 vCoatColor;
 uniform float vCoatRoughness;
@@ -26,6 +31,7 @@ uniform vec3 vEmissionColor;
 uniform float vThinFilmWeight;
 uniform vec2 vThinFilmThickness;
 uniform float vThinFilmIor;
+uniform float vGeometryThinWalled;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
@@ -115,6 +121,18 @@ uniform vec2 vTransmissionScatterInfos;
 
 #ifdef TRANSMISSION_DISPERSION_SCALE
 uniform vec2 vTransmissionDispersionScaleInfos;
+#endif
+
+#ifdef SUBSURFACE_WEIGHT
+uniform vec2 vSubsurfaceWeightInfos;
+#endif
+
+#ifdef SUBSURFACE_COLOR
+uniform vec2 vSubsurfaceColorInfos;
+#endif
+
+#ifdef SUBSURFACE_RADIUS_SCALE
+uniform vec2 vSubsurfaceRadiusScaleInfos;
 #endif
 
 #ifdef COAT_WEIGHT

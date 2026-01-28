@@ -297,6 +297,16 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public SCATTERING = false;
 
     /**
+     * Enables transmission slab
+     */
+    public TRANSMISSION_SLAB = false;
+
+    /**
+     * Enables subsurface slab
+     */
+    public SUBSURFACE_SLAB = false;
+
+    /**
      * Refraction of the 2D background texture. Might include the rest of the scene or just the background.
      */
     public REFRACTED_BACKGROUND = false;
@@ -727,6 +737,78 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _transmissionDispersionAbbeNumber: Property<number> = new Property<number>("transmission_dispersion_abbe_number", 20.0, "vTransmissionDispersionAbbeNumber", 1, 0);
 
     /**
+     * Defines the amount of subsurface scattering on the surface.
+     * See OpenPBR's specs for subsurface_weight
+     */
+    public subsurfaceWeight: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceWeight")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceWeight: Property<number> = new Property<number>("subsurface_weight", 0.0, "vSubsurfaceWeight", 1, 0);
+
+    /**
+     * Subsurface weight texture.
+     * See OpenPBR's specs for subsurface_weight
+     */
+    public subsurfaceWeightTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceWeightTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceWeightTexture: Sampler = new Sampler("subsurface_weight", "subsurfaceWeight", "SUBSURFACE_WEIGHT");
+
+    /**
+     * Defines the color of the subsurface scattering in the volume.
+     * See OpenPBR's specs for subsurface_color
+     */
+    public subsurfaceColor: Color3;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceColor")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceColor: Property<Color3> = new Property<Color3>("subsurface_color", new Color3(0.8, 0.8, 0.8), "vSubsurfaceColor", 3, 0);
+
+    /**
+     * Subsurface color texture.
+     * See OpenPBR's specs for subsurface_color
+     */
+    public subsurfaceColorTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceColorTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceColorTexture: Sampler = new Sampler("subsurface_color", "subsurfaceColor", "SUBSURFACE_COLOR");
+
+    /**
+     * Defines the radius of the subsurface scattering in the volume.
+     * See OpenPBR's specs for subsurface_radius
+     */
+    public subsurfaceRadius: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceRadius")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceRadius: Property<number> = new Property<number>("subsurface_radius", 1.0, "vSubsurfaceRadius", 1, 0);
+
+    /**
+     * Defines the scale factor applied to the subsurface radius.
+     * See OpenPBR's specs for subsurface_radius_scale
+     */
+    public subsurfaceRadiusScale: Color3;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceRadiusScale")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceRadiusScale: Property<Color3> = new Property<Color3>("subsurface_radius_scale", new Color3(1, 0.5, 0.25), "vSubsurfaceRadiusScale", 3, 0);
+
+    /**
+     * Subsurface radius scale texture.
+     * See OpenPBR's specs for subsurface_radius_scale
+     */
+    public subsurfaceRadiusScaleTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceRadiusScaleTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceRadiusScaleTexture: Sampler = new Sampler("subsurface_radius_scale", "subsurfaceRadiusScale", "SUBSURFACE_RADIUS_SCALE");
+
+    /**
+     * Defines the anisotropy of the subsurface scattering in the volume.
+     * See OpenPBR's specs for subsurface_scatter_anisotropy
+     */
+    public subsurfaceScatterAnisotropy: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "subsurfaceScatterAnisotropy")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _subsurfaceScatterAnisotropy: Property<number> = new Property<number>("subsurface_scatter_anisotropy", 0.0, "vSubsurfaceScatterAnisotropy", 1, 0);
+
+    /**
      * Defines the amount of clear coat on the surface.
      * See OpenPBR's specs for coat_weight
      */
@@ -888,6 +970,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzRoughnessTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _fuzzRoughnessTexture: Sampler = new Sampler("fuzz_roughness", "fuzzRoughness", "FUZZ_ROUGHNESS");
+
+    /**
+     * Defines whether the geometry is thin-walled (like a sheet of paper) or not.
+     * See OpenPBR's specs for geometry_thin_walled
+     */
+    public geometryThinWalled: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryThinWalled")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _geometryThinWalled: Property<number> = new Property<number>("geometry_thin_walled", 0, "vGeometryThinWalled", 1, 0);
 
     /**
      * Defines the normal of the material's geometry.
@@ -1147,6 +1238,18 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useAmbientInGrayScale = false;
+
+    /**
+     * Specifies if the material has volume properties such as subsurface scattering or transmission.
+     */
+    public get hasVolume(): boolean {
+        return !this.geometryThinWalled && (this.subsurfaceWeight > 0 || this.transmissionWeight > 0);
+    }
+
+    /** Specifies if the material has scattering properties such as subsurface scattering or transmission scattering. */
+    public get hasScattering(): boolean {
+        return !this.geometryThinWalled && ((this.transmissionWeight > 0 && !this.transmissionScatter.equals(Color3.BlackReadOnly)) || this.subsurfaceWeight > 0);
+    }
 
     /**
      * BJS is using an hardcoded light falloff based on a manually sets up range.
@@ -1818,6 +1921,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._transmissionDispersionScale;
         this._transmissionDispersionScaleTexture;
         this._transmissionDispersionAbbeNumber;
+        this._subsurfaceWeight;
+        this._subsurfaceWeightTexture;
+        this._subsurfaceColor;
+        this._subsurfaceColorTexture;
+        this._subsurfaceRadius;
+        this._subsurfaceRadiusScale;
+        this._subsurfaceRadiusScaleTexture;
+        this._subsurfaceScatterAnisotropy;
         this._coatWeight;
         this._coatWeightTexture;
         this._coatColor;
@@ -1835,6 +1946,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._fuzzColorTexture;
         this._fuzzRoughness;
         this._fuzzRoughnessTexture;
+        this._geometryThinWalled;
         this._geometryNormalTexture;
         this._geometryTangent;
         this._geometryTangentTexture;
@@ -2907,7 +3019,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     defines.FUZZENVIRONMENTBRDF = false;
                 }
 
-                if (this.transmissionWeight > 0) {
+                if (this.hasVolume) {
                     defines.REFRACTED_BACKGROUND = !!this._backgroundRefractionTexture && MaterialFlags.RefractionTextureEnabled;
                     defines.REFRACTED_LIGHTS = true;
                     const radianceTexture = this._getRadianceTexture();
@@ -2918,10 +3030,18 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     } else {
                         defines.REFRACTED_ENVIRONMENT = false;
                     }
+                    if (this.transmissionWeight > 0) {
+                        defines.TRANSMISSION_SLAB = true;
+                    }
+                    if (this.subsurfaceWeight > 0) {
+                        defines.SUBSURFACE_SLAB = true;
+                    }
                 } else {
                     defines.REFRACTED_BACKGROUND = false;
                     defines.REFRACTED_LIGHTS = false;
                     defines.REFRACTED_ENVIRONMENT = false;
+                    defines.TRANSMISSION_SLAB = false;
+                    defines.SUBSURFACE_SLAB = false;
                 }
 
                 if (this._shouldUseAlphaFromBaseColorTexture()) {
@@ -2998,7 +3118,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         defines.THIN_FILM = this.thinFilmWeight > 0.0;
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
         defines.DISPERSION = this.transmissionDispersionScale > 0.0;
-        defines.SCATTERING = !this.transmissionScatter.equals(Color3.BlackReadOnly);
+        defines.SCATTERING = this.hasScattering;
 
         defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;
         if (defines.FUZZ) {
