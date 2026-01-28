@@ -76,6 +76,8 @@ body,
     height: 50px;
     width: 100%;
     bottom: 50px;
+    z-index: 5;
+    pointer-events: none;
 }
 
 #logoContainer {
