@@ -1,22 +1,22 @@
 // This code reads uniforms and samples textures to fill up the fuzz
 // layer properties for OpenPBR
 var fuzz_weight: f32 = 0.0f;
-var fuzz_color: vec3f = vec3f(1.0);
+var fuzz_color: vec3f = vec3f(1.0f);
 var fuzz_roughness: f32 = 0.0f;
 
 #ifdef FUZZ
 
 // Sample Fuzz Layer properties from textures
 #ifdef FUZZ_WEIGHT
-    let fuzzWeightFromTexture: vec4 = textureSample(fuzzWeightSampler, fuzzWeightSamplerSampler, fragmentInputs.vFuzzWeightUV + uvOffset);
+    let fuzzWeightFromTexture: vec4f = textureSample(fuzzWeightSampler, fuzzWeightSamplerSampler, fragmentInputs.vFuzzWeightUV + uvOffset);
 #endif
 
 #ifdef FUZZ_COLOR
-    var fuzzColorFromTexture: vec4 = textureSample(fuzzColorSampler, fuzzColorSamplerSampler, fragmentInputs.vFuzzColorUV + uvOffset);
+    var fuzzColorFromTexture: vec4f = textureSample(fuzzColorSampler, fuzzColorSamplerSampler, fragmentInputs.vFuzzColorUV + uvOffset);
 #endif
 
 #ifdef FUZZ_ROUGHNESS
-    let fuzzRoughnessFromTexture: vec4 = textureSample(fuzzRoughnessSampler, fuzzRoughnessSamplerSampler, fragmentInputs.vFuzzRoughnessUV + uvOffset);
+    let fuzzRoughnessFromTexture: vec4f = textureSample(fuzzRoughnessSampler, fuzzRoughnessSamplerSampler, fragmentInputs.vFuzzRoughnessUV + uvOffset);
 #endif
 
 // Initalize fuzz layer properties from uniforms

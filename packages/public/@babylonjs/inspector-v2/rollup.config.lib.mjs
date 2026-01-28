@@ -47,7 +47,12 @@ const jsConfig = {
         nodeResolve({ mainFields: ["browser", "module", "main"] }),
     ],
     onwarn(warning, warn) {
-        // Treat all warnings as errors.
+        // Ignore warning over "this" being undefined in ES when converting gif.js from UMD to ES.
+        if (warning.code === "THIS_IS_UNDEFINED" && warning.loc && warning.loc.file && warning.loc.file.endsWith("node_modules/gif.js.optimized/dist/gif.js")) {
+            return;
+        }
+
+        // Treat all other warnings as errors.
         throw new Error(warning.message);
     },
 };

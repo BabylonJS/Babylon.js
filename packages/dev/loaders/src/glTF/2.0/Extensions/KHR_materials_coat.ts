@@ -21,8 +21,8 @@ declare module "../../glTFFileLoader" {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_coat/README.md)
- * [Playground Sample](https://www.babylonjs-playground.com/frame.html#7F7PN6#8)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/6cb2cb84b504c245c49cf2e9a8ae16d26f72ac97/extensions/2.0/Khronos/KHR_materials_coat/README.md)
+ * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_coat implements IGLTFLoaderExtension {
