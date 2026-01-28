@@ -262,11 +262,8 @@ vec3 singleScatterToMultiScatterAlbedo(vec3 rho_ss) {
 }
 
 vec3 multiScatterToSingleScatterAlbedo(vec3 rho_ms) {
-    vec3 a = vec3(1.0) - rho_ms;
-    vec3 b = vec3(1.0) - vec3(0.139) * a;
-    vec3 c = vec3(1.0) + vec3(1.17) * a;
-    vec3 s = (b - sqrt(b * b - 4.0 * 1.17 * a * a)) / (2.0 * 1.17 * a);
-    return vec3(1.0) - s * s;
+    vec3 s = 4.09712 + 4.20863*rho_ms - sqrt(9.59217 + 41.6808 * rho_ms + 17.7126 * rho_ms * rho_ms);
+    return 1.0 - s*s;
 }
 
 float min3(vec3 v) {

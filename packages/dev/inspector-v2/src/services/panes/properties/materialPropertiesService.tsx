@@ -17,6 +17,7 @@ import {
     OpenPBRMaterialBaseProperties,
     OpenPBRMaterialSpecularProperties,
     OpenPBRMaterialTransmissionProperties,
+    OpenPBRMaterialSubsurfaceProperties,
     OpenPBRMaterialCoatProperties,
     OpenPBRMaterialFuzzProperties,
     OpenPBRMaterialEmissionProperties,
@@ -197,6 +198,10 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 {
                     section: "Transmission",
                     component: ({ context }) => <OpenPBRMaterialTransmissionProperties material={context} />,
+                },
+                {
+                    section: "Subsurface",
+                    component: ({ context }) => <OpenPBRMaterialSubsurfaceProperties material={context} />,
                 },
                 {
                     section: "Coat",

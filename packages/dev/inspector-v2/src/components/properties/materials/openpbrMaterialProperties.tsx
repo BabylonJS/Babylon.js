@@ -5,6 +5,7 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { BoundProperty } from "../boundProperty";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { ReadFile } from "core/Misc/fileTools";
 import { Texture } from "core/Materials/Textures/texture";
@@ -225,6 +226,55 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
     );
 };
 
+export const OpenPBRMaterialSubsurfaceProperties: FunctionComponent<{ material: OpenPBRMaterial }> = (props) => {
+    const { material } = props;
+
+    return (
+        <>
+            <BoundProperty component={SyncedSliderPropertyLine} label="Subsurface Weight" target={material} propertyKey="subsurfaceWeight" min={0} max={1} step={0.01} />
+            <FileUploadLine
+                label="Subsurface Weight"
+                accept=".jpg, .png, .tga, .dds, .env, .exr"
+                onClick={(files) => {
+                    if (files.length > 0) {
+                        UpdateTexture(files[0], material, (texture) => (material.subsurfaceWeightTexture = texture));
+                    }
+                }}
+            />
+            <BoundProperty component={Color3PropertyLine} label="Subsurface Color" target={material} propertyKey="subsurfaceColor" isLinearMode />
+            <FileUploadLine
+                label="Subsurface Color"
+                accept=".jpg, .png, .tga, .dds, .env, .exr"
+                onClick={(files) => {
+                    if (files.length > 0) {
+                        UpdateTexture(files[0], material, (texture) => (material.subsurfaceColorTexture = texture));
+                    }
+                }}
+            />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Subsurface Radius" target={material} propertyKey="subsurfaceRadius" min={0} max={10} step={0.01} />
+            <BoundProperty component={Color3PropertyLine} label="Subsurface Radius Scale" target={material} propertyKey="subsurfaceRadiusScale" isLinearMode />
+            <FileUploadLine
+                label="Subsurface Radius Scale"
+                accept=".jpg, .png, .tga, .dds, .env, .exr"
+                onClick={(files) => {
+                    if (files.length > 0) {
+                        UpdateTexture(files[0], material, (texture) => (material.subsurfaceRadiusScaleTexture = texture));
+                    }
+                }}
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Subsurface Scatter Anisotropy"
+                target={material}
+                propertyKey="subsurfaceScatterAnisotropy"
+                min={-1}
+                max={1}
+                step={0.01}
+            />
+        </>
+    );
+};
+
 /**
  * Displays the coat layer properties of an OpenPBR material.
  * @param props - The required properties
@@ -423,6 +473,7 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                     }
                 }}
             />
+            <BoundProperty component={BooleanBadgePropertyLine} label="Thin-Walled" target={material} propertyKey="geometryThinWalled" />
             <FileUploadLine
                 label="Geometry Normal"
                 accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
