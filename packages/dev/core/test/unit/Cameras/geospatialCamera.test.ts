@@ -549,6 +549,97 @@ describe("GeospatialCamera", () => {
     });
 
     // ============================================
+    // TESTS: GeospatialCamera pitchDisabledRadiusScale
+    // ============================================
+    describe("GeospatialCamera pitchDisabledRadiusScale", () => {
+        const planetRadius = 6371;
+
+        it("should allow full pitch when radius is below fullPitchRadius", () => {
+            const camera = new GeospatialCamera("testCam", scene, { planetRadius });
+            camera.limits.pitchDisabledRadiusScale = new Vector2(2, 4); // full pitch at 2x, none at 4x
+
+            // Set radius to 1.5x planet radius (below fullPitchRadius of 2x)
+            camera.radius = planetRadius * 1.5;
+            camera.pitch = Math.PI / 4;
+
+            expect(camera.pitch).toBeCloseTo(Math.PI / 4, 3);
+        });
+
+        it("should clamp pitch to pitchMin when radius is at or above noPitchRadius", () => {
+            const camera = new GeospatialCamera("testCam", scene, { planetRadius });
+            camera.limits.pitchDisabledRadiusScale = new Vector2(2, 4); // full pitch at 2x, none at 4x
+
+            // Set radius to 4x planet radius (at noPitchRadius)
+            camera.radius = planetRadius * 4;
+            camera.pitch = Math.PI / 4;
+
+            expect(camera.pitch).toBeCloseTo(camera.limits.pitchMin, 3);
+        });
+
+        it("should interpolate pitch between fullPitchRadius and noPitchRadius", () => {
+            const camera = new GeospatialCamera("testCam", scene, { planetRadius });
+            camera.limits.pitchDisabledRadiusScale = new Vector2(2, 4); // full pitch at 2x, none at 4x
+
+            // Set radius to 3x planet radius (midpoint between 2x and 4x)
+            camera.radius = planetRadius * 3;
+            camera.pitch = Math.PI / 2; // Try to set max pitch
+
+            // At midpoint, effectivePitchMax should be ~halfway between pitchMax and pitchMin
+            const expectedEffectivePitchMax = (camera.limits.pitchMax + camera.limits.pitchMin) / 2;
+            expect(camera.pitch).toBeCloseTo(expectedEffectivePitchMax, 2);
+        });
+
+        it("should not clamp pitch when pitchDisabledRadiusScale is undefined", () => {
+            const camera = new GeospatialCamera("testCam", scene, { planetRadius });
+            camera.limits.pitchDisabledRadiusScale = undefined;
+
+            // Set radius to very high value
+            camera.radius = planetRadius * 10;
+            camera.pitch = Math.PI / 4;
+
+            // Pitch should only be limited by pitchMax, not by radius
+            expect(camera.pitch).toBeCloseTo(Math.PI / 4, 3);
+        });
+
+        it("should update pitch when zooming out past fullPitchRadius", () => {
+            const camera = new GeospatialCamera("testCam", scene, { planetRadius });
+            camera.limits.pitchDisabledRadiusScale = new Vector2(1.5, 3);
+
+            // Start close with high pitch
+            camera.radius = planetRadius * 1.2;
+            camera.pitch = Math.PI / 3;
+            expect(camera.pitch).toBeCloseTo(Math.PI / 3, 3);
+
+            // Zoom out past noPitchRadius - pitch should be clamped
+            camera.radius = planetRadius * 3.5;
+            // After setting radius, pitch should be reclamped
+            expect(camera.pitch).toBeCloseTo(camera.limits.pitchMin, 3);
+        });
+
+        it("getEffectivePitchMax should return correct values", () => {
+            const camera = new GeospatialCamera("testCam", scene, { planetRadius });
+            camera.limits.pitchDisabledRadiusScale = new Vector2(2, 4);
+
+            // Below fullPitchRadius
+            expect(camera.limits.getEffectivePitchMax(planetRadius * 1.5)).toBeCloseTo(camera.limits.pitchMax, 5);
+
+            // At fullPitchRadius
+            expect(camera.limits.getEffectivePitchMax(planetRadius * 2)).toBeCloseTo(camera.limits.pitchMax, 5);
+
+            // At noPitchRadius
+            expect(camera.limits.getEffectivePitchMax(planetRadius * 4)).toBeCloseTo(camera.limits.pitchMin, 5);
+
+            // Above noPitchRadius
+            expect(camera.limits.getEffectivePitchMax(planetRadius * 5)).toBeCloseTo(camera.limits.pitchMin, 5);
+
+            // Midpoint
+            const midpointRadius = planetRadius * 3;
+            const expectedMidpoint = (camera.limits.pitchMax + camera.limits.pitchMin) / 2;
+            expect(camera.limits.getEffectivePitchMax(midpointRadius)).toBeCloseTo(expectedMidpoint, 5);
+        });
+    });
+
+    // ============================================
     // TESTS: GeospatialCamera zoom methods
     // ============================================
     describe("GeospatialCamera zoom methods", () => {
@@ -628,6 +719,8 @@ describe("GeospatialCamera", () => {
 
         it("should produce consistent lookAt for various yaw/pitch combinations", () => {
             const camera = new GeospatialCamera("testCam", scene, { planetRadius: 6371 });
+            // Disable pitch radius scaling so pitch isn't clamped at high altitudes
+            camera.limits.pitchDisabledRadiusScale = undefined;
 
             const testCases = [
                 { yaw: 0, pitch: Math.PI / 6 },

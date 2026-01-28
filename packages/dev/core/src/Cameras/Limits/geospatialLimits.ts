@@ -1,4 +1,6 @@
 import { Epsilon } from "../../Maths/math.constants";
+import { Vector2 } from "../../Maths/math.vector";
+import { Clamp } from "../../Maths/math.scalar.functions";
 /**
  * Limits for geospatial camera
  */
@@ -11,7 +13,15 @@ export class GeospatialLimits {
     public pitchMin: number = Epsilon;
 
     /**  Gets the maximum pitch angle (angle from horizon) -- Pi/2 means looking at horizon */
-    public pitchMax: number = Math.PI / 2 - Epsilon;
+    public pitchMax: number = Math.PI / 2 - 0.01;
+
+    /**
+     * Controls how pitch is disabled as the camera zooms out.
+     * x = radius scale at which full pitch is allowed (e.g., 1.5 means 1.5 * planetRadius)
+     * y = radius scale at which pitch is fully disabled (forced to pitchMin)
+     * Set to undefined to disable this feature.
+     */
+    public pitchDisabledRadiusScale?: Vector2 = new Vector2(2, 4);
 
     /** Gets the minimum yaw angle (rotation around up axis) */
     public yawMin: number = -Infinity;
@@ -83,6 +93,35 @@ export class GeospatialLimits {
             // Zooming OUT - don't exceed radiusMax
             const maxZoomOut = this._radiusMax - currentRadius;
             return Math.max(zoomDistance, -Math.max(0, maxZoomOut));
+        }
+    }
+
+    /**
+     * Computes the effective maximum pitch based on the current camera radius.
+     * When pitchDisabledRadiusScale is set, pitch is interpolated from pitchMax to pitchMin
+     * as the camera zooms out from x*planetRadius to y*planetRadius.
+     * @param currentRadius The current camera radius (distance from planet center)
+     * @returns The effective maximum pitch angle
+     */
+    public getEffectivePitchMax(currentRadius: number): number {
+        if (!this.pitchDisabledRadiusScale) {
+            return this.pitchMax;
+        }
+
+        const fullPitchRadius = this.pitchDisabledRadiusScale.x * this._planetRadius;
+        const noPitchRadius = this.pitchDisabledRadiusScale.y * this._planetRadius;
+
+        if (currentRadius <= fullPitchRadius) {
+            // Full pitch allowed
+            return this.pitchMax;
+        } else if (currentRadius >= noPitchRadius) {
+            // No pitch allowed
+            return this.pitchMin;
+        } else {
+            // Interpolate between pitchMax and pitchMin
+            const t = (currentRadius - fullPitchRadius) / (noPitchRadius - fullPitchRadius);
+            const clampedT = Clamp(t, 0, 1);
+            return this.pitchMax * (1 - clampedT) + this.pitchMin * clampedT;
         }
     }
 }

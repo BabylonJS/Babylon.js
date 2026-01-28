@@ -78,7 +78,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
                 const canvasY = this._pinchCentroid.y - canvasRect.top;
 
                 // Pick at centroid
-                const pickResult = scene.pick(canvasX, canvasY, this.camera.pickPredicate);
+                const pickResult = scene.pick(canvasX, canvasY, this.camera.movement.pickPredicate);
                 if (pickResult?.pickedPoint) {
                     // Scale zoom by distance to picked point
                     const distanceToPoint = this.camera.position.subtract(pickResult.pickedPoint).length();
@@ -111,7 +111,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     }
 
     public override onDoubleTap(type: string): void {
-        const pickResult = this.camera._scene.pick(this.camera._scene.pointerX, this.camera._scene.pointerY, this.camera.pickPredicate);
+        const pickResult = this.camera._scene.pick(this.camera._scene.pointerX, this.camera._scene.pointerY, this.camera.movement.pickPredicate);
         if (pickResult.pickedPoint) {
             void this.camera.flyToPointAsync(pickResult.pickedPoint);
         }
