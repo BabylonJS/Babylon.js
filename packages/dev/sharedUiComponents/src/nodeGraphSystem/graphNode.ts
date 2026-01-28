@@ -214,7 +214,11 @@ export class GraphNode {
                 if (this._displayManager && this._displayManager.onSelectionChanged) {
                     this._displayManager.onSelectionChanged(this.content, node.content, this._stateManager);
                 }
+                this._stateManager.activeNode = this;
             } else {
+                if (this._stateManager.activeNode === this) {
+                    this._stateManager.activeNode = null;
+                }
                 if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
                     if (this.content.canBeActivated && this.content.isActive) {
                         this.content.setIsActive?.(false);
@@ -936,23 +940,11 @@ export class GraphNode {
         this.content.refreshCallback = () => {
             this.refresh();
         };
-
-        this._stateManager.onSelectionChangedObservable.add((selection) => {
-            if (!selection || selection.selection !== this) {
-                if (this._stateManager.activeRefresh === this) {
-                    this._stateManager.activeRefresh = null;
-                }
-                return;
-            }
-            if (selection && selection.selection === this) {
-                this._stateManager.activeRefresh = this;
-            }
-        });
     }
 
     public dispose() {
-        if (this._stateManager.activeRefresh === this) {
-            this._stateManager.activeRefresh = null;
+        if (this._stateManager.activeNode === this) {
+            this._stateManager.activeNode = null;
         }
         if (this._displayManager && this._displayManager.onDispose) {
             this._displayManager.onDispose(this.content, this._stateManager);

@@ -34,8 +34,8 @@ export function ForceRebuild(source: any, stateManager: StateManager, propertyNa
         stateManager.onPreviewCommandActivated.notifyObservers(true);
     }
 
-    if (engageActiveRefresh && stateManager.activeRefresh) {
-        for (const refresh of stateManager.activeRefresh._visualPropertiesRefresh) {
+    if (engageActiveRefresh && stateManager.activeNode) {
+        for (const refresh of stateManager.activeNode._visualPropertiesRefresh) {
             refresh();
         }
     }
