@@ -71,7 +71,3 @@ export const CaptureToolsDefinition: ServiceDefinition<[], [IToolsService]> = {
         };
     },
 };
-
-export default {
-    serviceDefinitions: [CaptureToolsDefinition],
-} as const;
