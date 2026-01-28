@@ -519,8 +519,6 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
             for (const id in TempMorphTargetIndexContainer) {
                 idMap.set(id.toString(), TempMorphTargetIndexContainer[id]);
             }
-            // TODO: The entire approach of swapping animation.targetId, bone.linkedTransformNodeId, and mesh.skeletonId
-            // to uniqueIds will generate files that are not backward compatible with previous loaders.
 
             // OPEN QUESTIONS:
             // - Does the idMap need to also have the scene's nodes (i.e., incl. nodes that already exist in the scene before loading)?

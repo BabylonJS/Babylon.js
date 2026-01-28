@@ -56,7 +56,8 @@ export class TargetedAnimation {
     public serialize(): any {
         const serializationObject: any = {};
         serializationObject.animation = this.animation.serialize();
-        serializationObject.targetId = this.target.uniqueId;
+        serializationObject.targetId = this.target.id;
+        serializationObject.targetUniqueId = this.target.uniqueId;
 
         return serializationObject;
     }
@@ -1022,7 +1023,7 @@ export class AnimationGroup implements IDisposable {
         for (let i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++) {
             const targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
             const animation = Animation.Parse(targetedAnimation.animation);
-            const id = targetedAnimation.targetId.toString();
+            const id = (targetedAnimation.targetUniqueId ?? targetedAnimation.targetId).toString();
 
             // Context:
             // Historically, we used just scene.getXXXById for lookups here.

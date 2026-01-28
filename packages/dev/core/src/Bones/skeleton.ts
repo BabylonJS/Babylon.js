@@ -769,7 +769,8 @@ export class Skeleton implements IAnimatable {
                 uniqueId: bone.uniqueId,
                 matrix: bone.getBindMatrix().asArray(),
                 rest: bone.getRestMatrix().asArray(),
-                linkedTransformNodeId: bone.getTransformNode()?.uniqueId,
+                linkedTransformNodeId: bone.getTransformNode()?.id,
+                linkedTransformNodeUniqueId: bone.getTransformNode()?.uniqueId,
             };
 
             serializationObject.bones.push(serializedBone);
@@ -850,9 +851,10 @@ export class Skeleton implements IAnimatable {
                 bone.animations.push(Animation.Parse(parsedBone.animation));
             }
 
-            if (parsedBone.linkedTransformNodeId !== undefined && parsedBone.linkedTransformNodeId !== null) {
+            const id = parsedBone.linkedTransformNodeUniqueId ?? parsedBone.linkedTransformNodeId;
+            if (id !== undefined && id !== null) {
                 skeleton._hasWaitingData = true;
-                bone._waitingTransformNodeId = parsedBone.linkedTransformNodeId;
+                bone._waitingTransformNodeId = id;
             }
         }
 
