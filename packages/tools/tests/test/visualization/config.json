@@ -2172,6 +2172,11 @@
             "referenceImage": "babylonFileAnimationsUsingUniqueId.png"
         },
         {
+            "title": "Roundtrip babylon file with node, skeletal, and morph animations; id only",
+            "playgroundId": "#KSGDML#7",
+            "referenceImage": "babylonFileAnimationsUsingId.png"
+        },
+        {
             "title": "Asset Container Instantiate to Scene",
             "playgroundId": "#5NFRVE#142",
             "referenceImage": "Asset-Container-Instantiate-to-Scene"
