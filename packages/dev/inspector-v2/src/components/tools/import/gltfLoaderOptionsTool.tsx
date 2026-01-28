@@ -26,7 +26,6 @@ export const GLTFLoaderOptionsTool: FunctionComponent<{
         <PropertyLine
             label="Loader Options"
             expandByDefault={false}
-            indentExpandedContent={true}
             expandedContent={
                 <>
                     <BoundProperty component={SwitchPropertyLine} label="Always compute bounding box" target={loaderOptions} propertyKey="alwaysComputeBoundingBox" />
@@ -68,7 +67,6 @@ export const GLTFExtensionOptionsTool: FunctionComponent<{
         <PropertyLine
             label="Extension Options"
             expandByDefault={false}
-            indentExpandedContent={true}
             expandedContent={
                 <>
                     {Object.entries(extensionOptions).map(([extensionName, options]) => {
