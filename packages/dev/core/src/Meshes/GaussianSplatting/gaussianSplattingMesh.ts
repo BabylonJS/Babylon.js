@@ -1937,7 +1937,7 @@ export class GaussianSplattingMesh extends Mesh {
         }
 
         // Update depthMix
-        if (!this._depthMix || vertexCount > this._depthMix.length) {
+        if (!this._depthMix || vertexCount > this._depthMix.length && _native) {
             this._depthMix = new BigInt64Array(paddedVertexCount);
         }
 
