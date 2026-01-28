@@ -53,7 +53,7 @@ export class PreviewManager {
 
         this._camera.doNotSerialize = true;
         this._camera.lowerRadiusLimit = 3;
-        this._camera.upperRadiusLimit = 10;
+        this._camera.upperRadiusLimit = 100;
         this._camera.wheelPrecision = 20;
         this._camera.minZ = 0.001;
         this._camera.attachControl(false);
