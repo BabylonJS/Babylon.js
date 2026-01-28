@@ -293,4 +293,3 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 }
 
 RegisterClass("BABYLON.FragmentOutputBlock", FragmentOutputBlock);
-
