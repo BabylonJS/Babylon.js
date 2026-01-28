@@ -479,7 +479,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         // Animation Groups
         if (parsedData.animationGroups !== undefined && parsedData.animationGroups !== null && parsedData.animationGroups.length) {
             // Build the idMap only for scenes with animationGroups.
-            const idMap = new Map<Node["id"], Node>();
+            const idMap = new Map<string, Node | MorphTarget>();
             // Nodes in scene does not change when parsing animationGroups, so it's safe to build a map.
             // This follows the order of scene.getNodeById: mesh, transformNode, light, camera, bone
             for (let index = 0; index < scene.meshes.length; index++) {
@@ -510,6 +510,14 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                         idMap.set(skeleton.bones[boneIndex].id, skeleton.bones[boneIndex]);
                     }
                 }
+            }
+            // If possible, try to use uniqueIds over ids to avoid name collisions.
+            // This means we will need to use the temp index containers to enable finding the nodes/morph targets by uniqueId.
+            for (const id in TempIndexContainer) {
+                idMap.set(id.toString(), TempIndexContainer[id]);
+            }
+            for (const id in TempMorphTargetIndexContainer) {
+                idMap.set(id.toString(), TempMorphTargetIndexContainer[id]);
             }
             for (index = 0, cache = parsedData.animationGroups.length; index < cache; index++) {
                 const parsedAnimationGroup = parsedData.animationGroups[index];

@@ -14,6 +14,7 @@ import type { AnimationGroupMask } from "./animationGroupMask";
 import "./animatable";
 import type { IAssetContainer } from "core/IAssetContainer";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
+import type { MorphTarget } from "../Morph/morphTarget";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -55,7 +56,7 @@ export class TargetedAnimation {
     public serialize(): any {
         const serializationObject: any = {};
         serializationObject.animation = this.animation.serialize();
-        serializationObject.targetId = this.target.id;
+        serializationObject.targetId = this.target.uniqueId;
 
         return serializationObject;
     }
@@ -1013,27 +1014,27 @@ export class AnimationGroup implements IDisposable {
      * Returns a new AnimationGroup object parsed from the source provided.
      * @param parsedAnimationGroup defines the source
      * @param scene defines the scene that will receive the animationGroup
-     * @param idMap a map of node.id to node in this scene, to accelerate node lookup
+     * @param idMap a map of target.uniqueId (or target.id in earlier versions) to the target instance, to accelerate lookup
      * @returns a new AnimationGroup
      */
-    public static Parse(parsedAnimationGroup: any, scene: Scene, idMap?: Map<Node["id"], Node>): AnimationGroup {
+    public static Parse(parsedAnimationGroup: any, scene: Scene, idMap?: Map<string, Node | MorphTarget>): AnimationGroup {
         const animationGroup = new AnimationGroup(parsedAnimationGroup.name, scene, parsedAnimationGroup.weight, parsedAnimationGroup.playOrder);
         for (let i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++) {
             const targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
             const animation = Animation.Parse(targetedAnimation.animation);
-            const id = targetedAnimation.targetId;
-            if (targetedAnimation.animation.property === "influence") {
-                // morph target animation
-                const morphTarget = scene.getMorphTargetById(id);
-                if (morphTarget) {
-                    animationGroup.addTargetedAnimation(animation, morphTarget);
-                }
-            } else {
+            const id = targetedAnimation.targetId.toString();
+
+            // Context:
+            // Historically, we used just scene.getXXXById for lookups here.
+            // Then the idMap parameter was added to address inefficient lookups in large scenes.
+            // And then we moved to using file-specific uniqueIds instead of ids to avoid name collisions.
+            // So now we have three possible ways to lookup targets: uniqueId via idMap, id via idMap, and id via scene.
+
                 const targetNode = idMap ? idMap.get(id) : scene.getNodeById(id);
 
-                if (targetNode != null) {
-                    animationGroup.addTargetedAnimation(animation, targetNode);
-                }
+            const target = idMap ? idMap.get(id) : targetedAnimation.animation.property === "influence" ? scene.getMorphTargetById(id) : scene.getNodeById(id);
+            if (target) {
+                animationGroup.addTargetedAnimation(animation, target);
             }
         }
 
