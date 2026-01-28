@@ -6,10 +6,9 @@ import type { Scene } from "../../scene";
 
 /**
  * The GeospatialClippingBehavior automatically adjusts the near and far clip planes of a GeospatialCamera
- * based on altitude and viewing angle to optimize depth buffer precision for geospatial applications.
+ * based on altitude to optimize depth buffer precision for geospatial applications.
  *
- * When viewing from high altitudes looking down, a larger near plane can be used.
- * When viewing horizontally at ground level, a smaller near plane is needed to avoid clipping nearby terrain.
+ * The near plane scales with altitude (distance to planet surface) to maintain good depth precision.
  * The far plane is calculated based on the visible horizon distance.
  */
 export class GeospatialClippingBehavior implements Behavior<GeospatialCamera> {
@@ -65,7 +64,7 @@ export class GeospatialClippingBehavior implements Behavior<GeospatialCamera> {
     }
 
     /**
-     * Updates the camera's near and far clip planes based on altitude and viewing angle.
+     * Updates the camera's near and far clip planes based on altitude.
      */
     private _updateCameraClipPlanes(): void {
         const camera = this._attachedCamera;
@@ -74,20 +73,15 @@ export class GeospatialClippingBehavior implements Behavior<GeospatialCamera> {
         }
 
         const planetRadius = camera.limits.planetRadius;
-        const altitude = Math.max(1, camera.radius);
-        const pitch = camera.pitch; // 0 = looking down, π/2 = looking at horizon
+        // Camera position length gives distance to world origin (planet center)
+        const altitude = Math.max(1, camera.position.length() - planetRadius);
 
-        // Near plane calculation:
-        // - When looking down (pitch ≈ 0): nearest visible point is roughly at altitude distance
-        // - When looking at horizon (pitch ≈ π/2): nearby terrain can be much closer
-
-        // Use pitch to blend between a small near (for horizontal view) and altitude-based near (for top-down)
-        const pitchFactor = Math.sin(pitch); // 0 when looking down, 1 at horizon
-        const minNearHorizontal = 1; // When looking horizontally, need small near plane
-        const minNearVertical = Math.max(1, altitude * 0.01); // When looking down, can use larger near
-        camera.minZ = minNearHorizontal + (minNearVertical - minNearHorizontal) * (1 - pitchFactor);
+        // Near plane: scale with altitude to maintain depth buffer precision
+        // Use a fraction of altitude - the closest visible point on a sphere is straight down at distance = altitude
+        camera.minZ = Math.max(1, altitude * 0.001);
 
         // Far plane: see to the horizon and beyond
+        // Horizon distance formula: √(2Rh + h²) where h is altitude above surface
         const horizonDist = Math.sqrt(2 * planetRadius * altitude + altitude * altitude);
         camera.maxZ = horizonDist + planetRadius * 0.1;
     }

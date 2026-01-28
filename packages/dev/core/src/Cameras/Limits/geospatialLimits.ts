@@ -13,7 +13,7 @@ export class GeospatialLimits {
     public pitchMin: number = Epsilon;
 
     /**  Gets the maximum pitch angle (angle from horizon) -- Pi/2 means looking at horizon */
-    public pitchMax: number = Math.PI / 2 - Epsilon;
+    public pitchMax: number = Math.PI / 2 - 0.01;
 
     /**
      * Controls how pitch is disabled as the camera zooms out.

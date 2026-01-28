@@ -200,7 +200,7 @@ export class GeospatialCameraMovement extends CameraMovement {
         return this._scene.pickWithRay(this._tempPickingRay, this.pickPredicate);
     }
 }
-
+/** @internal */
 export function ClampCenterFromPolesInPlace(center: Vector3) {
     const sineOfSphericalLatitudeLimit = 0.998749218; // ~90 degrees
     const centerMagnitude = center.length(); // distance from planet origin
