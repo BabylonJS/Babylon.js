@@ -236,7 +236,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         }
 
         state.compilationString += `#ifdef ${this._linearDefineName}\n`;
-        state.compilationString += `${outputString}  = toLinearSpace(${outputString});\n`;
+        state.compilationString += `${outputString}  = toLinearSpaceVec4(${outputString});\n`;
         state.compilationString += `#endif\n`;
 
         state.compilationString += `#ifdef ${this._gammaDefineName}\n`;
@@ -293,3 +293,4 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 }
 
 RegisterClass("BABYLON.FragmentOutputBlock", FragmentOutputBlock);
+
