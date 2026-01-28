@@ -13,8 +13,8 @@ export const ExportServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
         // glTF export content
         contentRegistrations.push(
             toolsService.addSectionContent({
-                key: "glTF Export",
-                section: "glTF Export",
+                key: "GLTF Export",
+                section: "GLTF Export",
                 component: ({ context }) => <ExportGltfTools scene={context} />,
             })
         );
