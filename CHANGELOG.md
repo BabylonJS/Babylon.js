@@ -1,5 +1,45 @@
 # Changelog
 
+## 8.47.1
+
+### Core
+
+- Fix clipping behavior, add drag limit when pitched towards horizon, add pitch limit scaling when zoomed out - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17743](https://github.com/BabylonJS/Babylon.js/pull/17743))
+- NME: Fix crash when choosing linear space for the fragment output block in WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17737](https://github.com/BabylonJS/Babylon.js/pull/17737))
+- Inspector V2: Capture Tools updates - by [alexchuber](https://github.com/alexchuber) ([#17713](https://github.com/BabylonJS/Babylon.js/pull/17713))
+- OpenPBR Translucent Slab - by [MiiBond](https://github.com/MiiBond) ([#17688](https://github.com/BabylonJS/Babylon.js/pull/17688))
+- Fix issue with srgb in sandbox - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#17733](https://github.com/BabylonJS/Babylon.js/pull/17733))
+- Remove try new inspector button from Sandbox and Playground - by [ryantrem](https://github.com/ryantrem) ([#17691](https://github.com/BabylonJS/Babylon.js/pull/17691))
+- Add GeospatialClippingBehavior and fix scrollwheel zoom limit - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17731](https://github.com/BabylonJS/Babylon.js/pull/17731))
+- Add more control on GS view update threshold - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17638](https://github.com/BabylonJS/Babylon.js/pull/17638))
+- Add sprites to the AssetContainer - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17727](https://github.com/BabylonJS/Babylon.js/pull/17727))
+- Recompute yawPitchFromLookAt after center change, inverse of computeLookAtFromYawPitch. Add unit tests - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17718](https://github.com/BabylonJS/Babylon.js/pull/17718))
+- FrameGraph: Fix use of SPS with frame graphs - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17725](https://github.com/BabylonJS/Babylon.js/pull/17725))
+- Fix ClusteredLightContainer proxy mesh belonging to wrong scene - [_Bug Fix_] by [BarthPaleologue](https://github.com/BarthPaleologue) ([#17722](https://github.com/BabylonJS/Babylon.js/pull/17722))
+
+### Inspector
+
+- OpenPBR Translucent Slab - by [MiiBond](https://github.com/MiiBond) ([#17688](https://github.com/BabylonJS/Babylon.js/pull/17688))
+- Performance Viewer - by [georginahalpern](https://github.com/georginahalpern) ([#17730](https://github.com/BabylonJS/Babylon.js/pull/17730))
+
+### Loaders
+
+- Inspector v2: GLTF Import tools - by [alexchuber](https://github.com/alexchuber) ([#17580](https://github.com/BabylonJS/Babylon.js/pull/17580))
+- OpenPBR Translucent Slab - by [MiiBond](https://github.com/MiiBond) ([#17688](https://github.com/BabylonJS/Babylon.js/pull/17688))
+
+### Materials
+
+- Materials: Fix of clustered lights usage in material library materials - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17723](https://github.com/BabylonJS/Babylon.js/pull/17723))
+
+### Playground
+
+- Remove try new inspector button from Sandbox and Playground - by [ryantrem](https://github.com/ryantrem) ([#17691](https://github.com/BabylonJS/Babylon.js/pull/17691))
+
+### Serializers
+
+- Fix bug where gltf export fails when texture points to local file - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17734](https://github.com/BabylonJS/Babylon.js/pull/17734))
+- OpenPBR Translucent Slab - by [MiiBond](https://github.com/MiiBond) ([#17688](https://github.com/BabylonJS/Babylon.js/pull/17688))
+
 ## 8.47.0
 
 ### Core

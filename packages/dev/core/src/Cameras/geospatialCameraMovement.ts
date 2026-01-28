@@ -14,9 +14,6 @@ import type { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBe
 import type { GeospatialCamera } from "./geospatialCamera";
 
 /**
- * @experimental
- * This class is subject to change as the geospatial camera evolves.
- *
  * Geospatial-specific camera movement system that extends the base movement with
  * raycasting and altitude-aware zoom constraints.
  *
@@ -112,12 +109,21 @@ export class GeospatialCameraMovement extends CameraMovement {
 
     public handleDrag(pointerX: number, pointerY: number) {
         if (this._hitPointRadius) {
-            const pickResult = this._scene.pick(pointerX, pointerY);
+            const pickResult = this._scene.pick(pointerX, pointerY, this.pickPredicate);
             if (pickResult.ray) {
                 const localToEcef = TmpVectors.Matrix[0];
                 this._recalculateDragPlaneHitPoint(this._hitPointRadius, pickResult.ray, localToEcef);
 
                 const delta = this._dragPlaneHitPointLocal.subtractToRef(this._previousDragPlaneHitPointLocal, TmpVectors.Vector3[6]);
+
+                // When the camera is pitched nearly parallel to the drag plane, ray-plane intersection
+                // can produce enormous deltas. Clamp the delta to avoid massive jumps.
+                const maxDragDelta = this._hitPointRadius * 0.1; // Max 10% of hit radius per frame
+                const deltaLength = delta.length();
+                if (deltaLength > maxDragDelta) {
+                    delta.scaleInPlace(maxDragDelta / deltaLength);
+                }
+
                 this._previousDragPlaneHitPointLocal.copyFrom(this._dragPlaneHitPointLocal);
 
                 Vector3.TransformNormalToRef(delta, localToEcef, delta);
@@ -191,7 +197,7 @@ export class GeospatialCameraMovement extends CameraMovement {
         return this._scene.pickWithRay(this._tempPickingRay, this.pickPredicate);
     }
 }
-
+/** @internal */
 export function ClampCenterFromPolesInPlace(center: Vector3) {
     const sineOfSphericalLatitudeLimit = 0.998749218; // ~90 degrees
     const centerMagnitude = center.length(); // distance from planet origin

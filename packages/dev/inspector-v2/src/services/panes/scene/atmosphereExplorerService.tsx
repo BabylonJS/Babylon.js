@@ -56,7 +56,3 @@ export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
         };
     },
 };
-
-export default {
-    serviceDefinitions: [AtmosphereExplorerServiceDefinition],
-} as const;

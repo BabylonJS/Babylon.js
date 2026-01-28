@@ -3,11 +3,11 @@
 // The cache is versioned to allow for updates and we use a stale-while-revalidate strategy
 // (serve from cache immediately, then update in background)
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const CACHE_NAME = `babylon-sandbox-${CACHE_VERSION}`;
 
 // App shell - core files required for offline startup
-const APP_SHELL = ["./", "./index.html", "./index.js", "./manifest.webmanifest"];
+const APP_SHELL = ["./", "./index.html", "./index.js", "./babylon.sandbox.js", "./manifest.webmanifest"];
 
 // Icons to pre-cache (key sizes for PWA installation)
 const ICONS = [

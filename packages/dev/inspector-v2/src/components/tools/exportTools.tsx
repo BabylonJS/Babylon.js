@@ -180,6 +180,7 @@ export const ExportGltfTools = MakeLazyComponent(async () => {
 
         return (
             <>
+                <ButtonLine label="Export to GLB" icon={ArrowDownloadRegular} onClick={exportGLTF} disabled={isExportingGltf} />
                 <SwitchPropertyLine
                     key="GLTFExportDisabledNodes"
                     label="Export Disabled Nodes"
@@ -215,7 +216,6 @@ export const ExportGltfTools = MakeLazyComponent(async () => {
                     value={gltfExportOptions.dracoCompression}
                     onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, dracoCompression: checked })}
                 />
-                <ButtonLine label="Export to GLB" icon={ArrowDownloadRegular} onClick={exportGLTF} disabled={isExportingGltf} />
             </>
         );
     };
