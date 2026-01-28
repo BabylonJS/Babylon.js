@@ -56,8 +56,9 @@ export class GraphNode {
     private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
     private _enclosingFrameId = -1;
-    private _visualPropertiesRefresh: Array<() => void> = [];
     private _lastClick = 0.0;
+
+    public _visualPropertiesRefresh: Array<() => void> = [];
 
     public addClassToVisual(className: string) {
         this._visual.classList.add(className);
@@ -651,7 +652,7 @@ export class GraphNode {
         for (const refresh of this._visualPropertiesRefresh) {
             refresh();
         }
-        ForceRebuild(source, this._stateManager, propertyName, notifiers);
+        ForceRebuild(source, this._stateManager, propertyName, notifiers, false);
     }
 
     private _isCollapsed = false;
@@ -935,9 +936,24 @@ export class GraphNode {
         this.content.refreshCallback = () => {
             this.refresh();
         };
+
+        this._stateManager.onSelectionChangedObservable.add((selection) => {
+            if (!selection || selection.selection !== this) {
+                if (this._stateManager.activeRefresh === this) {
+                    this._stateManager.activeRefresh = null;
+                }
+                return;
+            }
+            if (selection && selection.selection === this) {
+                this._stateManager.activeRefresh = this;
+            }
+        });
     }
 
     public dispose() {
+        if (this._stateManager.activeRefresh === this) {
+            this._stateManager.activeRefresh = null;
+        }
         if (this._displayManager && this._displayManager.onDispose) {
             this._displayManager.onDispose(this.content, this._stateManager);
         }
