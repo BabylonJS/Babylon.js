@@ -140,7 +140,8 @@ export class GeospatialCamera extends Camera {
     protected _checkLimits() {
         const limits = this.limits;
         this._yaw = Clamp(this._yaw, limits.yawMin, limits.yawMax);
-        this._pitch = Clamp(this._pitch, limits.pitchMin, limits.pitchMax);
+        const effectivePitchMax = limits.getEffectivePitchMax(this._radius);
+        this._pitch = Clamp(this._pitch, limits.pitchMin, effectivePitchMax);
         this._radius = Clamp(this._radius, limits.radiusMin, limits.radiusMax);
         ClampCenterFromPolesInPlace(this._center);
     }
