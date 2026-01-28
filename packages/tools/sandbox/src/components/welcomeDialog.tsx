@@ -1,5 +1,7 @@
 import type { FunctionComponent } from "react";
+import { useState } from "react";
 import logo from "../img/logo-fullscreen.svg";
+import { LocalStorageHelper } from "../tools/localStorageHelper";
 
 import "../scss/welcomeDialog.scss";
 
@@ -16,6 +18,15 @@ interface IWelcomeDialogProps {
  * @returns welcome dialog component
  */
 export const WelcomeDialog: FunctionComponent<IWelcomeDialogProps> = (props) => {
+    const [doNotShowAgain, setDoNotShowAgain] = useState(false);
+
+    const handleClose = () => {
+        if (doNotShowAgain && !props.canInstall) {
+            LocalStorageHelper.SetWelcomeDialogDismissed();
+        }
+        props.onClose();
+    };
+
     return (
         <div className="welcome-dialog-overlay">
             <div className="welcome-dialog">
@@ -34,10 +45,16 @@ export const WelcomeDialog: FunctionComponent<IWelcomeDialogProps> = (props) => 
                             Install App
                         </button>
                     )}
-                    <button className="welcome-button secondary" onClick={props.onClose}>
+                    <button className={`welcome-button ${props.canInstall ? "secondary" : "primary"}`} onClick={handleClose}>
                         {props.canInstall ? "Not now" : "Continue"}
                     </button>
                 </div>
+                {!props.canInstall && (
+                    <label className="welcome-checkbox">
+                        <input type="checkbox" checked={doNotShowAgain} onChange={(e) => setDoNotShowAgain(e.target.checked)} />
+                        <span>Do not show this message again</span>
+                    </label>
+                )}
             </div>
         </div>
     );
