@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.47.2
+
+### Playground
+
+- Fix Inspector v2 regression in Playground - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17747](https://github.com/BabylonJS/Babylon.js/pull/17747))
+
 ## 8.47.1
 
 ### Core
