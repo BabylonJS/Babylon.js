@@ -4,7 +4,8 @@ import { GlobalState } from "./globalState";
 import { RenderingZone } from "./components/renderingZone";
 import { ReflectorZone } from "./components/reflectorZone";
 import { Footer } from "./components/footer";
-import { WelcomeDialog, WelcomeDialogDismissedKey } from "./components/welcomeDialog";
+import { WelcomeDialog } from "./components/welcomeDialog";
+import { LocalStorageHelper } from "./tools/localStorageHelper";
 import { EnvironmentTools } from "./tools/environmentTools";
 import { Vector3 } from "core/Maths/math.vector";
 import { Deferred } from "core/Misc/deferred";
@@ -125,6 +126,8 @@ export class Sandbox extends React.Component<
         window.addEventListener("beforeinstallprompt", (e) => {
             e.preventDefault();
             this._deferredInstallPrompt = e as IBeforeInstallPromptEvent;
+            // Clear any previous "do not show" preference since PWA is not installed
+            LocalStorageHelper.ClearWelcomeDialogDismissed();
             this.setState({ canInstallPwa: true });
         });
 
@@ -296,7 +299,7 @@ export class Sandbox extends React.Component<
                             this._isViewerWelcomeMode = true;
                             // Show welcome dialog only if not already running as PWA and not previously dismissed
                             const isPwa = window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: window-controls-overlay)").matches;
-                            const isDismissed = localStorage.getItem(WelcomeDialogDismissedKey) === "true";
+                            const isDismissed = LocalStorageHelper.GetWelcomeDialogDismissed();
                             if (!isPwa && !isDismissed) {
                                 this.state = { ...this.state, showWelcomeDialog: true };
                             }

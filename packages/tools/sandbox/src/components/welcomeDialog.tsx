@@ -1,11 +1,9 @@
 import type { FunctionComponent } from "react";
 import { useState } from "react";
 import logo from "../img/logo-fullscreen.svg";
+import { LocalStorageHelper } from "../tools/localStorageHelper";
 
 import "../scss/welcomeDialog.scss";
-
-/** LocalStorage key for storing the "do not show again" preference */
-export const WelcomeDialogDismissedKey = "WelcomeDialogDismissed";
 
 interface IWelcomeDialogProps {
     onInstall: () => void;
@@ -24,7 +22,7 @@ export const WelcomeDialog: FunctionComponent<IWelcomeDialogProps> = (props) => 
 
     const handleClose = () => {
         if (doNotShowAgain && !props.canInstall) {
-            localStorage.setItem(WelcomeDialogDismissedKey, "true");
+            LocalStorageHelper.SetWelcomeDialogDismissed();
         }
         props.onClose();
     };
