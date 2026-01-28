@@ -1,4 +1,5 @@
-import { useState, type FunctionComponent } from "react";
+import type { FunctionComponent } from "react";
+import { useState } from "react";
 import logo from "../img/logo-fullscreen.svg";
 
 import "../scss/welcomeDialog.scss";
