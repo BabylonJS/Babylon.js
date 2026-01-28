@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Scene } from "../scene";
+import type { IDisposable, Scene } from "../scene";
 import type { Nullable } from "../types";
 import { SceneSerializer } from "./sceneSerializer";
 import { Mesh } from "../Meshes/mesh";
@@ -19,7 +19,7 @@ import { SerializationHelper } from "./decorators.serialization";
 /**
  * Class used to record delta files between 2 scene states
  */
-export class SceneRecorder {
+export class SceneRecorder implements IDisposable {
     private _trackedScene: Nullable<Scene> = null;
     private _savedJSON: any;
 
@@ -192,6 +192,14 @@ export class SceneRecorder {
                 return;
             }
         }
+    }
+
+    /**
+     * Dispose the recorder.
+     */
+    public dispose() {
+        this._trackedScene = null;
+        this._savedJSON = null;
     }
 
     private static GetShadowGeneratorById(scene: Scene, id: string) {
