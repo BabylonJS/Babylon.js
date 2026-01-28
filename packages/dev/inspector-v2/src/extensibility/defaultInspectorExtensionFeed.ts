@@ -22,10 +22,10 @@ export const DefaultInspectorExtensionFeed = new BuiltInsExtensionFeed("Inspecto
     },
     {
         name: "Export Tools",
-        description: "Adds new features to enable exporting Babylon assets such as .gltf, .glb, .babylon, and more.",
+        description: "Enables exporting to file formats like .gltf or .babylon.",
         keywords: ["export", "gltf", "glb", "babylon", "exporter", "tools"],
         ...BabylonWebResources,
-        author: { name: "Alex Chuber", forumUserName: "alexchuber" },
+        author: { name: "Babylon.js", forumUserName: "" },
         getExtensionModuleAsync: async () => await import("../services/panes/tools/exportService"),
     },
     {
