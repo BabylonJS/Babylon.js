@@ -22,10 +22,7 @@ type CameraOptions = {
 };
 
 /**
- * @experimental
- * This camera's movements are limited to a camera orbiting a globe, and as the API evolves it will introduce conversions between cartesian coordinates and true lat/long/alt
- *
- * Please note this is marked as experimental and the API (including the constructor!) will change until we remove that flag
+ * Camera that can orbit a planet (sphere) centered at world origin.
  */
 export class GeospatialCamera extends Camera {
     override inputs: GeospatialCameraInputsManager;

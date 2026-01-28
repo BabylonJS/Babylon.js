@@ -14,9 +14,6 @@ import type { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBe
 import type { GeospatialCamera } from "./geospatialCamera";
 
 /**
- * @experimental
- * This class is subject to change as the geospatial camera evolves.
- *
  * Geospatial-specific camera movement system that extends the base movement with
  * raycasting and altitude-aware zoom constraints.
  *
