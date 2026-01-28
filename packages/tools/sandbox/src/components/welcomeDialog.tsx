@@ -1,7 +1,10 @@
-import type { FunctionComponent } from "react";
+import { useState, type FunctionComponent } from "react";
 import logo from "../img/logo-fullscreen.svg";
 
 import "../scss/welcomeDialog.scss";
+
+/** LocalStorage key for storing the "do not show again" preference */
+export const WelcomeDialogDismissedKey = "WelcomeDialogDismissed";
 
 interface IWelcomeDialogProps {
     onInstall: () => void;
@@ -16,6 +19,15 @@ interface IWelcomeDialogProps {
  * @returns welcome dialog component
  */
 export const WelcomeDialog: FunctionComponent<IWelcomeDialogProps> = (props) => {
+    const [doNotShowAgain, setDoNotShowAgain] = useState(false);
+
+    const handleClose = () => {
+        if (doNotShowAgain && !props.canInstall) {
+            localStorage.setItem(WelcomeDialogDismissedKey, "true");
+        }
+        props.onClose();
+    };
+
     return (
         <div className="welcome-dialog-overlay">
             <div className="welcome-dialog">
@@ -34,10 +46,16 @@ export const WelcomeDialog: FunctionComponent<IWelcomeDialogProps> = (props) => 
                             Install App
                         </button>
                     )}
-                    <button className="welcome-button secondary" onClick={props.onClose}>
+                    <button className={`welcome-button ${props.canInstall ? "secondary" : "primary"}`} onClick={handleClose}>
                         {props.canInstall ? "Not now" : "Continue"}
                     </button>
                 </div>
+                {!props.canInstall && (
+                    <label className="welcome-checkbox">
+                        <input type="checkbox" checked={doNotShowAgain} onChange={(e) => setDoNotShowAgain(e.target.checked)} />
+                        <span>Do not show this message again</span>
+                    </label>
+                )}
             </div>
         </div>
     );

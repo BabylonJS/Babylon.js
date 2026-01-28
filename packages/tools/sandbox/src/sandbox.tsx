@@ -4,7 +4,7 @@ import { GlobalState } from "./globalState";
 import { RenderingZone } from "./components/renderingZone";
 import { ReflectorZone } from "./components/reflectorZone";
 import { Footer } from "./components/footer";
-import { WelcomeDialog } from "./components/welcomeDialog";
+import { WelcomeDialog, WelcomeDialogDismissedKey } from "./components/welcomeDialog";
 import { EnvironmentTools } from "./tools/environmentTools";
 import { Vector3 } from "core/Maths/math.vector";
 import { Deferred } from "core/Misc/deferred";
@@ -294,9 +294,10 @@ export class Sandbox extends React.Component<
                             this._globalState.assetUrl = "https://assets.babylonjs.com/meshes/YetiSmall.glb";
                             // Keep drop text visible so users know they can drag files
                             this._isViewerWelcomeMode = true;
-                            // Show welcome dialog only if not already running as PWA
+                            // Show welcome dialog only if not already running as PWA and not previously dismissed
                             const isPwa = window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: window-controls-overlay)").matches;
-                            if (!isPwa) {
+                            const isDismissed = localStorage.getItem(WelcomeDialogDismissedKey) === "true";
+                            if (!isPwa && !isDismissed) {
                                 this.state = { ...this.state, showWelcomeDialog: true };
                             }
                         }
