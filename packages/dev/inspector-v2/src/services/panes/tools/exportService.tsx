@@ -35,7 +35,3 @@ export const ExportServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
         };
     },
 };
-
-export default {
-    serviceDefinitions: [ExportServiceDefinition],
-} as const;
