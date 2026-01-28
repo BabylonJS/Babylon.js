@@ -1,7 +1,6 @@
 {
-    "name": "babylonjs-inspector-v2",
-    "version": "1.0.0",
-    "private": true,
+    "name": "babylonjs-inspector",
+    "version": "8.47.0",
     "main": "babylon.inspector-v2.bundle.js",
     "files": [
         "babylon.inspector-v2.*",
@@ -26,7 +25,7 @@
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
-        "@dev/inspector-v2": "1.0.0",
+        "@dev/inspector": "1.0.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
         "webpack": "^5.103.0",

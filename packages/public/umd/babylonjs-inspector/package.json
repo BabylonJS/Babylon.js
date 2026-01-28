@@ -1,6 +1,7 @@
 {
-    "name": "babylonjs-inspector",
+    "name": "babylonjs-inspector-legacy",
     "version": "8.47.0",
+    "private": true,
     "main": "babylon.inspector.bundle.js",
     "types": "babylon.inspector.module.d.ts",
     "files": [
@@ -25,7 +26,7 @@
     "devDependencies": {
         "@dev/addons": "1.0.0",
         "@dev/build-tools": "1.0.0",
-        "@dev/inspector": "1.0.0",
+        "@dev/inspector-legacy": "1.0.0",
         "@dev/shared-ui-components": "1.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",

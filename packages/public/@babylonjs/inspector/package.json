@@ -1,6 +1,7 @@
 {
-    "name": "@babylonjs/inspector",
+    "name": "@babylonjs/inspector-legacy",
     "version": "8.47.0",
+    "private": true,
     "module": "dist/babylon.inspector.bundle.js",
     "main": "dist/babylon.inspector.bundle.js",
     "esnext": "dist/babylon.inspector.bundle.js",
@@ -41,7 +42,7 @@
         "@babylonjs/loaders": "^8.47.0",
         "@babylonjs/materials": "^8.47.0",
         "@babylonjs/serializers": "^8.47.0",
-        "@dev/inspector": "1.0.0",
+        "@dev/inspector-legacy": "1.0.0",
         "@lts/gui": "1.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
