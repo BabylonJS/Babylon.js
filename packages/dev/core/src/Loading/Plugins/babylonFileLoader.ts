@@ -34,6 +34,7 @@ import { PostProcess } from "../../PostProcesses/postProcess";
 import { SpriteManager } from "core/Sprites/spriteManager";
 import { GetIndividualParser, Parse } from "./babylonFileParser.function";
 import { Observable } from "../../Misc/observable";
+import type { MorphTarget } from "../../Morph/morphTarget";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
@@ -53,6 +54,7 @@ export class BabylonFileLoaderConfiguration {
 
 let TempIndexContainer: { [key: string]: Node } = {};
 let TempMaterialIndexContainer: { [key: string]: Material } = {};
+let TempMorphTargetIndexContainer: { [key: string]: MorphTarget } = {};
 let TempMorphTargetManagerIndexContainer: { [key: string]: MorphTargetManager } = {};
 let TempSkeletonIndexContainer: { [key: string]: Skeleton } = {};
 
@@ -344,13 +346,20 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
             }
         }
 
-        // Morph targets
+        // Morph target managers
         if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
             for (const parsedManager of parsedData.morphTargetManagers) {
                 const manager = MorphTargetManager.Parse(parsedManager, scene);
                 TempMorphTargetManagerIndexContainer[parsedManager.id] = manager;
                 container.morphTargetManagers.push(manager);
                 manager._parentContainer = container;
+
+                // Morph targets - add to TempMorphTargetIndexContainer to later connect animations -> morph targets
+                for (let index = 0; index < parsedManager.targets.length; index++) {
+                    const parsedTarget = parsedManager.targets[index];
+                    const target = manager.getTarget(index);
+                    TempMorphTargetIndexContainer[parsedTarget.uniqueId ?? parsedTarget.id] = target;
+                }
             }
         }
 
@@ -682,6 +691,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
     } finally {
         TempIndexContainer = {};
         TempMaterialIndexContainer = {};
+        TempMorphTargetIndexContainer = {};
         TempMorphTargetManagerIndexContainer = {};
         TempSkeletonIndexContainer = {};
 
@@ -883,7 +893,7 @@ RegisterSceneLoaderPlugin({
                             }
                         }
 
-                        // Morph targets ?
+                        // Morph target managers ?
                         if (parsedMesh.morphTargetManagerId > -1 && parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
                             const morphTargetManagerAlreadyLoaded = loadedMorphTargetManagerIds.indexOf(parsedMesh.morphTargetManagerId) > -1;
                             if (!morphTargetManagerAlreadyLoaded) {
