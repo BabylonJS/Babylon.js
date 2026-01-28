@@ -17,21 +17,22 @@ import type { Collider } from "../Collisions/collider";
 import type { EasingFunction } from "../Animations/easing";
 import type { Animation } from "../Animations/animation";
 
-type CameraOptions = {
-    planetRadius: number; // Radius of the planet
+export type GeospatialCameraOptions = {
+    /**
+     * Radius of the planet being orbited
+     */
+    planetRadius: number;
+    /**
+     * If supplied, will be used by the movement class when picking the globe. Can later update camera.movement.pickPredicate directly
+     */
+    pickPredicate?: MeshPredicate;
 };
 
 /**
- * @experimental
- * This camera's movements are limited to a camera orbiting a globe, and as the API evolves it will introduce conversions between cartesian coordinates and true lat/long/alt
- *
- * Please note this is marked as experimental and the API (including the constructor!) will change until we remove that flag
+ * Camera equipped to orbit a spherical planet centered at world origin
  */
 export class GeospatialCamera extends Camera {
     override inputs: GeospatialCameraInputsManager;
-
-    /** If supplied, will be used when picking the globe */
-    public pickPredicate?: MeshPredicate;
 
     /** Movement controller that turns input pixelDeltas into currentFrameDeltas used by camera*/
     public readonly movement: GeospatialCameraMovement;
@@ -56,7 +57,7 @@ export class GeospatialCamera extends Camera {
     /** Enable or disable collision checking for this camera. Default is false. */
     public checkCollisions: boolean = false;
 
-    constructor(name: string, scene: Scene, options: CameraOptions, pickPredicate?: MeshPredicate) {
+    constructor(name: string, scene: Scene, options: GeospatialCameraOptions) {
         super(name, new Vector3(), scene);
 
         this._limits = new GeospatialLimits(options.planetRadius);
@@ -65,9 +66,8 @@ export class GeospatialCamera extends Camera {
         this._flyingBehavior = new InterpolatingBehavior();
         this.addBehavior(this._flyingBehavior);
 
-        this.movement = new GeospatialCameraMovement(scene, this._limits, this.position, this.center, this._lookAtVector, pickPredicate, this._flyingBehavior);
+        this.movement = new GeospatialCameraMovement(scene, this._limits, this.position, this.center, this._lookAtVector, options.pickPredicate, this._flyingBehavior);
 
-        this.pickPredicate = pickPredicate;
         this.inputs = new GeospatialCameraInputsManager(this);
         this.inputs.addMouse().addMouseWheel().addKeyboard();
     }
@@ -140,7 +140,8 @@ export class GeospatialCamera extends Camera {
     protected _checkLimits() {
         const limits = this.limits;
         this._yaw = Clamp(this._yaw, limits.yawMin, limits.yawMax);
-        this._pitch = Clamp(this._pitch, limits.pitchMin, limits.pitchMax);
+        const effectivePitchMax = limits.getEffectivePitchMax(this._radius);
+        this._pitch = Clamp(this._pitch, limits.pitchMin, effectivePitchMax);
         this._radius = Clamp(this._radius, limits.radiusMin, limits.radiusMax);
         ClampCenterFromPolesInPlace(this._center);
     }
