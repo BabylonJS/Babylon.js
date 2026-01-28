@@ -133,7 +133,7 @@ const LoadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
 
 const FindNode = (nodeId: any, instanceIndex: any, scene: Scene) => {
     // Back-compat: nodeId can represent either an id (string) or a uniqueId (number).
-    // If we think it's a uniqueId, use it with TempIndexContainer, which tracks uniqueIds from the parsed file. 
+    // If we think it's a uniqueId, use it with TempIndexContainer, which tracks uniqueIds from the parsed file.
     // Otherwise, assume it's an id and search the scene for *a* match.
     const node = typeof nodeId !== "number" ? scene.getLastEntryById(nodeId) : TempIndexContainer[nodeId];
     if (node && instanceIndex !== undefined && instanceIndex !== null) {
@@ -519,6 +519,14 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
             for (const id in TempMorphTargetIndexContainer) {
                 idMap.set(id.toString(), TempMorphTargetIndexContainer[id]);
             }
+            // TODO: The entire approach of swapping animation.targetId, bone.linkedTransformNodeId, and mesh.skeletonId
+            // to uniqueIds will generate files that are not backward compatible with previous loaders.
+
+            // OPEN QUESTIONS:
+            // - Does the idMap need to also have the scene's nodes (i.e., incl. nodes that already exist in the scene before loading)?
+            // That was the previous behavior, but I don't see why it would be needed unless we had a guarantee that .babylon files referencing
+            // nodes outside of the file would be possible.
+            //  - Why don't all the other linkings use a nodeMap approach?
             for (index = 0, cache = parsedData.animationGroups.length; index < cache; index++) {
                 const parsedAnimationGroup = parsedData.animationGroups[index];
                 const animationGroup = AnimationGroup.Parse(parsedAnimationGroup, scene, idMap);

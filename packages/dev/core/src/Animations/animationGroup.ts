@@ -1030,8 +1030,9 @@ export class AnimationGroup implements IDisposable {
             // And then we moved to using file-specific uniqueIds instead of ids to avoid name collisions.
             // So now we have three possible ways to lookup targets: uniqueId via idMap, id via idMap, and id via scene.
 
-                const targetNode = idMap ? idMap.get(id) : scene.getNodeById(id);
-
+            // TODO: Can or should this mapping logic for animations -> targets be moved into babylonFileLoader.ts?
+            // Right now, it's inconsistent with other Parse functions and caused me a bit of confusion.
+            // But moving this out would break backwards compatibility. At the same time, I don't know who'd be using this function directly.
             const target = idMap ? idMap.get(id) : targetedAnimation.animation.property === "influence" ? scene.getMorphTargetById(id) : scene.getNodeById(id);
             if (target) {
                 animationGroup.addTargetedAnimation(animation, target);
