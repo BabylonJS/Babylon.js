@@ -1034,7 +1034,7 @@ export class AnimationGroup implements IDisposable {
             // TODO: Can or should this mapping logic for animations -> targets be moved into babylonFileLoader.ts?
             // Right now, it's inconsistent with other Parse functions and caused me a bit of confusion.
             // But moving this out would break backwards compatibility. At the same time, I don't know who'd be using this function directly.
-            const target = idMap ? idMap.get(id) : targetedAnimation.animation.property === "influence" ? scene.getMorphTargetById(id) : scene.getNodeById(id);
+            const target = idMap?.get(id) ?? (targetedAnimation.animation.property === "influence" ? scene.getMorphTargetById(id) : scene.getNodeById(id));
             if (target) {
                 animationGroup.addTargetedAnimation(animation, target);
             }
