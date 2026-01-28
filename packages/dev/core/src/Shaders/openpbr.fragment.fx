@@ -230,9 +230,7 @@ void main(void) {
         
         #ifdef SUBSURFACE_SLAB
             // Figure out subsurface scattering contribution
-            // vec3 subsurface_extinction_coeff = vec3(0.0);
-            // vec3 subsurface_scatter_coeff = vec3(0.0);
-            // vec3 subsurface_absorption_coeff = vec3(0.0);
+            multi_scatter_color = subsurface_color;
             vec3 mfp = subsurface_radius_scale * vec3(subsurface_radius);
             extinction_coeff = vec3(1.0) / maxEps(mfp);
 
@@ -247,36 +245,25 @@ void main(void) {
             // Set extinction coefficient after shifting the absorption to be non-negative.
             extinction_coeff = absorption_coeff + scatter_coeff;
             transmission_absorption = exp(-absorption_coeff * geometry_thickness);
-            //     vec3 subsurface_invDepth = vec3(1. / maxEps(subsurface_radius));
-            //     subsurface_extinction_coeff = -log(subsurface_color.rgb) * subsurface_invDepth;
-            //     subsurface_scatter_coeff = subsurface_extinction_coeff * subsurface_weight;
-            //     subsurface_absorption_coeff = subsurface_extinction_coeff - subsurface_scatter_coeff;
-            //     float minSubsurfaceCoeff = min3(subsurface_absorption_coeff);
-            //     if (minSubsurfaceCoeff < 0.0) {
-            //         subsurface_absorption_coeff -= vec3(minSubsurfaceCoeff);
-            //     }
-            //     // Set extinction coefficient after shifting the absorption to be non-negative.
-            //     subsurface_extinction_coeff = subsurface_absorption_coeff + subsurface_scatter_coeff;
-            // #endif
-
-            // // Add subsurface scattering coeffs to transmission coeffs
-            // scatter_coeff += subsurface_scatter_coeff;
-            // extinction_coeff += subsurface_extinction_coeff;
-            // absorption_coeff += subsurface_absorption_coeff;
         #endif
 
         float refractionAlphaG = transmission_roughness * transmission_roughness;
         #ifdef SCATTERING
+            #ifdef TRANSMISSION_SLAB
+                float scatter_anisotropy = transmission_scatter_anisotropy;
+            #else
+                float scatter_anisotropy = subsurface_scatter_anisotropy;
+            #endif
             // Transmission Scattering
-            float back_to_iso_scattering_blend = min(1.0 + transmission_scatter_anisotropy, 1.0);
-            float iso_to_forward_scattering_blend = max(transmission_scatter_anisotropy, 0.0);
+            float back_to_iso_scattering_blend = min(1.0 + scatter_anisotropy, 1.0);
+            float iso_to_forward_scattering_blend = max(scatter_anisotropy, 0.0);
 
             // The 0.2 exponent is an empirical fit to match reference renderers - check if it works broadly
             vec3 iso_scatter_transmittance = pow(exp(-scatter_coeff * geometry_thickness), vec3(0.2));
             vec3 iso_scatter_density = clamp(vec3(1.0) - iso_scatter_transmittance, 0.0, 1.0);
             
             // Refraction roughness is modified by the density of the scattering and also by the anisotropy.
-            float roughness_alpha_modified_for_scatter = min(refractionAlphaG + (1.0 - abs(transmission_scatter_anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 1.0);
+            float roughness_alpha_modified_for_scatter = min(refractionAlphaG + (1.0 - abs(scatter_anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 1.0);
             roughness_alpha_modified_for_scatter = pow(roughness_alpha_modified_for_scatter, 6.0);
             roughness_alpha_modified_for_scatter = clamp(roughness_alpha_modified_for_scatter, refractionAlphaG, 1.0);
         #else

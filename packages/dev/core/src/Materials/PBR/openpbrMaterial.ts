@@ -3030,18 +3030,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     } else {
                         defines.REFRACTED_ENVIRONMENT = false;
                     }
-                    if (this.transmissionWeight > 0) {
-                        defines.TRANSMISSION_SLAB = true;
-                    }
-                    if (this.subsurfaceWeight > 0) {
-                        defines.SUBSURFACE_SLAB = true;
-                    }
                 } else {
                     defines.REFRACTED_BACKGROUND = false;
                     defines.REFRACTED_LIGHTS = false;
                     defines.REFRACTED_ENVIRONMENT = false;
-                    defines.TRANSMISSION_SLAB = false;
-                    defines.SUBSURFACE_SLAB = false;
                 }
 
                 if (this._shouldUseAlphaFromBaseColorTexture()) {
@@ -3119,8 +3111,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
         defines.DISPERSION = this.transmissionDispersionScale > 0.0;
         defines.SCATTERING = this.hasScattering;
-
+        defines.TRANSMISSION_SLAB = this.transmissionWeight > 0 && this.transmissionDepth > 0;
+        defines.SUBSURFACE_SLAB = this.subsurfaceWeight > 0;
         defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;
+
         if (defines.FUZZ) {
             if (!mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
                 defines._needUVs = true;
