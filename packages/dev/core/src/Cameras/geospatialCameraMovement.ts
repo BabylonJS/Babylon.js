@@ -109,7 +109,7 @@ export class GeospatialCameraMovement extends CameraMovement {
 
     public handleDrag(pointerX: number, pointerY: number) {
         if (this._hitPointRadius) {
-            const pickResult = this._scene.pick(pointerX, pointerY);
+            const pickResult = this._scene.pick(pointerX, pointerY, this.pickPredicate);
             if (pickResult.ray) {
                 const localToEcef = TmpVectors.Matrix[0];
                 this._recalculateDragPlaneHitPoint(this._hitPointRadius, pickResult.ray, localToEcef);
