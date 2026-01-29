@@ -63,7 +63,7 @@ export class MSCTranscoder extends Transcoder {
                         importScripts(Transcoder.GetWasmUrl(MSCTranscoder.JSModuleURL));
                     }
                     // Worker Number = 0 and MSC_TRANSCODER has not been loaded yet.
-                    else if (typeof MSC_TRANSCODER === "undefined" && typeof MSC_TRANSCODER === "undefined") {
+                    else if (typeof MSC_TRANSCODER === "undefined") {
                         return await new Promise((resolve, reject) => {
                             const head = document.getElementsByTagName("head")[0];
                             const script = document.createElement("script");
