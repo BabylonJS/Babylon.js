@@ -13,7 +13,7 @@ import type { IDisposable, Nullable, Scene, ThinEngine } from "@dev/core";
 
 import "../scss/rendering.scss";
 
-type InspectorV2Module = typeof import("inspector-v2/legacy/legacy") & typeof import("inspector-v2/index");
+type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 
 interface IRenderingComponentProps {
     globalState: GlobalState;

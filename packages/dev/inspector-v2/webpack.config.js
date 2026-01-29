@@ -28,7 +28,7 @@ module.exports = (env) => {
                 loaders: path.resolve("../../dev/loaders/dist"),
                 materials: path.resolve("../../dev/materials/dist"),
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
-                "inspector-v2": path.resolve("./src"),
+                inspector: path.resolve("./src"),
                 serializers: path.resolve("../../dev/serializers/dist"),
                 "node-editor": path.resolve("../../tools/nodeEditor/dist"),
                 "node-geometry-editor": path.resolve("../../tools/nodeGeometryEditor/dist"),

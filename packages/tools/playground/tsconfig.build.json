@@ -8,7 +8,7 @@
             "core/*": ["dev/core/dist/*"],
             "gui/*": ["dev/gui/dist/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
-            "inspector-v2/*": ["dev/inspector-v2/dist/*"],
+            "inspector/*": ["dev/inspector-v2/dist/*"],
             "playground/*": ["tools/playground/src/*"]
         }
     },
