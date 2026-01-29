@@ -110,8 +110,8 @@ const updatePeerDependencies = (version) => {
     });
 };
 
-const updateVersion = (version) => {
-    // get all package.json files in the dev folder
+const updatePackages = (version) => {
+    // get all package.json files in the public folder
     const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json").replace(/\\/g, "/"));
     files.forEach((file) => {
         try {
@@ -139,7 +139,46 @@ const updateVersion = (version) => {
     });
 };
 
-async function runTagsUpdate() {
+const updatePackageLockPackage = (updateFunction) => {
+    try {
+        // get the package.json as js objects
+        const file = path.join(baseDirectory, "package-lock.json").replace(/\\/g, "/");
+        const data = fs.readFileSync(file, "utf-8").replace(/\r/gm, "");
+        const packageLockJson = JSON.parse(data);
+
+        Object.keys(packageLockJson.packages).forEach((packageKey) => {
+            if (packageKey.indexOf("public/@babylonjs") > -1 || packageKey.indexOf("public/umd/babylonjs") > -1) {
+                const package = packageLockJson.packages[packageKey];
+                updateFunction(package);
+            }
+        });
+
+        // write file
+        fs.writeFileSync(file, JSON.stringify(packageLockJson, null, 4));
+    } catch (e) {
+        console.log(e);
+    }
+};
+
+const updatePackageLock = (version) => {
+    updatePackageLockPackage((package) => {
+        package.version = version;
+        updateDependencies(version, package.devDependencies);
+        updateDependencies(version, package.dependencies);
+    });
+
+    console.log(`Updating Babylon package lock json version to ${version}`);
+};
+
+const updatePackageLockPeerDependencies = (version) => {
+    updatePackageLockPackage((package) => {
+        updateDependencies(version, package.peerDependencies);
+    });
+
+    console.log(`Updating Babylon package lock json peer dependencies to ${version}`);
+};
+
+async function main() {
     // Gets the current version to update
     const previousVersion = getCurrentVersion();
     let [major, minor, revision] = previousVersion.split(".");
@@ -159,8 +198,10 @@ async function runTagsUpdate() {
     // Gets the new version
     const version = [major, minor, revision].join(".");
 
-    // update package-json
-    updateVersion(version);
+    // update package.json
+    updatePackages(version);
+    // update package-lock.json
+    updatePackageLock(version);
     // update engine version
     await updateEngineVersion(version);
     // generate changelog
@@ -170,6 +211,7 @@ async function runTagsUpdate() {
     // if major, update peer dependencies
     if (config.versionDefinition === "major") {
         updatePeerDependencies(`^${version}`);
+        updatePackageLockPeerDependencies(`^${version}`);
     }
     if (dryRun) {
         console.log("skipping", `git commit -m "Version update ${version}"`);
@@ -184,5 +226,5 @@ if (!branchName) {
     console.log("Please provide a branch name");
     process.exit(1);
 } else {
-    runTagsUpdate();
+    main();
 }
