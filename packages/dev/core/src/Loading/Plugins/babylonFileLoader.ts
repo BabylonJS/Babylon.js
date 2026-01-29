@@ -479,39 +479,48 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         // Animation Groups
         if (parsedData.animationGroups !== undefined && parsedData.animationGroups !== null && parsedData.animationGroups.length) {
             // Build the nodeMap only for scenes with animationGroups.
-            const nodeMap = new Map<string, Node>();
-            // Nodes in scene does not change when parsing animationGroups, so it's safe to build a map.
-            // This follows the order of scene.getNodeById: mesh, transformNode, light, camera, bone
-            // TODO: This won't be used for newer files that use uniqueIds for animation targets and should be refactored.
-            for (let index = 0; index < scene.meshes.length; index++) {
-                // This follows the behavior of scene.getXXXById, which picks the first match
-                if (!nodeMap.has(scene.meshes[index].id)) {
-                    nodeMap.set(scene.meshes[index].id, scene.meshes[index]);
-                }
-            }
-            for (let index = 0; index < scene.transformNodes.length; index++) {
-                if (!nodeMap.has(scene.transformNodes[index].id)) {
-                    nodeMap.set(scene.transformNodes[index].id, scene.transformNodes[index]);
-                }
-            }
-            for (let index = 0; index < scene.lights.length; index++) {
-                if (!nodeMap.has(scene.lights[index].id)) {
-                    nodeMap.set(scene.lights[index].id, scene.lights[index]);
-                }
-            }
-            for (let index = 0; index < scene.cameras.length; index++) {
-                if (!nodeMap.has(scene.cameras[index].id)) {
-                    nodeMap.set(scene.cameras[index].id, scene.cameras[index]);
-                }
-            }
-            for (let skeletonIndex = 0; skeletonIndex < scene.skeletons.length; skeletonIndex++) {
-                const skeleton = scene.skeletons[skeletonIndex];
-                for (let boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
-                    if (!nodeMap.has(skeleton.bones[boneIndex].id)) {
-                        nodeMap.set(skeleton.bones[boneIndex].id, skeleton.bones[boneIndex]);
+            let nodeMap: Nullable<Map<Node["id"], Node>> = null;
+
+            // Helper to get nodes by id more efficiently, building the nodeMap only on first access.
+            const getNodeById = (id: Node["id"]) => {
+                if (!nodeMap) {
+                    nodeMap = new Map<Node["id"], Node>();
+
+                    // Nodes in scene does not change when parsing animationGroups, so it's safe to build a map.
+                    // This follows the order of scene.getNodeById: mesh, transformNode, light, camera, bone
+                    for (let index = 0; index < scene.meshes.length; index++) {
+                        // This follows the behavior of scene.getXXXById, which picks the first match
+                        if (!nodeMap.has(scene.meshes[index].id)) {
+                            nodeMap.set(scene.meshes[index].id, scene.meshes[index]);
+                        }
+                    }
+                    for (let index = 0; index < scene.transformNodes.length; index++) {
+                        if (!nodeMap.has(scene.transformNodes[index].id)) {
+                            nodeMap.set(scene.transformNodes[index].id, scene.transformNodes[index]);
+                        }
+                    }
+                    for (let index = 0; index < scene.lights.length; index++) {
+                        if (!nodeMap.has(scene.lights[index].id)) {
+                            nodeMap.set(scene.lights[index].id, scene.lights[index]);
+                        }
+                    }
+                    for (let index = 0; index < scene.cameras.length; index++) {
+                        if (!nodeMap.has(scene.cameras[index].id)) {
+                            nodeMap.set(scene.cameras[index].id, scene.cameras[index]);
+                        }
+                    }
+                    for (let skeletonIndex = 0; skeletonIndex < scene.skeletons.length; skeletonIndex++) {
+                        const skeleton = scene.skeletons[skeletonIndex];
+                        for (let boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                            if (!nodeMap.has(skeleton.bones[boneIndex].id)) {
+                                nodeMap.set(skeleton.bones[boneIndex].id, skeleton.bones[boneIndex]);
+                            }
+                        }
                     }
                 }
-            }
+
+                return nodeMap.get(id);
+            };
 
             const targetLookup = (parsedTargetAnimation: any) => {
                 let target = null;
@@ -527,7 +536,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                 // fall back to searching by id in the scene.
                 if (!target) {
                     const id = parsedTargetAnimation.targetId;
-                    target = isMorphTarget ? scene.getMorphTargetById(id) : nodeMap.get(id); // nodeMap is equivalent to scene.getNodeById
+                    target = isMorphTarget ? scene.getMorphTargetById(id) : getNodeById(id);
                 }
 
                 return target;
