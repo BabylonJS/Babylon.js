@@ -468,7 +468,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                     const camera = this.camera || scene.activeCamera;
                     if (camera) {
                         const cameraIsOrtho = camera.mode === Camera.ORTHOGRAPHIC_CAMERA;
-                            
+
                         let minZ: number, maxZ: number;
 
                         if (cameraIsOrtho) {
