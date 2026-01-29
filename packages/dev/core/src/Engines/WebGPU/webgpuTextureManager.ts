@@ -1366,7 +1366,7 @@ export class WebGPUTextureManager {
         }
     }
 
-    public updateMipLevelCountForInternalTexture(texture: InternalTexture, mipLevelCount?:number) {
+    public updateMipLevelCountForInternalTexture(texture: InternalTexture, mipLevelCount?: number) {
         const maxNumMipLevels = WebGPUTextureHelper.ComputeNumMipmapLevels(texture.width, texture.height);
         if (mipLevelCount !== undefined) {
             texture.mipLevelCount = Math.min(Math.max(1, mipLevelCount), maxNumMipLevels);

@@ -423,16 +423,7 @@ export class InternalTexture extends TextureSampler {
                     for (let mipLevel = 0; mipLevel < this._bufferViewArray.length; mipLevel++) {
                         const mipData = this._bufferViewArray[mipLevel];
                         if (mipData) {
-                            this._engine.updateRawTexture(
-                                this,
-                                mipData,
-                                this.format,
-                                this.invertY,
-                                this._compression,
-                                this.type,
-                                this._useSRGBBuffer,
-                                mipLevel
-                            );
+                            this._engine.updateRawTexture(this, mipData, this.format, this.invertY, this._compression, this.type, this._useSRGBBuffer, mipLevel);
                         }
                     }
                 }
@@ -479,15 +470,7 @@ export class InternalTexture extends TextureSampler {
                     for (let mipLevel = 0; mipLevel < this._bufferViewArray.length; mipLevel++) {
                         const mipData = this._bufferViewArray[mipLevel];
                         if (mipData) {
-                            this._engine.updateRawTexture2DArray(
-                                this,
-                                mipData,
-                                this.format,
-                                this.invertY,
-                                this._compression,
-                                this.type,
-                                mipLevel
-                            );
+                            this._engine.updateRawTexture2DArray(this, mipData, this.format, this.invertY, this._compression, this.type, mipLevel);
                         }
                     }
                 }

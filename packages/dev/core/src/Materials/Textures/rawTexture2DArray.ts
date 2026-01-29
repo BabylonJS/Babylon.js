@@ -49,7 +49,9 @@ export class RawTexture2DArray extends Texture {
     ) {
         super(null, scene, !generateMipMaps, invertY);
 
-        this._texture = scene.getEngine().createRawTexture2DArray(data, width, height, depth, format, generateMipMaps, invertY, samplingMode, null, textureType, creationFlags ?? 0, mipLevelCount);
+        this._texture = scene
+            .getEngine()
+            .createRawTexture2DArray(data, width, height, depth, format, generateMipMaps, invertY, samplingMode, null, textureType, creationFlags ?? 0, mipLevelCount);
 
         this._depth = depth;
         this.is2DArray = true;

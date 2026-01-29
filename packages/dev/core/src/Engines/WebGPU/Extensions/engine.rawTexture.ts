@@ -39,7 +39,7 @@ declare module "../../abstractEngine" {
             compression: Nullable<string>,
             type: number,
             useSRGBBuffer: boolean,
-            mipLevel? : number
+            mipLevel?: number
         ): void;
 
         /**
@@ -275,7 +275,7 @@ ThinWebGPUEngine.prototype.updateRawTexture = function (
     compression: Nullable<string> = null,
     type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
     useSRGBBuffer: boolean = false,
-    mipLevel? : number
+    mipLevel?: number
 ): void {
     if (!texture) {
         return;
@@ -288,7 +288,7 @@ ThinWebGPUEngine.prototype.updateRawTexture = function (
         texture._useSRGBBuffer = useSRGBBuffer;
         if (mipLevel !== undefined && bufferView) {
             if (!texture._bufferViewArray) {
-                 texture._bufferViewArray = new Array(texture.mipLevelCount);
+                texture._bufferViewArray = new Array(texture.mipLevelCount);
             }
             texture._bufferViewArray[mipLevel] = bufferView;
         }
@@ -306,7 +306,7 @@ ThinWebGPUEngine.prototype.updateRawTexture = function (
 
         const mipWidth = Math.max(1, texture.width >> (mipLevel ?? 0));
         const mipHeight = Math.max(1, texture.height >> (mipLevel ?? 0));
-        this._textureHelper.updateTexture(data, texture, mipWidth, mipHeight, texture.depth, gpuTextureWrapper.format, 0, mipLevel??0, invertY, false, 0, 0);
+        this._textureHelper.updateTexture(data, texture, mipWidth, mipHeight, texture.depth, gpuTextureWrapper.format, 0, mipLevel ?? 0, invertY, false, 0, 0);
         if (texture.generateMipMaps && !mipLevel) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }

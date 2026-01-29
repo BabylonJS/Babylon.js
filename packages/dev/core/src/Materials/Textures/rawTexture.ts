@@ -47,7 +47,7 @@ export class RawTexture extends Texture {
         creationFlags?: number,
         useSRGBBuffer?: boolean,
         waitDataToBeReady?: boolean,
-        mipLevelCount? : number
+        mipLevelCount?: number
     ) {
         super(null, sceneOrEngine, !generateMipMaps, invertY, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, creationFlags);
 
@@ -62,7 +62,20 @@ export class RawTexture extends Texture {
             samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
 
-        this._texture = this._engine.createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode, null, type, creationFlags ?? 0, useSRGBBuffer ?? false, mipLevelCount);
+        this._texture = this._engine.createRawTexture(
+            data,
+            width,
+            height,
+            format,
+            generateMipMaps,
+            invertY,
+            samplingMode,
+            null,
+            type,
+            creationFlags ?? 0,
+            useSRGBBuffer ?? false,
+            mipLevelCount
+        );
 
         this.wrapU = Texture.CLAMP_ADDRESSMODE;
         this.wrapV = Texture.CLAMP_ADDRESSMODE;
