@@ -15,7 +15,7 @@ import { IMSFTAudioEmitter_AnimationEventAction } from "babylonjs-gltf2interface
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
 import "core/Audio/audioSceneComponent";
-import { GetUnsharedArrayBuffer } from "core/Buffers/bufferUtils";
+import { GetBlobBufferSource } from "core/Buffers/bufferUtils";
 
 const NAME = "MSFT_audio_emitter";
 
@@ -201,7 +201,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
 
         // eslint-disable-next-line github/no-then
         clip._objectURL = promise.then((data) => {
-            const buffer = GetUnsharedArrayBuffer(data);
+            const buffer = GetBlobBufferSource(data);
             return URL.createObjectURL(new Blob([buffer], { type: clip.mimeType }));
         });
 

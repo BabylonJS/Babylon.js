@@ -470,16 +470,16 @@ export function CreateAlignedTypedArray<T extends TypedArray>(type: TypedArrayCo
 }
 
 /**
- * Gets an ArrayBuffer from an ArrayBufferView, ensuring that the returned ArrayBuffer is not a SharedArrayBuffer.
+ * Gets a BufferSource from an ArrayBufferView, ensuring that the returned ArrayBuffer is not a SharedArrayBuffer.
  * If the input view's buffer is a SharedArrayBuffer, a new ArrayBuffer is created and the data is copied over.
  * @param view The input ArrayBufferView
  * @returns An ArrayBuffer containing the data from the view
  */
-export function GetUnsharedArrayBuffer(view: ArrayBufferView): ArrayBuffer {
+export function GetBlobBufferSource(view: ArrayBufferView): BufferSource {
     const buffer = view.buffer;
     if (buffer instanceof ArrayBuffer) {
         // Safely cast here because we know bytes is not a SharedArrayBuffer
-        return buffer as ArrayBuffer;
+        return view as ArrayBufferView<ArrayBuffer>;
     }
 
     // We are dealing with a SharedArrayBuffer, so we need to create a new ArrayBuffer and copy the data over

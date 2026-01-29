@@ -18,7 +18,7 @@ import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { Engine, WebGPUEngine } from "core/Engines";
 
 import "../Materials/Textures/baseTexture.polynomial";
-import { GetUnsharedArrayBuffer } from "../Buffers/bufferUtils";
+import { GetBlobBufferSource } from "../Buffers/bufferUtils";
 
 const DefaultEnvironmentTextureImageType = "image/png";
 const CurrentVersion = 2;
@@ -861,7 +861,7 @@ async function _UploadLevelsAsync(
         for (let face = 0; face < 6; face++) {
             // Constructs an image element from image data
             const bytes = imageData[i][face];
-            const buffer = GetUnsharedArrayBuffer(bytes);
+            const buffer = GetBlobBufferSource(bytes);
             const blob = new Blob([buffer], { type: imageType });
             const url = URL.createObjectURL(blob);
             let promise: Promise<void>;
