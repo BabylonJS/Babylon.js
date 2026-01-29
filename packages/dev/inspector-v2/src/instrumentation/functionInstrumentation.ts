@@ -17,11 +17,16 @@ const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, FunctionHooks<
  * @param hooks The hooks to call during the function execution.
  * @returns A disposable that removes the hooks when disposed and returns the object to its original state.
  */
+// This overload only matches when K is a specific literal key (not a union like keyof T)
 export function InterceptFunction<T extends object, K extends keyof T>(
     target: T,
-    propertyKey: K,
-    hooks: NonNullable<T[K]> extends (...args: infer Args) => unknown ? FunctionHooks<Args> : never
-): IDisposable {
+    propertyKey: string extends K ? never : number extends K ? never : symbol extends K ? never : K,
+    hooks: NonNullable<T[K]> extends (...args: infer Args) => unknown ? FunctionHooks<Args> : FunctionHooks
+): IDisposable;
+// Fallback overload for generic/dynamic cases where the function type cannot be inferred
+export function InterceptFunction<T extends object>(target: T, propertyKey: keyof T, hooks: FunctionHooks): IDisposable;
+/** @internal */
+export function InterceptFunction<T extends object>(target: T, propertyKey: keyof T, hooks: FunctionHooks): IDisposable {
     if (!hooks.afterCall) {
         throw new Error("At least one hook must be provided.");
     }

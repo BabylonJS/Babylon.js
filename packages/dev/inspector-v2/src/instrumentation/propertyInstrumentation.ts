@@ -50,7 +50,16 @@ const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, PropertyHooks<
  * @param hooks The hooks to call when the property is get or set.
  * @returns A disposable that removes the hooks when disposed and returns the object to its original state.
  */
-export function InterceptProperty<T extends object, K extends keyof T>(target: T, propertyKey: K, hooks: PropertyHooks<NonNullable<T[K]>>): IDisposable {
+// This overload only matches when K is a specific literal key (not a union like keyof T)
+export function InterceptProperty<T extends object, K extends keyof T>(
+    target: T,
+    propertyKey: string extends K ? never : number extends K ? never : symbol extends K ? never : K,
+    hooks: PropertyHooks<NonNullable<T[K]>>
+): IDisposable;
+// Fallback overload for generic/dynamic cases where the property type cannot be inferred
+export function InterceptProperty<T extends object>(target: T, propertyKey: keyof T, hooks: PropertyHooks): IDisposable;
+/** @internal */
+export function InterceptProperty<T extends object>(target: T, propertyKey: keyof T, hooks: PropertyHooks): IDisposable {
     // Find the property descriptor and note the owning object (might be inherited through the prototype chain).
     const ownerAndDescriptor = GetPropertyDescriptor(target, propertyKey);
 
