@@ -2,13 +2,10 @@ import type { FunctionComponent } from "react";
 
 import * as React from "react";
 import { Animation } from "core/Animations/animation";
-import type { Curve as SharedCurve } from "shared-ui-components/curveEditor/curve";
-
-// Re-export the Curve type as CurveData for use in other components
-export type CurveData = SharedCurve;
+import type { CurveData } from "./curveData";
 
 type CurveProps = {
-    curve: SharedCurve;
+    curve: CurveData;
     convertX: (frame: number) => number;
     convertY: (value: number) => number;
 };

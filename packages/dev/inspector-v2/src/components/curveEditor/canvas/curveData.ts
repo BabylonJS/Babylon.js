@@ -12,7 +12,7 @@ export interface KeyEntry {
     interpolation?: AnimationKeyInterpolation;
 }
 
-export class Curve {
+export class CurveData {
     public static readonly SampleRate = 50;
     public keys: KeyEntry[] = [];
     public animation: Animation;
@@ -73,7 +73,7 @@ export class Curve {
             }
 
             // Let's sample the curve else
-            for (let frame = prevFrame; frame < currentFrame; frame += frameDist / Curve.SampleRate) {
+            for (let frame = prevFrame; frame < currentFrame; frame += frameDist / CurveData.SampleRate) {
                 const keyValue = this.animation.evaluate(frame);
                 const value = this.property ? keyValue[this.property] : keyValue;
                 pathData += ` L${convertX(frame)} ${convertY(value)}`;

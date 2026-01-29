@@ -9,7 +9,7 @@ import { Vector2 } from "core/Maths/math.vector";
 import type { Nullable } from "core/types";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { CurveData } from "./curve";
+import type { CurveData } from "./curveData";
 import type { KeyPoint } from "../curveEditorContext";
 import { useCurveEditor } from "../curveEditorContext";
 

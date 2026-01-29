@@ -12,7 +12,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 
 import { useCurveEditor } from "../curveEditorContext";
 import { useObservableState } from "../../../hooks/observableHooks";
-import { Curve as SharedCurve } from "shared-ui-components/curveEditor/curve";
+import { CurveData } from "./curveData";
 import { Curve } from "./curve";
 import { KeyPointComponent } from "./keyPoint";
 import { ChannelColors, ColorChannelColors, DefaultCurveColor, GraphColors } from "../curveEditorColors";
@@ -204,9 +204,8 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         };
     }, [observables, state.activeAnimations, state.activeFrame, state.activeKeyPoints, actions]);
 
-    // Get curves from active animations - creates SharedCurve instances like v1
-    const curves = useMemo((): SharedCurve[] => {
-        const result: SharedCurve[] = [];
+    const curves = useMemo((): CurveData[] => {
+        const result: CurveData[] = [];
 
         // Helper to set default tangents across all curves (like v1)
         const setDefaultInTangent = (keyId: number) => {
@@ -227,69 +226,69 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             }
 
             const channelColor = state.activeChannels[animation.uniqueId];
-            const curvesToAdd: SharedCurve[] = [];
+            const curvesToAdd: CurveData[] = [];
 
             // Create curves based on data type (like v1's _evaluateKeys)
             switch (animation.dataType) {
                 case AnimationEnum.ANIMATIONTYPE_FLOAT:
-                    curvesToAdd.push(new SharedCurve(channelColor || DefaultCurveColor, animation));
+                    curvesToAdd.push(new CurveData(channelColor || DefaultCurveColor, animation));
                     break;
                 case AnimationEnum.ANIMATIONTYPE_VECTOR2:
                     if (!channelColor || channelColor === ChannelColors.X) {
-                        curvesToAdd.push(new SharedCurve(ChannelColors.X, animation, "x", () => Vector2.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => Vector2.Zero(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     if (!channelColor || channelColor === ChannelColors.Y) {
-                        curvesToAdd.push(new SharedCurve(ChannelColors.Y, animation, "y", () => Vector2.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => Vector2.Zero(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     break;
                 case AnimationEnum.ANIMATIONTYPE_VECTOR3:
                     if (!channelColor || channelColor === ChannelColors.X) {
-                        curvesToAdd.push(new SharedCurve(ChannelColors.X, animation, "x", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     if (!channelColor || channelColor === ChannelColors.Y) {
-                        curvesToAdd.push(new SharedCurve(ChannelColors.Y, animation, "y", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     if (!channelColor || channelColor === ChannelColors.Z) {
-                        curvesToAdd.push(new SharedCurve(ChannelColors.Z, animation, "z", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ChannelColors.Z, animation, "z", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     break;
                 case AnimationEnum.ANIMATIONTYPE_COLOR3:
                     if (!channelColor || channelColor === ColorChannelColors.R) {
-                        curvesToAdd.push(new SharedCurve(ColorChannelColors.R, animation, "r", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ColorChannelColors.R, animation, "r", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     if (!channelColor || channelColor === ColorChannelColors.G) {
-                        curvesToAdd.push(new SharedCurve(ColorChannelColors.G, animation, "g", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ColorChannelColors.G, animation, "g", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     if (!channelColor || channelColor === ColorChannelColors.B) {
-                        curvesToAdd.push(new SharedCurve(ColorChannelColors.B, animation, "b", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ColorChannelColors.B, animation, "b", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     break;
                 case AnimationEnum.ANIMATIONTYPE_COLOR4:
                     if (!channelColor || channelColor === ColorChannelColors.R) {
-                        curvesToAdd.push(new SharedCurve(ColorChannelColors.R, animation, "r", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ColorChannelColors.R, animation, "r", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     if (!channelColor || channelColor === ColorChannelColors.G) {
-                        curvesToAdd.push(new SharedCurve(ColorChannelColors.G, animation, "g", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ColorChannelColors.G, animation, "g", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     if (!channelColor || channelColor === ColorChannelColors.B) {
-                        curvesToAdd.push(new SharedCurve(ColorChannelColors.B, animation, "b", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ColorChannelColors.B, animation, "b", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     if (!channelColor || channelColor === ColorChannelColors.A) {
-                        curvesToAdd.push(new SharedCurve(ColorChannelColors.A, animation, "a", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ColorChannelColors.A, animation, "a", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     break;
                 case AnimationEnum.ANIMATIONTYPE_QUATERNION:
                     if (!channelColor || channelColor === ChannelColors.X) {
-                        curvesToAdd.push(new SharedCurve(ChannelColors.X, animation, "x", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     if (!channelColor || channelColor === ChannelColors.Y) {
-                        curvesToAdd.push(new SharedCurve(ChannelColors.Y, animation, "y", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     if (!channelColor || channelColor === ChannelColors.Z) {
-                        curvesToAdd.push(new SharedCurve(ChannelColors.Z, animation, "z", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ChannelColors.Z, animation, "z", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     if (!channelColor || channelColor === ChannelColors.W) {
-                        curvesToAdd.push(new SharedCurve(ChannelColors.W, animation, "w", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
+                        curvesToAdd.push(new CurveData(ChannelColors.W, animation, "w", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
                     }
                     break;
             }
