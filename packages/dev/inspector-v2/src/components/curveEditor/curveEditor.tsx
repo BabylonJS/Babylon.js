@@ -71,8 +71,8 @@ const useStyles = makeStyles({
 const CurveEditorContent: FunctionComponent = () => {
     const styles = useStyles();
     const { actions } = useCurveEditor();
-    const prepareRef = useRef(actions.prepare);
-    prepareRef.current = actions.prepare;
+    const prepareRef = useRef(() => actions.prepare());
+    prepareRef.current = () => actions.prepare();
 
     useEffect(() => {
         // Only run prepare once on mount

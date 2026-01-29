@@ -2,6 +2,7 @@ import type { FunctionComponent } from "react";
 
 import { makeStyles, tokens, Divider } from "@fluentui/react-components";
 import { useCallback, useEffect, useState } from "react";
+import { Animation } from "core/Animations/animation";
 import {
     AddRegular,
     DeleteRegular,
@@ -96,9 +97,13 @@ export const TopBar: FunctionComponent = () => {
             // TODO: Properly type KeyPointComponent to access curve.animation
             const numAnims = numKeys;
 
-            const frameEnabled = (numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1);
+            // Check if any active key point has a quaternion animation
+            const hasQuaternion = state.activeKeyPoints?.some((keyPoint) => keyPoint.props.curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION);
+
+            // Disable editing for quaternion animations (like v1)
+            const frameEnabled = ((numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1)) && !hasQuaternion;
             setFrameControlEnabled(frameEnabled);
-            setValueControlEnabled(numKeys > 0);
+            setValueControlEnabled(numKeys > 0 && !hasQuaternion);
             // Don't reset values here - they are set by onFrameSet/onValueSet observers
         });
 

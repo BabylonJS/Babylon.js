@@ -103,7 +103,7 @@ export const SideBar: FunctionComponent = () => {
     useEffect(() => {
         const observer = observables.onDeleteAnimation.add((animation: Animation) => {
             // Remove from active animations
-            actions.setActiveAnimations((prev) => prev.filter((a) => a !== animation));
+            actions.setActiveAnimations(state.activeAnimations.filter((a: Animation) => a !== animation));
 
             // Update target if exists
             const target = targetRef.current;
