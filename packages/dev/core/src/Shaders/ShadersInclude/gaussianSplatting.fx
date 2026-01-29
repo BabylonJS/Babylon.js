@@ -12,7 +12,7 @@ vec2 getDataUV(float index, vec2 textureSize) {
     return vec2((x + 0.5) / textureSize.x, (y + 0.5) / textureSize.y);
 }
 
-#if SH_DEGREE > 0
+#if SH_DEGREE > 0 || IS_COMPOUND
 ivec2 getDataUVint(float index, vec2 textureSize) {
     float y = floor(index / textureSize.x);
     float x = index - y * textureSize.x;
@@ -33,6 +33,9 @@ struct Splat {
 #endif
 #if SH_DEGREE > 2
     uvec4 sh2;
+#endif
+#if IS_COMPOUND
+    uint partIndex;
 #endif
 };
 
@@ -72,8 +75,10 @@ Splat readSplat(float splatIndex)
     splat.color = texture2D(colorsTexture, splatUV);
     splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
     splat.covB = texture2D(covariancesBTexture, splatUV) * splat.center.w;
-#if SH_DEGREE > 0
+#if SH_DEGREE > 0 || IS_COMPOUND
     ivec2 splatUVint = getDataUVint(splatIndex, dataTextureSize);
+#endif
+#if SH_DEGREE > 0
     splat.sh0 = texelFetch(shTexture0, splatUVint, 0);
 #endif
 #if SH_DEGREE > 1
@@ -82,7 +87,9 @@ Splat readSplat(float splatIndex)
 #if SH_DEGREE > 2
     splat.sh2 = texelFetch(shTexture2, splatUVint, 0);
 #endif
-
+#if IS_COMPOUND
+    splat.partIndex = uint(texture2D(partIndicesTexture, splatUV).r * 255.0 + 0.5);
+#endif
     return splat;
 }
     
@@ -288,3 +295,9 @@ vec4 gaussianSplatting(vec2 meshPos, vec3 worldPos, vec2 scale, vec3 covA, vec3 
         + ((meshPos.x * majorAxis
         + meshPos.y * minorAxis) * invViewport * scaleFactor) * scale, pos2d.zw);
 }
+
+#if IS_COMPOUND
+mat4 getPartWorld(uint partIndex) {
+    return partWorld[partIndex];
+}
+#endif
