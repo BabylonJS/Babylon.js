@@ -18,6 +18,8 @@ uniform mat4 viewProjection;
 
 #ifdef STORE_CAMERASPACE_Z
 uniform mat4 view;
+#else
+uniform vec2 depthValues;
 #endif
 
 // Output

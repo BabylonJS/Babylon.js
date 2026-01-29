@@ -18,6 +18,8 @@ uniform viewProjection: mat4x4f;
 
 #ifdef STORE_CAMERASPACE_Z
 uniform view: mat4x4f;
+#else
+uniform depthValues: vec2f;
 #endif
 
 // Output

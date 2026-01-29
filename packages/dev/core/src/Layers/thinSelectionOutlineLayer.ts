@@ -1,4 +1,5 @@
 import { VertexBuffer } from "../Buffers/buffer";
+import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
@@ -261,6 +262,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 "bakedVertexAnimationTextureSizeInverted",
                 "bakedVertexAnimationTime",
                 "bakedVertexAnimationTexture",
+                "depthValues",
                 "selectionId",
             ];
 
@@ -460,7 +462,26 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
             if (!renderingMaterial) {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
-                effect.setMatrix("view", scene.getViewMatrix());
+                if (this.storeCameraSpaceZ) {
+                    effect.setMatrix("view", scene.getViewMatrix());
+                } else {
+                    const camera = this.camera || scene.activeCamera;
+                    if (camera) {
+                        const cameraIsOrtho = camera.mode === Camera.ORTHOGRAPHIC_CAMERA;
+                            
+                        let minZ: number, maxZ: number;
+
+                        if (cameraIsOrtho) {
+                            minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
+                            maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
+                        } else {
+                            minZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? camera.minZ : engine.isNDCHalfZRange ? 0 : camera.minZ;
+                            maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : camera.maxZ;
+                        }
+
+                        effect.setFloat2("depthValues", minZ, minZ + maxZ);
+                    }
+                }
                 effect.setMatrix("world", effectiveMesh.getWorldMatrix());
             } else {
                 renderingMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), effectiveMesh as Mesh, subMesh);
