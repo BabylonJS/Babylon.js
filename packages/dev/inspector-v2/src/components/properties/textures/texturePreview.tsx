@@ -9,6 +9,7 @@ import { WhenTextureReadyAsync } from "core/Misc/textureTools";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { ApplyChannelsToTextureDataAsync } from "../../../misc/textureTools";
+import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 
 const useStyles = makeStyles({
     root: {
@@ -119,42 +120,44 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
     }, [updatePreviewAsync]);
 
     return (
-        <div className={classes.root}>
-            {disableToolbar ? null : texture.isCube ? (
-                <Toolbar className={classes.controls} size={size} aria-label="Cube Faces">
-                    {["+X", "-X", "+Y", "-Y", "+Z", "-Z"].map((label, idx) => (
-                        <ToolbarButton className={classes.controlButton} key={label} appearance={face === idx ? "primary" : "subtle"} onClick={() => setFace(idx)}>
-                            {label}
-                        </ToolbarButton>
-                    ))}
-                </Toolbar>
-            ) : (
-                <Toolbar className={classes.controls} size={size} aria-label="Channels">
-                    {(["R", "G", "B", "A", "ALL"] as const).map((ch) => (
-                        <ToolbarButton
-                            className={classes.controlButton}
-                            key={ch}
-                            appearance={channels === TextureChannelStates[ch] ? "primary" : "subtle"}
-                            onClick={() => setChannels(TextureChannelStates[ch])}
-                        >
-                            {ch}
-                        </ToolbarButton>
-                    ))}
-                </Toolbar>
-            )}
-            <div className={classes.previewContainer}>
-                <canvas ref={canvasRef} className={classes.preview} style={canvasStyle} />
+        <LineContainer itemId="TexturePreview" onRender={updatePreviewAsync}>
+            <div className={classes.root}>
+                {disableToolbar ? null : texture.isCube ? (
+                    <Toolbar className={classes.controls} size={size} aria-label="Cube Faces">
+                        {["+X", "-X", "+Y", "-Y", "+Z", "-Z"].map((label, idx) => (
+                            <ToolbarButton className={classes.controlButton} key={label} appearance={face === idx ? "primary" : "subtle"} onClick={() => setFace(idx)}>
+                                {label}
+                            </ToolbarButton>
+                        ))}
+                    </Toolbar>
+                ) : (
+                    <Toolbar className={classes.controls} size={size} aria-label="Channels">
+                        {(["R", "G", "B", "A", "ALL"] as const).map((ch) => (
+                            <ToolbarButton
+                                className={classes.controlButton}
+                                key={ch}
+                                appearance={channels === TextureChannelStates[ch] ? "primary" : "subtle"}
+                                onClick={() => setChannels(TextureChannelStates[ch])}
+                            >
+                                {ch}
+                            </ToolbarButton>
+                        ))}
+                    </Toolbar>
+                )}
+                <div className={classes.previewContainer}>
+                    <canvas ref={canvasRef} className={classes.preview} style={canvasStyle} />
+                </div>
+                {texture.isRenderTarget && (
+                    <Button
+                        appearance="outline"
+                        onClick={() => {
+                            void updatePreviewAsync();
+                        }}
+                    >
+                        Refresh
+                    </Button>
+                )}
             </div>
-            {texture.isRenderTarget && (
-                <Button
-                    appearance="outline"
-                    onClick={() => {
-                        void updatePreviewAsync();
-                    }}
-                >
-                    Refresh
-                </Button>
-            )}
-        </div>
+        </LineContainer>
     );
 };

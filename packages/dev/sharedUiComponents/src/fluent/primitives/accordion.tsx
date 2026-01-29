@@ -2,19 +2,44 @@ import type { AccordionToggleData, AccordionToggleEvent, AccordionProps as Fluen
 import type { ForwardRefExoticComponent, FunctionComponent, PropsWithChildren, RefAttributes } from "react";
 
 import { Children, forwardRef, isValidElement, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-
-import { AccordionHeader, AccordionItem, AccordionPanel, Divider, Accordion as FluentAccordion, Subtitle2Stronger, makeStyles, tokens } from "@fluentui/react-components";
+import {
+    Accordion as FluentAccordion,
+    AccordionItem,
+    AccordionHeader,
+    AccordionPanel,
+    AccordionPanelProps,
+    Divider,
+    Subtitle2Stronger,
+    Portal,
+    SearchBox,
+    makeStyles,
+    tokens,
+    MessageBar,
+    MessageBarBody,
+} from "@fluentui/react-components";
+import { EditRegular, CheckmarkFilled, PinRegular, PinFilled, ArrowCircleUpRegular, EyeFilled, EyeOffRegular, FilterRegular } from "@fluentui/react-icons";
+import { Button } from "./button";
 import { CustomTokens } from "./utils";
 import { ToolContext } from "../hoc/fluentToolWrapper";
+import {
+    AccordionContext,
+    AccordionSectionBlockContext,
+    AccordionSectionItemContext,
+    useAccordionContext,
+    useAccordionSectionBlockContext,
+    useAccordionSectionItemContext,
+} from "./accordion.contexts";
 
 const useStyles = makeStyles({
     accordion: {
-        overflowX: "hidden",
-        overflowY: "auto",
-        paddingBottom: tokens.spacingVerticalM, // bottom padding since there is no divider at the bottom
         display: "flex",
         flexDirection: "column",
         height: "100%",
+    },
+    accordionBody: {
+        overflowX: "hidden",
+        overflowY: "auto",
+        paddingBottom: tokens.spacingVerticalM, // bottom padding since there is no divider at the bottom
     },
     divider: {
         paddingTop: CustomTokens.dividerGap,
@@ -48,13 +73,317 @@ const useStyles = makeStyles({
             },
         },
     },
+    menuBar: {
+        display: "flex",
+    },
+    menuBarControls: {
+        display: "flex",
+        flexGrow: 1,
+        justifyContent: "end",
+    },
+    sectionEmpty: {
+        display: "none",
+    },
+    sectionItemContainer: {
+        display: "flex",
+        flexDirection: "row",
+    },
+    sectionItemButtons: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "start",
+        marginRight: tokens.spacingHorizontalXS,
+    },
+    pinnedContainer: {
+        display: "flex",
+        flexDirection: "column",
+    },
+    pinnedContainerEmpty: {
+        "&:not(:only-child)": {
+            display: "none",
+        },
+    },
+    searchBox: {
+        width: "100%",
+    },
 });
 
+/**
+ * Renders the menu bar and control buttons.
+ */
+const AccordionMenuBar: FunctionComponent = (props) => {
+    AccordionMenuBar.displayName = "AccordionMenuBar";
+    const classes = useStyles();
+    const accordionContext = useContext(AccordionContext);
+    const [editMode, setEditMode] = useState(false);
+
+    useMemo(() => {
+        if (accordionContext) {
+            Object.assign(accordionContext, {
+                editMode: {
+                    is: editMode,
+                    set: setEditMode,
+                },
+            }).renderItems();
+        }
+    }, [editMode]);
+
+    const hideAll = useCallback((isHidden: boolean) => {
+        if (accordionContext?.hiddenItems) {
+            const { itemContextMap, renderItems, storage } = accordionContext;
+
+            for (const { isStatic, hidden, match } of itemContextMap.values()) {
+                if (!isStatic && (match?.is ?? true)) {
+                    hidden?.toggle(isHidden);
+                }
+            }
+
+            storage.writeData("Hidden");
+            renderItems();
+        }
+    }, []);
+
+    if (accordionContext) {
+        const { pinnedItems, hiddenItems } = accordionContext;
+
+        return (
+            <div className={classes.menuBar}>
+                <AccordionSearchBox />
+                <div className={classes.menuBarControls}>
+                    {hiddenItems && editMode && (
+                        <>
+                            <Button title="Show all" icon={EyeFilled} appearance="subtle" onClick={() => hideAll(false)} />
+                            <Button title="Hide all" icon={EyeOffRegular} appearance="subtle" onClick={() => hideAll(true)} />
+                        </>
+                    )}
+                    {(pinnedItems || hiddenItems) && (
+                        <Button
+                            title="Edit mode"
+                            icon={editMode ? CheckmarkFilled : EditRegular}
+                            appearance={editMode ? "primary" : "subtle"}
+                            onClick={() => {
+                                setEditMode(!editMode);
+                            }}
+                        />
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    return null;
+};
+
+/**
+ * Props: `AccordionSectionBlock`.
+ */
+export type AccordionSectionBlockProps = {
+    /** The ID of the `AccordionSectionBlock`, unique within the `Accordion` instance. */
+    sectionId: string;
+};
+
+/**
+ * Wrapper component that must encapsulate the section headers and panels.
+ * - Stores the section ID for use in `AccordionSectionItem`.
+ */
+const AccordionSectionBlock: FunctionComponent<PropsWithChildren<AccordionSectionBlockProps>> = (props) => {
+    AccordionSectionBlock.displayName = "AccordionSectionBlock";
+    const { children, sectionId } = props;
+    const classes = useStyles();
+    const accordionContext = useContext(AccordionContext);
+    const sectionContext = useAccordionSectionBlockContext(props);
+
+    if (accordionContext && sectionContext) {
+        return (
+            <AccordionSectionBlockContext.Provider value={sectionContext}>
+                <AccordionItem className={sectionContext.isEmpty ? classes.sectionEmpty : undefined} value={sectionId}>
+                    {children}
+                </AccordionItem>
+            </AccordionSectionBlockContext.Provider>
+        );
+    }
+
+    return <AccordionItem value={sectionId}>{children}</AccordionItem>;
+};
+
+/**
+ * Props: `AccordionSectionItem`.
+ */
+export type AccordionSectionItemProps = {
+    /** The ID of the `AccordionSectionItem`, unique within the `AccordionSectionBlock` instance. */
+    itemId: string;
+    /** The searchable text label for the item. */
+    itemLabel?: string;
+    /** Whether the item is not interactable. */
+    staticItem?: boolean;
+    /** Event triggered after the item has been rendered. */
+    onRender?: () => void;
+};
+
+/**
+ * Wrapper component that must encapsulate individual items.
+ * - Renders the pin button and tracks the pinned state of the item.
+ * - Renders the hide button and tracks the hidden state of the item.
+ * - Filters items based on the current search term.
+ */
+export const AccordionSectionItem: FunctionComponent<PropsWithChildren<AccordionSectionItemProps>> = (props) => {
+    AccordionSectionItem.displayName = "AccordionSectionItem";
+    const { children } = props;
+    const classes = useStyles();
+    const accordionContext = useContext(AccordionContext);
+    const itemContext = useAccordionSectionItemContext(props);
+
+    if (accordionContext && itemContext) {
+        const { renderItems, editMode, pinnedItems, storage } = accordionContext.updated;
+        const { itemUniqueId, isDescendant, isStatic, ctrlMode, pinned, hidden, match } = itemContext;
+        const inEditMode = editMode?.is || (ctrlMode?.is ?? false);
+        const isPinned = pinned?.is ?? false;
+        const isHidden = hidden?.is ?? false;
+        const isMatch = match?.is ?? true;
+
+        const writeData: typeof storage.writeData = (listName) => {
+            ctrlMode?.set(false);
+            storage.writeData(listName);
+            renderItems();
+        };
+
+        if (isStatic) {
+            return children;
+        } else if ((isDescendant || !isHidden || inEditMode) && isMatch) {
+            const pinnedContainer = isPinned ? pinnedItems?.containerRef.current : undefined;
+            const pinnedActiveIds = isPinned ? pinnedItems?.activeIds : undefined;
+            const pinnedOrder = pinnedActiveIds?.indexOf(itemUniqueId);
+
+            const itemElement = (
+                <div
+                    className={classes.sectionItemContainer}
+                    style={isPinned ? { order: pinnedOrder } : undefined}
+                    onMouseMove={ctrlMode ? (event) => ctrlMode.set(event.ctrlKey) : undefined}
+                    onMouseLeave={ctrlMode ? () => ctrlMode.set(false) : undefined}
+                >
+                    {!isDescendant && inEditMode && (
+                        <div className={classes.sectionItemButtons}>
+                            {hidden && (
+                                <Button
+                                    title={isHidden ? "Unhide" : "Hide"}
+                                    icon={isHidden ? EyeOffRegular : EyeFilled}
+                                    appearance="transparent"
+                                    onClick={() => {
+                                        hidden.toggle();
+                                        writeData("Hidden");
+                                    }}
+                                />
+                            )}
+                            {pinned && (
+                                <>
+                                    <Button
+                                        title={isPinned ? "Unpin" : "Pin"}
+                                        icon={isPinned ? PinFilled : PinRegular}
+                                        appearance="transparent"
+                                        onClick={() => {
+                                            pinned.toggle();
+                                            writeData("Pinned");
+                                        }}
+                                    />
+                                    {isPinned && (
+                                        <Button
+                                            title="Move up"
+                                            icon={ArrowCircleUpRegular}
+                                            appearance="transparent"
+                                            disabled={pinnedOrder === 0}
+                                            onClick={() => {
+                                                if (pinnedActiveIds && pinnedOrder) {
+                                                    pinned.swap(pinnedActiveIds[pinnedOrder - 1]);
+                                                    writeData("Pinned");
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    )}
+                    <AccordionSectionItemContext.Provider value={itemContext}>{children}</AccordionSectionItemContext.Provider>
+                </div>
+            );
+
+            return pinnedContainer ? <Portal mountNode={pinnedContainer}>{itemElement}</Portal> : itemElement;
+        } else {
+            return null;
+        }
+    }
+
+    return children;
+};
+
+/**
+ * Renders the Pinned section container and defines the portal target for the pinned items.
+ */
+const AccordionPinnedContainer: FunctionComponent = (props) => {
+    AccordionPinnedContainer.displayName = "AccordionPinnedContainer";
+    const classes = useStyles();
+    const accordionContext = useContext(AccordionContext);
+
+    return (
+        <div ref={accordionContext?.pinnedItems?.containerRef} className={classes.pinnedContainer}>
+            <MessageBar className={classes.pinnedContainerEmpty}>
+                <MessageBarBody>No pinned items</MessageBarBody>
+            </MessageBar>
+        </div>
+    );
+};
+
+/**
+ * Renders the search box for filtering items.
+ */
+const AccordionSearchBox: FunctionComponent = (props) => {
+    AccordionSearchBox.displayName = "AccordionSearchBox";
+    const classes = useStyles();
+    const accordionContext = useContext(AccordionContext);
+    const searchItems = accordionContext?.searchItems;
+    const [term, setTerm] = useState("");
+
+    useMemo(() => {
+        if (searchItems) {
+            Object.assign(searchItems, {
+                term,
+                setTerm,
+            });
+            accordionContext.renderItems();
+        }
+    }, [term]);
+
+    if (searchItems) {
+        return (
+            <SearchBox
+                className={classes.searchBox}
+                appearance="underline"
+                contentBefore={<FilterRegular />}
+                placeholder="Filter"
+                value={term}
+                onChange={(_, data) => {
+                    setTerm(data.value);
+                }}
+            />
+        );
+    }
+
+    return null;
+};
+
+/**
+ * Props: `AccordionSection`.
+ */
 export type AccordionSectionProps = {
+    /** The text label shown in the section header. */
     title: string;
+    /** Indicates whether the `AccordionSection` is initially collapsed. */
     collapseByDefault?: boolean;
 };
 
+/**
+ * Wrapper component that must encapsulate the section body.
+ */
 export const AccordionSection: FunctionComponent<PropsWithChildren<AccordionSectionProps>> = (props) => {
     AccordionSection.displayName = "AccordionSection";
     const classes = useStyles();
@@ -62,20 +391,50 @@ export const AccordionSection: FunctionComponent<PropsWithChildren<AccordionSect
     return <div className={classes.panelDiv}>{props.children}</div>;
 };
 
+/**
+ * Props: `Accordion`.
+ */
 export type AccordionProps = {
+    /** The unique ID of the `Accordion` instance. */
+    accordionId?: string;
+    /** The list of sections to be highlighted. */
     highlightSections?: readonly string[];
+    /** Enables the pinned items feature. */
+    enablePinnedItems?: boolean;
+    /** Enables the hidden items feature. */
+    enableHiddenItems?: boolean;
+    /** Enables the search items feature. */
+    enableSearchItems?: boolean;
 };
 
 const StringAccordion = FluentAccordion as ForwardRefExoticComponent<FluentAccordionProps<string> & RefAttributes<HTMLDivElement>>;
 
 export const Accordion = forwardRef<HTMLDivElement, PropsWithChildren<AccordionProps>>((props, ref) => {
     Accordion.displayName = "Accordion";
+    const { children, accordionId, highlightSections, ...rest } = props;
     const classes = useStyles();
     const { size } = useContext(ToolContext);
-    const { children, highlightSections, ...rest } = props;
+    const accordionContext = useAccordionContext(props);
+    const pinnedItems = accordionContext?.pinnedItems;
+
+    const pinnedSectionElement = useMemo(() => {
+        return (
+            pinnedItems && (
+                <AccordionSection title="Pinned" collapseByDefault={false}>
+                    <AccordionPinnedContainer />
+                </AccordionSection>
+            )
+        );
+    }, []);
+
+    // Prevents sections contents from unmounting when closed, allowing their elements to be used in the Pinned section.
+    const preventUnmountMotion: AccordionPanelProps["collapseMotion"] = useMemo(() => {
+        return pinnedItems ? { children: (Motion, props) => <Motion {...props} unmountOnExit={false} /> } : undefined;
+    }, []);
+
     const validChildren = useMemo(() => {
         return (
-            Children.map(children, (child) => {
+            Children.map([pinnedSectionElement, children], (child) => {
                 if (isValidElement(child)) {
                     const childProps = child.props as Partial<AccordionSectionProps>;
                     if (childProps.title) {
@@ -134,22 +493,27 @@ export const Accordion = forwardRef<HTMLDivElement, PropsWithChildren<AccordionP
 
     return (
         <StringAccordion ref={ref} className={classes.accordion} collapsible multiple onToggle={onToggle} openItems={openItems} {...rest}>
-            {validChildren.map((child, index) => {
-                const isHighlighted = highlightSections?.includes(child.title);
-                return (
-                    <AccordionItem key={child.content.key ?? child.title} value={child.title}>
-                        <div className={isHighlighted ? classes.highlightDiv : undefined}>
-                            <AccordionHeader size={size}>
-                                <Subtitle2Stronger>{child.title}</Subtitle2Stronger>
-                            </AccordionHeader>
-                            <AccordionPanel>
-                                <div className={classes.panelDiv}>{child.content}</div>
-                            </AccordionPanel>
-                        </div>
-                        {index < validChildren.length - 1 && <Divider inset={true} className={size === "small" ? classes.dividerSmall : classes.divider} />}
-                    </AccordionItem>
-                );
-            })}
+            <AccordionContext.Provider value={accordionContext}>
+                <AccordionMenuBar />
+                <div className={classes.accordionBody}>
+                    {validChildren.map((child, index) => {
+                        const isHighlighted = highlightSections?.includes(child.title);
+                        return (
+                            <AccordionSectionBlock key={child.content.key ?? child.title} sectionId={child.title}>
+                                <div className={isHighlighted ? classes.highlightDiv : undefined}>
+                                    <AccordionHeader size={size}>
+                                        <Subtitle2Stronger>{child.title}</Subtitle2Stronger>
+                                    </AccordionHeader>
+                                    <AccordionPanel collapseMotion={preventUnmountMotion}>
+                                        <div className={classes.panelDiv}>{child.content}</div>
+                                    </AccordionPanel>
+                                </div>
+                                {index < validChildren.length - 1 && <Divider inset={true} className={size === "small" ? classes.dividerSmall : classes.divider} />}
+                            </AccordionSectionBlock>
+                        );
+                    })}
+                </div>
+            </AccordionContext.Provider>
         </StringAccordion>
     );
 });
