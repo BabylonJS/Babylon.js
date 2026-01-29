@@ -102,25 +102,43 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
         setCurrentY(initialY);
     }, [initialX, initialY]);
 
+    // Helper to compare curves by identity (animation + property) rather than reference
+    const curvesMatch = useCallback((c1: CurveData, c2: CurveData) => {
+        return c1.animation.uniqueId === c2.animation.uniqueId && c1.property === c2.property;
+    }, []);
+
     // Check if this key point is selected
     const isSelected = useCallback(() => {
-        return state.activeKeyPoints?.some((kp: KeyPoint) => kp.curve === curve && kp.keyId === keyId) ?? false;
-    }, [state.activeKeyPoints, curve, keyId]);
-
-    // Check if this is the main key point
-    const isMainKeyPoint = useCallback(() => {
-        return state.mainKeyPoint?.curve === curve && state.mainKeyPoint?.keyId === keyId;
-    }, [state.mainKeyPoint, curve, keyId]);
+        return state.activeKeyPoints?.some((kp: KeyPoint) => curvesMatch(kp.curve, curve) && kp.keyId === keyId) ?? false;
+    }, [state.activeKeyPoints, curve, keyId, curvesMatch]);
 
     // Update selection state
+    // v1 logic: "Selected" means this keypoint is in activeKeyPoints
+    // "Siblings" means another keypoint with same keyId but different curve (same animation) is selected
     useEffect(() => {
         if (isSelected()) {
-            setSelectedState(isMainKeyPoint() ? SelectionState.Selected : SelectionState.Siblings);
+            // This keypoint is directly selected
+            setSelectedState(SelectionState.Selected);
+        } else if (state.activeKeyPoints) {
+            // Check if a sibling (same keyId, different curve, same animation) is selected
+            let isSibling = false;
+            for (const activeKeyPoint of state.activeKeyPoints) {
+                if (activeKeyPoint.keyId === keyId && !curvesMatch(activeKeyPoint.curve, curve) && activeKeyPoint.curve.animation.uniqueId === curve.animation.uniqueId) {
+                    isSibling = true;
+                    break;
+                }
+            }
+            if (isSibling) {
+                setSelectedState(SelectionState.Siblings);
+            } else {
+                setSelectedState(SelectionState.None);
+                setTangentSelectedIndex(-1);
+            }
         } else {
             setSelectedState(SelectionState.None);
             setTangentSelectedIndex(-1);
         }
-    }, [state.activeKeyPoints, state.mainKeyPoint, curve, keyId, isSelected, isMainKeyPoint]);
+    }, [state.activeKeyPoints, state.mainKeyPoint, curve, keyId, isSelected, curvesMatch]);
 
     // Extract slope helper that uses current state
     const extractSlope = useCallback(
@@ -240,12 +258,13 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             // Update activeKeyPoints based on overlap
             actions.setActiveKeyPoints((prev) => {
                 const current = prev || [];
-                const isCurrentlySelected = current.some((kp) => kp.curve === curve && kp.keyId === keyId);
+                const matchesCurve = (kp: KeyPoint) => kp.curve.animation.uniqueId === curve.animation.uniqueId && kp.curve.property === curve.property && kp.keyId === keyId;
+                const isCurrentlySelected = current.some(matchesCurve);
 
                 if (overlap && !isCurrentlySelected) {
                     return [...current, { curve, keyId }];
                 } else if (!overlap && isCurrentlySelected) {
-                    return current.filter((kp) => !(kp.curve === curve && kp.keyId === keyId));
+                    return current.filter((kp) => !matchesCurve(kp));
                 }
                 return prev;
             });
@@ -261,7 +280,8 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
         const observer = observables.onSelectAllKeys.add(() => {
             actions.setActiveKeyPoints((prev) => {
                 const current = prev || [];
-                const isCurrentlySelected = current.some((kp) => kp.curve === curve && kp.keyId === keyId);
+                const matchesCurve = (kp: KeyPoint) => kp.curve.animation.uniqueId === curve.animation.uniqueId && kp.curve.property === curve.property && kp.keyId === keyId;
+                const isCurrentlySelected = current.some(matchesCurve);
                 if (!isCurrentlySelected) {
                     return [...current, { curve, keyId }];
                 }
@@ -318,9 +338,10 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             } else {
                 actions.setActiveKeyPoints((prev) => {
                     const current = prev || [];
-                    const isCurrentlySelected = current.some((kp) => kp.curve === curve && kp.keyId === keyId);
+                    const matchesCurve = (kp: KeyPoint) => kp.curve.animation.uniqueId === curve.animation.uniqueId && kp.curve.property === curve.property && kp.keyId === keyId;
+                    const isCurrentlySelected = current.some(matchesCurve);
                     if (isCurrentlySelected) {
-                        return current.filter((kp) => !(kp.curve === curve && kp.keyId === keyId));
+                        return current.filter((kp) => !matchesCurve(kp));
                     } else {
                         return [...current, { curve, keyId }];
                     }

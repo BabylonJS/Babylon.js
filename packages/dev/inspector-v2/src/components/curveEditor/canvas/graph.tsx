@@ -14,7 +14,7 @@ import { useCurveEditor } from "../curveEditorContext";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { Curve as SharedCurve } from "shared-ui-components/curveEditor/curve";
 import { Curve } from "./curve";
-import { KeyPointComponent } from "./keyPointComponent";
+import { KeyPointComponent } from "./keyPoint";
 import { ChannelColors, ColorChannelColors, DefaultCurveColor, GraphColors } from "../curveEditorColors";
 
 const useStyles = makeStyles({

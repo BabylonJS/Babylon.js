@@ -1,10 +1,10 @@
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
-import type { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import * as React from "react";
-import { Animation } from "core/Animations/animation";
 import type { Context, IActiveAnimationChangedOptions } from "../context";
 import type { Curve } from "./curve";
+import type { AnimationKeyInterpolation } from "core/Animations/animationKey";
+import { Animation } from "core/Animations/animation";
 
 interface ICurveComponentProps {
     curve: Curve;
@@ -68,15 +68,15 @@ export class CurveComponent extends React.Component<ICurveComponentProps, ICurve
         if (!this.props.context.isChannelEnabled(this.props.curve.animation, this.props.curve.color)) {
             return null;
         }
-        const pathStyle: React.CSSProperties = {
+        const pathStyle: any = {
             stroke: this.props.curve.color,
             fill: "none",
             strokeWidth: "1",
         };
 
         if (this.props.curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION) {
-            (pathStyle as Record<string, string>)["strokeDasharray"] = "5";
-            (pathStyle as Record<string, string>)["strokeOpacity"] = "0.5";
+            pathStyle["stroke-dasharray"] = "5";
+            pathStyle["stroke-opacity"] = "0.5";
         }
 
         return (
