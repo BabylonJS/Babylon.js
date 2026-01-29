@@ -112,7 +112,7 @@ export type ES6PackageName =
     | "babylonjs-gltf2interface"
     | "@babylonjs/smart-filters";
 
-export const umdPackageMapping: { [key in UMDPackageName]: { baseDir: string; baseFilename: string; isBundle?: boolean } } = {
+export const umdPackageMapping: { [key in UMDPackageName]: { sourceDir?: string; baseDir: string; baseFilename: string; isBundle?: boolean } } = {
     babylonjs: {
         baseDir: "",
         baseFilename: "babylon",
@@ -138,11 +138,15 @@ export const umdPackageMapping: { [key in UMDPackageName]: { baseDir: string; ba
         baseFilename: "babylonjs.proceduralTextures",
     },
     "babylonjs-inspector-legacy": {
+        // Needed because the package name does not currently match the directory name (see prepareSnapshot.ts)
+        sourceDir: "babylonjs-inspector",
         baseDir: "inspector",
         baseFilename: "babylon.inspector",
         isBundle: true,
     },
     "babylonjs-inspector": {
+        // Needed because the package name does not currently match the directory name (see prepareSnapshot.ts)
+        sourceDir: "babylonjs-inspector-v2",
         baseDir: "inspector",
         baseFilename: "babylon.inspector-v2",
         isBundle: true,

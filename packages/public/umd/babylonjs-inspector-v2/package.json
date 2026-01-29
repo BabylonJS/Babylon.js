@@ -9,7 +9,7 @@
         "readme.md"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:prod",
+        "build": "npm run clean && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
