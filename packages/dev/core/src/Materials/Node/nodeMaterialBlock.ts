@@ -970,7 +970,7 @@ export class NodeMaterialBlock {
         const serializedInputs = serializationObject.inputs;
         const serializedOutputs = serializationObject.outputs;
         if (serializedInputs) {
-            for (let i = 0; i < serializedInputs.length; i++) {
+            for (let i = 0; i < Math.min(serializedInputs.length, this.inputs.length); i++) {
                 const port = serializedInputs[i];
 
                 if (port.displayName) {
@@ -983,7 +983,7 @@ export class NodeMaterialBlock {
             }
         }
         if (serializedOutputs) {
-            for (let i = 0; i < serializedOutputs.length; i++) {
+            for (let i = 0; i < Math.min(serializedOutputs.length, this.outputs.length); i++) {
                 const port = serializedOutputs[i];
                 if (port.displayName) {
                     this.outputs[i].displayName = port.displayName;
