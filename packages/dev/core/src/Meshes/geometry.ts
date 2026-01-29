@@ -1061,10 +1061,8 @@ export class Geometry implements IGetSetVerticesData {
                 let bufferDataByteSize = 0;
                 if (bufferData instanceof Array) {
                     bufferDataByteSize = bufferData.length * 4;
-                } else if (bufferData instanceof ArrayBuffer) {
-                    bufferDataByteSize = bufferData.byteLength;
                 } else {
-                    bufferDataByteSize = bufferData.buffer.byteLength;
+                    bufferDataByteSize = bufferData.byteLength;
                 }
                 numElements = bufferDataByteSize / byteStride;
             }
