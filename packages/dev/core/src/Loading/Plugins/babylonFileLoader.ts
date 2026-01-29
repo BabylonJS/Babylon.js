@@ -152,14 +152,6 @@ const FindMaterial = (materialId: any, scene: Scene) => {
     return TempMaterialIndexContainer[materialId];
 };
 
-const FindSkeleton = (skeletonId: any, scene: Scene) => {
-    if (typeof skeletonId !== "number") {
-        return scene.getLastSkeletonById(skeletonId);
-    }
-
-    return TempSkeletonIndexContainer[skeletonId];
-};
-
 /**
  * @experimental
  * Loads an AssetContainer from a serialized Babylon scene.
@@ -627,10 +619,18 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
 
         // link meshes with skeletons
         for (const mesh of scene.meshes) {
-            if (mesh._waitingSkeletonId !== null) {
-                mesh.skeleton = FindSkeleton(mesh._waitingSkeletonId, scene);
-                mesh._waitingSkeletonId = null;
+            // First try to get it via uniqueId
+            if (mesh._waitingSkeletonUniqueId !== null) {
+                mesh.skeleton = TempSkeletonIndexContainer[mesh._waitingSkeletonUniqueId];
             }
+
+            // If not possible or not found, try to get it from the scene (backwards compatibility)
+            if (mesh._waitingSkeletonId !== null && !mesh.skeleton) {
+                mesh.skeleton = scene.getLastSkeletonById(mesh._waitingSkeletonId);
+            }
+
+            mesh._waitingSkeletonId = null;
+            mesh._waitingSkeletonUniqueId = null;
         }
 
         // link bones to transform nodes
@@ -641,7 +641,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                     for (const bone of skeleton.bones) {
                         let linkTransformNode: Nullable<Node> = null;
                         // First try to get it via uniqueId
-                        if (bone._waitingTransformNodeUniqueId) {
+                        if (bone._waitingTransformNodeUniqueId !== null) {
                             linkTransformNode = TempIndexContainer[bone._waitingTransformNodeUniqueId];
                         }
 
@@ -1030,10 +1030,18 @@ RegisterSceneLoaderPlugin({
 
                 // link meshes with skeletons
                 for (const mesh of scene.meshes) {
-                    if (mesh._waitingSkeletonId !== null) {
-                        mesh.skeleton = FindSkeleton(mesh._waitingSkeletonId, scene);
-                        mesh._waitingSkeletonId = null;
+                    // First try to get it via uniqueId
+                    if (mesh._waitingSkeletonUniqueId !== null) {
+                        mesh.skeleton = TempSkeletonIndexContainer[mesh._waitingSkeletonUniqueId];
                     }
+
+                    // If not possible or not found, try to get it from the scene (backwards compatibility)
+                    if (mesh._waitingSkeletonId !== null && !mesh.skeleton) {
+                        mesh.skeleton = scene.getLastSkeletonById(mesh._waitingSkeletonId);
+                    }
+
+                    mesh._waitingSkeletonId = null;
+                    mesh._waitingSkeletonUniqueId = null;
                 }
 
                 // link bones to transform nodes

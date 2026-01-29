@@ -4522,12 +4522,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Skeleton
-        const id = parsedMesh.skeletonUniqueId ?? parsedMesh.skeletonId;
-        if (id !== undefined && id !== null) {
-            mesh._waitingSkeletonId = id;
+        if (parsedMesh.skeletonId !== undefined && parsedMesh.skeletonId !== null) {
+            mesh._waitingSkeletonId = parsedMesh.skeletonId;
             if (parsedMesh.numBoneInfluencers) {
                 mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
             }
+        }
+
+        if (parsedMesh.skeletonUniqueId !== undefined && parsedMesh.skeletonUniqueId !== null) {
+            mesh._waitingSkeletonUniqueId = parsedMesh.skeletonUniqueId;
         }
 
         // Animations

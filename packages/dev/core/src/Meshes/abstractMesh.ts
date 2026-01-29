@@ -337,7 +337,10 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     public _waitingMorphTargetManagerId: Nullable<number> = null;
 
     /** @internal */
-    public _waitingSkeletonId: Nullable<number> = null;
+    public _waitingSkeletonId: Nullable<string> = null;
+
+    /** @internal */
+    public _waitingSkeletonUniqueId: Nullable<number> = null;
 
     /**
      * The culling strategy to use to check whether the mesh must be rendered or not.
