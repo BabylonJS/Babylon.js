@@ -90,7 +90,7 @@ const updateDependencies = (version, dependencies) => {
 };
 
 const updatePeerDependencies = (version) => {
-    // get all package.json files in the dev folder
+    // get all package.json files in the public folder
     const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json").replace(/\\/g, "/"));
     files.forEach((file) => {
         try {

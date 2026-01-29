@@ -162,7 +162,7 @@ export class ClusteredLightContainer extends Light {
     private _sliceScale = 0;
     private _sliceBias = 0;
     // List of vec2's that keep track of the min and max index per slice
-    private _sliceRanges: Float32Array;
+    private _sliceRanges: Float32Array<ArrayBuffer>;
 
     private _depthSlices = DefaultDepthSlices;
     /**

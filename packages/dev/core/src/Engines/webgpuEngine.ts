@@ -1630,10 +1630,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         if (data instanceof Array) {
             view = new Float32Array(data);
-        } else if (data instanceof ArrayBuffer) {
-            view = new Uint8Array(data);
-        } else {
+        } else if (ArrayBuffer.isView(data)) {
             view = data;
+        } else {
+            view = new Uint8Array(data);
         }
 
         const dataBuffer = this._bufferManager.createBuffer(
@@ -1729,19 +1729,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         if (byteLength === undefined) {
             if (data instanceof Array) {
                 view = new Float32Array(data);
-            } else if (data instanceof ArrayBuffer) {
-                view = new Uint8Array(data);
-            } else {
+            } else if (ArrayBuffer.isView(data)) {
                 view = data;
+            } else {
+                view = new Uint8Array(data);
             }
             byteLength = view.byteLength;
         } else {
             if (data instanceof Array) {
                 view = new Float32Array(data);
-            } else if (data instanceof ArrayBuffer) {
-                view = new Uint8Array(data);
-            } else {
+            } else if (ArrayBuffer.isView(data)) {
                 view = data;
+            } else {
+                view = new Uint8Array(data);
             }
         }
 
@@ -1756,10 +1756,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         if (data instanceof Array) {
             view = new Float32Array(data);
-        } else if (data instanceof ArrayBuffer) {
-            view = new Uint8Array(data);
-        } else {
+        } else if (ArrayBuffer.isView(data)) {
             view = data;
+        } else {
+            view = new Uint8Array(data);
         }
 
         let flags = 0;
@@ -4027,19 +4027,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         if (byteLength === undefined) {
             if (data instanceof Array) {
                 view = new Float32Array(data);
-            } else if (data instanceof ArrayBuffer) {
-                view = new Uint8Array(data);
-            } else {
+            } else if (ArrayBuffer.isView(data)) {
                 view = data;
+            } else {
+                view = new Uint8Array(data);
             }
             byteLength = view.byteLength;
         } else {
             if (data instanceof Array) {
                 view = new Float32Array(data);
-            } else if (data instanceof ArrayBuffer) {
-                view = new Uint8Array(data);
-            } else {
+            } else if (ArrayBuffer.isView(data)) {
                 view = data;
+            } else {
+                view = new Uint8Array(data);
             }
         }
 
