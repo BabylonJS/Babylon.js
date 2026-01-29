@@ -21,7 +21,6 @@ import {
     Subtitle2Stronger,
     tokens,
     ToolbarRadioButton,
-    Tooltip,
 } from "@fluentui/react-components";
 import {
     LayoutColumnTwoFocusLeftFilled,
@@ -43,6 +42,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Observable } from "core/Misc/observable";
 import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { Tooltip } from "shared-ui-components/fluent/primitives/tooltip";
 import { ErrorBoundary } from "../components/errorBoundary";
 import { TeachingMoment } from "../components/teachingMoment";
 import { Theme } from "../components/theme";
@@ -650,18 +650,19 @@ const SidePaneTab: FunctionComponent<
             />
             <div className={tabClass}>
                 <DockMenu openOnContext sidePaneId={id} dockOptions={dockOptions}>
-                    <ToolbarRadioButton
-                        ref={teachingMoment.targetRef}
-                        title={title ?? id}
-                        appearance="transparent"
-                        className={classes.tabRadioButton}
-                        name="selectedTab"
-                        value={id}
-                        icon={{
-                            className: isSelected ? classes.selectedTabIcon : undefined,
-                            children: <Icon />,
-                        }}
-                    />
+                    <Tooltip content={title ?? id}>
+                        <ToolbarRadioButton
+                            ref={teachingMoment.targetRef}
+                            appearance="transparent"
+                            className={classes.tabRadioButton}
+                            name="selectedTab"
+                            value={id}
+                            icon={{
+                                className: isSelected ? classes.selectedTabIcon : undefined,
+                                children: <Icon />,
+                            }}
+                        />
+                    </Tooltip>
                 </DockMenu>
             </div>
         </>
@@ -802,7 +803,7 @@ function usePane(
             <Menu positioning="below-end">
                 <MenuTrigger disableButtonEnhancement={true}>
                     {(triggerProps) => (
-                        <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
+                        <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"}>
                             <SplitButton
                                 className={classes.paneCollapseButton}
                                 menuButton={triggerProps}
@@ -1361,14 +1362,14 @@ export function MakeShellServiceDefinition({
                                     <>
                                         <FluentFade visible={leftPaneCollapsed} delay={50} duration={100} unmountOnExit>
                                             <div className={mergeClasses(classes.expandButtonContainer, classes.expandButtonContainerLeft)}>
-                                                <Tooltip content="Show Side Pane" relationship="label">
+                                                <Tooltip content="Show Side Pane">
                                                     <Button className={classes.expandButton} icon={<PanelLeftExpandRegular />} onClick={() => setLeftPaneCollapsed(false)} />
                                                 </Tooltip>
                                             </div>
                                         </FluentFade>
                                         <FluentFade visible={rightPaneCollapsed} delay={50} duration={100} unmountOnExit>
                                             <div className={mergeClasses(classes.expandButtonContainer, classes.expandButtonContainerRight)}>
-                                                <Tooltip content="Show Side Pane" relationship="label">
+                                                <Tooltip content="Show Side Pane">
                                                     <Button className={classes.expandButton} icon={<PanelRightExpandRegular />} onClick={() => setRightPaneCollapsed(false)} />
                                                 </Tooltip>
                                             </div>
