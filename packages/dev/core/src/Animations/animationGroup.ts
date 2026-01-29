@@ -7,14 +7,12 @@ import type { Scene, IDisposable } from "../scene";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
-import type { Node } from "../node";
 
 import { Tags } from "../Misc/tags";
 import type { AnimationGroupMask } from "./animationGroupMask";
 import "./animatable";
 import type { IAssetContainer } from "core/IAssetContainer";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
-import type { MorphTarget } from "../Morph/morphTarget";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -1015,26 +1013,21 @@ export class AnimationGroup implements IDisposable {
      * Returns a new AnimationGroup object parsed from the source provided.
      * @param parsedAnimationGroup defines the source
      * @param scene defines the scene that will receive the animationGroup
-     * @param idMap a map of target.uniqueId (or target.id in earlier versions) to the target instance, to accelerate lookup
+     * @param targetLookup a callback that will be used instead of the default lookup
      * @returns a new AnimationGroup
      */
-    public static Parse(parsedAnimationGroup: any, scene: Scene, idMap?: Map<string, Node | MorphTarget>): AnimationGroup {
+    public static Parse(parsedAnimationGroup: any, scene: Scene, targetLookup?: (parsedTargetAnimation: any) => any): AnimationGroup {
         const animationGroup = new AnimationGroup(parsedAnimationGroup.name, scene, parsedAnimationGroup.weight, parsedAnimationGroup.playOrder);
         for (let i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++) {
             const targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
             const animation = Animation.Parse(targetedAnimation.animation);
-            const id = (targetedAnimation.targetUniqueId ?? targetedAnimation.targetId).toString();
 
-            // Context:
-            // Historically, we used just scene.getXXXById for lookups here.
-            // Then the idMap parameter was added to address inefficient lookups in large scenes.
-            // And then we moved to using file-specific uniqueIds instead of ids to avoid name collisions.
-            // So now we have three possible ways to lookup targets: uniqueId via idMap, id via idMap, and id via scene.
+            const target = targetLookup
+                ? targetLookup(targetedAnimation)
+                : targetedAnimation.animation.property === "influence"
+                  ? scene.getMorphTargetById(targetedAnimation.targetId)
+                  : scene.getNodeById(targetedAnimation.targetId);
 
-            // TODO: Can or should this mapping logic for animations -> targets be moved into babylonFileLoader.ts?
-            // Right now, it's inconsistent with other Parse functions and caused me a bit of confusion.
-            // But moving this out would break backwards compatibility. At the same time, I don't know who'd be using this function directly.
-            const target = idMap?.get(id) ?? (targetedAnimation.animation.property === "influence" ? scene.getMorphTargetById(id) : scene.getNodeById(id));
             if (target) {
                 animationGroup.addTargetedAnimation(animation, target);
             }

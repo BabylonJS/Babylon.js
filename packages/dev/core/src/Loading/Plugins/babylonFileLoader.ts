@@ -358,7 +358,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                 for (let index = 0; index < parsedManager.targets.length; index++) {
                     const parsedTarget = parsedManager.targets[index];
                     const target = manager.getTarget(index);
-                    TempMorphTargetIndexContainer[parsedTarget.uniqueId ?? parsedTarget.id] = target;
+                    TempMorphTargetIndexContainer[parsedTarget.uniqueId] = target;
                 }
             }
         }
@@ -478,56 +478,64 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
 
         // Animation Groups
         if (parsedData.animationGroups !== undefined && parsedData.animationGroups !== null && parsedData.animationGroups.length) {
-            // Build the idMap only for scenes with animationGroups.
-            const idMap = new Map<string, Node | MorphTarget>();
+            // Build the nodeMap only for scenes with animationGroups.
+            const nodeMap = new Map<string, Node>();
             // Nodes in scene does not change when parsing animationGroups, so it's safe to build a map.
             // This follows the order of scene.getNodeById: mesh, transformNode, light, camera, bone
+            // TODO: This won't be used for newer files that use uniqueIds for animation targets and should be refactored.
             for (let index = 0; index < scene.meshes.length; index++) {
                 // This follows the behavior of scene.getXXXById, which picks the first match
-                if (!idMap.has(scene.meshes[index].id)) {
-                    idMap.set(scene.meshes[index].id, scene.meshes[index]);
+                if (!nodeMap.has(scene.meshes[index].id)) {
+                    nodeMap.set(scene.meshes[index].id, scene.meshes[index]);
                 }
             }
             for (let index = 0; index < scene.transformNodes.length; index++) {
-                if (!idMap.has(scene.transformNodes[index].id)) {
-                    idMap.set(scene.transformNodes[index].id, scene.transformNodes[index]);
+                if (!nodeMap.has(scene.transformNodes[index].id)) {
+                    nodeMap.set(scene.transformNodes[index].id, scene.transformNodes[index]);
                 }
             }
             for (let index = 0; index < scene.lights.length; index++) {
-                if (!idMap.has(scene.lights[index].id)) {
-                    idMap.set(scene.lights[index].id, scene.lights[index]);
+                if (!nodeMap.has(scene.lights[index].id)) {
+                    nodeMap.set(scene.lights[index].id, scene.lights[index]);
                 }
             }
             for (let index = 0; index < scene.cameras.length; index++) {
-                if (!idMap.has(scene.cameras[index].id)) {
-                    idMap.set(scene.cameras[index].id, scene.cameras[index]);
+                if (!nodeMap.has(scene.cameras[index].id)) {
+                    nodeMap.set(scene.cameras[index].id, scene.cameras[index]);
                 }
             }
             for (let skeletonIndex = 0; skeletonIndex < scene.skeletons.length; skeletonIndex++) {
                 const skeleton = scene.skeletons[skeletonIndex];
                 for (let boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
-                    if (!idMap.has(skeleton.bones[boneIndex].id)) {
-                        idMap.set(skeleton.bones[boneIndex].id, skeleton.bones[boneIndex]);
+                    if (!nodeMap.has(skeleton.bones[boneIndex].id)) {
+                        nodeMap.set(skeleton.bones[boneIndex].id, skeleton.bones[boneIndex]);
                     }
                 }
             }
-            // If possible, try to use uniqueIds over ids to avoid name collisions.
-            // This means we will need to use the temp index containers to enable finding the nodes/morph targets by uniqueId.
-            for (const id in TempIndexContainer) {
-                idMap.set(id.toString(), TempIndexContainer[id]);
-            }
-            for (const id in TempMorphTargetIndexContainer) {
-                idMap.set(id.toString(), TempMorphTargetIndexContainer[id]);
-            }
 
-            // OPEN QUESTIONS:
-            // - Does the idMap need to also have the scene's nodes (i.e., incl. nodes that already exist in the scene before loading)?
-            // That was the previous behavior, but I don't see why it would be needed unless we had a guarantee that .babylon files referencing
-            // nodes outside of the file would be possible.
-            //  - Why don't all the other linkings use a nodeMap approach?
+            const targetLookup = (parsedTargetAnimation: any) => {
+                let target = null;
+                const isMorphTarget = parsedTargetAnimation.animation.property === "influence";
+                const uniqueId = parsedTargetAnimation.targetUniqueId;
+
+                // Attempt to find animation targets by uniqueId first (tracked in TempXXXIndexContainer).
+                if (uniqueId !== undefined && uniqueId !== null) {
+                    target = isMorphTarget ? TempMorphTargetIndexContainer[uniqueId] : TempIndexContainer[uniqueId];
+                }
+
+                // Backwards compatibility: If no uniqueId is provided or no match is found,
+                // fall back to searching by id in the scene.
+                if (!target) {
+                    const id = parsedTargetAnimation.targetId;
+                    target = isMorphTarget ? scene.getMorphTargetById(id) : nodeMap.get(id); // nodeMap is equivalent to scene.getNodeById
+                }
+
+                return target;
+            };
+
             for (index = 0, cache = parsedData.animationGroups.length; index < cache; index++) {
                 const parsedAnimationGroup = parsedData.animationGroups[index];
-                const animationGroup = AnimationGroup.Parse(parsedAnimationGroup, scene, idMap);
+                const animationGroup = AnimationGroup.Parse(parsedAnimationGroup, scene, targetLookup);
                 container.animationGroups.push(animationGroup);
                 animationGroup._parentContainer = container;
                 log += index === 0 ? "\n\tAnimationGroups:" : "";
