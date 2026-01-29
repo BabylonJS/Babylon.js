@@ -47,18 +47,14 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #ifdef STORE_CAMERASPACE_Z
     const occlusionThreshold: f32 = 1.0000001;
 #else
-    const occlusionThreshold: f32 = 0.001;
+    const occlusionThreshold: f32 = 0.01;
 #endif
     var occlusionCenter: f32 = step(occlusionThreshold, abs(centerMask.g - depthCenter));
     var occlusionX: f32 = step(occlusionThreshold, abs(maskX.g - depthX));
     var occlusionY: f32 = step(occlusionThreshold, abs(maskY.g - depthY));
     var occlusionXY: f32 = step(occlusionThreshold, abs(maskXY.g - depthXY));
 
-ifdef STORE_CAMERASPACE_Z
     var occlusionFactor: f32 = min(min(occlusionCenter, occlusionX), min(occlusionY, occlusionXY));
-#else
-    var occlusionFactor: f32 = max(max(occlusionCenter, occlusionX), max(occlusionY, occlusionXY));
-#endif
 
     var finalOutlineMask: f32 = outlineMask * (1.0 - uniforms.occlusionStrength * occlusionFactor);
 

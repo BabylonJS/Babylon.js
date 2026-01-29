@@ -44,18 +44,14 @@ void main(void) {
 #ifdef STORE_CAMERASPACE_Z
     const float occlusionThreshold = 1.0000001;
 #else
-    const float occlusionThreshold = 0.001;
+    const float occlusionThreshold = 0.01;
 #endif
     float occlusionCenter = step(occlusionThreshold, abs(centerMask.g - depthCenter));
     float occlusionX = step(occlusionThreshold, abs(maskX.g - depthX));
     float occlusionY = step(occlusionThreshold, abs(maskY.g - depthY));
     float occlusionXY = step(occlusionThreshold, abs(maskXY.g - depthXY));
 
-#ifdef STORE_CAMERASPACE_Z
     float occlusionFactor = min(min(occlusionCenter, occlusionX), min(occlusionY, occlusionXY));
-#else
-    float occlusionFactor = max(max(occlusionCenter, occlusionX), max(occlusionY, occlusionXY));
-#endif
 
     float finalOutlineMask = outlineMask * (1.0 - occlusionStrength * occlusionFactor);
 
