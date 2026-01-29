@@ -350,7 +350,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 attributes: [VertexBuffer.PositionKind],
                 uniformsNames: ["screenSize", "outlineColor", "outlineThickness", "occlusionStrength", "occlusionThreshold"],
                 samplers: ["maskSampler", "depthSampler"],
-                defines: this._options.storeCameraSpaceZ ? "#define STORE_CAMERASPACE_Z" : "",
+                defines: "",
                 fallbacks: null,
                 onCompiled: null,
                 onError: null,
