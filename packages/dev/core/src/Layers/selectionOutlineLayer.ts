@@ -13,8 +13,6 @@ import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { IThinSelectionOutlineLayerOptions } from "./thinSelectionOutlineLayer";
 import { ThinSelectionOutlineLayer } from "./thinSelectionOutlineLayer";
-import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
-import { SelectionOutlineConfiguration } from "../Rendering/selectionOutlineConfiguration";
 import type { Color3 } from "../Maths/math.color";
 
 declare module "../scene" {
@@ -104,7 +102,6 @@ export class SelectionOutlineLayer extends EffectLayer {
     private _options: Required<ISelectionOutlineLayerOptions>;
 
     protected override readonly _thinEffectLayer: ThinSelectionOutlineLayer;
-    private readonly _prePassEffectConfiguration: PrePassEffectConfiguration;
 
     /**
      * Instantiates a new selection outline Layer and references it to the scene..
@@ -135,11 +132,7 @@ export class SelectionOutlineLayer extends EffectLayer {
         // Do not render as long as no meshes have been added
         this._shouldRender = false;
 
-        this._scene.enablePrePassRenderer();
-
-        const prePassRenderer = this._scene._prePassRenderer!;
-        this._prePassEffectConfiguration = prePassRenderer.addEffectConfiguration(new SelectionOutlineConfiguration());
-        this._prePassEffectConfiguration.enabled = true;
+        this._scene.enableDepthRenderer();
     }
 
     /**
@@ -171,8 +164,8 @@ export class SelectionOutlineLayer extends EffectLayer {
 
         this._thinEffectLayer.bindTexturesForCompose = (effect: Effect): void => {
             effect.setTexture("maskSampler", this._mainTexture);
-            const prePassRenderer = this._scene._prePassRenderer!;
-            effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
+            const depthRenderer = this._scene.enableDepthRenderer();
+            effect.setTexture("depthSampler", depthRenderer.getDepthMap());
 
             const mainTextureDesiredSize = this._mainTextureDesiredSize;
             this._thinEffectLayer.textureWidth = mainTextureDesiredSize.width;

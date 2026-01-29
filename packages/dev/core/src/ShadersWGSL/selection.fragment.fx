@@ -4,7 +4,11 @@ flat varying vSelectionId: f32;
 uniform selectionId: f32;
 #endif
 
+#ifdef STORE_CAMERASPACE_Z
 varying vViewPosZ: f32;
+#else
+varying vDepthMetric: f32;
+#endif
 
 #ifdef ALPHATEST
 varying vUV: vec2f;
@@ -35,7 +39,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var id: f32 = uniforms.selectionId;
 #endif
 
+#ifdef STORE_CAMERASPACE_Z
     fragmentOutputs.color = vec4(id, fragmentInputs.vViewPosZ, 0.0, 1.0);
+#else
+    fragmentOutputs.color = vec4(id, fragmentInputs.vDepthMetric, 0.0, 1.0);
+#endif
 
 #define CUSTOM_FRAGMENT_MAIN_END
 }

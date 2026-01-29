@@ -15,14 +15,21 @@ attribute instanceSelectionId: f32;
 
 #include<instancesDeclaration>
 uniform viewProjection: mat4x4f;
+
+#ifdef STORE_CAMERASPACE_Z
 uniform view: mat4x4f;
+#endif
 
 // Output
 #ifdef INSTANCES
 flat varying vSelectionId: f32;
 #endif
 
+#ifdef STORE_CAMERASPACE_Z
 varying vViewPosZ: f32;
+#else
+varying vDepthMetric: f32;
+#endif
 
 #ifdef ALPHATEST
 varying vUV: vec2f;
@@ -66,7 +73,15 @@ fn main(input: VertexInputs) -> FragmentInputs {
 #endif
 #endif
 
-    vertexOutputs.vViewPosZ = (uniforms.view * worldPos).z;
+    #ifdef STORE_CAMERASPACE_Z
+        vertexOutputs.vViewPosZ = (uniforms.view * worldPos).z;
+    #else
+        #ifdef USE_REVERSE_DEPTHBUFFER
+            vertexOutputs.vDepthMetric = ((-vertexOutputs.position.z + uniforms.depthValues.x) / (uniforms.depthValues.y));
+        #else
+            vertexOutputs.vDepthMetric = ((vertexOutputs.position.z + uniforms.depthValues.x) / (uniforms.depthValues.y));
+        #endif
+    #endif
 
 #ifdef INSTANCES
     vertexOutputs.vSelectionId = vertexInputs.instanceSelectionId;

@@ -69,6 +69,11 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
      */
     public textureHeight: number = 0;
 
+    /**
+     * Specifies whether the depth stored is the Z coordinate in camera space.
+     */
+    public storeCameraSpaceZ: boolean = false;
+
     /** @internal */
     public override _options: Required<IThinSelectionOutlineLayerOptions>;
 
@@ -554,8 +559,10 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
     }
 
     /** @internal */
-    public override _addCustomEffectDefines(_defines: string[]): void {
-        // Nothing to add since we override entire _internalIsSubMeshReady method
+    public override _addCustomEffectDefines(defines: string[]): void {
+        if (this.storeCameraSpaceZ) {
+            defines.push("#define STORE_CAMERASPACE_Z");
+        }
     }
 
     /**

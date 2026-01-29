@@ -15,14 +15,21 @@ attribute float instanceSelectionId;
 
 #include<instancesDeclaration>
 uniform mat4 viewProjection;
+
+#ifdef STORE_CAMERASPACE_Z
 uniform mat4 view;
+#endif
 
 // Output
 #ifdef INSTANCES
 flat varying float vSelectionId;
 #endif
 
+#ifdef STORE_CAMERASPACE_Z
 varying float vViewPosZ;
+#else
+varying float vDepthMetric;
+#endif
 
 #ifdef ALPHATEST
 varying vec2 vUV;
@@ -58,14 +65,22 @@ void main(void) {
 
 #ifdef ALPHATEST
 #ifdef UV1
-	vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
+    vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
 #endif
 #ifdef UV2
-	vUV = vec2(diffuseMatrix * vec4(uv2Updated, 1.0, 0.0));
+    vUV = vec2(diffuseMatrix * vec4(uv2Updated, 1.0, 0.0));
 #endif
 #endif
 
-    vViewPosZ = (view * worldPos).z;
+    #ifdef STORE_CAMERASPACE_Z
+        vViewPosZ = (view * worldPos).z;
+    #else
+        #ifdef USE_REVERSE_DEPTHBUFFER
+            vDepthMetric = ((-gl_Position.z + depthValues.x) / (depthValues.y));
+        #else
+            vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y));
+        #endif
+    #endif
 
 #ifdef INSTANCES
     vSelectionId = instanceSelectionId;
