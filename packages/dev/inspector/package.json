@@ -1,5 +1,5 @@
 {
-    "name": "@dev/inspector",
+    "name": "@dev/inspector-legacy",
     "private": true,
     "version": "1.0.0",
     "types": "dist/index",
@@ -18,7 +18,7 @@
         "compile:assets": "build-tools -c process-assets",
         "watch:assets": "build-tools -c process-assets --watch",
         "watch:source": "tsc -b tsconfig.build.json -w",
-        "watch": "build-tools -c dev-watch --packages \"inspector\" -wa"
+        "watch": "build-tools -c dev-watch --packages \"inspector-legacy\" -wa"
     },
     "devDependencies": {
         "@dev/core": "^1.0.0",

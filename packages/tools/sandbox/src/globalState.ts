@@ -1,7 +1,7 @@
 import type { FilesInput, IDisposable, Nullable, Scene, Vector3 } from "core/index";
 import { Observable } from "core/Misc/observable";
 
-type InspectorV2Module = typeof import("inspector-v2/legacy/legacy") & typeof import("inspector-v2/index");
+type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 
 export class GlobalState {
     private _inspectorToken: Nullable<IDisposable> = null;

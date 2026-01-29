@@ -1,7 +1,6 @@
 {
-    "name": "babylonjs-inspector-v2",
-    "version": "1.0.0",
-    "private": true,
+    "name": "babylonjs-inspector",
+    "version": "8.47.0",
     "main": "babylon.inspector-v2.bundle.js",
     "files": [
         "babylon.inspector-v2.*",
@@ -10,9 +9,10 @@
         "readme.md"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:prod",
+        "build": "npm run clean && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
+        "build:declaration": "build-tools -c pud --config ./config.json",
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
@@ -26,7 +26,7 @@
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
-        "@dev/inspector-v2": "1.0.0",
+        "@dev/inspector": "1.0.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
         "webpack": "^5.103.0",
