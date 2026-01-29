@@ -485,6 +485,6 @@ export function GetUnsharedArrayBuffer(view: ArrayBufferView): ArrayBuffer {
     // We are dealing with a SharedArrayBuffer, so we need to create a new ArrayBuffer and copy the data over
     const unsharedBuffer = new ArrayBuffer(view.byteLength);
     const copyView = new Uint8Array(unsharedBuffer);
-    copyView.set(new Uint8Array(buffer));
+    copyView.set(new Uint8Array(buffer, view.byteOffset, view.byteLength));
     return unsharedBuffer;
 }
