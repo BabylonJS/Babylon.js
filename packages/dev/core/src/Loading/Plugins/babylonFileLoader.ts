@@ -381,7 +381,6 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                     const parsedBone = parsedSkeleton.bones[boneIndex];
                     const bone = skeleton.bones[boneIndex]; // This was instantiated in Skeleton.Parse
                     TempIndexContainer[parsedBone.uniqueId] = bone;
-                    // TODO: Can this bones array be sparse? I.e., have an undefined entry?
                 }
             }
         }
