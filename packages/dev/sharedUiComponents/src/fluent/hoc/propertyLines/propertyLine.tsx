@@ -1,4 +1,4 @@
-import { Body1, Checkbox, makeStyles, tokens, mergeClasses, Tooltip } from "@fluentui/react-components";
+import { Body1, Checkbox, makeStyles, tokens, mergeClasses } from "@fluentui/react-components";
 import {
     ChevronCircleDown20Regular,
     ChevronCircleDown16Regular,
@@ -18,6 +18,7 @@ import { ToggleButton } from "../../primitives/toggleButton";
 import { Button } from "../../primitives/button";
 import { CustomTokens, TokenMap } from "../../primitives/utils";
 import { InfoLabel } from "../../primitives/infoLabel";
+import { Tooltip } from "../../primitives/tooltip";
 
 const usePropertyLineStyles = makeStyles({
     baseLine: {
@@ -179,7 +180,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
 
                     {nullable && !ignoreNullable && (
                         // If this is a nullableProperty and ignoreNullable was not sent, display a checkbox used to toggle null ('checked' means 'non null')
-                        <Tooltip relationship="label" content={props.value == null ? "Enable property" : "Disable property (set to null)"}>
+                        <Tooltip content={props.value == null ? "Enable property" : "Disable property (set to null)"}>
                             <Checkbox
                                 className={classes.checkbox}
                                 indicator={{ className: classes.checkboxIndicator }}
@@ -199,13 +200,14 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                     )}
                     <div className={classes.childWrapper}>{processedChildren}</div>
                     {onCopy && !disableCopy && (
-                        <Button
-                            className={classes.copy}
-                            title="Copy to clipboard"
-                            appearance="transparent"
-                            icon={size === "small" ? Copy16Regular : CopyRegular}
-                            onClick={() => copyCommandToClipboard(onCopy())}
-                        />
+                        <Tooltip content="Copy to Clipboard">
+                            <Button
+                                className={classes.copy}
+                                appearance="transparent"
+                                icon={size === "small" ? Copy16Regular : CopyRegular}
+                                onClick={() => copyCommandToClipboard(onCopy())}
+                            />
+                        </Tooltip>
                     )}
                 </div>
             </div>
