@@ -4,6 +4,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 import type { FluentIcon } from "@fluentui/react-icons";
 import { ToolContext } from "../hoc/fluentToolWrapper";
+import { Tooltip } from "./tooltip";
 
 const useStyles = makeStyles({
     button: {
@@ -46,14 +47,15 @@ export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
     }, [props.value]);
 
     return (
-        <FluentToggleButton
-            className={classes.button}
-            title={title}
-            size={size}
-            icon={checked ? <props.checkedIcon /> : props.uncheckedIcon ? <props.uncheckedIcon /> : <props.checkedIcon />}
-            appearance={appearance}
-            checked={checked}
-            onClick={toggle}
-        />
+        <Tooltip content={title ?? ""}>
+            <FluentToggleButton
+                className={classes.button}
+                size={size}
+                icon={checked ? <props.checkedIcon /> : props.uncheckedIcon ? <props.uncheckedIcon /> : <props.checkedIcon />}
+                appearance={appearance}
+                checked={checked}
+                onClick={toggle}
+            />
+        </Tooltip>
     );
 };
