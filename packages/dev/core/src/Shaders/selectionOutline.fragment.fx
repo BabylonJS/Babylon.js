@@ -10,6 +10,7 @@ uniform vec2 screenSize;
 uniform vec3 outlineColor;
 uniform float outlineThickness;
 uniform float occlusionStrength;
+uniform float occlusionThreshold;
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
@@ -41,11 +42,6 @@ void main(void) {
     float depthY = texture2D(depthSampler, vUV + vec2(0.0, sampleOffset.y)).r;
     float depthXY = texture2D(depthSampler, vUV + sampleOffset).r;
 
-#ifdef STORE_CAMERASPACE_Z
-    const float occlusionThreshold = 1.0000001;
-#else
-    const float occlusionThreshold = 0.01;
-#endif
     float occlusionCenter = step(occlusionThreshold, abs(centerMask.g - depthCenter));
     float occlusionX = step(occlusionThreshold, abs(maskX.g - depthX));
     float occlusionY = step(occlusionThreshold, abs(maskY.g - depthY));

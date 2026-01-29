@@ -12,6 +12,7 @@ uniform screenSize: vec2f;
 uniform outlineColor: vec3f;
 uniform outlineThickness: f32;
 uniform occlusionStrength: f32;
+uniform occlusionThreshold: f32;
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
@@ -44,16 +45,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var depthY: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + vec2f(0.0, sampleOffset.y), 0.0).r;
     var depthXY: f32 = textureSampleLevel(depthSampler, depthSamplerSampler, fragmentInputs.vUV + sampleOffset, 0.0).r;
 
-#ifdef STORE_CAMERASPACE_Z
-    const occlusionThreshold: f32 = 1.0000001;
-#else
-    const occlusionThreshold: f32 = 0.01;
-#endif
-    var occlusionCenter: f32 = step(occlusionThreshold, abs(centerMask.g - depthCenter));
-    var occlusionX: f32 = step(occlusionThreshold, abs(maskX.g - depthX));
-    var occlusionY: f32 = step(occlusionThreshold, abs(maskY.g - depthY));
-    var occlusionXY: f32 = step(occlusionThreshold, abs(maskXY.g - depthXY));
-
+    var occlusionCenter: f32 = step(uniforms.occlusionThreshold, abs(centerMask.g - depthCenter));
+    var occlusionX: f32 = step(uniforms.occlusionThreshold, abs(maskX.g - depthX));
+    var occlusionY: f32 = step(uniforms.occlusionThreshold, abs(maskY.g - depthY));
+    var occlusionXY: f32 = step(uniforms.occlusionThreshold, abs(maskXY.g - depthXY));
     var occlusionFactor: f32 = min(min(occlusionCenter, occlusionX), min(occlusionY, occlusionXY));
 
     var finalOutlineMask: f32 = outlineMask * (1.0 - uniforms.occlusionStrength * occlusionFactor);

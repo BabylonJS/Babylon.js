@@ -66,6 +66,11 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
     public occlusionStrength: number = 0.8;
 
     /**
+     * The occlusion threshold (default: 0.01)
+     */
+    public occlusionThreshold: number = 0.01;
+
+    /**
      * The width of the source texture
      */
     public textureWidth: number = 0;
@@ -343,7 +348,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             },
             <IEffectCreationOptions>{
                 attributes: [VertexBuffer.PositionKind],
-                uniformsNames: ["screenSize", "outlineColor", "outlineThickness", "occlusionStrength"],
+                uniformsNames: ["screenSize", "outlineColor", "outlineThickness", "occlusionStrength", "occlusionThreshold"],
                 samplers: ["maskSampler", "depthSampler"],
                 defines: this._options.storeCameraSpaceZ ? "#define STORE_CAMERASPACE_Z" : "",
                 fallbacks: null,
@@ -551,6 +556,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
         effect.setColor3("outlineColor", this.outlineColor);
         effect.setFloat("outlineThickness", this.outlineThickness);
         effect.setFloat("occlusionStrength", this.occlusionStrength);
+        effect.setFloat("occlusionThreshold", this.occlusionThreshold);
 
         // Cache
         const engine = this._engine;

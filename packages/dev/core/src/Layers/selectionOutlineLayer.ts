@@ -98,6 +98,18 @@ export class SelectionOutlineLayer extends EffectLayer {
         this._thinEffectLayer.occlusionStrength = value;
     }
 
+    /**
+     * The occlusion threshold (default: 0.01)
+     */
+    @serialize()
+    public get occlusionThreshold(): number {
+        return this._thinEffectLayer.occlusionThreshold;
+    }
+
+    public set occlusionThreshold(value: number) {
+        this._thinEffectLayer.occlusionThreshold = value;
+    }
+
     @serialize("options")
     private _options: Required<ISelectionOutlineLayerOptions>;
 
