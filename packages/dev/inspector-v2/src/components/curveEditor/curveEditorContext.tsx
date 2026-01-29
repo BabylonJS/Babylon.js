@@ -5,7 +5,7 @@ import type { TargetedAnimation, AnimationGroup } from "core/Animations/animatio
 import type { Scene } from "core/scene";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { AnimationKeyInterpolation } from "core/Animations/animationKey";
-import type { CurveData } from "./canvas/curve";
+import type { CurveData } from "./canvas/curveData";
 
 /**
  * Represents a key point on a curve

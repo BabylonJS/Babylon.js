@@ -10,6 +10,7 @@ import {
     LineHorizontal1Regular,
     ChevronDoubleRightRegular,
     ChevronDoubleLeftRegular,
+    StepsRegular,
 } from "@fluentui/react-icons";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
@@ -196,6 +197,13 @@ export const TopBar: FunctionComponent = () => {
                     disabled={!hasActiveKeyPoints}
                     onClick={() => observables.onUnifyTangentRequired.notifyObservers()}
                     title="Unify tangent"
+                />
+                <Button
+                    icon={StepsRegular}
+                    appearance="subtle"
+                    disabled={!hasActiveKeyPoints}
+                    onClick={() => observables.onStepTangentRequired.notifyObservers()}
+                    title="Step tangent"
                 />
             </div>
         </div>
