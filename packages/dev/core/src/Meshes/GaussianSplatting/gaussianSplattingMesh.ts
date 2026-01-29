@@ -25,8 +25,9 @@ import type { INative } from "core/Engines/Native/nativeInterfaces";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
 
-const isNative = typeof _native !== "undefined";
-const native = isNative ? _native : null;
+const IsNative = typeof _native !== "undefined";
+const Native = IsNative ? _native : null;
+
 interface IDelayedTextureUpdate {
     covA: Uint16Array;
     covB: Uint16Array;
@@ -669,7 +670,7 @@ export class GaussianSplattingMesh extends Mesh {
         // sort view infos by last updated frame id: first item is the least recently updated
         activeViewInfos.sort((a, b) => a.frameIdLastUpdate - b.frameIdLastUpdate);
 
-        const hasSortFunction = this._worker || native?.sortSplats || this._disableDepthSort;
+        const hasSortFunction = this._worker || Native?.sortSplats || this._disableDepthSort;
         if ((forced || outdated) && hasSortFunction && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
             // view infos sorted by least recent updated frame id
             activeViewInfos.forEach((cameraViewInfos) => {
@@ -692,8 +693,8 @@ export class GaussianSplattingMesh extends Mesh {
                             },
                             [this._depthMix.buffer]
                         );
-                    } else if (native?.sortSplats) {
-                        native.sortSplats(this._modelViewProjectionMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
+                    } else if (Native?.sortSplats) {
+                        Native.sortSplats(this._modelViewProjectionMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
                         if (cameraViewInfos.splatIndexBufferSet) {
                             cameraViewInfos.mesh.thinInstanceBufferUpdated("splatIndex");
                         } else {
@@ -1939,7 +1940,7 @@ export class GaussianSplattingMesh extends Mesh {
         }
 
         // Update depthMix
-        if ((!this._depthMix || vertexCount > this._depthMix.length) && !isNative) {
+        if ((!this._depthMix || vertexCount > this._depthMix.length) && !IsNative) {
             this._depthMix = new BigInt64Array(paddedVertexCount);
         }
 
@@ -1994,7 +1995,7 @@ export class GaussianSplattingMesh extends Mesh {
         this._updateSplatIndexBuffer(this._vertexCount);
 
         // no worker in native
-        if (isNative) {
+        if (IsNative) {
             return;
         }
 
