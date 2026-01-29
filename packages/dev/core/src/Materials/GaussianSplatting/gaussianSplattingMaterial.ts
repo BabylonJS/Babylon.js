@@ -49,6 +49,8 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
     public CLIPPLANE6 = false;
     public SH_DEGREE = 0;
     public COMPENSATION = false;
+    public IS_COMPOUND = false;
+    public MAX_PART_COUNT = 16; // Can be up to 256, then we'll need to change the partIndices texture format to uint16
 
     /**
      * Constructor of the defines.
@@ -134,7 +136,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     protected static _Attribs = [VertexBuffer.PositionKind, "splatIndex0", "splatIndex1", "splatIndex2", "splatIndex3"];
-    protected static _Samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2"];
+    protected static _Samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2", "partIndicesTexture"];
     protected static _UniformBuffers = ["Scene", "Mesh"];
     protected static _Uniforms = [
         "world",
@@ -150,6 +152,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "kernelSize",
         "alpha",
         "depthValues",
+        "partWorld",
     ];
     private _sourceMesh: GaussianSplattingMesh | null = null;
     /**
@@ -216,6 +219,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
         if (engine.version > 1 || engine.isWebGPU) {
             defines["SH_DEGREE"] = gsMesh.shDegree;
         }
+
+        defines["IS_COMPOUND"] = gsMesh.isCompound;
 
         // Compensation
         const splatMaterial = gsMesh.material as GaussianSplattingMaterial;
@@ -346,6 +351,16 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 for (let i = 0; i < gsMesh.shTextures?.length; i++) {
                     effect.setTexture(`shTexture${i}`, gsMesh.shTextures[i]);
                 }
+            }
+
+            // Bind part indices texture, if the
+            if (gsMesh.partIndicesTexture) {
+                effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
+                const partWorldData = new Float32Array(gsMesh.partCount * 16);
+                for (let i = 0; i < gsMesh.partCount; i++) {
+                    gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
+                }
+                effect.setMatrices("partWorld", partWorldData);
             }
         }
     }

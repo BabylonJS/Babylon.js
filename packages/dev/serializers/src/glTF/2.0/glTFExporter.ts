@@ -567,7 +567,7 @@ export class GLTFExporter {
         return container;
     }
 
-    private async _generateBinaryAsync(): Promise<Uint8Array> {
+    private async _generateBinaryAsync(): Promise<Uint8Array<ArrayBuffer>> {
         await this._exportSceneAsync();
         await this._extensionsPreGenerateBinaryAsync();
         return this._bufferManager.generateBinary(this._bufferViews);

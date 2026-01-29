@@ -98,6 +98,7 @@ export function ExtrudeShape(
  * * The parameter `rotationFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the beginning of the path
  * * It must returns a float value that will be the rotation in radians applied to the shape on each path point.
  * * The parameter `scaleFunction` (JS function) is a custom Javascript function called on each path point. This function is passed the position i of the point in the path and the distance of this point from the beginning of the path
+ * * The parameter `scaleVectorFunction` (JS function) has the same purpose as `scaleFunction` but instead of returning a float it returns a Vector3 to allow non uniform scaling. If provided, it takes precedence over `scaleFunction`.
  * * It must returns a float value that will be the scale value applied to the shape on each path point
  * * The parameter `closeShape` (boolean, default false) closes the shape when true, since v5.0.0.
  * * The parameter `closePath` (boolean, default false) closes the path when true and no caps, since v5.0.0.
@@ -126,6 +127,7 @@ export function ExtrudeShapeCustom(
         shape: Vector3[];
         path: Vector3[];
         scaleFunction?: Nullable<{ (i: number, distance: number): number }>;
+        scaleVectorFunction?: Nullable<{ (i: number, distance: number): Vector3 }>;
         rotationFunction?: Nullable<{ (i: number, distance: number): number }>;
         ribbonCloseArray?: boolean;
         ribbonClosePath?: boolean;
@@ -146,11 +148,11 @@ export function ExtrudeShapeCustom(
 ): Mesh {
     const path = options.path;
     const shape = options.shape;
-    const scaleFunction =
-        options.scaleFunction ||
-        (() => {
-            return 1;
-        });
+    const tmpVector3 = Vector3.Zero();
+    const scaleFunction = (i: number, distance: number) => {
+        const s = options.scaleFunction?.(i, distance) ?? 1;
+        return tmpVector3.copyFromFloats(s, s, s);
+    };
     const rotationFunction =
         options.rotationFunction ||
         (() => {
@@ -172,7 +174,7 @@ export function ExtrudeShapeCustom(
         path,
         null,
         null,
-        scaleFunction,
+        options.scaleVectorFunction ?? scaleFunction,
         rotationFunction,
         ribbonCloseArray,
         ribbonClosePath,
@@ -197,7 +199,7 @@ function ExtrudeShapeGeneric(
     curve: Vector3[],
     scale: Nullable<number>,
     rotation: Nullable<number>,
-    scaleFunction: Nullable<{ (i: number, distance: number): number }>,
+    scaleFunction: Nullable<{ (i: number, distance: number): Vector3 }>,
     rotateFunction: Nullable<{ (i: number, distance: number): number }>,
     rbCA: boolean,
     rbCP: boolean,
@@ -220,9 +222,9 @@ function ExtrudeShapeGeneric(
         curve: Vector3[],
         path3D: Path3D,
         shapePaths: Vector3[][],
-        scale: Nullable<number>,
+        scale: Nullable<Vector3>,
         rotation: Nullable<number>,
-        scaleFunction: Nullable<{ (i: number, distance: number): number }>,
+        scaleFunction: Nullable<{ (i: number, distance: number): Vector3 }>,
         rotateFunction: Nullable<{ (i: number, distance: number): number }>,
         cap: number,
         custom: boolean,
@@ -262,13 +264,13 @@ function ExtrudeShapeGeneric(
         }
         let angle = 0;
         const returnScale = () => {
-            return scale !== null ? scale : 1;
+            return scale !== null ? scale : Vector3.OneReadOnly;
         };
         const returnRotation = () => {
             return rotation !== null ? rotation : 0;
         };
         const rotate: { (i: number, distance: number): number } = custom && rotateFunction ? rotateFunction : returnRotation;
-        const scl: { (i: number, distance: number): number } = custom && scaleFunction ? scaleFunction : returnScale;
+        const scl: { (i: number, distance: number): Vector3 } = custom && scaleFunction ? scaleFunction : returnScale;
         let index = cap === Mesh.NO_CAP || cap === Mesh.CAP_END ? 0 : 2;
         const rotationMatrix: Matrix = TmpVectors.Matrix[0];
 
@@ -281,7 +283,7 @@ function ExtrudeShapeGeneric(
                 const planed = tangents[i].scale(shape[p].z).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y));
                 const rotated = Vector3.Zero();
                 Vector3.TransformCoordinatesToRef(planed, rotationMatrix, rotated);
-                rotated.scaleInPlace(scaleRatio).addInPlace(curve[i]);
+                rotated.multiplyInPlace(scaleRatio).addInPlace(curve[i]);
                 shapePath[p] = rotated;
             }
             shapePaths[index] = shapePath;
@@ -325,13 +327,14 @@ function ExtrudeShapeGeneric(
         }
         return shapePaths;
     };
+    const scaleVector = scale !== null ? new Vector3(scale, scale, scale) : null;
     let path3D;
     let pathArray;
     if (instance) {
         // instance update
         const storage = instance._creationDataStorage!;
         path3D = firstNormal ? storage.path3D.update(curve, firstNormal) : storage.path3D.update(curve);
-        pathArray = extrusionPathArray(shape, curve, storage.path3D, storage.pathArray, scale, rotation, scaleFunction, rotateFunction, storage.cap, custom, adjustFrame);
+        pathArray = extrusionPathArray(shape, curve, storage.path3D, storage.pathArray, scaleVector, rotation, scaleFunction, rotateFunction, storage.cap, custom, adjustFrame);
         instance = CreateRibbon("", { pathArray, closeArray: false, closePath: false, offset: 0, updatable: false, sideOrientation: 0, instance }, scene || undefined);
 
         return instance;
@@ -340,7 +343,7 @@ function ExtrudeShapeGeneric(
     path3D = firstNormal ? new Path3D(curve, firstNormal) : new Path3D(curve);
     const newShapePaths = new Array<Array<Vector3>>();
     cap = cap < 0 || cap > 3 ? 0 : cap;
-    pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scale, rotation, scaleFunction, rotateFunction, cap, custom, adjustFrame);
+    pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scaleVector, rotation, scaleFunction, rotateFunction, cap, custom, adjustFrame);
     const extrudedGeneric = CreateRibbon(
         name,
         {

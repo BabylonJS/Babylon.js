@@ -1,5 +1,27 @@
 # Changelog
 
+## 8.48.1
+
+### Core
+
+- Update TS to 5.9.3 with back compat - by [sebavan](https://github.com/sebavan) ([#17749](https://github.com/BabylonJS/Babylon.js/pull/17749))
+- feat(WebGPU): Add custom mip level support for RawTexture and RawTexture2DArray - [_New Feature_] by [wiiskii](https://github.com/wiiskii) ([#17724](https://github.com/BabylonJS/Babylon.js/pull/17724))
+- Add 'compound' mode to GaussianSplatting to globally sort multiple parts - by [eliemichel](https://github.com/eliemichel) ([#17679](https://github.com/BabylonJS/Babylon.js/pull/17679))
+
+### Inspector
+
+
+### Loaders
+
+- Update TS to 5.9.3 with back compat - by [sebavan](https://github.com/sebavan) ([#17749](https://github.com/BabylonJS/Babylon.js/pull/17749))
+
+### Node Editor
+
+
+### Serializers
+
+- Update TS to 5.9.3 with back compat - by [sebavan](https://github.com/sebavan) ([#17749](https://github.com/BabylonJS/Babylon.js/pull/17749))
+
 ## 8.47.2
 
 ### Playground
@@ -903,6 +925,14 @@
 ### Viewer
 
 - Viewer : Add default metarial and ssao - by [alexandremottet](https://github.com/alexandremottet) ([#17186](https://github.com/BabylonJS/Babylon.js/pull/17186))
+
+## FinalViewerV1
+
+### Core
+
+- Mesh extrusion: Add an optional scaleVectorFunction parameter to ExtrudeShapeCustom - by [Popov72](https://github.com/Popov72) ([#17752](https://github.com/BabylonJS/Babylon.js/pull/17752))
+
+## 8.48.0
 
 ## 8.29.0
 

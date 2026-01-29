@@ -29,6 +29,7 @@ export class RawTexture extends Texture {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @param waitDataToBeReady If set to true Rawtexture will wait data to be set in order to be flaged as ready.
+     * @param mipLevelCount defines the number of mip levels to allocate for the texture
      */
     constructor(
         data: Nullable<ArrayBufferView>,
@@ -45,7 +46,8 @@ export class RawTexture extends Texture {
         type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         creationFlags?: number,
         useSRGBBuffer?: boolean,
-        waitDataToBeReady?: boolean
+        waitDataToBeReady?: boolean,
+        mipLevelCount?: number
     ) {
         super(null, sceneOrEngine, !generateMipMaps, invertY, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, creationFlags);
 
@@ -60,7 +62,20 @@ export class RawTexture extends Texture {
             samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
 
-        this._texture = this._engine.createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode, null, type, creationFlags ?? 0, useSRGBBuffer ?? false);
+        this._texture = this._engine.createRawTexture(
+            data,
+            width,
+            height,
+            format,
+            generateMipMaps,
+            invertY,
+            samplingMode,
+            null,
+            type,
+            creationFlags ?? 0,
+            useSRGBBuffer ?? false,
+            mipLevelCount
+        );
 
         this.wrapU = Texture.CLAMP_ADDRESSMODE;
         this.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -72,7 +87,16 @@ export class RawTexture extends Texture {
      * @param data Define the new data of the texture
      */
     public update(data: ArrayBufferView): void {
-        this._getEngine()!.updateRawTexture(this._texture, data, this._texture!.format, this._texture!.invertY, null, this._texture!.type, this._texture!._useSRGBBuffer);
+        this.updateMipLevel(data, 0);
+    }
+
+    /**
+     * Updates a specific mip level of the texture.
+     * @param data The new data for the mip level
+     * @param mipLevel The mip level to update (0 is the base level)
+     */
+    public updateMipLevel(data: ArrayBufferView, mipLevel: number): void {
+        this._getEngine()!.updateRawTexture(this._texture, data, this._texture!.format, this._texture!.invertY, null, this._texture!.type, this._texture!._useSRGBBuffer, mipLevel);
         this._waitingForData = false;
     }
 
