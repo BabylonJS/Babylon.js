@@ -20,7 +20,7 @@ import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBloc
 
 import { Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { TransformNode } from "../../Meshes/transformNode";
 import { FactorGradient } from "core/Misc/gradients";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
@@ -1056,11 +1056,11 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     return newSystem;
 }
 
-function _SystemEmitterPosition(emitter: AbstractMesh | Vector3, newSystem: SystemBlock): void {
+function _SystemEmitterPosition(emitter: TransformNode | Vector3, newSystem: SystemBlock): void {
     if (emitter) {
         _CreateAndConnectInput(
             "Emitter Position",
-            emitter instanceof AbstractMesh ? emitter.position.clone() : emitter.clone(),
+            emitter instanceof TransformNode ? emitter.position.clone() : emitter.clone(),
             newSystem.emitterPosition,
             NodeParticleBlockConnectionPointTypes.Vector3
         );
