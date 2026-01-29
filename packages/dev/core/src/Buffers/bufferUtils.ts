@@ -250,9 +250,7 @@ export function GetFloatData(
         if (data instanceof Array) {
             const offset = byteOffset / 4;
             return data.slice(offset, offset + count);
-        } else if (data instanceof ArrayBuffer) {
-            return new Float32Array(data, byteOffset, count);
-        } else {
+        } else if (ArrayBuffer.isView(data)) {
             const offset = data.byteOffset + byteOffset;
             if ((offset & 3) !== 0) {
                 Logger.Warn("Float array must be aligned to 4-bytes border");
@@ -264,6 +262,8 @@ export function GetFloatData(
             } else {
                 return new Float32Array(data.buffer, offset, count);
             }
+        } else {
+            return new Float32Array(data, byteOffset, count);
         }
     }
 
@@ -330,14 +330,14 @@ export function GetTypedArrayData(
     }
 
     // Handle ArrayBuffer and ArrayBufferView
-    let buffer: ArrayBuffer;
+    let buffer: ArrayBufferLike;
     let adjustedByteOffset = byteOffset;
 
-    if (data instanceof ArrayBuffer) {
-        buffer = data;
-    } else {
+    if (ArrayBuffer.isView(data)) {
         buffer = data.buffer;
         adjustedByteOffset += data.byteOffset;
+    } else {
+        buffer = data;
     }
 
     const lastByteOffset = adjustedByteOffset + (totalVertices - 1) * byteStride + size * typeByteLength;
@@ -411,10 +411,7 @@ export function CopyFloatData(
     if (input instanceof Array) {
         const offset = byteOffset / 4;
         output.set(input, offset);
-    } else if (input instanceof ArrayBuffer) {
-        const floatData = new Float32Array(input, byteOffset, count);
-        output.set(floatData);
-    } else {
+    } else if (ArrayBuffer.isView(input)) {
         const offset = input.byteOffset + byteOffset;
         if ((offset & 3) !== 0) {
             Logger.Warn("Float array must be aligned to 4-bytes border");
@@ -423,6 +420,9 @@ export function CopyFloatData(
         }
 
         const floatData = new Float32Array(input.buffer, offset, count);
+        output.set(floatData);
+    } else {
+        const floatData = new Float32Array(input, byteOffset, count);
         output.set(floatData);
     }
 }
@@ -467,4 +467,24 @@ export function CreateAlignedTypedArray<T extends TypedArray>(type: TypedArrayCo
     const backingBuffer = new ArrayBuffer(byteSize);
 
     return new type(backingBuffer, 0, elementCount);
+}
+
+/**
+ * Gets a BufferSource from an ArrayBufferView, ensuring that the returned ArrayBuffer is not a SharedArrayBuffer.
+ * If the input view's buffer is a SharedArrayBuffer, a new ArrayBuffer is created and the data is copied over.
+ * @param view The input ArrayBufferView
+ * @returns An ArrayBuffer containing the data from the view
+ */
+export function GetBlobBufferSource(view: ArrayBufferView): BufferSource {
+    const buffer = view.buffer;
+    if (buffer instanceof ArrayBuffer) {
+        // Safely cast here because we know bytes is not a SharedArrayBuffer
+        return view as ArrayBufferView<ArrayBuffer>;
+    }
+
+    // We are dealing with a SharedArrayBuffer, so we need to create a new ArrayBuffer and copy the data over
+    const unsharedBuffer = new ArrayBuffer(view.byteLength);
+    const copyView = new Uint8Array(unsharedBuffer);
+    copyView.set(new Uint8Array(buffer, view.byteOffset, view.byteLength));
+    return unsharedBuffer;
 }

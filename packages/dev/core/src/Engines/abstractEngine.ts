@@ -1922,14 +1922,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.47.0";
+        return "babylonjs@8.48.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.47.0";
+        return "8.48.0";
     }
 
     /**
@@ -2281,6 +2281,7 @@ export abstract class AbstractEngine {
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+     * @param mipLevelCount defines the number of mip levels to allocate for the texture
      * @returns the raw texture inside an InternalTexture
      */
     public createRawTexture(
@@ -2294,7 +2295,8 @@ export abstract class AbstractEngine {
         compression?: Nullable<string>,
         type?: number,
         creationFlags?: number,
-        useSRGBBuffer?: boolean
+        useSRGBBuffer?: boolean,
+        mipLevelCount?: number
     ): InternalTexture {
         throw _WarnImport("engine.rawTexture");
     }
@@ -2370,6 +2372,7 @@ export abstract class AbstractEngine {
      * @param compression defines the compressed used (can be null)
      * @param textureType defines the compressed used (can be null)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param mipLevelCount defines the number of mip levels to allocate for the texture
      * @returns a new raw 2D array texture (stored in an InternalTexture)
      */
     public createRawTexture2DArray(
@@ -2383,7 +2386,8 @@ export abstract class AbstractEngine {
         samplingMode: number,
         compression?: Nullable<string>,
         textureType?: number,
-        creationFlags?: number
+        creationFlags?: number,
+        mipLevelCount?: number
     ): InternalTexture {
         throw _WarnImport("engine.rawTexture");
     }

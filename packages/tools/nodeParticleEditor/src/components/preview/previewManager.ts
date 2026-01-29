@@ -3,7 +3,7 @@ import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
-import { Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Color3 } from "core/Maths/math.color";
 import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
@@ -17,6 +17,10 @@ import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import type { ParticleSystemSet } from "core/Particles/particleSystemSet";
 import { EngineStore } from "core/Engines";
 import type { ParticleSystem } from "core/Particles";
+import { AxesViewer } from "core/Debug/axesViewer";
+import { TransformNode } from "core/Meshes/transformNode";
+import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
+import { StandardMaterial } from "core/Materials/standardMaterial";
 
 export class PreviewManager {
     private _nodeParticleSystemSet: NodeParticleSystemSet;
@@ -53,7 +57,7 @@ export class PreviewManager {
 
         this._camera.doNotSerialize = true;
         this._camera.lowerRadiusLimit = 3;
-        this._camera.upperRadiusLimit = 10;
+        this._camera.upperRadiusLimit = 100;
         this._camera.wheelPrecision = 20;
         this._camera.minZ = 0.001;
         this._camera.attachControl(false);
@@ -93,6 +97,59 @@ export class PreviewManager {
 
         const ground = MeshBuilder.CreateGround("ground", { width: 100, height: 100 }, this._scene);
         ground.material = groundMaterial;
+
+        // Axis
+        const generateTextPlane = function (text: string, color: string, size: number, scene: Scene, parent: TransformNode) {
+            const dynamicTexture = new DynamicTexture("DynamicTexture", 50, scene, true);
+            dynamicTexture.hasAlpha = true;
+            dynamicTexture.drawText(text, 14, 35, "bold 40px Arial", color, "transparent", true);
+            const plane = MeshBuilder.CreatePlane("TextPlane", { size: size }, scene);
+            const material = new StandardMaterial("TextPlaneMaterial", scene);
+            material.backFaceCulling = false;
+            material.disableLighting = true;
+            material.emissiveTexture = dynamicTexture;
+            material.diffuseTexture = dynamicTexture;
+
+            plane.material = material;
+            plane.billboardMode = TransformNode.BILLBOARDMODE_ALL;
+            plane.renderingGroupId = 2;
+            plane.setParent(parent);
+
+            return plane;
+        };
+
+        const axis = new AxesViewer(this._scene, 1, 2, undefined, undefined, undefined, 3);
+        const dummy = new TransformNode("Dummy", this._scene);
+        dummy.doNotSerialize = true;
+        axis.xAxis.setParent(dummy);
+        axis.xAxis.doNotSerialize = true;
+        axis.yAxis.setParent(dummy);
+        axis.yAxis.doNotSerialize = true;
+        axis.zAxis.setParent(dummy);
+        axis.zAxis.doNotSerialize = true;
+
+        (axis.xAxis.getChildMeshes()[0].material as StandardMaterial).emissiveColor.scaleInPlace(2);
+        (axis.yAxis.getChildMeshes()[0].material as StandardMaterial).emissiveColor.scaleInPlace(2);
+        (axis.zAxis.getChildMeshes()[0].material as StandardMaterial).emissiveColor.scaleInPlace(2);
+
+        const xPlane = generateTextPlane("x", "red", 0.5, this._scene, dummy);
+        xPlane.position.x = 1;
+        xPlane.position.y = 0.3;
+
+        const yPlane = generateTextPlane("y", "#0F0", 0.5, this._scene, dummy);
+        yPlane.position.y = 1.55;
+
+        const zPlane = generateTextPlane("z", "blue", 0.5, this._scene, dummy);
+        zPlane.position.z = 1;
+        zPlane.position.y = 0.3;
+
+        const targetPosition = new Vector3(3.5, 3.6, 13);
+        const tempMat = Matrix.Identity();
+
+        this._scene.onBeforeCameraRenderObservable.add(() => {
+            this._scene.getViewMatrix().invertToRef(tempMat);
+            Vector3.TransformCoordinatesToRef(targetPosition, tempMat, dummy.position);
+        });
     }
 
     private _refreshPreview() {

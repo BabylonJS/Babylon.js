@@ -16,6 +16,7 @@ import { Logger } from "./logger";
 import { TimingTools } from "./timingTools";
 import { EngineFunctionContext } from "core/Engines/abstractEngine.functions";
 import { AbstractEngine } from "../Engines/abstractEngine";
+import { GetBlobBufferSource } from "../Buffers/bufferUtils";
 
 const Base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 
@@ -218,7 +219,15 @@ export const LoadImage = (
 
     if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
         if (typeof Blob !== "undefined" && typeof URL !== "undefined") {
-            url = URL.createObjectURL(new Blob([input], { type: mimeType }));
+            let source: BufferSource;
+
+            if (input instanceof ArrayBuffer) {
+                source = input;
+            } else {
+                source = GetBlobBufferSource(input);
+            }
+
+            url = URL.createObjectURL(new Blob([source], { type: mimeType }));
             usingObjectURL = true;
         } else {
             url = `data:${mimeType};base64,` + EncodeArrayBufferToBase64(input);
