@@ -35,8 +35,8 @@ const useStyles = makeStyles({
         strokeWidth: "0.5px",
     },
     activeFrameLine: {
-        stroke: tokens.colorNeutralForegroundOnBrand,
-        strokeWidth: "0.5px",
+        stroke: tokens.colorBrandForeground1,
+        strokeWidth: "1px",
     },
 });
 
