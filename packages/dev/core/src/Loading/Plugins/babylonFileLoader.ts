@@ -54,9 +54,9 @@ export class BabylonFileLoaderConfiguration {
 
 let TempIndexContainer: { [key: string]: Node } = {};
 let TempMaterialIndexContainer: { [key: string]: Material } = {};
-let TempMorphTargetIndexContainer: { [key: string]: MorphTarget } = {};
+let TempMorphTargetIndexContainer: { [key: number]: MorphTarget } = {};
 let TempMorphTargetManagerIndexContainer: { [key: string]: MorphTargetManager } = {};
-let TempSkeletonIndexContainer: { [key: string]: Skeleton } = {};
+let TempSkeletonIndexContainer: { [key: number]: Skeleton } = {};
 
 const ParseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
     if (!parsedData.materials) {
@@ -131,17 +131,23 @@ const LoadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
     }
 };
 
-const FindParent = (nodeId: any, instanceIndex: any, scene: Scene) => {
-    // Back-compat: nodeId can represent either an id (string) or a uniqueId (number).
-    // If we think it's a uniqueId, use it with TempIndexContainer, which tracks uniqueIds from the parsed file.
-    // Otherwise, assume it's an id and search the scene for *a* match.
-    const node = typeof nodeId !== "number" ? scene.getLastEntryById(nodeId) : TempIndexContainer[nodeId];
-    if (node && instanceIndex !== undefined && instanceIndex !== null) {
-        const instance = (node as Mesh).instances[parseInt(instanceIndex)];
+const FindParent = (parentId: any, parentInstanceIndex: any, scene: Scene) => {
+    if (typeof parentId !== "number") {
+        const parentEntry = scene.getLastEntryById(parentId);
+        if (parentEntry && parentInstanceIndex !== undefined && parentInstanceIndex !== null) {
+            const instance = (parentEntry as Mesh).instances[parseInt(parentInstanceIndex)];
+            return instance;
+        }
+        return parentEntry;
+    }
+
+    const parent = TempIndexContainer[parentId];
+    if (parent && parentInstanceIndex !== undefined && parentInstanceIndex !== null) {
+        const instance = (parent as Mesh).instances[parseInt(parentInstanceIndex)];
         return instance;
     }
 
-    return node;
+    return parent;
 };
 
 const FindMaterial = (materialId: any, scene: Scene) => {
@@ -349,8 +355,10 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                 // Morph targets - add to TempMorphTargetIndexContainer to later connect animations -> morph targets
                 for (let index = 0; index < parsedManager.targets.length; index++) {
                     const parsedTarget = parsedManager.targets[index];
-                    const target = manager.getTarget(index);
-                    TempMorphTargetIndexContainer[parsedTarget.uniqueId] = target;
+                    if (parsedTarget.uniqueId !== undefined && parsedTarget.uniqueId !== null) {
+                        const target = manager.getTarget(index);
+                        TempMorphTargetIndexContainer[parsedTarget.uniqueId] = target;
+                    }
                 }
             }
         }
@@ -360,7 +368,9 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
             for (index = 0, cache = parsedData.skeletons.length; index < cache; index++) {
                 const parsedSkeleton = parsedData.skeletons[index];
                 const skeleton = Skeleton.Parse(parsedSkeleton, scene);
-                TempSkeletonIndexContainer[parsedSkeleton.uniqueId ?? parsedSkeleton.id] = skeleton;
+                if (parsedSkeleton.uniqueId !== undefined && parsedSkeleton.uniqueId !== null) {
+                    TempSkeletonIndexContainer[parsedSkeleton.uniqueId] = skeleton;
+                }
                 container.skeletons.push(skeleton);
                 skeleton._parentContainer = container;
                 log += index === 0 ? "\n\tSkeletons:" : "";
@@ -804,6 +814,7 @@ RegisterSceneLoaderPlugin({
                 }
             }
             if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
+                const loadedSkeletonsIds = [];
                 const loadedMaterialsIds: string[] = [];
                 const loadedMaterialsUniqueIds: string[] = [];
                 const loadedMorphTargetManagerIds: number[] = [];
@@ -920,13 +931,16 @@ RegisterSceneLoaderPlugin({
                             parsedData.skeletons !== undefined &&
                             parsedData.skeletons !== null
                         ) {
-                            if (!TempSkeletonIndexContainer[parsedMesh.skeletonId]) {
+                            const skeletonAlreadyLoaded = loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1;
+                            if (!skeletonAlreadyLoaded) {
                                 for (let skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {
                                     const parsedSkeleton = parsedData.skeletons[skeletonIndex];
-                                    const parsedSkeletonId = parsedSkeleton.uniqueId ?? parsedSkeleton.id;
-                                    if (parsedSkeletonId === parsedMesh.skeletonId) {
+                                    if (parsedSkeleton.id === parsedMesh.skeletonId) {
                                         const skeleton = Skeleton.Parse(parsedSkeleton, scene);
-                                        TempSkeletonIndexContainer[parsedSkeletonId] = skeleton;
+                                        loadedSkeletonsIds.push(parsedSkeleton.id);
+                                        if (parsedSkeleton.uniqueId !== undefined && parsedSkeleton.uniqueId !== null) {
+                                            TempSkeletonIndexContainer[parsedSkeleton.uniqueId] = skeleton;
+                                        }
                                         skeletons.push(skeleton);
                                         log += "\n\tSkeleton " + skeleton.toString(fullDetails);
                                     }
