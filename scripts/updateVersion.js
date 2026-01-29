@@ -68,7 +68,7 @@ const updateSinceTag = (version) => {
                 fs.writeFileSync(file, newData);
             }
         } catch (e) {
-            console.log(e);
+            console.log("updateSinceTag error", e);
         }
     });
     // run formatter to make sure the package.json files are formatted
@@ -81,6 +81,14 @@ const updateDependencies = (version, dependencies) => {
     if (dependencies) {
         Object.keys(dependencies).forEach((dependency) => {
             if (dependency.startsWith("babylonjs") || dependency.startsWith("@babylonjs")) {
+                // Cheap targetted way for now to update when needed
+                const currentVersion = dependencies[dependency];
+                if (currentVersion.startsWith("^")) {
+                    version = "^" + version;
+                } else if (currentVersion.startsWith("~")) {
+                    version = "~" + version;
+                }
+
                 dependencies[dependency] = version;
                 changed = true;
             }
@@ -105,7 +113,7 @@ const updatePeerDependencies = (version) => {
                 fs.writeFileSync(file, JSON.stringify(packageJson, null, 4));
             }
         } catch (e) {
-            console.log(e);
+            console.log("updatePeerDependencies error", e);
         }
     });
 };
@@ -134,7 +142,7 @@ const updatePackages = (version) => {
             // write file
             fs.writeFileSync(file, JSON.stringify(packageJson, null, 4));
         } catch (e) {
-            console.log(e);
+            console.log("updatePackages error", e);
         }
     });
 };
@@ -147,7 +155,14 @@ const updatePackageLockPackage = (updateFunction) => {
         const packageLockJson = JSON.parse(data);
 
         Object.keys(packageLockJson.packages).forEach((packageKey) => {
-            if (packageKey.indexOf("public/@babylonjs") > -1 || packageKey.indexOf("public/umd/babylonjs") > -1) {
+            if (
+                packageKey.indexOf("node_modules") === -1 &&
+                packageKey.indexOf("@babylonjs/test-tools") === -1 &&
+                packageKey.indexOf("@babylonjs/inspector-legacy") === -1 &&
+                packageKey.indexOf("umd/babylonjs-inspector") === -1 &&
+                packageKey.indexOf("umd/babylonjs-testproject") === -1 &&
+                (packageKey.indexOf("public/@babylonjs") > -1 || packageKey.indexOf("public/umd/babylonjs") > -1 || packageKey.indexOf("public/glTF2Interface") > -1)
+            ) {
                 const package = packageLockJson.packages[packageKey];
                 updateFunction(package);
             }
@@ -156,7 +171,7 @@ const updatePackageLockPackage = (updateFunction) => {
         // write file
         fs.writeFileSync(file, JSON.stringify(packageLockJson, null, 4));
     } catch (e) {
-        console.log(e);
+        console.log("updatePackageLockPackage error", e);
     }
 };
 
