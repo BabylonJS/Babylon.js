@@ -5,6 +5,7 @@ import type { FluentIcon } from "@fluentui/react-icons";
 import type { BasePrimitiveProps } from "./primitive";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { TokenMap } from "./utils";
+// import { Tooltip } from "./tooltip";
 
 const useButtonStyles = makeStyles({
     smallIcon: {

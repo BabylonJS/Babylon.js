@@ -27,8 +27,9 @@ import {
     TreeItemLayout,
     treeItemLevelToken,
 } from "@fluentui/react-components";
-import { ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
+import { ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular, TextSortAscendingRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocalStorage } from "usehooks-ts";
 
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
@@ -274,21 +275,61 @@ function useCommandContextMenuState(commands: readonly SceneExplorerCommand<"con
     return [checkedContextMenuItems, onContextMenuCheckedValueChange, contextMenuItems] as const;
 }
 
+function CoerceEntityArray(entities: EntityTreeItemData[], sort: boolean): readonly EntityTreeItemData[] {
+    // If sorting is requested, create a copy of the array and sort it by display name.
+    if (sort) {
+        entities = [...entities];
+        entities.sort((left, right) => {
+            const leftDisplayInfo = left.getDisplayInfo();
+            const rightDisplayInfo = right.getDisplayInfo();
+            const comparison = leftDisplayInfo.name.localeCompare(rightDisplayInfo.name);
+            leftDisplayInfo.dispose?.();
+            rightDisplayInfo.dispose?.();
+            return comparison;
+        });
+    }
+
+    return entities;
+}
+
 const useStyles = makeStyles({
     rootDiv: {
         flex: 1,
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-        padding: `0 ${tokens.spacingHorizontalM}`,
+    },
+    toolbarDiv: {
+        display: "flex",
+        flexDirection: "row",
+        paddingLeft: tokens.spacingHorizontalM,
+        paddingRight: tokens.spacingHorizontalM,
     },
     searchBox: {
+        flex: 1,
         padding: 0,
     },
     tree: {
         rowGap: 0,
         overflow: "hidden",
         flex: 1,
+        paddingLeft: tokens.spacingHorizontalM,
+        paddingRight: tokens.spacingHorizontalM,
+    },
+    scrollView: {
+        overflowX: "hidden",
+        // Create a little padding and negative margin to keep correct alignment but make
+        // room for the focus ring so it doesn't get clipped.
+        paddingLeft: tokens.spacingHorizontalXXS,
+        paddingRight: tokens.spacingHorizontalXXS,
+        marginLeft: `calc(-1 * ${tokens.spacingHorizontalXXS})`,
+        marginRight: `calc(-1 * ${tokens.spacingHorizontalXXS})`,
+    },
+    treeItem: {
+        // Ensure focused items render their focus ring above adjacent selected/hovered items
+        "&:focus": {
+            zIndex: 1,
+        },
     },
     sceneTreeItemLayout: {
         padding: 0,
@@ -306,6 +347,13 @@ const useStyles = makeStyles({
     treeItemLayoutCompact: {
         minHeight: CustomTokens.lineHeightSmall,
         maxHeight: CustomTokens.lineHeightSmall,
+    },
+    // Use tighter indentation than the default (16px instead of 24px per level)
+    treeItemLayoutBranch: {
+        paddingLeft: `calc((var(${treeItemLevelToken}, 1) - 1) * ${tokens.spacingHorizontalL})`,
+    },
+    treeItemLayoutLeaf: {
+        paddingLeft: `calc(var(${treeItemLevelToken}, 1) * ${tokens.spacingHorizontalL} + ${tokens.spacingHorizontalS})`,
     },
 });
 
@@ -373,7 +421,17 @@ const SceneTreeItem: FunctionComponent<{
     const treeItemLayoutClass = mergeClasses(classes.sceneTreeItemLayout, compactMode ? classes.treeItemLayoutCompact : undefined);
 
     return (
-        <FlatTreeItem key="scene" value="scene" itemType="leaf" parentValue={undefined} aria-level={1} aria-setsize={1} aria-posinset={1} onClick={select}>
+        <FlatTreeItem
+            className={classes.treeItem}
+            key="scene"
+            value="scene"
+            itemType="leaf"
+            parentValue={undefined}
+            aria-level={1}
+            aria-setsize={1}
+            aria-posinset={1}
+            onClick={select}
+        >
             <TreeItemLayout
                 iconBefore={<GlobeRegular />}
                 className={treeItemLayoutClass}
@@ -419,6 +477,7 @@ const SectionTreeItem: FunctionComponent<{
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
+                    className={classes.treeItem}
                     key={section.sectionName}
                     value={section.sectionName}
                     // Disable manual expand/collapse when a filter is active.
@@ -428,7 +487,7 @@ const SectionTreeItem: FunctionComponent<{
                     aria-setsize={1}
                     aria-posinset={1}
                 >
-                    <TreeItemLayout className={compactMode ? classes.treeItemLayoutCompact : undefined}>
+                    <TreeItemLayout className={mergeClasses(classes.treeItemLayoutBranch, compactMode ? classes.treeItemLayoutCompact : undefined)}>
                         <Body1Strong wrap={false} truncate>
                             {section.sectionName.substring(0, 100)}
                         </Body1Strong>
@@ -573,6 +632,7 @@ const EntityTreeItem: FunctionComponent<{
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
+                    className={classes.treeItem}
                     key={entityItem.entity.uniqueId}
                     value={entityItem.entity.uniqueId}
                     // Disable manual expand/collapse when a filter is active.
@@ -586,7 +646,7 @@ const EntityTreeItem: FunctionComponent<{
                 >
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
-                        className={compactMode ? classes.treeItemLayoutCompact : undefined}
+                        className={mergeClasses(hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf, compactMode ? classes.treeItemLayoutCompact : undefined)}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                         actions={actions}
                         aside={{
@@ -648,6 +708,7 @@ export const SceneExplorer: FunctionComponent<{
     };
 
     const [itemsFilter, setItemsFilter] = useState("");
+    const [isSorted, setIsSorted] = useLocalStorage("Babylon/Settings/SceneExplorer/IsSorted", false);
 
     useEffect(() => {
         setSceneVersion((version) => version + 1);
@@ -769,8 +830,8 @@ export const SceneExplorer: FunctionComponent<{
         visibleItems.add(sceneTreeItem);
 
         for (const sectionTreeItem of sectionTreeItems) {
-            const children = sectionTreeItem.children;
             traversedItems.push(sectionTreeItem);
+            const children = CoerceEntityArray(sectionTreeItem.children, isSorted);
             if (!children.length) {
                 continue;
             }
@@ -787,7 +848,10 @@ export const SceneExplorer: FunctionComponent<{
                     // Get children
                     (treeItem) => {
                         if (filter || openItems.has(treeItem.entity.uniqueId)) {
-                            return treeItem.children ?? null;
+                            if (!treeItem.children) {
+                                return null;
+                            }
+                            return CoerceEntityArray(treeItem.children, isSorted);
                         }
                         return null;
                     },
@@ -834,7 +898,7 @@ export const SceneExplorer: FunctionComponent<{
 
         // Filter the traversal ordered items by those that should actually be visible.
         return traversedItems.filter((item) => visibleItems.has(item));
-    }, [sceneTreeItem, sectionTreeItems, allTreeItems, openItems, itemsFilter]);
+    }, [sceneTreeItem, sectionTreeItems, allTreeItems, openItems, itemsFilter, isSorted]);
 
     const getParentStack = useCallback(
         (entity: EntityBase) => {
@@ -922,16 +986,25 @@ export const SceneExplorer: FunctionComponent<{
 
     return (
         <div className={classes.rootDiv}>
-            <SearchBox
-                className={classes.searchBox}
-                appearance="underline"
-                contentBefore={<FilterRegular />}
-                placeholder="Filter"
-                value={itemsFilter}
-                onChange={(_, data) => setItemsFilter(data.value)}
-            />
+            <div className={classes.toolbarDiv}>
+                <SearchBox
+                    className={classes.searchBox}
+                    appearance="underline"
+                    contentBefore={<FilterRegular />}
+                    placeholder="Filter"
+                    value={itemsFilter}
+                    onChange={(_, data) => setItemsFilter(data.value)}
+                />
+                <ToggleButton
+                    title="Sort Entities Alphabetically"
+                    appearance="transparent"
+                    checkedIcon={TextSortAscendingRegular}
+                    value={isSorted}
+                    onChange={() => setIsSorted((isSorted) => !isSorted)}
+                />
+            </div>
             <FlatTree className={classes.tree} openItems={openItems} onOpenChange={onOpenChange} aria-label="Scene Explorer Tree">
-                <VirtualizerScrollView imperativeRef={scrollViewRef} numItems={visibleItems.length} itemSize={32} container={{ style: { overflowX: "hidden" } }}>
+                <VirtualizerScrollView imperativeRef={scrollViewRef} numItems={visibleItems.length} itemSize={32} container={{ className: classes.scrollView }}>
                     {(index: number) => {
                         const item = visibleItems[index];
 
