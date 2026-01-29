@@ -12,6 +12,7 @@ export const enum DefaultSectionsOrder {
     GUIs = 1100,
     FrameGraphs = 1200,
     Atmosphere = 1300,
+    Sounds = 1400,
 }
 
 export const enum DefaultCommandsOrder {

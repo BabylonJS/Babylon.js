@@ -1,13 +1,14 @@
 import type { IDisposable } from "core/index";
 
-export type FunctionHooks = {
+export type FunctionHooks<Args extends unknown[] = unknown[]> = {
     /**
      * This function will be called after the hooked function is called.
+     * @param args The arguments that were passed to the original function.
      */
-    afterCall?: () => void;
+    afterCall?: (...args: Args) => void;
 };
 
-const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, FunctionHooks[]>>();
+const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, FunctionHooks<unknown[]>[]>>();
 
 /**
  * Intercepts a function on an object and allows you to add hooks that will be called during function execution.
@@ -16,7 +17,11 @@ const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, FunctionHooks[
  * @param hooks The hooks to call during the function execution.
  * @returns A disposable that removes the hooks when disposed and returns the object to its original state.
  */
-export function InterceptFunction<T extends object>(target: T, propertyKey: keyof T, hooks: FunctionHooks): IDisposable {
+export function InterceptFunction<T extends object, K extends keyof T>(
+    target: T,
+    propertyKey: K,
+    hooks: NonNullable<T[K]> extends (...args: infer Args) => unknown ? FunctionHooks<Args> : never
+): IDisposable {
     if (!hooks.afterCall) {
         throw new Error("At least one hook must be provided.");
     }
@@ -50,10 +55,10 @@ export function InterceptFunction<T extends object>(target: T, propertyKey: keyo
         hooksMap.set(propertyKey, (hooksForKey = []));
         if (
             // Replace the function with a new one that calls the hooks in addition to the original function.
-            !Reflect.set(target, propertyKey, (...args: any) => {
+            !Reflect.set(target, propertyKey, (...args: unknown[]) => {
                 const result = Reflect.apply(originalFunction, target, args);
                 for (const { afterCall } of hooksForKey!) {
-                    afterCall?.();
+                    afterCall?.(...args);
                 }
                 return result;
             })
@@ -61,7 +66,7 @@ export function InterceptFunction<T extends object>(target: T, propertyKey: keyo
             throw new Error(`Failed to define new function "${propertyKey.toString()}" on object "${target}".`);
         }
     }
-    hooksForKey.push(hooks);
+    hooksForKey.push(hooks as FunctionHooks<unknown[]>);
 
     let isDisposed = false;
     return {

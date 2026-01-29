@@ -29,6 +29,7 @@ import { Texture } from "core/Materials/Textures/texture";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Button } from "gui/2D/controls/button";
 import "core/Audio/audioSceneComponent";
+import "core/Audio/audioEngine";
 import { Sound } from "core/Audio/sound";
 import { ShowInspector } from "../../src/inspector";
 
@@ -49,6 +50,7 @@ const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const engine = new Engine(canvas, true, {
     adaptToDeviceRatio: true,
     antialias: true,
+    audioEngine: true,
 });
 
 const scene = new Scene(engine);
@@ -188,7 +190,7 @@ function createGui() {
 }
 
 function createSound() {
-    const music = new Sound("Music", "https://playground.babylonjs.com/sounds/violons11.wav", scene, null, {
+    const sound = new Sound("Music", "https://playground.babylonjs.com/sounds/violons11.wav", scene, null, {
         loop: true,
         autoplay: false,
     });

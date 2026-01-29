@@ -30,6 +30,7 @@ import {
 import { ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
 import { useObservableState } from "../../hooks/observableHooks";
@@ -37,10 +38,23 @@ import { useResource } from "../../hooks/resourceHooks";
 import { useCompactMode } from "../../hooks/settingsHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
 
-export type EntityBase = Readonly<{
-    uniqueId: number;
+type EntityBase = Readonly<{
+    uniqueId?: number;
     reservedDataStore?: Record<PropertyKey, unknown>;
 }>;
+
+const SyntheticUniqueIds = new WeakMap<EntityBase, number>();
+function GetEntityId(entity: EntityBase): number {
+    if (entity.uniqueId !== undefined) {
+        return entity.uniqueId;
+    }
+
+    let id = SyntheticUniqueIds.get(entity);
+    if (!id) {
+        SyntheticUniqueIds.set(entity, (id = UniqueIdGenerator.UniqueId));
+    }
+    return id;
+}
 
 export type EntityDisplayInfo = Partial<IDisposable> &
     Readonly<{
@@ -55,7 +69,7 @@ export type EntityDisplayInfo = Partial<IDisposable> &
         onChange?: IReadonlyObservable<void>;
     }>;
 
-export type SceneExplorerSection<T extends EntityBase> = Readonly<{
+export type SceneExplorerSection<T> = Readonly<{
     /**
      * The display name of the section (e.g. "Nodes", "Materials", etc.).
      */
@@ -198,7 +212,7 @@ type EntityTreeItemData = {
     depth: number;
     parent: SectionTreeItemData | EntityTreeItemData;
     children?: EntityTreeItemData[];
-    icon?: ComponentType<{ entity: EntityBase }>;
+    icon?: ComponentType<{ entity: unknown }>;
     getDisplayInfo: () => EntityDisplayInfo;
 };
 
@@ -209,7 +223,7 @@ function ExpandOrCollapseAll(treeItem: SectionTreeItemData | EntityTreeItemData,
     TraverseGraph(
         [treeItem],
         (treeItem) => treeItem.children,
-        (treeItem) => addOrRemove(treeItem.type === "entity" ? treeItem.entity.uniqueId : treeItem.sectionName)
+        (treeItem) => addOrRemove(treeItem.type === "entity" ? GetEntityId(treeItem.entity) : treeItem.sectionName)
     );
 }
 
@@ -573,11 +587,11 @@ const EntityTreeItem: FunctionComponent<{
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
-                    key={entityItem.entity.uniqueId}
-                    value={entityItem.entity.uniqueId}
+                    key={GetEntityId(entityItem.entity)}
+                    value={GetEntityId(entityItem.entity)}
                     // Disable manual expand/collapse when a filter is active.
                     itemType={!isFiltering && hasChildren ? "branch" : "leaf"}
-                    parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : entityItem.entity.uniqueId}
+                    parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : GetEntityId(entityItem.entity)}
                     aria-level={entityItem.depth}
                     aria-setsize={1}
                     aria-posinset={1}
@@ -626,8 +640,8 @@ const EntityTreeItem: FunctionComponent<{
 };
 
 export const SceneExplorer: FunctionComponent<{
-    sections: readonly SceneExplorerSection<EntityBase>[];
-    entityCommandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
+    sections: readonly SceneExplorerSection<unknown>[];
+    entityCommandProviders: readonly SceneExplorerCommandProvider<unknown>[];
     sectionCommandProviders: readonly SceneExplorerCommandProvider<string, "contextMenu">[];
     scene: Scene;
     selectedEntity?: unknown;
@@ -658,10 +672,10 @@ export const SceneExplorer: FunctionComponent<{
             setSceneVersion((version) => version + 1);
         };
 
-        const onSceneItemRemoved = (item: EntityBase) => {
+        const onSceneItemRemoved = (item: unknown) => {
             setSceneVersion((version) => version + 1);
 
-            if (openItems.delete(item.uniqueId)) {
+            if (openItems.delete(GetEntityId(item as EntityBase))) {
                 setOpenItems(new Set(openItems));
             }
 
@@ -727,18 +741,18 @@ export const SceneExplorer: FunctionComponent<{
                 }
                 parent.children.push(treeItemData);
 
-                allTreeItems.set(entity.uniqueId, treeItemData);
+                allTreeItems.set(GetEntityId(entity), treeItemData);
                 return treeItemData;
             };
 
-            const rootEntityTreeItems = rootEntities.map((entity) => createEntityTreeItemData(entity, sectionTreeItem));
+            const rootEntityTreeItems = rootEntities.map((entity) => createEntityTreeItemData(entity as EntityBase, sectionTreeItem));
 
             TraverseGraph(
                 rootEntityTreeItems,
                 // Get children
                 (treeItem) => {
                     if (section.getEntityChildren) {
-                        const children = section.getEntityChildren(treeItem.entity);
+                        const children = section.getEntityChildren(treeItem.entity) as EntityBase[];
                         return children.filter((child) => !child.reservedDataStore?.hidden).map((child) => createEntityTreeItemData(child, treeItem));
                     }
                     return null;
@@ -786,7 +800,7 @@ export const SceneExplorer: FunctionComponent<{
                     children,
                     // Get children
                     (treeItem) => {
-                        if (filter || openItems.has(treeItem.entity.uniqueId)) {
+                        if (filter || openItems.has(GetEntityId(treeItem.entity))) {
                             return treeItem.children ?? null;
                         }
                         return null;
@@ -839,8 +853,8 @@ export const SceneExplorer: FunctionComponent<{
     const getParentStack = useCallback(
         (entity: EntityBase) => {
             const parentStack: TreeItemValue[] = [];
-            for (let treeItem = allTreeItems.get(entity.uniqueId); treeItem; treeItem = treeItem?.type === "entity" ? treeItem.parent : undefined) {
-                parentStack.push(treeItem.type === "entity" ? treeItem.entity.uniqueId : treeItem.sectionName);
+            for (let treeItem = allTreeItems.get(GetEntityId(entity)); treeItem; treeItem = treeItem?.type === "entity" ? treeItem.parent : undefined) {
+                parentStack.push(treeItem.type === "entity" ? GetEntityId(treeItem.entity) : treeItem.sectionName);
             }
             // The first item will be the entity itself, so just remove it.
             parentStack.shift();
@@ -966,7 +980,7 @@ export const SceneExplorer: FunctionComponent<{
                                     isSelected={selectedEntity === item.entity}
                                     select={() => setSelectedEntity?.(item.entity)}
                                     isFiltering={!!itemsFilter}
-                                    commandProviders={entityCommandProviders}
+                                    commandProviders={entityCommandProviders as SceneExplorerCommandProvider<EntityBase>[]}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
                                 />
