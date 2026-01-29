@@ -298,11 +298,12 @@ const useStyles = makeStyles({
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-        padding: `0 ${tokens.spacingHorizontalM}`,
     },
     toolbarDiv: {
         display: "flex",
         flexDirection: "row",
+        paddingLeft: tokens.spacingHorizontalM,
+        paddingRight: tokens.spacingHorizontalM,
     },
     searchBox: {
         flex: 1,
@@ -312,6 +313,23 @@ const useStyles = makeStyles({
         rowGap: 0,
         overflow: "hidden",
         flex: 1,
+        paddingLeft: tokens.spacingHorizontalM,
+        paddingRight: tokens.spacingHorizontalM,
+    },
+    scrollView: {
+        overflowX: "hidden",
+        // Create a little padding and negative margin to keep correct alignment but make
+        // room for the focus ring so it doesn't get clipped.
+        paddingLeft: tokens.spacingHorizontalXXS,
+        paddingRight: tokens.spacingHorizontalXXS,
+        marginLeft: `calc(-1 * ${tokens.spacingHorizontalXXS})`,
+        marginRight: `calc(-1 * ${tokens.spacingHorizontalXXS})`,
+    },
+    treeItem: {
+        // Ensure focused items render their focus ring above adjacent selected/hovered items
+        "&:focus": {
+            zIndex: 1,
+        },
     },
     sceneTreeItemLayout: {
         padding: 0,
@@ -396,7 +414,17 @@ const SceneTreeItem: FunctionComponent<{
     const treeItemLayoutClass = mergeClasses(classes.sceneTreeItemLayout, compactMode ? classes.treeItemLayoutCompact : undefined);
 
     return (
-        <FlatTreeItem key="scene" value="scene" itemType="leaf" parentValue={undefined} aria-level={1} aria-setsize={1} aria-posinset={1} onClick={select}>
+        <FlatTreeItem
+            className={classes.treeItem}
+            key="scene"
+            value="scene"
+            itemType="leaf"
+            parentValue={undefined}
+            aria-level={1}
+            aria-setsize={1}
+            aria-posinset={1}
+            onClick={select}
+        >
             <TreeItemLayout
                 iconBefore={<GlobeRegular />}
                 className={treeItemLayoutClass}
@@ -442,6 +470,7 @@ const SectionTreeItem: FunctionComponent<{
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
+                    className={classes.treeItem}
                     key={section.sectionName}
                     value={section.sectionName}
                     // Disable manual expand/collapse when a filter is active.
@@ -596,6 +625,7 @@ const EntityTreeItem: FunctionComponent<{
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
+                    className={classes.treeItem}
                     key={entityItem.entity.uniqueId}
                     value={entityItem.entity.uniqueId}
                     // Disable manual expand/collapse when a filter is active.
@@ -967,7 +997,7 @@ export const SceneExplorer: FunctionComponent<{
                 />
             </div>
             <FlatTree className={classes.tree} openItems={openItems} onOpenChange={onOpenChange} aria-label="Scene Explorer Tree">
-                <VirtualizerScrollView imperativeRef={scrollViewRef} numItems={visibleItems.length} itemSize={32} container={{ style: { overflowX: "hidden" } }}>
+                <VirtualizerScrollView imperativeRef={scrollViewRef} numItems={visibleItems.length} itemSize={32} container={{ className: classes.scrollView }}>
                     {(index: number) => {
                         const item = visibleItems[index];
 
