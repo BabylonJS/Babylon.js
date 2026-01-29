@@ -66,9 +66,9 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
     public occlusionStrength: number = 0.8;
 
     /**
-     * The occlusion threshold (default: 0.01)
+     * The occlusion threshold (default: 0.0001)
      */
-    public occlusionThreshold: number = 0.01;
+    public occlusionThreshold: number = 0.0001;
 
     /**
      * The width of the source texture
