@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Merge Meshes with submeshes",
+            "playgroundId": "#ZHPFRQ",
+            "referenceImage": "mergemeshes-sub.png"
+        },
+        {
             "title": "Gaussian Splatting modify",
             "playgroundId": "#RKKCHG#15",
             "renderCount": 15,
