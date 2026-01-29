@@ -27,8 +27,9 @@ import {
     TreeItemLayout,
     treeItemLevelToken,
 } from "@fluentui/react-components";
-import { ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
+import { ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular, TextSortAscendingRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocalStorage } from "usehooks-ts";
 
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
@@ -274,6 +275,23 @@ function useCommandContextMenuState(commands: readonly SceneExplorerCommand<"con
     return [checkedContextMenuItems, onContextMenuCheckedValueChange, contextMenuItems] as const;
 }
 
+function CoerceEntityArray(entities: EntityTreeItemData[], sort: boolean): readonly EntityTreeItemData[] {
+    // If sorting is requested, create a copy of the array and sort it by display name.
+    if (sort) {
+        entities = [...entities];
+        entities.sort((left, right) => {
+            const leftDisplayInfo = left.getDisplayInfo();
+            const rightDisplayInfo = right.getDisplayInfo();
+            const comparison = leftDisplayInfo.name.localeCompare(rightDisplayInfo.name);
+            leftDisplayInfo.dispose?.();
+            rightDisplayInfo.dispose?.();
+            return comparison;
+        });
+    }
+
+    return entities;
+}
+
 const useStyles = makeStyles({
     rootDiv: {
         flex: 1,
@@ -282,7 +300,12 @@ const useStyles = makeStyles({
         flexDirection: "column",
         padding: `0 ${tokens.spacingHorizontalM}`,
     },
+    toolbarDiv: {
+        display: "flex",
+        flexDirection: "row",
+    },
     searchBox: {
+        flex: 1,
         padding: 0,
     },
     tree: {
@@ -648,6 +671,7 @@ export const SceneExplorer: FunctionComponent<{
     };
 
     const [itemsFilter, setItemsFilter] = useState("");
+    const [isSorted, setIsSorted] = useLocalStorage("Babylon/Settings/SceneExplorer/IsSorted", false);
 
     useEffect(() => {
         setSceneVersion((version) => version + 1);
@@ -769,8 +793,8 @@ export const SceneExplorer: FunctionComponent<{
         visibleItems.add(sceneTreeItem);
 
         for (const sectionTreeItem of sectionTreeItems) {
-            const children = sectionTreeItem.children;
             traversedItems.push(sectionTreeItem);
+            const children = CoerceEntityArray(sectionTreeItem.children, isSorted);
             if (!children.length) {
                 continue;
             }
@@ -787,7 +811,10 @@ export const SceneExplorer: FunctionComponent<{
                     // Get children
                     (treeItem) => {
                         if (filter || openItems.has(treeItem.entity.uniqueId)) {
-                            return treeItem.children ?? null;
+                            if (!treeItem.children) {
+                                return null;
+                            }
+                            return CoerceEntityArray(treeItem.children, isSorted);
                         }
                         return null;
                     },
@@ -834,7 +861,7 @@ export const SceneExplorer: FunctionComponent<{
 
         // Filter the traversal ordered items by those that should actually be visible.
         return traversedItems.filter((item) => visibleItems.has(item));
-    }, [sceneTreeItem, sectionTreeItems, allTreeItems, openItems, itemsFilter]);
+    }, [sceneTreeItem, sectionTreeItems, allTreeItems, openItems, itemsFilter, isSorted]);
 
     const getParentStack = useCallback(
         (entity: EntityBase) => {
@@ -922,14 +949,23 @@ export const SceneExplorer: FunctionComponent<{
 
     return (
         <div className={classes.rootDiv}>
-            <SearchBox
-                className={classes.searchBox}
-                appearance="underline"
-                contentBefore={<FilterRegular />}
-                placeholder="Filter"
-                value={itemsFilter}
-                onChange={(_, data) => setItemsFilter(data.value)}
-            />
+            <div className={classes.toolbarDiv}>
+                <SearchBox
+                    className={classes.searchBox}
+                    appearance="underline"
+                    contentBefore={<FilterRegular />}
+                    placeholder="Filter"
+                    value={itemsFilter}
+                    onChange={(_, data) => setItemsFilter(data.value)}
+                />
+                <ToggleButton
+                    title="Sort Entities Alphabetically"
+                    appearance="transparent"
+                    checkedIcon={TextSortAscendingRegular}
+                    value={isSorted}
+                    onChange={() => setIsSorted((isSorted) => !isSorted)}
+                />
+            </div>
             <FlatTree className={classes.tree} openItems={openItems} onOpenChange={onOpenChange} aria-label="Scene Explorer Tree">
                 <VirtualizerScrollView imperativeRef={scrollViewRef} numItems={visibleItems.length} itemSize={32} container={{ style: { overflowX: "hidden" } }}>
                     {(index: number) => {
