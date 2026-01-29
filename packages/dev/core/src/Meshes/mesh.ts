@@ -5017,41 +5017,41 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 return null;
             }
 
-            if (subdivideWithSubMeshes) {
-                indiceArray.push({ start: 0, count: mesh.getTotalIndices() });
-            }
-
-            if (multiMultiMaterials) {
+            if (subdivideWithSubMeshes || multiMultiMaterials) {
                 const indexOffset = indiceArray.reduce((accumulator, currentValue) => {
                     return Math.max(accumulator, currentValue.start + currentValue.count);
                 }, 0);
 
-                if (mesh.material) {
-                    const material = mesh.material;
-                    if (material instanceof MultiMaterial) {
-                        for (let matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
-                            if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
-                                materialArray.push(<Material>material.subMaterials[matIndex]);
+                if (multiMultiMaterials) {
+                    if (mesh.material) {
+                        const material = mesh.material;
+                        if (material instanceof MultiMaterial) {
+                            for (let matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
+                                if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
+                                    materialArray.push(<Material>material.subMaterials[matIndex]);
+                                }
+                            }
+                            for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                                materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
+                                indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
+                            }
+                        } else {
+                            if (materialArray.indexOf(material) < 0) {
+                                materialArray.push(material);
+                            }
+                            for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                                materialIndexArray.push(materialArray.indexOf(material));
+                                indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
                             }
                         }
-                        for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
-                            indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
-                        }
                     } else {
-                        if (materialArray.indexOf(material) < 0) {
-                            materialArray.push(material);
-                        }
                         for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            materialIndexArray.push(materialArray.indexOf(material));
+                            materialIndexArray.push(0);
                             indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
                         }
                     }
                 } else {
-                    for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                        materialIndexArray.push(0);
-                        indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
-                    }
+                    indiceArray.push({ start: indexOffset, count: mesh.getTotalIndices() });
                 }
             }
         }
