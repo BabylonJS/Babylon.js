@@ -187,7 +187,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
 
                     {nullable && !ignoreNullable && (
                         // If this is a nullableProperty and ignoreNullable was not sent, display a checkbox used to toggle null ('checked' means 'non null')
-                        <Tooltip relationship="label" content={props.value == null ? "Enable property" : "Disable property (set to null)"}>
+                        <Tooltip content={props.value == null ? "Enable property" : "Disable property (set to null)"}>
                             <Checkbox
                                 className={classes.checkbox}
                                 indicator={{ className: classes.checkboxIndicator }}
