@@ -104,9 +104,9 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
             } else {
                 const index = state.activeAnimations.indexOf(animation);
                 if (index !== -1) {
-                    actions.setActiveAnimations(state.activeAnimations.filter((a: Animation) => a !== animation));
+                    actions.setActiveAnimations((prev) => prev.filter((a) => a !== animation));
                 } else {
-                    actions.setActiveAnimations([...state.activeAnimations, animation]);
+                    actions.setActiveAnimations((prev) => [...prev, animation]);
                 }
             }
             actions.disableChannel(animation);

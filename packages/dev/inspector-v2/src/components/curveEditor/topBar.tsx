@@ -2,7 +2,6 @@ import type { FunctionComponent } from "react";
 
 import { makeStyles, tokens, Divider } from "@fluentui/react-components";
 import { useCallback, useEffect, useState } from "react";
-import { Animation } from "core/Animations/animation";
 import {
     AddRegular,
     DeleteRegular,
@@ -11,6 +10,7 @@ import {
     LineHorizontal1Regular,
     ChevronDoubleRightRegular,
     ChevronDoubleLeftRegular,
+    StepsRegular,
 } from "@fluentui/react-icons";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
@@ -97,13 +97,9 @@ export const TopBar: FunctionComponent = () => {
             // TODO: Properly type KeyPointComponent to access curve.animation
             const numAnims = numKeys;
 
-            // Check if any active key point has a quaternion animation
-            const hasQuaternion = state.activeKeyPoints?.some((keyPoint) => keyPoint.curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION);
-
-            // Disable editing for quaternion animations (like v1)
-            const frameEnabled = ((numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1)) && !hasQuaternion;
+            const frameEnabled = (numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1);
             setFrameControlEnabled(frameEnabled);
-            setValueControlEnabled(numKeys > 0 && !hasQuaternion);
+            setValueControlEnabled(numKeys > 0);
             // Don't reset values here - they are set by onFrameSet/onValueSet observers
         });
 
@@ -201,6 +197,13 @@ export const TopBar: FunctionComponent = () => {
                     disabled={!hasActiveKeyPoints}
                     onClick={() => observables.onUnifyTangentRequired.notifyObservers()}
                     title="Unify tangent"
+                />
+                <Button
+                    icon={StepsRegular}
+                    appearance="subtle"
+                    disabled={!hasActiveKeyPoints}
+                    onClick={() => observables.onStepTangentRequired.notifyObservers()}
+                    title="Step tangent"
                 />
             </div>
         </div>

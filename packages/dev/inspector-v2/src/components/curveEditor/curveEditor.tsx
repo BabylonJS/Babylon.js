@@ -108,13 +108,15 @@ const CurveEditorContent: FunctionComponent = () => {
                     break;
                 case "ArrowLeft":
                     if (!state.focusedInput) {
-                        observables.onMoveToFrameRequired.notifyObservers(Math.max(0, state.activeFrame - 1));
+                        const newFrame = Math.max(0, state.activeFrame - 1);
+                        actions.moveToFrame(newFrame);
                         evt.preventDefault();
                     }
                     break;
                 case "ArrowRight":
                     if (!state.focusedInput) {
-                        observables.onMoveToFrameRequired.notifyObservers(Math.min(state.clipLength, state.activeFrame + 1));
+                        const newFrame = Math.min(state.clipLength, state.activeFrame + 1);
+                        actions.moveToFrame(newFrame);
                         evt.preventDefault();
                     }
                     break;
@@ -122,7 +124,7 @@ const CurveEditorContent: FunctionComponent = () => {
                     if (!state.focusedInput) {
                         const prevKey = actions.getPrevKey();
                         if (prevKey !== null) {
-                            observables.onMoveToFrameRequired.notifyObservers(prevKey);
+                            actions.moveToFrame(prevKey);
                         }
                         evt.preventDefault();
                     }
@@ -132,7 +134,7 @@ const CurveEditorContent: FunctionComponent = () => {
                     if (!state.focusedInput) {
                         const nextKey = actions.getNextKey();
                         if (nextKey !== null) {
-                            observables.onMoveToFrameRequired.notifyObservers(nextKey);
+                            actions.moveToFrame(nextKey);
                         }
                         evt.preventDefault();
                     }

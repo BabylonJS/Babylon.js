@@ -12,7 +12,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { CurveData } from "./curve";
 import type { KeyPoint } from "../curveEditorContext";
 import { useCurveEditor } from "../curveEditorContext";
-import { ExtractSlope, ProcessTangentMove, HandleLockedTangent } from "../utils/tangentUtils";
 
 // Inline SVG data URIs for key point icons
 const KEY_INACTIVE =
@@ -140,18 +139,44 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
         }
     }, [state.activeKeyPoints, state.mainKeyPoint, curve, keyId, isSelected, curvesMatch]);
 
-    // Extract slope helper that uses current state
+    // Extract slope from a tangent vector (matches v1's _extractSlope)
     const extractSlope = useCallback(
         (vec: Vector2, storedLength: number, isIn: boolean) => {
             const keys = curve.keys;
-            return ExtractSlope(vec, storedLength, isIn, keys[keyId].value, keys[keyId].frame, invertX, invertY, currentX, currentY);
+            const keyValue = keys[keyId].value;
+            const keyFrame = keys[keyId].frame;
+
+            // Work with a clone to avoid mutating the original vector
+            const workVec = vec.clone();
+
+            // Ensure vector points in the correct direction
+            if (isIn && workVec.x >= 0) {
+                workVec.x = -0.01;
+            } else if (!isIn && workVec.x <= 0) {
+                workVec.x = 0.01;
+            }
+
+            const currentPosition = workVec.clone();
+            currentPosition.normalize();
+            currentPosition.scaleInPlace(storedLength);
+
+            const value = isIn ? keyValue - invertY(currentPosition.y + currentY) : invertY(currentPosition.y + currentY) - keyValue;
+            const frame = isIn ? keyFrame - invertX(currentPosition.x + currentX) : invertX(currentPosition.x + currentX) - keyFrame;
+
+            return value / frame;
         },
         [curve, keyId, invertX, invertY, currentX, currentY]
     );
 
     // Tangent operations
     const flattenTangent = useCallback(() => {
-        observables.onInterpolationModeSet.notifyObservers({ keyId, value: AnimationKeyInterpolation.NONE });
+        // First update the interpolation mode to NONE without triggering observers
+        const keys = curve.keys;
+        const animationKeys = curve.animation.getKeys();
+        keys[keyId].interpolation = AnimationKeyInterpolation.NONE;
+        animationKeys[keyId].interpolation = AnimationKeyInterpolation.NONE;
+
+        // Then update the tangents
         if (tangentSelectedIndex === -1 || tangentSelectedIndex === 0) {
             if (keyId !== 0) {
                 curve.updateInTangentFromControlPoint(keyId, 0);
@@ -163,10 +188,16 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             }
         }
         setForceUpdate((v) => v + 1);
-    }, [observables, keyId, tangentSelectedIndex, curve]);
+    }, [keyId, tangentSelectedIndex, curve]);
 
     const linearTangent = useCallback(() => {
-        observables.onInterpolationModeSet.notifyObservers({ keyId, value: AnimationKeyInterpolation.NONE });
+        // First update the interpolation mode to NONE without triggering observers
+        const keys = curve.keys;
+        const animationKeys = curve.animation.getKeys();
+        keys[keyId].interpolation = AnimationKeyInterpolation.NONE;
+        animationKeys[keyId].interpolation = AnimationKeyInterpolation.NONE;
+
+        // Then update the tangents
         if (tangentSelectedIndex === -1 || tangentSelectedIndex === 0) {
             if (keyId !== 0) {
                 curve.storeDefaultInTangent(keyId);
@@ -177,26 +208,40 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 curve.storeDefaultOutTangent(keyId);
             }
         }
+
+        // Notify once after all changes are done
         curve.onDataUpdatedObservable.notifyObservers();
         setForceUpdate((v) => v + 1);
-    }, [observables, keyId, tangentSelectedIndex, curve]);
+    }, [keyId, tangentSelectedIndex, curve]);
 
     const breakTangent = useCallback(() => {
-        observables.onInterpolationModeSet.notifyObservers({ keyId, value: AnimationKeyInterpolation.NONE });
+        // Update interpolation without triggering intermediate observers
+        const keys = curve.keys;
+        const animationKeys = curve.animation.getKeys();
+        keys[keyId].interpolation = AnimationKeyInterpolation.NONE;
+        animationKeys[keyId].interpolation = AnimationKeyInterpolation.NONE;
+
         curve.updateLockedTangentMode(keyId, false);
+        curve.onDataUpdatedObservable.notifyObservers();
         setForceUpdate((v) => v + 1);
-    }, [observables, keyId, curve]);
+    }, [keyId, curve]);
 
     const unifyTangent = useCallback(() => {
-        observables.onInterpolationModeSet.notifyObservers({ keyId, value: AnimationKeyInterpolation.NONE });
+        // Update interpolation without triggering intermediate observers
+        const keys = curve.keys;
+        const animationKeys = curve.animation.getKeys();
+        keys[keyId].interpolation = AnimationKeyInterpolation.NONE;
+        animationKeys[keyId].interpolation = AnimationKeyInterpolation.NONE;
+
         curve.updateLockedTangentMode(keyId, true);
+        curve.onDataUpdatedObservable.notifyObservers();
         setForceUpdate((v) => v + 1);
-    }, [observables, keyId, curve]);
+    }, [keyId, curve]);
 
     const stepTangent = useCallback(() => {
-        observables.onInterpolationModeSet.notifyObservers({ keyId, value: AnimationKeyInterpolation.STEP });
+        curve.updateInterpolationMode(keyId, AnimationKeyInterpolation.STEP);
         setForceUpdate((v) => v + 1);
-    }, [observables, keyId]);
+    }, [keyId, curve]);
 
     // Subscribe to tangent operation observables
     useEffect(() => {
@@ -426,46 +471,53 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 const keys = curve.keys;
                 const isLockedTangent = keys[keyId].lockedTangent && keyId !== 0 && keyId !== keys.length - 1;
 
+                // Calculate angle diff BEFORE modifying the tangent (like v1 does)
+                let angleDiff = 0;
+                if (isLockedTangent) {
+                    const va = inVec.current.clone().normalize();
+                    const vb = outVec.current.clone().normalize();
+                    angleDiff = Math.acos(Math.min(1.0, Math.max(-1, Vector2.Dot(va, vb))));
+
+                    // Determine direction of angle
+                    const tmpCheck = new Vector2();
+                    va.rotateToRef(-angleDiff, tmpCheck);
+                    if (Vector2.Distance(tmpCheck, vb) > 0.01) {
+                        angleDiff = -angleDiff;
+                    }
+                }
+
                 if (controlMode.current === ControlMode.TangentLeft) {
-                    const newSlope = ProcessTangentMove(
-                        diffX,
-                        diffY,
-                        inVec.current,
-                        storedLengthIn.current,
-                        scale,
-                        true,
-                        keys[keyId].value,
-                        keys[keyId].frame,
-                        invertX,
-                        invertY,
-                        currentX,
-                        currentY
-                    );
+                    // Calculate the moved vector position
+                    const movedInVec = inVec.current.clone();
+                    movedInVec.x += diffX * scale;
+                    movedInVec.y += diffY * scale;
+
+                    const newSlope = extractSlope(movedInVec, storedLengthIn.current, true);
                     curve.updateInTangentFromControlPoint(keyId, newSlope);
 
                     if (isLockedTangent) {
-                        const { outSlope } = HandleLockedTangent(inVec.current, outVec.current, "left", storedLengthIn.current, storedLengthOut.current, extractSlope);
+                        // Rotate the moved inVec by -angleDiff to get the outVec direction
+                        const tmpVector = new Vector2();
+                        movedInVec.rotateToRef(-angleDiff, tmpVector);
+                        tmpVector.x = Math.abs(tmpVector.x); // Ensure out tangent points right
+                        const outSlope = extractSlope(tmpVector, storedLengthOut.current, false);
                         curve.updateOutTangentFromControlPoint(keyId, outSlope);
                     }
                 } else if (controlMode.current === ControlMode.TangentRight) {
-                    const newSlope = ProcessTangentMove(
-                        diffX,
-                        diffY,
-                        outVec.current,
-                        storedLengthOut.current,
-                        scale,
-                        false,
-                        keys[keyId].value,
-                        keys[keyId].frame,
-                        invertX,
-                        invertY,
-                        currentX,
-                        currentY
-                    );
+                    // Calculate the moved vector position
+                    const movedOutVec = outVec.current.clone();
+                    movedOutVec.x += diffX * scale;
+                    movedOutVec.y += diffY * scale;
+
+                    const newSlope = extractSlope(movedOutVec, storedLengthOut.current, false);
                     curve.updateOutTangentFromControlPoint(keyId, newSlope);
 
                     if (isLockedTangent) {
-                        const { inSlope } = HandleLockedTangent(inVec.current, outVec.current, "right", storedLengthIn.current, storedLengthOut.current, extractSlope);
+                        // Rotate the moved outVec by angleDiff to get the inVec direction
+                        const tmpVector = new Vector2();
+                        movedOutVec.rotateToRef(angleDiff, tmpVector);
+                        tmpVector.x = -Math.abs(tmpVector.x); // Ensure in tangent points left
+                        const inSlope = extractSlope(tmpVector, storedLengthIn.current, true);
                         curve.updateInTangentFromControlPoint(keyId, inSlope);
                     }
                 }
@@ -538,7 +590,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
     const hasDefinedInTangent = curve.hasDefinedInTangent(keyId);
     const hasDefinedOutTangent = curve.hasDefinedOutTangent(keyId);
 
-    // Calculate tangent vectors
+    // Calculate tangent vectors from curve data (like v1's render method)
     const convertedX = invertX(currentX);
     const convertedY = invertY(currentY);
 
