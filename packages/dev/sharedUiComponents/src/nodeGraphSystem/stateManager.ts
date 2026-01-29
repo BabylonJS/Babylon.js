@@ -18,6 +18,7 @@ export class StateManager {
     lockObject: any;
     modalIsDisplayed: boolean;
     historyStack: HistoryStack;
+    activeNode: Nullable<GraphNode>;
 
     onSearchBoxRequiredObservable = new Observable<{ x: number; y: number }>();
     onSelectionChangedObservable = new Observable<Nullable<ISelectionChangedOptions>>();

@@ -53,6 +53,11 @@ import { SpriteManagerExplorerServiceDefinition } from "./services/panes/scene/s
 import { TextureExplorerServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
+import { CaptureToolsDefinition } from "./services/panes/tools/captureService";
+import { ExportServiceDefinition } from "./services/panes/tools/exportService";
+import { GLTFAnimationImportServiceDefinition } from "./services/panes/tools/import/gltfAnimationImportService";
+import { GLTFLoaderOptionsServiceDefinition } from "./services/panes/tools/import/gltfLoaderOptionsService";
+import { GLTFValidationServiceDefinition } from "./services/panes/tools/import/gltfValidationService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { PickingServiceDefinition } from "./services/pickingService";
 import { SceneContextIdentity } from "./services/sceneContext";
@@ -319,6 +324,11 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
 
             // Tools pane tab and related services.
             ToolsServiceDefinition,
+            ExportServiceDefinition,
+            GLTFAnimationImportServiceDefinition,
+            GLTFLoaderOptionsServiceDefinition,
+            GLTFValidationServiceDefinition,
+            CaptureToolsDefinition,
 
             // Settings pane tab and related services.
             SettingsServiceDefinition,
