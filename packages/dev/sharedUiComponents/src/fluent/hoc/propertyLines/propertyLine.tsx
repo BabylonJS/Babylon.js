@@ -55,6 +55,7 @@ const usePropertyLineStyles = makeStyles({
     },
     expandedContentDiv: {
         overflow: "hidden",
+        paddingLeft: tokens.spacingHorizontalM,
     },
     checkbox: {
         display: "flex",

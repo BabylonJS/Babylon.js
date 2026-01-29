@@ -68,6 +68,8 @@ body,
     height: 50px;
     width: 100%;
     bottom: 50px;
+    z-index: 5;
+    pointer-events: none;
 }
 
 #logoContainer {
@@ -127,7 +129,7 @@ body,
     }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     html {
         --footer-height: 50px;
         --font-size: 16px;

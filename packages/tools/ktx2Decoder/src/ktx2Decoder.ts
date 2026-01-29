@@ -121,8 +121,9 @@ export class KTX2Decoder {
             let imageOffsetInLevel = 0;
 
             if (kfr.header.supercompressionScheme === SupercompressionScheme.ZStandard) {
-                levelDataBuffer = this._zstdDecoder.decode(new Uint8Array(levelDataBuffer, levelDataOffset, kfr.levels[level].byteLength), levelUncompressedByteLength);
-                levelDataOffset = 0;
+                const decoded = this._zstdDecoder.decode(new Uint8Array(levelDataBuffer, levelDataOffset, kfr.levels[level].byteLength), levelUncompressedByteLength);
+                levelDataBuffer = decoded.buffer;
+                levelDataOffset = decoded.byteOffset;
             }
 
             if (level === 0) {

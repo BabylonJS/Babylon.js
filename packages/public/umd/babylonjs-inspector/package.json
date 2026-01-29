@@ -1,6 +1,7 @@
 {
-    "name": "babylonjs-inspector",
-    "version": "8.47.0",
+    "name": "babylonjs-inspector-legacy",
+    "version": "8.48.1",
+    "private": true,
     "main": "babylon.inspector.bundle.js",
     "types": "babylon.inspector.module.d.ts",
     "files": [
@@ -14,18 +15,18 @@
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "^8.47.0",
-        "babylonjs-addons": "^8.47.0",
-        "babylonjs-gui": "^8.47.0",
-        "babylonjs-gui-editor": "^8.47.0",
-        "babylonjs-loaders": "^8.47.0",
-        "babylonjs-materials": "^8.47.0",
-        "babylonjs-serializers": "^8.47.0"
+        "babylonjs": "8.48.1",
+        "babylonjs-addons": "8.48.1",
+        "babylonjs-gui": "8.48.1",
+        "babylonjs-gui-editor": "8.48.1",
+        "babylonjs-loaders": "8.48.1",
+        "babylonjs-materials": "8.48.1",
+        "babylonjs-serializers": "8.48.1"
     },
     "devDependencies": {
         "@dev/addons": "1.0.0",
         "@dev/build-tools": "1.0.0",
-        "@dev/inspector": "1.0.0",
+        "@dev/inspector-legacy": "1.0.0",
         "@dev/shared-ui-components": "1.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",

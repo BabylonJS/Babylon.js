@@ -12,20 +12,20 @@ const useClasses = makeStyles({
 
 type MessageBarProps = {
     message: string;
-    title: string;
+    title?: string;
     docLink?: string;
     intent: "info" | "success" | "warning" | "error";
 };
 export const MessageBar: FunctionComponent<MessageBarProps> = (props) => {
     MessageBar.displayName = "MessageBar";
-    const { message, title: header, intent, docLink } = props;
+    const { message, title, intent, docLink } = props;
     const classes = useClasses();
 
     return (
         <div className={classes.container}>
             <FluentMessageBar intent={intent} layout="multiline">
                 <MessageBarBody>
-                    <MessageBarTitle>{header}</MessageBarTitle>
+                    {title && <MessageBarTitle>{title}</MessageBarTitle>}
                     {message}
                     {docLink && (
                         <>

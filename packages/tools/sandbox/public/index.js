@@ -48,8 +48,13 @@ const Versions = {
         { url: "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/gui/babylon.gui.min.js", instantResolve: true },
-        { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true },
-        { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.40.1" },
+        // Allow an "inspectorv1" query param to force loading Inspector v1.
+        ...(window.location.search.toLocaleLowerCase().includes("inspectorv1")
+            ? [{ url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true }]
+            : [
+                  { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true, maxVersion: "8.40.0" },
+                  { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.40.1" },
+              ]),
     ],
     local: [
         { url: `//${window.location.hostname}:1337/babylon.js`, instantResolve: false },
@@ -58,7 +63,7 @@ const Versions = {
         { url: `//${window.location.hostname}:1337/serializers/babylonjs.serializers.min.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/materialsLibrary/babylonjs.materials.min.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/gui/babylon.gui.min.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`, instantResolve: false },
+        // { url: `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
     ],
 };
@@ -133,7 +138,7 @@ let checkBabylonVersionAsync = function () {
         }));
     } else if (version && activeVersion === "dist") {
         versions = versions
-            .filter((v) => !v.minVersion || isVersionGreaterOrEqual(version, v.minVersion))
+            .filter((v) => (!v.minVersion || isVersionGreaterOrEqual(version, v.minVersion)) && (!v.maxVersion || isVersionGreaterOrEqual(v.maxVersion, version)))
             .map((v) => ({
                 url: v.url.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version),
                 instantResolve: v.instantResolve,

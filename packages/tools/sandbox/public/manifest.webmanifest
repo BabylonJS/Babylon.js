@@ -58,8 +58,9 @@
                 "model/gltf-binary": [".glb"],
                 "model/gltf+json": [".gltf"],
                 "model/obj": [".obj"],
+                "model/stl": [".stl"],
                 "application/x-ply": [".ply"],
-                "application/octet-stream": [".splat", ".spz", ".babylon"]
+                "application/octet-stream": [".splat", ".spz", ".babylon", ".bvh", ".sog"]
             },
             "icons": [
                 {

@@ -1,0 +1,10 @@
+{
+    "declarationLibs": ["@dev/inspector", "@dev/shared-ui-components"],
+    "sourceDirectoryOverrides": {
+        "@dev/inspector": "dev/inspector-v2"
+    },
+    "devPackageName": "inspector",
+    "filename": "babylon.inspector-v2.module.d.ts",
+    "outputDirectory": "./",
+    "fileFilterRegex": "stories"
+}

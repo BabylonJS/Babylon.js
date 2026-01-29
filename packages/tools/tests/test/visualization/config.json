@@ -2975,52 +2975,52 @@
         },
         {
             "title": "Atmosphere Day",
-            "playgroundId": "#VO1Z0C#14",
+            "playgroundId": "#VO1Z0C#34",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Day (Planet Origin)",
-            "playgroundId": "#VO1Z0C#30",
+            "playgroundId": "#VO1Z0C#35",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Sunset",
-            "playgroundId": "#VO1Z0C#15",
+            "playgroundId": "#VO1Z0C#36",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Sunset (Planet Origin)",
             "playgroundId": "#VO1Z0C#31",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Night",
             "playgroundId": "#VO1Z0C#13",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Night (Planet Origin)",
             "playgroundId": "#VO1Z0C#32",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Space View",
             "playgroundId": "#VO1Z0C#6",
             "referenceImage": "atmosphere-space-view.png",
             "excludedEngines": ["webgl1"],
-            "renderCount": 30
+            "renderCount": 60
         },
         {
             "title": "OpenPBR IBL Reflectance with IOR",
@@ -3275,6 +3275,101 @@
         {
             "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - Furnace Test",
             "playgroundId": "#GRQHVV#207",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Color glTF - IBL",
+            "playgroundId": "#GRQHVV#120",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Color glTF - Analytic Lights",
+            "playgroundId": "#GRQHVV#122",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Roughness glTF - IBL",
+            "playgroundId": "#GRQHVV#123",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Roughness glTF - Analytic Lights",
+            "playgroundId": "#GRQHVV#124",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Roughness vs IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#134",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy Roughness vs IOR - IBL",
+            "playgroundId": "#GRQHVV#131",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy Roughness vs IOR - Realtime IBL",
+            "playgroundId": "#GRQHVV#132",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy Roughness vs IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#135",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy vs Roughness - Analytic Lights",
+            "playgroundId": "#GRQHVV#136",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy vs Roughness - IBL",
+            "playgroundId": "#GRQHVV#138",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Dispersion glTF - IBL",
+            "playgroundId": "#GRQHVV#140",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Dispersion VS IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#142",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Dispersion VS IOR - IBL",
+            "playgroundId": "#GRQHVV#143",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Forward Scatter and Absorption - IBL",
+            "playgroundId": "#GRQHVV#149",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Anisotropy Reflect - IBL",
+            "playgroundId": "#GRQHVV#216",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Anisotropy Refract - IBL",
+            "playgroundId": "#GRQHVV#220",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Anisotropy Refract - Analytic Lights",
+            "playgroundId": "#GRQHVV#217",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Anisotropy Reflect - Analytic Lights",
+            "playgroundId": "#GRQHVV#219",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Roughness - Analytic Lights",
+            "playgroundId": "#GRQHVV#218",
             "excludedEngines": ["webgl1"]
         },
         {

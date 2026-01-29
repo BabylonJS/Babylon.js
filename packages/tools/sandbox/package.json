@@ -28,7 +28,7 @@
         "@dev/build-tools": "1.0.0",
         "@dev/core": "1.0.0",
         "@dev/loaders": "1.0.0",
-        "@dev/inspector-v2": "1.0.0",
+        "@dev/inspector": "1.0.0",
         "@pmmmwh/react-refresh-webpack-plugin": "^0.6.0",
         "@svgr/webpack": "^7.0.0",
         "@types/dagre": "^0.7.47",

@@ -4,6 +4,8 @@ import { GlobalState } from "./globalState";
 import { RenderingZone } from "./components/renderingZone";
 import { ReflectorZone } from "./components/reflectorZone";
 import { Footer } from "./components/footer";
+import { WelcomeDialog } from "./components/welcomeDialog";
+import { LocalStorageHelper } from "./tools/localStorageHelper";
 import { EnvironmentTools } from "./tools/environmentTools";
 import { Vector3 } from "core/Maths/math.vector";
 import { Deferred } from "core/Misc/deferred";
@@ -18,6 +20,8 @@ import fullScreenLogo from "./img/logo-fullscreen.svg";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 
+declare const BABYLON: typeof import("core/index");
+
 // Types for PWA Launch Queue API (file handlers)
 interface ILaunchParams {
     files: FileSystemFileHandle[];
@@ -25,6 +29,12 @@ interface ILaunchParams {
 
 interface ILaunchQueue {
     setConsumer(consumer: (params: ILaunchParams) => void): void;
+}
+
+// Type for PWA install prompt event
+interface IBeforeInstallPromptEvent extends Event {
+    prompt(): Promise<void>;
+    userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
 interface ISandboxProps {
@@ -54,6 +64,18 @@ export class Sandbox extends React.Component<
          * Show folder access prompt for files with dependencies
          */
         showFolderAccessPrompt: boolean;
+        /**
+         * Show welcome dialog for 3D Viewer users
+         */
+        showWelcomeDialog: boolean;
+        /**
+         * Whether PWA can be installed
+         */
+        canInstallPwa: boolean;
+        /**
+         * Supported file extensions from registered scene loader plugins
+         */
+        supportedExtensions: string;
     }
 > {
     private _globalState: GlobalState;
@@ -70,6 +92,10 @@ export class Sandbox extends React.Component<
     private _pendingFolderAccessFile: File | null = null;
     // Stores the file handle for folder access (to start picker in same directory)
     private _pendingFolderAccessFileHandle: FileSystemFileHandle | null = null;
+    // Stores the PWA install prompt event
+    private _deferredInstallPrompt: IBeforeInstallPromptEvent | null = null;
+    // Whether we're in 3D Viewer welcome mode (show drop text even with default model)
+    private _isViewerWelcomeMode = false;
 
     /**
      * Constructs the Sandbox component
@@ -82,11 +108,28 @@ export class Sandbox extends React.Component<
         this._dropTextRef = React.createRef();
         this._clickInterceptorRef = React.createRef();
 
-        this.state = { isFooterVisible: true, errorMessage: "", currentFileName: "", showFolderAccessPrompt: false };
+        this.state = {
+            isFooterVisible: true,
+            errorMessage: "",
+            currentFileName: "",
+            showFolderAccessPrompt: false,
+            showWelcomeDialog: false,
+            canInstallPwa: false,
+            supportedExtensions: this._getSupportedExtensions(),
+        };
 
-        this.checkUrl();
+        this._checkUrl();
 
         EnvironmentTools.HookWithEnvironmentChange(this._globalState);
+
+        // Listen for PWA install prompt
+        window.addEventListener("beforeinstallprompt", (e) => {
+            e.preventDefault();
+            this._deferredInstallPrompt = e as IBeforeInstallPromptEvent;
+            // Clear any previous "do not show" preference since PWA is not installed
+            LocalStorageHelper.ClearWelcomeDialogDismissed();
+            this.setState({ canInstallPwa: true });
+        });
 
         // Update document title when display mode changes
         window.matchMedia("(display-mode: window-controls-overlay)").addEventListener("change", () => {
@@ -108,7 +151,12 @@ export class Sandbox extends React.Component<
                 this._logoRef.current!.className = "";
             } else {
                 this._logoRef.current!.className = "hidden";
-                this._dropTextRef.current!.className = "hidden";
+                // Keep drop text visible in 3D Viewer welcome mode so users know they can drag files
+                if (!this._isViewerWelcomeMode) {
+                    this._dropTextRef.current!.className = "hidden";
+                }
+                // Reset welcome mode after first load so subsequent file drops hide the text
+                this._isViewerWelcomeMode = false;
             }
 
             if (this._clearColor) {
@@ -185,7 +233,34 @@ export class Sandbox extends React.Component<
         this._engine = engine;
     };
 
-    checkUrl() {
+    /**
+     * Handles the PWA install button click
+     */
+    private _handleInstallClickAsync = async () => {
+        if (!this._deferredInstallPrompt) {
+            return;
+        }
+
+        await this._deferredInstallPrompt.prompt();
+        const { outcome } = await this._deferredInstallPrompt.userChoice;
+
+        if (outcome === "accepted") {
+            this._deferredInstallPrompt = null;
+            this.setState({ canInstallPwa: false, showWelcomeDialog: false });
+        }
+    };
+
+    /**
+     * Closes the welcome dialog
+     */
+    private _handleWelcomeClose = () => {
+        this.setState({ showWelcomeDialog: false });
+    };
+
+    /**
+     * Checks URL parameters to set modes and load assets
+     */
+    private _checkUrl = () => {
         const set3DCommerceMode = () => {
             document.title = "Babylon.js Sandbox for 3D Commerce";
             this._globalState.commerceMode = true;
@@ -211,6 +286,24 @@ export class Sandbox extends React.Component<
                 switch (name.toLowerCase()) {
                     case "3dcommerce": {
                         set3DCommerceMode();
+                        break;
+                    }
+                    case "from": {
+                        // Handle special source modes
+                        if (value.toLowerCase() === "3dviewer") {
+                            // Set Studio environment for 3D Viewer mode
+                            EnvironmentTools.SkyboxPath = EnvironmentTools.Skyboxes[2];
+                            // Load the welcome Yeti model
+                            this._globalState.assetUrl = "https://assets.babylonjs.com/meshes/YetiSmall.glb";
+                            // Keep drop text visible so users know they can drag files
+                            this._isViewerWelcomeMode = true;
+                            // Show welcome dialog only if not already running as PWA and not previously dismissed
+                            const isPwa = window.matchMedia("(display-mode: standalone)").matches || window.matchMedia("(display-mode: window-controls-overlay)").matches;
+                            const isDismissed = LocalStorageHelper.GetWelcomeDialogDismissed();
+                            if (!isPwa && !isDismissed) {
+                                this.state = { ...this.state, showWelcomeDialog: true };
+                            }
+                        }
                         break;
                     }
                     case "asset":
@@ -243,7 +336,15 @@ export class Sandbox extends React.Component<
                         break;
                     }
                     case "kiosk": {
-                        this.state = { isFooterVisible: value.toLowerCase() === "true" ? false : true, errorMessage: "", currentFileName: "", showFolderAccessPrompt: false };
+                        this.state = {
+                            isFooterVisible: value.toLowerCase() === "true" ? false : true,
+                            errorMessage: "",
+                            currentFileName: "",
+                            showFolderAccessPrompt: false,
+                            showWelcomeDialog: false,
+                            canInstallPwa: false,
+                            supportedExtensions: this._getSupportedExtensions(),
+                        };
                         break;
                     }
                     case "skybox": {
@@ -287,6 +388,33 @@ export class Sandbox extends React.Component<
                 }
             }
         }
+    };
+
+    /**
+     * Gets the supported file extensions from registered scene loader plugins.
+     * Falls back to a hardcoded list if GetRegisteredSceneLoaderPluginMetadata is not available (older Babylon versions).
+     * @returns A formatted string of supported extensions like "gltf, glb, obj or babylon"
+     */
+    private _getSupportedExtensions(): string {
+        const fallbackExtensions = "babylon, gltf, glb, obj, ply, sog, splat, spz or stl";
+
+        try {
+            const plugins = BABYLON.GetRegisteredSceneLoaderPluginMetadata();
+            let extensions = plugins.flatMap((plugin) => plugin.extensions.map((ext) => ext.extension.replace(".", "").toLowerCase())).sort();
+            extensions = extensions.filter((ext) => ext !== "json"); // The splat loader registers .json, but that is covered by the sog format and json files are too generic
+
+            if (extensions.length === 0) {
+                return fallbackExtensions;
+            }
+
+            // Format: "ext1, ext2, ext3 or ext4"
+            if (extensions.length === 1) {
+                return extensions[0];
+            }
+            return extensions.slice(0, -1).join(", ") + " or " + extensions[extensions.length - 1];
+        } catch {
+            return fallbackExtensions;
+        }
     }
 
     public override render() {
@@ -298,7 +426,7 @@ export class Sandbox extends React.Component<
                 <div className="titlebar">{titleBarText}</div>
                 <span>
                     <p id="droptext" ref={this._dropTextRef}>
-                        {this._globalState.reflector ? "" : "Drag and drop gltf, glb, obj, ply, splat, spz or babylon files to view them"}
+                        {this._globalState.reflector ? "" : `Drag and drop ${this.state.supportedExtensions} files to view them`}
                     </p>
                     {this._globalState.reflector ? (
                         <ReflectorZone globalState={this._globalState} expanded={!this.state.isFooterVisible} />
@@ -349,6 +477,9 @@ export class Sandbox extends React.Component<
                             </div>
                         </div>
                     </div>
+                )}
+                {this.state.showWelcomeDialog && (
+                    <WelcomeDialog onInstall={this._handleInstallClickAsync} onClose={this._handleWelcomeClose} canInstall={this.state.canInstallPwa} />
                 )}
             </div>
         );

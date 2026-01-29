@@ -9,7 +9,7 @@ You can learn more in the Inspector [documentation](https://doc.babylonjs.com/to
 Install the package using npm:
 
 ```bash
-npm install @babylonjs/inspector@preview
+npm install @babylonjs/inspector
 ```
 
 The simplest way to use `Inspector` is to call the `ShowInspector` function, passing in your scene:

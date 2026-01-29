@@ -169,16 +169,15 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                         #ifdef REFLECTION
                             #ifdef COLORED_IBL_SHADOWS
                                 var shadowValue: vec3f = computeIndirectShadow();
-                                slab_diffuse_ibl *= shadowValue;
-                                slab_glossy_ibl *= mix(vec3f(1.0), shadowValue, specularAlphaG);
+                                ambient_occlusion = min(ambient_occlusion, shadowValue);
                             #else
                                 var shadowValue: vec2f = computeIndirectShadow();
-                                slab_diffuse_ibl *= vec3f(shadowValue.x);
-                                slab_glossy_ibl *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, specularAlphaG));
+                                ambient_occlusion = min(ambient_occlusion, vec3f(shadowValue.x));
+                                specular_ambient_occlusion = min(specular_ambient_occlusion, pow(shadowValue.y, 4.0));
                             #endif
                         #endif
                     #else
-                        slab_diffuse_ibl *= computeIndirectShadow().x;
+                        ambient_occlusion = min(ambient_occlusion, vec3f(computeIndirectShadow().x));
                     #endif
                 #endif
             `;
@@ -247,16 +246,15 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                         #ifdef REFLECTION
                             #ifdef COLORED_IBL_SHADOWS
                                 vec3 shadowValue = computeIndirectShadow();
-                                slab_diffuse_ibl.rgb *= shadowValue.rgb;
-                                slab_glossy_ibl *= mix(vec3(1.0), shadowValue.rgb, specularAlphaG);
+                                ambient_occlusion = min(ambient_occlusion, shadowValue);
                             #else
                                 vec2 shadowValue = computeIndirectShadow();
-                                slab_diffuse_ibl *= shadowValue.x;
-                                slab_glossy_ibl *= mix(pow(shadowValue.y, 4.0), shadowValue.x, specularAlphaG);
+                                ambient_occlusion = min(ambient_occlusion, vec3(shadowValue.x));
+                                specular_ambient_occlusion = min(specular_ambient_occlusion, pow(shadowValue.y, 4.0));
                             #endif
                         #endif
                     #else
-                        slab_diffuse_ibl *= computeIndirectShadow().x;
+                        ambient_occlusion = min(ambient_occlusion, vec3(computeIndirectShadow().x));
                     #endif
                 #endif
             `;

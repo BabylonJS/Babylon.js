@@ -1,6 +1,6 @@
 {
-    "declarationLibs": ["@dev/inspector", "@dev/shared-ui-components"],
-    "devPackageName": "inspector",
+    "declarationLibs": ["@dev/inspector-legacy", "@dev/shared-ui-components"],
+    "devPackageName": "inspector-legacy",
     "filename": "babylon.inspector.module.d.ts",
     "buildType": "es6",
     "fileFilterRegex": "stories"
