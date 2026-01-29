@@ -46,7 +46,7 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        "& span": {
+        "& div": {
             height: "2px",
             width: "100%",
             backgroundColor: tokens.colorNeutralForeground3,
@@ -240,18 +240,18 @@ export const RangeSelector: FunctionComponent = () => {
             >
                 <div id="left-handle" className={styles.handle}>
                     <div className={styles.handleIcon}>
-                        <span />
-                        <span />
-                        <span />
+                        <div />
+                        <div />
+                        <div />
                     </div>
                 </div>
                 <div className={styles.label}>{Math.floor(state.fromKey)}</div>
                 <div className={styles.label}>{Math.floor(state.toKey)}</div>
                 <div id="right-handle" className={styles.handle}>
                     <div className={styles.handleIcon}>
-                        <span />
-                        <span />
-                        <span />
+                        <div />
+                        <div />
+                        <div />
                     </div>
                 </div>
             </div>

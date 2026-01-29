@@ -128,19 +128,19 @@ export const TopBar: FunctionComponent = () => {
 
     return (
         <div className={styles.root}>
-            <span className={styles.title}>{state.title}</span>
+            <div className={styles.title}>{state.title}</div>
 
             <Divider vertical className={styles.divider} />
 
             {/* Frame Input */}
             <div className={styles.inputGroup}>
-                <span className={styles.inputLabel}>Frame:</span>
+                <div className={styles.inputLabel}>Frame:</div>
                 <SpinButton className={styles.spinButton} value={keyFrameValue ?? 0} onChange={handleFrameChange} disabled={!hasActiveAnimations || !frameControlEnabled} />
             </div>
 
             {/* Value Input */}
             <div className={styles.inputGroup}>
-                <span className={styles.inputLabel}>Value:</span>
+                <div className={styles.inputLabel}>Value:</div>
                 <SpinButton className={styles.spinButton} value={keyValue ?? 0} onChange={handleValueChange} disabled={!hasActiveAnimations || !valueControlEnabled} step={0.1} />
             </div>
 

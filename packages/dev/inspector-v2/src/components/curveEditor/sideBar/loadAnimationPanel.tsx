@@ -130,7 +130,7 @@ export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = ({
     return (
         <div className={styles.root}>
             <div className={styles.header}>
-                <span className={styles.title}>Load Animations</span>
+                <div className={styles.title}>Load Animations</div>
             </div>
 
             <div className={styles.section}>
@@ -139,7 +139,7 @@ export const LoadAnimationPanel: FunctionComponent<LoadAnimationPanelProps> = ({
                     <Input className={styles.input} placeholder="Snippet ID" value={snippetIdInput} onChange={(_, data) => setSnippetIdInput(data.value)} />
                     <Button appearance="primary" onClick={loadFromSnippetServer} disabled={!snippetIdInput.trim()} label="Load" />
                 </div>
-                {loadError && <span className={styles.errorText}>{loadError}</span>}
+                {loadError && <div className={styles.errorText}>{loadError}</div>}
             </div>
 
             <div className={styles.section}>

@@ -13,7 +13,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { useCurveEditor } from "../curveEditorContext";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { Curve, type CurveData } from "./curve";
-import { ChannelColors, ColorChannelColors, DefaultCurveColor, GraphColors } from "../curveEditorColors";
+import { ChannelColors, ColorChannelColors, DefaultCurveColor } from "../curveEditorColors";
 
 const useStyles = makeStyles({
     root: {
@@ -36,30 +36,38 @@ const useStyles = makeStyles({
         strokeDasharray: "4 4",
     },
     zeroLine: {
-        stroke: GraphColors.zeroLine,
+        stroke: tokens.colorNeutralStroke1,
         strokeWidth: "1px",
     },
     selectionRect: {
         fill: "rgba(255, 255, 255, 0.1)",
-        stroke: GraphColors.selectionStroke,
+        stroke: tokens.colorNeutralForeground1,
         strokeWidth: "1px",
         strokeDasharray: "4 4",
     },
     valueAxisLabel: {
-        fill: GraphColors.valueAxisLabel,
+        fill: tokens.colorNeutralForeground3,
         fontSize: "10px",
         fontFamily: "acumin-pro-condensed, sans-serif",
         userSelect: "none",
     },
     valueAxisBackground: {
-        fill: GraphColors.valueAxisBackground,
+        fill: tokens.colorNeutralBackground1,
     },
     activeRangeOverlay: {
         position: "absolute" as const,
         top: 0,
         height: "100%",
-        backgroundColor: "rgba(38, 82, 128, 0.3)",
-        border: "1px solid rgba(78, 140, 206, 0.5)",
+        backgroundColor: tokens.colorBrandBackground2,
+        opacity: 0.3,
+        pointerEvents: "none" as const,
+    },
+    inactiveRangeOverlay: {
+        position: "absolute" as const,
+        top: 0,
+        height: "100%",
+        backgroundColor: tokens.colorNeutralBackgroundStatic,
+        opacity: 0.6,
         pointerEvents: "none" as const,
     },
 });
@@ -907,9 +915,33 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
     const activeRangeRight = frameToX(state.toKey);
     const activeRangeWidth = activeRangeRight - activeRangeLeft;
 
+    // Calculate inactive (outside range) overlay positions
+    const leftInactiveWidth = Math.max(0, activeRangeLeft - graphOffsetX);
+    const rightInactiveLeft = Math.min(activeRangeRight, safeWidth);
+    const rightInactiveWidth = Math.max(0, safeWidth - rightInactiveLeft);
+
     return (
         <div className={styles.root}>
-            {/* Active range overlay (dark rectangle showing playback range) */}
+            {/* Inactive range overlays (dark areas outside playback range) */}
+            {state.activeAnimations.length > 0 && leftInactiveWidth > 0 && (
+                <div
+                    className={styles.inactiveRangeOverlay}
+                    style={{
+                        left: graphOffsetX,
+                        width: leftInactiveWidth,
+                    }}
+                />
+            )}
+            {state.activeAnimations.length > 0 && rightInactiveWidth > 0 && (
+                <div
+                    className={styles.inactiveRangeOverlay}
+                    style={{
+                        left: rightInactiveLeft,
+                        width: rightInactiveWidth,
+                    }}
+                />
+            )}
+            {/* Active range overlay (highlight showing playback range) */}
             {state.activeAnimations.length > 0 && activeRangeWidth > 0 && (
                 <div
                     className={styles.activeRangeOverlay}

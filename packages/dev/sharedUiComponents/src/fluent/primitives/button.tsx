@@ -1,4 +1,4 @@
-import { Button as FluentButton, makeStyles, Spinner } from "@fluentui/react-components";
+import { Button as FluentButton, makeStyles, Spinner, Tooltip } from "@fluentui/react-components";
 import type { MouseEvent } from "react";
 import { forwardRef, useCallback, useContext, useState } from "react";
 import type { FluentIcon } from "@fluentui/react-icons";
@@ -26,7 +26,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
     const { size } = useContext(ToolContext);
     const classes = useButtonStyles();
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { icon: Icon, label, onClick, disabled, className, ...buttonProps } = props;
+    const { icon: Icon, label, onClick, disabled, className, title, ...buttonProps } = props;
 
     const [isOnClickBusy, setIsOnClickBusy] = useState(false);
     const handleOnClick = useCallback(
@@ -47,18 +47,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
     const iconClass = size === "small" ? classes.smallIcon : classes.mediumIcon;
 
     return (
-        <FluentButton
-            ref={ref}
-            iconPosition="after"
-            {...buttonProps}
-            className={className}
-            size={size}
-            icon={isOnClickBusy ? <Spinner size="extra-tiny" /> : Icon && <Icon className={iconClass} />}
-            onClick={handleOnClick}
-            disabled={disabled || isOnClickBusy}
-        >
-            {label && props.label}
-        </FluentButton>
+        <Tooltip content={title ?? ""} relationship="label">
+            <FluentButton
+                ref={ref}
+                iconPosition="after"
+                {...buttonProps}
+                className={className}
+                size={size}
+                icon={isOnClickBusy ? <Spinner size="extra-tiny" /> : Icon && <Icon className={iconClass} />}
+                onClick={handleOnClick}
+                disabled={disabled || isOnClickBusy}
+            >
+                {label && props.label}
+            </FluentButton>
+        </Tooltip>
     );
 });
 
