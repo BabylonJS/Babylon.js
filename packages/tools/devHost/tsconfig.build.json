@@ -23,7 +23,6 @@
             "node-render-graph-editor/*": ["tools/nodeRenderGraphEditor/src/*"],
             "node-particle-editor/*": ["tools/nodeParticleEditor/src/*"],
             "gui-editor/*": ["tools/guiEditor/src/*"],
-            "viewer-legacy/*": ["tools/viewer-legacy/src/*"],
             "ktx2decoder/*": ["tools/ktx2Decoder/src/*"],
             "babylonjs-gltf2interface/*": ["public/glTF2Interface/babylon.glTF2Interface.d.ts"]
         }
