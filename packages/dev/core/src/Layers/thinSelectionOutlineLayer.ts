@@ -9,7 +9,7 @@ import { Material } from "../Materials/material";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import { Color3 } from "../Maths/math.color";
+import { Color3, Color4 } from "../Maths/math.color";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { InstancedMesh } from "../Meshes/instancedMesh";
 import type { Mesh } from "../Meshes/mesh";
@@ -70,10 +70,23 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
      */
     public textureHeight: number = 0;
 
+    private _storeCameraSpaceZ: boolean = false;
+
     /**
      * Specifies whether the depth stored is the Z coordinate in camera space.
      */
-    public storeCameraSpaceZ: boolean = false;
+    public get storeCameraSpaceZ(): boolean {
+        return this._storeCameraSpaceZ;
+    }
+
+    public set storeCameraSpaceZ(value: boolean) {
+        if (this._storeCameraSpaceZ === value) {
+            return;
+        }
+
+        this._storeCameraSpaceZ = value;
+        this.neutralColor = new Color4(0.0, value ? 0.0 : 1.0, 0.0, 1.0);
+    }
 
     /** @internal */
     public override _options: Required<IThinSelectionOutlineLayerOptions>;
@@ -93,6 +106,8 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
      */
     public constructor(name: string, scene?: Scene, options?: Partial<IThinSelectionOutlineLayerOptions>, dontCheckIfReady = false) {
         super(name, scene, options !== undefined ? !!options.forceGLSL : false);
+
+        this.neutralColor = new Color4(0.0, 1.0, 0.0, 1.0);
 
         // Adapt options
         this._options = {
