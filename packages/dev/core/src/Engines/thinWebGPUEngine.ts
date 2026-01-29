@@ -1,4 +1,5 @@
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { AbstractEngine } from "./abstractEngine";
 import type { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import type { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
@@ -172,6 +173,8 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
 
         if (texture.isCube) {
             this._textureHelper.generateCubeMipmaps(gpuHardwareTexture, mipmapCount, commandEncoder);
+        } else if (texture._source === InternalTextureSource.Raw || texture._source === InternalTextureSource.Raw2DArray) {
+            this._textureHelper.generateMipmaps(gpuHardwareTexture, texture.mipLevelCount, 0, commandEncoder);
         } else {
             this._textureHelper.generateMipmaps(gpuHardwareTexture, mipmapCount, 0, commandEncoder);
         }
