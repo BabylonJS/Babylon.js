@@ -102,10 +102,10 @@ VertexBuffer.prototype._alignBuffer = function (): void {
     if (Array.isArray(data)) {
         const sourceDataAsFloat = new Float32Array(data);
         sourceData = new DataView(sourceDataAsFloat.buffer, sourceDataAsFloat.byteOffset, sourceDataAsFloat.byteLength);
-    } else if (data instanceof ArrayBuffer) {
-        sourceData = new DataView(data, 0, data.byteLength);
-    } else {
+    } else if (ArrayBuffer.isView(data)) {
         sourceData = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    } else {
+        sourceData = new DataView(data, 0, data.byteLength);
     }
 
     let alignedData: Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array;
