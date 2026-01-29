@@ -2,19 +2,11 @@ import type { FunctionComponent } from "react";
 
 import { makeStyles, tokens, Divider } from "@fluentui/react-components";
 import { useCallback, useEffect, useState } from "react";
-import {
-    AddRegular,
-    DeleteRegular,
-    FullScreenMaximizeRegular,
-    ArrowMinimizeRegular,
-    LineHorizontal1Regular,
-    ChevronDoubleRightRegular,
-    ChevronDoubleLeftRegular,
-    StepsRegular,
-} from "@fluentui/react-icons";
+import { AddRegular, DeleteRegular, FullScreenMaximizeRegular } from "@fluentui/react-icons";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
+import { FlatTangentIcon, LinearTangentIcon, BreakTangentIcon, UnifyTangentIcon, StepTangentIcon } from "shared-ui-components/fluent/icons";
 import { useCurveEditor } from "./curveEditorContext";
 
 const useStyles = makeStyles({
@@ -171,35 +163,35 @@ export const TopBar: FunctionComponent = () => {
             {/* Tangent Actions */}
             <div className={styles.buttonGroup}>
                 <Button
-                    icon={ArrowMinimizeRegular}
+                    icon={FlatTangentIcon}
                     appearance="subtle"
                     disabled={!hasActiveKeyPoints}
                     onClick={() => observables.onFlattenTangentRequired.notifyObservers()}
                     title="Flatten tangent"
                 />
                 <Button
-                    icon={LineHorizontal1Regular}
+                    icon={LinearTangentIcon}
                     appearance="subtle"
                     disabled={!hasActiveKeyPoints}
                     onClick={() => observables.onLinearTangentRequired.notifyObservers()}
                     title="Linear tangent"
                 />
                 <Button
-                    icon={ChevronDoubleLeftRegular}
+                    icon={BreakTangentIcon}
                     appearance="subtle"
                     disabled={!hasActiveKeyPoints}
                     onClick={() => observables.onBreakTangentRequired.notifyObservers()}
                     title="Break tangent"
                 />
                 <Button
-                    icon={ChevronDoubleRightRegular}
+                    icon={UnifyTangentIcon}
                     appearance="subtle"
                     disabled={!hasActiveKeyPoints}
                     onClick={() => observables.onUnifyTangentRequired.notifyObservers()}
                     title="Unify tangent"
                 />
                 <Button
-                    icon={StepsRegular}
+                    icon={StepTangentIcon}
                     appearance="subtle"
                     disabled={!hasActiveKeyPoints}
                     onClick={() => observables.onStepTangentRequired.notifyObservers()}
