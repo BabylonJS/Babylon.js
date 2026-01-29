@@ -1,4 +1,5 @@
-import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { AbstractEngine } from "./abstractEngine";
 import type { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
 import type { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
