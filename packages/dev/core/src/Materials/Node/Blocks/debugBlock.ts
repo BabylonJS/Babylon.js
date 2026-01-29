@@ -16,6 +16,9 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/
 export class NodeMaterialDebugBlock extends NodeMaterialBlock {
     private _isActive = false;
 
+    /** @internal */
+    public _forcedActive = false;
+
     /** Gets or sets a boolean indicating if we want to render alpha when using a rgba input*/
     @editableInPropertyPage("Render Alpha", PropertyTypeForEdition.Boolean, undefined)
     public renderAlpha = false;
@@ -49,7 +52,7 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
 
     /** @internal */
     public override get _isFinalOutputAndActive() {
-        return this.isActive;
+        return this.isActive || this._forcedActive;
     }
 
     /** @internal */
@@ -75,7 +78,7 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (!this._isActive) {
+        if (!this._isFinalOutputAndActive) {
             return this;
         }
 
@@ -108,6 +111,7 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
         const serializationObject = super.serialize();
         serializationObject.isActive = this._isActive;
         serializationObject.renderAlpha = this.renderAlpha;
+        serializationObject._forcedActive = this._forcedActive;
         return serializationObject;
     }
 
@@ -116,6 +120,7 @@ export class NodeMaterialDebugBlock extends NodeMaterialBlock {
 
         this.isActive = serializationObject.isActive;
         this.renderAlpha = serializationObject.renderAlpha;
+        this._forcedActive = serializationObject._forcedActive;
     }
 }
 
