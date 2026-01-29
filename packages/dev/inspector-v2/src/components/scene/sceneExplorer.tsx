@@ -348,6 +348,13 @@ const useStyles = makeStyles({
         minHeight: CustomTokens.lineHeightSmall,
         maxHeight: CustomTokens.lineHeightSmall,
     },
+    // Use tighter indentation than the default (16px instead of 24px per level)
+    treeItemLayoutBranch: {
+        paddingLeft: `calc((var(${treeItemLevelToken}, 1) - 1) * ${tokens.spacingHorizontalL})`,
+    },
+    treeItemLayoutLeaf: {
+        paddingLeft: `calc(var(${treeItemLevelToken}, 1) * ${tokens.spacingHorizontalL} + ${tokens.spacingHorizontalS})`,
+    },
 });
 
 const ActionCommand: FunctionComponent<{ command: SceneExplorerCommand<"inline", "action"> }> = (props) => {
@@ -480,7 +487,7 @@ const SectionTreeItem: FunctionComponent<{
                     aria-setsize={1}
                     aria-posinset={1}
                 >
-                    <TreeItemLayout className={compactMode ? classes.treeItemLayoutCompact : undefined}>
+                    <TreeItemLayout className={mergeClasses(classes.treeItemLayoutBranch, compactMode ? classes.treeItemLayoutCompact : undefined)}>
                         <Body1Strong wrap={false} truncate>
                             {section.sectionName.substring(0, 100)}
                         </Body1Strong>
@@ -639,7 +646,7 @@ const EntityTreeItem: FunctionComponent<{
                 >
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
-                        className={compactMode ? classes.treeItemLayoutCompact : undefined}
+                        className={mergeClasses(hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf, compactMode ? classes.treeItemLayoutCompact : undefined)}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                         actions={actions}
                         aside={{
