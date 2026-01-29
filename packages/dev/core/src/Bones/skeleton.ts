@@ -851,10 +851,14 @@ export class Skeleton implements IAnimatable {
                 bone.animations.push(Animation.Parse(parsedBone.animation));
             }
 
-            const id = parsedBone.linkedTransformNodeUniqueId ?? parsedBone.linkedTransformNodeId;
-            if (id !== undefined && id !== null) {
+            if (parsedBone.linkedTransformNodeId !== undefined && parsedBone.linkedTransformNodeId !== null) {
                 skeleton._hasWaitingData = true;
-                bone._waitingTransformNodeId = id;
+                bone._waitingTransformNodeId = parsedBone.linkedTransformNodeId;
+            }
+
+            if (parsedBone.linkedTransformNodeUniqueId !== undefined && parsedBone.linkedTransformNodeUniqueId !== null) {
+                skeleton._hasWaitingData = true;
+                bone._waitingTransformNodeUniqueId = parsedBone.linkedTransformNodeUniqueId;
             }
         }
 

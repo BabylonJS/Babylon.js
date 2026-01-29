@@ -61,6 +61,9 @@ export class Bone extends Node {
     public _waitingTransformNodeId: Nullable<string> = null;
 
     /** @internal */
+    public _waitingTransformNodeUniqueId: Nullable<number> = null;
+
+    /** @internal */
     get _matrix(): Matrix {
         this._compose();
         return this._localMatrix;

@@ -131,7 +131,7 @@ const LoadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
     }
 };
 
-const FindNode = (nodeId: any, instanceIndex: any, scene: Scene) => {
+const FindParent = (nodeId: any, instanceIndex: any, scene: Scene) => {
     // Back-compat: nodeId can represent either an id (string) or a uniqueId (number).
     // If we think it's a uniqueId, use it with TempIndexContainer, which tracks uniqueIds from the parsed file.
     // Otherwise, assume it's an id and search the scene for *a* match.
@@ -565,7 +565,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         for (index = 0, cache = scene.cameras.length; index < cache; index++) {
             const camera = scene.cameras[index];
             if (camera._waitingParentId !== null) {
-                camera.parent = FindNode(camera._waitingParentId, camera._waitingParentInstanceIndex, scene);
+                camera.parent = FindParent(camera._waitingParentId, camera._waitingParentInstanceIndex, scene);
                 camera._waitingParentId = null;
                 camera._waitingParentInstanceIndex = null;
             }
@@ -574,7 +574,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         for (index = 0, cache = scene.lights.length; index < cache; index++) {
             const light = scene.lights[index];
             if (light && light._waitingParentId !== null) {
-                light.parent = FindNode(light._waitingParentId, light._waitingParentInstanceIndex, scene);
+                light.parent = FindParent(light._waitingParentId, light._waitingParentInstanceIndex, scene);
                 light._waitingParentId = null;
                 light._waitingParentInstanceIndex = null;
             }
@@ -584,7 +584,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
             const transformNode = scene.transformNodes[index];
             if (transformNode._waitingParentId !== null) {
-                transformNode.parent = FindNode(transformNode._waitingParentId, transformNode._waitingParentInstanceIndex, scene);
+                transformNode.parent = FindParent(transformNode._waitingParentId, transformNode._waitingParentInstanceIndex, scene);
                 transformNode._waitingParentId = null;
                 transformNode._waitingParentInstanceIndex = null;
             }
@@ -592,7 +592,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         for (index = 0, cache = scene.meshes.length; index < cache; index++) {
             const mesh = scene.meshes[index];
             if (mesh._waitingParentId !== null) {
-                mesh.parent = FindNode(mesh._waitingParentId, mesh._waitingParentInstanceIndex, scene);
+                mesh.parent = FindParent(mesh._waitingParentId, mesh._waitingParentInstanceIndex, scene);
                 mesh._waitingParentId = null;
                 mesh._waitingParentInstanceIndex = null;
             }
@@ -639,13 +639,23 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
             if (skeleton._hasWaitingData) {
                 if (skeleton.bones != null) {
                     for (const bone of skeleton.bones) {
-                        if (bone._waitingTransformNodeId) {
-                            const linkTransformNode = FindNode(bone._waitingTransformNodeId, null, scene);
-                            if (linkTransformNode) {
-                                bone.linkTransformNode(linkTransformNode as TransformNode);
-                            }
-                            bone._waitingTransformNodeId = null;
+                        let linkTransformNode: Nullable<Node> = null;
+                        // First try to get it via uniqueId
+                        if (bone._waitingTransformNodeUniqueId) {
+                            linkTransformNode = TempIndexContainer[bone._waitingTransformNodeUniqueId];
                         }
+
+                        // If not possible or not found, try to get it from the scene (backwards compatibility)
+                        if (bone._waitingTransformNodeId !== null && !linkTransformNode) {
+                            linkTransformNode = scene.getLastEntryById(bone._waitingTransformNodeId);
+                        }
+
+                        if (linkTransformNode) {
+                            bone.linkTransformNode(linkTransformNode as TransformNode);
+                        }
+
+                        bone._waitingTransformNodeId = null;
+                        bone._waitingTransformNodeUniqueId = null;
                     }
                 }
 
@@ -1032,13 +1042,23 @@ RegisterSceneLoaderPlugin({
                     if (skeleton._hasWaitingData) {
                         if (skeleton.bones != null) {
                             for (const bone of skeleton.bones) {
-                                if (bone._waitingTransformNodeId) {
-                                    const linkTransformNode = parsedIdToNodeMap.get(parseInt(bone._waitingTransformNodeId)) ?? scene.getLastEntryById(bone._waitingTransformNodeId);
-                                    if (linkTransformNode) {
-                                        bone.linkTransformNode(linkTransformNode as TransformNode);
-                                    }
-                                    bone._waitingTransformNodeId = null;
+                                let linkTransformNode: Nullable<Node> = null;
+                                // First try to get it via uniqueId
+                                if (bone._waitingTransformNodeUniqueId !== null) {
+                                    linkTransformNode = parsedIdToNodeMap.get(bone._waitingTransformNodeUniqueId) ?? null;
                                 }
+
+                                // If not possible or not found, try to get it from the scene (backwards compatibility)
+                                if (bone._waitingTransformNodeId !== null && !linkTransformNode) {
+                                    linkTransformNode = scene.getLastEntryById(bone._waitingTransformNodeId);
+                                }
+
+                                if (linkTransformNode) {
+                                    bone.linkTransformNode(linkTransformNode as TransformNode);
+                                }
+
+                                bone._waitingTransformNodeId = null;
+                                bone._waitingTransformNodeUniqueId = null;
                             }
                         }
 
