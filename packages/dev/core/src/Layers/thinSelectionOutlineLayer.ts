@@ -28,6 +28,11 @@ export interface IThinSelectionOutlineLayerOptions extends IThinEffectLayerOptio
      * Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
     forceGLSL?: boolean;
+
+    /**
+     * Specifies whether the depth stored is the Z coordinate in camera space.
+     */
+    storeCameraSpaceZ?: boolean;
 }
 
 /**
@@ -70,24 +75,6 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
      */
     public textureHeight: number = 0;
 
-    private _storeCameraSpaceZ: boolean = false;
-
-    /**
-     * Specifies whether the depth stored is the Z coordinate in camera space.
-     */
-    public get storeCameraSpaceZ(): boolean {
-        return this._storeCameraSpaceZ;
-    }
-
-    public set storeCameraSpaceZ(value: boolean) {
-        if (this._storeCameraSpaceZ === value) {
-            return;
-        }
-
-        this._storeCameraSpaceZ = value;
-        this.neutralColor = new Color4(0.0, value ? 0.0 : 1.0, 0.0, 1.0);
-    }
-
     /** @internal */
     public override _options: Required<IThinSelectionOutlineLayerOptions>;
 
@@ -107,8 +94,6 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
     public constructor(name: string, scene?: Scene, options?: Partial<IThinSelectionOutlineLayerOptions>, dontCheckIfReady = false) {
         super(name, scene, options !== undefined ? !!options.forceGLSL : false);
 
-        this.neutralColor = new Color4(0.0, 1.0, 0.0, 1.0);
-
         // Adapt options
         this._options = {
             mainTextureRatio: 1.0,
@@ -119,8 +104,12 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             forceGLSL: false,
             mainTextureType: Constants.TEXTURETYPE_FLOAT,
             mainTextureFormat: Constants.TEXTUREFORMAT_RG,
+            storeCameraSpaceZ: false,
             ...options,
         };
+
+        // set clear color
+        this.neutralColor = new Color4(0.0, this._options.storeCameraSpaceZ ? 0.0 : 1.0, 0.0, 1.0);
 
         // Initialize the layer
         this._init(this._options);
@@ -356,7 +345,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 attributes: [VertexBuffer.PositionKind],
                 uniformsNames: ["screenSize", "outlineColor", "outlineThickness", "occlusionStrength"],
                 samplers: ["maskSampler", "depthSampler"],
-                defines: this.storeCameraSpaceZ ? "#define STORE_CAMERASPACE_Z" : "",
+                defines: this._options.storeCameraSpaceZ ? "#define STORE_CAMERASPACE_Z" : "",
                 fallbacks: null,
                 onCompiled: null,
                 onError: null,
@@ -477,7 +466,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
             if (!renderingMaterial) {
                 effect.setMatrix("viewProjection", scene.getTransformMatrix());
-                if (this.storeCameraSpaceZ) {
+                if (this._options.storeCameraSpaceZ) {
                     effect.setMatrix("view", scene.getViewMatrix());
                 } else {
                     const camera = this.camera || scene.activeCamera;
@@ -596,7 +585,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
     /** @internal */
     public override _addCustomEffectDefines(defines: string[]): void {
-        if (this.storeCameraSpaceZ) {
+        if (this._options.storeCameraSpaceZ) {
             defines.push("#define STORE_CAMERASPACE_Z");
         }
     }

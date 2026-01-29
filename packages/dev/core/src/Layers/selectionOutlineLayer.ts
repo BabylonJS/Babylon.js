@@ -123,6 +123,7 @@ export class SelectionOutlineLayer extends EffectLayer {
             mainTextureType: Constants.TEXTURETYPE_FLOAT,
             mainTextureFormat: Constants.TEXTUREFORMAT_RG,
             forceGLSL: false,
+            storeCameraSpaceZ: false,
             ...options,
         };
 
