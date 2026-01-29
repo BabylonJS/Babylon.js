@@ -1,5 +1,5 @@
 {
-    "name": "@dev/inspector-v2",
+    "name": "@dev/inspector",
     "version": "1.0.0",
     "types": "dist/index",
     "main": "dist/index",

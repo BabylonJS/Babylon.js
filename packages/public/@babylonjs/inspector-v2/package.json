@@ -1,7 +1,6 @@
 {
-    "name": "@babylonjs/inspector-v2",
-    "version": "1.0.0",
-    "private": true,
+    "name": "@babylonjs/inspector",
+    "version": "8.47.0",
     "type": "module",
     "main": "lib/index.js",
     "module": "lib/index.js",
@@ -38,7 +37,7 @@
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
-        "@dev/inspector-v2": "1.0.0",
+        "@dev/inspector": "1.0.0",
         "@rollup/plugin-alias": "^5.1.0",
         "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-typescript": "^11.1.6",

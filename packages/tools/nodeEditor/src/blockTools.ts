@@ -427,6 +427,11 @@ export class BlockTools {
                 cameraPosition.setAsSystemValue(NodeMaterialSystemValues.CameraPosition);
                 return cameraPosition;
             }
+            case "CameraForwardBlock": {
+                const cameraForward = new InputBlock("Camera forward");
+                cameraForward.setAsSystemValue(NodeMaterialSystemValues.CameraForward);
+                return cameraForward;
+            }
             case "CameraParametersBlock": {
                 const cameraParameters = new InputBlock("Camera parameters");
                 cameraParameters.setAsSystemValue(NodeMaterialSystemValues.CameraParameters);
