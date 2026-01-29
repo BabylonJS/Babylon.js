@@ -126,8 +126,8 @@ function GetModuleDeclaration(
                                 if (!found) {
                                     // not a dev dependency
                                     // TODO - make a list of external dependencies per package
-                                    // for now - we support react
-                                    if (group !== "react" /* && !group.startsWith("@fluentui")*/) {
+                                    // for now - we support react (including react/jsx-runtime, etc.)
+                                    if (!group.startsWith("react") /* && !group.startsWith("@fluentui")*/) {
                                         // check what the line imports
                                         line = "";
                                     }
