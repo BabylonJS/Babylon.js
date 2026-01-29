@@ -1,5 +1,7 @@
 # Changelog
 
+## 8.48.0
+
 ## 8.47.2
 
 ### Playground
