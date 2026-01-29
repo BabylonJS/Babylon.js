@@ -4523,6 +4523,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Skeleton
         if (parsedMesh.skeletonId !== undefined && parsedMesh.skeletonId !== null) {
+            mesh.skeleton = scene.getLastSkeletonById(parsedMesh.skeletonId); // Back-compat for if this function is called directly
             mesh._waitingSkeletonId = parsedMesh.skeletonId;
             if (parsedMesh.numBoneInfluencers) {
                 mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
