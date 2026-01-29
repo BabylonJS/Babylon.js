@@ -14,7 +14,7 @@ import { useCurveEditor } from "../curveEditorContext";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { Curve as SharedCurve } from "shared-ui-components/curveEditor/curve";
 import { Curve } from "./curve";
-import { KeyPointComponent } from "shared-ui-components/curveEditor/keyPointComponent";
+import { KeyPointComponent } from "./keyPointComponent";
 import { ChannelColors, ColorChannelColors, DefaultCurveColor, GraphColors } from "../curveEditorColors";
 
 const useStyles = makeStyles({
@@ -77,7 +77,7 @@ type GraphProps = {
  */
 export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
     const styles = useStyles();
-    const { state, actions, observables, context } = useCurveEditor();
+    const { state, actions, observables } = useCurveEditor();
     const svgRef = useRef<SVGSVGElement>(null);
 
     const [scale, setScale] = useState(1);
@@ -169,11 +169,11 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             // Group key points by animation
             const keysByAnimation = new Map<Animation, Set<number>>();
             for (const keyPoint of state.activeKeyPoints) {
-                const animation = keyPoint.props.curve.animation;
+                const animation = keyPoint.curve.animation;
                 if (!keysByAnimation.has(animation)) {
                     keysByAnimation.set(animation, new Set());
                 }
-                keysByAnimation.get(animation)!.add(keyPoint.props.keyId);
+                keysByAnimation.get(animation)!.add(keyPoint.keyId);
             }
 
             // Delete keys from each animation (in reverse order to maintain indices)
@@ -359,11 +359,11 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             }
 
             for (const keyPoint of state.activeKeyPoints) {
-                const animation = keyPoint.props.curve.animation;
+                const animation = keyPoint.curve.animation;
                 const keys = animation.getKeys();
-                const keyId = keyPoint.props.keyId;
+                const keyId = keyPoint.keyId;
                 const dataType = animation.dataType;
-                const component = getComponentFromProperty(dataType, keyPoint.props.curve.property);
+                const component = getComponentFromProperty(dataType, keyPoint.curve.property);
 
                 if (keyId >= 0 && keyId < keys.length) {
                     const key = keys[keyId];
@@ -393,11 +393,11 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             }
 
             for (const keyPoint of state.activeKeyPoints) {
-                const animation = keyPoint.props.curve.animation;
+                const animation = keyPoint.curve.animation;
                 const keys = animation.getKeys();
-                const keyId = keyPoint.props.keyId;
+                const keyId = keyPoint.keyId;
                 const dataType = animation.dataType;
-                const component = getComponentFromProperty(dataType, keyPoint.props.curve.property);
+                const component = getComponentFromProperty(dataType, keyPoint.curve.property);
                 const prop = getComponentProperty(dataType, component);
 
                 if (keyId >= 0 && keyId < keys.length) {
@@ -447,9 +447,9 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             }
 
             for (const keyPoint of state.activeKeyPoints) {
-                const animation = keyPoint.props.curve.animation;
+                const animation = keyPoint.curve.animation;
                 const keys = animation.getKeys();
-                const keyId = keyPoint.props.keyId;
+                const keyId = keyPoint.keyId;
 
                 if (keyId >= 0 && keyId < keys.length) {
                     const key = keys[keyId];
@@ -468,9 +468,9 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             }
 
             for (const keyPoint of state.activeKeyPoints) {
-                const animation = keyPoint.props.curve.animation;
+                const animation = keyPoint.curve.animation;
                 const keys = animation.getKeys();
-                const keyId = keyPoint.props.keyId;
+                const keyId = keyPoint.keyId;
 
                 if (keyId >= 0 && keyId < keys.length) {
                     const key = keys[keyId];
@@ -882,14 +882,13 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                                 scale={scale}
                                 keyId={keyIndex}
                                 curve={curve}
-                                context={context}
                                 channel={curve.color}
-                                onFrameValueChanged={(frame) => {
+                                onFrameValueChanged={(frame: number) => {
                                     curve.updateKeyFrame(keyIndex, frame);
                                     observables.onFrameSet.notifyObservers(frame);
                                     observables.onActiveAnimationChanged.notifyObservers({});
                                 }}
-                                onKeyValueChanged={(value) => {
+                                onKeyValueChanged={(value: number) => {
                                     curve.updateKeyValue(keyIndex, value);
                                     observables.onValueSet.notifyObservers(value);
                                     observables.onActiveAnimationChanged.notifyObservers({});

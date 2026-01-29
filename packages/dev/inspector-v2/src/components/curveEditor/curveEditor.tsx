@@ -71,7 +71,7 @@ const useStyles = makeStyles({
  */
 const CurveEditorContent: FunctionComponent = () => {
     const styles = useStyles();
-    const { state, actions, observables, context } = useCurveEditor();
+    const { state, actions, observables } = useCurveEditor();
     const rootRef = useRef<HTMLDivElement>(null);
     const prepareRef = useRef(() => actions.prepare());
     prepareRef.current = () => actions.prepare();
@@ -94,9 +94,9 @@ const CurveEditorContent: FunctionComponent = () => {
                 case " ":
                     evt.preventDefault();
                     if (state.isPlaying) {
-                        context.stop();
+                        actions.stop();
                     } else {
-                        context.play(true);
+                        actions.play(true);
                     }
                     break;
                 case "a":
@@ -120,7 +120,7 @@ const CurveEditorContent: FunctionComponent = () => {
                     break;
                 case "ArrowDown": {
                     if (!state.focusedInput) {
-                        const prevKey = context.getPrevKey();
+                        const prevKey = actions.getPrevKey();
                         if (prevKey !== null) {
                             observables.onMoveToFrameRequired.notifyObservers(prevKey);
                         }
@@ -130,7 +130,7 @@ const CurveEditorContent: FunctionComponent = () => {
                 }
                 case "ArrowUp": {
                     if (!state.focusedInput) {
-                        const nextKey = context.getNextKey();
+                        const nextKey = actions.getNextKey();
                         if (nextKey !== null) {
                             observables.onMoveToFrameRequired.notifyObservers(nextKey);
                         }
@@ -140,7 +140,7 @@ const CurveEditorContent: FunctionComponent = () => {
                 }
             }
         },
-        [state.activeKeyPoints, state.focusedInput, state.isPlaying, state.activeFrame, state.clipLength, observables, context]
+        [state.activeKeyPoints, state.focusedInput, state.isPlaying, state.activeFrame, state.clipLength, observables, actions]
     );
 
     // Handle window resize

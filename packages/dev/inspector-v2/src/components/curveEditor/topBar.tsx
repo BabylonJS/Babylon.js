@@ -98,7 +98,7 @@ export const TopBar: FunctionComponent = () => {
             const numAnims = numKeys;
 
             // Check if any active key point has a quaternion animation
-            const hasQuaternion = state.activeKeyPoints?.some((keyPoint) => keyPoint.props.curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION);
+            const hasQuaternion = state.activeKeyPoints?.some((keyPoint) => keyPoint.curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION);
 
             // Disable editing for quaternion animations (like v1)
             const frameEnabled = ((numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1)) && !hasQuaternion;
