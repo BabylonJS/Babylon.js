@@ -5,7 +5,7 @@ import type { TargetedAnimation, AnimationGroup } from "core/Animations/animatio
 import type { Scene } from "core/scene";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 
-import { makeStyles, tokens, FluentProvider, webDarkTheme } from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback, useEffect, useRef } from "react";
 
 import { CurveEditorProvider, useCurveEditor } from "./curveEditorContext";
@@ -15,12 +15,6 @@ import { Canvas } from "./canvas/canvas";
 import { BottomBar } from "./bottomBar";
 
 const useStyles = makeStyles({
-    fluentProvider: {
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-    },
     root: {
         display: "flex",
         flexDirection: "column",
@@ -204,20 +198,10 @@ export type CurveEditorProps = {
  */
 export const CurveEditor: FunctionComponent<CurveEditorProps> = (props) => {
     const { scene, target, animations, rootAnimationGroup, title, useTargetAnimations } = props;
-    const styles = useStyles();
 
     return (
-        <FluentProvider theme={webDarkTheme} className={styles.fluentProvider}>
-            <CurveEditorProvider
-                scene={scene}
-                target={target}
-                animations={animations}
-                rootAnimationGroup={rootAnimationGroup}
-                title={title}
-                useTargetAnimations={useTargetAnimations}
-            >
-                <CurveEditorContent />
-            </CurveEditorProvider>
-        </FluentProvider>
+        <CurveEditorProvider scene={scene} target={target} animations={animations} rootAnimationGroup={rootAnimationGroup} title={title} useTargetAnimations={useTargetAnimations}>
+            <CurveEditorContent />
+        </CurveEditorProvider>
     );
 };
