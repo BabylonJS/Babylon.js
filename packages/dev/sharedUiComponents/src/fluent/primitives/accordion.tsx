@@ -1,4 +1,4 @@
-import type { AccordionToggleData, AccordionToggleEvent, AccordionProps as FluentAccordionProps } from "@fluentui/react-components";
+import type { AccordionToggleData, AccordionToggleEvent, AccordionProps as FluentAccordionProps, AccordionPanelProps } from "@fluentui/react-components";
 import type { ForwardRefExoticComponent, FunctionComponent, PropsWithChildren, RefAttributes } from "react";
 
 import { Children, forwardRef, isValidElement, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -7,7 +7,6 @@ import {
     AccordionItem,
     AccordionHeader,
     AccordionPanel,
-    AccordionPanelProps,
     Divider,
     Subtitle2Stronger,
     Portal,
@@ -110,8 +109,10 @@ const useStyles = makeStyles({
 
 /**
  * Renders the menu bar and control buttons.
+ *
+ * @returns `AccordionMenuBar`, or `undefined` if all features are disabled.
  */
-const AccordionMenuBar: FunctionComponent = (props) => {
+const AccordionMenuBar: FunctionComponent = () => {
     AccordionMenuBar.displayName = "AccordionMenuBar";
     const classes = useStyles();
     const accordionContext = useContext(AccordionContext);
@@ -171,7 +172,7 @@ const AccordionMenuBar: FunctionComponent = (props) => {
         );
     }
 
-    return null;
+    return;
 };
 
 /**
@@ -185,6 +186,9 @@ export type AccordionSectionBlockProps = {
 /**
  * Wrapper component that must encapsulate the section headers and panels.
  * - Stores the section ID for use in `AccordionSectionItem`.
+ *
+ * @param props - `AccordionSectionBlockProps`
+ * @returns `AccordionSectionBlock`, or `AccordionItem` if all features are disabled.
  */
 const AccordionSectionBlock: FunctionComponent<PropsWithChildren<AccordionSectionBlockProps>> = (props) => {
     AccordionSectionBlock.displayName = "AccordionSectionBlock";
@@ -225,6 +229,9 @@ export type AccordionSectionItemProps = {
  * - Renders the pin button and tracks the pinned state of the item.
  * - Renders the hide button and tracks the hidden state of the item.
  * - Filters items based on the current search term.
+ *
+ * @param props - `AccordionSectionItemProps`
+ * @returns `AccordionSectionItem`, `undefined` if the item is discarded, or `children` if all features are disabled.
  */
 export const AccordionSectionItem: FunctionComponent<PropsWithChildren<AccordionSectionItemProps>> = (props) => {
     AccordionSectionItem.displayName = "AccordionSectionItem";
@@ -309,7 +316,7 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
 
             return pinnedContainer ? <Portal mountNode={pinnedContainer}>{itemElement}</Portal> : itemElement;
         } else {
-            return null;
+            return;
         }
     }
 
@@ -318,8 +325,10 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
 
 /**
  * Renders the Pinned section container and defines the portal target for the pinned items.
+ *
+ * @returns `AccordionPinnedContainer`
  */
-const AccordionPinnedContainer: FunctionComponent = (props) => {
+const AccordionPinnedContainer: FunctionComponent = () => {
     AccordionPinnedContainer.displayName = "AccordionPinnedContainer";
     const classes = useStyles();
     const accordionContext = useContext(AccordionContext);
@@ -335,8 +344,10 @@ const AccordionPinnedContainer: FunctionComponent = (props) => {
 
 /**
  * Renders the search box for filtering items.
+ *
+ * @returns `AccordionSearchBox`, or `undefined` if the feature is disabled.
  */
-const AccordionSearchBox: FunctionComponent = (props) => {
+const AccordionSearchBox: FunctionComponent = () => {
     AccordionSearchBox.displayName = "AccordionSearchBox";
     const classes = useStyles();
     const accordionContext = useContext(AccordionContext);
@@ -368,7 +379,7 @@ const AccordionSearchBox: FunctionComponent = (props) => {
         );
     }
 
-    return null;
+    return;
 };
 
 /**
@@ -383,6 +394,9 @@ export type AccordionSectionProps = {
 
 /**
  * Wrapper component that must encapsulate the section body.
+ *
+ * @param props - `AccordionSectionProps`
+ * @returns `AccordionSection`
  */
 export const AccordionSection: FunctionComponent<PropsWithChildren<AccordionSectionProps>> = (props) => {
     AccordionSection.displayName = "AccordionSection";
@@ -411,7 +425,7 @@ const StringAccordion = FluentAccordion as ForwardRefExoticComponent<FluentAccor
 
 export const Accordion = forwardRef<HTMLDivElement, PropsWithChildren<AccordionProps>>((props, ref) => {
     Accordion.displayName = "Accordion";
-    const { children, accordionId, highlightSections, ...rest } = props;
+    const { children, highlightSections, ...rest } = props;
     const classes = useStyles();
     const { size } = useContext(ToolContext);
     const accordionContext = useAccordionContext(props);
@@ -429,7 +443,9 @@ export const Accordion = forwardRef<HTMLDivElement, PropsWithChildren<AccordionP
 
     // Prevents sections contents from unmounting when closed, allowing their elements to be used in the Pinned section.
     const preventUnmountMotion: AccordionPanelProps["collapseMotion"] = useMemo(() => {
-        return pinnedItems ? { children: (Motion, props) => <Motion {...props} unmountOnExit={false} /> } : undefined;
+        // https://github.com/microsoft/fluentui/issues/34309#issuecomment-2824364945
+        // eslint-disable-next-line
+        return pinnedItems ? { children: (Component, props) => <Component {...props} unmountOnExit={false} /> } : undefined;
     }, []);
 
     const validChildren = useMemo(() => {

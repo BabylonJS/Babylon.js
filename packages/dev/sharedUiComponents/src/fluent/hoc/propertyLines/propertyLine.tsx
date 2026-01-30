@@ -19,7 +19,8 @@ import { Button } from "../../primitives/button";
 import { CustomTokens, TokenMap } from "../../primitives/utils";
 import { InfoLabel } from "../../primitives/infoLabel";
 import { Tooltip } from "../../primitives/tooltip";
-import { AccordionSectionItem, AccordionSectionItemProps } from "../../primitives/accordion";
+import type { AccordionSectionItemProps } from "../../primitives/accordion";
+import { AccordionSectionItem } from "../../primitives/accordion";
 
 const usePropertyLineStyles = makeStyles({
     baseLine: {

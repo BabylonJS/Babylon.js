@@ -1,49 +1,75 @@
-import { RefObject, createContext, createRef, useMemo, useState, useEffect, useReducer, useContext } from "react";
+import type { RefObject } from "react";
+import type { AccordionProps, AccordionSectionBlockProps, AccordionSectionItemProps } from "./accordion";
+import { createContext, createRef, useMemo, useState, useEffect, useReducer, useContext } from "react";
 import { DataStorage } from "core/Misc/dataStorage";
-import { AccordionProps, AccordionSectionBlockProps, AccordionSectionItemProps } from "./accordion";
 
 /**
  * Helper class to track the presence and order of items in a shared array.
  */
 class ListedItem<T> {
+    /** The shared array. */
     _array: T[];
+    /** The tracked item. */
     _item: T;
 
+    /**
+     * @param array - The shared array.
+     * @param item - The tracked item.
+     */
     constructor(array: T[], item: T) {
         this._array = array;
         this._item = item;
     }
 
+    /** Gets the array. */
     get array() {
         return this._array;
     }
 
+    /** Gets the item. */
     get item() {
         return this._item;
     }
 
+    /** Gets the item index in the array. */
     get index() {
         return this._array.indexOf(this._item);
     }
 
+    /** Checks if the item is in the array. */
     get is() {
         return this._array.includes(this._item);
     }
 
+    /** Adds or removes the item from the array. */
     set is(value: boolean) {
         const index = this.index;
 
         if (index === -1) {
-            if (value) this._array.push(this._item);
+            if (value) {
+                this._array.push(this._item);
+            }
         } else {
-            if (!value) this._array.splice(index, 1);
+            if (!value) {
+                this._array.splice(index, 1);
+            }
         }
     }
 
+    /**
+     * Adds, removes or toggles the item in the array.
+     *
+     * @param value - The value to set.
+     */
     toggle(value?: boolean) {
         this.is = value ?? !this.is;
     }
 
+    /**
+     * Swaps the positions of two items in the array.
+     *
+     * @param item - The item to swap.
+     */
     swap(item: T) {
         this._array[this.index] = item;
         this._array[this._array.indexOf(item)] = this._item;
@@ -53,6 +79,8 @@ class ListedItem<T> {
 /**
  * Helper hook for debounced re-renders.
  * - Triggers immediately and after an `interval` of inactivity.
+ *
+ * @returns The counter state and its associated setter function.
  */
 const useDebouncedCounter: () => [number, (interval?: number) => void] = () => {
     const [counter, setCounter] = useReducer(($) => ++$, 0);
@@ -73,7 +101,10 @@ const useDebouncedCounter: () => [number, (interval?: number) => void] = () => {
                 }
 
                 timerId = setTimeout(() => {
-                    if (isPending) setCounter();
+                    if (isPending) {
+                        setCounter();
+                    }
+
                     timerId = undefined;
                 }, interval);
             };
@@ -138,6 +169,9 @@ export const AccordionContext = createContext<undefined | AccordionContext>(unde
 
 /**
  * Hook: `AccordionContext`.
+ *
+ * @param props - `AccordionProps`
+ * @returns `AccordionContext`, or `undefined` if all features are disabled.
  */
 export const useAccordionContext = (props: AccordionProps) => {
     return useMemo(() => {
@@ -198,8 +232,8 @@ export const useAccordionContext = (props: AccordionProps) => {
                         storage.write(
                             `${listName}/${accordionId}`,
                             {
-                                Pinned: pinnedItems?.uniqueIds,
-                                Hidden: hiddenItems?.uniqueIds,
+                                ["Pinned"]: pinnedItems?.uniqueIds,
+                                ["Hidden"]: hiddenItems?.uniqueIds,
                             }[listName]
                         );
                     },
@@ -256,6 +290,9 @@ export const AccordionSectionBlockContext = createContext<undefined | AccordionS
 
 /**
  * Hook: `AccordionSectionBlockContext`.
+ *
+ * @param props - `AccordionSectionBlockProps`
+ * @returns `AccordionSectionBlockContext`, or `undefined` if all features are disabled.
  */
 export const useAccordionSectionBlockContext = (props: AccordionSectionBlockProps) => {
     const { sectionId } = props;
@@ -343,6 +380,9 @@ export const AccordionSectionItemContext = createContext<undefined | AccordionSe
 
 /**
  * Hook: `AccordionSectionItemContext`.
+ *
+ * @param props - `AccordionSectionItemProps`
+ * @returns `AccordionSectionItemContext`, or `undefined` if all features are disabled.
  */
 export const useAccordionSectionItemContext = (props: AccordionSectionItemProps) => {
     const { itemId, itemLabel, staticItem, onRender } = props;
@@ -369,8 +409,13 @@ export const useAccordionSectionItemContext = (props: AccordionSectionItemProps)
             };
 
             if (!isDescendant) {
-                if (pinnedItems) itemContext.pinned = new ListedItem(pinnedItems.uniqueIds, itemUniqueId);
-                if (hiddenItems) itemContext.hidden = new ListedItem(hiddenItems.uniqueIds, itemUniqueId);
+                if (pinnedItems) {
+                    itemContext.pinned = new ListedItem(pinnedItems.uniqueIds, itemUniqueId);
+                }
+
+                if (hiddenItems) {
+                    itemContext.hidden = new ListedItem(hiddenItems.uniqueIds, itemUniqueId);
+                }
 
                 if (searchItems) {
                     itemContext.match = {
@@ -395,11 +440,17 @@ export const useAccordionSectionItemContext = (props: AccordionSectionItemProps)
             const isPinned = itemContext.pinned?.is;
 
             itemContextMap.set(itemUniqueId, itemContext);
-            if (isPinned) renderItems(10);
+
+            if (isPinned) {
+                renderItems(10);
+            }
 
             return () => {
                 itemContextMap.delete(itemUniqueId);
-                if (isPinned) renderItems(10);
+
+                if (isPinned) {
+                    renderItems(10);
+                }
             };
         }
 
