@@ -39,7 +39,9 @@ declare module "core/Animations/animatable" {
 export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Partial<IAnimatable & IAnimationRangeContainer & IAnimatableContainer> }> = (props) => {
     const { scene, entity } = props;
 
-    const animations = entity.animations ?? [];
+    // Track animations array changes via property interception
+    const trackedAnimations = useProperty(entity as IAnimatable, "animations");
+    const animations = trackedAnimations ?? [];
     const ranges = entity.getAnimationRanges?.()?.filter((range) => !!range) ?? [];
     const childAnimatablesAnimations = entity.getAnimatables?.().flatMap((animatable) => animatable.animations ?? []) ?? [];
     animations.concat(childAnimatablesAnimations);
@@ -71,153 +73,141 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
 
     return (
         <>
-            {!hasAnimations ? (
+            {!hasAnimations && (
                 <MessageBar
                     intent="info"
                     title="No Animations"
                     message="To modify animations, attach an animation to this node."
                     docLink="https://doc.babylonjs.com/features/featuresDeepDive/animation/"
                 />
-            ) : (
-                <>
-                    {ranges.length > 0 && (
-                        <PropertyLine
-                            label="Ranges"
-                            expandedContent={
-                                <>
-                                    {ranges.map((range) => {
-                                        return (
-                                            <ButtonLine
-                                                key={range.name}
-                                                label={range.name}
-                                                onClick={() => {
-                                                    scene.beginAnimation(entity, range.from, range.to, true);
-                                                }}
-                                            />
-                                        );
-                                    })}
-                                </>
-                            }
-                        >
-                            <Badge appearance="filled">{ranges.length}</Badge>
-                        </PropertyLine>
-                    )}
-                    {animations.length > 0 && (
+            )}
+            {ranges.length > 0 && (
+                <PropertyLine
+                    label="Ranges"
+                    expandedContent={
                         <>
-                            <PropertyLine
-                                label="Animations"
-                                expandedContent={
-                                    <>
-                                        {animations.map((animation, index) => {
-                                            return <TextPropertyLine key={animation.uniqueId} label={`${index}: ${animation.name}`} value={animation.targetProperty} />;
-                                        })}
-                                    </>
-                                }
-                            >
-                                <Badge appearance="filled">{animations.length}</Badge>
-                            </PropertyLine>
-                            <CurveEditorButton
-                                scene={scene}
-                                target={entity as IAnimatable}
-                                animations={animations}
-                                title={(entity as { name?: string }).name ?? "Animation Curve Editor"}
-                            />
-                            {mainAnimatable && (
-                                <>
-                                    <PropertyLine
-                                        label="Animation Controls"
-                                        expandedContent={
-                                            <>
-                                                <NumberInputPropertyLine
-                                                    label="From"
-                                                    value={mainAnimatable.fromFrame}
-                                                    onChange={(value) => {
-                                                        scene.stopAnimation(entity);
-                                                        scene.beginAnimation(entity, value, mainAnimatable.toFrame, true);
-                                                    }}
-                                                />
-                                                <NumberInputPropertyLine
-                                                    label="To"
-                                                    value={mainAnimatable.toFrame}
-                                                    onChange={(value) => {
-                                                        scene.stopAnimation(entity);
-                                                        scene.beginAnimation(entity, mainAnimatable.fromFrame, value, true);
-                                                    }}
-                                                />
-                                                <SwitchPropertyLine
-                                                    label="Loop"
-                                                    value={mainAnimatable.loopAnimation}
-                                                    onChange={(value) => {
-                                                        for (const animatable of animatablesForTarget) {
-                                                            animatable.loopAnimation = value;
-                                                        }
-                                                    }}
-                                                />
-                                                <SyncedSliderPropertyLine
-                                                    label="Current Frame"
-                                                    value={currentFrame}
-                                                    min={mainAnimatable.fromFrame}
-                                                    max={mainAnimatable.toFrame}
-                                                    step={(mainAnimatable.toFrame - mainAnimatable.fromFrame) / 1000}
-                                                    onChange={(value) => {
-                                                        mainAnimatable.goToFrame(value);
-                                                    }}
-                                                />
-                                            </>
-                                        }
-                                        expandByDefault
-                                    ></PropertyLine>
-                                </>
-                            )}
-                            <ButtonLine
-                                label={isPlaying ? "Stop Animation" : "Play Animation"}
-                                onClick={() => {
-                                    if (isPlaying) {
-                                        scene.stopAnimation(entity);
-                                    } else {
-                                        scene.beginAnimation(entity, lastFrom.current, lastTo.current, lastLoop.current);
-                                    }
-                                }}
-                            />
-                            {mainAnimatable && (ranges.length > 0 || animations.length > 0) ? (
-                                <>
-                                    <SwitchPropertyLine
-                                        label="Enable Override"
-                                        value={animationPropertiesOverride != null}
-                                        onChange={(value) => {
-                                            if (value) {
-                                                mainAnimatable.animationPropertiesOverride = new AnimationPropertiesOverride();
-                                                mainAnimatable.animationPropertiesOverride.blendingSpeed = 0.05;
-                                            } else {
-                                                mainAnimatable.animationPropertiesOverride = undefined;
-                                            }
+                            {ranges.map((range) => {
+                                return (
+                                    <ButtonLine
+                                        key={range.name}
+                                        label={range.name}
+                                        onClick={() => {
+                                            scene.beginAnimation(entity, range.from, range.to, true);
                                         }}
                                     />
-                                    <Collapse visible={animationPropertiesOverride != null}>
-                                        <div>
-                                            <BoundProperty
-                                                component={SwitchPropertyLine}
-                                                label="Enable Blending"
-                                                target={animationPropertiesOverride!}
-                                                propertyKey="enableBlending"
-                                            />
-                                            <BoundProperty
-                                                component={SyncedSliderPropertyLine}
-                                                label="Blending Speed"
-                                                target={animationPropertiesOverride!}
-                                                propertyKey="blendingSpeed"
-                                                min={0}
-                                                max={0.1}
-                                                step={0.01}
-                                            />
-                                        </div>
-                                    </Collapse>
-                                </>
-                            ) : null}
+                                );
+                            })}
                         </>
-                    )}
+                    }
+                >
+                    <Badge appearance="filled">{ranges.length}</Badge>
+                </PropertyLine>
+            )}
+            {animations.length > 0 && (
+                <PropertyLine
+                    label="Animations"
+                    expandedContent={
+                        <>
+                            {animations.map((animation, index) => {
+                                return <TextPropertyLine key={animation.uniqueId} label={`${index}: ${animation.name}`} value={animation.targetProperty} />;
+                            })}
+                        </>
+                    }
+                >
+                    <Badge appearance="filled">{animations.length}</Badge>
+                </PropertyLine>
+            )}
+            {/* CurveEditorButton is always rendered at the same position to preserve ChildWindow state */}
+            <CurveEditorButton scene={scene} target={entity as IAnimatable} animations={animations} title={(entity as { name?: string }).name ?? "Animation Curve Editor"} />
+            {mainAnimatable && (
+                <>
+                    <PropertyLine
+                        label="Animation Controls"
+                        expandedContent={
+                            <>
+                                <NumberInputPropertyLine
+                                    label="From"
+                                    value={mainAnimatable.fromFrame}
+                                    onChange={(value) => {
+                                        scene.stopAnimation(entity);
+                                        scene.beginAnimation(entity, value, mainAnimatable.toFrame, true);
+                                    }}
+                                />
+                                <NumberInputPropertyLine
+                                    label="To"
+                                    value={mainAnimatable.toFrame}
+                                    onChange={(value) => {
+                                        scene.stopAnimation(entity);
+                                        scene.beginAnimation(entity, mainAnimatable.fromFrame, value, true);
+                                    }}
+                                />
+                                <SwitchPropertyLine
+                                    label="Loop"
+                                    value={mainAnimatable.loopAnimation}
+                                    onChange={(value) => {
+                                        for (const animatable of animatablesForTarget) {
+                                            animatable.loopAnimation = value;
+                                        }
+                                    }}
+                                />
+                                <SyncedSliderPropertyLine
+                                    label="Current Frame"
+                                    value={currentFrame}
+                                    min={mainAnimatable.fromFrame}
+                                    max={mainAnimatable.toFrame}
+                                    step={(mainAnimatable.toFrame - mainAnimatable.fromFrame) / 1000}
+                                    onChange={(value) => {
+                                        mainAnimatable.goToFrame(value);
+                                    }}
+                                />
+                            </>
+                        }
+                        expandByDefault
+                    ></PropertyLine>
                 </>
             )}
+            {hasAnimations && (
+                <ButtonLine
+                    label={isPlaying ? "Stop Animation" : "Play Animation"}
+                    onClick={() => {
+                        if (isPlaying) {
+                            scene.stopAnimation(entity);
+                        } else {
+                            scene.beginAnimation(entity, lastFrom.current, lastTo.current, lastLoop.current);
+                        }
+                    }}
+                />
+            )}
+            {mainAnimatable && (ranges.length > 0 || animations.length > 0) ? (
+                <>
+                    <SwitchPropertyLine
+                        label="Enable Override"
+                        value={animationPropertiesOverride != null}
+                        onChange={(value) => {
+                            if (value) {
+                                mainAnimatable.animationPropertiesOverride = new AnimationPropertiesOverride();
+                                mainAnimatable.animationPropertiesOverride.blendingSpeed = 0.05;
+                            } else {
+                                mainAnimatable.animationPropertiesOverride = undefined;
+                            }
+                        }}
+                    />
+                    <Collapse visible={animationPropertiesOverride != null}>
+                        <div>
+                            <BoundProperty component={SwitchPropertyLine} label="Enable Blending" target={animationPropertiesOverride!} propertyKey="enableBlending" />
+                            <BoundProperty
+                                component={SyncedSliderPropertyLine}
+                                label="Blending Speed"
+                                target={animationPropertiesOverride!}
+                                propertyKey="blendingSpeed"
+                                min={0}
+                                max={0.1}
+                                step={0.01}
+                            />
+                        </div>
+                    </Collapse>
+                </>
+            ) : null}
         </>
     );
 };

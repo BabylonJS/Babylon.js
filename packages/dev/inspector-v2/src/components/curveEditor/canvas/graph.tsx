@@ -11,7 +11,6 @@ import { Quaternion } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 
 import { useCurveEditor } from "../curveEditorContext";
-import { useObservableState } from "../../../hooks/observableHooks";
 import { CurveData } from "./curveData";
 import { Curve } from "./curve";
 import { KeyPointComponent } from "./keyPoint";
@@ -93,9 +92,17 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
     const [offsetY, setOffsetY] = useState(0);
     const [isPointerDown, setIsPointerDown] = useState(false);
     const [pointerStart, setPointerStart] = useState({ x: 0, y: 0 });
+    const [animationVersion, setAnimationVersion] = useState(0);
 
-    // Re-render when active animation or range changes - use counter to invalidate memoized curves
-    const animationVersion = useObservableState(() => Date.now(), observables.onActiveAnimationChanged, observables.onRangeUpdated);
+    // Re-render when active animation or range changes
+    useEffect(() => {
+        const obs1 = observables.onActiveAnimationChanged.add(() => setAnimationVersion((v) => v + 1));
+        const obs2 = observables.onRangeUpdated.add(() => setAnimationVersion((v) => v + 1));
+        return () => {
+            obs1?.remove();
+            obs2?.remove();
+        };
+    }, [observables]);
 
     // Ensure dimensions are valid
     const safeWidth = Math.max(1, width);

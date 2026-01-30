@@ -254,7 +254,12 @@ export const AnimationList: FunctionComponent = () => {
     const { state, observables } = useCurveEditor();
 
     // Re-render when animations are loaded or changed (e.g. animation deleted)
-    useObservableState(() => ({}), observables.onAnimationsLoaded, observables.onActiveAnimationChanged);
+    // useCallback stabilizes the accessor to prevent infinite re-render loops
+    useObservableState(
+        useCallback(() => ({}), []),
+        observables.onAnimationsLoaded,
+        observables.onActiveAnimationChanged
+    );
 
     // Get animations from target if available (for dynamically added animations), otherwise from state
     const animations = state.target?.animations ?? state.animations;

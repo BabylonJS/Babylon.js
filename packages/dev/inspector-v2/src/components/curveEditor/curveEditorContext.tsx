@@ -17,7 +17,7 @@ export type KeyPoint = {
     keyId: number;
 };
 
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Observable } from "core/Misc/observable";
 
 /**
