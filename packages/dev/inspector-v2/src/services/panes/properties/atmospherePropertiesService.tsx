@@ -15,16 +15,6 @@ import {
     ScatteringAndAbsorptionProperties,
 } from "../../../components/properties/atmosphereProperties";
 
-// Returns the Atmosphere class if addons are loaded, undefined otherwise
-const getAtmosphereClass = (): (new (...args: unknown[]) => Atmosphere) | undefined => {
-    try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        return require("addons/atmosphere/atmosphere").Atmosphere;
-    } catch {
-        return undefined;
-    }
-};
-
 export const AtmospherePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService, ISceneContext]> = {
     friendlyName: "Atmosphere Properties",
     consumes: [PropertiesServiceIdentity, SelectionServiceIdentity, SceneContextIdentity],
@@ -34,14 +24,9 @@ export const AtmospherePropertiesServiceDefinition: ServiceDefinition<[], [IProp
             return undefined;
         }
 
-        const AtmosphereClass = getAtmosphereClass();
-        if (!AtmosphereClass) {
-            return undefined;
-        }
-
         const atmosphereContentRegistration = propertiesService.addSectionContent({
             key: "Atmosphere Properties",
-            predicate: (entity: unknown) => entity instanceof AtmosphereClass,
+            predicate: (entity: unknown): entity is Atmosphere => (entity as Partial<Atmosphere>).getClassName?.() === "Atmosphere",
             content: [
                 {
                     section: "General",
