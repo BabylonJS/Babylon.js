@@ -15,6 +15,11 @@ import { _TriggerSubEmitter } from "core/Particles/Node/Blocks/Triggers/triggerT
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { ParticleGradientBlock } from "./particleGradientBlock";
 
+type CustomShader = {
+    shaderPath: { fragmentElement: string };
+    shaderOptions: { uniforms: string[]; samplers: string[]; defines: string[] };
+};
+
 /**
  * Block used to get a system of particles
  */
@@ -119,10 +124,7 @@ export class SystemBlock extends NodeParticleBlock {
      * Gets or sets the custom shader configuration used to render the particles.
      * This can be used to set your own shader to render the particle system.
      */
-    public customShader: Nullable<{
-        shaderPath: { fragmentElement: string };
-        shaderOptions: { uniforms: string[]; samplers: string[]; defines: string[] };
-    }> = null;
+    public customShader: Nullable<CustomShader> = null;
 
     /**
      * Create a new SystemBlock
