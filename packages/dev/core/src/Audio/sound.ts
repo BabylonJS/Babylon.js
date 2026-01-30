@@ -37,6 +37,17 @@ const TmpStopOptions: IStaticSoundStopOptions = {
     waitTime: 0,
 };
 
+function ResetTmpPlayOptions() {
+    TmpPlayOptions.duration = 0;
+    TmpPlayOptions.startOffset = 0;
+    TmpPlayOptions.waitTime = 0;
+
+    TmpPlayOptions.loop = undefined;
+    TmpPlayOptions.loopStart = undefined;
+    TmpPlayOptions.loopEnd = undefined;
+    TmpPlayOptions.volume = undefined;
+}
+
 function D2r(degrees: number): number {
     return (degrees * Math.PI) / 180;
 }
@@ -728,6 +739,7 @@ export class Sound {
             }
 
             try {
+                ResetTmpPlayOptions();
                 TmpPlayOptions.duration = length || 0;
                 TmpPlayOptions.startOffset = offset !== undefined ? offset || this._optionsV2.startOffset! : this._optionsV2.startOffset!;
                 TmpPlayOptions.waitTime = time || 0;
