@@ -59,7 +59,11 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
     const [displayFrame, setDisplayFrame] = useState(state.activeFrame);
 
     // Re-render when range updates
-    useObservableState(() => ({}), observables.onRangeUpdated);
+    // useCallback stabilizes the accessor to prevent infinite re-render loops
+    useObservableState(
+        useCallback(() => ({}), []),
+        observables.onRangeUpdated
+    );
 
     // Update view width on resize
     useEffect(() => {
