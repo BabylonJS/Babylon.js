@@ -1,6 +1,6 @@
 import type { FunctionComponent, MouseEvent, MouseEventHandler } from "react";
 import { useCallback, useState, useEffect } from "react";
-import { Body1Strong, InfoLabel as FluentInfoLabel, makeStyles, mergeClasses } from "@fluentui/react-components";
+import { Body1Strong, InfoLabel as FluentInfoLabel, makeStyles, mergeClasses, useFluent } from "@fluentui/react-components";
 
 export type InfoLabelProps = {
     htmlFor: string; // required ID of the element whose label we are applying
@@ -43,10 +43,13 @@ const useInfoLabelStyles = makeStyles({
 export const InfoLabel: FunctionComponent<InfoLabelProps> = (props) => {
     InfoLabel.displayName = "InfoLabel";
     const classes = useInfoLabelStyles();
+    const { targetDocument } = useFluent();
 
     const [ctrlPressed, setCtrlPressed] = useState(false);
 
     useEffect(() => {
+        const targetWindow = targetDocument?.defaultView ?? window;
+
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.ctrlKey) setCtrlPressed(true);
         };
@@ -55,16 +58,16 @@ export const InfoLabel: FunctionComponent<InfoLabelProps> = (props) => {
         };
         const handleBlur = () => setCtrlPressed(false);
 
-        window.addEventListener("keydown", handleKeyDown);
-        window.addEventListener("keyup", handleKeyUp);
-        window.addEventListener("blur", handleBlur);
+        targetWindow.addEventListener("keydown", handleKeyDown);
+        targetWindow.addEventListener("keyup", handleKeyUp);
+        targetWindow.addEventListener("blur", handleBlur);
 
         return () => {
-            window.removeEventListener("keydown", handleKeyDown);
-            window.removeEventListener("keyup", handleKeyUp);
-            window.removeEventListener("blur", handleBlur);
+            targetWindow.removeEventListener("keydown", handleKeyDown);
+            targetWindow.removeEventListener("keyup", handleKeyUp);
+            targetWindow.removeEventListener("blur", handleBlur);
         };
-    }, []);
+    }, [targetDocument]);
 
     const infoContent = props.info ? <div className={classes.infoPopup}>{props.info}</div> : undefined;
 
