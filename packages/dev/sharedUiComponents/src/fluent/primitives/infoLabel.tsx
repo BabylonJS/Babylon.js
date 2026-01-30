@@ -51,12 +51,18 @@ export const InfoLabel: FunctionComponent<InfoLabelProps> = (props) => {
         const targetWindow = targetDocument?.defaultView ?? window;
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.ctrlKey) setCtrlPressed(true);
+            if (e.ctrlKey) {
+                setCtrlPressed(true);
+            }
         };
         const handleKeyUp = (e: KeyboardEvent) => {
-            if (!e.ctrlKey) setCtrlPressed(false);
+            if (!e.ctrlKey) {
+                setCtrlPressed(false);
+            }
         };
-        const handleBlur = () => setCtrlPressed(false);
+        const handleBlur = () => {
+            setCtrlPressed(false);
+        };
 
         targetWindow.addEventListener("keydown", handleKeyDown);
         targetWindow.addEventListener("keyup", handleKeyUp);
