@@ -15,13 +15,13 @@
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "8.49.2",
-        "babylonjs-addons": "8.49.2",
-        "babylonjs-gui": "8.49.2",
-        "babylonjs-gui-editor": "8.49.2",
-        "babylonjs-loaders": "8.49.2",
-        "babylonjs-materials": "8.49.2",
-        "babylonjs-serializers": "8.49.2"
+        "babylonjs": "8.49.3",
+        "babylonjs-addons": "8.49.3",
+        "babylonjs-gui": "8.49.3",
+        "babylonjs-gui-editor": "8.49.3",
+        "babylonjs-loaders": "8.49.3",
+        "babylonjs-materials": "8.49.3",
+        "babylonjs-serializers": "8.49.3"
     },
     "devDependencies": {
         "@dev/addons": "1.0.0",
