@@ -1034,6 +1034,8 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     newSystem.isLocal = oldSystem.isLocal;
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
 
+    _SystemCustomShader(oldSystem, newSystem);
+
     if (oldSystem.emitter) {
         _SystemEmitterPosition(oldSystem.emitter, newSystem);
     }
@@ -1054,6 +1056,46 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     updateParticleOutput.connectTo(newSystem.particle);
 
     return newSystem;
+}
+
+function _SystemCustomShader(oldSystem: ParticleSystem, newSystem: SystemBlock) {
+    if (oldSystem.customShader) {
+        // Copy the custom shader configuration so it can be recreated when building the system
+        newSystem.customShader = {
+            shaderPath: {
+                fragmentElement: oldSystem.customShader.shaderPath.fragmentElement,
+            },
+            shaderOptions: {
+                uniforms: oldSystem.customShader.shaderOptions.uniforms.slice(),
+                samplers: oldSystem.customShader.shaderOptions.samplers.slice(),
+                defines: oldSystem.customShader.shaderOptions.defines.slice(),
+            },
+        };
+    } else {
+        // Check if there's a custom effect set directly without customShader metadata
+        // This happens when using the ThinParticleSystem constructor with a customEffect parameter
+        const customEffect = oldSystem.getCustomEffect(0);
+        if (customEffect) {
+            const effectName = customEffect.name;
+            const fragmentElement =
+                typeof effectName === "string"
+                    ? effectName
+                    : ((effectName as { fragmentElement?: string; fragment?: string }).fragmentElement ?? (effectName as { fragment?: string }).fragment);
+
+            const effectInternal = customEffect as unknown as { _uniformsNames: string[]; _samplerList: string[] };
+
+            newSystem.customShader = {
+                shaderPath: {
+                    fragmentElement: fragmentElement ?? "",
+                },
+                shaderOptions: {
+                    uniforms: [...effectInternal._uniformsNames],
+                    samplers: [...effectInternal._samplerList],
+                    defines: customEffect.defines ? customEffect.defines.split("\n").filter((d) => d.length > 0) : [],
+                },
+            };
+        }
+    }
 }
 
 function _SystemEmitterPosition(emitter: TransformNode | Vector3, newSystem: SystemBlock): void {
