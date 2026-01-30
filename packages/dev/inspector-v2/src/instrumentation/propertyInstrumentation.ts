@@ -33,14 +33,15 @@ export function IsPropertyReadonly(propertyDescriptor: PropertyDescriptor): bool
     return propertyDescriptor.writable === false || (propertyDescriptor.writable === undefined && !propertyDescriptor.set);
 }
 
-export type PropertyHooks = {
+export type PropertyHooks<T = unknown> = {
     /**
      * This function will be called after the hooked property is set.
+     * @param value The new value that was set on the property.
      */
-    afterSet?: () => void;
+    afterSet?: (value: T) => void;
 };
 
-const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, PropertyHooks[]>>();
+const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, PropertyHooks<unknown>[]>>();
 
 /**
  * Intercepts a property on an object and allows you to add hooks that will be called when the property is get or set.
@@ -49,6 +50,15 @@ const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, PropertyHooks[
  * @param hooks The hooks to call when the property is get or set.
  * @returns A disposable that removes the hooks when disposed and returns the object to its original state.
  */
+// This overload only matches when K is a specific literal key (not a union like keyof T)
+export function InterceptProperty<T extends object, K extends keyof T>(
+    target: T,
+    propertyKey: string extends K ? never : number extends K ? never : symbol extends K ? never : K,
+    hooks: PropertyHooks<NonNullable<T[K]>>
+): IDisposable;
+// Fallback overload for generic/dynamic cases where the property type cannot be inferred
+export function InterceptProperty<T extends object>(target: T, propertyKey: keyof T, hooks: PropertyHooks): IDisposable;
+/** @internal */
 export function InterceptProperty<T extends object>(target: T, propertyKey: keyof T, hooks: PropertyHooks): IDisposable {
     // Find the property descriptor and note the owning object (might be inherited through the prototype chain).
     const ownerAndDescriptor = GetPropertyDescriptor(target, propertyKey);
@@ -105,10 +115,10 @@ export function InterceptProperty<T extends object>(target: T, propertyKey: keyo
             !Reflect.defineProperty(target, propertyKey, {
                 configurable: true,
                 get: getValue ? () => getValue.call(target) : undefined,
-                set: (newValue: any) => {
+                set: (newValue: unknown) => {
                     setValue.call(target, newValue);
                     for (const { afterSet } of hooksForKey!) {
-                        afterSet?.();
+                        afterSet?.(newValue);
                     }
                 },
             })
@@ -116,14 +126,14 @@ export function InterceptProperty<T extends object>(target: T, propertyKey: keyo
             throw new Error(`Failed to define new property "${propertyKey.toString()}" on object "${target}".`);
         }
     }
-    hooksForKey.push(hooks);
+    hooksForKey.push(hooks as PropertyHooks<unknown>);
 
     let isDisposed = false;
     return {
         dispose: () => {
             if (!isDisposed) {
                 // Remove the hooks from the hooks array for the property key.
-                hooksForKey.splice(hooksForKey.indexOf(hooks), 1);
+                hooksForKey.splice(hooksForKey.indexOf(hooks as PropertyHooks<unknown>), 1);
 
                 // If there are no more hooks for the property key, remove the property from the hooks map.
                 if (hooksForKey.length === 0) {
