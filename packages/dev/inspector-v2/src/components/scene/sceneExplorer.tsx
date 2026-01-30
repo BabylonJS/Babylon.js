@@ -651,7 +651,7 @@ const EntityTreeItem: FunctionComponent<{
                     value={GetEntityId(entityItem.entity)}
                     // Disable manual expand/collapse when a filter is active.
                     itemType={!isFiltering && hasChildren ? "branch" : "leaf"}
-                    parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : GetEntityId(entityItem.entity)}
+                    parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : GetEntityId(entityItem.parent.entity)}
                     aria-level={entityItem.depth}
                     aria-setsize={1}
                     aria-posinset={1}
