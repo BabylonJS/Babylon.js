@@ -17,6 +17,7 @@ import { ParticleSystemColorProperties } from "../../../components/properties/pa
 import { ParticleSystemRotationProperties } from "../../../components/properties/particles/rotationProperties";
 import { ParticleSystemSpritesheetProperties } from "../../../components/properties/particles/spritesheetProperties";
 import { ParticleSystemAttractorProperties } from "../../../components/properties/particles/attractorProperties";
+import { ParticleSystemNodeEmitterProperties } from "../../../components/properties/particles/nodeEmitterProperties";
 import { ParticleSystemNodeEditorProperties } from "../../../components/properties/particles/nodeEditorProperties";
 
 function IsParticleSystem(entity: unknown): entity is ParticleSystem | GPUParticleSystem {
@@ -170,7 +171,19 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
             ],
         });
 
-        const particleSystemNodeContent = propertiesService.addSectionContent({
+        const particleSystemNodeEmitterContent = propertiesService.addSectionContent({
+            key: "Node Particle System Emitter Properties",
+            predicate: IsNodeParticleSystem,
+            content: [
+                {
+                    section: "Emitter",
+                    order: 11,
+                    component: ({ context }) => <ParticleSystemNodeEmitterProperties particleSystem={context} selectionService={selectionService} />,
+                },
+            ],
+        });
+
+        const particleSystemNodeInputContent = propertiesService.addSectionContent({
             key: "Node Particle System Inputs Properties",
             predicate: IsNodeParticleSystem,
             content: [
@@ -194,7 +207,8 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 particleSystemColorContent.dispose();
                 particleSystemRotationContent.dispose();
                 particleSystemSpritesheetContent.dispose();
-                particleSystemNodeContent.dispose();
+                particleSystemNodeEmitterContent.dispose();
+                particleSystemNodeInputContent.dispose();
             },
         };
     },
