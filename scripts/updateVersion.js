@@ -165,7 +165,7 @@ const updatePackageLockPackage = (updateFunction) => {
         });
 
         // write file
-        fs.writeFileSync(file, JSON.stringify(packageLockJson, null, 4) + "\r");
+        fs.writeFileSync(file, JSON.stringify(packageLockJson, null, 4) + "\n");
     } catch (e) {
         console.log("updatePackageLockPackage error", e);
     }
