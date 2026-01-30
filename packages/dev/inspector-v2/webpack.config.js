@@ -15,7 +15,7 @@ module.exports = (env) => {
             },
             {
                 static: ["test/app"],
-                port: process.env.INSPECTOR_TEST_PORT || 9002,
+                port: process.env.INSPECTOR_TEST_PORT || 9001,
             }
         ),
 
