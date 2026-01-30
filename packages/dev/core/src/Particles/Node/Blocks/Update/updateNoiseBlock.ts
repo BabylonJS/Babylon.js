@@ -1,9 +1,11 @@
 import type { Nullable } from "core/types";
+import type { ISize } from "core/Maths/math.size";
+import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Particle } from "core/Particles/particle";
 import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
-import type { INodeParticleTextureData, ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
+import type { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
 
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -76,15 +78,42 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
             return;
         }
 
-        const noiseTexture = this.noiseTexture.connectedPoint?.ownerBlock as ParticleTextureSourceBlock;
-        if (!noiseTexture) {
+        const noiseTextureBlock = this.noiseTexture.connectedPoint?.ownerBlock as ParticleTextureSourceBlock;
+        if (!noiseTextureBlock) {
             return;
         }
 
-        const processNoiseAsync = async (particle: Particle) => {
-            // eslint-disable-next-line github/no-then
-            const textureContent: Nullable<INodeParticleTextureData> = await noiseTexture.extractTextureContentAsync();
-            if (!textureContent) {
+        // These will be updated each frame for procedural textures
+        let noiseTextureData: Nullable<Uint8Array | Uint8ClampedArray> = null;
+        let noiseTextureSize: Nullable<ISize> = null;
+        let lastFrameId = -1;
+
+        const processNoise = (particle: Particle) => {
+            // Get the texture directly from the block's stored value to support procedural textures
+            // (as the block caches the texture data)
+            const texture = noiseTextureBlock.texture._storedValue as ProceduralTexture;
+            if (!texture || !texture.isReady()) {
+                return;
+            }
+
+            // Fetch fresh texture data once per frame (like in thinParticleSystem)
+            const currentFrameId = texture.getScene()?.getFrameId() ?? -1;
+            if (currentFrameId !== lastFrameId) {
+                lastFrameId = currentFrameId;
+
+                // Texture size only needs to be fetched once
+                if (!noiseTextureSize) {
+                    noiseTextureSize = texture.getSize();
+                }
+
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                texture.getContent()?.then((data) => {
+                    noiseTextureData = data as Uint8Array;
+                });
+            }
+
+            // Skip if we don't have texture data yet
+            if (!noiseTextureData || !noiseTextureSize) {
                 return;
             }
 
@@ -99,23 +128,23 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
             const fetchedColorR = system._fetchR(
                 particle._randomNoiseCoordinates1.x,
                 particle._randomNoiseCoordinates1.y,
-                textureContent.width,
-                textureContent.height,
-                textureContent.data
+                noiseTextureSize.width,
+                noiseTextureSize.height,
+                noiseTextureData
             );
             const fetchedColorG = system._fetchR(
                 particle._randomNoiseCoordinates1.z,
                 particle._randomNoiseCoordinates2.x,
-                textureContent.width,
-                textureContent.height,
-                textureContent.data
+                noiseTextureSize.width,
+                noiseTextureSize.height,
+                noiseTextureData
             );
             const fetchedColorB = system._fetchR(
                 particle._randomNoiseCoordinates2.y,
                 particle._randomNoiseCoordinates2.z,
-                textureContent.width,
-                textureContent.height,
-                textureContent.data
+                noiseTextureSize.width,
+                noiseTextureSize.height,
+                noiseTextureData
             );
 
             const force = TmpVectors.Vector3[0];
@@ -128,7 +157,7 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
         };
 
         const noiseProcessing = {
-            process: processNoiseAsync,
+            process: processNoise,
             previousItem: null,
             nextItem: null,
         };
