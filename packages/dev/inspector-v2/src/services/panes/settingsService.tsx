@@ -172,7 +172,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                                     />
                                     <SwitchPropertyLine
                                         label="Disable Copy Button"
-                                        description="Disables the copy to clipboard button on property lines. You can still Ctrl+Click on label to copy"
+                                        description="Disables the copy to clipboard button on property lines. You can still Ctrl+Click on the label to copy."
                                         value={disableCopy}
                                         onChange={(checked) => {
                                             setDisableCopy(checked);
