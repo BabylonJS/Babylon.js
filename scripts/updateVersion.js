@@ -157,10 +157,10 @@ const updatePackageLockPackage = (updateFunction) => {
         Object.keys(packageLockJson.packages).forEach((packageKey) => {
             if (
                 packageKey.indexOf("node_modules") === -1 &&
-                packageKey.indexOf("@babylonjs/test-tools") === -1 &&
-                packageKey.indexOf("@babylonjs/inspector-legacy") === -1 &&
-                packageKey.indexOf("umd/babylonjs-inspector") === -1 &&
-                packageKey.indexOf("umd/babylonjs-testproject") === -1 &&
+                packageKey !== "@babylonjs/test-tools" &&
+                packageKey !== "packages/public/umd/babylonjs-testproject" &&
+                packageKey !== "packages/public/@babylonjs/inspector" &&
+                packageKey !== "packages/public/umd/babylonjs-inspector" &&
                 (packageKey.indexOf("public/@babylonjs") > -1 || packageKey.indexOf("public/umd/babylonjs") > -1 || packageKey.indexOf("public/glTF2Interface") > -1)
             ) {
                 const package = packageLockJson.packages[packageKey];

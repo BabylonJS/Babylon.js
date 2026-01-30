@@ -115,15 +115,14 @@ export class KTX2Decoder {
 
             const levelUncompressedByteLength = kfr.levels[level].uncompressedByteLength;
 
-            let levelDataBuffer = kfr.data.buffer;
+            let levelDataBuffer: ArrayBufferLike | ArrayBufferView = kfr.data.buffer;
 
             let levelDataOffset = kfr.levels[level].byteOffset + kfr.data.byteOffset;
             let imageOffsetInLevel = 0;
 
             if (kfr.header.supercompressionScheme === SupercompressionScheme.ZStandard) {
-                const decoded = this._zstdDecoder.decode(new Uint8Array(levelDataBuffer, levelDataOffset, kfr.levels[level].byteLength), levelUncompressedByteLength);
-                levelDataBuffer = decoded.buffer;
-                levelDataOffset = decoded.byteOffset;
+                levelDataBuffer = this._zstdDecoder.decode(new Uint8Array(levelDataBuffer, levelDataOffset, kfr.levels[level].byteLength), levelUncompressedByteLength);
+                levelDataOffset = 0;
             }
 
             if (level === 0) {
@@ -138,9 +137,13 @@ export class KTX2Decoder {
                 if (kfr.header.supercompressionScheme === SupercompressionScheme.BasisLZ) {
                     imageDesc = kfr.supercompressionGlobalData.imageDescs![firstImageDescIndex + imageIndex];
 
-                    encodedData = new Uint8Array(levelDataBuffer, levelDataOffset + imageDesc.rgbSliceByteOffset, imageDesc.rgbSliceByteLength + imageDesc.alphaSliceByteLength);
+                    encodedData = new Uint8Array(
+                        levelDataBuffer as ArrayBuffer,
+                        levelDataOffset + imageDesc.rgbSliceByteOffset,
+                        imageDesc.rgbSliceByteLength + imageDesc.alphaSliceByteLength
+                    );
                 } else {
-                    encodedData = new Uint8Array(levelDataBuffer, levelDataOffset + imageOffsetInLevel, levelImageByteLength);
+                    encodedData = new Uint8Array(levelDataBuffer as ArrayBuffer, levelDataOffset + imageOffsetInLevel, levelImageByteLength);
 
                     imageOffsetInLevel += levelImageByteLength;
                 }
