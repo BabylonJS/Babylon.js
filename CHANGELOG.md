@@ -1,5 +1,7 @@
 # Changelog
 
+## 8.30.0
+
 ## 8.29.2
 
 ### Playground
@@ -5195,6 +5197,8 @@
 
 - Mesh extrusion: Add an optional scaleVectorFunction parameter to ExtrudeShapeCustom - by [Popov72](https://github.com/Popov72) ([#17752](https://github.com/BabylonJS/Babylon.js/pull/17752))
 
+## 8.49.2
+
 ## 8.49.1
 
 ### Core
@@ -6101,8 +6105,6 @@
 ### Inspector
 
 - FrameGraph: add support for screenshots - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17218](https://github.com/BabylonJS/Babylon.js/pull/17218))
-
-## 8.30.0
 
 ## 6.15.0
 
