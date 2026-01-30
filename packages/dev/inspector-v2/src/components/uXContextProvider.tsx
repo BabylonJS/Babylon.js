@@ -5,9 +5,6 @@ import { useMemo } from "react";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { useCompactMode, useDisableCopy } from "../hooks/settingsHooks";
 
-/**
- * Provides the ToolContext with UI settings like compact mode and disableCopy.
- */
 export const UXContextProvider: FunctionComponent<PropsWithChildren> = (props) => {
     const [compactMode] = useCompactMode();
     const [disableCopy] = useDisableCopy();

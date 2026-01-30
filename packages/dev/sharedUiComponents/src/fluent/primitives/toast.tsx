@@ -8,9 +8,6 @@ type ToastContextType = {
 
 const ToastContext = createContext<ToastContextType>({ showToast: () => {} });
 
-/**
- * Provider component that enables toast notifications.
- */
 export const ToastProvider: FunctionComponent<PropsWithChildren> = ({ children }) => {
     const toasterId = useId("toaster");
     const { dispatchToast } = useToastController(toasterId);
