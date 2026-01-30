@@ -294,8 +294,24 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
 
                     {particleEmitterType instanceof ConeParticleEmitter && (
                         <>
-                            <BoundProperty component={NumberInputPropertyLine} label="Radius range" target={particleEmitterType} propertyKey="radiusRange" min={0} max={1} step={0.01} />
-                            <BoundProperty component={NumberInputPropertyLine} label="Height range" target={particleEmitterType} propertyKey="heightRange" min={0} max={1} step={0.01} />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Radius range"
+                                target={particleEmitterType}
+                                propertyKey="radiusRange"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Height range"
+                                target={particleEmitterType}
+                                propertyKey="heightRange"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
                             <BoundProperty component={SwitchPropertyLine} label="Emit from spawn point only" target={particleEmitterType} propertyKey="emitFromSpawnPointOnly" />
                             <BoundProperty
                                 component={NumberInputPropertyLine}
@@ -312,7 +328,15 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                     {particleEmitterType instanceof SphereParticleEmitter && (
                         <>
                             <BoundProperty component={NumberInputPropertyLine} label="Radius" target={particleEmitterType} propertyKey="radius" min={0} step={0.1} />
-                            <BoundProperty component={NumberInputPropertyLine} label="Radius range" target={particleEmitterType} propertyKey="radiusRange" min={0} max={1} step={0.01} />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Radius range"
+                                target={particleEmitterType}
+                                propertyKey="radiusRange"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
                             <BoundProperty
                                 component={NumberInputPropertyLine}
                                 label="Direction randomizer"
@@ -329,7 +353,15 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                         <>
                             <BoundProperty component={NumberInputPropertyLine} label="Radius" target={particleEmitterType} propertyKey="radius" min={0} step={0.1} />
                             <BoundProperty component={NumberInputPropertyLine} label="Height" target={particleEmitterType} propertyKey="height" min={0} step={0.1} />
-                            <BoundProperty component={NumberInputPropertyLine} label="Radius range" target={particleEmitterType} propertyKey="radiusRange" min={0} max={1} step={0.01} />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Radius range"
+                                target={particleEmitterType}
+                                propertyKey="radiusRange"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
                             <BoundProperty
                                 component={NumberInputPropertyLine}
                                 label="Direction randomizer"
@@ -345,7 +377,15 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                     {particleEmitterType instanceof HemisphericParticleEmitter && (
                         <>
                             <BoundProperty component={NumberInputPropertyLine} label="Radius" target={particleEmitterType} propertyKey="radius" min={0} step={0.1} />
-                            <BoundProperty component={NumberInputPropertyLine} label="Radius range" target={particleEmitterType} propertyKey="radiusRange" min={0} max={1} step={0.01} />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Radius range"
+                                target={particleEmitterType}
+                                propertyKey="radiusRange"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
                             <BoundProperty
                                 component={NumberInputPropertyLine}
                                 label="Direction randomizer"
