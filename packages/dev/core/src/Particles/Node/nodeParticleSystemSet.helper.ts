@@ -1073,7 +1073,7 @@ function _SystemCustomShader(oldSystem: ParticleSystem, newSystem: SystemBlock) 
         };
     } else {
         // Check if there's a custom effect set directly without customShader metadata
-        // This happens when using the ThinParticleSystem constructor with a customEffect parameter
+        // This happens when using the ThinParticleSystem constructor with a customEffect parameter or when calling setCustomEffect directly
         const customEffect = oldSystem.getCustomEffect(0);
         if (customEffect) {
             const effectName = customEffect.name;
@@ -1082,15 +1082,13 @@ function _SystemCustomShader(oldSystem: ParticleSystem, newSystem: SystemBlock) 
                     ? effectName
                     : ((effectName as { fragmentElement?: string; fragment?: string }).fragmentElement ?? (effectName as { fragment?: string }).fragment);
 
-            const effectInternal = customEffect as unknown as { _uniformsNames: string[]; _samplerList: string[] };
-
             newSystem.customShader = {
                 shaderPath: {
                     fragmentElement: fragmentElement ?? "",
                 },
                 shaderOptions: {
-                    uniforms: [...effectInternal._uniformsNames],
-                    samplers: [...effectInternal._samplerList],
+                    uniforms: (customEffect as any)._uniformsNames.slice(),
+                    samplers: (customEffect as any)._samplerList.slice(),
                     defines: customEffect.defines ? customEffect.defines.split("\n").filter((d) => d.length > 0) : [],
                 },
             };
