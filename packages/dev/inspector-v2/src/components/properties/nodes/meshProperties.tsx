@@ -1,6 +1,6 @@
 import type { FunctionComponent } from "react";
 
-import type { Mesh, NodeGeometry } from "core/index";
+import type { Mesh, MorphTarget, NodeGeometry } from "core/index";
 
 import { EditRegular } from "@fluentui/react-icons";
 
@@ -60,6 +60,44 @@ export const MeshDisplayProperties: FunctionComponent<{ mesh: Mesh }> = (props) 
                     { value: Constants.MATERIAL_CounterClockWiseSideOrientation, label: "CounterClockwise" },
                 ]}
             />
+        </>
+    );
+};
+
+export const MeshMorphTargetsProperties: FunctionComponent<{ mesh: Mesh }> = (props) => {
+    const { mesh } = props;
+
+    if (!mesh.morphTargetManager) {
+        return null;
+    }
+
+    const morphTargets: MorphTarget[] = [];
+    for (let index = 0; index < mesh.morphTargetManager.numTargets; index++) {
+        const target = mesh.morphTargetManager.getTarget(index);
+        if (target.hasPositions) {
+            morphTargets.push(target);
+        }
+    }
+
+    if (morphTargets.length === 0) {
+        return null;
+    }
+
+    return (
+        <>
+            {morphTargets.map((target, index) => (
+                <BoundProperty
+                    key={index}
+                    component={SyncedSliderPropertyLine}
+                    label={target.name || `Target ${index}`}
+                    description={`Influence of morph target "${target.name || `Target ${index}`}"`}
+                    target={target}
+                    propertyKey="influence"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                />
+            ))}
         </>
     );
 };
