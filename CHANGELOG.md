@@ -5221,6 +5221,16 @@
 
 - Mesh extrusion: Add an optional scaleVectorFunction parameter to ExtrudeShapeCustom - by [Popov72](https://github.com/Popov72) ([#17752](https://github.com/BabylonJS/Babylon.js/pull/17752))
 
+## 8.49.5
+
+### Core
+
+- Fixing caching in noise textures - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17780](https://github.com/BabylonJS/Babylon.js/pull/17780))
+
+### Loaders
+
+- Check for valid material in transparency helper - by [MiiBond](https://github.com/MiiBond) ([#17785](https://github.com/BabylonJS/Babylon.js/pull/17785))
+
 ## 8.49.4
 
 ### Core
