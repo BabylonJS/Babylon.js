@@ -1,6 +1,6 @@
 import type { FunctionComponent, MouseEvent, MouseEventHandler } from "react";
-import { useCallback } from "react";
-import { Body1Strong, InfoLabel as FluentInfoLabel, makeStyles } from "@fluentui/react-components";
+import { useCallback, useState, useEffect } from "react";
+import { Body1Strong, InfoLabel as FluentInfoLabel, makeStyles, mergeClasses } from "@fluentui/react-components";
 
 export type InfoLabelProps = {
     htmlFor: string; // required ID of the element whose label we are applying
@@ -31,6 +31,9 @@ const useInfoLabelStyles = makeStyles({
         overflow: "hidden",
         textOverflow: "ellipsis",
     },
+    copyable: {
+        cursor: "copy",
+    },
 });
 /**
  * Renders a label with an optional popup containing more info
@@ -41,7 +44,31 @@ export const InfoLabel: FunctionComponent<InfoLabelProps> = (props) => {
     InfoLabel.displayName = "InfoLabel";
     const classes = useInfoLabelStyles();
 
+    const [ctrlPressed, setCtrlPressed] = useState(false);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey) setCtrlPressed(true);
+        };
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (!e.ctrlKey) setCtrlPressed(false);
+        };
+        const handleBlur = () => setCtrlPressed(false);
+
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("keyup", handleKeyUp);
+        window.addEventListener("blur", handleBlur);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("keyup", handleKeyUp);
+            window.removeEventListener("blur", handleBlur);
+        };
+    }, []);
+
     const infoContent = props.info ? <div className={classes.infoPopup}>{props.info}</div> : undefined;
+
+    const showCopyCursor = ctrlPressed && props.onContextMenu;
 
     // Handle Ctrl+click as context menu action
     const handleClick = useCallback(
@@ -57,7 +84,7 @@ export const InfoLabel: FunctionComponent<InfoLabelProps> = (props) => {
         <FluentInfoLabel
             htmlFor={props.htmlFor}
             info={infoContent}
-            className={props.className}
+            className={mergeClasses(props.className, showCopyCursor ? classes.copyable : undefined)}
             label={props.flexLabel ? { className: classes.labelSlot } : undefined}
             onContextMenu={props.onContextMenu}
             onClick={handleClick}
@@ -65,7 +92,7 @@ export const InfoLabel: FunctionComponent<InfoLabelProps> = (props) => {
             <Body1Strong className={classes.labelText}>{props.label}</Body1Strong>
         </FluentInfoLabel>
     ) : (
-        <Body1Strong className={props.className} onContextMenu={props.onContextMenu} onClick={handleClick}>
+        <Body1Strong className={mergeClasses(props.className, showCopyCursor ? classes.copyable : undefined)} onContextMenu={props.onContextMenu} onClick={handleClick}>
             {props.label}
         </Body1Strong>
     );

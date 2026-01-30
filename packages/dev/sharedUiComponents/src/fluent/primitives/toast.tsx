@@ -29,7 +29,7 @@ export const ToastProvider: FunctionComponent<PropsWithChildren> = ({ children }
         <ToastContext.Provider value={{ showToast }}>
             {children}
             <FluentProvider targetDocument={targetDocument} applyStylesToPortals={true}>
-                <Toaster toasterId={toasterId} position="bottom-end" />
+                <Toaster toasterId={toasterId} position="bottom" />
             </FluentProvider>
         </ToastContext.Provider>
     );

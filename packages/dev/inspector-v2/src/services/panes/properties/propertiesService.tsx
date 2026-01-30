@@ -11,7 +11,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Observable } from "core/Misc/observable";
 import { PropertiesPane } from "../../../components/properties/propertiesPane";
 import { PropertyContext } from "../../../contexts/propertyContext";
-import { ToastProvider } from "shared-ui-components/fluent/primitives/toast";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
 import { ObservableCollection } from "../../../misc/observableCollection";
 import { SelectionServiceIdentity } from "../../selectionService";
@@ -127,11 +126,9 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                 }, [pendingHighlight]);
 
                 return (
-                    <ToastProvider>
-                        <PropertyContext.Provider value={{ onPropertyChanged }}>
-                            <PropertiesPane sections={sections} sectionContent={applicableContent} context={entity} sectionsRef={sectionsRef} />
-                        </PropertyContext.Provider>
-                    </ToastProvider>
+                    <PropertyContext.Provider value={{ onPropertyChanged }}>
+                        <PropertiesPane sections={sections} sectionContent={applicableContent} context={entity} sectionsRef={sectionsRef} />
+                    </PropertyContext.Provider>
                 );
             },
         });

@@ -6,7 +6,7 @@ import { makeStyles } from "@fluentui/react-components";
 import { Children, isValidElement, useImperativeHandle, useLayoutEffect, useMemo, useState } from "react";
 
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
-import { UXContextProvider } from "../components/compactModeContextProvider";
+import { UXContextProvider } from "../components/uxContextProvider";
 
 function AsReadonlyArray<T>(array: T[]): readonly T[] {
     return array;
