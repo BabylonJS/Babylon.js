@@ -128,16 +128,14 @@ const updatePackages = (version) => {
             const packageJson = JSON.parse(data);
 
             const name = packageJson.name;
-            if (!packageJson.private && (name.startsWith("babylonjs") || name.startsWith("@babylonjs"))) {
+            if (name.startsWith("babylonjs") || name.startsWith("@babylonjs")) {
                 // if not private bump the revision.
                 packageJson.version = version;
             }
 
-            if (name !== "babylonjs-inspector-legacy" && name !== "@babylonjs/inspector-legacy") {
-                // And lets update the devDependencies/dependencies
-                updateDependencies(version, packageJson.devDependencies);
-                updateDependencies(version, packageJson.dependencies);
-            }
+            // And lets update the devDependencies/dependencies
+            updateDependencies(version, packageJson.devDependencies);
+            updateDependencies(version, packageJson.dependencies);
 
             console.log(`Updating Babylon package json version in ${file} to ${version}`);
 
@@ -159,10 +157,6 @@ const updatePackageLockPackage = (updateFunction) => {
         Object.keys(packageLockJson.packages).forEach((packageKey) => {
             if (
                 packageKey.indexOf("node_modules") === -1 &&
-                packageKey !== "packages/public/@babylonjs/test-tools" &&
-                packageKey !== "packages/public/umd/babylonjs-testproject" &&
-                packageKey !== "packages/public/@babylonjs/inspector" &&
-                packageKey !== "packages/public/umd/babylonjs-inspector" &&
                 (packageKey.indexOf("public/@babylonjs") > -1 || packageKey.indexOf("public/umd/babylonjs") > -1 || packageKey.indexOf("public/glTF2Interface") > -1)
             ) {
                 const package = packageLockJson.packages[packageKey];
