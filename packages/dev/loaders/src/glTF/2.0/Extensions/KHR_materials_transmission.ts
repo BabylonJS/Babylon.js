@@ -171,6 +171,9 @@ class TransmissionHelper {
         // internal properties are not setup yet, like _sourceMesh (needed when doing mesh.material below)
         Tools.SetImmediate(() => {
             if (mesh.material) {
+                if (!this._loader.isMatchingMaterialType(mesh.material)) {
+                    return;
+                }
                 const adapter = this._loader._getOrCreateMaterialAdapter(mesh.material);
                 if (adapter.transmissionWeight > 0) {
                     adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
@@ -212,6 +215,9 @@ class TransmissionHelper {
         const transparentIdx = this._transparentMeshesCache.indexOf(mesh);
         const opaqueIdx = this._opaqueMeshesCache.indexOf(mesh);
 
+        if (!this._loader.isMatchingMaterialType(mesh.material)) {
+            return;
+        }
         // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
         const adapter = mesh.material ? this._loader._getOrCreateMaterialAdapter(mesh.material) : null;
         const useTransmission = adapter ? adapter.transmissionWeight > 0 : false;
@@ -289,6 +295,9 @@ class TransmissionHelper {
 
         for (const mesh of this._transparentMeshesCache) {
             if (mesh.material) {
+                if (!this._loader.isMatchingMaterialType(mesh.material)) {
+                    return;
+                }
                 const adapter = this._loader._getOrCreateMaterialAdapter(mesh.material);
                 if (adapter.transmissionWeight > 0) {
                     adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
