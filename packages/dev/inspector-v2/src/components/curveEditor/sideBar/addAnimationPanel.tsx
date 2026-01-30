@@ -311,7 +311,7 @@ export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ o
     return (
         <div className={styles.root}>
             <div className={styles.header}>
-                <span className={styles.title}>Add Animation</span>
+                <div className={styles.title}>Add Animation</div>
             </div>
 
             <div className={styles.form}>

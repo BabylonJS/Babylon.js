@@ -100,9 +100,9 @@ export const FrameBar: FunctionComponent<FrameBarProps> = ({ width }) => {
             if (x >= graphOffsetX && x <= width) {
                 ticks.push(
                     <div key={`tick-${frame}`} className={styles.tick} style={{ left: x }} />,
-                    <span key={`label-${frame}`} className={styles.label} style={{ left: x - 10 }}>
+                    <div key={`label-${frame}`} className={styles.label} style={{ left: x - 10 }}>
                         {frame}
-                    </span>
+                    </div>
                 );
             }
         }

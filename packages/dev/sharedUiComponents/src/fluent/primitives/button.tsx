@@ -5,7 +5,7 @@ import type { FluentIcon } from "@fluentui/react-icons";
 import type { BasePrimitiveProps } from "./primitive";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { TokenMap } from "./utils";
-// import { Tooltip } from "./tooltip";
+import { Tooltip } from "./tooltip";
 
 const useButtonStyles = makeStyles({
     smallIcon: {
@@ -48,22 +48,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
     const iconClass = size === "small" ? classes.smallIcon : classes.mediumIcon;
 
     return (
-        // TODO: Somehow wrapping Button in a Tooltip completely breaks rendering CurveEditor. Need to figure out why.
-        // <Tooltip content={title}>
-        <FluentButton
-            ref={ref}
-            title={title}
-            iconPosition="after"
-            {...buttonProps}
-            className={className}
-            size={size}
-            icon={isOnClickBusy ? <Spinner size="extra-tiny" /> : Icon && <Icon className={iconClass} />}
-            onClick={handleOnClick}
-            disabled={disabled || isOnClickBusy}
-        >
-            {label && props.label}
-        </FluentButton>
-        // </Tooltip>
+        <Tooltip content={title ?? ""}>
+            <FluentButton
+                ref={ref}
+                iconPosition="after"
+                {...buttonProps}
+                className={className}
+                size={size}
+                icon={isOnClickBusy ? <Spinner size="extra-tiny" /> : Icon && <Icon className={iconClass} />}
+                onClick={handleOnClick}
+                disabled={disabled || isOnClickBusy}
+            >
+                {label && props.label}
+            </FluentButton>
+        </Tooltip>
     );
 });
 

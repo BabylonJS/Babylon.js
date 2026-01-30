@@ -182,7 +182,7 @@ export const SideBar: FunctionComponent = () => {
 
                 <div className={styles.fpsInput}>
                     <SpinButton className={styles.spinButton} value={fps} onChange={handleFpsChange} min={1} max={120} />
-                    <span className={styles.fpsLabel}>fps</span>
+                    <div className={styles.fpsLabel}>fps</div>
                 </div>
             </div>
 

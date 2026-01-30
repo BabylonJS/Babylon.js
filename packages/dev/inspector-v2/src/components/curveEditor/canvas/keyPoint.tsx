@@ -92,6 +92,10 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
     const storedLengthIn = useRef(0);
     const storedLengthOut = useRef(0);
 
+    // Track current position in refs to avoid stale closure issues during drag
+    const currentXRef = useRef(initialX);
+    const currentYRef = useRef(initialY);
+
     // Suppress unused variable warnings
     void channel;
 
@@ -99,6 +103,8 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
     useEffect(() => {
         setCurrentX(initialX);
         setCurrentY(initialY);
+        currentXRef.current = initialX;
+        currentYRef.current = initialY;
     }, [initialX, initialY]);
 
     // Helper to compare curves by identity (animation + property) rather than reference
@@ -146,17 +152,15 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             const keyValue = keys[keyId].value;
             const keyFrame = keys[keyId].frame;
 
-            // Work with a clone to avoid mutating the original vector
-            const workVec = vec.clone();
-
-            // Ensure vector points in the correct direction
-            if (isIn && workVec.x >= 0) {
-                workVec.x = -0.01;
-            } else if (!isIn && workVec.x <= 0) {
-                workVec.x = 0.01;
+            // Ensure vector points in the correct direction (modifies vec directly like v1)
+            if (isIn && vec.x >= 0) {
+                vec.x = -0.01;
+            } else if (!isIn && vec.x <= 0) {
+                vec.x = 0.01;
             }
 
-            const currentPosition = workVec.clone();
+            // Clone AFTER direction correction (like v1)
+            const currentPosition = vec.clone();
             currentPosition.normalize();
             currentPosition.scaleInPlace(storedLength);
 
@@ -430,9 +434,9 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                     lockY.current = false;
                 }
 
-                // Calculate new position
-                let newX = currentX + (lockX.current ? 0 : diffX * scale);
-                let newY = currentY + (lockY.current ? 0 : diffY * scale);
+                // Calculate new position using refs to avoid stale closure
+                let newX = currentXRef.current + (lockX.current ? 0 : diffX * scale);
+                let newY = currentYRef.current + (lockY.current ? 0 : diffY * scale);
 
                 // Constrain to valid frame range
                 const previousX = getPreviousX();
@@ -452,18 +456,21 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                     onFrameValueChanged(frame);
                     observables.onFrameSet.notifyObservers(frame);
                 } else {
-                    newX = currentX;
+                    newX = currentXRef.current;
                 }
 
                 // Check value lock constraints
                 if (state.lockLastFrameValue && keyId === curve.keys.length - 1) {
-                    newY = currentY;
+                    newY = currentYRef.current;
                 }
 
                 const value = invertY(newY);
                 onKeyValueChanged(value);
                 observables.onValueSet.notifyObservers(value);
 
+                // Update both ref and state
+                currentXRef.current = newX;
+                currentYRef.current = newY;
                 setCurrentX(newX);
                 setCurrentY(newY);
             } else {
@@ -487,38 +494,44 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 }
 
                 if (controlMode.current === ControlMode.TangentLeft) {
-                    // Calculate the moved vector position
-                    const movedInVec = inVec.current.clone();
-                    movedInVec.x += diffX * scale;
-                    movedInVec.y += diffY * scale;
+                    // Update the vector in place - multiply by scale to match v1 behavior
+                    inVec.current.x += diffX * scale;
+                    inVec.current.y += diffY * scale;
 
-                    const newSlope = extractSlope(movedInVec, storedLengthIn.current, true);
+                    const newSlope = extractSlope(inVec.current, storedLengthIn.current, true);
                     curve.updateInTangentFromControlPoint(keyId, newSlope);
 
                     if (isLockedTangent) {
                         // Rotate the moved inVec by -angleDiff to get the outVec direction
                         const tmpVector = new Vector2();
-                        movedInVec.rotateToRef(-angleDiff, tmpVector);
+                        inVec.current.rotateToRef(-angleDiff, tmpVector);
                         tmpVector.x = Math.abs(tmpVector.x); // Ensure out tangent points right
                         const outSlope = extractSlope(tmpVector, storedLengthOut.current, false);
                         curve.updateOutTangentFromControlPoint(keyId, outSlope);
+                        // Update outVec visually to match the rotated position
+                        outVec.current.copyFrom(tmpVector);
+                        outVec.current.normalize();
+                        outVec.current.scaleInPlace(100 * scale);
                     }
                 } else if (controlMode.current === ControlMode.TangentRight) {
-                    // Calculate the moved vector position
-                    const movedOutVec = outVec.current.clone();
-                    movedOutVec.x += diffX * scale;
-                    movedOutVec.y += diffY * scale;
+                    // Update the vector in place - multiply by scale to match v1 behavior
+                    outVec.current.x += diffX * scale;
+                    outVec.current.y += diffY * scale;
 
-                    const newSlope = extractSlope(movedOutVec, storedLengthOut.current, false);
+                    const newSlope = extractSlope(outVec.current, storedLengthOut.current, false);
                     curve.updateOutTangentFromControlPoint(keyId, newSlope);
 
                     if (isLockedTangent) {
                         // Rotate the moved outVec by angleDiff to get the inVec direction
                         const tmpVector = new Vector2();
-                        movedOutVec.rotateToRef(angleDiff, tmpVector);
+                        outVec.current.rotateToRef(angleDiff, tmpVector);
                         tmpVector.x = -Math.abs(tmpVector.x); // Ensure in tangent points left
                         const inSlope = extractSlope(tmpVector, storedLengthIn.current, true);
                         curve.updateInTangentFromControlPoint(keyId, inSlope);
+                        // Update inVec visually to match the rotated position
+                        inVec.current.copyFrom(tmpVector);
+                        inVec.current.normalize();
+                        inVec.current.scaleInPlace(100 * scale);
                     }
                 }
 
@@ -531,8 +544,6 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             sourcePointerY.current = evt.nativeEvent.offsetY;
         },
         [
-            currentX,
-            currentY,
             selectedState,
             getPreviousX,
             getNextX,
@@ -591,6 +602,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
     const hasDefinedOutTangent = curve.hasDefinedOutTangent(keyId);
 
     // Calculate tangent vectors from curve data (like v1's render method)
+    // This recalculates on every render, including after tangent updates
     const convertedX = invertX(currentX);
     const convertedY = invertY(currentY);
 
