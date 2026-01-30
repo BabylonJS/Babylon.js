@@ -318,6 +318,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _partIndicesTexture: Nullable<BaseTexture> = null;
     private _partIndices: Nullable<Uint8Array> = null;
     private _partMatrices: Matrix[] = [];
+    private _partVisibility: number[] = [];
     private _textureSize: Vector2 = new Vector2(0, 0);
     private readonly _keepInRam: boolean = false;
 
@@ -421,6 +422,13 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public get partIndicesTexture() {
         return this._partIndicesTexture;
+    }
+
+    /**
+     * Gets the part visibility array, if the mesh is a compound
+     */
+    public get partVisibility() {
+        return this._partVisibility;
     }
 
     /**
@@ -2150,11 +2158,13 @@ export class GaussianSplattingMesh extends Mesh {
             return;
         } else if (this._partMatrices.length > length) {
             this._partMatrices = this._partMatrices.slice(0, length);
+            this._partVisibility = this._partVisibility.slice(0, length);
         } else {
             this.computeWorldMatrix(true);
             const defaultMatrix = this.getWorldMatrix();
             while (this._partMatrices.length < length) {
                 this._partMatrices.push(defaultMatrix.clone());
+                this._partVisibility.push(1.0);
             }
         }
 
@@ -2259,6 +2269,22 @@ export class GaussianSplattingMesh extends Mesh {
 
         placeholderMesh.onAfterWorldMatrixUpdateObservable.add(() => {
             this.setWorldMatrixForPart(newPartIndex, placeholderMesh.getWorldMatrix());
+        });
+        Object.defineProperty(placeholderMesh, "isVisible", {
+            get: () => {
+                return (this._partVisibility[newPartIndex] ?? 1.0) > 0;
+            },
+            set: (value: boolean) => {
+                this._partVisibility[newPartIndex] = value ? 1.0 : 0.0;
+            },
+        });
+        Object.defineProperty(placeholderMesh, "visibility", {
+            get: () => {
+                return this._partVisibility[newPartIndex] ?? 1.0;
+            },
+            set: (value: number) => {
+                this._partVisibility[newPartIndex] = Math.max(0.0, Math.min(1.0, value));
+            },
         });
 
         // Directly set the world matrix using freezeWorldMatrix
