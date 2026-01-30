@@ -1,5 +1,15 @@
 # Changelog
 
+## 8.29.2
+
+### Playground
+
+- Revert "Playground Editor V2: Multi-file, ES modules, NPM Support" - by [sebavan](https://github.com/sebavan) ([#17214](https://github.com/BabylonJS/Babylon.js/pull/17214))
+
+### Viewer
+
+- viewer: fix imageProcessingConfiguration condition with ssao - by [alexandremottet](https://github.com/alexandremottet) ([#17215](https://github.com/BabylonJS/Babylon.js/pull/17215))
+
 ## 8.29.1
 
 ### Core
@@ -5185,6 +5195,15 @@
 
 - Mesh extrusion: Add an optional scaleVectorFunction parameter to ExtrudeShapeCustom - by [Popov72](https://github.com/Popov72) ([#17752](https://github.com/BabylonJS/Babylon.js/pull/17752))
 
+## 8.49.1
+
+### Core
+
+- Fix wrong setup for mergemeshes when subdivideWithSubMeshes was set - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#17762](https://github.com/BabylonJS/Babylon.js/pull/17762))
+- Fix issues with _native checks in GaussianSplattingMesh - by [spsDrop](https://github.com/spsDrop) ([#17764](https://github.com/BabylonJS/Babylon.js/pull/17764))
+- Geometry: Fix copy of instanced buffers - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17759](https://github.com/BabylonJS/Babylon.js/pull/17759))
+- Fixing issue with TransformsNode as emitters - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17763](https://github.com/BabylonJS/Babylon.js/pull/17763))
+
 ## 8.49.0
 
 ### Core
@@ -6084,16 +6103,6 @@
 - FrameGraph: add support for screenshots - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17218](https://github.com/BabylonJS/Babylon.js/pull/17218))
 
 ## 8.30.0
-
-## 8.29.2
-
-### Playground
-
-- Revert "Playground Editor V2: Multi-file, ES modules, NPM Support" - by [sebavan](https://github.com/sebavan) ([#17214](https://github.com/BabylonJS/Babylon.js/pull/17214))
-
-### Viewer
-
-- viewer: fix imageProcessingConfiguration condition with ssao - by [alexandremottet](https://github.com/alexandremottet) ([#17215](https://github.com/BabylonJS/Babylon.js/pull/17215))
 
 ## 6.15.0
 
