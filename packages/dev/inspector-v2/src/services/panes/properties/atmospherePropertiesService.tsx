@@ -2,10 +2,10 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISelectionService } from "../../selectionService";
 import type { IPropertiesService } from "./propertiesService";
 import type { ISceneContext } from "../../../services/sceneContext";
+import type { Atmosphere } from "addons/atmosphere/atmosphere";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { SceneContextIdentity } from "../../../services/sceneContext";
-import { Atmosphere } from "addons/atmosphere/atmosphere";
 import {
     AerialPerspectiveProperties,
     DiffuseIrradianceProperties,
@@ -14,6 +14,7 @@ import {
     RenderingOptionsProperties,
     ScatteringAndAbsorptionProperties,
 } from "../../../components/properties/atmosphereProperties";
+
 export const AtmospherePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService, ISceneContext]> = {
     friendlyName: "Atmosphere Properties",
     consumes: [PropertiesServiceIdentity, SelectionServiceIdentity, SceneContextIdentity],
@@ -25,7 +26,7 @@ export const AtmospherePropertiesServiceDefinition: ServiceDefinition<[], [IProp
 
         const atmosphereContentRegistration = propertiesService.addSectionContent({
             key: "Atmosphere Properties",
-            predicate: (entity: unknown) => entity instanceof Atmosphere,
+            predicate: (entity: unknown): entity is Atmosphere => (entity as Partial<Atmosphere>).getClassName?.() === "Atmosphere",
             content: [
                 {
                     section: "General",
