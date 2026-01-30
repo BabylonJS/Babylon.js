@@ -133,9 +133,11 @@ const updatePackages = (version) => {
                 packageJson.version = version;
             }
 
-            // And lets update the devDependencies/dependencies
-            updateDependencies(version, packageJson.devDependencies);
-            updateDependencies(version, packageJson.dependencies);
+            if (name !== "babylonjs-inspector-legacy" && name !== "@babylonjs/inspector-legacy") {
+                // And lets update the devDependencies/dependencies
+                updateDependencies(version, packageJson.devDependencies);
+                updateDependencies(version, packageJson.dependencies);
+            }
 
             console.log(`Updating Babylon package json version in ${file} to ${version}`);
 
@@ -157,7 +159,7 @@ const updatePackageLockPackage = (updateFunction) => {
         Object.keys(packageLockJson.packages).forEach((packageKey) => {
             if (
                 packageKey.indexOf("node_modules") === -1 &&
-                packageKey !== "@babylonjs/test-tools" &&
+                packageKey !== "packages/public/@babylonjs/test-tools" &&
                 packageKey !== "packages/public/umd/babylonjs-testproject" &&
                 packageKey !== "packages/public/@babylonjs/inspector" &&
                 packageKey !== "packages/public/umd/babylonjs-inspector" &&
@@ -169,7 +171,7 @@ const updatePackageLockPackage = (updateFunction) => {
         });
 
         // write file
-        fs.writeFileSync(file, JSON.stringify(packageLockJson, null, 4));
+        fs.writeFileSync(file, JSON.stringify(packageLockJson, null, 4) + "\r");
     } catch (e) {
         console.log("updatePackageLockPackage error", e);
     }
