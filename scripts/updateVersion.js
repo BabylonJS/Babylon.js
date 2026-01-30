@@ -128,7 +128,7 @@ const updatePackages = (version) => {
             const packageJson = JSON.parse(data);
 
             const name = packageJson.name;
-            if (!packageJson.private && (name.startsWith("babylonjs") || name.startsWith("@babylonjs"))) {
+            if (name.startsWith("babylonjs") || name.startsWith("@babylonjs")) {
                 // if not private bump the revision.
                 packageJson.version = version;
             }
@@ -157,10 +157,6 @@ const updatePackageLockPackage = (updateFunction) => {
         Object.keys(packageLockJson.packages).forEach((packageKey) => {
             if (
                 packageKey.indexOf("node_modules") === -1 &&
-                packageKey !== "@babylonjs/test-tools" &&
-                packageKey !== "packages/public/umd/babylonjs-testproject" &&
-                packageKey !== "packages/public/@babylonjs/inspector" &&
-                packageKey !== "packages/public/umd/babylonjs-inspector" &&
                 (packageKey.indexOf("public/@babylonjs") > -1 || packageKey.indexOf("public/umd/babylonjs") > -1 || packageKey.indexOf("public/glTF2Interface") > -1)
             ) {
                 const package = packageLockJson.packages[packageKey];
@@ -169,7 +165,7 @@ const updatePackageLockPackage = (updateFunction) => {
         });
 
         // write file
-        fs.writeFileSync(file, JSON.stringify(packageLockJson, null, 4));
+        fs.writeFileSync(file, JSON.stringify(packageLockJson, null, 4) + "\n");
     } catch (e) {
         console.log("updatePackageLockPackage error", e);
     }
