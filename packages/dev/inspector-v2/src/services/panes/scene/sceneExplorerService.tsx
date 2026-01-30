@@ -1,12 +1,13 @@
 import type { IDisposable } from "core/index";
 
-import type { SceneExplorerCommandProvider, SceneExplorerSection } from "../../../components/scene/sceneExplorer";
+import type { SceneExplorerCommandProvider, SceneExplorerDragDropEvent, SceneExplorerSection } from "../../../components/scene/sceneExplorer";
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISelectionService } from "../../selectionService";
 import type { IShellService } from "../../shellService";
 
 import { CubeTreeRegular } from "@fluentui/react-icons";
+import { Observable } from "core/Misc/observable";
 
 import { SceneExplorer } from "../../../components/scene/sceneExplorer";
 import { useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
@@ -38,6 +39,19 @@ export interface ISceneExplorerService extends IService<typeof SceneExplorerServ
      * @param command A description of the command to add.
      */
     addSectionCommand<T extends string>(command: SceneExplorerCommandProvider<T, "contextMenu">): IDisposable;
+
+    /**
+     * Enables or disables drag-to-reparent functionality for Node entities in the scene explorer.
+     * When enabled, users can drag nodes and drop them onto other nodes to change the parent-child relationship.
+     */
+    enableDragToReparent: boolean;
+
+    /**
+     * Callback invoked when a drag-drop operation occurs.
+     * Consumers can use this to intercept or customize the drop behavior.
+     * Call `event.preventDefault()` to cancel the default reparenting behavior.
+     */
+    onDragDrop: ((event: SceneExplorerDragDropEvent) => void) | null;
 }
 
 /**
@@ -52,6 +66,11 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
         const entityCommandsCollection = new ObservableCollection<SceneExplorerCommandProvider<unknown>>();
         const sectionCommandsCollection = new ObservableCollection<SceneExplorerCommandProvider<string, "contextMenu">>();
 
+        let dragToReparentEnabled = true;
+        const dragToReparentObservable = new Observable<void>();
+
+        let onDragDropCallback: ((event: SceneExplorerDragDropEvent) => void) | null = null;
+
         const registration = shellService.addSidePane({
             key: "Scene Explorer",
             title: "Scene Explorer",
@@ -65,6 +84,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                 const sectionCommands = useOrderedObservableCollection(sectionCommandsCollection);
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
                 const entity = useObservableState(() => selectionService.selectedEntity, selectionService.onSelectedEntityChanged);
+                const enableDragToReparent = useObservableState(() => dragToReparentEnabled, dragToReparentObservable);
 
                 return (
                     <>
@@ -76,6 +96,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                                 scene={scene}
                                 selectedEntity={entity}
                                 setSelectedEntity={(entity) => (selectionService.selectedEntity = entity)}
+                                enableDragToReparent={enableDragToReparent}
+                                onDragDrop={onDragDropCallback ?? undefined}
                             />
                         )}
                     </>
@@ -87,7 +109,25 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
             addSection: (section) => sectionsCollection.add(section as SceneExplorerSection<unknown>),
             addEntityCommand: (command) => entityCommandsCollection.add(command as SceneExplorerCommandProvider<unknown>),
             addSectionCommand: (command) => sectionCommandsCollection.add(command as unknown as SceneExplorerCommandProvider<string, "contextMenu">),
-            dispose: () => registration.dispose(),
+            get enableDragToReparent() {
+                return dragToReparentEnabled;
+            },
+            set enableDragToReparent(value: boolean) {
+                if (dragToReparentEnabled !== value) {
+                    dragToReparentEnabled = value;
+                    dragToReparentObservable.notifyObservers();
+                }
+            },
+            get onDragDrop() {
+                return onDragDropCallback;
+            },
+            set onDragDrop(value: ((event: SceneExplorerDragDropEvent) => void) | null) {
+                onDragDropCallback = value;
+            },
+            dispose: () => {
+                dragToReparentObservable.clear();
+                registration.dispose();
+            },
         };
     },
 };

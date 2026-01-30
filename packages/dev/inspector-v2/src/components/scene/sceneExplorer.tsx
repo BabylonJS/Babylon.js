@@ -4,6 +4,8 @@ import type { FluentIcon } from "@fluentui/react-icons";
 import type { ComponentType, FunctionComponent } from "react";
 
 import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
+import { Node } from "core/node";
+import { TransformNode } from "core/Meshes/transformNode";
 
 import { VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
 import {
@@ -39,7 +41,7 @@ import { useResource } from "../../hooks/resourceHooks";
 import { useCompactMode } from "../../hooks/settingsHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
 
-type EntityBase = Readonly<{
+export type EntityBase = Readonly<{
     uniqueId?: number;
     reservedDataStore?: Record<PropertyKey, unknown>;
 }>;
@@ -198,6 +200,59 @@ export type SceneExplorerCommandProvider<ContextT, ModeT extends CommandMode = C
      */
     getCommand: (context: ContextT) => SceneExplorerCommand<ModeT, TypeT>;
 }>;
+
+/**
+ * Represents where in relation to the target entity a dragged item will be dropped.
+ * Used by the Scene Explorer's drag-to-reparent feature to indicate drop position.
+ *
+ * - `"before"` - Insert as a sibling before the target (shares target's parent)
+ * - `"inside"` - Insert as a child of the target (target becomes the new parent)
+ * - `"after"` - Insert as a sibling after the target (shares target's parent)
+ */
+export type DropPosition = "before" | "inside" | "after";
+
+/**
+ * Event data for drag-drop operations in the Scene Explorer.
+ * Passed to the `onDragDrop` callback when a user drops a node onto another.
+ *
+ * @example
+ * ```typescript
+ * sceneExplorerService.onDragDrop = (event) => {
+ *     console.log(`Dropped ${event.draggedEntity.name} ${event.dropPosition} ${event.targetEntity.name}`);
+ *     // Call preventDefault() to handle the reparenting yourself
+ *     // event.preventDefault();
+ * };
+ * ```
+ */
+export type SceneExplorerDragDropEvent = {
+    /**
+     * The entity being dragged.
+     */
+    draggedEntity: EntityBase;
+
+    /**
+     * The entity being dropped onto (the drop target).
+     */
+    targetEntity: EntityBase;
+
+    /**
+     * Where the dragged entity will be placed relative to the target.
+     */
+    dropPosition: DropPosition;
+
+    /**
+     * Call this to prevent the default reparenting behavior.
+     * Use this when you want to handle the drop operation yourself.
+     */
+    preventDefault: () => void;
+};
+
+/**
+ * Check if dropping draggedEntity onto targetEntity would create a cycle in the hierarchy.
+ */
+function wouldCreateCycle(dragged: Node, target: Node): boolean {
+    return target === dragged || target.isDescendantOf(dragged);
+}
 
 type SceneTreeItemData = { type: "scene"; scene: Scene };
 
@@ -369,6 +424,18 @@ const useStyles = makeStyles({
     treeItemLayoutLeaf: {
         paddingLeft: `calc(var(${treeItemLevelToken}, 1) * ${tokens.spacingHorizontalL} + ${tokens.spacingHorizontalS})`,
     },
+    treeItemDragging: {
+        opacity: 0.5,
+    },
+    treeItemDropTargetInside: {
+        boxShadow: `inset 0 0 0 2px ${tokens.colorBrandForeground1}`,
+    },
+    treeItemDropTargetBefore: {
+        boxShadow: `inset 0 2px 0 0 ${tokens.colorBrandForeground1}`,
+    },
+    treeItemDropTargetAfter: {
+        boxShadow: `inset 0 -2px 0 0 ${tokens.colorBrandForeground1}`,
+    },
 });
 
 const ActionCommand: FunctionComponent<{ command: SceneExplorerCommand<"inline", "action"> }> = (props) => {
@@ -537,11 +604,219 @@ const EntityTreeItem: FunctionComponent<{
     commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
     expandAll: () => void;
     collapseAll: () => void;
+    enableDragToReparent?: boolean;
+    draggedEntity: Nullable<EntityBase>;
+    setDraggedEntity: (entity: Nullable<EntityBase>) => void;
+    onEntityReparented?: () => void;
+    onDragDrop?: (event: SceneExplorerDragDropEvent) => void;
+    onExpandEntity?: (entity: EntityBase) => void;
+    onSelectEntity?: (entity: EntityBase) => void;
 }> = (props) => {
-    const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll } = props;
+    const {
+        entityItem,
+        isSelected,
+        select,
+        isFiltering,
+        commandProviders,
+        expandAll,
+        collapseAll,
+        enableDragToReparent,
+        draggedEntity,
+        setDraggedEntity,
+        onEntityReparented,
+        onDragDrop,
+        onExpandEntity,
+        onSelectEntity,
+    } = props;
 
     const classes = useStyles();
     const [compactMode] = useCompactMode();
+
+    // Drag and drop state for built-in Node reparenting
+    const [dropPosition, setDropPosition] = useState<DropPosition | null>(null);
+    const isDragging = draggedEntity === entityItem.entity;
+    const isNode = entityItem.entity instanceof Node;
+    const canDrag = enableDragToReparent && isNode;
+
+    const handleDragStart = useCallback(
+        (e: React.DragEvent) => {
+            if (!canDrag) {
+                e.preventDefault();
+                return;
+            }
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", String(entityItem.entity.uniqueId));
+            setDraggedEntity(entityItem.entity);
+        },
+        [canDrag, entityItem.entity, setDraggedEntity]
+    );
+
+    const handleDragEnd = useCallback(() => {
+        setDraggedEntity(null);
+        setDropPosition(null);
+    }, [setDraggedEntity]);
+
+    const handleDragOver = useCallback(
+        (e: React.DragEvent) => {
+            if (!enableDragToReparent || !draggedEntity || draggedEntity === entityItem.entity) {
+                return;
+            }
+
+            // Both must be Nodes for reparenting
+            if (!(draggedEntity instanceof Node) || !(entityItem.entity instanceof Node)) {
+                return;
+            }
+
+            // Determine drop position based on mouse Y position within the element
+            const rect = e.currentTarget.getBoundingClientRect();
+            const relativeY = e.clientY - rect.top;
+            const height = rect.height;
+            let newDropPosition: DropPosition;
+
+            if (relativeY < height * 0.25) {
+                newDropPosition = "before";
+            } else if (relativeY > height * 0.75) {
+                newDropPosition = "after";
+            } else {
+                newDropPosition = "inside";
+            }
+
+            // Determine the effective new parent for cycle check
+            const effectiveNewParent = newDropPosition === "inside" ? entityItem.entity : entityItem.entity.parent;
+
+            // Prevent dropping if it would create a cycle (dropping onto self or any descendant)
+            if (effectiveNewParent && wouldCreateCycle(draggedEntity, effectiveNewParent)) {
+                e.dataTransfer.dropEffect = "none";
+                setDropPosition(null);
+                return;
+            }
+
+            // Must prevent default to allow drop event to fire
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = "move";
+            setDropPosition(newDropPosition);
+        },
+        [enableDragToReparent, draggedEntity, entityItem.entity]
+    );
+
+    const handleDragLeave = useCallback(() => {
+        setDropPosition(null);
+    }, []);
+
+    const handleDrop = useCallback(
+        (e: React.DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const currentDropPosition = dropPosition;
+            setDropPosition(null);
+
+            if (!enableDragToReparent || !draggedEntity || !currentDropPosition) {
+                return;
+            }
+
+            // Both must be Nodes for reparenting
+            if (!(draggedEntity instanceof Node) || !(entityItem.entity instanceof Node)) {
+                setDraggedEntity(null);
+                return;
+            }
+
+            // Determine the effective new parent for cycle check
+            const effectiveNewParent = currentDropPosition === "inside" ? entityItem.entity : entityItem.entity.parent;
+
+            // Prevent dropping if it would create a cycle (dropping onto self or any descendant)
+            if (effectiveNewParent && wouldCreateCycle(draggedEntity, effectiveNewParent)) {
+                setDraggedEntity(null);
+                return;
+            }
+
+            // Create the event object for the callback
+            let isDefaultPrevented = false;
+            const dragDropEvent: SceneExplorerDragDropEvent = {
+                draggedEntity,
+                targetEntity: entityItem.entity,
+                dropPosition: currentDropPosition,
+                preventDefault: () => {
+                    isDefaultPrevented = true;
+                },
+            };
+
+            // Call the consumer callback if provided
+            onDragDrop?.(dragDropEvent);
+
+            // If the consumer prevented the default behavior, don't perform the reparent
+            if (isDefaultPrevented) {
+                setDraggedEntity(null);
+                return;
+            }
+
+            // Determine the new parent based on drop position
+            let newParent: Nullable<Node>;
+            if (currentDropPosition === "inside") {
+                // Drop inside the target - target becomes the parent
+                newParent = entityItem.entity;
+            } else {
+                // Drop before/after the target - use target's parent (can be null for root)
+                newParent = entityItem.entity.parent;
+            }
+
+            // Perform the reparent, preserving world transform if possible
+            if (draggedEntity instanceof TransformNode) {
+                // setParent preserves the world position/rotation/scale
+                draggedEntity.setParent(newParent);
+            } else {
+                // Fallback for non-TransformNode nodes
+                draggedEntity.parent = newParent;
+            }
+
+            // Handle sibling ordering for before/after positions
+            if (currentDropPosition !== "inside") {
+                // Get the actual internal siblings array (not a copy)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const siblings: Node[] | null = newParent ? (newParent as any)._children : draggedEntity.getScene().rootNodes;
+
+                if (siblings) {
+                    const draggedIndex = siblings.indexOf(draggedEntity);
+                    const targetIndex = siblings.indexOf(entityItem.entity);
+
+                    if (draggedIndex !== -1 && targetIndex !== -1 && draggedIndex !== targetIndex) {
+                        // Remove from current position
+                        siblings.splice(draggedIndex, 1);
+                        // Calculate new index (adjust if dragged was before target)
+                        let insertIndex = draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
+                        if (currentDropPosition === "after") {
+                            insertIndex++;
+                        }
+                        // Insert at new position
+                        siblings.splice(insertIndex, 0, draggedEntity);
+
+                        // For root nodes, update the _sceneRootNodesIndex for all affected nodes
+                        // since Babylon.js uses this index for fast removal via swap-and-pop
+                        if (!newParent) {
+                            for (let i = 0; i < siblings.length; i++) {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                (siblings[i] as any)._nodeDataStorage._sceneRootNodesIndex = i;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Notify that the entity was reparented so the tree can refresh
+            onEntityReparented?.();
+
+            // Expand the target node when dropping inside so the user can see the dropped item
+            if (currentDropPosition === "inside") {
+                onExpandEntity?.(entityItem.entity);
+            }
+
+            // Select the dragged entity so the user can see its properties
+            onSelectEntity?.(draggedEntity);
+
+            setDraggedEntity(null);
+        },
+        [enableDragToReparent, draggedEntity, entityItem.entity, dropPosition, setDraggedEntity, onEntityReparented, onDragDrop, onExpandEntity, onSelectEntity]
+    );
 
     const hasChildren = !!entityItem.children?.length;
 
@@ -646,7 +921,13 @@ const EntityTreeItem: FunctionComponent<{
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
-                    className={classes.treeItem}
+                    className={mergeClasses(
+                        classes.treeItem,
+                        isDragging && classes.treeItemDragging,
+                        dropPosition === "inside" && classes.treeItemDropTargetInside,
+                        dropPosition === "before" && classes.treeItemDropTargetBefore,
+                        dropPosition === "after" && classes.treeItemDropTargetAfter
+                    )}
                     key={GetEntityId(entityItem.entity)}
                     value={GetEntityId(entityItem.entity)}
                     // Disable manual expand/collapse when a filter is active.
@@ -657,6 +938,12 @@ const EntityTreeItem: FunctionComponent<{
                     aria-posinset={1}
                     onClick={select}
                     style={{ [treeItemLevelToken]: entityItem.depth }}
+                    draggable={canDrag}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
                 >
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
@@ -706,14 +993,17 @@ export const SceneExplorer: FunctionComponent<{
     scene: Scene;
     selectedEntity?: unknown;
     setSelectedEntity?: (entity: unknown) => void;
+    enableDragToReparent?: boolean;
+    onDragDrop?: (event: SceneExplorerDragDropEvent) => void;
 }> = (props) => {
     const classes = useStyles();
 
-    const { sections, entityCommandProviders, sectionCommandProviders, scene, selectedEntity } = props;
+    const { sections, entityCommandProviders, sectionCommandProviders, scene, selectedEntity, enableDragToReparent, onDragDrop } = props;
 
     const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
     const [sceneVersion, setSceneVersion] = useState(0);
     const scrollViewRef = useRef<ScrollToInterface>(null);
+    const [draggedEntity, setDraggedEntity] = useState<Nullable<EntityBase>>(null);
     // We only want to scroll to the selected item if it was externally selected (outside of SceneExplorer).
     const previousSelectedEntity = useRef(selectedEntity);
     const setSelectedEntity = (entity: unknown) => {
@@ -998,8 +1288,18 @@ export const SceneExplorer: FunctionComponent<{
         setOpenItems(new Set(openItems));
     };
 
+    // Stop drag events from propagating to parent elements (like file drop zones) when dragging within the tree
+    const handleContainerDragOver = useCallback(
+        (e: React.DragEvent) => {
+            if (draggedEntity) {
+                e.stopPropagation();
+            }
+        },
+        [draggedEntity]
+    );
+
     return (
-        <div className={classes.rootDiv}>
+        <div className={classes.rootDiv} onDragOver={handleContainerDragOver} onDragEnter={handleContainerDragOver}>
             <div className={classes.toolbarDiv}>
                 <SearchBox
                     className={classes.searchBox}
@@ -1056,6 +1356,16 @@ export const SceneExplorer: FunctionComponent<{
                                     commandProviders={entityCommandProviders as SceneExplorerCommandProvider<EntityBase>[]}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
+                                    enableDragToReparent={enableDragToReparent}
+                                    draggedEntity={draggedEntity}
+                                    setDraggedEntity={setDraggedEntity}
+                                    onEntityReparented={() => setSceneVersion((v) => v + 1)}
+                                    onDragDrop={onDragDrop}
+                                    onExpandEntity={(entity) => {
+                                        openItems.add(GetEntityId(entity));
+                                        setOpenItems(new Set(openItems));
+                                    }}
+                                    onSelectEntity={(entity) => setSelectedEntity?.(entity)}
                                 />
                             );
                         }
