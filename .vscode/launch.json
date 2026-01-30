@@ -550,14 +550,14 @@
             "type": "msedge",
             "request": "launch",
             "name": "Inspector v2 development (Edge)",
-            "url": "http://localhost:9001",
+            "url": "http://localhost:9002",
             "preLaunchTask": "Inspector v2 Test App"
         },
         {
             "type": "chrome",
             "request": "launch",
             "name": "Inspector v2 development (Chrome)",
-            "url": "http://localhost:9001",
+            "url": "http://localhost:9002",
             "preLaunchTask": "Inspector v2 Test App"
         }
     ],
