@@ -52,7 +52,13 @@ export const DebugServiceDefinition: ServiceDefinition<[IDebugService], [IShellS
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
-                return <>{scene && <DebugPane sections={sections} sectionContent={sectionContent} context={scene} />}</>;
+                return (
+                    <>
+                        {scene && (
+                            <DebugPane uniqueId="Debug" sections={sections} sectionContent={sectionContent} context={scene} enablePinnedItems enableHiddenItems enableSearchItems />
+                        )}
+                    </>
+                );
             },
         });
 

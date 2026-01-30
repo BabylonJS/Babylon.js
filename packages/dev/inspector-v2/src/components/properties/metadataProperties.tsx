@@ -181,7 +181,7 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
             <Collapse visible={canPreventObjectCorruption}>
                 <SwitchPropertyLine label="Prevent Object Corruption" value={isReadonly} onChange={setPreventObjectCorruption} />
             </Collapse>
-            <LineContainer>
+            <LineContainer uniqueId="MetadataTextarea">
                 <Textarea disabled={isReadonly} value={editedMetadata} onChange={setEditedMetadata} />
             </LineContainer>
             <ButtonLine
@@ -196,7 +196,7 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
                     setEditedMetadata(withGLTFExtras);
                 }}
             />
-            <LineContainer>
+            <LineContainer uniqueId="MetadataButtonDiv">
                 <div className={classes.buttonDiv}>
                     {/* TODO: gehalper - need to update our Button primitive to accommodate these scenarios. */}
                     <Button size={size} icon={<SaveRegular />} disabled={stringifiedMetadata === unformattedEditedMetadata} onClick={() => SaveMetadata(entity, editedMetadata)}>

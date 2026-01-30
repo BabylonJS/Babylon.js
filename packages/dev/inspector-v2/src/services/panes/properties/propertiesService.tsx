@@ -127,7 +127,16 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
 
                 return (
                     <PropertyContext.Provider value={{ onPropertyChanged }}>
-                        <PropertiesPane sections={sections} sectionContent={applicableContent} context={entity} sectionsRef={sectionsRef} />
+                        <PropertiesPane
+                            uniqueId="Properties"
+                            sections={sections}
+                            sectionContent={applicableContent}
+                            context={entity}
+                            sectionsRef={sectionsRef}
+                            enablePinnedItems
+                            enableHiddenItems
+                            enableSearchItems
+                        />
                     </PropertyContext.Provider>
                 );
             },
