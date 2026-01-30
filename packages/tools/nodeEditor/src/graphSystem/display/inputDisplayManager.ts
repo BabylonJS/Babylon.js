@@ -117,6 +117,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeMaterialSystemValues.CameraPosition:
                     value = "Camera position";
                     break;
+                case NodeMaterialSystemValues.CameraForward:
+                    value = "Camera forward";
+                    break;
                 case NodeMaterialSystemValues.FogColor:
                     value = "Fog color";
                     break;
