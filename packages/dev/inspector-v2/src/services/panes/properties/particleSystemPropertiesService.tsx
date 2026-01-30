@@ -183,7 +183,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
             ],
         });
 
-        const particleSystemNodeInputContent = propertiesService.addSectionContent({
+        const particleSystemNodeEditorContent = propertiesService.addSectionContent({
             key: "Node Particle System Inputs Properties",
             predicate: IsNodeParticleSystem,
             content: [
@@ -208,7 +208,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 particleSystemRotationContent.dispose();
                 particleSystemSpritesheetContent.dispose();
                 particleSystemNodeEmitterContent.dispose();
-                particleSystemNodeInputContent.dispose();
+                particleSystemNodeEditorContent.dispose();
             },
         };
     },

@@ -15,7 +15,6 @@ import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 
 /**
  * Display emitter-related properties for a node particle system.
- * This is a simplified version that only includes emitter selection (none/position/node).
  * @param props Component props.
  * @returns Render property lines.
  */
