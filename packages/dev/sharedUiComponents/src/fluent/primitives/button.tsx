@@ -1,11 +1,11 @@
-import { Button as FluentButton, makeStyles, Spinner, Tooltip } from "@fluentui/react-components";
+import { Button as FluentButton, makeStyles, Spinner } from "@fluentui/react-components";
 import type { MouseEvent } from "react";
 import { forwardRef, useCallback, useContext, useState } from "react";
 import type { FluentIcon } from "@fluentui/react-icons";
 import type { BasePrimitiveProps } from "./primitive";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { TokenMap } from "./utils";
-// import { Tooltip } from "./tooltip";
+import { Tooltip } from "./tooltip";
 
 const useButtonStyles = makeStyles({
     smallIcon: {
@@ -48,7 +48,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
     const iconClass = size === "small" ? classes.smallIcon : classes.mediumIcon;
 
     return (
-        <Tooltip content={title ?? ""} relationship="label">
+        <Tooltip content={title ?? ""}>
             <FluentButton
                 ref={ref}
                 iconPosition="after"
