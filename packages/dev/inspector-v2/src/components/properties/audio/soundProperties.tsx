@@ -73,6 +73,9 @@ export const SoundCommandProperties: FunctionComponent<{ sound: Sound }> = (prop
                 label="Volume"
                 functionPath="setVolume"
                 value={volume}
+                min={0}
+                max={5}
+                step={0.1}
                 onChange={(value) => {
                     sound.setVolume(value);
                 }}
