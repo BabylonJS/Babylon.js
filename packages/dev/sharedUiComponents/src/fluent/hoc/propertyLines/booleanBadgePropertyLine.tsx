@@ -10,8 +10,9 @@ import type { PropertyLineProps } from "./propertyLine";
  */
 export const BooleanBadgePropertyLine: FunctionComponent<PropertyLineProps<boolean> & ImmutablePrimitiveProps<boolean>> = (props) => {
     BooleanBadgePropertyLine.displayName = "BooleanBadgePropertyLine";
+    // For now assume BooleanBadge is used for readonly properties and disable copy. In future we could enable with a different copy string
     return (
-        <PropertyLine {...props}>
+        <PropertyLine {...props} onCopy={undefined}>
             <PresenceBadge status={props.value ? "available" : "do-not-disturb"} outOfOffice={true} />
         </PropertyLine>
     );

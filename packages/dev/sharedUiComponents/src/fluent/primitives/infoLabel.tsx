@@ -1,4 +1,5 @@
-import type { FunctionComponent } from "react";
+import type { FunctionComponent, MouseEvent, MouseEventHandler } from "react";
+import { useCallback } from "react";
 import { Body1Strong, InfoLabel as FluentInfoLabel, makeStyles } from "@fluentui/react-components";
 
 export type InfoLabelProps = {
@@ -10,6 +11,10 @@ export type InfoLabelProps = {
      * When true, applies flex layout styling to the label slot for proper truncation in flex containers
      */
     flexLabel?: boolean;
+    /**
+     * Handler for right-click context menu. Also triggers on Ctrl+click.
+     */
+    onContextMenu?: MouseEventHandler;
 };
 export type InfoLabelParentProps = Omit<InfoLabelProps, "htmlFor">;
 const useInfoLabelStyles = makeStyles({
@@ -38,11 +43,30 @@ export const InfoLabel: FunctionComponent<InfoLabelProps> = (props) => {
 
     const infoContent = props.info ? <div className={classes.infoPopup}>{props.info}</div> : undefined;
 
+    // Handle Ctrl+click as context menu action
+    const handleClick = useCallback(
+        (e: MouseEvent) => {
+            if (e.ctrlKey && props.onContextMenu) {
+                props.onContextMenu(e);
+            }
+        },
+        [props.onContextMenu]
+    );
+
     return infoContent ? (
-        <FluentInfoLabel htmlFor={props.htmlFor} info={infoContent} className={props.className} label={props.flexLabel ? { className: classes.labelSlot } : undefined}>
+        <FluentInfoLabel
+            htmlFor={props.htmlFor}
+            info={infoContent}
+            className={props.className}
+            label={props.flexLabel ? { className: classes.labelSlot } : undefined}
+            onContextMenu={props.onContextMenu}
+            onClick={handleClick}
+        >
             <Body1Strong className={classes.labelText}>{props.label}</Body1Strong>
         </FluentInfoLabel>
     ) : (
-        <Body1Strong className={props.className}>{props.label}</Body1Strong>
+        <Body1Strong className={props.className} onContextMenu={props.onContextMenu} onClick={handleClick}>
+            {props.label}
+        </Body1Strong>
     );
 };
