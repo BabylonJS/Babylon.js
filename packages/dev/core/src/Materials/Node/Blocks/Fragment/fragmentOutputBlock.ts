@@ -70,8 +70,8 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         embedded: true,
         options: [
             { label: "No color space", value: FragmentOutputBlockColorSpace.NoColorSpace },
-            { label: "Gamma", value: FragmentOutputBlockColorSpace.Gamma },
-            { label: "Linear", value: FragmentOutputBlockColorSpace.Linear },
+            { label: "To Gamma", value: FragmentOutputBlockColorSpace.Gamma },
+            { label: "To Linear", value: FragmentOutputBlockColorSpace.Linear },
         ],
     })
     public get colorSpace() {
