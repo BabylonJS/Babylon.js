@@ -20,6 +20,7 @@ import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLin
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { Color4 } from "core/Maths/math.color";
 
 let StoredEnvironmentTexture: Nullable<BaseTexture>;
 
@@ -220,6 +221,12 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
     const envTexture = useProperty(scene, "environmentTexture");
     const fogMode = useProperty(scene, "fogMode");
 
+    let backgroundTransparent = false;
+
+    const skyBoxMesh = scene.getMeshById("hdrSkyBox");
+    const skyBoxVisible = skyBoxMesh?.isVisible || false;
+    const skyBoxEnable = skyBoxMesh?.isEnabled() || false;
+
     return (
         <>
             <NumberDropdownPropertyLine
@@ -251,6 +258,26 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
             />
 
             <BoundProperty component={Color4PropertyLine} label="Clear Color" target={scene} propertyKey="clearColor" />
+
+            <SwitchPropertyLine
+                label="transparent"
+                value={backgroundTransparent}
+                onChange={(value) => {
+                    backgroundTransparent = value;
+                    const tempColor = scene.clearColor.clone();
+
+                    if (backgroundTransparent) {
+                        scene.clearColor = new Color4(tempColor.r, tempColor.g, tempColor.b, 0);
+                        skyBoxMesh?.setEnabled(false);
+                    } else {
+                        scene.clearColor = new Color4(tempColor.r, tempColor.g, tempColor.b, 1);
+                        if (skyBoxMesh) {
+                            skyBoxMesh.isVisible = skyBoxVisible;
+                            skyBoxMesh.setEnabled(skyBoxEnable);
+                        }
+                    }
+                }}
+            />
 
             <BoundProperty component={SwitchPropertyLine} label="Clear Color Enabled" target={scene} propertyKey="autoClear" />
 

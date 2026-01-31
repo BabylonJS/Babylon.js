@@ -163,6 +163,11 @@ export class Sandbox extends React.Component<
                 info.scene.clearColor = Color4.FromColor3(Color3.FromHexString(`#${this._clearColor}`), 1);
             }
 
+            const canvasParentDom = document.getElementById("canvasZone");
+            if (canvasParentDom) {
+                canvasParentDom.style.background = "repeating-conic-gradient(#d2d2d2 0% 25%, white 25% 50%) 50% / 20px 20px";
+            }
+
             if (this._camera != undefined) {
                 info.scene.activeCamera = info.scene.cameras[this._camera];
             }
