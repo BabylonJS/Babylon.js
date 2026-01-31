@@ -264,7 +264,7 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
             const itemElement = (
                 <div
                     className={classes.sectionItemContainer}
-                    style={isPinned ? { order: pinnedOrder } : undefined}
+                    style={isPinned ? { order: pinned?.index } : undefined}
                     onMouseMove={ctrlMode ? (event) => ctrlMode.set(event.ctrlKey) : undefined}
                     onMouseLeave={ctrlMode ? () => ctrlMode.set(false) : undefined}
                 >

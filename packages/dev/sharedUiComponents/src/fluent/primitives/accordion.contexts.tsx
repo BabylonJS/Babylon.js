@@ -31,7 +31,7 @@ class ListedItem<T> {
         return this._item;
     }
 
-    /** Gets the item index in the array. */
+    /** Gets the index of the item in the array. */
     get index() {
         return this._array.indexOf(this._item);
     }
