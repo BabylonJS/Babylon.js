@@ -5,6 +5,7 @@ import { createDOMRenderer, FluentProvider, Portal, RendererProvider } from "@fl
 import { useCallback, useEffect, useImperativeHandle, useState } from "react";
 
 import { Logger } from "core/Misc/logger";
+import { ToastProvider } from "../primitives/toast";
 
 function ToFeaturesString(options: ChildWindowOptions) {
     const { defaultWidth, defaultHeight, defaultLeft, defaultTop } = options;
@@ -268,7 +269,7 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
                     applyStylesToPortals={false}
                     targetDocument={mountNode.ownerDocument}
                 >
-                    {children}
+                    <ToastProvider>{children}</ToastProvider>
                 </FluentProvider>
             </RendererProvider>
         </Portal>
