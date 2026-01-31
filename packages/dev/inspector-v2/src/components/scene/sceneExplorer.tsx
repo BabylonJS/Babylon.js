@@ -4,8 +4,6 @@ import type { FluentIcon } from "@fluentui/react-icons";
 import type { ComponentType, FunctionComponent } from "react";
 
 import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
-import { Node } from "core/node";
-import { TransformNode } from "core/Meshes/transformNode";
 
 import { VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
 import {
@@ -120,7 +118,38 @@ export type SceneExplorerSection<T> = Readonly<{
      * A function that returns an array of observables for when entities are moved (e.g. re-parented) within the scene.
      */
     getEntityMovedObservables?: () => readonly IReadonlyObservable<T>[];
+
+    /**
+     * Optional drag-drop configuration for this section.
+     * If not provided, drag-drop is disabled for entities in this section.
+     */
+    dragDropConfig?: DragDropConfig<T>;
 }>;
+
+/**
+ * Configuration for drag-and-drop behavior within a Scene Explorer section.
+ * Allows sections to implement their own reparenting logic.
+ */
+export type DragDropConfig<T> = {
+    /**
+     * Determines if a specific entity can be dragged.
+     * Defaults to true for all entities if not provided.
+     */
+    canDrag?: (entity: T) => boolean;
+
+    /**
+     * Validates if dropping draggedEntity onto targetEntity at the given position would be valid.
+     * Use this for cycle detection and other validation logic.
+     * Defaults to true if not provided.
+     */
+    canDrop?: (draggedEntity: T, targetEntity: T, dropPosition: DropPosition) => boolean;
+
+    /**
+     * Performs the actual reparent/reorder operation.
+     * Called when a valid drop occurs and the default behavior is not prevented.
+     */
+    performDrop?: (draggedEntity: T, targetEntity: T, dropPosition: DropPosition) => void;
+};
 
 type InlineCommand = {
     /**
@@ -247,13 +276,6 @@ export type SceneExplorerDragDropEvent = {
     preventDefault: () => void;
 };
 
-/**
- * Check if dropping draggedEntity onto targetEntity would create a cycle in the hierarchy.
- */
-function wouldCreateCycle(dragged: Node, target: Node): boolean {
-    return target === dragged || target.isDescendantOf(dragged);
-}
-
 type SceneTreeItemData = { type: "scene"; scene: Scene };
 
 type SectionTreeItemData = {
@@ -270,6 +292,7 @@ type EntityTreeItemData = {
     children?: EntityTreeItemData[];
     icon?: ComponentType<{ entity: unknown }>;
     getDisplayInfo: () => EntityDisplayInfo;
+    dragDropConfig?: DragDropConfig<unknown>;
 };
 
 type TreeItemData = SceneTreeItemData | SectionTreeItemData | EntityTreeItemData;
@@ -632,11 +655,11 @@ const EntityTreeItem: FunctionComponent<{
     const classes = useStyles();
     const [compactMode] = useCompactMode();
 
-    // Drag and drop state for built-in Node reparenting
+    // Drag and drop state
     const [dropPosition, setDropPosition] = useState<DropPosition | null>(null);
     const isDragging = draggedEntity === entityItem.entity;
-    const isNode = entityItem.entity instanceof Node;
-    const canDrag = enableDragToReparent && isNode;
+    const { dragDropConfig } = entityItem;
+    const canDrag = enableDragToReparent && (dragDropConfig?.canDrag?.(entityItem.entity) ?? !!dragDropConfig);
 
     const handleDragStart = useCallback(
         (e: React.DragEvent) => {
@@ -662,8 +685,8 @@ const EntityTreeItem: FunctionComponent<{
                 return;
             }
 
-            // Both must be Nodes for reparenting
-            if (!(draggedEntity instanceof Node) || !(entityItem.entity instanceof Node)) {
+            // Both entities must have dragDropConfig for reparenting
+            if (!dragDropConfig) {
                 return;
             }
 
@@ -681,11 +704,9 @@ const EntityTreeItem: FunctionComponent<{
                 newDropPosition = "inside";
             }
 
-            // Determine the effective new parent for cycle check
-            const effectiveNewParent = newDropPosition === "inside" ? entityItem.entity : entityItem.entity.parent;
-
-            // Prevent dropping if it would create a cycle (dropping onto self or any descendant)
-            if (effectiveNewParent && wouldCreateCycle(draggedEntity, effectiveNewParent)) {
+            // Use section's canDrop callback to validate the drop (e.g., cycle detection)
+            const canDrop = dragDropConfig.canDrop?.(draggedEntity, entityItem.entity, newDropPosition) ?? true;
+            if (!canDrop) {
                 e.dataTransfer.dropEffect = "none";
                 setDropPosition(null);
                 return;
@@ -697,7 +718,7 @@ const EntityTreeItem: FunctionComponent<{
             e.dataTransfer.dropEffect = "move";
             setDropPosition(newDropPosition);
         },
-        [enableDragToReparent, draggedEntity, entityItem.entity]
+        [enableDragToReparent, draggedEntity, entityItem.entity, dragDropConfig]
     );
 
     const handleDragLeave = useCallback(() => {
@@ -711,21 +732,13 @@ const EntityTreeItem: FunctionComponent<{
             const currentDropPosition = dropPosition;
             setDropPosition(null);
 
-            if (!enableDragToReparent || !draggedEntity || !currentDropPosition) {
+            if (!enableDragToReparent || !draggedEntity || !currentDropPosition || !dragDropConfig) {
                 return;
             }
 
-            // Both must be Nodes for reparenting
-            if (!(draggedEntity instanceof Node) || !(entityItem.entity instanceof Node)) {
-                setDraggedEntity(null);
-                return;
-            }
-
-            // Determine the effective new parent for cycle check
-            const effectiveNewParent = currentDropPosition === "inside" ? entityItem.entity : entityItem.entity.parent;
-
-            // Prevent dropping if it would create a cycle (dropping onto self or any descendant)
-            if (effectiveNewParent && wouldCreateCycle(draggedEntity, effectiveNewParent)) {
+            // Use section's canDrop callback to validate the drop
+            const canDrop = dragDropConfig.canDrop?.(draggedEntity, entityItem.entity, currentDropPosition) ?? true;
+            if (!canDrop) {
                 setDraggedEntity(null);
                 return;
             }
@@ -750,57 +763,8 @@ const EntityTreeItem: FunctionComponent<{
                 return;
             }
 
-            // Determine the new parent based on drop position
-            let newParent: Nullable<Node>;
-            if (currentDropPosition === "inside") {
-                // Drop inside the target - target becomes the parent
-                newParent = entityItem.entity;
-            } else {
-                // Drop before/after the target - use target's parent (can be null for root)
-                newParent = entityItem.entity.parent;
-            }
-
-            // Perform the reparent, preserving world transform if possible
-            if (draggedEntity instanceof TransformNode) {
-                // setParent preserves the world position/rotation/scale
-                draggedEntity.setParent(newParent);
-            } else {
-                // Fallback for non-TransformNode nodes
-                draggedEntity.parent = newParent;
-            }
-
-            // Handle sibling ordering for before/after positions
-            if (currentDropPosition !== "inside") {
-                // Get the actual internal siblings array (not a copy)
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const siblings: Node[] | null = newParent ? (newParent as any)._children : draggedEntity.getScene().rootNodes;
-
-                if (siblings) {
-                    const draggedIndex = siblings.indexOf(draggedEntity);
-                    const targetIndex = siblings.indexOf(entityItem.entity);
-
-                    if (draggedIndex !== -1 && targetIndex !== -1 && draggedIndex !== targetIndex) {
-                        // Remove from current position
-                        siblings.splice(draggedIndex, 1);
-                        // Calculate new index (adjust if dragged was before target)
-                        let insertIndex = draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
-                        if (currentDropPosition === "after") {
-                            insertIndex++;
-                        }
-                        // Insert at new position
-                        siblings.splice(insertIndex, 0, draggedEntity);
-
-                        // For root nodes, update the _sceneRootNodesIndex for all affected nodes
-                        // since Babylon.js uses this index for fast removal via swap-and-pop
-                        if (!newParent) {
-                            for (let i = 0; i < siblings.length; i++) {
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                (siblings[i] as any)._nodeDataStorage._sceneRootNodesIndex = i;
-                            }
-                        }
-                    }
-                }
-            }
+            // Use section's performDrop callback to execute the reparent/reorder operation
+            dragDropConfig.performDrop?.(draggedEntity, entityItem.entity, currentDropPosition);
 
             // Notify that the entity was reparented so the tree can refresh
             onEntityReparented?.();
@@ -815,7 +779,7 @@ const EntityTreeItem: FunctionComponent<{
 
             setDraggedEntity(null);
         },
-        [enableDragToReparent, draggedEntity, entityItem.entity, dropPosition, setDraggedEntity, onEntityReparented, onDragDrop, onExpandEntity, onSelectEntity]
+        [enableDragToReparent, draggedEntity, entityItem.entity, dropPosition, setDraggedEntity, onEntityReparented, onDragDrop, onExpandEntity, onSelectEntity, dragDropConfig]
     );
 
     const hasChildren = !!entityItem.children?.length;
@@ -1085,6 +1049,7 @@ export const SceneExplorer: FunctionComponent<{
                     parent,
                     icon: section.entityIcon,
                     getDisplayInfo: () => section.getEntityDisplayInfo(entity),
+                    dragDropConfig: section.dragDropConfig as DragDropConfig<unknown> | undefined,
                 } as const satisfies EntityTreeItemData;
 
                 if (!parent.children) {
