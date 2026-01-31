@@ -1,6 +1,7 @@
 import type { FrameGraphPostProcessTask, IViewportLike } from "core/index";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { Constants } from "core/Engines/constants";
 
 /**
  * Base class for post process blocks.
@@ -62,6 +63,36 @@ export class NodeRenderGraphBaseWithPropertiesPostProcessBlock extends NodeRende
         this._frameGraphTask.depthTest = value;
     }
 
+    /** The alpha mode to use when applying the post process. */
+    @editableInPropertyPage("Alpha Mode", PropertyTypeForEdition.List, "BASE PROPERTIES", {
+        options: [
+            { label: "ALPHA_DISABLE", value: Constants.ALPHA_DISABLE },
+            { label: "Combine", value: Constants.ALPHA_COMBINE },
+            { label: "One One", value: Constants.ALPHA_ONEONE },
+            { label: "Add", value: Constants.ALPHA_ADD },
+            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
+            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
+            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
+            { label: "Pre-multiplied Porter Duff", value: Constants.ALPHA_PREMULTIPLIED_PORTERDUFF },
+            { label: "Screen Mode", value: Constants.ALPHA_SCREENMODE },
+            { label: "OneOne OneOne", value: Constants.ALPHA_ONEONE_ONEONE },
+            { label: "Alpha to Color", value: Constants.ALPHA_ALPHATOCOLOR },
+            { label: "Reverse One Minus", value: Constants.ALPHA_REVERSEONEMINUS },
+            { label: "Source+Dest * (1 - SourceAlpha)", value: Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA },
+            { label: "OneOne OneZero", value: Constants.ALPHA_ONEONE_ONEZERO },
+            { label: "Exclusion", value: Constants.ALPHA_EXCLUSION },
+            { label: "Layer Accumulate", value: Constants.ALPHA_LAYER_ACCUMULATE },
+        ],
+    })
+    public get alphaMode(): number {
+        return this._frameGraphTask.alphaMode;
+    }
+
+    public set alphaMode(value: number) {
+        this._frameGraphTask.alphaMode = value;
+    }
+
     private _setViewport() {
         if (this._useCurrentViewport) {
             this._frameGraphTask.viewport = null;
@@ -120,6 +151,7 @@ export class NodeRenderGraphBaseWithPropertiesPostProcessBlock extends NodeRende
         codes.push(`${this._codeVariableName}.disableColorWrite = ${this.disableColorWrite};`);
         codes.push(`${this._codeVariableName}.drawBackFace = ${this.drawBackFace};`);
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
+        codes.push(`${this._codeVariableName}.alphaMode = ${this.alphaMode};`);
         codes.push(`${this._codeVariableName}.viewport = ${this._useCurrentViewport ? "null" : this._useFullScreenViewport ? "undefined" : JSON.stringify(this._viewport)};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
@@ -131,6 +163,7 @@ export class NodeRenderGraphBaseWithPropertiesPostProcessBlock extends NodeRende
         serializationObject.disableColorWrite = this.disableColorWrite;
         serializationObject.drawBackFace = this.drawBackFace;
         serializationObject.depthTest = this.depthTest;
+        serializationObject.alphaMode = this.alphaMode;
         serializationObject.useCurrentViewport = this._useCurrentViewport;
         serializationObject.useFullScreenViewport = this._useFullScreenViewport;
         serializationObject.viewport = this._viewport;
@@ -144,6 +177,7 @@ export class NodeRenderGraphBaseWithPropertiesPostProcessBlock extends NodeRende
         this.disableColorWrite = !!serializationObject.disableColorWrite;
         this.drawBackFace = !!serializationObject.drawBackFace;
         this.depthTest = serializationObject.depthTest ?? true;
+        this.alphaMode = serializationObject.alphaMode ?? Constants.ALPHA_DISABLE;
         if (serializationObject.useCurrentViewport !== undefined) {
             this._useCurrentViewport = serializationObject.useCurrentViewport;
             this._useFullScreenViewport = serializationObject.useFullScreenViewport;
