@@ -147,48 +147,6 @@ const updatePackages = (version) => {
     });
 };
 
-const updatePackageLockPackage = (updateFunction) => {
-    try {
-        // get the package.json as js objects
-        const file = path.join(baseDirectory, "package-lock.json").replace(/\\/g, "/");
-        const data = fs.readFileSync(file, "utf-8").replace(/\r/gm, "");
-        const packageLockJson = JSON.parse(data);
-
-        Object.keys(packageLockJson.packages).forEach((packageKey) => {
-            if (
-                packageKey.indexOf("node_modules") === -1 &&
-                (packageKey.indexOf("public/@babylonjs") > -1 || packageKey.indexOf("public/umd/babylonjs") > -1 || packageKey.indexOf("public/glTF2Interface") > -1)
-            ) {
-                const package = packageLockJson.packages[packageKey];
-                updateFunction(package);
-            }
-        });
-
-        // write file
-        fs.writeFileSync(file, JSON.stringify(packageLockJson, null, 4) + "\n");
-    } catch (e) {
-        console.log("updatePackageLockPackage error", e);
-    }
-};
-
-const updatePackageLock = (version) => {
-    updatePackageLockPackage((package) => {
-        package.version = version;
-        updateDependencies(version, package.devDependencies);
-        updateDependencies(version, package.dependencies);
-    });
-
-    console.log(`Updating Babylon package lock json version to ${version}`);
-};
-
-const updatePackageLockPeerDependencies = (version) => {
-    updatePackageLockPackage((package) => {
-        updateDependencies(version, package.peerDependencies);
-    });
-
-    console.log(`Updating Babylon package lock json peer dependencies to ${version}`);
-};
-
 async function main() {
     // Gets the current version to update
     const previousVersion = getCurrentVersion();
@@ -211,8 +169,6 @@ async function main() {
 
     // update package.json
     updatePackages(version);
-    // update package-lock.json
-    updatePackageLock(version);
     // update engine version
     await updateEngineVersion(version);
     // generate changelog
@@ -222,7 +178,6 @@ async function main() {
     // if major, update peer dependencies
     if (config.versionDefinition === "major") {
         updatePeerDependencies(`^${version}`);
-        updatePackageLockPeerDependencies(`^${version}`);
     }
     if (dryRun) {
         console.log("skipping", `git commit -m "Version update ${version}"`);
