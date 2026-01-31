@@ -60,13 +60,29 @@ const updateDependencies = (version, dependencies) => {
             if (dependency.startsWith("babylonjs") || dependency.startsWith("@babylonjs")) {
                 // Cheap targetted way for now to update when needed
                 const currentVersion = dependencies[dependency];
-                if (currentVersion.startsWith("^")) {
-                    version = "^" + version;
-                } else if (currentVersion.startsWith("~")) {
-                    version = "~" + version;
+
+                // Target version is the requested one by default
+                let newVersion = version;
+
+                // If the new version is containing a modifier (~, ^...), We need to keep it.
+                // If not, we reuse the current modifier if any.
+                if (!isNaN(parseInt(version[0], 10))) {
+                    if (currentVersion.startsWith("^")) {
+                        newVersion = "^" + newVersion;
+                    } else if (currentVersion.startsWith("~")) {
+                        newVersion = "~" + newVersion;
+                    }
                 }
 
-                dependencies[dependency] = version;
+                // If the dependency contains the version already do not change anything
+                // Else if the dependency contains several versions but this one, adds the new one in
+                if (currentVersion.indexOf(newVersion) !== -1) {
+                    newVersion = currentVersion;
+                } else if (currentVersion.indexOf(" || ") > -1) {
+                    newVersion = currentVersion + " || " + newVersion;
+                }
+
+                dependencies[dependency] = newVersion;
                 changed = true;
             }
         });
