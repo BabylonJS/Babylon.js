@@ -14,7 +14,7 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { ExtensibleAccordion } from "../../components/extensibleAccordion";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
-import { useCompactMode, useSidePaneDockOverrides } from "../../hooks/settingsHooks";
+import { useCompactMode, useSidePaneDockOverrides, useDisableCopy } from "../../hooks/settingsHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { SettingsContextIdentity } from "../settingsContext";
@@ -122,6 +122,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
 
                 const [compactMode, setCompactMode] = useCompactMode();
+                const [disableCopy, setDisableCopy] = useDisableCopy();
                 const [, , resetSidePaneLayout] = useSidePaneDockOverrides();
 
                 return (
@@ -167,6 +168,14 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                                         value={settings.showPropertiesOnEntitySelection}
                                         onChange={(checked) => {
                                             settings.showPropertiesOnEntitySelection = checked;
+                                        }}
+                                    />
+                                    <SwitchPropertyLine
+                                        label="Disable Copy Button"
+                                        description="Disables the copy to clipboard button on property lines. You can still Ctrl+Click on the label to copy."
+                                        value={disableCopy}
+                                        onChange={(checked) => {
+                                            setDisableCopy(checked);
                                         }}
                                     />
                                     <ButtonLine label="Reset Layout" onClick={resetSidePaneLayout} />

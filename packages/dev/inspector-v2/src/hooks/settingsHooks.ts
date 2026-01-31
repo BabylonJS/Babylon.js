@@ -8,6 +8,7 @@ import { useObservableState } from "./observableHooks";
 
 const CompactModeStorageKey = "Babylon/Settings/IsCompactMode";
 const SidePaneDockOverridesStorageKey = "Babylon/Settings/SidePaneDockOverrides";
+const DisableCopyStorageKey = "Babylon/Settings/DisableCopy";
 
 function useSetting<T>(storageKey: string, defaultValue: T) {
     const [value, setValue, resetValue] = useLocalStorage<T>(storageKey, defaultValue);
@@ -25,6 +26,14 @@ function useSetting<T>(storageKey: string, defaultValue: T) {
  */
 export function useCompactMode() {
     return useSetting<boolean>(CompactModeStorageKey, !matchMedia("(pointer: coarse)").matches);
+}
+
+/**
+ * Gets the disable copy setting.
+ * @returns A tuple containing the current disable copy value, a function to update it, and a function to reset it.
+ */
+export function useDisableCopy() {
+    return useSetting<boolean>(DisableCopyStorageKey, false);
 }
 
 /**
