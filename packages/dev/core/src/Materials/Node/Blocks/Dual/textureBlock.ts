@@ -39,6 +39,19 @@ export class TextureBlock extends NodeMaterialBlock {
     private _imageSource: Nullable<ImageSourceBlock | PrePassTextureBlock>;
 
     protected _texture: Nullable<Texture>;
+
+    /**
+     * Gets or sets a boolean indicating if the block is used in fragment shader only
+     * If false the system will allow optimizations to use it in vertex shader when possible for the uv computation
+     */
+    public get fragmentOnly(): boolean {
+        return this._fragmentOnly;
+    }
+
+    public set fragmentOnly(value: boolean) {
+        this._fragmentOnly = value;
+    }
+
     /**
      * Gets or sets the texture associated with the node
      */
