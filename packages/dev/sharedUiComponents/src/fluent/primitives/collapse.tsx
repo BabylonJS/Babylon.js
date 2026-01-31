@@ -29,8 +29,12 @@ const useCollapseStyles = makeStyles({
 export const Collapse: FunctionComponent<PropsWithChildren<CollapseProps>> = (props) => {
     Collapse.displayName = "Collapse";
     const classes = useCollapseStyles();
+
+    // Since portalling breaks DOM hierarchy, `unmountOnExit` is required to ensure descendants are unmounted when the logical ancestor collapses.
+    // If this is a breaking change, the alternative would be creating a context to pass the `visible` state down to the descendants.
+
     return (
-        <FluentCollapse visible={props.visible} orientation={props.orientation}>
+        <FluentCollapse visible={props.visible} orientation={props.orientation} unmountOnExit>
             <div className={`${classes.collapseContent} ${props.orientation === "horizontal" ? classes.horizontal : classes.vertical}`}>{props.children}</div>
         </FluentCollapse>
     );
