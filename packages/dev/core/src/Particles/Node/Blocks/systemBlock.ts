@@ -1,3 +1,4 @@
+import type { Nullable } from "core/types";
 import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
@@ -13,6 +14,11 @@ import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { _TriggerSubEmitter } from "core/Particles/Node/Blocks/Triggers/triggerTools";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { ParticleGradientBlock } from "./particleGradientBlock";
+
+type CustomShader = {
+    shaderPath: { fragmentElement: string };
+    shaderOptions: { uniforms: string[]; samplers: string[]; defines: string[] };
+};
 
 /**
  * Block used to get a system of particles
@@ -113,6 +119,12 @@ export class SystemBlock extends NodeParticleBlock {
 
     /** @internal */
     public _internalId = SystemBlock._IdCounter++;
+
+    /**
+     * Gets or sets the custom shader configuration used to render the particles.
+     * This can be used to set your own shader to render the particle system.
+     */
+    public customShader: Nullable<CustomShader> = null;
 
     /**
      * Create a new SystemBlock
@@ -251,6 +263,22 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem.disposeOnStop = this.disposeOnStop;
         particleSystem.emitter = (this.emitterPosition.getConnectedValue(state) as Vector3) ?? Vector3.Zero();
 
+        // Apply custom shader if defined
+        if (this.customShader) {
+            const engine = particleSystem.getScene()?.getEngine();
+            if (engine?.createEffectForParticles) {
+                const defines: string = this.customShader.shaderOptions.defines.length > 0 ? this.customShader.shaderOptions.defines.join("\n") : "";
+                const effect = engine.createEffectForParticles(
+                    this.customShader.shaderPath.fragmentElement,
+                    this.customShader.shaderOptions.uniforms,
+                    this.customShader.shaderOptions.samplers,
+                    defines
+                );
+                particleSystem.setCustomEffect(effect, 0);
+                particleSystem.customShader = this.customShader;
+            }
+        }
+
         // The emit rate can vary if it is connected to another block like a gradient
         particleSystem._calculateEmitRate = () => {
             state.systemContext = particleSystem;
@@ -343,6 +371,7 @@ export class SystemBlock extends NodeParticleBlock {
         serializationObject.disposeOnStop = this.disposeOnStop;
         serializationObject.doNoStart = this.doNoStart;
         serializationObject.startDelay = this.startDelay;
+        serializationObject.customShader = this.customShader;
 
         return serializationObject;
     }
@@ -375,6 +404,10 @@ export class SystemBlock extends NodeParticleBlock {
 
         if (serializationObject.startDelay !== undefined) {
             this.startDelay = serializationObject.startDelay;
+        }
+
+        if (serializationObject.customShader !== undefined) {
+            this.customShader = serializationObject.customShader;
         }
     }
 }

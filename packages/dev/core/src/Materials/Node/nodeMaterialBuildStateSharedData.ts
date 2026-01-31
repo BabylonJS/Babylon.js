@@ -197,7 +197,7 @@ export class NodeMaterialBuildStateSharedData {
      * @param message defines the error message to push
      */
     public raiseBuildError(message: string) {
-        if (this.checks.customErrors.indexOf(message) !== -1) {
+        if (this.checks.customErrors.indexOf(message) === -1) {
             this.checks.customErrors.push(message);
         }
     }

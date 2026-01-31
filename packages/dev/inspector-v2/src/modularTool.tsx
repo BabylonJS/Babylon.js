@@ -29,6 +29,7 @@ import { createRoot } from "react-dom/client";
 import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
 import { Theme } from "./components/theme";
+import { ToastProvider } from "shared-ui-components/fluent/primitives/toast";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
 import { SetThemeMode } from "./hooks/themeHooks";
@@ -223,7 +224,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         return (
             <ExtensionManagerContext.Provider value={extensionManagerContext}>
                 <Theme className={classes.app}>
-                    <>
+                    <ToastProvider>
                         <Dialog open={!!requiredExtensions} modalType="alert">
                             <DialogSurface>
                                 <DialogBody>
@@ -273,7 +274,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                         <Suspense fallback={<Spinner className={classes.spinner} />}>
                             <Content />
                         </Suspense>
-                    </>
+                    </ToastProvider>
                 </Theme>
             </ExtensionManagerContext.Provider>
         );
