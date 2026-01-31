@@ -771,7 +771,7 @@ Mesh.prototype._processInstancedBuffers = function (visibleInstances: Nullable<I
         // Update data buffer
         let offset = 0;
         if (renderSelf) {
-            const value = this.instancedBuffers[kind];
+            const value = this.instancedBuffers[kind] ?? 0;
 
             if (value.toArray) {
                 value.toArray(data, offset);
@@ -787,7 +787,7 @@ Mesh.prototype._processInstancedBuffers = function (visibleInstances: Nullable<I
         for (let instanceIndex = 0; instanceIndex < instanceCount; instanceIndex++) {
             const instance = visibleInstances![instanceIndex];
 
-            const value = instance.instancedBuffers[kind];
+            const value = instance.instancedBuffers[kind] ?? 0;
 
             if (value.toArray) {
                 value.toArray(data, offset);
