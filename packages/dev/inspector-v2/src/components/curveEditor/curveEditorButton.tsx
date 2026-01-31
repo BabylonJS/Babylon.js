@@ -38,7 +38,7 @@ export type CurveEditorButtonProps = {
  * @returns The button component
  */
 export const CurveEditorButton: FunctionComponent<CurveEditorButtonProps> = (props) => {
-    const { scene, target, animations, rootAnimationGroup, title, useTargetAnimations, label = "Edit Curves" } = props;
+    const { scene, target, animations, rootAnimationGroup, title, useTargetAnimations, label = "Open Animation Curve Editor" } = props;
 
     const childWindow = useRef<ChildWindow>(null);
 

@@ -94,8 +94,13 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
     const [isPointerDown, setIsPointerDown] = useState(false);
     const [pointerStart, setPointerStart] = useState({ x: 0, y: 0 });
 
-    // Re-render when active animation or range changes - use counter to invalidate memoized curves
-    const animationVersion = useObservableState(() => Date.now(), observables.onActiveAnimationChanged, observables.onRangeUpdated);
+    // Re-render when active animation or range changes
+    // useCallback stabilizes the accessor to prevent infinite re-render loops
+    useObservableState(
+        useCallback(() => ({}), []),
+        observables.onActiveAnimationChanged,
+        observables.onRangeUpdated
+    );
 
     // Ensure dimensions are valid
     const safeWidth = Math.max(1, width);
@@ -326,7 +331,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         }
 
         return result;
-    }, [state.activeAnimations, state.activeChannels, animationVersion]);
+    }, [state.activeAnimations, state.activeChannels]);
 
     // Calculate value range
     const valueRange = useMemo(() => {

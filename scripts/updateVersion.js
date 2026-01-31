@@ -1,38 +1,15 @@
 /* eslint-disable no-console */
-const exec = require("child_process").exec;
 const path = require("path");
 const fs = require("fs");
 const glob = require("glob");
 const generateChangelog = require("./generateChangelog");
+const { runCommand, getCurrentVersion } = require("./versionUtils");
 
 const branchName = process.argv[2];
-const dryRun = process.argv[3];
 
 const config = require(path.resolve("./.build/config.json"));
 
 const baseDirectory = path.resolve(".");
-
-async function runCommand(command) {
-    return new Promise((resolve, reject) => {
-        console.log(command);
-        exec(command, function (error, stdout, stderr) {
-            if (error || typeof stderr !== "string") {
-                console.log(error);
-                return reject(error || stderr);
-            }
-            console.log(stderr || stdout);
-            return resolve(stderr || stdout);
-        });
-    });
-}
-
-const getCurrentVersion = () => {
-    // get @dev/core package.json
-    const rawdata = fs.readFileSync(path.join(baseDirectory, "packages", "public", "umd", "babylonjs", "package.json"), "utf-8");
-    const packageJson = JSON.parse(rawdata);
-    const version = packageJson.version;
-    return version;
-};
 
 const updateEngineVersion = async (version) => {
     // get thinEngine.ts
@@ -83,13 +60,29 @@ const updateDependencies = (version, dependencies) => {
             if (dependency.startsWith("babylonjs") || dependency.startsWith("@babylonjs")) {
                 // Cheap targetted way for now to update when needed
                 const currentVersion = dependencies[dependency];
-                if (currentVersion.startsWith("^")) {
-                    version = "^" + version;
-                } else if (currentVersion.startsWith("~")) {
-                    version = "~" + version;
+
+                // Target version is the requested one by default
+                let newVersion = version;
+
+                // If the new version is containing a modifier (~, ^...), We need to keep it.
+                // If not, we reuse the current modifier if any.
+                if (!isNaN(parseInt(version[0], 10))) {
+                    if (currentVersion.startsWith("^")) {
+                        newVersion = "^" + newVersion;
+                    } else if (currentVersion.startsWith("~")) {
+                        newVersion = "~" + newVersion;
+                    }
                 }
 
-                dependencies[dependency] = version;
+                // If the dependency contains the version already do not change anything
+                // Else if the dependency contains several versions but this one, adds the new one in
+                if (currentVersion.indexOf(newVersion) !== -1) {
+                    newVersion = currentVersion;
+                } else if (currentVersion.indexOf(" || ") > -1) {
+                    newVersion = currentVersion + " || " + newVersion;
+                }
+
+                dependencies[dependency] = newVersion;
                 changed = true;
             }
         });
@@ -128,7 +121,7 @@ const updatePackages = (version) => {
             const packageJson = JSON.parse(data);
 
             const name = packageJson.name;
-            if (!packageJson.private && (name.startsWith("babylonjs") || name.startsWith("@babylonjs"))) {
+            if (name.startsWith("babylonjs") || name.startsWith("@babylonjs")) {
                 // if not private bump the revision.
                 packageJson.version = version;
             }
@@ -145,52 +138,6 @@ const updatePackages = (version) => {
             console.log("updatePackages error", e);
         }
     });
-};
-
-const updatePackageLockPackage = (updateFunction) => {
-    try {
-        // get the package.json as js objects
-        const file = path.join(baseDirectory, "package-lock.json").replace(/\\/g, "/");
-        const data = fs.readFileSync(file, "utf-8").replace(/\r/gm, "");
-        const packageLockJson = JSON.parse(data);
-
-        Object.keys(packageLockJson.packages).forEach((packageKey) => {
-            if (
-                packageKey.indexOf("node_modules") === -1 &&
-                packageKey !== "@babylonjs/test-tools" &&
-                packageKey !== "packages/public/umd/babylonjs-testproject" &&
-                packageKey !== "packages/public/@babylonjs/inspector" &&
-                packageKey !== "packages/public/umd/babylonjs-inspector" &&
-                (packageKey.indexOf("public/@babylonjs") > -1 || packageKey.indexOf("public/umd/babylonjs") > -1 || packageKey.indexOf("public/glTF2Interface") > -1)
-            ) {
-                const package = packageLockJson.packages[packageKey];
-                updateFunction(package);
-            }
-        });
-
-        // write file
-        fs.writeFileSync(file, JSON.stringify(packageLockJson, null, 4));
-    } catch (e) {
-        console.log("updatePackageLockPackage error", e);
-    }
-};
-
-const updatePackageLock = (version) => {
-    updatePackageLockPackage((package) => {
-        package.version = version;
-        updateDependencies(version, package.devDependencies);
-        updateDependencies(version, package.dependencies);
-    });
-
-    console.log(`Updating Babylon package lock json version to ${version}`);
-};
-
-const updatePackageLockPeerDependencies = (version) => {
-    updatePackageLockPackage((package) => {
-        updateDependencies(version, package.peerDependencies);
-    });
-
-    console.log(`Updating Babylon package lock json peer dependencies to ${version}`);
 };
 
 async function main() {
@@ -215,8 +162,6 @@ async function main() {
 
     // update package.json
     updatePackages(version);
-    // update package-lock.json
-    updatePackageLock(version);
     // update engine version
     await updateEngineVersion(version);
     // generate changelog
@@ -226,15 +171,6 @@ async function main() {
     // if major, update peer dependencies
     if (config.versionDefinition === "major") {
         updatePeerDependencies(`^${version}`);
-        updatePackageLockPeerDependencies(`^${version}`);
-    }
-    if (dryRun) {
-        console.log("skipping", `git commit -m "Version update ${version}"`);
-        console.log("skipping", `git tag -a ${version} -m ${version}`);
-    } else {
-        await runCommand("git add .");
-        await runCommand(`git commit -m "Version update ${version}"`);
-        await runCommand(`git tag -a ${version} -m ${version}`);
     }
 }
 if (!branchName) {

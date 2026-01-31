@@ -7,8 +7,8 @@ import {
     CopyRegular,
     Copy16Regular,
 } from "@fluentui/react-icons";
-import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
-import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
+import type { FunctionComponent, HTMLProps, PropsWithChildren, MouseEvent } from "react";
+import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef, useCallback } from "react";
 import { Collapse } from "../../primitives/collapse";
 import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
 import { ToolContext } from "../fluentToolWrapper";
@@ -19,6 +19,7 @@ import { Button } from "../../primitives/button";
 import { CustomTokens, TokenMap } from "../../primitives/utils";
 import { InfoLabel } from "../../primitives/infoLabel";
 import { Tooltip } from "../../primitives/tooltip";
+import { useToast } from "../../primitives/toast";
 
 const usePropertyLineStyles = makeStyles({
     baseLine: {
@@ -149,6 +150,23 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     const [expanded, setExpanded] = useState("expandByDefault" in props ? props.expandByDefault : false);
     const cachedVal = useRef(nullable ? props.value : null);
 
+    const { showToast } = useToast();
+
+    const handleCopy = useCallback(() => {
+        if (onCopy) {
+            copyCommandToClipboard(onCopy());
+            showToast("Copied property to clipboard");
+        }
+    }, [onCopy, showToast]);
+
+    const handleContextMenu = useCallback(
+        (e: MouseEvent) => {
+            e.preventDefault();
+            handleCopy();
+        },
+        [handleCopy]
+    );
+
     const description = props.docLink ? <Link url={props.docLink} value={props.description ?? "Docs"} /> : props.description ? <Body1>{props.description}</Body1> : undefined;
 
     // Process children to handle nullable state -- creating component in disabled state with default value in lieu of null value
@@ -165,7 +183,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     return (
         <LineContainer ref={ref}>
             <div className={classes.baseLine}>
-                <InfoLabel className={classes.infoLabel} htmlFor="property" info={description} label={label} flexLabel />
+                <InfoLabel className={classes.infoLabel} htmlFor="property" info={description} label={label} flexLabel onContextMenu={onCopy ? handleContextMenu : undefined} />
                 <div className={classes.rightContent} id="property">
                     {expandedContent && (
                         <ToggleButton
@@ -201,12 +219,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                     <div className={classes.childWrapper}>{processedChildren}</div>
                     {onCopy && !disableCopy && (
                         <Tooltip content="Copy to Clipboard">
-                            <Button
-                                className={classes.copy}
-                                appearance="transparent"
-                                icon={size === "small" ? Copy16Regular : CopyRegular}
-                                onClick={() => copyCommandToClipboard(onCopy())}
-                            />
+                            <Button className={classes.copy} appearance="transparent" icon={size === "small" ? Copy16Regular : CopyRegular} onClick={handleCopy} />
                         </Tooltip>
                     )}
                 </div>

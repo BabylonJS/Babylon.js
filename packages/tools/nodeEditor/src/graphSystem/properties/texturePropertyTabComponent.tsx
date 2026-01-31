@@ -248,6 +248,15 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                 {GetGeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent
+                        label="Fragment only"
+                        propertyName="fragmentOnly"
+                        target={block}
+                        onValueChanged={() => {
+                            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                        }}
+                    />
+                    <CheckBoxLineComponent
                         label="Auto select UV"
                         propertyName="autoSelectUV"
                         target={block}

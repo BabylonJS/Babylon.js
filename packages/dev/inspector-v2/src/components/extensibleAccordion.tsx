@@ -6,7 +6,7 @@ import { makeStyles } from "@fluentui/react-components";
 import { Children, isValidElement, useImperativeHandle, useLayoutEffect, useMemo, useState } from "react";
 
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
-import { CompactModeContextProvider } from "../components/compactModeContextProvider";
+import { UXContextProvider } from "../components/uxContextProvider";
 
 function AsReadonlyArray<T>(array: T[]): readonly T[] {
     return array;
@@ -199,7 +199,7 @@ export function ExtensibleAccordion<ContextT = unknown>(
     return (
         <div className={classes.rootDiv}>
             {visibleSections.length > -1 && (
-                <CompactModeContextProvider>
+                <UXContextProvider>
                     <Accordion highlightSections={highlightSections}>
                         {...visibleSections.map((section) => {
                             return (
@@ -209,7 +209,7 @@ export function ExtensibleAccordion<ContextT = unknown>(
                             );
                         })}
                     </Accordion>
-                </CompactModeContextProvider>
+                </UXContextProvider>
             )}
         </div>
     );

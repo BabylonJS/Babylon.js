@@ -234,6 +234,18 @@ export class GLTFLoader implements IGLTFLoader {
     public _pbrMaterialImpl: Nullable<Readonly<PBRMaterialImplementation>> | false = null;
 
     /**
+     * Test if the given material is of the same type as the one used by the loader
+     * @param material The material to test
+     * @returns true if the material is of the same type, false otherwise
+     */
+    public isMatchingMaterialType(material: Nullable<Material>): boolean {
+        if (material && this._pbrMaterialImpl) {
+            return material instanceof this._pbrMaterialImpl.materialClass;
+        }
+        return false;
+    }
+
+    /**
      * The default glTF sampler.
      */
     public static readonly DefaultSampler: ISampler = { index: -1 };

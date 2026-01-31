@@ -78,6 +78,17 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
     public depthTest = true;
 
     /**
+     * The alpha mode to use when applying the post process (default is ALPHA_DISABLE).
+     */
+    public get alphaMode(): number {
+        return this.postProcess.alphaMode;
+    }
+
+    public set alphaMode(value: number) {
+        this.postProcess.alphaMode = value;
+    }
+
+    /**
      * The viewport to use when applying the post process.
      * If set to null, the currently active viewport is used.
      * If undefined (default), the viewport is reset to a full screen viewport before applying the post process.
