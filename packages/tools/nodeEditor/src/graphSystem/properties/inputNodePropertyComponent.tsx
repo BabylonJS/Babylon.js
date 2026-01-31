@@ -236,7 +236,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                systemValuesOptions = [{ label: "Camera position", value: NodeMaterialSystemValues.CameraPosition }];
+                systemValuesOptions = [
+                    { label: "Camera position", value: NodeMaterialSystemValues.CameraPosition },
+                    { label: "Camera forward", value: NodeMaterialSystemValues.CameraForward },
+                ];
                 attributeOptions = [
                     { label: "position", value: "position" },
                     { label: "normal", value: "normal" },
