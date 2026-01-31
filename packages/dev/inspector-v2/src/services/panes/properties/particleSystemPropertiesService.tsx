@@ -83,7 +83,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
 
         const particleSystemEmitterContent = propertiesService.addSectionContent({
             key: "Particle System Emitter Properties",
-            predicate: IsNonNodeParticleSystem,
+            predicate: IsParticleSystem,
             content: [
                 {
                     section: "Emitter",
@@ -170,7 +170,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
             ],
         });
 
-        const particleSystemNodeContent = propertiesService.addSectionContent({
+        const particleSystemNodeEditorContent = propertiesService.addSectionContent({
             key: "Node Particle System Inputs Properties",
             predicate: IsNodeParticleSystem,
             content: [
@@ -194,7 +194,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
                 particleSystemColorContent.dispose();
                 particleSystemRotationContent.dispose();
                 particleSystemSpritesheetContent.dispose();
-                particleSystemNodeContent.dispose();
+                particleSystemNodeEditorContent.dispose();
             },
         };
     },

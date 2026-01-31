@@ -1,12 +1,12 @@
 import type { FunctionComponent } from "react";
 import type { AbstractMesh } from "core/index";
-import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import type { ISelectionService } from "../../../services/selectionService";
 
 import { useEffect, useMemo, useState } from "react";
 
 import { Vector3 } from "core/Maths/math.vector";
+import { ParticleSystem } from "core/Particles/particleSystem";
 import { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
 import { ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
 import { CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
@@ -33,6 +33,9 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
     const { particleSystem: system, selectionService } = props;
 
     const scene = system.getScene();
+
+    // Node-generated particle systems don't expose emitter type configuration
+    const isNodeGenerated = system instanceof ParticleSystem && system.isNodeGenerated;
 
     type EmitterSelectionValue = "none" | "position" | `node:${number}`;
 
@@ -199,164 +202,208 @@ export const ParticleSystemEmitterProperties: FunctionComponent<{ particleSystem
                 <Property component={LinkToEntityPropertyLine} label="Entity" propertyPath="emitter" entity={emitter} selectionService={selectionService} />
             )}
 
-            <Property
-                component={StringDropdownPropertyLine}
-                label="Type"
-                propertyPath="emitterType"
-                value={emitterTypeKey}
-                options={[
-                    { label: "Box", value: "box" },
-                    { label: "Cone", value: "cone" },
-                    { label: "Cylinder", value: "cylinder" },
-                    { label: "Hemispheric", value: "hemispheric" },
-                    { label: "Point", value: "point" },
-                    { label: "Mesh", value: "mesh" },
-                    { label: "Sphere", value: "sphere" },
-                ]}
-                onChange={(value) => {
-                    const next = value as EmitterTypeKey;
-                    setEmitterTypeKey(next);
-
-                    // Update the engine by swapping the particleEmitterType instance to match the selected key.
-                    switch (next) {
-                        case "box":
-                            system.createBoxEmitter(new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(-0.5, -0.5, -0.5), new Vector3(0.5, 0.5, 0.5));
-                            break;
-                        case "sphere":
-                            system.createSphereEmitter(1, 1);
-                            break;
-                        case "cone":
-                            system.createConeEmitter(1, Math.PI / 4);
-                            break;
-                        case "cylinder":
-                            system.createCylinderEmitter(1, 1, 1, 0);
-                            break;
-                        case "hemispheric":
-                            system.createHemisphericEmitter(1, 1);
-                            break;
-                        case "point":
-                            system.createPointEmitter(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
-                            break;
-                        case "mesh": {
-                            // Default to the first mesh in the scene when available, then allow changes via "Source".
-                            const defaultMesh = scene?.meshes?.[0] ?? null;
-                            system.particleEmitterType = new MeshParticleEmitter(defaultMesh);
-                            break;
-                        }
-                    }
-                }}
-            />
-
-            {particleEmitterType instanceof MeshParticleEmitter && (
+            {!isNodeGenerated && (
                 <>
-                    {scene && scene.meshes.length > 0 ? (
-                        <Property
-                            component={StringDropdownPropertyLine}
-                            propertyPath="source"
-                            label="Source"
-                            value={particleEmitterType.mesh ? `mesh:${particleEmitterType.mesh.uniqueId}` : `mesh:${scene.meshes[0].uniqueId}`}
-                            options={scene.meshes.map((mesh) => {
-                                const uniqueId = mesh.uniqueId;
-                                const name = mesh.name ?? "(unnamed)";
-                                const label = `${name} (#${uniqueId})`;
-                                return {
-                                    label,
-                                    value: `mesh:${uniqueId}`,
-                                };
-                            })}
-                            onChange={(value) => {
-                                const next = String(value);
-                                const uniqueIdText = next.replace("mesh:", "");
-                                const uniqueId = Number(uniqueIdText);
-                                const mesh = scene.meshes.find((candidate) => candidate.uniqueId === uniqueId) ?? null;
-                                particleEmitterType.mesh = mesh;
-                            }}
-                        />
-                    ) : (
-                        <Property component={TextPropertyLine} propertyPath="source" label="Source" value="No meshes in scene." />
+                    <Property
+                        component={StringDropdownPropertyLine}
+                        label="Type"
+                        propertyPath="emitterType"
+                        value={emitterTypeKey}
+                        options={[
+                            { label: "Box", value: "box" },
+                            { label: "Cone", value: "cone" },
+                            { label: "Cylinder", value: "cylinder" },
+                            { label: "Hemispheric", value: "hemispheric" },
+                            { label: "Point", value: "point" },
+                            { label: "Mesh", value: "mesh" },
+                            { label: "Sphere", value: "sphere" },
+                        ]}
+                        onChange={(value) => {
+                            const next = value as EmitterTypeKey;
+                            setEmitterTypeKey(next);
+
+                            // Update the engine by swapping the particleEmitterType instance to match the selected key.
+                            switch (next) {
+                                case "box":
+                                    system.createBoxEmitter(new Vector3(0, 1, 0), new Vector3(0, 1, 0), new Vector3(-0.5, -0.5, -0.5), new Vector3(0.5, 0.5, 0.5));
+                                    break;
+                                case "sphere":
+                                    system.createSphereEmitter(1, 1);
+                                    break;
+                                case "cone":
+                                    system.createConeEmitter(1, Math.PI / 4);
+                                    break;
+                                case "cylinder":
+                                    system.createCylinderEmitter(1, 1, 1, 0);
+                                    break;
+                                case "hemispheric":
+                                    system.createHemisphericEmitter(1, 1);
+                                    break;
+                                case "point":
+                                    system.createPointEmitter(new Vector3(0, 1, 0), new Vector3(0, 1, 0));
+                                    break;
+                                case "mesh": {
+                                    // Default to the first mesh in the scene when available, then allow changes via "Source".
+                                    const defaultMesh = scene?.meshes?.[0] ?? null;
+                                    system.particleEmitterType = new MeshParticleEmitter(defaultMesh);
+                                    break;
+                                }
+                            }
+                        }}
+                    />
+
+                    {particleEmitterType instanceof MeshParticleEmitter && (
+                        <>
+                            {scene && scene.meshes.length > 0 ? (
+                                <Property
+                                    component={StringDropdownPropertyLine}
+                                    propertyPath="source"
+                                    label="Source"
+                                    value={particleEmitterType.mesh ? `mesh:${particleEmitterType.mesh.uniqueId}` : `mesh:${scene.meshes[0].uniqueId}`}
+                                    options={scene.meshes.map((mesh) => {
+                                        const uniqueId = mesh.uniqueId;
+                                        const name = mesh.name ?? "(unnamed)";
+                                        const label = `${name} (#${uniqueId})`;
+                                        return {
+                                            label,
+                                            value: `mesh:${uniqueId}`,
+                                        };
+                                    })}
+                                    onChange={(value) => {
+                                        const next = String(value);
+                                        const uniqueIdText = next.replace("mesh:", "");
+                                        const uniqueId = Number(uniqueIdText);
+                                        const mesh = scene.meshes.find((candidate) => candidate.uniqueId === uniqueId) ?? null;
+                                        particleEmitterType.mesh = mesh;
+                                    }}
+                                />
+                            ) : (
+                                <Property component={TextPropertyLine} propertyPath="source" label="Source" value="No meshes in scene." />
+                            )}
+                        </>
                     )}
-                </>
-            )}
 
-            {particleEmitterType instanceof BoxParticleEmitter && (
-                <>
-                    <BoundProperty component={Vector3PropertyLine} label="Direction1" target={particleEmitterType} propertyKey="direction1" />
-                    <BoundProperty component={Vector3PropertyLine} label="Direction2" target={particleEmitterType} propertyKey="direction2" />
-                    <BoundProperty component={Vector3PropertyLine} label="Min emit box" target={particleEmitterType} propertyKey="minEmitBox" />
-                    <BoundProperty component={Vector3PropertyLine} label="Max emit box" target={particleEmitterType} propertyKey="maxEmitBox" />
-                </>
-            )}
+                    {particleEmitterType instanceof BoxParticleEmitter && (
+                        <>
+                            <BoundProperty component={Vector3PropertyLine} label="Direction1" target={particleEmitterType} propertyKey="direction1" />
+                            <BoundProperty component={Vector3PropertyLine} label="Direction2" target={particleEmitterType} propertyKey="direction2" />
+                            <BoundProperty component={Vector3PropertyLine} label="Min emit box" target={particleEmitterType} propertyKey="minEmitBox" />
+                            <BoundProperty component={Vector3PropertyLine} label="Max emit box" target={particleEmitterType} propertyKey="maxEmitBox" />
+                        </>
+                    )}
 
-            {particleEmitterType instanceof ConeParticleEmitter && (
-                <>
-                    <BoundProperty component={NumberInputPropertyLine} label="Radius range" target={particleEmitterType} propertyKey="radiusRange" min={0} max={1} step={0.01} />
-                    <BoundProperty component={NumberInputPropertyLine} label="Height range" target={particleEmitterType} propertyKey="heightRange" min={0} max={1} step={0.01} />
-                    <BoundProperty component={SwitchPropertyLine} label="Emit from spawn point only" target={particleEmitterType} propertyKey="emitFromSpawnPointOnly" />
-                    <BoundProperty
-                        component={NumberInputPropertyLine}
-                        label="Direction randomizer"
-                        target={particleEmitterType}
-                        propertyKey="directionRandomizer"
-                        min={0}
-                        max={1}
-                        step={0.01}
-                    />
-                </>
-            )}
+                    {particleEmitterType instanceof ConeParticleEmitter && (
+                        <>
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Radius range"
+                                target={particleEmitterType}
+                                propertyKey="radiusRange"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Height range"
+                                target={particleEmitterType}
+                                propertyKey="heightRange"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
+                            <BoundProperty component={SwitchPropertyLine} label="Emit from spawn point only" target={particleEmitterType} propertyKey="emitFromSpawnPointOnly" />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Direction randomizer"
+                                target={particleEmitterType}
+                                propertyKey="directionRandomizer"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
+                        </>
+                    )}
 
-            {particleEmitterType instanceof SphereParticleEmitter && (
-                <>
-                    <BoundProperty component={NumberInputPropertyLine} label="Radius" target={particleEmitterType} propertyKey="radius" min={0} step={0.1} />
-                    <BoundProperty component={NumberInputPropertyLine} label="Radius range" target={particleEmitterType} propertyKey="radiusRange" min={0} max={1} step={0.01} />
-                    <BoundProperty
-                        component={NumberInputPropertyLine}
-                        label="Direction randomizer"
-                        target={particleEmitterType}
-                        propertyKey="directionRandomizer"
-                        min={0}
-                        max={1}
-                        step={0.01}
-                    />
-                </>
-            )}
+                    {particleEmitterType instanceof SphereParticleEmitter && (
+                        <>
+                            <BoundProperty component={NumberInputPropertyLine} label="Radius" target={particleEmitterType} propertyKey="radius" min={0} step={0.1} />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Radius range"
+                                target={particleEmitterType}
+                                propertyKey="radiusRange"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Direction randomizer"
+                                target={particleEmitterType}
+                                propertyKey="directionRandomizer"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
+                        </>
+                    )}
 
-            {particleEmitterType instanceof CylinderParticleEmitter && (
-                <>
-                    <BoundProperty component={NumberInputPropertyLine} label="Radius" target={particleEmitterType} propertyKey="radius" min={0} step={0.1} />
-                    <BoundProperty component={NumberInputPropertyLine} label="Height" target={particleEmitterType} propertyKey="height" min={0} step={0.1} />
-                    <BoundProperty component={NumberInputPropertyLine} label="Radius range" target={particleEmitterType} propertyKey="radiusRange" min={0} max={1} step={0.01} />
-                    <BoundProperty
-                        component={NumberInputPropertyLine}
-                        label="Direction randomizer"
-                        target={particleEmitterType}
-                        propertyKey="directionRandomizer"
-                        min={0}
-                        max={1}
-                        step={0.01}
-                    />
-                </>
-            )}
+                    {particleEmitterType instanceof CylinderParticleEmitter && (
+                        <>
+                            <BoundProperty component={NumberInputPropertyLine} label="Radius" target={particleEmitterType} propertyKey="radius" min={0} step={0.1} />
+                            <BoundProperty component={NumberInputPropertyLine} label="Height" target={particleEmitterType} propertyKey="height" min={0} step={0.1} />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Radius range"
+                                target={particleEmitterType}
+                                propertyKey="radiusRange"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Direction randomizer"
+                                target={particleEmitterType}
+                                propertyKey="directionRandomizer"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
+                        </>
+                    )}
 
-            {particleEmitterType instanceof HemisphericParticleEmitter && (
-                <>
-                    <BoundProperty component={NumberInputPropertyLine} label="Radius" target={particleEmitterType} propertyKey="radius" min={0} step={0.1} />
-                    <BoundProperty component={NumberInputPropertyLine} label="Radius range" target={particleEmitterType} propertyKey="radiusRange" min={0} max={1} step={0.01} />
-                    <BoundProperty
-                        component={NumberInputPropertyLine}
-                        label="Direction randomizer"
-                        target={particleEmitterType}
-                        propertyKey="directionRandomizer"
-                        min={0}
-                        max={1}
-                        step={0.01}
-                    />
-                </>
-            )}
+                    {particleEmitterType instanceof HemisphericParticleEmitter && (
+                        <>
+                            <BoundProperty component={NumberInputPropertyLine} label="Radius" target={particleEmitterType} propertyKey="radius" min={0} step={0.1} />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Radius range"
+                                target={particleEmitterType}
+                                propertyKey="radiusRange"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
+                            <BoundProperty
+                                component={NumberInputPropertyLine}
+                                label="Direction randomizer"
+                                target={particleEmitterType}
+                                propertyKey="directionRandomizer"
+                                min={0}
+                                max={1}
+                                step={0.01}
+                            />
+                        </>
+                    )}
 
-            {particleEmitterType instanceof PointParticleEmitter && (
-                <>
-                    <BoundProperty component={Vector3PropertyLine} label="Direction1" target={particleEmitterType} propertyKey="direction1" />
-                    <BoundProperty component={Vector3PropertyLine} label="Direction2" target={particleEmitterType} propertyKey="direction2" />
+                    {particleEmitterType instanceof PointParticleEmitter && (
+                        <>
+                            <BoundProperty component={Vector3PropertyLine} label="Direction1" target={particleEmitterType} propertyKey="direction1" />
+                            <BoundProperty component={Vector3PropertyLine} label="Direction2" target={particleEmitterType} propertyKey="direction2" />
+                        </>
+                    )}
                 </>
             )}
 
