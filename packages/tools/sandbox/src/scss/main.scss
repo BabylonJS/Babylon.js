@@ -12,10 +12,6 @@ html {
     --chk-color: #e0e0e0;
     --chk-base: #ffffff;
     --chk-size: 20px;
-    --background-transparent:
-        linear-gradient(45deg, var(--chk-color) 25%, transparent 25%, transparent 75%, var(--chk-color) 75%, var(--chk-color)) 0 0 / var(--chk-size) var(--chk-size),
-        linear-gradient(45deg, var(--chk-color) 25%, transparent 25%, transparent 75%, var(--chk-color) 75%, var(--chk-color)) calc(var(--chk-size) / 2) calc(var(--chk-size) / 2) /
-            var(--chk-size) var(--chk-size) var(--chk-base);
 }
 
 html,

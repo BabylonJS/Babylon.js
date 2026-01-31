@@ -61,21 +61,14 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
         const skyBoxMesh = scene.getMeshById("hdrSkyBox");
         const skyBoxVisible = skyBoxMesh?.isVisible || false;
         const skyBoxEnable = skyBoxMesh?.isEnabled() || false;
-        const renderCanvasDom = this.props.scene.getEngine().getRenderingCanvas();
         if (transparent) {
             scene.clearColor = new Color4(tempColor.r, tempColor.g, tempColor.b, 0);
             skyBoxMesh?.setEnabled(false);
-            if (renderCanvasDom) {
-                renderCanvasDom.style.background = "var(--background-transparent)";
-            }
         } else {
             scene.clearColor = new Color4(tempColor.r, tempColor.g, tempColor.b, 1);
             if (skyBoxMesh) {
                 skyBoxMesh.isVisible = skyBoxVisible;
                 skyBoxMesh.setEnabled(skyBoxEnable);
-            }
-            if (renderCanvasDom) {
-                renderCanvasDom.style.background = "";
             }
         }
 
