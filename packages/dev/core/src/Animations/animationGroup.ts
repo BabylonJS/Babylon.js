@@ -7,7 +7,6 @@ import type { Scene, IDisposable } from "../scene";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
-import type { Node } from "../node";
 
 import { Tags } from "../Misc/tags";
 import type { AnimationGroupMask } from "./animationGroupMask";
@@ -56,6 +55,7 @@ export class TargetedAnimation {
         const serializationObject: any = {};
         serializationObject.animation = this.animation.serialize();
         serializationObject.targetId = this.target.id;
+        serializationObject.targetUniqueId = this.target.uniqueId;
 
         return serializationObject;
     }
@@ -1013,27 +1013,23 @@ export class AnimationGroup implements IDisposable {
      * Returns a new AnimationGroup object parsed from the source provided.
      * @param parsedAnimationGroup defines the source
      * @param scene defines the scene that will receive the animationGroup
-     * @param nodeMap a map of node.id to node in this scene, to accelerate node lookup
+     * @param targetLookup a callback that will be used instead of the default lookup
      * @returns a new AnimationGroup
      */
-    public static Parse(parsedAnimationGroup: any, scene: Scene, nodeMap?: Map<Node["id"], Node>): AnimationGroup {
+    public static Parse(parsedAnimationGroup: any, scene: Scene, targetLookup?: (parsedTargetAnimation: any) => any): AnimationGroup {
         const animationGroup = new AnimationGroup(parsedAnimationGroup.name, scene, parsedAnimationGroup.weight, parsedAnimationGroup.playOrder);
         for (let i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++) {
             const targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
             const animation = Animation.Parse(targetedAnimation.animation);
-            const id = targetedAnimation.targetId;
-            if (targetedAnimation.animation.property === "influence") {
-                // morph target animation
-                const morphTarget = scene.getMorphTargetById(id);
-                if (morphTarget) {
-                    animationGroup.addTargetedAnimation(animation, morphTarget);
-                }
-            } else {
-                const targetNode = nodeMap ? nodeMap.get(id) : scene.getNodeById(id);
 
-                if (targetNode != null) {
-                    animationGroup.addTargetedAnimation(animation, targetNode);
-                }
+            const target = targetLookup
+                ? targetLookup(targetedAnimation)
+                : targetedAnimation.animation.property === "influence"
+                  ? scene.getMorphTargetById(targetedAnimation.targetId)
+                  : scene.getNodeById(targetedAnimation.targetId);
+
+            if (target) {
+                animationGroup.addTargetedAnimation(animation, target);
             }
         }
 
