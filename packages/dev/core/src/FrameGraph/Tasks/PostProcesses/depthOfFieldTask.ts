@@ -22,6 +22,17 @@ export class FrameGraphDepthOfFieldTask extends FrameGraphTask {
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
     /**
+     * The alpha mode to use when applying the depth of field effect.
+     */
+    public get alphaMode() {
+        return this._merge.alphaMode;
+    }
+
+    public set alphaMode(mode: number) {
+        this._merge.alphaMode = mode;
+    }
+
+    /**
      * The depth texture to use for the depth of field effect.
      * Should store camera space depth (Z coordinate).
      */

@@ -21,6 +21,17 @@ export class FrameGraphBloomTask extends FrameGraphTask {
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
     /**
+     * The alpha mode to use when applying the bloom effect.
+     */
+    public get alphaMode() {
+        return this._merge.alphaMode;
+    }
+
+    public set alphaMode(mode: number) {
+        this._merge.alphaMode = mode;
+    }
+
+    /**
      * The target texture to render the bloom effect to.
      * If not supplied, a texture with the same configuration as the source texture will be created.
      */

@@ -21,6 +21,17 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
     /**
+     * The alpha mode to use when applying the SSAO2 effect.
+     */
+    public get alphaMode() {
+        return this._ssaoCombine.alphaMode;
+    }
+
+    public set alphaMode(mode: number) {
+        this._ssaoCombine.alphaMode = mode;
+    }
+
+    /**
      * The depth texture used by the SSAO2 effect (Z coordinate in camera view space).
      */
     public depthTexture: FrameGraphTextureHandle;
