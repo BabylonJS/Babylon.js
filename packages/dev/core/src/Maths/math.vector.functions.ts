@@ -140,11 +140,11 @@ export function Vector3NormalizeToRef<T extends IVector3Like>(vector: DeepImmuta
 }
 
 /**
- * Computes the signed distance from a point to a plane.
+ * Computes the signed distance between the specified point and plane.
  * @param origin defines a point on the plane
  * @param normal defines the plane normal (assumes normalized)
- * @param point defines the point to measure distance to
- * @returns the signed distance from the point to the plane
+ * @param point defines the point to compute the signed distance to
+ * @returns the signed distance
  */
 export function Vector3SignedDistanceToPlaneFromPositionAndNormal(
     origin: DeepImmutable<IVector3Like>,
