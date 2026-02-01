@@ -37,6 +37,7 @@ import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
 import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
 import { useCompactMode } from "../../hooks/settingsHooks";
+import { useNodeReparentDragDrop, type DragDropProps } from "./sceneExplorerDragDrop";
 import { TraverseGraph } from "../../misc/graphUtils";
 
 type EntityBase = Readonly<{
@@ -369,6 +370,12 @@ const useStyles = makeStyles({
     treeItemLayoutLeaf: {
         paddingLeft: `calc(var(${treeItemLevelToken}, 1) * ${tokens.spacingHorizontalL} + ${tokens.spacingHorizontalS})`,
     },
+    treeItemDragging: {
+        opacity: 0.5,
+    },
+    treeItemDropTarget: {
+        boxShadow: `inset 0 0 0 2px ${tokens.colorBrandForeground1}`,
+    },
 });
 
 const ActionCommand: FunctionComponent<{ command: SceneExplorerCommand<"inline", "action"> }> = (props) => {
@@ -537,8 +544,11 @@ const EntityTreeItem: FunctionComponent<{
     commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
     expandAll: () => void;
     collapseAll: () => void;
+    isDragging: boolean;
+    isDropTarget: boolean;
+    dragProps: DragDropProps;
 }> = (props) => {
-    const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll } = props;
+    const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll, isDragging, isDropTarget, dragProps } = props;
 
     const classes = useStyles();
     const [compactMode] = useCompactMode();
@@ -646,55 +656,61 @@ const EntityTreeItem: FunctionComponent<{
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
-                    className={classes.treeItem}
+                    className={mergeClasses(classes.treeItem, isDragging && classes.treeItemDragging, isDropTarget && classes.treeItemDropTarget)}
                     key={GetEntityId(entityItem.entity)}
                     value={GetEntityId(entityItem.entity)}
                     // Disable manual expand/collapse when a filter is active.
                     itemType={!isFiltering && hasChildren ? "branch" : "leaf"}
-                    parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : GetEntityId(entityItem.entity)}
+                    parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : GetEntityId(entityItem.parent.entity)}
                     aria-level={entityItem.depth}
                     aria-setsize={1}
                     aria-posinset={1}
                     onClick={select}
                     style={{ [treeItemLevelToken]: entityItem.depth }}
+                    draggable={dragProps.draggable}
+                    onDragStart={dragProps.onDragStart}
+                    onDragEnd={dragProps.onDragEnd}
+                    onDragOver={dragProps.onDragOver}
+                    onDragLeave={dragProps.onDragLeave}
+                    onDrop={dragProps.onDrop}
                 >
-                    <TreeItemLayout
-                        iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
-                        className={mergeClasses(hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf, compactMode ? classes.treeItemLayoutCompact : undefined)}
-                        style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
-                        actions={actions}
-                        aside={{
-                            // Match the gap and padding of the actions.
-                            className: classes.treeItemLayoutAside,
-                            children: aside,
-                        }}
-                        main={{
-                            // Prevent the "main" content (the Body1 below) from growing too large and pushing the actions/aside out of view.
-                            className: classes.treeItemLayoutMain,
-                        }}
-                    >
-                        <Body1 wrap={false} truncate>
-                            {name}
-                        </Body1>
-                    </TreeItemLayout>
-                </FlatTreeItem>
-            </MenuTrigger>
-            <MenuPopover hidden={!hasChildren && contextMenuCommands.length === 0}>
-                <MenuList>
-                    {hasChildren && (
-                        <>
-                            <MenuItem icon={<ArrowExpandAllRegular />} onClick={expandAll}>
-                                <Body1>Expand All</Body1>
-                            </MenuItem>
-                            <MenuItem icon={<ArrowCollapseAllRegular />} onClick={collapseAll}>
-                                <Body1>Collapse All</Body1>
-                            </MenuItem>
-                        </>
-                    )}
-                    {hasChildren && contextMenuCommands.length > 0 && <MenuDivider />}
-                    {contextMenuItems}
-                </MenuList>
-            </MenuPopover>
+                        <TreeItemLayout
+                            iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
+                            className={mergeClasses(hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf, compactMode ? classes.treeItemLayoutCompact : undefined, isDropTarget && classes.treeItemDropTarget)}
+                            style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                            actions={actions}
+                            aside={{
+                                // Match the gap and padding of the actions.
+                                className: classes.treeItemLayoutAside,
+                                children: aside,
+                            }}
+                            main={{
+                                // Prevent the "main" content (the Body1 below) from growing too large and pushing the actions/aside out of view.
+                                className: classes.treeItemLayoutMain,
+                            }}
+                        >
+                            <Body1 wrap={false} truncate>
+                                {name}
+                            </Body1>
+                        </TreeItemLayout>
+                    </FlatTreeItem>
+                </MenuTrigger>
+                <MenuPopover hidden={!hasChildren && contextMenuCommands.length === 0}>
+                    <MenuList>
+                        {hasChildren && (
+                            <>
+                                <MenuItem icon={<ArrowExpandAllRegular />} onClick={expandAll}>
+                                    <Body1>Expand All</Body1>
+                                </MenuItem>
+                                <MenuItem icon={<ArrowCollapseAllRegular />} onClick={collapseAll}>
+                                    <Body1>Collapse All</Body1>
+                                </MenuItem>
+                            </>
+                        )}
+                        {hasChildren && contextMenuCommands.length > 0 && <MenuDivider />}
+                        {contextMenuItems}
+                    </MenuList>
+                </MenuPopover>
         </Menu>
     );
 };
@@ -723,6 +739,20 @@ export const SceneExplorer: FunctionComponent<{
 
     const [itemsFilter, setItemsFilter] = useState("");
     const [isSorted, setIsSorted] = useLocalStorage("Babylon/Settings/SceneExplorer/IsSorted", false);
+
+    // Drag-drop state for node reparenting
+    const { draggedNode, dropTarget, createDragProps } = useNodeReparentDragDrop({
+        onDrop: (draggedNode, targetNode) => {
+            // Expand the target so user can see the dropped item
+            setOpenItems((prev) => {
+                const next = new Set(prev);
+                next.add(GetEntityId(targetNode as EntityBase));
+                return next;
+            });
+            // Select the dragged node
+            setSelectedEntity(draggedNode);
+        },
+    });
 
     useEffect(() => {
         setSceneVersion((version) => version + 1);
@@ -1045,6 +1075,15 @@ export const SceneExplorer: FunctionComponent<{
                                 />
                             );
                         } else {
+                            // Create drag props for this entity (only works for Nodes)
+                            const getName = () => {
+                                const displayInfo = item.getDisplayInfo();
+                                const name = displayInfo.name;
+                                displayInfo.dispose?.();
+                                return name;
+                            };
+                            const dragProps = createDragProps(item.entity, getName);
+
                             return (
                                 <EntityTreeItem
                                     key={item.entity.uniqueId}
@@ -1056,6 +1095,9 @@ export const SceneExplorer: FunctionComponent<{
                                     commandProviders={entityCommandProviders as SceneExplorerCommandProvider<EntityBase>[]}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
+                                    isDragging={draggedNode === item.entity}
+                                    isDropTarget={dropTarget === item.entity}
+                                    dragProps={dragProps}
                                 />
                             );
                         }
