@@ -46,11 +46,18 @@ describe("Vector functions tests", () => {
                 expect(Vector3SignedDistanceToPlaneFromPositionAndNormal(planeOrigin, planeNormal, point)).toBe(-3);
             });
 
-            it("works with offset plane", () => {
-                const planeOrigin = { x: 0, y: 10, z: 0 };
+            it("returns positive distance", () => {
+                const planeOrigin = { x: 0, y: 0, z: 0 };
                 const planeNormal = { x: 0, y: 1, z: 0 };
-                const point = { x: 0, y: 15, z: 0 };
+                const point = { x: 0, y: 5, z: 0 };
                 expect(Vector3SignedDistanceToPlaneFromPositionAndNormal(planeOrigin, planeNormal, point)).toBe(5);
+            });
+
+            it("works with different normal", () => {
+                const planeOrigin = { x: 0, y: -2, z: 0 };
+                const planeNormal = { x: Math.sqrt(0.5), y: Math.sqrt(0.5), z: 0 };
+                const point = { x: 0, y: -1, z: 0 };
+                expect(Vector3SignedDistanceToPlaneFromPositionAndNormal(planeOrigin, planeNormal, point)).toBe(Math.sqrt(0.5));
             });
         });
     });
