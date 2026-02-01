@@ -37,7 +37,7 @@ import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
 import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
 import { useCompactMode } from "../../hooks/settingsHooks";
-import { useNodeReparentDragDrop, type DragDropProps } from "./sceneExplorerDragDrop";
+import { useNodeReparentDragDrop, type DragDropProps, type SectionDropProps } from "./sceneExplorerDragDrop";
 import { TraverseGraph } from "../../misc/graphUtils";
 
 type EntityBase = Readonly<{
@@ -473,8 +473,10 @@ const SectionTreeItem: FunctionComponent<{
     commandProviders: readonly SceneExplorerCommandProvider<string, "contextMenu">[];
     expandAll: () => void;
     collapseAll: () => void;
+    isDropTarget: boolean;
+    dropProps: SectionDropProps;
 }> = (props) => {
-    const { section, isFiltering, commandProviders, expandAll, collapseAll } = props;
+    const { section, isFiltering, commandProviders, expandAll, collapseAll, isDropTarget, dropProps } = props;
 
     const classes = useStyles();
     const [compactMode] = useCompactMode();
@@ -498,7 +500,7 @@ const SectionTreeItem: FunctionComponent<{
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
-                    className={classes.treeItem}
+                    className={mergeClasses(classes.treeItem, isDropTarget && classes.treeItemDropTarget)}
                     key={section.sectionName}
                     value={section.sectionName}
                     // Disable manual expand/collapse when a filter is active.
@@ -507,6 +509,9 @@ const SectionTreeItem: FunctionComponent<{
                     aria-level={1}
                     aria-setsize={1}
                     aria-posinset={1}
+                    onDragOver={dropProps.onDragOver}
+                    onDragLeave={dropProps.onDragLeave}
+                    onDrop={dropProps.onDrop}
                 >
                     <TreeItemLayout className={mergeClasses(classes.treeItemLayoutBranch, compactMode ? classes.treeItemLayoutCompact : undefined)}>
                         <Body1Strong wrap={false} truncate>
@@ -741,14 +746,16 @@ export const SceneExplorer: FunctionComponent<{
     const [isSorted, setIsSorted] = useLocalStorage("Babylon/Settings/SceneExplorer/IsSorted", false);
 
     // Drag-drop state for node reparenting
-    const { draggedNode, dropTarget, createDragProps } = useNodeReparentDragDrop({
+    const { draggedNode, dropTarget, dropTargetIsRoot, createDragProps, createSectionDropProps } = useNodeReparentDragDrop({
         onDrop: (draggedNode, targetNode) => {
-            // Expand the target so user can see the dropped item
-            setOpenItems((prev) => {
-                const next = new Set(prev);
-                next.add(GetEntityId(targetNode as EntityBase));
-                return next;
-            });
+            // Expand the target so user can see the dropped item (if not unparenting to root)
+            if (targetNode) {
+                setOpenItems((prev) => {
+                    const next = new Set(prev);
+                    next.add(GetEntityId(targetNode as EntityBase));
+                    return next;
+                });
+            }
             // Select the dragged node
             setSelectedEntity(draggedNode);
         },
@@ -1072,6 +1079,8 @@ export const SceneExplorer: FunctionComponent<{
                                     commandProviders={sectionCommandProviders}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
+                                    isDropTarget={dropTargetIsRoot && item.sectionName === "Nodes"}
+                                    dropProps={createSectionDropProps(item.sectionName)}
                                 />
                             );
                         } else {
