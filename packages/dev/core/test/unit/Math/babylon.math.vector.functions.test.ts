@@ -46,10 +46,10 @@ describe("Vector functions tests", () => {
                 expect(Vector3SignedDistanceToPlaneFromPositionAndNormal(planeOrigin, planeNormal, point)).toBe(-3);
             });
 
-            it("returns positive distance", () => {
-                const planeOrigin = { x: 0, y: 0, z: 0 };
+            it("works with offset plane", () => {
+                const planeOrigin = { x: 0, y: 7, z: 0 };
                 const planeNormal = { x: 0, y: 1, z: 0 };
-                const point = { x: 0, y: 5, z: 0 };
+                const point = { x: 0, y: 12, z: 0 };
                 expect(Vector3SignedDistanceToPlaneFromPositionAndNormal(planeOrigin, planeNormal, point)).toBe(5);
             });
 
