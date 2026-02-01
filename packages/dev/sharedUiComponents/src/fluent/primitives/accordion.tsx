@@ -444,7 +444,7 @@ export const Accordion = forwardRef<HTMLDivElement, PropsWithChildren<AccordionP
     // Prevents sections contents from unmounting when closed, allowing their elements to be used in the Pinned section.
     const preventUnmountMotion: AccordionPanelProps["collapseMotion"] = useMemo(() => {
         // https://github.com/microsoft/fluentui/issues/34309#issuecomment-2824364945
-        // eslint-disable-next-line
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         return pinnedItems ? { children: (Component, props) => <Component {...props} unmountOnExit={false} /> } : undefined;
     }, []);
 
