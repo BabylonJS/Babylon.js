@@ -679,43 +679,43 @@ const EntityTreeItem: FunctionComponent<{
                     onDragLeave={dragProps.onDragLeave}
                     onDrop={dragProps.onDrop}
                 >
-                        <TreeItemLayout
-                            iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
-                            className={mergeClasses(hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf, compactMode ? classes.treeItemLayoutCompact : undefined, isDropTarget && classes.treeItemDropTarget)}
-                            style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
-                            actions={actions}
-                            aside={{
-                                // Match the gap and padding of the actions.
-                                className: classes.treeItemLayoutAside,
-                                children: aside,
-                            }}
-                            main={{
-                                // Prevent the "main" content (the Body1 below) from growing too large and pushing the actions/aside out of view.
-                                className: classes.treeItemLayoutMain,
-                            }}
-                        >
-                            <Body1 wrap={false} truncate>
-                                {name}
-                            </Body1>
-                        </TreeItemLayout>
-                    </FlatTreeItem>
-                </MenuTrigger>
-                <MenuPopover hidden={!hasChildren && contextMenuCommands.length === 0}>
-                    <MenuList>
-                        {hasChildren && (
-                            <>
-                                <MenuItem icon={<ArrowExpandAllRegular />} onClick={expandAll}>
-                                    <Body1>Expand All</Body1>
-                                </MenuItem>
-                                <MenuItem icon={<ArrowCollapseAllRegular />} onClick={collapseAll}>
-                                    <Body1>Collapse All</Body1>
-                                </MenuItem>
-                            </>
-                        )}
-                        {hasChildren && contextMenuCommands.length > 0 && <MenuDivider />}
-                        {contextMenuItems}
-                    </MenuList>
-                </MenuPopover>
+                    <TreeItemLayout
+                        iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
+                        className={mergeClasses(hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf, compactMode ? classes.treeItemLayoutCompact : undefined, isDropTarget && classes.treeItemDropTarget)}
+                        style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                        actions={actions}
+                        aside={{
+                            // Match the gap and padding of the actions.
+                            className: classes.treeItemLayoutAside,
+                            children: aside,
+                        }}
+                        main={{
+                            // Prevent the "main" content (the Body1 below) from growing too large and pushing the actions/aside out of view.
+                            className: classes.treeItemLayoutMain,
+                        }}
+                    >
+                        <Body1 wrap={false} truncate>
+                            {name}
+                        </Body1>
+                    </TreeItemLayout>
+                </FlatTreeItem>
+            </MenuTrigger>
+            <MenuPopover hidden={!hasChildren && contextMenuCommands.length === 0}>
+                <MenuList>
+                    {hasChildren && (
+                        <>
+                            <MenuItem icon={<ArrowExpandAllRegular />} onClick={expandAll}>
+                                <Body1>Expand All</Body1>
+                            </MenuItem>
+                            <MenuItem icon={<ArrowCollapseAllRegular />} onClick={collapseAll}>
+                                <Body1>Collapse All</Body1>
+                            </MenuItem>
+                        </>
+                    )}
+                    {hasChildren && contextMenuCommands.length > 0 && <MenuDivider />}
+                    {contextMenuItems}
+                </MenuList>
+            </MenuPopover>
         </Menu>
     );
 };
