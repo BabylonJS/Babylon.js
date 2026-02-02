@@ -153,7 +153,7 @@ export function EncoderWorkerFunction(): void {
                     // eslint-disable-next-line github/no-then
                     .then((encoder) => {
                         const result = EncodeMesh(encoder, message.attributes, message.indices, message.options);
-                        postMessage({ id: "encodeMeshDone", encodedMeshData: result }, result ? [result.data.buffer] : undefined);
+                        postMessage({ id: "encodeMeshSuccess", encodedMeshData: result }, result ? [result.data.buffer] : undefined);
                     })
                     // eslint-disable-next-line github/no-then
                     .catch((e) => {

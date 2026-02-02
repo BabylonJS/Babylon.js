@@ -223,7 +223,7 @@ export class DracoEncoder extends DracoCodec {
                     };
 
                     const onMessage = (message: MessageEvent<EncoderMessage>) => {
-                        if (message.data.id === "encodeMeshDone") {
+                        if (message.data.id === "encodeMeshSuccess") {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
                             resolve(message.data.encodedMeshData);

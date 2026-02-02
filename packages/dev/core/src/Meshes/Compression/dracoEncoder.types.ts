@@ -75,8 +75,8 @@ export interface IDracoEncodedMeshData {
     attributeIds: Record<string, number>;
 }
 
-interface IEncodeDoneMessage {
-    id: "encodeMeshDone";
+interface IEncodeSuccessMessage {
+    id: "encodeMeshSuccess";
     encodedMeshData: Nullable<IDracoEncodedMeshData>;
 }
 
@@ -88,4 +88,4 @@ interface IEncodeErrorMessage {
 /**
  * @internal
  */
-export type EncoderMessage = IEncodeDoneMessage | IEncodeErrorMessage;
+export type EncoderMessage = IEncodeSuccessMessage | IEncodeErrorMessage;
