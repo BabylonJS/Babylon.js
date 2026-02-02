@@ -130,7 +130,7 @@ export function EncodeMesh(
  * To be used if a developer wants to create their own worker instance and inject it instead of using the default worker.
  */
 export function EncoderWorkerFunction(): void {
-    let encoderPromise: PromiseLike<EncoderModule> | undefined;
+    let encoderPromise: Promise<EncoderModule> | undefined;
 
     onmessage = (event) => {
         const message = event.data;
