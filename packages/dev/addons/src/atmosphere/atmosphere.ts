@@ -30,7 +30,6 @@ import "./Shaders/compositeAerialPerspective.fragment";
 import "./Shaders/compositeSky.fragment";
 import "./Shaders/compositeGlobeAtmosphere.fragment";
 import "./Shaders/fullscreenTriangle.vertex";
-import "./Shaders/multiScattering.fragment";
 import "./Shaders/skyView.fragment";
 import "./Shaders/aerialPerspective.fragment";
 import "./Shaders/ShadersInclude/atmosphereFragmentDeclaration";
@@ -1415,6 +1414,8 @@ const CreateEffectWrapper = (
 const CreateMultiScatteringEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer, groundAlbedo: Color3): EffectWrapper => {
     const name = "atmo-multiScattering";
     const useUbo = uniformBuffer.useUbo;
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
 
     const defines = ["#define POSITION_VEC2"];
     if (!groundAlbedo.equals(Color3.BlackReadOnly)) {
@@ -1428,10 +1429,20 @@ const CreateMultiScatteringEffectWrapper = (engine: AbstractEngine, uniformBuffe
         fragmentShader: "multiScattering",
         attributeNames: ["position"],
         uniformNames: ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
-        uniformBuffers: useUbo ? [uniformBuffer.name] : [],
+        uniformBuffers: useUbo ? [uboName] : [],
         samplerNames: ["transmittanceLut"],
         defines,
         useShaderStore: true,
+        shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+        extraInitializations: (_, list) => {
+            list.push(
+                Promise.all(
+                    useWebGPU
+                        ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/multiScattering.fragment")]
+                        : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/multiScattering.fragment")]
+                )
+            );
+        },
     });
 };
 
