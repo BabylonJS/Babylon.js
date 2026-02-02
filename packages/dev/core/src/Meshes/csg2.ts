@@ -370,8 +370,16 @@ export class CSG2 implements IDisposable {
         }
 
         // UVs
+        const uvKindToPropertyName: { [key: string]: string } = {
+            [VertexBuffer.UVKind]: "uvs",
+            [VertexBuffer.UV2Kind]: "uvs2",
+            [VertexBuffer.UV3Kind]: "uvs3",
+            [VertexBuffer.UV4Kind]: "uvs4",
+            [VertexBuffer.UV5Kind]: "uvs5",
+            [VertexBuffer.UV6Kind]: "uvs6",
+        };
         for (const kind of [VertexBuffer.UVKind, VertexBuffer.UV2Kind, VertexBuffer.UV3Kind, VertexBuffer.UV4Kind, VertexBuffer.UV5Kind, VertexBuffer.UV6Kind]) {
-            const sourceUV = (data as any)[kind === VertexBuffer.UVKind ? "uvs" : kind];
+            const sourceUV = (data as any)[uvKindToPropertyName[kind]];
             if (sourceUV) {
                 numProp += 2;
                 structure.push({ stride: 2, kind: kind, data: sourceUV });
