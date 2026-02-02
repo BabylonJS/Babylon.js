@@ -37,21 +37,29 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
      * @param partIndex the index of the part in the compound mesh
      * @param compoundSplatMesh the original Gaussian Splatting mesh that was merged into the compound
      * @param scene defines the hosting scene
-     * @param boundingInfo the bounding info to clone for this proxy
      */
-    constructor(name: string, proxiedMesh: GaussianSplattingMesh, partIndex: number, compoundSplatMesh: GaussianSplattingMesh, scene: Nullable<Scene>, boundingInfo: BoundingInfo) {
+    constructor(name: string, proxiedMesh: GaussianSplattingMesh, partIndex: number, compoundSplatMesh: GaussianSplattingMesh, scene: Nullable<Scene>) {
         super(name, scene);
         this.proxiedMesh = proxiedMesh;
         this._partIndex = partIndex;
         this.compoundSplatMesh = compoundSplatMesh;
 
         // Set bounding info based on the source mesh's bounds
-        this.setBoundingInfo(new BoundingInfo(boundingInfo.minimum.clone(), boundingInfo.maximum.clone()));
+        this.updateBoundingInfoFromProxiedMesh();
 
         // Update the proxied mesh's part matrix when this proxy's world matrix changes
         this.onAfterWorldMatrixUpdateObservable.add(() => {
             this.proxiedMesh.setWorldMatrixForPart(this.partIndex, this.getWorldMatrix());
+            this.updateBoundingInfoFromProxiedMesh();
         });
+    }
+
+    /**
+     * Updates the bounding info of this proxy mesh from the proxied mesh
+     */
+    public updateBoundingInfoFromProxiedMesh(): void {
+        const boundingInfo = this.proxiedMesh.getBoundingInfo();
+        this.setBoundingInfo(new BoundingInfo(boundingInfo.minimum.clone(), boundingInfo.maximum.clone()));
     }
 
     /**
