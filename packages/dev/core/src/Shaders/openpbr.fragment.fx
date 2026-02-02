@@ -66,6 +66,7 @@ precision highp float;
 #include<openpbrAmbientOcclusionFunctions>
 #include<openpbrGeometryInfo>
 #include<openpbrIblFunctions>
+#include<openpbrVolumeFunctions>
 
 // Do a mix between layers with additional multipliers for each layer.
 vec3 layer(vec3 slab_bottom, vec3 slab_top, float lerp_factor, vec3 bottom_multiplier, vec3 top_multiplier) {
@@ -184,7 +185,11 @@ void main(void) {
     ReflectanceParams baseConductorReflectance;
     baseConductorReflectance = conductorReflectance(base_color, specular_color, specular_weight);
 
-    vec3 transmission_absorption = vec3(1.0);
+    // Absorption for entire volume thickness
+    vec3 volume_absorption = vec3(1.0);
+    // Surface constant tint for transmission
+    vec3 transmission_tint = vec3(1.0);
+    float surface_translucency_weight = 0.0;
     #if defined(REFRACTED_BACKGROUND) || defined(REFRACTED_ENVIRONMENT) || defined(REFRACTED_LIGHTS)
         #ifdef DISPERSION
             vec3 refractedViewVectors[3];
@@ -199,82 +204,96 @@ void main(void) {
         // Transmission blurriness is affected by IOR so we scale the roughness accordingly
         float transmission_roughness = specular_roughness * clamp(4.0 * (specular_ior - 1.0), 0.001, 1.0);
 
-        vec3 extinction_coeff = vec3(0.0);
-        vec3 scatter_coeff = vec3(0.0);
-        vec3 absorption_coeff = vec3(0.0);
-        vec3 ss_albedo = vec3(0.0);
-        vec3 multi_scatter_color = vec3(1.0);
-        // Absorption is volumetric if transmission depth is > 0.
-        // Otherwise, absorption is considered instantaneous at the surface.
-        #ifdef TRANSMISSION_SLAB
-            // Figure out coefficients based on OpenPBR spec.
-            vec3 invDepth = vec3(1. / maxEps(transmission_depth));
-            extinction_coeff = -log(transmission_color.rgb) * invDepth;
-            scatter_coeff = transmission_scatter.rgb * invDepth;
-            absorption_coeff = extinction_coeff - scatter_coeff.rgb;
-            float minCoeff = min3(absorption_coeff);
-            if (minCoeff < 0.0) {
-                absorption_coeff -= vec3(minCoeff);
+        #if !defined(GEOMETRY_THIN_WALLED) && (defined(TRANSMISSION_SLAB) || defined(SUBSURFACE_SLAB))
+        
+            OpenPBRHomogeneousVolume volumeParams;
+            {
+                #if defined(TRANSMISSION_SLAB)
+                    OpenPBRHomogeneousVolume transmissionVolumeParams = computeOpenPBRTransmissionVolume(
+                        transmission_color.rgb,
+                        transmission_depth,
+                        transmission_scatter.rgb,
+                        transmission_scatter_anisotropy
+                    );
+                #endif
+                #if defined(SUBSURFACE_SLAB)
+                    OpenPBRHomogeneousVolume subsurfaceVolumeParams = computeOpenPBRSubsurfaceVolume(
+                        subsurface_color.rgb,
+                        subsurface_radius,
+                        subsurface_radius_scale.rgb,
+                        subsurface_scatter_anisotropy
+                    );
+                #endif
+                // Handle constant transmission with subsurface
+                // Also, handle thin-walled geometry
+                #if !defined(TRANSMISSION_SLAB)
+                    volumeParams = subsurfaceVolumeParams;
+                    surface_translucency_weight = subsurface_weight;
+                #elif !defined(SUBSURFACE_SLAB)
+                    volumeParams = transmissionVolumeParams;
+                    #ifdef TRANSMISSION_SLAB_VOLUME
+                        volumeParams.multi_scatter_color = singleScatterToMultiScatterAlbedo(volumeParams.ss_albedo);
+                    #endif
+                    surface_translucency_weight = transmission_weight;
+                #else
+                    float subsurface_fraction_of_dielectric = (1.0f - transmission_weight) * subsurface_weight;
+                    float subsurface_and_transmission_fraction_of_dielectric = subsurface_fraction_of_dielectric + transmission_weight;
+                    float reciprocal_of_subsurface_and_transmission_fraction_of_dielectric =
+                        1.0f / maxEps(subsurface_and_transmission_fraction_of_dielectric);
+                    float trans_weight = transmission_weight * reciprocal_of_subsurface_and_transmission_fraction_of_dielectric;
+                    float subsurf_weight = subsurface_fraction_of_dielectric * reciprocal_of_subsurface_and_transmission_fraction_of_dielectric;
+                    volumeParams.scatter_coeff = transmissionVolumeParams.scatter_coeff * trans_weight + subsurfaceVolumeParams.scatter_coeff * subsurf_weight;
+                    volumeParams.absorption_coeff = transmissionVolumeParams.absorption_coeff * trans_weight + subsurfaceVolumeParams.absorption_coeff * subsurf_weight;
+                    volumeParams.anisotropy = (transmissionVolumeParams.anisotropy * trans_weight + subsurfaceVolumeParams.anisotropy * subsurf_weight) / maxEps(trans_weight + subsurf_weight);
+                    volumeParams.extinction_coeff = volumeParams.absorption_coeff + volumeParams.scatter_coeff;
+                    volumeParams.ss_albedo = volumeParams.scatter_coeff / maxEps(volumeParams.extinction_coeff);
+                    volumeParams.multi_scatter_color = singleScatterToMultiScatterAlbedo(volumeParams.ss_albedo);
+                    surface_translucency_weight = subsurface_and_transmission_fraction_of_dielectric;
+                #endif
             }
-            // Set extinction coefficient after shifting the absorption to be non-negative.
-            extinction_coeff = absorption_coeff + scatter_coeff;
-            ss_albedo = scatter_coeff / (extinction_coeff);
-            multi_scatter_color = singleScatterToMultiScatterAlbedo(ss_albedo);
+            volume_absorption = exp(-volumeParams.absorption_coeff * geometry_thickness);
+            // Calculated viewable distance based on reduced extinction and use that to
+            // determine absorption at mean free path.
+            vec3 transport_mfp = vec3(2.0) / maxEps(volumeParams.scatter_coeff);
+            vec3 absorption_at_mfp = exp(-volumeParams.absorption_coeff * transport_mfp);
+        #elif defined(TRANSMISSION_SLAB)
+            // If we only have a transmission slab and no subsurface, use the transmission_weight directly
+            surface_translucency_weight = transmission_weight;
+        #endif
 
-            transmission_absorption = exp(-absorption_coeff * geometry_thickness);
-        #else
-            // We'll account for double-absorption here, assuming light enters and then exits the
-            // volume before reaching the eye. 
-            transmission_absorption = transmission_color.rgb * transmission_color.rgb;
+        #if defined(TRANSMISSION_SLAB) && !defined(TRANSMISSION_SLAB_VOLUME)
+            // Geometry is either thin-walled or we have a transmission slab with depth=0
+            // For now, assume that mesh is closed and light enters and exits through the surface, leading to double-tinting.
+            transmission_tint *= transmission_color.rgb * transmission_color.rgb;
+
+            #ifdef SUBSURFACE_SLAB
+                float unweighted_translucency = mix(subsurface_weight, 1.0f, transmission_weight);
+                transmission_tint = mix(vec3(1.0), transmission_tint, transmission_weight / unweighted_translucency);
+            #endif
         #endif
         
-        #ifdef SUBSURFACE_SLAB
-            // Figure out subsurface scattering contribution
-            multi_scatter_color = subsurface_color;
-            vec3 mfp = subsurface_radius_scale * vec3(subsurface_radius);
-            extinction_coeff = vec3(1.0) / maxEps(mfp);
-
-            // Convert subsurface color to single scatter albedo and then to coefficients
-            ss_albedo = multiScatterToSingleScatterAlbedo(subsurface_color);
-            scatter_coeff = ss_albedo * extinction_coeff;
-            absorption_coeff = extinction_coeff - scatter_coeff.rgb;
-            float minCoeff = min3(absorption_coeff);
-            if (minCoeff < 0.0) {
-                absorption_coeff -= vec3(minCoeff);
-            }
-            // Set extinction coefficient after shifting the absorption to be non-negative.
-            extinction_coeff = absorption_coeff + scatter_coeff;
-            transmission_absorption = exp(-absorption_coeff * geometry_thickness);
-        #endif
-
         float refractionAlphaG = transmission_roughness * transmission_roughness;
         #ifdef SCATTERING
-            #ifdef TRANSMISSION_SLAB
-                float scatter_anisotropy = transmission_scatter_anisotropy;
-            #else
-                float scatter_anisotropy = subsurface_scatter_anisotropy;
-            #endif
             // Transmission Scattering
-            float back_to_iso_scattering_blend = min(1.0 + scatter_anisotropy, 1.0);
-            float iso_to_forward_scattering_blend = max(scatter_anisotropy, 0.0);
+            float back_to_iso_scattering_blend = min(1.0 + volumeParams.anisotropy, 1.0);
+            float iso_to_forward_scattering_blend = max(volumeParams.anisotropy, 0.0);
 
             // The 0.2 exponent is an empirical fit to match reference renderers - check if it works broadly
-            vec3 iso_scatter_transmittance = pow(exp(-scatter_coeff * geometry_thickness), vec3(0.2));
+            vec3 iso_scatter_transmittance = pow(exp(-volumeParams.scatter_coeff * geometry_thickness), vec3(0.2));
             vec3 iso_scatter_density = clamp(vec3(1.0) - iso_scatter_transmittance, 0.0, 1.0);
             
             // Refraction roughness is modified by the density of the scattering and also by the anisotropy.
-            float roughness_alpha_modified_for_scatter = min(refractionAlphaG + (1.0 - abs(scatter_anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 1.0);
+            float roughness_alpha_modified_for_scatter = min(refractionAlphaG + (1.0 - abs(volumeParams.anisotropy)) * max3(iso_scatter_density * iso_scatter_density), 1.0);
             roughness_alpha_modified_for_scatter = pow(roughness_alpha_modified_for_scatter, 6.0);
             roughness_alpha_modified_for_scatter = clamp(roughness_alpha_modified_for_scatter, refractionAlphaG, 1.0);
+
+            // Blend the multi-scatter color towards single-scatter based on the scatter density
+            // This is an empirical approximation to account for weaker scattering at low densities where scattering isn't strong enough to reach the multiple scattering colour.
+            volumeParams.multi_scatter_color = mix(volumeParams.ss_albedo, volumeParams.multi_scatter_color, max3(iso_scatter_density));
         #else
             float roughness_alpha_modified_for_scatter = refractionAlphaG;
         #endif
-        
-        // Calculated viewable distance based on reduced extinction and use that to
-        // determine absorption at mean free path.
-        vec3 transport_mfp = vec3(2.0) / scatter_coeff;
-        vec3 absorption_at_mfp = exp(-absorption_coeff * transport_mfp);
-        
+
     #endif
     // __________________ Transmitted Light From Background Refraction ___________________________
     #include<openpbrBackgroundTransmission>

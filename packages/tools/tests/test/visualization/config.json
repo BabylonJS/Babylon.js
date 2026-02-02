@@ -3419,6 +3419,34 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR Subsurface Radius vs Roughness - IBL",
+            "playgroundId": "#GRQHVV#227",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Subsurface Radius vs Anisotropy - IBL",
+            "playgroundId": "#GRQHVV#224",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Subsurface Radius vs Radius Scale - IBL",
+            "playgroundId": "#GRQHVV#228",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Blending - IBL",
+            "playgroundId": "#GRQHVV#233",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Blending Zero Depth - IBL",
+            "playgroundId": "#GRQHVV#235",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458"
         },

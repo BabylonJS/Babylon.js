@@ -302,9 +302,19 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public TRANSMISSION_SLAB = false;
 
     /**
+     * Enables transmission slab with volume
+     */
+    public TRANSMISSION_SLAB_VOLUME = false;
+
+    /**
      * Enables subsurface slab
      */
     public SUBSURFACE_SLAB = false;
+
+    /**
+     * Enables thin-walled geometry
+     */
+    public GEOMETRY_THIN_WALLED = false;
 
     /**
      * Refraction of the 2D background texture. Might include the rest of the scene or just the background.
@@ -1240,15 +1250,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public useAmbientInGrayScale = false;
 
     /**
-     * Specifies if the material has volume properties such as subsurface scattering or transmission.
+     * Specifies if we can see through the surface of the material due to subsurface scattering or transmission.
      */
-    public get hasVolume(): boolean {
-        return !this.geometryThinWalled && (this.subsurfaceWeight > 0 || this.transmissionWeight > 0);
+    public get hasTransparency(): boolean {
+        return this.subsurfaceWeight > 0 || this.transmissionWeight > 0;
     }
 
     /** Specifies if the material has scattering properties such as subsurface scattering or transmission scattering. */
     public get hasScattering(): boolean {
-        return !this.geometryThinWalled && ((this.transmissionWeight > 0 && !this.transmissionScatter.equals(Color3.BlackReadOnly)) || this.subsurfaceWeight > 0);
+        return (this.transmissionWeight > 0 && this.transmissionDepth > 0 && !this.transmissionScatter.equals(Color3.BlackReadOnly)) || this.subsurfaceWeight > 0;
     }
 
     /**
@@ -3019,7 +3029,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     defines.FUZZENVIRONMENTBRDF = false;
                 }
 
-                if (this.hasVolume) {
+                if (this.hasTransparency) {
                     defines.REFRACTED_BACKGROUND = !!this._backgroundRefractionTexture && MaterialFlags.RefractionTextureEnabled;
                     defines.REFRACTED_LIGHTS = true;
                     const radianceTexture = this._getRadianceTexture();
@@ -3111,9 +3121,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
         defines.DISPERSION = this.transmissionDispersionScale > 0.0;
         defines.SCATTERING = this.hasScattering;
-        defines.TRANSMISSION_SLAB = this.transmissionWeight > 0 && this.transmissionDepth > 0;
+        defines.TRANSMISSION_SLAB = this.transmissionWeight > 0;
+        defines.TRANSMISSION_SLAB_VOLUME = this.transmissionWeight > 0 && this.transmissionDepth > 0;
         defines.SUBSURFACE_SLAB = this.subsurfaceWeight > 0;
         defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;
+        defines.GEOMETRY_THIN_WALLED = this.geometryThinWalled != 0;
 
         if (defines.FUZZ) {
             if (!mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
