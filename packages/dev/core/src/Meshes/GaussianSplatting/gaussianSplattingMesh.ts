@@ -2308,11 +2308,9 @@ export class GaussianSplattingMesh extends Mesh {
 
     /**
      * Remove a part from this compound mesh.
-     * @param partIndex - The index of the part to remove, or the proxy mesh representing the part
+     * @param index - The index of the part to remove
      */
-    public removePart(partIndex: number | GaussianSplattingPartProxyMesh): void {
-        const index = typeof partIndex === "number" ? partIndex : partIndex.partIndex;
-
+    public removePart(index: number): void {
         if (index < 0 || index >= this.partCount) {
             throw new Error(`Part index ${index} is out of range [0, ${this.partCount})`);
         }
