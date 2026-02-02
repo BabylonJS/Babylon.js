@@ -1,8 +1,7 @@
 ﻿#ifdef LIGHT{X}
 {
     var slab_diffuse: vec3f = vec3f(0.f, 0.f, 0.f);
-    var slab_subsurface: vec3f = vec3f(0.f, 0.f, 0.f);
-    var slab_translucent: vec3f = slab_translucent_background.rgb;
+    var slab_translucent: vec3f = vec3f(0.f, 0.f, 0.f);
     var slab_glossy: vec3f = vec3f(0.f, 0.f, 0.f);
     var specularFresnel: f32 = 0.0f;
     var specularColoredFresnel: vec3f = vec3f(0.f, 0.f, 0.f);
@@ -65,6 +64,7 @@
 
     // Refraction Lobe
     #ifdef REFRACTED_LIGHTS
+        var forwardScatteredLight: vec3f = vec3f(0.0f);
         #if AREALIGHT{X}
             // TODO
         #else
@@ -106,9 +106,9 @@
                     preInfoTrans.VdotH = clamp(dot(viewDirectionW, preInfoTrans.H), 0.0, 1.0);
                 
                 #ifdef DISPERSION
-                    slab_translucent[i] += 
+                    forwardScatteredLight[i] += 
                 #else
-                    slab_translucent += 
+                    forwardScatteredLight += 
                 #endif
                 #ifdef ANISOTROPIC_BASE
                     computeAnisotropicSpecularLighting(preInfoTrans, viewDirectionW, normalW, 
@@ -128,41 +128,45 @@
 
                 // Empirical scattered light contribution for transmission
                 // As roughness increases, we add a small ambient term to simulate scattering of internal reflections
-                slab_translucent = mix(slab_translucent, 0.25f * preInfoTrans.attenuation * lightColor{X}.rgb, clamp(1.0f - pow(baseGeoInfo.NdotV, refractionAlphaG), 0.0f, 1.0f));
+                forwardScatteredLight = mix(forwardScatteredLight, 0.25f * preInfoTrans.attenuation * lightColor{X}.rgb, clamp(1.0f - pow(baseGeoInfo.NdotV, roughness_alpha_modified_for_scatter), 0.0f, 1.0f));
+
+                #ifdef REFRACTED_BACKGROUND
+                    // Scale the IBL refraction so that we only see it at higher roughnesses
+                    // At low blurriness the transmitted light is mostly coming from the background geometry which is in front of the IBL.
+                    // At high blurriness, the refraction from the environment will be coming from more directions
+                    // and so we want to include more of this indirect lighting.
+                    forwardScatteredLight = max(slab_translucent_background.rgb, mix(slab_translucent_background.rgb, forwardScatteredLight, roughness_alpha_modified_for_scatter));
+                #endif
 
                 #ifdef SCATTERING
-                if (transmission_depth>0.0f) {
                     // Compute forward-scattered light that has been completely diffused. This will be used when
                     // scattering is very strong.
                     preInfoTrans.roughness = 1.0f;
-                    let diffused_forward_scattered_light: vec3f = computeSpecularLighting(preInfoTrans, normalW, vec3f(1.0f), vec3f(1.0f), 1.0f, lightColor{X}.rgb) * transmission_absorption;
+                    let diffused_forward_scattered_light: vec3f = computeSpecularLighting(preInfoTrans, normalW, vec3f(1.0f), vec3f(1.0f), 1.0f, lightColor{X}.rgb) * volume_absorption;
                     
                     // Compute back-scattered light
-                    preInfoTrans.NdotL = max(dot(viewDirectionW, preInfoTrans.L), 0.0f);
-                    preInfoTrans.NdotV = 1.0f;
+                    let back_scattered_normal: vec3f = normalize(normalW + viewDirectionW);
+                    preInfoTrans.NdotL = max(dot(back_scattered_normal, preInfoTrans.L), 0.0f);
+                    preInfoTrans.NdotV = dot(back_scattered_normal, viewDirectionW);
                     preInfoTrans.H = normalize(viewDirectionW + preInfoTrans.L);
                     preInfoTrans.VdotH = clamp(dot(viewDirectionW, preInfoTrans.H), 0.0f, 1.0f);
-                    preInfoTrans.roughness = 0.3f;
+                    preInfoTrans.roughness = 0.05f;
                     let back_scattered_light: vec3f = computeSpecularLighting(preInfoTrans, viewDirectionW, vec3f(1.0f), vec3f(1.0f), 0.025f, lightColor{X}.rgb);
                     // Direct Transmission (aka forward-scattered light from back side)
-                    // let forward_scattered_light: vec3f = mix(slab_translucent * transmission_absorption, additional_scattering, additional_scattering_scale);
-                    let forward_scattered_light: vec3f = (slab_translucent * transmission_absorption);
+                    let forward_scattered_light: vec3f = (forwardScatteredLight * volume_absorption);
                     
                     // Use the diffuse lobe as the isotropic scattered light component
                     let iso_scattered_light: vec3f = slab_diffuse;
                     // Back Scattering
-                    let back_scattering: vec3f = mix(forward_scattered_light, forward_scattered_light + back_scattered_light * absorption_at_mfp, max3(iso_scatter_density));
+                    let back_scattering: vec3f = mix(forward_scattered_light, forward_scattered_light + back_scattered_light * absorption_at_mfp, iso_scatter_density);
                     // Iso Scattering
-                    // let iso_scattering: vec3f = mix(forward_scattered_light, diffused_forward_scattered_light + iso_scattered_light * multi_scatter_color, max3(iso_scatter_density));
-                    let iso_scattering: vec3f = mix(forward_scattered_light, (diffused_forward_scattered_light + iso_scattered_light) * mix(transmission_scatter.rgb, multi_scatter_color, max3(iso_scatter_density)), max3(iso_scatter_density));
+                    let iso_scattering: vec3f = mix(forward_scattered_light, (diffused_forward_scattered_light + iso_scattered_light) * volumeParams.multi_scatter_color, iso_scatter_density);
                     // Lerp between the three based on the anisotropy
                     slab_translucent = mix(back_scattering, iso_scattering, back_to_iso_scattering_blend);
-                    slab_translucent = mix(slab_translucent, forward_scattered_light, iso_to_forward_scattering_blend);
-                }
+                    slab_translucent = mix(slab_translucent, forward_scattered_light, iso_to_forward_scattering_blend) * transmission_tint;
                 #else
-                
-                // Simple transmission without scattering
-                slab_translucent *= transmission_absorption;
+                    // Simple transmission without scattering
+                    slab_translucent = forwardScatteredLight * transmission_tint * volume_absorption;
                 #endif
             }
         #endif
@@ -260,8 +264,7 @@
     #endif
 
     slab_diffuse *= base_color.rgb;
-    let material_opaque_base: vec3f = mix(slab_diffuse, slab_subsurface, subsurface_weight);
-    let material_dielectric_base: vec3f = mix(material_opaque_base, slab_translucent, transmission_weight);
+    let material_dielectric_base: vec3f = mix(slab_diffuse, slab_translucent, surface_translucency_weight);
     let material_dielectric_gloss: vec3f = material_dielectric_base * (1.0f - specularFresnel) + slab_glossy * specularColoredFresnel;
     let material_base_substrate: vec3f = mix(material_dielectric_gloss, slab_metal, base_metalness);
     let material_coated_base: vec3f = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3f(1.0f));

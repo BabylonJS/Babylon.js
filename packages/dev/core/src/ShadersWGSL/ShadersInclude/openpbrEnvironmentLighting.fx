@@ -350,31 +350,24 @@
                 , uniforms.vReflectionInfos
                 , viewDirectionW
                 , 1.0f
-                , multi_scatter_color
+                , volumeParams.multi_scatter_color
             );
 
-            if (transmission_depth>0.0f) {
-                // Direct Transmission (aka forward-scattered light from back side)
-                let forward_scattered_light: vec3f = forwardScatteredEnvironmentLight * transmission_absorption;
-                // Back Scattering
-                let back_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
-                // Iso Scattering
-                let iso_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * multi_scatter_color, iso_scatter_density);
+            // Direct Transmission (aka forward-scattered light from back side)
+            let forward_scattered_light: vec3f = forwardScatteredEnvironmentLight * volume_absorption;
+            // Back Scattering
+            let back_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
+            // Iso Scattering
+            let iso_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * volumeParams.multi_scatter_color, iso_scatter_density);
 
-                // Lerp between the three based on the anisotropy
-                slab_translucent_base_ibl = mix(back_scattered_light, iso_scattered_light, back_to_iso_scattering_blend);
-                slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend);
-            } else {
-                slab_translucent_base_ibl += forwardScatteredEnvironmentLight.rgb;
-            }
+            // Lerp between the three based on the anisotropy
+            slab_translucent_base_ibl = mix(back_scattered_light, iso_scattered_light, back_to_iso_scattering_blend);
+            slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend) * transmission_tint;
         #else
-            slab_translucent_base_ibl += forwardScatteredEnvironmentLight * transmission_absorption;
+            slab_translucent_base_ibl += forwardScatteredEnvironmentLight * transmission_tint * volume_absorption;
         #endif
     #endif
-
-    // TEMP
-    var slab_subsurface_ibl: vec3f = vec3f(0., 0., 0.);
-
+    
     slab_diffuse_ibl *= base_color.rgb;
 
     // _____________________________ IBL Material Layer Composition ______________________________________
@@ -384,8 +377,7 @@
     slab_glossy_ibl *= specular_ambient_occlusion;
     slab_coat_ibl *= coat_specular_ambient_occlusion;
 
-    let material_opaque_base_ibl: vec3f = mix(slab_diffuse_ibl, slab_subsurface_ibl, subsurface_weight);
-    let material_dielectric_base_ibl: vec3f = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
+    let material_dielectric_base_ibl: vec3f = mix(slab_diffuse_ibl, slab_translucent_base_ibl, surface_translucency_weight);
     let material_dielectric_gloss_ibl: vec3f = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     let material_base_substrate_ibl: vec3f = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     let material_coated_base_ibl: vec3f = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3f(1.0f));

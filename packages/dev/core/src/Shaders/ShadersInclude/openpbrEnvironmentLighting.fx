@@ -343,29 +343,23 @@
                 , vReflectionInfos
                 , viewDirectionW
                 , 1.0
-                , multi_scatter_color
+                , volumeParams.multi_scatter_color
             );
 
-            #if defined(TRANSMISSION_SLAB) || defined(SUBSURFACE_SLAB)
-                // Direct Transmission (aka forward-scattered light from back side)
-                vec3 forward_scattered_light = forwardScatteredEnvironmentLight * transmission_absorption;
-                // Back Scattering
-                vec3 back_scattered_light = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
-                // Iso Scattering
-                vec3 iso_scattered_light = mix(forward_scattered_light, scatteredEnvironmentLight * multi_scatter_color, iso_scatter_density);
+            // Direct Transmission (aka forward-scattered light from back side)
+            vec3 forward_scattered_light = forwardScatteredEnvironmentLight * volume_absorption;
+            // Back Scattering
+            vec3 back_scattered_light = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
+            // Iso Scattering
+            vec3 iso_scattered_light = mix(forward_scattered_light, scatteredEnvironmentLight * volumeParams.multi_scatter_color, iso_scatter_density);
 
-                // Lerp between the three based on the anisotropy
-                slab_translucent_base_ibl = mix(back_scattered_light, iso_scattered_light, back_to_iso_scattering_blend);
-                slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend);
-            #else
-                slab_translucent_base_ibl += forwardScatteredEnvironmentLight.rgb;
-            #endif
+            // Lerp between the three based on the anisotropy
+            slab_translucent_base_ibl = mix(back_scattered_light, iso_scattered_light, back_to_iso_scattering_blend);
+            slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend) * transmission_tint;
         #else
-            slab_translucent_base_ibl += forwardScatteredEnvironmentLight * transmission_absorption;
+            slab_translucent_base_ibl += forwardScatteredEnvironmentLight * transmission_tint * volume_absorption;
         #endif
     #endif
-    slab_subsurface_ibl = slab_translucent_base_ibl;
-
     
     slab_diffuse_ibl *= base_color.rgb;
 
@@ -377,16 +371,15 @@
     slab_glossy_ibl *= specular_ambient_occlusion;
     slab_coat_ibl *= coat_specular_ambient_occlusion;
 
-    vec3 material_opaque_base_ibl = mix(slab_diffuse_ibl, slab_subsurface_ibl, subsurface_weight);
-    vec3 material_dielectric_base_ibl = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
+    vec3 material_dielectric_base_ibl = mix(slab_diffuse_ibl, slab_translucent_base_ibl, surface_translucency_weight);
     vec3 material_dielectric_gloss_ibl = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3(1.0));
     #ifdef FUZZ
-    slab_fuzz_ibl *= ambient_occlusion;
-    material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3(1.0), fuzz_color);
+        slab_fuzz_ibl *= ambient_occlusion;
+        material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3(1.0), fuzz_color);
     #else
-    material_surface_ibl = material_coated_base_ibl;
+        material_surface_ibl = material_coated_base_ibl;
     #endif
     
 #endif
