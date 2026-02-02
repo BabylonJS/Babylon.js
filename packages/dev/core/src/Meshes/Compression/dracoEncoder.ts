@@ -207,12 +207,12 @@ export class DracoEncoder extends DracoCodec {
         attributes: Array<IDracoAttributeData>,
         indices: Nullable<Uint16Array | Uint32Array>,
         options?: IDracoEncoderOptions
-    ): Promise<Nullable<IDracoEncodedMeshData>> {
+    ): Promise<IDracoEncodedMeshData> {
         const mergedOptions = options ? deepMerge(DefaultEncoderOptions, options) : DefaultEncoderOptions;
 
         if (this._workerPoolPromise) {
             const workerPool = await this._workerPoolPromise;
-            return await new Promise<Nullable<IDracoEncodedMeshData>>((resolve, reject) => {
+            return await new Promise<IDracoEncodedMeshData>((resolve, reject) => {
                 workerPool.push((worker, onComplete) => {
                     const onError = (error: ErrorEvent) => {
                         worker.removeEventListener("error", onError);
@@ -267,7 +267,7 @@ export class DracoEncoder extends DracoCodec {
      * @param options options for the encoding
      * @returns a promise that resolves to the newly-encoded data
      */
-    public async encodeMeshAsync(input: Mesh | Geometry, options?: IDracoEncoderOptions): Promise<Nullable<IDracoEncodedMeshData>> {
+    public async encodeMeshAsync(input: Mesh | Geometry, options?: IDracoEncoderOptions): Promise<IDracoEncodedMeshData> {
         const verticesCount = input.getTotalVertices();
         if (verticesCount == 0) {
             throw new Error("Cannot compress geometry with Draco. There are no vertices.");

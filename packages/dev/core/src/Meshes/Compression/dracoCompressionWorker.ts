@@ -28,7 +28,7 @@ export function EncodeMesh(
     attributes: Array<IDracoAttributeData>,
     indices: Nullable<Uint16Array | Uint32Array>,
     options: IDracoEncoderOptions
-): Nullable<IDracoEncodedMeshData> {
+): IDracoEncodedMeshData {
     const encoderModule = module as EncoderModule;
     let encoder: Nullable<Encoder> = null;
     let meshBuilder: Nullable<MeshBuilder> = null;

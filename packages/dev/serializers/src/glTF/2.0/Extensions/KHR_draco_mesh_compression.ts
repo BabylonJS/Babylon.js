@@ -121,11 +121,6 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
         const promise = DracoEncoder.Default._encodeAsync(attributes, indices, options)
             // eslint-disable-next-line github/no-then
             .then((encodedData) => {
-                if (!encodedData) {
-                    Logger.Error("Draco encoding failed for primitive.");
-                    return;
-                }
-
                 const dracoInfo: IKHRDracoMeshCompression = {
                     bufferView: -1, // bufferView will be set to a real index later, when we write the binary and decide bufferView ordering
                     attributes: encodedData.attributeIds,
