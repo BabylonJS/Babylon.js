@@ -1,9 +1,9 @@
-import { Node } from "core/node";
 import type { Nullable } from "core/index";
-import { TransformNode } from "core/Meshes/transformNode";
 
 import { tokens } from "@fluentui/react-components";
 import { useCallback, useRef, useState } from "react";
+
+import type { SceneExplorerDragDropConfig } from "./sceneExplorer";
 
 /**
  * Props for drag-drop event handlers on a tree item.
@@ -35,48 +35,62 @@ const NoOpDragProps: DragDropProps = {
     onDrop: () => {},
 };
 
+const NoOpSectionDropProps: SectionDropProps = {
+    onDragOver: () => {},
+    onDragLeave: () => {},
+    onDrop: () => {},
+};
+
 // Global drag state - HTML5 drag/drop doesn't allow reading dataTransfer in dragover events.
-let globalDraggedNode: Nullable<Node> = null;
+let globalDragState: {
+    entity: unknown;
+    config: SceneExplorerDragDropConfig<unknown>;
+} | null = null;
 
 /**
  * Options for the drag-drop hook.
  */
-export type NodeReparentDragDropOptions = {
-    /** Called after a successful drop with the dragged node and target (node or null for scene root). */
-    onDrop?: (draggedNode: Node, targetNode: Nullable<Node>) => void;
+export type SceneExplorerDragDropOptions = {
+    /** Called after a successful drop with the dragged entity and target (entity or null for section root). */
+    onDrop?: (draggedEntity: unknown, targetEntity: unknown | null) => void;
 };
 
 /**
- * Hook that provides drag-drop re-parenting for Nodes in the scene explorer.
+ * Hook that provides drag-drop functionality for the scene explorer.
  * Uses vanilla HTML5 drag and drop APIs.
  * @param options Optional callbacks for drag-drop events.
  * @returns State and props factory for drag-drop functionality.
  */
-export function useNodeReparentDragDrop(options?: NodeReparentDragDropOptions) {
-    const [draggedNode, setDraggedNode] = useState<Nullable<Node>>(null);
-    const [dropTarget, setDropTarget] = useState<Nullable<Node>>(null);
+export function useSceneExplorerDragDrop(options?: SceneExplorerDragDropOptions) {
+    const [draggedEntity, setDraggedEntity] = useState<unknown>(null);
+    const [dropTarget, setDropTarget] = useState<unknown>(null);
     const [dropTargetIsRoot, setDropTargetIsRoot] = useState(false);
 
     // Ref to track current valid drop for the onDrop handler
-    const pendingDropRef = useRef<Nullable<{ target: Nullable<Node>; dragged: Node }>>(null);
+    const pendingDropRef = useRef<Nullable<{ target: unknown | null; dragged: unknown; config: SceneExplorerDragDropConfig<unknown> }>>(null);
 
     const resetState = useCallback(() => {
-        setDraggedNode(null);
+        setDraggedEntity(null);
         setDropTarget(null);
         setDropTargetIsRoot(false);
         pendingDropRef.current = null;
     }, []);
 
     const createDragProps = useCallback(
-        (entity: unknown, getName: () => string) => {
-            // Only Nodes can be dragged
-            if (!(entity instanceof Node)) {
+        (entity: unknown, getName: () => string, dragDropConfig: SceneExplorerDragDropConfig<unknown> | undefined): DragDropProps => {
+            // No drag-drop if section doesn't support it
+            if (!dragDropConfig) {
+                return NoOpDragProps;
+            }
+
+            // Check if entity can be dragged
+            if (!dragDropConfig.canDrag(entity)) {
                 return NoOpDragProps;
             }
 
             const onDragStart = (e: React.DragEvent) => {
-                globalDraggedNode = entity;
-                setDraggedNode(entity);
+                globalDragState = { entity, config: dragDropConfig };
+                setDraggedEntity(entity);
 
                 e.dataTransfer.effectAllowed = "move";
                 e.dataTransfer.setData("text/plain", getName());
@@ -102,27 +116,27 @@ export function useNodeReparentDragDrop(options?: NodeReparentDragDropOptions) {
             };
 
             const onDragEnd = () => {
-                globalDraggedNode = null;
+                globalDragState = null;
                 resetState();
             };
 
             const onDragOver = (e: React.DragEvent) => {
-                const dragged = globalDraggedNode;
-                if (!dragged) return;
+                if (!globalDragState) return;
+                const { entity: dragged, config } = globalDragState;
 
                 e.preventDefault();
                 e.stopPropagation();
                 e.dataTransfer.dropEffect = "move";
 
-                // Can't drop on self or on a descendant
-                if (entity === dragged || entity.isDescendantOf(dragged)) {
+                // Check if this is a valid drop target
+                if (!config.canDrop(dragged, entity)) {
                     setDropTarget(null);
                     pendingDropRef.current = null;
                     return;
                 }
 
                 setDropTarget(entity);
-                pendingDropRef.current = { target: entity, dragged };
+                pendingDropRef.current = { target: entity, dragged, config };
             };
 
             const onDragLeave = () => {
@@ -137,12 +151,11 @@ export function useNodeReparentDragDrop(options?: NodeReparentDragDropOptions) {
 
                 const pending = pendingDropRef.current;
                 if (pending) {
-                    // Re-parent the node
-                    ReparentNode(pending.dragged, pending.target);
+                    pending.config.onDrop(pending.dragged, pending.target);
                     options?.onDrop?.(pending.dragged, pending.target);
                 }
 
-                globalDraggedNode = null;
+                globalDragState = null;
                 resetState();
             };
 
@@ -155,30 +168,29 @@ export function useNodeReparentDragDrop(options?: NodeReparentDragDropOptions) {
                 onDrop: onDropHandler,
             };
         },
-        [resetState]
+        [resetState, options]
     );
 
     /**
-     * Creates drag-drop props for a section header that accepts drops to unparent nodes.
-     * @param sectionName The name of the section (only "Nodes" section accepts drops).
+     * Creates drag-drop props for a section header that accepts drops to move entities to section root.
+     * @param dragDropConfig The drag-drop configuration for the section.
      */
     const createSectionDropProps = useCallback(
-        (sectionName: string): SectionDropProps => {
-            // Only the "Nodes" section accepts drops (to move nodes to scene root)
-            if (sectionName !== "Nodes") {
-                return {
-                    onDragOver: () => {},
-                    onDragLeave: () => {},
-                    onDrop: () => {},
-                };
+        (dragDropConfig: SceneExplorerDragDropConfig<unknown> | undefined): SectionDropProps => {
+            // No drop handling if section doesn't support drag-drop
+            if (!dragDropConfig) {
+                return NoOpSectionDropProps;
             }
 
             const onDragOver = (e: React.DragEvent) => {
-                const dragged = globalDraggedNode;
-                if (!dragged) return;
+                if (!globalDragState) return;
+                const { entity: dragged, config } = globalDragState;
 
-                // Only allow drop if node has a parent (otherwise already at root)
-                if (!dragged.parent) return;
+                // Only accept drops from the same section's drag-drop config
+                if (config !== dragDropConfig) return;
+
+                // Check if drop to section root is allowed
+                if (!config.canDrop(dragged, null)) return;
 
                 e.preventDefault();
                 e.stopPropagation();
@@ -186,7 +198,7 @@ export function useNodeReparentDragDrop(options?: NodeReparentDragDropOptions) {
 
                 setDropTarget(null);
                 setDropTargetIsRoot(true);
-                pendingDropRef.current = { target: null, dragged };
+                pendingDropRef.current = { target: null, dragged, config };
             };
 
             const onDragLeave = () => {
@@ -201,12 +213,11 @@ export function useNodeReparentDragDrop(options?: NodeReparentDragDropOptions) {
 
                 const pending = pendingDropRef.current;
                 if (pending && pending.target === null) {
-                    // Re-parent the node to scene root (null parent)
-                    ReparentNode(pending.dragged, null);
+                    pending.config.onDrop(pending.dragged, null);
                     options?.onDrop?.(pending.dragged, null);
                 }
 
-                globalDraggedNode = null;
+                globalDragState = null;
                 resetState();
             };
 
@@ -220,26 +231,10 @@ export function useNodeReparentDragDrop(options?: NodeReparentDragDropOptions) {
     );
 
     return {
-        draggedNode,
+        draggedEntity,
         dropTarget,
         dropTargetIsRoot,
         createDragProps,
         createSectionDropProps,
     };
-}
-
-/**
- * Re-parents a node, preserving world transform for TransformNodes.
- * @param node The node to re-parent.
- * @param newParent The new parent node, or null to move to scene root.
- */
-function ReparentNode(node: Node, newParent: Nullable<Node>): void {
-    if (node.parent === newParent) return;
-
-    // Use setParent for TransformNodes to preserve world transform
-    if (node instanceof TransformNode) {
-        node.setParent(newParent);
-    } else {
-        node.parent = newParent;
-    }
 }

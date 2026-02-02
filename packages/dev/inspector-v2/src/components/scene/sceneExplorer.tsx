@@ -37,7 +37,7 @@ import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
 import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
 import { useCompactMode } from "../../hooks/settingsHooks";
-import { useNodeReparentDragDrop, type DragDropProps, type SectionDropProps } from "./sceneExplorerDragDrop";
+import { useSceneExplorerDragDrop, type DragDropProps, type SectionDropProps } from "./sceneExplorerDragDrop";
 import { TraverseGraph } from "../../misc/graphUtils";
 
 type EntityBase = Readonly<{
@@ -70,6 +70,33 @@ export type EntityDisplayInfo = Partial<IDisposable> &
          */
         onChange?: IReadonlyObservable<void>;
     }>;
+
+/**
+ * Configuration for drag-and-drop behavior within a section.
+ */
+export type SceneExplorerDragDropConfig<T> = Readonly<{
+    /**
+     * Determines whether an entity can be dragged.
+     * @param entity The entity to check.
+     * @returns True if the entity can be dragged, false otherwise.
+     */
+    canDrag: (entity: T) => boolean;
+
+    /**
+     * Determines whether an entity can be dropped onto a target.
+     * @param draggedEntity The entity being dragged.
+     * @param targetEntity The potential drop target entity, or null if dropping onto the section root.
+     * @returns True if the drop is allowed, false otherwise.
+     */
+    canDrop: (draggedEntity: T, targetEntity: T | null) => boolean;
+
+    /**
+     * Called when a drag-and-drop operation completes.
+     * @param draggedEntity The entity that was dragged.
+     * @param targetEntity The entity it was dropped onto, or null if dropped onto the section root.
+     */
+    onDrop: (draggedEntity: T, targetEntity: T | null) => void;
+}>;
 
 export type SceneExplorerSection<T> = Readonly<{
     /**
@@ -119,6 +146,12 @@ export type SceneExplorerSection<T> = Readonly<{
      * A function that returns an array of observables for when entities are moved (e.g. re-parented) within the scene.
      */
     getEntityMovedObservables?: () => readonly IReadonlyObservable<T>[];
+
+    /**
+     * Optional configuration for drag-and-drop behavior within this section.
+     * If not provided, drag-and-drop is disabled for this section.
+     */
+    dragDropConfig?: SceneExplorerDragDropConfig<T>;
 }>;
 
 type InlineCommand = {
@@ -206,6 +239,7 @@ type SectionTreeItemData = {
     type: "section";
     sectionName: string;
     children: EntityTreeItemData[];
+    dragDropConfig?: SceneExplorerDragDropConfig<unknown>;
 };
 
 type EntityTreeItemData = {
@@ -219,6 +253,14 @@ type EntityTreeItemData = {
 };
 
 type TreeItemData = SceneTreeItemData | SectionTreeItemData | EntityTreeItemData;
+
+function GetEntitySection(entityItem: EntityTreeItemData): SectionTreeItemData {
+    let current: SectionTreeItemData | EntityTreeItemData = entityItem;
+    while (current.type === "entity") {
+        current = current.parent;
+    }
+    return current;
+}
 
 function ExpandOrCollapseAll(treeItem: SectionTreeItemData | EntityTreeItemData, open: boolean, openItems: Set<TreeItemValue>) {
     const addOrRemove = open ? openItems.add.bind(openItems) : openItems.delete.bind(openItems);
@@ -745,19 +787,19 @@ export const SceneExplorer: FunctionComponent<{
     const [itemsFilter, setItemsFilter] = useState("");
     const [isSorted, setIsSorted] = useLocalStorage("Babylon/Settings/SceneExplorer/IsSorted", false);
 
-    // Drag-drop state for node reparenting
-    const { draggedNode, dropTarget, dropTargetIsRoot, createDragProps, createSectionDropProps } = useNodeReparentDragDrop({
-        onDrop: (draggedNode, targetNode) => {
-            // Expand the target so user can see the dropped item (if not unparenting to root)
-            if (targetNode) {
+    // Drag-drop state
+    const { draggedEntity, dropTarget, dropTargetIsRoot, createDragProps, createSectionDropProps } = useSceneExplorerDragDrop({
+        onDrop: (draggedEntity, targetEntity) => {
+            // Expand the target so user can see the dropped item (if not dropping to root)
+            if (targetEntity) {
                 setOpenItems((prev) => {
                     const next = new Set(prev);
-                    next.add(GetEntityId(targetNode as EntityBase));
+                    next.add(GetEntityId(targetEntity as EntityBase));
                     return next;
                 });
             }
-            // Select the dragged node
-            setSelectedEntity(draggedNode);
+            // Select the dragged entity
+            setSelectedEntity(draggedEntity);
         },
     });
 
@@ -814,11 +856,12 @@ export const SceneExplorer: FunctionComponent<{
         for (const section of sections) {
             const rootEntities = section.getRootEntities();
 
-            const sectionTreeItem = {
+            const sectionTreeItem: SectionTreeItemData = {
                 type: "section",
                 sectionName: section.displayName,
                 children: [],
-            } as const satisfies SectionTreeItemData;
+                dragDropConfig: section.dragDropConfig as SceneExplorerDragDropConfig<unknown> | undefined,
+            };
 
             sectionTreeItems.push(sectionTreeItem);
             allTreeItems.set(sectionTreeItem.sectionName, sectionTreeItem);
@@ -1079,19 +1122,20 @@ export const SceneExplorer: FunctionComponent<{
                                     commandProviders={sectionCommandProviders}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
-                                    isDropTarget={dropTargetIsRoot && item.sectionName === "Nodes"}
-                                    dropProps={createSectionDropProps(item.sectionName)}
+                                    isDropTarget={dropTargetIsRoot && item.dragDropConfig !== undefined}
+                                    dropProps={createSectionDropProps(item.dragDropConfig)}
                                 />
                             );
                         } else {
-                            // Create drag props for this entity (only works for Nodes)
+                            // Get the section's dragDropConfig for this entity
+                            const section = GetEntitySection(item);
                             const getName = () => {
                                 const displayInfo = item.getDisplayInfo();
                                 const name = displayInfo.name;
                                 displayInfo.dispose?.();
                                 return name;
                             };
-                            const dragProps = createDragProps(item.entity, getName);
+                            const dragProps = createDragProps(item.entity, getName, section.dragDropConfig);
 
                             return (
                                 <EntityTreeItem
@@ -1104,7 +1148,7 @@ export const SceneExplorer: FunctionComponent<{
                                     commandProviders={entityCommandProviders as SceneExplorerCommandProvider<EntityBase>[]}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
-                                    isDragging={draggedNode === item.entity}
+                                    isDragging={draggedEntity === item.entity}
                                     isDropTarget={dropTarget === item.entity}
                                     dragProps={dragProps}
                                 />

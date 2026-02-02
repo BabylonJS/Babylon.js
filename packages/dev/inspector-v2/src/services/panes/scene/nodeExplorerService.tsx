@@ -1,4 +1,4 @@
-import type { IDisposable, Node, Nullable } from "core/index";
+import type { IDisposable, Nullable } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IGizmoService } from "../../gizmoService";
 import type { ISceneContext } from "../../sceneContext";
@@ -18,6 +18,7 @@ import {
     VideoRegular,
 } from "@fluentui/react-icons";
 
+import { Node } from "core/node";
 import { Camera } from "core/Cameras/camera";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { Light } from "core/Lights/light";
@@ -130,6 +131,35 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 scene.onLightRemovedObservable,
             ],
             getEntityMovedObservables: () => [nodeMovedObservable],
+            dragDropConfig: {
+                canDrag: (node) => node instanceof Node,
+                canDrop: (draggedNode, targetNode) => {
+                    // Can't drop on self
+                    if (targetNode === draggedNode) {
+                        return false;
+                    }
+                    // Can't drop on a descendant
+                    if (targetNode !== null && targetNode.isDescendantOf(draggedNode)) {
+                        return false;
+                    }
+                    // Can drop onto section root (null) only if node has a parent
+                    if (targetNode === null) {
+                        return draggedNode.parent !== null;
+                    }
+                    return true;
+                },
+                onDrop: (draggedNode, targetNode) => {
+                    if (draggedNode.parent === targetNode) {
+                        return;
+                    }
+                    // Use setParent for TransformNodes to preserve world transform
+                    if (draggedNode instanceof TransformNode) {
+                        draggedNode.setParent(targetNode);
+                    } else {
+                        draggedNode.parent = targetNode;
+                    }
+                },
+            },
         });
 
         const abstractMeshBoundingBoxCommandRegistration = sceneExplorerService.addEntityCommand({
