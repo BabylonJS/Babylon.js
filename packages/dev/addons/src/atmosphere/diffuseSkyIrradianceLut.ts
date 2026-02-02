@@ -187,15 +187,14 @@ export class DiffuseSkyIrradianceLut {
             return false;
         }
 
-        const engine = this._atmosphere.scene.getEngine();
+        const effectRenderer = this._effectRenderer!;
+        effectRenderer.saveStates();
 
+        const engine = this._atmosphere.scene.getEngine();
         engine.bindFramebuffer(this.renderTarget.renderTarget!, undefined, undefined, undefined, true);
 
-        const effectRenderer = this._effectRenderer!;
-        effectRenderer.applyEffectWrapper(effectWrapper);
-
-        effectRenderer.saveStates();
         effectRenderer.setViewport();
+        effectRenderer.applyEffectWrapper(effectWrapper);
 
         const effect = effectWrapper.effect;
         effectRenderer.bindBuffers(effect);
