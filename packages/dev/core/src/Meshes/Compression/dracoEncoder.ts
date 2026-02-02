@@ -63,7 +63,7 @@ function PrepareAttributesForDraco(input: Mesh | Geometry, excludedAttributes?: 
     for (const kind of input.getVerticesDataKinds()) {
         if (excludedAttributes?.includes(kind)) {
             if (kind === VertexBuffer.PositionKind) {
-                throw new Error("Cannot exclude position attribute from Draco encoding.");
+                throw new Error("Draco: Cannot exclude position attribute from encoding.");
             }
             continue;
         }
@@ -258,7 +258,7 @@ export class DracoEncoder extends DracoCodec {
             return EncodeMesh(encoder.module, attributes, indices, mergedOptions);
         }
 
-        throw new Error("Draco encoder module is not available");
+        throw new Error("Draco: Encoder module is not available");
     }
 
     /**
@@ -270,12 +270,12 @@ export class DracoEncoder extends DracoCodec {
     public async encodeMeshAsync(input: Mesh | Geometry, options?: IDracoEncoderOptions): Promise<IDracoEncodedMeshData> {
         const verticesCount = input.getTotalVertices();
         if (verticesCount == 0) {
-            throw new Error("Cannot compress geometry with Draco. There are no vertices.");
+            throw new Error("Draco: Cannot encode geometry with no vertices.");
         }
 
         // Prepare parameters for encoding
         if (input instanceof Mesh && input.morphTargetManager && options?.method === "MESH_EDGEBREAKER_ENCODING") {
-            Logger.Warn("Cannot use Draco EDGEBREAKER method with morph targets. Falling back to SEQUENTIAL method.");
+            Logger.Warn("Draco: Cannot use EDGEBREAKER encoding method with morph targets. Falling back to SEQUENTIAL method.");
             options.method = "MESH_SEQUENTIAL_ENCODING";
         }
 
