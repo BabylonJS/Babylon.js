@@ -228,6 +228,11 @@ export class DracoEncoder extends DracoCodec {
                             worker.removeEventListener("message", onMessage);
                             resolve(message.data.encodedMeshData);
                             onComplete();
+                        } else if (message.data.id === "encodeMeshError") {
+                            worker.removeEventListener("error", onError);
+                            worker.removeEventListener("message", onMessage);
+                            reject(new Error(message.data.errorMessage));
+                            onComplete();
                         }
                     };
 

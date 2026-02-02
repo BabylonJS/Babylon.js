@@ -149,11 +149,16 @@ export function EncoderWorkerFunction(): void {
                 if (!encoderPromise) {
                     throw new Error("Draco encoder module is not available");
                 }
-                // eslint-disable-next-line github/no-then
-                encoderPromise.then((encoder) => {
-                    const result = EncodeMesh(encoder, message.attributes, message.indices, message.options);
-                    postMessage({ id: "encodeMeshDone", encodedMeshData: result }, result ? [result.data.buffer] : undefined);
-                });
+                encoderPromise
+                    // eslint-disable-next-line github/no-then
+                    .then((encoder) => {
+                        const result = EncodeMesh(encoder, message.attributes, message.indices, message.options);
+                        postMessage({ id: "encodeMeshDone", encodedMeshData: result }, result ? [result.data.buffer] : undefined);
+                    })
+                    // eslint-disable-next-line github/no-then
+                    .catch((e) => {
+                        postMessage({ id: "encodeMeshError", errorMessage: e instanceof Error ? e.message : String(e) });
+                    });
                 break;
             }
         }

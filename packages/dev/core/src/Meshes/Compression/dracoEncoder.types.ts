@@ -80,7 +80,12 @@ interface IEncodeDoneMessage {
     encodedMeshData: Nullable<IDracoEncodedMeshData>;
 }
 
+interface IEncodeErrorMessage {
+    id: "encodeMeshError";
+    errorMessage: string;
+}
+
 /**
  * @internal
  */
-export type EncoderMessage = IEncodeDoneMessage;
+export type EncoderMessage = IEncodeDoneMessage | IEncodeErrorMessage;
