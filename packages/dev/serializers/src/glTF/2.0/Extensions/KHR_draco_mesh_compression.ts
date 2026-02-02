@@ -145,7 +145,7 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
             })
             // eslint-disable-next-line github/no-then
             .catch((error) => {
-                Logger.Error("Draco encoding failed for primitive: " + error);
+                Logger.Error("KHR_draco_mesh_compression: Failed to export Draco-encoded primitive. " + error);
             });
 
         this._encodePromises.push(promise);
