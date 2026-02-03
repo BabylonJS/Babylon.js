@@ -315,16 +315,24 @@
         #endif
 
         #ifdef SCATTERING
-            // Isotropic Scattering
-            
-            #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
-                var scatterVector: vec3f = mix(uniforms.vReflectionDominantDirection, normalW, max3(iso_scatter_density));
-            #else
-                var scatterVector: vec3f = normalW;
+            #ifdef GEOMETRY_THIN_WALLED
+                iso_scatter_density = vec3f(1.0f);
             #endif
+            #ifdef GEOMETRY_THIN_WALLED
+                var scatterVector: vec3f = normalW;
+            #else
+                // Handle isotropic and backscattering components
+                // We'll approximate scattering as a diffuse lobe. If we have a dominant lighting direction,
+                // we can bias the lobe towards that direction as the scatter density gets thinner.
+                #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
+                    var scatterVector: vec3f = mix(uniforms.vReflectionDominantDirection, normalW, max3(iso_scatter_density));
+                #else
+                    var scatterVector: vec3f = normalW;
+                #endif
 
-            // Backscattering can be approximated by sampling IBL along the view vector.
-            scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
+                // We'll then bend the sample direction towards the view direction based on the anisotropy to approximate backscattering.
+                scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
+            #endif
             var scatteredEnvironmentLight: vec3f = sampleIrradiance(
                 scatterVector
                 #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
@@ -349,20 +357,34 @@
                 #endif
                 , uniforms.vReflectionInfos
                 , viewDirectionW
-                , 1.0f
-                , volumeParams.multi_scatter_color
+                #if defined(GEOMETRY_THIN_WALLED)
+                    , base_diffuse_roughness
+                    , subsurface_color.rgb
+                #else
+                    , 1.0f
+                    , volumeParams.multi_scatter_color
+                #endif
             );
 
-            // Direct Transmission (aka forward-scattered light from back side)
-            let forward_scattered_light: vec3f = forwardScatteredEnvironmentLight * volume_absorption;
-            // Back Scattering
-            let back_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
-            // Iso Scattering
-            let iso_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * volumeParams.multi_scatter_color, iso_scatter_density);
+            #ifdef GEOMETRY_THIN_WALLED
+                // Direct Transmission (aka forward-scattered light from back side)
+                let forward_scattered_light: vec3f = forwardScatteredEnvironmentLight * transmission_tint * volumeParams.multi_scatter_color * volumeParams.multi_scatter_color;
+                // Back Scattering
+                let back_scattered_light: vec3f = scatteredEnvironmentLight * volumeParams.multi_scatter_color;
+                // Lerp between the back and forward scattering.
+                slab_translucent_base_ibl = mix(back_scattered_light, forward_scattered_light, 0.5f + 0.5f * volumeParams.anisotropy);
+            #else
+                // Direct Transmission (aka forward-scattered light from back side)
+                let forward_scattered_light: vec3f = forwardScatteredEnvironmentLight * volume_absorption;
+                // Back Scattering
+                let back_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
+                // Iso Scattering
+                let iso_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * volumeParams.multi_scatter_color, iso_scatter_density);
 
-            // Lerp between the three based on the anisotropy
-            slab_translucent_base_ibl = mix(back_scattered_light, iso_scattered_light, back_to_iso_scattering_blend);
-            slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend) * transmission_tint;
+                // Lerp between the three based on the anisotropy
+                slab_translucent_base_ibl = mix(back_scattered_light, iso_scattered_light, back_to_iso_scattering_blend);
+                slab_translucent_base_ibl = mix(slab_translucent_base_ibl, forward_scattered_light, iso_to_forward_scattering_blend) * transmission_tint;
+            #endif
         #else
             slab_translucent_base_ibl += forwardScatteredEnvironmentLight * transmission_tint * volume_absorption;
         #endif
