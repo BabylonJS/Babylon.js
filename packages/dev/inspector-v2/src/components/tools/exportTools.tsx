@@ -68,14 +68,14 @@ export const ExportBabylonTools: FunctionComponent<{ scene: Scene }> = ({ scene 
             Logger.Error(error);
             alert(error);
         }
-    }, [environmentTexture, babylonExportOptions]);
+    }, [scene, environmentTexture, babylonExportOptions]);
 
     return (
         <>
             <ButtonLine label="Export to Babylon" icon={ArrowDownloadRegular} onClick={exportBabylon} />
             {!scene.getEngine().premultipliedAlpha && environmentTexture && environmentTexture._prefiltered && scene.activeCamera && (
                 <>
-                    <ButtonLine label="Generate .env texture" icon={ArrowDownloadRegular} onClick={createEnvTexture} />
+                    <ButtonLine label="Generate .env Texture" icon={ArrowDownloadRegular} onClick={createEnvTexture} />
                     {environmentTexture.irradianceTexture && (
                         <SwitchPropertyLine
                             key="iblDiffuse"

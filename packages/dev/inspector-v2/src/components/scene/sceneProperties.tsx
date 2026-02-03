@@ -202,7 +202,7 @@ export const SceneShadowsProperties: FunctionComponent<{ scene: Scene }> = (prop
     return (
         <>
             <ButtonLine
-                label={"Normalize scene"}
+                label={"Normalize Scene"}
                 onClick={() => {
                     for (const mesh of scene.meshes) {
                         mesh.normalizeToUnitCube(true);
@@ -271,7 +271,7 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
             />
 
             {scene.environmentTexture && (
-                <LinkPropertyLine label="Env. texture" value={scene.environmentTexture.name} onLink={() => (selectionService.selectedEntity = scene.environmentTexture)} />
+                <LinkPropertyLine label="Env. Texture" value={scene.environmentTexture.name} onLink={() => (selectionService.selectedEntity = scene.environmentTexture)} />
             )}
 
             <FileUploadLine
