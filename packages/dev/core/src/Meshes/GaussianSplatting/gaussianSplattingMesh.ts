@@ -2288,7 +2288,7 @@ export class GaussianSplattingMesh extends Mesh {
         this.setWorldMatrixForPart(newPartIndex, partWorldMatrix);
 
         // Create a proxy mesh to manipulate the part transform
-        const proxyMesh = new GaussianSplattingPartProxyMesh(other.name, this, newPartIndex, other, this.getScene());
+        const proxyMesh = new GaussianSplattingPartProxyMesh(other.name, this.getScene(), this, other, newPartIndex);
 
         if (disposeOther) {
             other.dispose();

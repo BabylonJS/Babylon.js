@@ -32,13 +32,13 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
 
     /**
      * Creates a new Gaussian Splatting part proxy mesh
-     * @param name defines the name of the mesh
-     * @param proxiedMesh the Gaussian Splatting mesh that this proxy represents a part of
-     * @param partIndex the index of the part in the compound mesh
-     * @param compoundSplatMesh the original Gaussian Splatting mesh that was merged into the compound
-     * @param scene defines the hosting scene
+     * @param name The name of the proxy mesh
+     * @param scene The scene the proxy mesh belongs to
+     * @param compoundSplatMesh The original Gaussian Splatting mesh that was merged into the compound
+     * @param proxiedMesh The Gaussian Splatting mesh that this proxy represents a part of
+     * @param partIndex The index of the part in the compound mesh
      */
-    constructor(name: string, proxiedMesh: GaussianSplattingMesh, partIndex: number, compoundSplatMesh: GaussianSplattingMesh, scene: Nullable<Scene>) {
+    constructor(name: string, scene: Nullable<Scene>, compoundSplatMesh: GaussianSplattingMesh, proxiedMesh: GaussianSplattingMesh, partIndex: number) {
         super(name, scene);
         this.proxiedMesh = proxiedMesh;
         this._partIndex = partIndex;
