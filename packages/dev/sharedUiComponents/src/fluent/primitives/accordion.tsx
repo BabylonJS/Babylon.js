@@ -333,6 +333,10 @@ const AccordionPinnedContainer: FunctionComponent = () => {
     const classes = useStyles();
     const accordionContext = useContext(AccordionContext);
 
+    useEffect(() => {
+        accordionContext?.renderItems();
+    }, []);
+
     return (
         <div ref={accordionContext?.pinnedItems?.containerRef} className={classes.pinnedContainer}>
             <MessageBar className={classes.pinnedContainerEmpty}>

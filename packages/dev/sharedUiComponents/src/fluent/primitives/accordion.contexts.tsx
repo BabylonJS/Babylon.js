@@ -77,42 +77,6 @@ class ListedItem<T> {
 }
 
 /**
- * Helper hook for debounced re-renders.
- * - Triggers immediately and after an `interval` of inactivity.
- *
- * @returns The counter state and its associated setter function.
- */
-const useDebouncedCounter: () => [number, (interval?: number) => void] = () => {
-    const [counter, setCounter] = useReducer(($) => ++$, 0);
-
-    return [
-        counter,
-        useMemo(() => {
-            let timerId: undefined | ReturnType<typeof setTimeout> = undefined;
-            let isPending = false;
-
-            return (interval = 0) => {
-                if (timerId) {
-                    clearTimeout(timerId);
-                    isPending = true;
-                } else {
-                    setTimeout(setCounter);
-                    isPending = false;
-                }
-
-                timerId = setTimeout(() => {
-                    if (isPending) {
-                        setCounter();
-                    }
-
-                    timerId = undefined;
-                }, interval);
-            };
-        }, []),
-    ];
-};
-
-/**
  * Context: `Accordion`.
  */
 export type AccordionContext = {
@@ -125,7 +89,7 @@ export type AccordionContext = {
     /** Map of all mounted `AccordionSectionItem` contexts, indexed by their unique ID. */
     itemContextMap: Map<string, AccordionSectionItemContext>;
     /** Triggers a render cycle for all mounted items. */
-    renderItems: (interval?: number) => void;
+    renderItems: (filter?: { sections?: string[]; items?: string[] }) => void;
     /** Tracks whether the `Accordion` is in edit mode. */
     editMode?: {
         is: boolean;
@@ -205,15 +169,19 @@ export const useAccordionContext = (props: AccordionProps) => {
                     return accordionContext;
                 },
 
-                renderItems: (interval?: number) => {
+                renderItems: (filter) => {
                     const { sectionContextMap, itemContextMap } = accordionContext;
 
                     for (const sectionContext of sectionContextMap.values()) {
-                        sectionContext.renderSection(interval);
+                        if (filter?.sections?.includes(sectionContext.sectionId) ?? true) {
+                            sectionContext.renderSection();
+                        }
                     }
 
                     for (const itemContext of itemContextMap.values()) {
-                        itemContext.renderItem(interval);
+                        if (filter?.items?.includes(itemContext.itemUniqueId) ?? true) {
+                            itemContext.renderItem();
+                        }
                     }
                 },
 
@@ -281,7 +249,7 @@ export type AccordionSectionBlockContext = {
     /** The ID of the `AccordionSectionBlock`, unique within the `Accordion` instance. */
     sectionId: string;
     /** Triggers a render cycle for the section. */
-    renderSection: (interval?: number) => void;
+    renderSection: () => void;
     /** Gets the section empty state. */
     isEmpty: boolean;
 };
@@ -297,13 +265,13 @@ export const AccordionSectionBlockContext = createContext<undefined | AccordionS
 export const useAccordionSectionBlockContext = (props: AccordionSectionBlockProps) => {
     const { sectionId } = props;
     const accordionContext = useContext(AccordionContext);
-    const [, setRenderCounter] = useDebouncedCounter();
+    const [, setRenderCounter] = useReducer(($) => ++$, 0);
 
     return useMemo(() => {
         if (accordionContext) {
             const sectionContext: AccordionSectionBlockContext = {
                 sectionId,
-                renderSection: setRenderCounter,
+                renderSection: () => setTimeout(setRenderCounter),
 
                 get isEmpty() {
                     if (accordionContext) {
@@ -356,7 +324,7 @@ export type AccordionSectionItemContext = {
     /** The searchable text label for the item. */
     itemLabel?: string;
     /** Triggers a render cycle for the item. */
-    renderItem: (interval?: number) => void;
+    renderItem: () => void;
     /** Whether the item is a descendant of another `AccordionSectionItem`. */
     isDescendant: boolean;
     /** Whether the item is not interactable. */
@@ -391,7 +359,7 @@ export const useAccordionSectionItemContext = (props: AccordionSectionItemProps)
     const sectionId = sectionContext?.sectionId ?? "";
     const isDescendant = !!useContext(AccordionSectionItemContext);
     const itemUniqueId = useMemo(() => `${accordionContext?.accordionId}\0${sectionId}\0${itemId}`, []);
-    const [renderCounter, setRenderCounter] = useDebouncedCounter();
+    const [renderCounter, setRenderCounter] = useReducer(($) => ++$, 0);
     const [ctrlMode, setCtrlMode] = useState(false);
 
     const itemContext = useMemo(() => {
@@ -403,7 +371,7 @@ export const useAccordionSectionItemContext = (props: AccordionSectionItemProps)
                 itemUniqueId,
                 itemId,
                 itemLabel,
-                renderItem: setRenderCounter,
+                renderItem: () => setTimeout(setRenderCounter),
                 isDescendant: isDescendant,
                 isStatic: staticItem ?? false,
             };
@@ -437,20 +405,15 @@ export const useAccordionSectionItemContext = (props: AccordionSectionItemProps)
     useEffect(() => {
         if (accordionContext && itemContext && !isDescendant) {
             const { itemContextMap, renderItems } = accordionContext;
-            const isPinned = itemContext.pinned?.is;
+            const { sectionId, pinned } = itemContext;
+            const filter = { sections: [pinned?.is ? "Pinned" : sectionId], items: [] };
 
             itemContextMap.set(itemUniqueId, itemContext);
-
-            if (isPinned) {
-                renderItems(10);
-            }
+            renderItems(filter);
 
             return () => {
                 itemContextMap.delete(itemUniqueId);
-
-                if (isPinned) {
-                    renderItems(10);
-                }
+                renderItems(filter);
             };
         }
 
