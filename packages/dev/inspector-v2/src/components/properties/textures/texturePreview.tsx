@@ -10,6 +10,7 @@ import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { ApplyChannelsToTextureDataAsync } from "../../../misc/textureTools";
 import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { AccordionContext } from "shared-ui-components/fluent/primitives/accordion.contexts";
 
 const useStyles = makeStyles({
     root: {
@@ -80,6 +81,10 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
 
     const { size } = useContext(ToolContext);
 
+    // Watch for pinned state changes - when portaled, the canvas needs to be redrawn
+    const accordionCtx = useContext(AccordionContext);
+    const isPinned = accordionCtx?.state.pinnedIds.some((id) => id.endsWith("\0TexturePreview")) ?? false;
+
     const updatePreviewAsync = useCallback(async () => {
         const canvas = canvasRef.current;
         if (!canvas) {
@@ -119,8 +124,13 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
         void updatePreviewAsync();
     }, [updatePreviewAsync]);
 
+    // Redraw canvas after portaling (pinned state change moves DOM element, which can clear canvas)
+    useEffect(() => {
+        void updatePreviewAsync();
+    }, [isPinned]);
+
     return (
-        <LineContainer uniqueId="TexturePreview" onRender={updatePreviewAsync}>
+        <LineContainer uniqueId="TexturePreview">
             <div className={classes.root}>
                 {disableToolbar ? null : texture.isCube ? (
                     <Toolbar className={classes.controls} size={size} aria-label="Cube Faces">

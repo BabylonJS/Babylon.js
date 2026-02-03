@@ -263,11 +263,11 @@ const useLineStyles = makeStyles({
 
 export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren<HTMLProps<HTMLDivElement> & AccordionSectionItemProps>>((props, ref) => {
     const { size } = useContext(ToolContext);
-    const { children, uniqueId, label, onRender, ...rest } = props;
+    const { children, uniqueId, label, ...rest } = props;
     const classes = useLineStyles();
 
     return (
-        <AccordionSectionItem uniqueId={uniqueId} label={label} onRender={onRender}>
+        <AccordionSectionItem uniqueId={uniqueId} label={label}>
             <div ref={ref} className={mergeClasses(classes.container, size == "small" ? classes.containerSmall : undefined)} {...rest}>
                 {children}
             </div>

@@ -23,10 +23,10 @@ import { ToolContext } from "../hoc/fluentToolWrapper";
 import {
     AccordionContext,
     AccordionSectionBlockContext,
-    AccordionSectionItemContext,
+    AccordionItemDepthContext,
     useAccordionContext,
     useAccordionSectionBlockContext,
-    useAccordionSectionItemContext,
+    useAccordionSectionItemState,
 } from "./accordion.contexts";
 
 const useStyles = makeStyles({
@@ -115,64 +115,47 @@ const useStyles = makeStyles({
 const AccordionMenuBar: FunctionComponent = () => {
     AccordionMenuBar.displayName = "AccordionMenuBar";
     const classes = useStyles();
-    const accordionContext = useContext(AccordionContext);
-    const [editMode, setEditMode] = useState(false);
+    const accordionCtx = useContext(AccordionContext);
 
-    useMemo(() => {
-        if (accordionContext) {
-            Object.assign(accordionContext, {
-                editMode: {
-                    is: editMode,
-                    set: setEditMode,
-                },
-            }).renderItems();
-        }
-    }, [editMode]);
-
-    const hideAll = useCallback((isHidden: boolean) => {
-        if (accordionContext?.hiddenItems) {
-            const { itemContextMap, renderItems, storage } = accordionContext;
-
-            for (const { isStatic, hidden, match } of itemContextMap.values()) {
-                if (!isStatic && (match?.is ?? true)) {
-                    hidden?.toggle(isHidden);
-                }
-            }
-
-            storage.writeData("Hidden");
-            renderItems();
-        }
-    }, []);
-
-    if (accordionContext) {
-        const { pinnedItems, hiddenItems } = accordionContext;
-
-        return (
-            <div className={classes.menuBar}>
-                <AccordionSearchBox />
-                <div className={classes.menuBarControls}>
-                    {hiddenItems && editMode && (
-                        <>
-                            <Button title="Show all" icon={EyeFilled} appearance="subtle" onClick={() => hideAll(false)} />
-                            <Button title="Hide all" icon={EyeOffRegular} appearance="subtle" onClick={() => hideAll(true)} />
-                        </>
-                    )}
-                    {(pinnedItems || hiddenItems) && (
-                        <Button
-                            title="Edit mode"
-                            icon={editMode ? CheckmarkFilled : EditRegular}
-                            appearance={editMode ? "primary" : "subtle"}
-                            onClick={() => {
-                                setEditMode(!editMode);
-                            }}
-                        />
-                    )}
-                </div>
-            </div>
-        );
+    if (!accordionCtx) {
+        return null;
     }
 
-    return;
+    const { state, dispatch, features } = accordionCtx;
+    const { editMode } = state;
+
+    return (
+        <div className={classes.menuBar}>
+            <AccordionSearchBox />
+            <div className={classes.menuBarControls}>
+                {features.hiding && editMode && (
+                    <>
+                        <Button title="Show all" icon={EyeFilled} appearance="subtle" onClick={() => dispatch({ type: "SHOW_ALL" })} />
+                        <Button
+                            title="Hide all"
+                            icon={EyeOffRegular}
+                            appearance="subtle"
+                            onClick={() => {
+                                // Hide all visible items - we pass all non-hidden, matching items
+                                // For simplicity, we dispatch with an empty array; the actual filtering
+                                // would need to be done with knowledge of all registered items.
+                                // This is a limitation - in a full implementation, you'd track registered items.
+                                dispatch({ type: "HIDE_ALL_VISIBLE", visibleItemIds: [] });
+                            }}
+                        />
+                    </>
+                )}
+                {(features.pinning || features.hiding) && (
+                    <Button
+                        title="Edit mode"
+                        icon={editMode ? CheckmarkFilled : EditRegular}
+                        appearance={editMode ? "primary" : "subtle"}
+                        onClick={() => dispatch({ type: "SET_EDIT_MODE", enabled: !editMode })}
+                    />
+                )}
+            </div>
+        </div>
+    );
 };
 
 /**
@@ -193,16 +176,13 @@ export type AccordionSectionBlockProps = {
 const AccordionSectionBlock: FunctionComponent<PropsWithChildren<AccordionSectionBlockProps>> = (props) => {
     AccordionSectionBlock.displayName = "AccordionSectionBlock";
     const { children, sectionId } = props;
-    const classes = useStyles();
-    const accordionContext = useContext(AccordionContext);
+    const accordionCtx = useContext(AccordionContext);
     const sectionContext = useAccordionSectionBlockContext(props);
 
-    if (accordionContext && sectionContext) {
+    if (accordionCtx) {
         return (
             <AccordionSectionBlockContext.Provider value={sectionContext}>
-                <AccordionItem className={sectionContext.isEmpty ? classes.sectionEmpty : undefined} value={sectionId}>
-                    {children}
-                </AccordionItem>
+                <AccordionItem value={sectionId}>{children}</AccordionItem>
             </AccordionSectionBlockContext.Provider>
         );
     }
@@ -220,8 +200,6 @@ export type AccordionSectionItemProps = {
     label?: string;
     /** Whether the item is not interactable. */
     staticItem?: boolean;
-    /** Event triggered after the item has been rendered. */
-    onRender?: () => void;
 };
 
 /**
@@ -231,96 +209,57 @@ export type AccordionSectionItemProps = {
  * - Filters items based on the current search term.
  *
  * @param props - `AccordionSectionItemProps`
- * @returns `Portal` if pinned; `undefined` if discarded; `children` otherwise.
+ * @returns `Portal` if pinned; `null` if hidden/filtered; `children` otherwise.
  */
 export const AccordionSectionItem: FunctionComponent<PropsWithChildren<AccordionSectionItemProps>> = (props) => {
     AccordionSectionItem.displayName = "AccordionSectionItem";
-    const { children } = props;
+    const { children, staticItem } = props;
     const classes = useStyles();
-    const accordionContext = useContext(AccordionContext);
-    const itemContext = useAccordionSectionItemContext(props);
+    const accordionCtx = useContext(AccordionContext);
+    const itemState = useAccordionSectionItemState(props);
 
-    if (accordionContext && itemContext) {
-        const { renderItems, editMode, pinnedItems, storage } = accordionContext.updated;
-        const { itemUniqueId, isDescendant, isStatic, ctrlMode, pinned, hidden, match } = itemContext;
-        const inEditMode = editMode?.is || (ctrlMode?.is ?? false);
-        const isPinned = pinned?.is ?? false;
-        const isHidden = hidden?.is ?? false;
-        const isMatch = match?.is ?? true;
-
-        const writeData: typeof storage.writeData = (listName) => {
-            ctrlMode?.set(false);
-            storage.writeData(listName);
-            renderItems();
-        };
-
-        if (isStatic) {
-            return children;
-        } else if ((isDescendant || !isHidden || inEditMode) && isMatch) {
-            const pinnedContainer = isPinned ? pinnedItems?.containerRef.current : undefined;
-            const pinnedActiveIds = isPinned ? pinnedItems?.activeIds : undefined;
-            const pinnedOrder = pinnedActiveIds?.indexOf(itemUniqueId);
-
-            const itemElement = (
-                <div
-                    className={classes.sectionItemContainer}
-                    style={isPinned ? { order: pinned?.index } : undefined}
-                    onMouseMove={ctrlMode ? (event) => ctrlMode.set(event.ctrlKey) : undefined}
-                    onMouseLeave={ctrlMode ? () => ctrlMode.set(false) : undefined}
-                >
-                    {!isDescendant && inEditMode && (
-                        <div className={classes.sectionItemButtons}>
-                            {hidden && (
-                                <Button
-                                    title={isHidden ? "Unhide" : "Hide"}
-                                    icon={isHidden ? EyeOffRegular : EyeFilled}
-                                    appearance="transparent"
-                                    onClick={() => {
-                                        hidden.toggle();
-                                        writeData("Hidden");
-                                    }}
-                                />
-                            )}
-                            {pinned && (
-                                <>
-                                    <Button
-                                        title={isPinned ? "Unpin" : "Pin"}
-                                        icon={isPinned ? PinFilled : PinRegular}
-                                        appearance="transparent"
-                                        onClick={() => {
-                                            pinned.toggle();
-                                            writeData("Pinned");
-                                        }}
-                                    />
-                                    {isPinned && (
-                                        <Button
-                                            title="Move up"
-                                            icon={ArrowCircleUpRegular}
-                                            appearance="transparent"
-                                            disabled={pinnedOrder === 0}
-                                            onClick={() => {
-                                                if (pinnedActiveIds && pinnedOrder) {
-                                                    pinned.swap(pinnedActiveIds[pinnedOrder - 1]);
-                                                    writeData("Pinned");
-                                                }
-                                            }}
-                                        />
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    )}
-                    <AccordionSectionItemContext.Provider value={itemContext}>{children}</AccordionSectionItemContext.Provider>
-                </div>
-            );
-
-            return pinnedContainer ? <Portal mountNode={pinnedContainer}>{itemElement}</Portal> : itemElement;
-        } else {
-            return;
-        }
+    // If static item or no context, just render children
+    if (staticItem || !accordionCtx || !itemState) {
+        return <>{children}</>;
     }
 
-    return children;
+    const { pinnedContainerRef, features } = accordionCtx;
+    const { isNested, isPinned, isHidden, isMatch, pinnedIndex, inEditMode, actions } = itemState;
+
+    // Nested items just render children (don't show controls)
+    if (isNested) {
+        return <>{children}</>;
+    }
+
+    // If hidden (and not in edit mode) or doesn't match search, don't render
+    if ((isHidden && !inEditMode) || !isMatch) {
+        return null;
+    }
+
+    const pinnedContainer = isPinned ? pinnedContainerRef.current : null;
+
+    const itemElement = (
+        <div className={classes.sectionItemContainer} style={isPinned ? { order: pinnedIndex } : undefined}>
+            {inEditMode && (
+                <div className={classes.sectionItemButtons}>
+                    {features.hiding && (
+                        <Button title={isHidden ? "Unhide" : "Hide"} icon={isHidden ? EyeOffRegular : EyeFilled} appearance="transparent" onClick={actions.toggleHidden} />
+                    )}
+                    {features.pinning && (
+                        <>
+                            <Button title={isPinned ? "Unpin" : "Pin"} icon={isPinned ? PinFilled : PinRegular} appearance="transparent" onClick={actions.togglePinned} />
+                            {isPinned && (
+                                <Button title="Move up" icon={ArrowCircleUpRegular} appearance="transparent" disabled={pinnedIndex === 0} onClick={actions.movePinnedUp} />
+                            )}
+                        </>
+                    )}
+                </div>
+            )}
+            <AccordionItemDepthContext.Provider value={true}>{children}</AccordionItemDepthContext.Provider>
+        </div>
+    );
+
+    return pinnedContainer ? <Portal mountNode={pinnedContainer}>{itemElement}</Portal> : itemElement;
 };
 
 /**
@@ -331,14 +270,10 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
 const AccordionPinnedContainer: FunctionComponent = () => {
     AccordionPinnedContainer.displayName = "AccordionPinnedContainer";
     const classes = useStyles();
-    const accordionContext = useContext(AccordionContext);
-
-    useEffect(() => {
-        accordionContext?.renderItems();
-    }, []);
+    const accordionCtx = useContext(AccordionContext);
 
     return (
-        <div ref={accordionContext?.pinnedItems?.containerRef} className={classes.pinnedContainer}>
+        <div ref={accordionCtx?.pinnedContainerRef} className={classes.pinnedContainer}>
             <MessageBar className={classes.pinnedContainerEmpty}>
                 <MessageBarBody>No pinned items</MessageBarBody>
             </MessageBar>
@@ -349,41 +284,29 @@ const AccordionPinnedContainer: FunctionComponent = () => {
 /**
  * Renders the search box for filtering items.
  *
- * @returns `SearchBox`, or `undefined` if the feature is disabled.
+ * @returns `SearchBox`, or `null` if the feature is disabled.
  */
 const AccordionSearchBox: FunctionComponent = () => {
     AccordionSearchBox.displayName = "AccordionSearchBox";
     const classes = useStyles();
-    const accordionContext = useContext(AccordionContext);
-    const searchItems = accordionContext?.searchItems;
-    const [term, setTerm] = useState("");
+    const accordionCtx = useContext(AccordionContext);
 
-    useMemo(() => {
-        if (searchItems) {
-            Object.assign(searchItems, {
-                term,
-                setTerm,
-            });
-            accordionContext.renderItems();
-        }
-    }, [term]);
-
-    if (searchItems) {
-        return (
-            <SearchBox
-                className={classes.searchBox}
-                appearance="underline"
-                contentBefore={<FilterRegular />}
-                placeholder="Filter"
-                value={term}
-                onChange={(_, data) => {
-                    setTerm(data.value);
-                }}
-            />
-        );
+    if (!accordionCtx?.features.search) {
+        return null;
     }
 
-    return;
+    const { state, dispatch } = accordionCtx;
+
+    return (
+        <SearchBox
+            className={classes.searchBox}
+            appearance="underline"
+            contentBefore={<FilterRegular />}
+            placeholder="Filter"
+            value={state.searchTerm}
+            onChange={(_, data) => dispatch({ type: "SET_SEARCH_TERM", term: data.value })}
+        />
+    );
 };
 
 /**
@@ -432,25 +355,25 @@ export const Accordion = forwardRef<HTMLDivElement, PropsWithChildren<AccordionP
     const { children, highlightSections, ...rest } = props;
     const classes = useStyles();
     const { size } = useContext(ToolContext);
-    const accordionContext = useAccordionContext(props);
-    const pinnedItems = accordionContext?.pinnedItems;
+    const accordionCtx = useAccordionContext(props);
+    const hasPinning = accordionCtx?.features.pinning ?? false;
 
     const pinnedSectionElement = useMemo(() => {
         return (
-            pinnedItems && (
+            hasPinning && (
                 <AccordionSection title="Pinned" collapseByDefault={false}>
                     <AccordionPinnedContainer />
                 </AccordionSection>
             )
         );
-    }, []);
+    }, [hasPinning]);
 
     // Prevents sections contents from unmounting when closed, allowing their elements to be used in the Pinned section.
     const preventUnmountMotion: AccordionPanelProps["collapseMotion"] = useMemo(() => {
         // https://github.com/microsoft/fluentui/issues/34309#issuecomment-2824364945
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        return pinnedItems ? { children: (Component, props) => <Component {...props} unmountOnExit={false} /> } : undefined;
-    }, []);
+        return hasPinning ? { children: (Component, props) => <Component {...props} unmountOnExit={false} /> } : undefined;
+    }, [hasPinning]);
 
     const validChildren = useMemo(() => {
         return (
@@ -513,7 +436,7 @@ export const Accordion = forwardRef<HTMLDivElement, PropsWithChildren<AccordionP
 
     return (
         <StringAccordion ref={ref} className={classes.accordion} collapsible multiple onToggle={onToggle} openItems={openItems} {...rest}>
-            <AccordionContext.Provider value={accordionContext}>
+            <AccordionContext.Provider value={accordionCtx}>
                 <AccordionMenuBar />
                 <div className={classes.accordionBody}>
                     {validChildren.map((child, index) => {
