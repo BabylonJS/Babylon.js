@@ -2,6 +2,22 @@ import type { RefObject } from "react";
 import type { AccordionProps, AccordionSectionBlockProps, AccordionSectionItemProps } from "./accordion";
 import { createContext, createRef, useMemo, useState, useEffect, useReducer, useContext } from "react";
 import { DataStorage } from "core/Misc/dataStorage";
+import { Logger } from "core/Misc/logger";
+
+/**
+ * Helper function that displays debug messages only when not in production.
+ *
+ * @param messageCallback - A callback that returns the message to display, or `undefined` if there is no message.
+ */
+const DEBUG_MESSAGE = (messageCallback: () => undefined | string) => {
+    if (process.env.NODE_ENV !== "production") {
+        const message = messageCallback();
+
+        if (message) {
+            Logger.Warn(message);
+        }
+    }
+};
 
 /**
  * Helper class to track the presence and order of items in a shared array.
@@ -408,6 +424,19 @@ export const useAccordionSectionItemContext = (props: AccordionSectionItemProps)
             const { sectionId, pinned } = itemContext;
             const filter = { sections: [pinned?.is ? "Pinned" : sectionId], items: [] };
 
+            DEBUG_MESSAGE(() => {
+                const currentItemContext = itemContextMap.get(itemUniqueId);
+
+                if (currentItemContext && currentItemContext !== itemContext) {
+                    return (
+                        `Accordion: Duplicate uniqueId "${itemId}" in section "${sectionId}". ` +
+                        `Each item must have a unique, stable ID for pin/hide persistence to work correctly.`
+                    );
+                }
+
+                return;
+            });
+
             itemContextMap.set(itemUniqueId, itemContext);
             renderItems(filter);
 
@@ -438,6 +467,17 @@ export const useAccordionSectionItemContext = (props: AccordionSectionItemProps)
             onRender?.();
         }
     }, [renderCounter]);
+
+    DEBUG_MESSAGE(() => {
+        if (itemContext && itemId !== itemContext.itemId) {
+            return (
+                `Accordion: The uniqueId "${itemId}" in section "${sectionId}" has changed. ` +
+                `Each item must have a unique, stable ID for pin/hide persistence to work correctly.`
+            );
+        }
+
+        return;
+    });
 
     return itemContext;
 };
