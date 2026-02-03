@@ -21,23 +21,31 @@ OpenPBRHomogeneousVolume computeOpenPBRTransmissionVolume(
     volumeParams.scatter_coeff = vec3(0.0);
     volumeParams.anisotropy = anisotropy;
 
-    if (transmission_depth > 0.0) {
-        // Compute only if we have a valid transmission
-        vec3 invDepth = vec3(1. / maxEps(transmission_depth));
-        volumeParams.extinction_coeff = -log(transmission_color.rgb) * invDepth;
-        volumeParams.scatter_coeff = transmission_scatter.rgb * invDepth;
-        volumeParams.absorption_coeff = volumeParams.extinction_coeff - volumeParams.scatter_coeff.rgb;
-        float minCoeff = min3(volumeParams.absorption_coeff);
-        if (minCoeff < 0.0) {
-            volumeParams.absorption_coeff -= vec3(minCoeff);
+    #ifdef GEOMETRY_THIN_WALLED
+        // For thin-walled geometry, we don't compute actual volume coefficients
+        volumeParams.scatter_coeff = vec3(1.0);
+        volumeParams.anisotropy = 1.0; // Forward scattering
+        volumeParams.extinction_coeff = volumeParams.absorption_coeff + volumeParams.scatter_coeff;
+        volumeParams.ss_albedo = vec3(1.0);
+    #else
+        if (transmission_depth > 0.0) {
+            // Compute only if we have a valid transmission
+            vec3 invDepth = vec3(1. / maxEps(transmission_depth));
+            volumeParams.extinction_coeff = -log(transmission_color.rgb) * invDepth;
+            volumeParams.scatter_coeff = transmission_scatter.rgb * invDepth;
+            volumeParams.absorption_coeff = volumeParams.extinction_coeff - volumeParams.scatter_coeff.rgb;
+            float minCoeff = min3(volumeParams.absorption_coeff);
+            if (minCoeff < 0.0) {
+                volumeParams.absorption_coeff -= vec3(minCoeff);
+            }
+            // Set extinction coefficient after shifting the absorption to be non-negative.
+            volumeParams.extinction_coeff = volumeParams.absorption_coeff + volumeParams.scatter_coeff;
+            volumeParams.ss_albedo = volumeParams.scatter_coeff / (volumeParams.extinction_coeff);
+        } else {
+            volumeParams.extinction_coeff = volumeParams.absorption_coeff + volumeParams.scatter_coeff;
+            volumeParams.ss_albedo = vec3(0.0);
         }
-        // Set extinction coefficient after shifting the absorption to be non-negative.
-        volumeParams.extinction_coeff = volumeParams.absorption_coeff + volumeParams.scatter_coeff;
-        volumeParams.ss_albedo = volumeParams.scatter_coeff / (volumeParams.extinction_coeff);
-    } else {
-        volumeParams.extinction_coeff = volumeParams.absorption_coeff + volumeParams.scatter_coeff;
-        volumeParams.ss_albedo = vec3(0.0);
-    }
+    #endif
 
     return volumeParams;
 }

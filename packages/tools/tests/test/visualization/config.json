@@ -3447,6 +3447,21 @@
             "renderCount": 5
         },
         {
+            "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - IBL",
+            "playgroundId": "#GRQHVV#240",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Walled Subsurface Anisotropy - IBL",
+            "playgroundId": "#GRQHVV#241",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Walled Subsurface Transmission Blending - IBL",
+            "playgroundId": "#GRQHVV#242",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458"
         },
