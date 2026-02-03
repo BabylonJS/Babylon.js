@@ -3,6 +3,9 @@ import type { Scene } from "core/scene";
 import { Mesh } from "../mesh";
 import { BoundingInfo } from "../../Culling/boundingInfo";
 import type { GaussianSplattingMesh } from "./gaussianSplattingMesh";
+import type { Ray } from "../../Culling/ray.core";
+import { PickingInfo } from "../../Collisions/pickingInfo";
+import { Vector3 } from "../../Maths/math.vector";
 
 /**
  * Class used as a proxy mesh for a part of a compound Gaussian Splatting mesh
@@ -46,10 +49,11 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
 
         // Set bounding info based on the source mesh's bounds
         this.updateBoundingInfoFromProxiedMesh();
+        this.compoundSplatMesh.setWorldMatrixForPart(this.partIndex, this.getWorldMatrix());
 
         // Update the proxied mesh's part matrix when this proxy's world matrix changes
         this.onAfterWorldMatrixUpdateObservable.add(() => {
-            this.proxiedMesh.setWorldMatrixForPart(this.partIndex, this.getWorldMatrix());
+            this.compoundSplatMesh.setWorldMatrixForPart(this.partIndex, this.getWorldMatrix());
             this.updateBoundingInfoFromProxiedMesh();
         });
     }
@@ -106,5 +110,32 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
      */
     public override set visibility(value: number) {
         this.compoundSplatMesh.setPartVisibility(this.partIndex, value);
+    }
+
+    /**
+     * Checks if a ray intersects with this proxy mesh using only bounding info
+     * @param ray defines the ray to test
+     * @returns the picking info with this mesh set as pickedMesh if hit
+     */
+    public override intersects(ray: Ray): PickingInfo {
+        const pickingInfo = new PickingInfo();
+        const boundingInfo = this.getBoundingInfo();
+
+        if (!boundingInfo) {
+            return pickingInfo;
+        }
+
+        // Always check against bounding info for proxy meshes
+        if (!ray.intersectsSphere(boundingInfo.boundingSphere) || !ray.intersectsBox(boundingInfo.boundingBox)) {
+            return pickingInfo;
+        }
+
+        // If we hit the bounding volume, report this mesh as picked
+        pickingInfo.hit = true;
+        pickingInfo.pickedMesh = this;
+        pickingInfo.distance = Vector3.Distance(ray.origin, boundingInfo.boundingSphere.center);
+        pickingInfo.subMeshId = 0;
+
+        return pickingInfo;
     }
 }
