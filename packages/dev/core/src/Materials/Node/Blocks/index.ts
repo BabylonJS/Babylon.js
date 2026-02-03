@@ -69,3 +69,4 @@ export * from "./storageWriteBlock";
 export * from "./matrixSplitterBlock";
 export * from "./GaussianSplatting/index";
 export * from "./debugBlock";
+export * from "./pannerBlock";
