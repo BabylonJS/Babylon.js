@@ -32,7 +32,7 @@ const useInfoLabelStyles = makeStyles({
         textOverflow: "ellipsis",
     },
     copyable: {
-        cursor: "copy",
+        cursor: "pointer",
     },
 });
 /**

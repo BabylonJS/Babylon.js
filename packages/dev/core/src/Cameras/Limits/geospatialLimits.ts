@@ -100,7 +100,7 @@ export class GeospatialLimits {
      * Computes the effective maximum pitch based on the current camera radius.
      * When pitchDisabledRadiusScale is set, pitch is interpolated from pitchMax to pitchMin
      * as the camera zooms out from x*planetRadius to y*planetRadius.
-     * @param currentRadius The current camera radius (distance from planet center)
+     * @param currentRadius The current camera radius
      * @returns The effective maximum pitch angle
      */
     public getEffectivePitchMax(currentRadius: number): number {
