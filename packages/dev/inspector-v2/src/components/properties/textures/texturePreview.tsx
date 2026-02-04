@@ -30,9 +30,11 @@ const useStyles = makeStyles({
         textOverflow: "ellipsis",
     },
     preview: {
-        border: `1px solid ${tokens.colorNeutralStroke1}`,
+        outline: `1px solid ${tokens.colorNeutralStroke1}`,
         display: "block",
         objectFit: "contain",
+        // Checkerboard background to show transparency
+        background: "repeating-conic-gradient(#B2B2B2 0% 25%, white 25% 50%) 50% / 32px 32px",
     },
     previewContainer: {
         display: "flex",
@@ -40,8 +42,6 @@ const useStyles = makeStyles({
         marginTop: tokens.spacingVerticalXS,
         marginBottom: tokens.spacingVerticalS,
         width: "100%",
-        // Checkerboard background to show transparency
-        background: "repeating-conic-gradient(#B2B2B2 0% 25%, white 25% 50%) 50% / 32px 32px",
     },
 });
 
@@ -94,18 +94,23 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
             await WhenTextureReadyAsync(texture); // Ensure texture is loaded before grabbing size
             const { width: textureWidth, height: textureHeight } = texture.getSize();
 
-            // Set canvas dimensions to the sub-region size
-            canvas.width = width ?? textureWidth;
-            canvas.height = height ?? textureHeight;
+            // Calculate canvas dimensions
+            const canvasWidth = width ?? textureWidth;
+            const canvasHeight = height ?? textureHeight;
 
             // Calculate the width that corresponds to maxHeight while maintaining aspect ratio
-            const aspectRatio = canvas.width / canvas.height;
+            const aspectRatio = canvasWidth / canvasHeight;
             // Use CSS min() to pick the smaller of maxWidth or the width that corresponds to maxHeight
             const imageWidth = `min(${maxWidth}, calc(${maxHeight} * ${aspectRatio}))`;
             setCanvasStyle({ width: imageWidth });
 
-            // Get full texture data, then draw only the sub-region
+            // Fetch texture data BEFORE clearing the canvas to avoid flicker
             const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, face, channels);
+
+            // Now set canvas dimensions (this clears the canvas) and draw immediately
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
             const context = canvas.getContext("2d");
             if (context) {
                 const fullImageData = context.createImageData(textureWidth, textureHeight);
