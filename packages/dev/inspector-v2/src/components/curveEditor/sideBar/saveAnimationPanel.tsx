@@ -143,7 +143,7 @@ export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({
     return (
         <div className={styles.root}>
             <div className={styles.header}>
-                <span className={styles.title}>Save Animations</span>
+                <div className={styles.title}>Save Animations</div>
             </div>
 
             <div className={styles.list}>
@@ -164,7 +164,7 @@ export const SaveAnimationPanel: FunctionComponent<SaveAnimationPanelProps> = ({
                 <Button appearance="secondary" onClick={saveToFile} disabled={selectedAnimations.length === 0} label="Save to File" />
             </div>
 
-            {saveError && <span className={styles.errorText}>{saveError}</span>}
+            {saveError && <div className={styles.errorText}>{saveError}</div>}
             {snippetId && <div className={styles.snippetId}>Saved! Snippet ID: {snippetId}</div>}
         </div>
     );

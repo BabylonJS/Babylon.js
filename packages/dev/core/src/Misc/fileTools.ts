@@ -253,7 +253,7 @@ export const LoadImage = (
             url,
             (data) => {
                 engine
-                    .createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none", ...imageBitmapOptions })
+                    .createImageBitmap(new Blob([data], { type: mimeType }), { premultiplyAlpha: "none", colorSpaceConversion: "none", ...imageBitmapOptions })
                     // eslint-disable-next-line github/no-then
                     .then((imgBmp) => {
                         onLoad(imgBmp);

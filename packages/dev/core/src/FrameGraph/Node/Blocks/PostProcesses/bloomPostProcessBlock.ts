@@ -82,7 +82,7 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBasePos
     }
 
     /** The strength of the bloom. */
-    @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 3 })
+    @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 10 })
     public get weight(): number {
         return this._frameGraphTask.bloom.weight;
     }

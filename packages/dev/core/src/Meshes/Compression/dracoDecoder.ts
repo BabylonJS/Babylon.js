@@ -218,7 +218,7 @@ export class DracoDecoder extends DracoCodec {
             });
         }
 
-        throw new Error("Draco decoder module is not available");
+        throw new Error("Draco: Decoder module is not available");
     }
 
     /**

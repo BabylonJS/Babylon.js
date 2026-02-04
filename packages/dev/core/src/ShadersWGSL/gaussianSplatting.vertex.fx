@@ -23,6 +23,7 @@ uniform alpha: f32;
 
 #if IS_COMPOUND
 uniform partWorld: array<mat4x4<f32>, MAX_PART_COUNT>;
+uniform partVisibility: array<f32, MAX_PART_COUNT>;
 #endif
 
 // textures
@@ -76,6 +77,11 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vColor = vec4f(splat.color.xyz + computeSH(splat, eyeToSplatLocalSpace), splat.color.w * uniforms.alpha);
 #else
     vertexOutputs.vColor = vec4f(splat.color.xyz, splat.color.w * uniforms.alpha);
+#endif
+
+#if IS_COMPOUND
+    // Apply part visibility (0.0 to 1.0) to alpha
+    vertexOutputs.vColor.w *= uniforms.partVisibility[splat.partIndex];
 #endif
 
     vertexOutputs.position = gaussianSplatting(input.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);

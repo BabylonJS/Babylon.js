@@ -252,14 +252,14 @@ export const BottomBar: FunctionComponent = () => {
 
             {/* Current frame display - uses displayFrame for smooth updates during playback */}
             <div className={styles.frameDisplay}>
-                <span className={styles.frameLabel}>Frame:</span>
+                <div className={styles.frameLabel}>Frame:</div>
                 <SpinButton className={styles.spinButton} value={displayFrame} onChange={handleFrameChange} min={state.fromKey} max={state.toKey} disabled={!hasActiveAnimations} />
             </div>
 
             <RangeSelector />
 
             <div className={styles.clipLengthSection}>
-                <span className={styles.frameLabel}>Clip Length:</span>
+                <div className={styles.frameLabel}>Clip Length:</div>
                 <SpinButton className={styles.spinButton} value={clipLength} onChange={handleClipLengthChange} min={1} disabled={!hasActiveAnimations} />
             </div>
         </div>

@@ -19,6 +19,7 @@ import { DebugServiceDefinition } from "./services/panes/debugService";
 import { AnimationGroupPropertiesServiceDefinition } from "./services/panes/properties/animationGroupPropertiesService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
 import { AtmospherePropertiesServiceDefinition } from "./services/panes/properties/atmospherePropertiesService";
+import { AudioPropertiesServiceDefinition } from "./services/panes/properties/audioPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
 import { EffectLayerPropertiesServiceDefinition } from "./services/panes/properties/effectLayerPropertiesService";
@@ -49,6 +50,7 @@ import { PostProcessExplorerServiceDefinition } from "./services/panes/scene/pos
 import { RenderingPipelineExplorerServiceDefinition } from "./services/panes/scene/renderingPipelinesExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
 import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
+import { SoundExplorerServiceDefinition } from "./services/panes/scene/soundExplorerService";
 import { SpriteManagerExplorerServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
 import { TextureExplorerServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
@@ -289,6 +291,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             GuiExplorerServiceDefinition,
             FrameGraphExplorerServiceDefinition,
             AtmosphereExplorerServiceDefinition,
+            SoundExplorerServiceDefinition,
 
             // Properties pane tab and related services.
             ScenePropertiesServiceDefinition,
@@ -312,6 +315,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             AnimationGroupPropertiesServiceDefinition,
             MetadataPropertiesServiceDefinition,
             AtmospherePropertiesServiceDefinition,
+            AudioPropertiesServiceDefinition,
 
             // Texture editor and related services.
             TextureEditorServiceDefinition,

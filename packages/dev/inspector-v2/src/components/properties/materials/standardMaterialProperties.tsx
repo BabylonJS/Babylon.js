@@ -70,6 +70,7 @@ export const StandardMaterialTexturesProperties: FunctionComponent<{ material: S
             />
             <BoundProperty
                 component={TextureSelectorPropertyLine}
+                uniqueId="StandardMaterialTextures_Reflection"
                 label="Reflection"
                 target={material}
                 propertyKey="reflectionTexture"

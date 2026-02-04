@@ -5,6 +5,7 @@ import type { FluentIcon } from "@fluentui/react-icons";
 import type { BasePrimitiveProps } from "./primitive";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { TokenMap } from "./utils";
+import { Tooltip } from "./tooltip";
 
 const useButtonStyles = makeStyles({
     smallIcon: {
@@ -26,7 +27,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
     const { size } = useContext(ToolContext);
     const classes = useButtonStyles();
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { icon: Icon, label, onClick, disabled, className, ...buttonProps } = props;
+    const { icon: Icon, label, onClick, disabled, className, title, ...buttonProps } = props;
 
     const [isOnClickBusy, setIsOnClickBusy] = useState(false);
     const handleOnClick = useCallback(
@@ -47,18 +48,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
     const iconClass = size === "small" ? classes.smallIcon : classes.mediumIcon;
 
     return (
-        <FluentButton
-            ref={ref}
-            iconPosition="after"
-            {...buttonProps}
-            className={className}
-            size={size}
-            icon={isOnClickBusy ? <Spinner size="extra-tiny" /> : Icon && <Icon className={iconClass} />}
-            onClick={handleOnClick}
-            disabled={disabled || isOnClickBusy}
-        >
-            {label && props.label}
-        </FluentButton>
+        <Tooltip content={title ?? ""}>
+            <FluentButton
+                ref={ref}
+                iconPosition="after"
+                {...buttonProps}
+                className={className}
+                size={size}
+                icon={isOnClickBusy ? <Spinner size="extra-tiny" /> : Icon && <Icon className={iconClass} />}
+                onClick={handleOnClick}
+                disabled={disabled || isOnClickBusy}
+            >
+                {label && props.label}
+            </FluentButton>
+        </Tooltip>
     );
 });
 

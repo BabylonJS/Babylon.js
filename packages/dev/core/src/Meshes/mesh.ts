@@ -4048,6 +4048,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Skeleton
         if (this.skeleton) {
             serializationObject.skeletonId = this.skeleton.id;
+            serializationObject.skeletonUniqueId = this.skeleton.uniqueId;
             serializationObject.numBoneInfluencers = this.numBoneInfluencers;
         }
 
@@ -4522,10 +4523,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Skeleton
         if (parsedMesh.skeletonId !== undefined && parsedMesh.skeletonId !== null) {
-            mesh.skeleton = scene.getLastSkeletonById(parsedMesh.skeletonId);
+            mesh.skeleton = scene.getLastSkeletonById(parsedMesh.skeletonId); // Back-compat for if this function is called directly
+            mesh._waitingSkeletonId = parsedMesh.skeletonId;
             if (parsedMesh.numBoneInfluencers) {
                 mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
             }
+        }
+
+        if (parsedMesh.skeletonUniqueId !== undefined && parsedMesh.skeletonUniqueId !== null) {
+            mesh._waitingSkeletonUniqueId = parsedMesh.skeletonUniqueId;
         }
 
         // Animations
@@ -5017,41 +5023,41 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 return null;
             }
 
-            if (subdivideWithSubMeshes) {
-                indiceArray.push({ start: 0, count: mesh.getTotalIndices() });
-            }
-
-            if (multiMultiMaterials) {
+            if (subdivideWithSubMeshes || multiMultiMaterials) {
                 const indexOffset = indiceArray.reduce((accumulator, currentValue) => {
                     return Math.max(accumulator, currentValue.start + currentValue.count);
                 }, 0);
 
-                if (mesh.material) {
-                    const material = mesh.material;
-                    if (material instanceof MultiMaterial) {
-                        for (let matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
-                            if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
-                                materialArray.push(<Material>material.subMaterials[matIndex]);
+                if (multiMultiMaterials) {
+                    if (mesh.material) {
+                        const material = mesh.material;
+                        if (material instanceof MultiMaterial) {
+                            for (let matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
+                                if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
+                                    materialArray.push(<Material>material.subMaterials[matIndex]);
+                                }
+                            }
+                            for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                                materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
+                                indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
+                            }
+                        } else {
+                            if (materialArray.indexOf(material) < 0) {
+                                materialArray.push(material);
+                            }
+                            for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                                materialIndexArray.push(materialArray.indexOf(material));
+                                indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
                             }
                         }
-                        for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
-                            indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
-                        }
                     } else {
-                        if (materialArray.indexOf(material) < 0) {
-                            materialArray.push(material);
-                        }
                         for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            materialIndexArray.push(materialArray.indexOf(material));
+                            materialIndexArray.push(0);
                             indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
                         }
                     }
                 } else {
-                    for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                        materialIndexArray.push(0);
-                        indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
-                    }
+                    indiceArray.push({ start: indexOffset, count: mesh.getTotalIndices() });
                 }
             }
         }

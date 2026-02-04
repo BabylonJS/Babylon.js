@@ -1,4 +1,4 @@
-import { Body1, Checkbox, makeStyles, tokens, mergeClasses, Tooltip } from "@fluentui/react-components";
+import { Body1, Checkbox, makeStyles, tokens, mergeClasses } from "@fluentui/react-components";
 import {
     ChevronCircleDown20Regular,
     ChevronCircleDown16Regular,
@@ -7,8 +7,10 @@ import {
     CopyRegular,
     Copy16Regular,
 } from "@fluentui/react-icons";
-import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
-import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
+import type { FunctionComponent, HTMLProps, PropsWithChildren, MouseEvent } from "react";
+import type { AccordionSectionItemProps } from "../../primitives/accordion";
+import { AccordionSectionItem } from "../../primitives/accordion";
+import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef, useCallback } from "react";
 import { Collapse } from "../../primitives/collapse";
 import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
 import { ToolContext } from "../fluentToolWrapper";
@@ -18,6 +20,8 @@ import { ToggleButton } from "../../primitives/toggleButton";
 import { Button } from "../../primitives/button";
 import { CustomTokens, TokenMap } from "../../primitives/utils";
 import { InfoLabel } from "../../primitives/infoLabel";
+import { Tooltip } from "../../primitives/tooltip";
+import { useToast } from "../../primitives/toast";
 
 const usePropertyLineStyles = makeStyles({
     baseLine: {
@@ -74,6 +78,13 @@ type BasePropertyLineProps = {
      * The name of the property to display in the property line.
      */
     label: string;
+    /**
+     * The ID of the property line to be used when the label cannot be used as a persistent ID.
+     *
+     * Note that when a property line is used within an accordion section, this ID must be unique within that section in order
+     * for property pinning and filtering to work correctly. If not, error will be shown in console.
+     */
+    uniqueId?: string;
     /**
      * Optional description for the property, shown on hover of the info icon
      */
@@ -143,10 +154,27 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     PropertyLine.displayName = "PropertyLine";
     const { disableCopy, size } = useContext(ToolContext);
     const classes = usePropertyLineStyles();
-    const { label, onCopy, expandedContent, children, nullable, ignoreNullable } = props;
+    const { label, uniqueId, onCopy, expandedContent, children, nullable, ignoreNullable } = props;
 
     const [expanded, setExpanded] = useState("expandByDefault" in props ? props.expandByDefault : false);
     const cachedVal = useRef(nullable ? props.value : null);
+
+    const { showToast } = useToast();
+
+    const handleCopy = useCallback(() => {
+        if (onCopy) {
+            copyCommandToClipboard(onCopy());
+            showToast("Copied property to clipboard");
+        }
+    }, [onCopy, showToast]);
+
+    const handleContextMenu = useCallback(
+        (e: MouseEvent) => {
+            e.preventDefault();
+            handleCopy();
+        },
+        [handleCopy]
+    );
 
     const description = props.docLink ? <Link url={props.docLink} value={props.description ?? "Docs"} /> : props.description ? <Body1>{props.description}</Body1> : undefined;
 
@@ -162,9 +190,9 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
             : children;
 
     return (
-        <LineContainer ref={ref}>
+        <LineContainer ref={ref} uniqueId={uniqueId ?? label} label={label}>
             <div className={classes.baseLine}>
-                <InfoLabel className={classes.infoLabel} htmlFor="property" info={description} label={label} flexLabel />
+                <InfoLabel className={classes.infoLabel} htmlFor="property" info={description} label={label} flexLabel onContextMenu={onCopy ? handleContextMenu : undefined} />
                 <div className={classes.rightContent} id="property">
                     {expandedContent && (
                         <ToggleButton
@@ -179,7 +207,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
 
                     {nullable && !ignoreNullable && (
                         // If this is a nullableProperty and ignoreNullable was not sent, display a checkbox used to toggle null ('checked' means 'non null')
-                        <Tooltip relationship="label" content={props.value == null ? "Enable property" : "Disable property (set to null)"}>
+                        <Tooltip content={props.value == null ? "Enable property" : "Disable property (set to null)"}>
                             <Checkbox
                                 className={classes.checkbox}
                                 indicator={{ className: classes.checkboxIndicator }}
@@ -199,13 +227,9 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                     )}
                     <div className={classes.childWrapper}>{processedChildren}</div>
                     {onCopy && !disableCopy && (
-                        <Button
-                            className={classes.copy}
-                            title="Copy to clipboard"
-                            appearance="transparent"
-                            icon={size === "small" ? Copy16Regular : CopyRegular}
-                            onClick={() => copyCommandToClipboard(onCopy())}
-                        />
+                        <Tooltip content="Copy to Clipboard">
+                            <Button className={classes.copy} appearance="transparent" icon={size === "small" ? Copy16Regular : CopyRegular} onClick={handleCopy} />
+                        </Tooltip>
                     )}
                 </div>
             </div>
@@ -240,14 +264,17 @@ const useLineStyles = makeStyles({
     },
 });
 
-export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren<HTMLProps<HTMLDivElement>>>((props, ref) => {
+export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren<HTMLProps<HTMLDivElement> & AccordionSectionItemProps>>((props, ref) => {
     const { size } = useContext(ToolContext);
+    const { children, uniqueId, label, ...rest } = props;
     const classes = useLineStyles();
 
     return (
-        <div ref={ref} className={mergeClasses(classes.container, size == "small" ? classes.containerSmall : undefined)} {...props}>
-            {props.children}
-        </div>
+        <AccordionSectionItem uniqueId={uniqueId} label={label}>
+            <div ref={ref} className={mergeClasses(classes.container, size == "small" ? classes.containerSmall : undefined)} {...rest}>
+                {children}
+            </div>
+        </AccordionSectionItem>
     );
 });
 

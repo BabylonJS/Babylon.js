@@ -4025,7 +4025,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
-     * Gets a the last added node (Mesh, Camera, Light) using a given Id
+     * Gets a the last added node (Mesh, Camera, Light, Bone) using a given Id
      * @param id defines the Id to search for
      * @returns the found node or null if not found at all
      */
@@ -4055,11 +4055,20 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
+        for (index = this.skeletons.length - 1; index >= 0; index--) {
+            const skeleton = this.skeletons[index];
+            for (let boneIndex = skeleton.bones.length - 1; boneIndex >= 0; boneIndex--) {
+                if (skeleton.bones[boneIndex].id === id) {
+                    return skeleton.bones[boneIndex];
+                }
+            }
+        }
+
         return null;
     }
 
     /**
-     * Gets a node (Mesh, Camera, Light) using a given Id
+     * Gets a node (Mesh, Camera, Light, Bone) using a given Id
      * @param id defines the Id to search for
      * @returns the found node or null if not found at all
      */

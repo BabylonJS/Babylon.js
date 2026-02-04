@@ -18,7 +18,7 @@ const useStyles = makeStyles({
         position: "absolute",
         width: "2px",
         height: "100%",
-        backgroundColor: tokens.colorNeutralForegroundOnBrand,
+        backgroundColor: tokens.colorBrandForeground1,
         pointerEvents: "auto",
         cursor: "ew-resize",
     },
@@ -27,7 +27,7 @@ const useStyles = makeStyles({
         top: 0,
         width: "20px",
         height: "20px",
-        backgroundColor: tokens.colorNeutralForegroundOnBrand,
+        backgroundColor: tokens.colorBrandBackground,
         borderRadius: "50%",
         border: `2px solid ${tokens.colorNeutralBackground1}`,
         pointerEvents: "auto",
@@ -35,7 +35,7 @@ const useStyles = makeStyles({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: tokens.colorNeutralBackground1,
+        color: tokens.colorNeutralForegroundOnBrand,
         fontSize: "9px",
         fontWeight: "bold",
         userSelect: "none",
@@ -50,113 +50,163 @@ type PlayHeadProps = {
 
 /**
  * Playhead component showing current frame position
+ * Uses direct DOM manipulation (like v1) to avoid render cycle flashing during animation
  * @returns The playhead component
  */
 export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _height }) => {
     const styles = useStyles();
     const { state, actions, observables } = useCurveEditor();
     const [isDragging, setIsDragging] = useState(false);
-    const [scale, setScale] = useState(1);
-    const [offsetX, setOffsetX] = useState(0);
-    const [currentFrame, setCurrentFrame] = useState(state.activeFrame);
+
+    // Use refs for all mutable values to avoid render cycles
+    const scaleRef = useRef(1);
+    const offsetXRef = useRef(0);
+    const currentFrameRef = useRef(state.activeFrame);
     const animationFrameRef = useRef<number | null>(null);
+    const isPlayingRef = useRef(state.isPlaying);
+
+    // Cache state values that we need for calculations
+    const referenceMinFrameRef = useRef(state.referenceMinFrame);
+    const referenceMaxFrameRef = useRef(state.referenceMaxFrame);
+    const fromKeyRef = useRef(state.fromKey);
+    const toKeyRef = useRef(state.toKey);
+    const activeAnimationsRef = useRef(state.activeAnimations);
+
+    // DOM refs for direct manipulation (avoids flash during playback)
+    const lineRef = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
 
     const graphOffsetX = 30;
     const viewWidth = width - graphOffsetX;
 
-    // Subscribe to graph moved/scaled events
+    // Update cached refs when state changes (but don't trigger re-renders for playhead position)
+    useEffect(() => {
+        referenceMinFrameRef.current = state.referenceMinFrame;
+        referenceMaxFrameRef.current = state.referenceMaxFrame;
+        fromKeyRef.current = state.fromKey;
+        toKeyRef.current = state.toKey;
+        activeAnimationsRef.current = state.activeAnimations;
+    }, [state.referenceMinFrame, state.referenceMaxFrame, state.fromKey, state.toKey, state.activeAnimations]);
+
+    // Calculate and apply playhead position directly to DOM
+    const moveHead = useCallback(
+        (frame: number) => {
+            if (!lineRef.current || !handleRef.current) {
+                return;
+            }
+
+            const range = referenceMaxFrameRef.current - referenceMinFrameRef.current;
+            if (range <= 0) {
+                return;
+            }
+
+            const x = graphOffsetX + ((frame - referenceMinFrameRef.current) / range) * viewWidth * scaleRef.current + offsetXRef.current;
+
+            // Hide if out of view
+            if (x < graphOffsetX || x > width) {
+                lineRef.current.style.display = "none";
+                handleRef.current.style.display = "none";
+            } else {
+                lineRef.current.style.display = "";
+                handleRef.current.style.display = "";
+                lineRef.current.style.left = `${x}px`;
+                handleRef.current.style.left = `${x}px`;
+                handleRef.current.textContent = Math.round(frame).toString();
+            }
+
+            currentFrameRef.current = frame;
+        },
+        [viewWidth, width]
+    );
+
+    // Subscribe to all observables in a single effect
     useEffect(() => {
         const onMoved = observables.onGraphMoved.add((newOffset) => {
-            setOffsetX(newOffset);
+            offsetXRef.current = newOffset;
+            moveHead(currentFrameRef.current);
         });
         const onScaled = observables.onGraphScaled.add((newScale) => {
-            setScale(newScale);
+            scaleRef.current = newScale;
+            moveHead(currentFrameRef.current);
         });
-        // Note: onPlayheadMoved updates the local frame display.
-        // We only update the context's activeFrame if NOT playing (during playback,
-        // the PlayHead component notifies observers but doesn't update context state).
         const onPlayheadMoved = observables.onPlayheadMoved.add((frame) => {
-            setCurrentFrame(frame);
-            lastFrameRef.current = frame; // Keep lastFrameRef in sync to prevent reset on stop
-            // Only update context if not playing - during playback, frame updates
-            // come from our own RAF loop and shouldn't trigger context re-renders
-            if (!state.isPlaying) {
-                actions.setActiveFrame(frame);
+            // Skip during playback - we update ourselves via requestAnimationFrame
+            if (!isPlayingRef.current) {
+                moveHead(frame);
             }
         });
+        const onMoveToFrame = observables.onMoveToFrameRequired.add((frame) => {
+            moveHead(frame);
+        });
+
+        // Initial position
+        moveHead(currentFrameRef.current);
 
         return () => {
             observables.onGraphMoved.remove(onMoved);
             observables.onGraphScaled.remove(onScaled);
             observables.onPlayheadMoved.remove(onPlayheadMoved);
+            observables.onMoveToFrameRequired.remove(onMoveToFrame);
         };
-    }, [observables, actions, state.isPlaying]);
+    }, [observables, moveHead]);
 
-    // Track animation playback using requestAnimationFrame
-    // Note: We only update local state during playback to avoid constant context re-renders.
-    // The context's activeFrame is synced when playback stops.
-    const lastFrameRef = useRef<number>(state.activeFrame);
+    // Track animation playback using requestAnimationFrame - separate from render cycle
     useEffect(() => {
+        isPlayingRef.current = state.isPlaying;
+
         const trackAnimation = () => {
-            if (state.isPlaying && state.activeAnimations.length > 0) {
-                const animation = state.activeAnimations[0];
+            if (!isPlayingRef.current) {
+                return;
+            }
+
+            const animations = activeAnimationsRef.current;
+            if (animations.length > 0) {
+                const animation = animations[0];
                 if (animation && animation.runtimeAnimations && animation.runtimeAnimations.length > 0) {
                     const runtimeAnimation = animation.runtimeAnimations[0];
                     if (runtimeAnimation && runtimeAnimation.currentFrame !== undefined) {
                         const frame = runtimeAnimation.currentFrame;
-                        setCurrentFrame(frame);
-                        lastFrameRef.current = frame;
-                        // Notify observers about frame change (for UI updates) without updating context state
+                        moveHead(frame);
+                        // Notify other components (like RangeFrameBar) about the playhead position
                         observables.onPlayheadMoved.notifyObservers(frame);
                     }
                 }
             }
+
             animationFrameRef.current = requestAnimationFrame(trackAnimation);
         };
 
         if (state.isPlaying) {
             animationFrameRef.current = requestAnimationFrame(trackAnimation);
         } else {
-            // Sync the context's activeFrame when playback stops
-            if (lastFrameRef.current !== state.activeFrame) {
-                actions.setActiveFrame(lastFrameRef.current);
+            // When playback stops, sync the context's activeFrame
+            if (animationFrameRef.current !== null) {
+                cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
+            }
+            // Only update if the frame actually changed
+            if (currentFrameRef.current !== state.activeFrame) {
+                actions.setActiveFrame(currentFrameRef.current);
             }
         }
 
         return () => {
             if (animationFrameRef.current !== null) {
                 cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
             }
         };
-    }, [state.isPlaying, state.activeAnimations, actions, state.activeFrame, observables]);
+    }, [state.isPlaying, actions, moveHead, state.activeFrame]);
 
-    // Sync currentFrame with activeFrame when not playing
-    useEffect(() => {
-        if (!state.isPlaying) {
-            setCurrentFrame(state.activeFrame);
-        }
-    }, [state.activeFrame, state.isPlaying]);
-
-    // Calculate playhead position (uses reference frames for position)
-    const getPlayheadX = useCallback(() => {
-        const { referenceMinFrame, referenceMaxFrame } = state;
-        const range = referenceMaxFrame - referenceMinFrame;
-        if (range <= 0) {
-            return graphOffsetX;
-        }
-        return graphOffsetX + ((currentFrame - referenceMinFrame) / range) * viewWidth * scale + offsetX;
-    }, [state.referenceMinFrame, state.referenceMaxFrame, currentFrame, viewWidth, scale, offsetX]);
-
-    // Convert x to frame (uses reference frames for conversion, clamps to fromKey/toKey for playback range)
+    // Convert x to frame
     const xToFrame = useCallback(
         (x: number) => {
-            const { referenceMinFrame, referenceMaxFrame, fromKey, toKey } = state;
-            const range = referenceMaxFrame - referenceMinFrame;
-            const frame = referenceMinFrame + ((x - graphOffsetX - offsetX) / (viewWidth * scale)) * range;
+            const range = referenceMaxFrameRef.current - referenceMinFrameRef.current;
+            const frame = referenceMinFrameRef.current + ((x - graphOffsetX - offsetXRef.current) / (viewWidth * scaleRef.current)) * range;
             // Clamp to the active playback range
-            return Math.max(fromKey, Math.min(toKey, Math.round(frame)));
+            return Math.max(fromKeyRef.current, Math.min(toKeyRef.current, Math.round(frame)));
         },
-        [state.referenceMinFrame, state.referenceMaxFrame, state.fromKey, state.toKey, viewWidth, scale, offsetX]
+        [viewWidth]
     );
 
     const handlePointerDown = useCallback((e: React.PointerEvent) => {
@@ -174,10 +224,10 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
             const x = e.clientX - rect.left;
             const frame = xToFrame(x);
 
+            moveHead(frame);
             actions.moveToFrame(frame);
-            observables.onMoveToFrameRequired.notifyObservers(frame);
         },
-        [isDragging, xToFrame, actions, observables]
+        [isDragging, xToFrame, actions, moveHead]
     );
 
     const handlePointerUp = useCallback((e: React.PointerEvent) => {
@@ -185,19 +235,10 @@ export const PlayHead: FunctionComponent<PlayHeadProps> = ({ width, height: _hei
         e.currentTarget.releasePointerCapture(e.pointerId);
     }, []);
 
-    const playheadX = getPlayheadX();
-
-    // Don't render if playhead is out of view
-    if (playheadX < graphOffsetX || playheadX > width) {
-        return null;
-    }
-
     return (
         <div className={styles.root}>
-            <div className={styles.line} style={{ left: playheadX }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} />
-            <div className={styles.handle} style={{ left: playheadX }} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
-                {Math.round(currentFrame)}
-            </div>
+            <div ref={lineRef} className={styles.line} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} />
+            <div ref={handleRef} className={styles.handle} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} />
         </div>
     );
 };

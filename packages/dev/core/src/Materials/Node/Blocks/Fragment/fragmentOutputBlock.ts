@@ -70,8 +70,8 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         embedded: true,
         options: [
             { label: "No color space", value: FragmentOutputBlockColorSpace.NoColorSpace },
-            { label: "Gamma", value: FragmentOutputBlockColorSpace.Gamma },
-            { label: "Linear", value: FragmentOutputBlockColorSpace.Linear },
+            { label: "To Gamma", value: FragmentOutputBlockColorSpace.Gamma },
+            { label: "To Linear", value: FragmentOutputBlockColorSpace.Linear },
         ],
     })
     public get colorSpace() {
@@ -236,7 +236,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         }
 
         state.compilationString += `#ifdef ${this._linearDefineName}\n`;
-        state.compilationString += `${outputString}  = toLinearSpaceVec4(${outputString});\n`;
+        state.compilationString += `${outputString}  = toLinearSpace${state.shaderLanguage === ShaderLanguage.WGSL ? "Vec4" : ""}(${outputString});\n`;
         state.compilationString += `#endif\n`;
 
         state.compilationString += `#ifdef ${this._gammaDefineName}\n`;

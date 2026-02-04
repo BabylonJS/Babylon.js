@@ -12,8 +12,10 @@ import { Color3, Color4 } from "core/Maths/math.color";
 
 import { useCurveEditor } from "../curveEditorContext";
 import { useObservableState } from "../../../hooks/observableHooks";
-import { Curve, type CurveData } from "./curve";
-import { ChannelColors, ColorChannelColors, DefaultCurveColor, GraphColors } from "../curveEditorColors";
+import { CurveData } from "./curveData";
+import { Curve } from "./curve";
+import { KeyPointComponent } from "./keyPoint";
+import { ChannelColors, ColorChannelColors, DefaultCurveColor } from "../curveEditorColors";
 
 const useStyles = makeStyles({
     root: {
@@ -36,30 +38,38 @@ const useStyles = makeStyles({
         strokeDasharray: "4 4",
     },
     zeroLine: {
-        stroke: GraphColors.zeroLine,
+        stroke: tokens.colorNeutralStroke1,
         strokeWidth: "1px",
     },
     selectionRect: {
         fill: "rgba(255, 255, 255, 0.1)",
-        stroke: GraphColors.selectionStroke,
+        stroke: tokens.colorNeutralForeground1,
         strokeWidth: "1px",
         strokeDasharray: "4 4",
     },
     valueAxisLabel: {
-        fill: GraphColors.valueAxisLabel,
+        fill: tokens.colorNeutralForeground3,
         fontSize: "10px",
         fontFamily: "acumin-pro-condensed, sans-serif",
         userSelect: "none",
     },
     valueAxisBackground: {
-        fill: GraphColors.valueAxisBackground,
+        fill: tokens.colorNeutralBackground1,
     },
     activeRangeOverlay: {
         position: "absolute" as const,
         top: 0,
         height: "100%",
-        backgroundColor: "rgba(38, 82, 128, 0.3)",
-        border: "1px solid rgba(78, 140, 206, 0.5)",
+        backgroundColor: tokens.colorBrandBackground2,
+        opacity: 0.3,
+        pointerEvents: "none" as const,
+    },
+    inactiveRangeOverlay: {
+        position: "absolute" as const,
+        top: 0,
+        height: "100%",
+        backgroundColor: tokens.colorNeutralBackgroundStatic,
+        opacity: 0.6,
         pointerEvents: "none" as const,
     },
 });
@@ -83,10 +93,14 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
     const [offsetY, setOffsetY] = useState(0);
     const [isPointerDown, setIsPointerDown] = useState(false);
     const [pointerStart, setPointerStart] = useState({ x: 0, y: 0 });
-    const [selectedKey, setSelectedKey] = useState<{ curveId: string; keyIndex: number } | null>(null);
 
-    // Re-render when active animation or range changes - use counter to invalidate memoized curves
-    const animationVersion = useObservableState(() => Date.now(), observables.onActiveAnimationChanged, observables.onRangeUpdated);
+    // Re-render when active animation or range changes
+    // useCallback stabilizes the accessor to prevent infinite re-render loops
+    useObservableState(
+        useCallback(() => ({}), []),
+        observables.onActiveAnimationChanged,
+        observables.onRangeUpdated
+    );
 
     // Ensure dimensions are valid
     const safeWidth = Math.max(1, width);
@@ -193,194 +207,30 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             observables.onActiveAnimationChanged.notifyObservers({});
         });
 
-        // Helper to get the component property name for a data type
-        const getComponentProperty = (dataType: number, component: number): string | null => {
-            if (dataType === AnimationEnum.ANIMATIONTYPE_FLOAT) {
-                return null; // Float has no components
-            } else if (dataType === AnimationEnum.ANIMATIONTYPE_VECTOR2) {
-                return ["x", "y"][component] || null;
-            } else if (dataType === AnimationEnum.ANIMATIONTYPE_VECTOR3) {
-                return ["x", "y", "z"][component] || null;
-            } else if (dataType === AnimationEnum.ANIMATIONTYPE_COLOR3) {
-                return ["r", "g", "b"][component] || null;
-            } else if (dataType === AnimationEnum.ANIMATIONTYPE_COLOR4) {
-                return ["r", "g", "b", "a"][component] || null;
-            } else if (dataType === AnimationEnum.ANIMATIONTYPE_QUATERNION) {
-                return ["x", "y", "z", "w"][component] || null;
-            }
-            return null;
-        };
-
-        // Helper to create a tangent object for a given data type (initialized to 0)
-        // Must use actual Babylon.js classes so they have .scale() method
-        const createTangentObject = (dataType: number): unknown => {
-            if (dataType === AnimationEnum.ANIMATIONTYPE_FLOAT) {
-                return 0;
-            } else if (dataType === AnimationEnum.ANIMATIONTYPE_VECTOR2) {
-                return new Vector2(0, 0);
-            } else if (dataType === AnimationEnum.ANIMATIONTYPE_VECTOR3) {
-                return new Vector3(0, 0, 0);
-            } else if (dataType === AnimationEnum.ANIMATIONTYPE_COLOR3) {
-                return new Color3(0, 0, 0);
-            } else if (dataType === AnimationEnum.ANIMATIONTYPE_COLOR4) {
-                return new Color4(0, 0, 0, 0);
-            } else if (dataType === AnimationEnum.ANIMATIONTYPE_QUATERNION) {
-                return new Quaternion(0, 0, 0, 0);
-            }
-            return 0;
-        };
-
-        // Helper to set a tangent component value
-        const setTangentComponent = (key: IAnimationKey, tangentType: "inTangent" | "outTangent", dataType: number, component: number, value: number) => {
-            const prop = getComponentProperty(dataType, component);
-            if (prop === null) {
-                // Float type - set directly
-                key[tangentType] = value;
-            } else {
-                // Vector/Color type - set component
-                if (!key[tangentType]) {
-                    key[tangentType] = createTangentObject(dataType);
-                }
-                (key[tangentType] as Record<string, number>)[prop] = value;
-            }
-        };
-
-        // Handle flatten tangent - set tangent slopes to 0 (horizontal)
-        const onFlattenTangentRequired = observables.onFlattenTangentRequired.add(() => {
-            if (!state.activeKeyPoints || state.activeKeyPoints.length === 0) {
-                return;
-            }
-
-            for (const keyPoint of state.activeKeyPoints) {
-                const animation = keyPoint.curve.animation;
-                const keys = animation.getKeys();
-                const keyId = keyPoint.keyId;
-                const component = keyPoint.curve.component;
-                const dataType = animation.dataType;
-
-                if (keyId >= 0 && keyId < keys.length) {
-                    const key = keys[keyId];
-                    // Set interpolation to NONE (bezier)
-                    key.interpolation = undefined;
-                    // Set tangents to 0 (flat/horizontal)
-                    if (keyId > 0) {
-                        setTangentComponent(key, "inTangent", dataType, component, 0);
-                    }
-                    if (keyId < keys.length - 1) {
-                        setTangentComponent(key, "outTangent", dataType, component, 0);
-                    }
-                }
-            }
-
-            observables.onActiveAnimationChanged.notifyObservers({});
-        });
-
-        // Handle linear tangent - set tangent to slope between adjacent keys
-        const onLinearTangentRequired = observables.onLinearTangentRequired.add(() => {
-            if (!state.activeKeyPoints || state.activeKeyPoints.length === 0) {
-                return;
-            }
-
-            for (const keyPoint of state.activeKeyPoints) {
-                const animation = keyPoint.curve.animation;
-                const keys = animation.getKeys();
-                const keyId = keyPoint.keyId;
-                const component = keyPoint.curve.component;
-                const dataType = animation.dataType;
-                const prop = getComponentProperty(dataType, component);
-
-                if (keyId >= 0 && keyId < keys.length) {
-                    const key = keys[keyId];
-                    // Set interpolation to NONE (bezier)
-                    key.interpolation = undefined;
-
-                    // Get the component value from a key
-                    const getKeyValue = (k: IAnimationKey): number => {
-                        if (prop === null) {
-                            return k.value as number;
-                        }
-                        return (k.value as Record<string, number>)[prop];
-                    };
-
-                    // Calculate linear tangent (slope to adjacent keys)
-                    if (keyId > 0) {
-                        const prevKey = keys[keyId - 1];
-                        const frameDiff = key.frame - prevKey.frame;
-                        if (frameDiff !== 0) {
-                            const slope = (getKeyValue(key) - getKeyValue(prevKey)) / frameDiff;
-                            setTangentComponent(key, "inTangent", dataType, component, slope);
-                        }
-                    }
-                    if (keyId < keys.length - 1) {
-                        const nextKey = keys[keyId + 1];
-                        const frameDiff = nextKey.frame - key.frame;
-                        if (frameDiff !== 0) {
-                            const slope = (getKeyValue(nextKey) - getKeyValue(key)) / frameDiff;
-                            setTangentComponent(key, "outTangent", dataType, component, slope);
-                        }
-                    }
-                }
-            }
-
-            observables.onActiveAnimationChanged.notifyObservers({});
-        });
-
-        // Handle break tangent - allow in/out tangents to be different
-        const onBreakTangentRequired = observables.onBreakTangentRequired.add(() => {
-            if (!state.activeKeyPoints || state.activeKeyPoints.length === 0) {
-                return;
-            }
-
-            for (const keyPoint of state.activeKeyPoints) {
-                const animation = keyPoint.curve.animation;
-                const keys = animation.getKeys();
-                const keyId = keyPoint.keyId;
-
-                if (keyId >= 0 && keyId < keys.length) {
-                    const key = keys[keyId];
-                    key.interpolation = undefined;
-                    key.lockedTangent = false;
-                }
-            }
-
-            observables.onActiveAnimationChanged.notifyObservers({});
-        });
-
-        // Handle unify tangent - keep in/out tangents the same
-        const onUnifyTangentRequired = observables.onUnifyTangentRequired.add(() => {
-            if (!state.activeKeyPoints || state.activeKeyPoints.length === 0) {
-                return;
-            }
-
-            for (const keyPoint of state.activeKeyPoints) {
-                const animation = keyPoint.curve.animation;
-                const keys = animation.getKeys();
-                const keyId = keyPoint.keyId;
-
-                if (keyId >= 0 && keyId < keys.length) {
-                    const key = keys[keyId];
-                    key.interpolation = undefined;
-                    key.lockedTangent = true;
-                }
-            }
-
-            observables.onActiveAnimationChanged.notifyObservers({});
-        });
+        // Note: Tangent operations (flatten, linear, break, unify, step) are handled by KeyPointComponent
+        // Each selected keypoint subscribes to the observables and handles its own tangent updates (like v1)
 
         return () => {
             observables.onCreateOrUpdateKeyPointRequired.remove(onCreateOrUpdateKeyPointRequired);
             observables.onFrameRequired.remove(onFrameRequired);
             observables.onDeleteKeyActiveKeyPoints.remove(onDeleteKeyActiveKeyPoints);
-            observables.onFlattenTangentRequired.remove(onFlattenTangentRequired);
-            observables.onLinearTangentRequired.remove(onLinearTangentRequired);
-            observables.onBreakTangentRequired.remove(onBreakTangentRequired);
-            observables.onUnifyTangentRequired.remove(onUnifyTangentRequired);
         };
     }, [observables, state.activeAnimations, state.activeFrame, state.activeKeyPoints, actions]);
 
-    // Get curves from active animations
     const curves = useMemo((): CurveData[] => {
         const result: CurveData[] = [];
+
+        // Helper to set default tangents across all curves (like v1)
+        const setDefaultInTangent = (keyId: number) => {
+            for (const curve of result) {
+                curve.storeDefaultInTangent(keyId);
+            }
+        };
+        const setDefaultOutTangent = (keyId: number) => {
+            for (const curve of result) {
+                curve.storeDefaultOutTangent(keyId);
+            }
+        };
 
         for (const animation of state.activeAnimations) {
             const keys = animation.getKeys();
@@ -388,255 +238,100 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                 continue;
             }
 
-            const color = state.activeChannels[animation.uniqueId];
+            const channelColor = state.activeChannels[animation.uniqueId];
+            const curvesToAdd: CurveData[] = [];
 
-            if (animation.dataType === AnimationEnum.ANIMATIONTYPE_FLOAT) {
-                result.push({
-                    animation,
-                    color: color || DefaultCurveColor,
-                    component: 0,
-                    keys: keys.map((k) => ({
-                        frame: k.frame,
-                        value: k.value as number,
-                        inTangent: k.inTangent as number | undefined,
-                        outTangent: k.outTangent as number | undefined,
-                        interpolation: k.interpolation,
-                    })),
-                });
-            } else if (animation.dataType === AnimationEnum.ANIMATIONTYPE_VECTOR2) {
-                if (!color || color === ChannelColors.X) {
-                    result.push({
-                        animation,
-                        color: ChannelColors.X,
-                        component: 0,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { x: number }).x,
-                            inTangent: k.inTangent?.x,
-                            outTangent: k.outTangent?.x,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-                if (!color || color === ChannelColors.Y) {
-                    result.push({
-                        animation,
-                        color: ChannelColors.Y,
-                        component: 1,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { y: number }).y,
-                            inTangent: k.inTangent?.y,
-                            outTangent: k.outTangent?.y,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-            } else if (animation.dataType === AnimationEnum.ANIMATIONTYPE_VECTOR3) {
-                if (!color || color === ChannelColors.X) {
-                    result.push({
-                        animation,
-                        color: ChannelColors.X,
-                        component: 0,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { x: number }).x,
-                            inTangent: k.inTangent?.x,
-                            outTangent: k.outTangent?.x,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-                if (!color || color === ChannelColors.Y) {
-                    result.push({
-                        animation,
-                        color: ChannelColors.Y,
-                        component: 1,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { y: number }).y,
-                            inTangent: k.inTangent?.y,
-                            outTangent: k.outTangent?.y,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-                if (!color || color === ChannelColors.Z) {
-                    result.push({
-                        animation,
-                        color: ChannelColors.Z,
-                        component: 2,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { z: number }).z,
-                            inTangent: k.inTangent?.z,
-                            outTangent: k.outTangent?.z,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-            } else if (animation.dataType === AnimationEnum.ANIMATIONTYPE_COLOR3) {
-                if (!color || color === ColorChannelColors.R) {
-                    result.push({
-                        animation,
-                        color: ColorChannelColors.R,
-                        component: 0,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { r: number }).r,
-                            inTangent: k.inTangent?.r,
-                            outTangent: k.outTangent?.r,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-                if (!color || color === ColorChannelColors.G) {
-                    result.push({
-                        animation,
-                        color: ColorChannelColors.G,
-                        component: 1,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { g: number }).g,
-                            inTangent: k.inTangent?.g,
-                            outTangent: k.outTangent?.g,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-                if (!color || color === ColorChannelColors.B) {
-                    result.push({
-                        animation,
-                        color: ColorChannelColors.B,
-                        component: 2,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { b: number }).b,
-                            inTangent: k.inTangent?.b,
-                            outTangent: k.outTangent?.b,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-            } else if (animation.dataType === AnimationEnum.ANIMATIONTYPE_COLOR4) {
-                if (!color || color === ColorChannelColors.R) {
-                    result.push({
-                        animation,
-                        color: ColorChannelColors.R,
-                        component: 0,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { r: number }).r,
-                            inTangent: k.inTangent?.r,
-                            outTangent: k.outTangent?.r,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-                if (!color || color === ColorChannelColors.G) {
-                    result.push({
-                        animation,
-                        color: ColorChannelColors.G,
-                        component: 1,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { g: number }).g,
-                            inTangent: k.inTangent?.g,
-                            outTangent: k.outTangent?.g,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-                if (!color || color === ColorChannelColors.B) {
-                    result.push({
-                        animation,
-                        color: ColorChannelColors.B,
-                        component: 2,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { b: number }).b,
-                            inTangent: k.inTangent?.b,
-                            outTangent: k.outTangent?.b,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-                if (!color || color === ColorChannelColors.A) {
-                    result.push({
-                        animation,
-                        color: ColorChannelColors.A,
-                        component: 3,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { a: number }).a,
-                            inTangent: k.inTangent?.a,
-                            outTangent: k.outTangent?.a,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-            } else if (animation.dataType === AnimationEnum.ANIMATIONTYPE_QUATERNION) {
-                if (!color || color === ChannelColors.X) {
-                    result.push({
-                        animation,
-                        color: ChannelColors.X,
-                        component: 0,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { x: number }).x,
-                            inTangent: k.inTangent?.x,
-                            outTangent: k.outTangent?.x,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-                if (!color || color === ChannelColors.Y) {
-                    result.push({
-                        animation,
-                        color: ChannelColors.Y,
-                        component: 1,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { y: number }).y,
-                            inTangent: k.inTangent?.y,
-                            outTangent: k.outTangent?.y,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-                if (!color || color === ChannelColors.Z) {
-                    result.push({
-                        animation,
-                        color: ChannelColors.Z,
-                        component: 2,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { z: number }).z,
-                            inTangent: k.inTangent?.z,
-                            outTangent: k.outTangent?.z,
-                            interpolation: k.interpolation,
-                        })),
-                    });
-                }
-                if (!color || color === ChannelColors.W) {
-                    result.push({
-                        animation,
-                        color: ChannelColors.W,
-                        component: 3,
-                        keys: keys.map((k) => ({
-                            frame: k.frame,
-                            value: (k.value as { w: number }).w,
-                            inTangent: k.inTangent?.w,
-                            outTangent: k.outTangent?.w,
-                            interpolation: k.interpolation,
-                        })),
+            // Create curves based on data type (like v1's _evaluateKeys)
+            switch (animation.dataType) {
+                case AnimationEnum.ANIMATIONTYPE_FLOAT:
+                    curvesToAdd.push(new CurveData(channelColor || DefaultCurveColor, animation));
+                    break;
+                case AnimationEnum.ANIMATIONTYPE_VECTOR2:
+                    if (!channelColor || channelColor === ChannelColors.X) {
+                        curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => Vector2.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    if (!channelColor || channelColor === ChannelColors.Y) {
+                        curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => Vector2.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    break;
+                case AnimationEnum.ANIMATIONTYPE_VECTOR3:
+                    if (!channelColor || channelColor === ChannelColors.X) {
+                        curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    if (!channelColor || channelColor === ChannelColors.Y) {
+                        curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    if (!channelColor || channelColor === ChannelColors.Z) {
+                        curvesToAdd.push(new CurveData(ChannelColors.Z, animation, "z", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    break;
+                case AnimationEnum.ANIMATIONTYPE_COLOR3:
+                    if (!channelColor || channelColor === ColorChannelColors.R) {
+                        curvesToAdd.push(new CurveData(ColorChannelColors.R, animation, "r", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    if (!channelColor || channelColor === ColorChannelColors.G) {
+                        curvesToAdd.push(new CurveData(ColorChannelColors.G, animation, "g", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    if (!channelColor || channelColor === ColorChannelColors.B) {
+                        curvesToAdd.push(new CurveData(ColorChannelColors.B, animation, "b", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    break;
+                case AnimationEnum.ANIMATIONTYPE_COLOR4:
+                    if (!channelColor || channelColor === ColorChannelColors.R) {
+                        curvesToAdd.push(new CurveData(ColorChannelColors.R, animation, "r", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    if (!channelColor || channelColor === ColorChannelColors.G) {
+                        curvesToAdd.push(new CurveData(ColorChannelColors.G, animation, "g", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    if (!channelColor || channelColor === ColorChannelColors.B) {
+                        curvesToAdd.push(new CurveData(ColorChannelColors.B, animation, "b", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    if (!channelColor || channelColor === ColorChannelColors.A) {
+                        curvesToAdd.push(new CurveData(ColorChannelColors.A, animation, "a", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    break;
+                case AnimationEnum.ANIMATIONTYPE_QUATERNION:
+                    if (!channelColor || channelColor === ChannelColors.X) {
+                        curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    if (!channelColor || channelColor === ChannelColors.Y) {
+                        curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    if (!channelColor || channelColor === ChannelColors.Z) {
+                        curvesToAdd.push(new CurveData(ChannelColors.Z, animation, "z", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    if (!channelColor || channelColor === ChannelColors.W) {
+                        curvesToAdd.push(new CurveData(ChannelColors.W, animation, "w", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
+                    }
+                    break;
+            }
+
+            // Populate keys for each curve (like v1's _extractValuesFromKeys)
+            for (const key of keys) {
+                const lockedTangent = key.lockedTangent ?? true;
+
+                for (const curve of curvesToAdd) {
+                    const prop = curve.property;
+                    const value = prop ? (key.value as Record<string, number>)[prop] : (key.value as number);
+                    const inTangent = prop ? key.inTangent?.[prop] : (key.inTangent as number | undefined);
+                    const outTangent = prop ? key.outTangent?.[prop] : (key.outTangent as number | undefined);
+
+                    curve.keys.push({
+                        frame: key.frame,
+                        value,
+                        inTangent,
+                        outTangent,
+                        lockedTangent,
+                        interpolation: key.interpolation,
                     });
                 }
             }
+
+            result.push(...curvesToAdd);
         }
 
         return result;
-    }, [state.activeAnimations, state.activeChannels, animationVersion]);
+    }, [state.activeAnimations, state.activeChannels]);
 
     // Calculate value range
     const valueRange = useMemo(() => {
@@ -709,59 +404,8 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         [valueRange, safeHeight, scale, offsetY]
     );
 
-    // Handle key frame changed from dragging
-    const handleKeyFrameChanged = useCallback(
-        (animation: Animation, keyIndex: number, component: number, newFrame: number) => {
-            const keys = animation.getKeys();
-            if (keyIndex >= 0 && keyIndex < keys.length) {
-                keys[keyIndex].frame = newFrame;
-                // Notify observers about the new frame value for spinbutton updates
-                observables.onFrameSet.notifyObservers(newFrame);
-                observables.onActiveAnimationChanged.notifyObservers({});
-            }
-        },
-        [observables]
-    );
-
-    // Handle key value changed from dragging
-    const handleKeyValueChanged = useCallback(
-        (animation: Animation, keyIndex: number, component: number, newValue: number) => {
-            const keys = animation.getKeys();
-            if (keyIndex >= 0 && keyIndex < keys.length) {
-                const key = keys[keyIndex];
-                const dataType = animation.dataType;
-
-                // Update the correct component based on data type
-                if (dataType === AnimationEnum.ANIMATIONTYPE_FLOAT) {
-                    key.value = newValue;
-                } else if (dataType === AnimationEnum.ANIMATIONTYPE_VECTOR2) {
-                    const componentKeys = ["x", "y"];
-                    (key.value as Record<string, number>)[componentKeys[component]] = newValue;
-                } else if (dataType === AnimationEnum.ANIMATIONTYPE_VECTOR3 || dataType === AnimationEnum.ANIMATIONTYPE_SIZE) {
-                    const componentKeys = ["x", "y", "z"];
-                    if (dataType === AnimationEnum.ANIMATIONTYPE_SIZE) {
-                        componentKeys[0] = "width";
-                        componentKeys[1] = "height";
-                    }
-                    (key.value as Record<string, number>)[componentKeys[component]] = newValue;
-                } else if (dataType === AnimationEnum.ANIMATIONTYPE_COLOR3) {
-                    const componentKeys = ["r", "g", "b"];
-                    (key.value as Record<string, number>)[componentKeys[component]] = newValue;
-                } else if (dataType === AnimationEnum.ANIMATIONTYPE_COLOR4) {
-                    const componentKeys = ["r", "g", "b", "a"];
-                    (key.value as Record<string, number>)[componentKeys[component]] = newValue;
-                } else if (dataType === AnimationEnum.ANIMATIONTYPE_QUATERNION) {
-                    const componentKeys = ["x", "y", "z", "w"];
-                    (key.value as Record<string, number>)[componentKeys[component]] = newValue;
-                }
-
-                // Notify observers about the new value for spinbutton updates
-                observables.onValueSet.notifyObservers(newValue);
-                observables.onActiveAnimationChanged.notifyObservers({});
-            }
-        },
-        [observables]
-    );
+    // Note: Key frame/value changes are now handled directly via curve.updateKeyFrame/updateKeyValue
+    // in the KeyPoint component
 
     // Handle pointer events for panning
     const handlePointerDown = useCallback((e: React.PointerEvent) => {
@@ -907,9 +551,33 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
     const activeRangeRight = frameToX(state.toKey);
     const activeRangeWidth = activeRangeRight - activeRangeLeft;
 
+    // Calculate inactive (outside range) overlay positions
+    const leftInactiveWidth = Math.max(0, activeRangeLeft - graphOffsetX);
+    const rightInactiveLeft = Math.min(activeRangeRight, safeWidth);
+    const rightInactiveWidth = Math.max(0, safeWidth - rightInactiveLeft);
+
     return (
         <div className={styles.root}>
-            {/* Active range overlay (dark rectangle showing playback range) */}
+            {/* Inactive range overlays (dark areas outside playback range) */}
+            {state.activeAnimations.length > 0 && leftInactiveWidth > 0 && (
+                <div
+                    className={styles.inactiveRangeOverlay}
+                    style={{
+                        left: graphOffsetX,
+                        width: leftInactiveWidth,
+                    }}
+                />
+            )}
+            {state.activeAnimations.length > 0 && rightInactiveWidth > 0 && (
+                <div
+                    className={styles.inactiveRangeOverlay}
+                    style={{
+                        left: rightInactiveLeft,
+                        width: rightInactiveWidth,
+                    }}
+                />
+            )}
+            {/* Active range overlay (highlight showing playback range) */}
             {state.activeAnimations.length > 0 && activeRangeWidth > 0 && (
                 <div
                     className={styles.activeRangeOverlay}
@@ -932,36 +600,47 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                 {renderGrid()}
 
                 {curves.map((curve) => {
-                    const curveId = `${curve.animation.uniqueId}-${curve.component}`;
-                    return (
-                        <Curve
-                            key={curveId}
-                            curve={curve}
-                            frameToX={frameToX}
-                            valueToY={valueToY}
-                            xToFrame={xToFrame}
-                            yToValue={yToValue}
-                            onKeyFrameChanged={handleKeyFrameChanged}
-                            onKeyValueChanged={handleKeyValueChanged}
-                            selectedKeyIndex={selectedKey?.curveId === curveId ? selectedKey.keyIndex : null}
-                            onKeySelected={(keyIndex) => {
-                                setSelectedKey(keyIndex !== null ? { curveId, keyIndex } : null);
-                                // Update active key points in context and notify observables
-                                if (keyIndex !== null && keyIndex < curve.keys.length) {
-                                    const key = curve.keys[keyIndex];
-                                    // Update the active key points in context
-                                    actions.setActiveKeyPoints([{ curve, keyId: keyIndex }]);
-                                    // Notify observables about the selected key's frame and value
-                                    observables.onFrameSet.notifyObservers(key.frame);
-                                    observables.onValueSet.notifyObservers(key.value);
-                                    observables.onActiveKeyPointChanged.notifyObservers();
-                                } else {
-                                    actions.setActiveKeyPoints([]);
-                                    observables.onActiveKeyPointChanged.notifyObservers();
-                                }
-                            }}
-                        />
-                    );
+                    const curveId = `${curve.animation.uniqueId}-${curve.property || "value"}`;
+                    return <Curve key={curveId} curve={curve} convertX={frameToX} convertY={valueToY} />;
+                })}
+
+                {/* Render key points separately - like v1 does with KeyPointComponent */}
+                {curves.map((curve) => {
+                    const curveId = `${curve.animation.uniqueId}-${curve.property || "value"}`;
+
+                    return curve.keys.map((key, keyIndex) => {
+                        const x = frameToX(key.frame);
+                        const y = valueToY(key.value);
+                        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+                            return null;
+                        }
+
+                        return (
+                            <KeyPointComponent
+                                key={`${curveId}-key-${keyIndex}`}
+                                x={x}
+                                y={y}
+                                getPreviousX={() => (keyIndex > 0 ? frameToX(curve.keys[keyIndex - 1].frame) : null)}
+                                getNextX={() => (keyIndex < curve.keys.length - 1 ? frameToX(curve.keys[keyIndex + 1].frame) : null)}
+                                invertX={xToFrame}
+                                invertY={yToValue}
+                                convertX={frameToX}
+                                convertY={valueToY}
+                                scale={scale}
+                                keyId={keyIndex}
+                                curve={curve}
+                                channel={curve.color}
+                                onFrameValueChanged={(frame: number) => {
+                                    curve.updateKeyFrame(keyIndex, frame);
+                                    actions.refreshTarget();
+                                }}
+                                onKeyValueChanged={(value: number) => {
+                                    curve.updateKeyValue(keyIndex, value);
+                                    actions.refreshTarget();
+                                }}
+                            />
+                        );
+                    });
                 })}
 
                 {renderValueAxis()}

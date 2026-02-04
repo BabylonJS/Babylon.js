@@ -1,5 +1,4 @@
 import type { VertexDataTypedArray } from "core/Buffers/bufferUtils";
-import type { Nullable } from "core/types";
 
 /**
  * The available Draco attribute names.
@@ -75,12 +74,17 @@ export interface IDracoEncodedMeshData {
     attributeIds: Record<string, number>;
 }
 
-interface IEncodeDoneMessage {
-    id: "encodeMeshDone";
-    encodedMeshData: Nullable<IDracoEncodedMeshData>;
+interface IEncodeSuccessMessage {
+    id: "encodeMeshSuccess";
+    encodedMeshData: IDracoEncodedMeshData;
+}
+
+interface IEncodeErrorMessage {
+    id: "encodeMeshError";
+    errorMessage: string;
 }
 
 /**
  * @internal
  */
-export type EncoderMessage = IEncodeDoneMessage;
+export type EncoderMessage = IEncodeSuccessMessage | IEncodeErrorMessage;

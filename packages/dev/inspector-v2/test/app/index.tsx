@@ -28,6 +28,9 @@ import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Button } from "gui/2D/controls/button";
+import "core/Audio/audioSceneComponent";
+import "core/Audio/audioEngine";
+import { Sound } from "core/Audio/sound";
 import { ShowInspector } from "../../src/inspector";
 
 // TODO: Get this working automatically without requiring an explicit import. Inspector v2 should dynamically import these when needed.
@@ -47,6 +50,7 @@ const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const engine = new Engine(canvas, true, {
     adaptToDeviceRatio: true,
     antialias: true,
+    audioEngine: true,
 });
 
 const scene = new Scene(engine);
@@ -185,6 +189,13 @@ function createGui() {
     advancedTexture.addControl(button);
 }
 
+function createSound() {
+    const sound = new Sound("Music", "https://playground.babylonjs.com/sounds/violons11.wav", scene, null, {
+        loop: true,
+        autoplay: false,
+    });
+}
+
 (async () => {
     let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
     assetContainer.addAllToScene();
@@ -203,6 +214,8 @@ function createGui() {
     createTestMetadata();
 
     createGui();
+
+    createSound();
 
     engine.runRenderLoop(() => {
         scene.render();

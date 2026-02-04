@@ -20,6 +20,7 @@ uniform float alpha;
 
 #if IS_COMPOUND
 uniform mat4 partWorld[MAX_PART_COUNT];
+uniform float partVisibility[MAX_PART_COUNT];
 #endif
 
 uniform sampler2D covariancesATexture;
@@ -74,6 +75,11 @@ void main () {
 #endif
 
     vColor.w *= alpha;
+
+#if IS_COMPOUND
+    // Apply part visibility (0.0 to 1.0) to alpha
+    vColor.w *= partVisibility[splat.partIndex];
+#endif
 
     gl_Position = gaussianSplatting(position.xy, worldPos.xyz, vec2(1.,1.), covA, covB, splatWorld, view, projection);
 

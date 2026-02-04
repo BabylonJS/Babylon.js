@@ -1,6 +1,6 @@
 import type { FunctionComponent } from "react";
 
-import { makeStyles } from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useCurveEditor } from "../curveEditorContext";
@@ -11,7 +11,7 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        backgroundColor: "#222222",
+        backgroundColor: tokens.colorNeutralBackground2,
         overflow: "hidden",
         userSelect: "none",
         pointerEvents: "none",
@@ -21,13 +21,13 @@ const useStyles = makeStyles({
         height: "100%",
     },
     tickLabel: {
-        fill: "#555555",
+        fill: tokens.colorNeutralForeground3,
         fontSize: "12px",
         fontFamily: "acumin-pro-condensed, sans-serif",
         textAnchor: "middle",
     },
     tickLine: {
-        stroke: "#333333",
+        stroke: tokens.colorNeutralStroke2,
         strokeWidth: "0.5px",
     },
     keyframeLine: {
@@ -35,8 +35,8 @@ const useStyles = makeStyles({
         strokeWidth: "0.5px",
     },
     activeFrameLine: {
-        stroke: "#ffffff",
-        strokeWidth: "0.5px",
+        stroke: tokens.colorBrandForeground1,
+        strokeWidth: "1px",
     },
 });
 
@@ -59,7 +59,11 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
     const [displayFrame, setDisplayFrame] = useState(state.activeFrame);
 
     // Re-render when range updates
-    useObservableState(() => ({}), observables.onRangeUpdated);
+    // useCallback stabilizes the accessor to prevent infinite re-render loops
+    useObservableState(
+        useCallback(() => ({}), []),
+        observables.onRangeUpdated
+    );
 
     // Update view width on resize
     useEffect(() => {

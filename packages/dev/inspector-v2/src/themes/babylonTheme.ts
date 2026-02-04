@@ -1,6 +1,6 @@
 import type { BrandVariants, Theme } from "@fluentui/react-components";
 
-import { createDarkTheme, createLightTheme } from "@fluentui/react-components";
+import { createDarkTheme, createLightTheme, tokens } from "@fluentui/react-components";
 
 // Generated from https://react.fluentui.dev/?path=/docs/theme-theme-designer--docs
 // Key color: #3A94FC
@@ -27,8 +27,12 @@ const BabylonRamp: BrandVariants = {
 
 export const LightTheme: Theme = {
     ...createLightTheme(BabylonRamp),
+    // Reduce the max contrast between foreground and background by just replacing the most intense foreground color with the second most intense one.
+    colorNeutralForeground1: tokens.colorNeutralForeground2,
 };
 
 export const DarkTheme: Theme = {
     ...createDarkTheme(BabylonRamp),
+    // Reduce the max contrast between foreground and background by just replacing the most intense foreground color with the second most intense one.
+    colorNeutralForeground1: tokens.colorNeutralForeground2,
 };

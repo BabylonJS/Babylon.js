@@ -4,7 +4,6 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 import { useEffect, useRef, useState } from "react";
 
 import { useCurveEditor } from "../curveEditorContext";
-import { useObservableState } from "../../../hooks/observableHooks";
 import { Graph } from "./graph";
 import { PlayHead } from "./playHead";
 import { FrameBar } from "./frameBar";
@@ -48,8 +47,8 @@ export const Canvas: FunctionComponent = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-    // Re-render when active animation changes
-    useObservableState(() => ({}), observables.onActiveAnimationChanged);
+    // Note: Child components (Graph, PlayHead, etc.) handle their own observable subscriptions
+    // No need for canvas to re-render on animation changes
 
     // Update dimensions on resize
     useEffect(() => {

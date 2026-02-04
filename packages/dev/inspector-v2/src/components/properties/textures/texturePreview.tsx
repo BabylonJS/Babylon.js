@@ -9,6 +9,8 @@ import { WhenTextureReadyAsync } from "core/Misc/textureTools";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { ApplyChannelsToTextureDataAsync } from "../../../misc/textureTools";
+import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { AccordionContext } from "shared-ui-components/fluent/primitives/accordion.contexts";
 
 const useStyles = makeStyles({
     root: {
@@ -79,6 +81,10 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
 
     const { size } = useContext(ToolContext);
 
+    // Watch for pinned state changes - when portaled, the canvas needs to be redrawn
+    const accordionCtx = useContext(AccordionContext);
+    const isPinned = accordionCtx?.state.pinnedIds.some((id) => id.endsWith("\0TexturePreview")) ?? false;
+
     const updatePreviewAsync = useCallback(async () => {
         const canvas = canvasRef.current;
         if (!canvas) {
@@ -118,43 +124,50 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
         void updatePreviewAsync();
     }, [updatePreviewAsync]);
 
+    // Redraw canvas after portaling (pinned state change moves DOM element, which can clear canvas)
+    useEffect(() => {
+        void updatePreviewAsync();
+    }, [isPinned]);
+
     return (
-        <div className={classes.root}>
-            {disableToolbar ? null : texture.isCube ? (
-                <Toolbar className={classes.controls} size={size} aria-label="Cube Faces">
-                    {["+X", "-X", "+Y", "-Y", "+Z", "-Z"].map((label, idx) => (
-                        <ToolbarButton className={classes.controlButton} key={label} appearance={face === idx ? "primary" : "subtle"} onClick={() => setFace(idx)}>
-                            {label}
-                        </ToolbarButton>
-                    ))}
-                </Toolbar>
-            ) : (
-                <Toolbar className={classes.controls} size={size} aria-label="Channels">
-                    {(["R", "G", "B", "A", "ALL"] as const).map((ch) => (
-                        <ToolbarButton
-                            className={classes.controlButton}
-                            key={ch}
-                            appearance={channels === TextureChannelStates[ch] ? "primary" : "subtle"}
-                            onClick={() => setChannels(TextureChannelStates[ch])}
-                        >
-                            {ch}
-                        </ToolbarButton>
-                    ))}
-                </Toolbar>
-            )}
-            <div className={classes.previewContainer}>
-                <canvas ref={canvasRef} className={classes.preview} style={canvasStyle} />
+        <LineContainer uniqueId="TexturePreview">
+            <div className={classes.root}>
+                {disableToolbar ? null : texture.isCube ? (
+                    <Toolbar className={classes.controls} size={size} aria-label="Cube Faces">
+                        {["+X", "-X", "+Y", "-Y", "+Z", "-Z"].map((label, idx) => (
+                            <ToolbarButton className={classes.controlButton} key={label} appearance={face === idx ? "primary" : "subtle"} onClick={() => setFace(idx)}>
+                                {label}
+                            </ToolbarButton>
+                        ))}
+                    </Toolbar>
+                ) : (
+                    <Toolbar className={classes.controls} size={size} aria-label="Channels">
+                        {(["R", "G", "B", "A", "ALL"] as const).map((ch) => (
+                            <ToolbarButton
+                                className={classes.controlButton}
+                                key={ch}
+                                appearance={channels === TextureChannelStates[ch] ? "primary" : "subtle"}
+                                onClick={() => setChannels(TextureChannelStates[ch])}
+                            >
+                                {ch}
+                            </ToolbarButton>
+                        ))}
+                    </Toolbar>
+                )}
+                <div className={classes.previewContainer}>
+                    <canvas ref={canvasRef} className={classes.preview} style={canvasStyle} />
+                </div>
+                {texture.isRenderTarget && (
+                    <Button
+                        appearance="outline"
+                        onClick={() => {
+                            void updatePreviewAsync();
+                        }}
+                    >
+                        Refresh
+                    </Button>
+                )}
             </div>
-            {texture.isRenderTarget && (
-                <Button
-                    appearance="outline"
-                    onClick={() => {
-                        void updatePreviewAsync();
-                    }}
-                >
-                    Refresh
-                </Button>
-            )}
-        </div>
+        </LineContainer>
     );
 };

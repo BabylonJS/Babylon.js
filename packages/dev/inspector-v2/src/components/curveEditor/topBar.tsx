@@ -2,18 +2,11 @@ import type { FunctionComponent } from "react";
 
 import { makeStyles, tokens, Divider } from "@fluentui/react-components";
 import { useCallback, useEffect, useState } from "react";
-import {
-    AddRegular,
-    DeleteRegular,
-    FullScreenMaximizeRegular,
-    ArrowMinimizeRegular,
-    LineHorizontal1Regular,
-    ChevronDoubleRightRegular,
-    ChevronDoubleLeftRegular,
-} from "@fluentui/react-icons";
+import { AddRegular, DeleteRegular, FullScreenMaximizeRegular } from "@fluentui/react-icons";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
+import { FlatTangentIcon, LinearTangentIcon, BreakTangentIcon, UnifyTangentIcon, StepTangentIcon } from "shared-ui-components/fluent/icons";
 import { useCurveEditor } from "./curveEditorContext";
 
 const useStyles = makeStyles({
@@ -128,19 +121,19 @@ export const TopBar: FunctionComponent = () => {
 
     return (
         <div className={styles.root}>
-            <span className={styles.title}>{state.title}</span>
+            <div className={styles.title}>{state.title}</div>
 
             <Divider vertical className={styles.divider} />
 
             {/* Frame Input */}
             <div className={styles.inputGroup}>
-                <span className={styles.inputLabel}>Frame:</span>
+                <div className={styles.inputLabel}>Frame:</div>
                 <SpinButton className={styles.spinButton} value={keyFrameValue ?? 0} onChange={handleFrameChange} disabled={!hasActiveAnimations || !frameControlEnabled} />
             </div>
 
             {/* Value Input */}
             <div className={styles.inputGroup}>
-                <span className={styles.inputLabel}>Value:</span>
+                <div className={styles.inputLabel}>Value:</div>
                 <SpinButton className={styles.spinButton} value={keyValue ?? 0} onChange={handleValueChange} disabled={!hasActiveAnimations || !valueControlEnabled} step={0.1} />
             </div>
 
@@ -170,32 +163,39 @@ export const TopBar: FunctionComponent = () => {
             {/* Tangent Actions */}
             <div className={styles.buttonGroup}>
                 <Button
-                    icon={ArrowMinimizeRegular}
+                    icon={FlatTangentIcon}
                     appearance="subtle"
                     disabled={!hasActiveKeyPoints}
                     onClick={() => observables.onFlattenTangentRequired.notifyObservers()}
                     title="Flatten tangent"
                 />
                 <Button
-                    icon={LineHorizontal1Regular}
+                    icon={LinearTangentIcon}
                     appearance="subtle"
                     disabled={!hasActiveKeyPoints}
                     onClick={() => observables.onLinearTangentRequired.notifyObservers()}
                     title="Linear tangent"
                 />
                 <Button
-                    icon={ChevronDoubleLeftRegular}
+                    icon={BreakTangentIcon}
                     appearance="subtle"
                     disabled={!hasActiveKeyPoints}
                     onClick={() => observables.onBreakTangentRequired.notifyObservers()}
                     title="Break tangent"
                 />
                 <Button
-                    icon={ChevronDoubleRightRegular}
+                    icon={UnifyTangentIcon}
                     appearance="subtle"
                     disabled={!hasActiveKeyPoints}
                     onClick={() => observables.onUnifyTangentRequired.notifyObservers()}
                     title="Unify tangent"
+                />
+                <Button
+                    icon={StepTangentIcon}
+                    appearance="subtle"
+                    disabled={!hasActiveKeyPoints}
+                    onClick={() => observables.onStepTangentRequired.notifyObservers()}
+                    title="Step tangent"
                 />
             </div>
         </div>

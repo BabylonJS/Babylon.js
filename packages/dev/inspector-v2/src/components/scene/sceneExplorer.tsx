@@ -27,9 +27,11 @@ import {
     TreeItemLayout,
     treeItemLevelToken,
 } from "@fluentui/react-components";
-import { ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
+import { ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular, TextSortAscendingRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocalStorage } from "usehooks-ts";
 
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
 import { useObservableState } from "../../hooks/observableHooks";
@@ -37,10 +39,23 @@ import { useResource } from "../../hooks/resourceHooks";
 import { useCompactMode } from "../../hooks/settingsHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
 
-export type EntityBase = Readonly<{
-    uniqueId: number;
+type EntityBase = Readonly<{
+    uniqueId?: number;
     reservedDataStore?: Record<PropertyKey, unknown>;
 }>;
+
+const SyntheticUniqueIds = new WeakMap<EntityBase, number>();
+function GetEntityId(entity: EntityBase): number {
+    if (entity.uniqueId !== undefined) {
+        return entity.uniqueId;
+    }
+
+    let id = SyntheticUniqueIds.get(entity);
+    if (!id) {
+        SyntheticUniqueIds.set(entity, (id = UniqueIdGenerator.UniqueId));
+    }
+    return id;
+}
 
 export type EntityDisplayInfo = Partial<IDisposable> &
     Readonly<{
@@ -55,7 +70,7 @@ export type EntityDisplayInfo = Partial<IDisposable> &
         onChange?: IReadonlyObservable<void>;
     }>;
 
-export type SceneExplorerSection<T extends EntityBase> = Readonly<{
+export type SceneExplorerSection<T> = Readonly<{
     /**
      * The display name of the section (e.g. "Nodes", "Materials", etc.).
      */
@@ -198,7 +213,7 @@ type EntityTreeItemData = {
     depth: number;
     parent: SectionTreeItemData | EntityTreeItemData;
     children?: EntityTreeItemData[];
-    icon?: ComponentType<{ entity: EntityBase }>;
+    icon?: ComponentType<{ entity: unknown }>;
     getDisplayInfo: () => EntityDisplayInfo;
 };
 
@@ -209,7 +224,7 @@ function ExpandOrCollapseAll(treeItem: SectionTreeItemData | EntityTreeItemData,
     TraverseGraph(
         [treeItem],
         (treeItem) => treeItem.children,
-        (treeItem) => addOrRemove(treeItem.type === "entity" ? treeItem.entity.uniqueId : treeItem.sectionName)
+        (treeItem) => addOrRemove(treeItem.type === "entity" ? GetEntityId(treeItem.entity) : treeItem.sectionName)
     );
 }
 
@@ -274,21 +289,61 @@ function useCommandContextMenuState(commands: readonly SceneExplorerCommand<"con
     return [checkedContextMenuItems, onContextMenuCheckedValueChange, contextMenuItems] as const;
 }
 
+function CoerceEntityArray(entities: EntityTreeItemData[], sort: boolean): readonly EntityTreeItemData[] {
+    // If sorting is requested, create a copy of the array and sort it by display name.
+    if (sort) {
+        entities = [...entities];
+        entities.sort((left, right) => {
+            const leftDisplayInfo = left.getDisplayInfo();
+            const rightDisplayInfo = right.getDisplayInfo();
+            const comparison = leftDisplayInfo.name.localeCompare(rightDisplayInfo.name);
+            leftDisplayInfo.dispose?.();
+            rightDisplayInfo.dispose?.();
+            return comparison;
+        });
+    }
+
+    return entities;
+}
+
 const useStyles = makeStyles({
     rootDiv: {
         flex: 1,
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-        padding: `0 ${tokens.spacingHorizontalM}`,
+    },
+    toolbarDiv: {
+        display: "flex",
+        flexDirection: "row",
+        paddingLeft: tokens.spacingHorizontalM,
+        paddingRight: tokens.spacingHorizontalM,
     },
     searchBox: {
+        flex: 1,
         padding: 0,
     },
     tree: {
         rowGap: 0,
         overflow: "hidden",
         flex: 1,
+        paddingLeft: tokens.spacingHorizontalM,
+        paddingRight: tokens.spacingHorizontalM,
+    },
+    scrollView: {
+        overflowX: "hidden",
+        // Create a little padding and negative margin to keep correct alignment but make
+        // room for the focus ring so it doesn't get clipped.
+        paddingLeft: tokens.spacingHorizontalXXS,
+        paddingRight: tokens.spacingHorizontalXXS,
+        marginLeft: `calc(-1 * ${tokens.spacingHorizontalXXS})`,
+        marginRight: `calc(-1 * ${tokens.spacingHorizontalXXS})`,
+    },
+    treeItem: {
+        // Ensure focused items render their focus ring above adjacent selected/hovered items
+        "&:focus": {
+            zIndex: 1,
+        },
     },
     sceneTreeItemLayout: {
         padding: 0,
@@ -306,6 +361,13 @@ const useStyles = makeStyles({
     treeItemLayoutCompact: {
         minHeight: CustomTokens.lineHeightSmall,
         maxHeight: CustomTokens.lineHeightSmall,
+    },
+    // Use tighter indentation than the default (16px instead of 24px per level)
+    treeItemLayoutBranch: {
+        paddingLeft: `calc((var(${treeItemLevelToken}, 1) - 1) * ${tokens.spacingHorizontalL})`,
+    },
+    treeItemLayoutLeaf: {
+        paddingLeft: `calc(var(${treeItemLevelToken}, 1) * ${tokens.spacingHorizontalL} + ${tokens.spacingHorizontalS})`,
     },
 });
 
@@ -373,7 +435,17 @@ const SceneTreeItem: FunctionComponent<{
     const treeItemLayoutClass = mergeClasses(classes.sceneTreeItemLayout, compactMode ? classes.treeItemLayoutCompact : undefined);
 
     return (
-        <FlatTreeItem key="scene" value="scene" itemType="leaf" parentValue={undefined} aria-level={1} aria-setsize={1} aria-posinset={1} onClick={select}>
+        <FlatTreeItem
+            className={classes.treeItem}
+            key="scene"
+            value="scene"
+            itemType="leaf"
+            parentValue={undefined}
+            aria-level={1}
+            aria-setsize={1}
+            aria-posinset={1}
+            onClick={select}
+        >
             <TreeItemLayout
                 iconBefore={<GlobeRegular />}
                 className={treeItemLayoutClass}
@@ -419,6 +491,7 @@ const SectionTreeItem: FunctionComponent<{
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
+                    className={classes.treeItem}
                     key={section.sectionName}
                     value={section.sectionName}
                     // Disable manual expand/collapse when a filter is active.
@@ -428,7 +501,7 @@ const SectionTreeItem: FunctionComponent<{
                     aria-setsize={1}
                     aria-posinset={1}
                 >
-                    <TreeItemLayout className={compactMode ? classes.treeItemLayoutCompact : undefined}>
+                    <TreeItemLayout className={mergeClasses(classes.treeItemLayoutBranch, compactMode ? classes.treeItemLayoutCompact : undefined)}>
                         <Body1Strong wrap={false} truncate>
                             {section.sectionName.substring(0, 100)}
                         </Body1Strong>
@@ -573,11 +646,12 @@ const EntityTreeItem: FunctionComponent<{
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
-                    key={entityItem.entity.uniqueId}
-                    value={entityItem.entity.uniqueId}
+                    className={classes.treeItem}
+                    key={GetEntityId(entityItem.entity)}
+                    value={GetEntityId(entityItem.entity)}
                     // Disable manual expand/collapse when a filter is active.
                     itemType={!isFiltering && hasChildren ? "branch" : "leaf"}
-                    parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : entityItem.entity.uniqueId}
+                    parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : GetEntityId(entityItem.entity)}
                     aria-level={entityItem.depth}
                     aria-setsize={1}
                     aria-posinset={1}
@@ -586,7 +660,7 @@ const EntityTreeItem: FunctionComponent<{
                 >
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
-                        className={compactMode ? classes.treeItemLayoutCompact : undefined}
+                        className={mergeClasses(hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf, compactMode ? classes.treeItemLayoutCompact : undefined)}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                         actions={actions}
                         aside={{
@@ -626,8 +700,8 @@ const EntityTreeItem: FunctionComponent<{
 };
 
 export const SceneExplorer: FunctionComponent<{
-    sections: readonly SceneExplorerSection<EntityBase>[];
-    entityCommandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
+    sections: readonly SceneExplorerSection<unknown>[];
+    entityCommandProviders: readonly SceneExplorerCommandProvider<unknown>[];
     sectionCommandProviders: readonly SceneExplorerCommandProvider<string, "contextMenu">[];
     scene: Scene;
     selectedEntity?: unknown;
@@ -648,6 +722,7 @@ export const SceneExplorer: FunctionComponent<{
     };
 
     const [itemsFilter, setItemsFilter] = useState("");
+    const [isSorted, setIsSorted] = useLocalStorage("Babylon/Settings/SceneExplorer/IsSorted", false);
 
     useEffect(() => {
         setSceneVersion((version) => version + 1);
@@ -658,10 +733,10 @@ export const SceneExplorer: FunctionComponent<{
             setSceneVersion((version) => version + 1);
         };
 
-        const onSceneItemRemoved = (item: EntityBase) => {
+        const onSceneItemRemoved = (item: unknown) => {
             setSceneVersion((version) => version + 1);
 
-            if (openItems.delete(item.uniqueId)) {
+            if (openItems.delete(GetEntityId(item as EntityBase))) {
                 setOpenItems(new Set(openItems));
             }
 
@@ -727,18 +802,18 @@ export const SceneExplorer: FunctionComponent<{
                 }
                 parent.children.push(treeItemData);
 
-                allTreeItems.set(entity.uniqueId, treeItemData);
+                allTreeItems.set(GetEntityId(entity), treeItemData);
                 return treeItemData;
             };
 
-            const rootEntityTreeItems = rootEntities.map((entity) => createEntityTreeItemData(entity, sectionTreeItem));
+            const rootEntityTreeItems = rootEntities.map((entity) => createEntityTreeItemData(entity as EntityBase, sectionTreeItem));
 
             TraverseGraph(
                 rootEntityTreeItems,
                 // Get children
                 (treeItem) => {
                     if (section.getEntityChildren) {
-                        const children = section.getEntityChildren(treeItem.entity);
+                        const children = section.getEntityChildren(treeItem.entity) as EntityBase[];
                         return children.filter((child) => !child.reservedDataStore?.hidden).map((child) => createEntityTreeItemData(child, treeItem));
                     }
                     return null;
@@ -769,8 +844,8 @@ export const SceneExplorer: FunctionComponent<{
         visibleItems.add(sceneTreeItem);
 
         for (const sectionTreeItem of sectionTreeItems) {
-            const children = sectionTreeItem.children;
             traversedItems.push(sectionTreeItem);
+            const children = CoerceEntityArray(sectionTreeItem.children, isSorted);
             if (!children.length) {
                 continue;
             }
@@ -786,8 +861,11 @@ export const SceneExplorer: FunctionComponent<{
                     children,
                     // Get children
                     (treeItem) => {
-                        if (filter || openItems.has(treeItem.entity.uniqueId)) {
-                            return treeItem.children ?? null;
+                        if (filter || openItems.has(GetEntityId(treeItem.entity))) {
+                            if (!treeItem.children) {
+                                return null;
+                            }
+                            return CoerceEntityArray(treeItem.children, isSorted);
                         }
                         return null;
                     },
@@ -834,13 +912,13 @@ export const SceneExplorer: FunctionComponent<{
 
         // Filter the traversal ordered items by those that should actually be visible.
         return traversedItems.filter((item) => visibleItems.has(item));
-    }, [sceneTreeItem, sectionTreeItems, allTreeItems, openItems, itemsFilter]);
+    }, [sceneTreeItem, sectionTreeItems, allTreeItems, openItems, itemsFilter, isSorted]);
 
     const getParentStack = useCallback(
         (entity: EntityBase) => {
             const parentStack: TreeItemValue[] = [];
-            for (let treeItem = allTreeItems.get(entity.uniqueId); treeItem; treeItem = treeItem?.type === "entity" ? treeItem.parent : undefined) {
-                parentStack.push(treeItem.type === "entity" ? treeItem.entity.uniqueId : treeItem.sectionName);
+            for (let treeItem = allTreeItems.get(GetEntityId(entity)); treeItem; treeItem = treeItem?.type === "entity" ? treeItem.parent : undefined) {
+                parentStack.push(treeItem.type === "entity" ? GetEntityId(treeItem.entity) : treeItem.sectionName);
             }
             // The first item will be the entity itself, so just remove it.
             parentStack.shift();
@@ -922,16 +1000,25 @@ export const SceneExplorer: FunctionComponent<{
 
     return (
         <div className={classes.rootDiv}>
-            <SearchBox
-                className={classes.searchBox}
-                appearance="underline"
-                contentBefore={<FilterRegular />}
-                placeholder="Filter"
-                value={itemsFilter}
-                onChange={(_, data) => setItemsFilter(data.value)}
-            />
+            <div className={classes.toolbarDiv}>
+                <SearchBox
+                    className={classes.searchBox}
+                    appearance="underline"
+                    contentBefore={<FilterRegular />}
+                    placeholder="Filter"
+                    value={itemsFilter}
+                    onChange={(_, data) => setItemsFilter(data.value)}
+                />
+                <ToggleButton
+                    title="Sort Entities Alphabetically"
+                    appearance="transparent"
+                    checkedIcon={TextSortAscendingRegular}
+                    value={isSorted}
+                    onChange={() => setIsSorted((isSorted) => !isSorted)}
+                />
+            </div>
             <FlatTree className={classes.tree} openItems={openItems} onOpenChange={onOpenChange} aria-label="Scene Explorer Tree">
-                <VirtualizerScrollView imperativeRef={scrollViewRef} numItems={visibleItems.length} itemSize={32} container={{ style: { overflowX: "hidden" } }}>
+                <VirtualizerScrollView imperativeRef={scrollViewRef} numItems={visibleItems.length} itemSize={32} container={{ className: classes.scrollView }}>
                     {(index: number) => {
                         const item = visibleItems[index];
 
@@ -966,7 +1053,7 @@ export const SceneExplorer: FunctionComponent<{
                                     isSelected={selectedEntity === item.entity}
                                     select={() => setSelectedEntity?.(item.entity)}
                                     isFiltering={!!itemsFilter}
-                                    commandProviders={entityCommandProviders}
+                                    commandProviders={entityCommandProviders as SceneExplorerCommandProvider<EntityBase>[]}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
                                 />

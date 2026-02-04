@@ -146,6 +146,7 @@ export const SpriteAnimationProperties: FunctionComponent<{ sprite: Sprite }> = 
                 propertyKey="delay"
             />
             <ButtonLine
+                uniqueId="Start/Stop"
                 label={animationStarted ? "Stop Animation" : "Start Animation"}
                 icon={animationStarted ? StopFilled : PlayFilled}
                 onClick={() => {

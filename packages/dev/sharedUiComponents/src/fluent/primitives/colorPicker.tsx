@@ -247,7 +247,6 @@ const InputRgbField: FunctionComponent<InputRgbFieldProps> = (props) => {
 
     return (
         <SpinButton
-            title={title}
             infoLabel={title ? { label: title } : undefined}
             className={classes.inputField}
             min={0}
@@ -300,7 +299,6 @@ export const InputHsvField: FunctionComponent<InputHsvFieldProps> = (props) => {
     return (
         <SpinButton
             infoLabel={title ? { label: title } : undefined}
-            title={title}
             className={classes.inputField}
             min={0}
             max={max}

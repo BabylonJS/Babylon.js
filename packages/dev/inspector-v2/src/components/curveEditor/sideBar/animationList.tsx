@@ -185,9 +185,9 @@ const AnimationEntry: FunctionComponent<AnimationEntryProps> = ({ animation }) =
                         <CircleSmallFilled />
                     )}
                 </div>
-                <span className={styles.name} title={animation.name}>
+                <div className={styles.name} title={animation.name}>
                     {animation.name}
-                </span>
+                </div>
                 <div className={`${styles.actions} ${isHovered || isEditOpen ? styles.actionsVisible : ""}`}>
                     <Popover
                         open={isEditOpen}
@@ -240,7 +240,7 @@ const AnimationSubEntry: FunctionComponent<AnimationSubEntryProps> = ({ animatio
     return (
         <div className={`${styles.entry} ${styles.subEntry} ${!isEnabled ? styles.subEntryDisabled : ""}`} onClick={handleClick}>
             <div className={styles.colorDot} style={{ backgroundColor: color }} />
-            <span className={styles.name}>{subName}</span>
+            <div className={styles.name}>{subName}</div>
         </div>
     );
 };
@@ -254,7 +254,12 @@ export const AnimationList: FunctionComponent = () => {
     const { state, observables } = useCurveEditor();
 
     // Re-render when animations are loaded or changed (e.g. animation deleted)
-    useObservableState(() => ({}), observables.onAnimationsLoaded, observables.onActiveAnimationChanged);
+    // useCallback stabilizes the accessor to prevent infinite re-render loops
+    useObservableState(
+        useCallback(() => ({}), []),
+        observables.onAnimationsLoaded,
+        observables.onActiveAnimationChanged
+    );
 
     // Get animations from target if available (for dynamically added animations), otherwise from state
     const animations = state.target?.animations ?? state.animations;

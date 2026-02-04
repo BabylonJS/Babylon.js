@@ -1055,7 +1055,18 @@ export class Geometry implements IGetSetVerticesData {
             const { type, byteOffset, byteStride, normalized } = vb;
             updatable = updatable || isUpdatable;
 
-            const copy = GetTypedArrayData(bufferData, size, type, byteOffset, byteStride, this._totalVertices, true);
+            let numElements = this._totalVertices;
+            if (vb.getIsInstanced()) {
+                // Do our best with the data we have to find a number of instances when the vertex buffer is instanced...
+                let bufferDataByteSize = 0;
+                if (bufferData instanceof Array) {
+                    bufferDataByteSize = bufferData.length * 4;
+                } else {
+                    bufferDataByteSize = bufferData.byteLength;
+                }
+                numElements = bufferDataByteSize / byteStride;
+            }
+            const copy = GetTypedArrayData(bufferData, size, type, byteOffset, byteStride, numElements, true);
             const newVb = new VertexBuffer(this._engine, copy, kind, {
                 updatable: isUpdatable,
                 useBytes: false,
@@ -1065,9 +1076,10 @@ export class Geometry implements IGetSetVerticesData {
                 type: type,
                 normalized: normalized,
                 takeBufferOwnership: true,
+                instanced: vb.getIsInstanced(),
             });
 
-            geometry.setVerticesBuffer(newVb, this._totalVertices);
+            geometry.setVerticesBuffer(newVb, numElements);
         }
 
         geometry._updatable = updatable;
