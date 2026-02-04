@@ -97,7 +97,12 @@ export function UpdateConfiguration(newConfig: Partial<AnimationConfiguration>, 
     // If devicePixelRatio is 0 (auto-detect), set it based on atlas size
     if (config.devicePixelRatio === 0) {
         // 8K atlas can afford higher supersampling (4x), smaller atlas uses 2x
-        config.devicePixelRatio = optimalAtlasSize >= MAX_SPRITE_ATLAS_SIZE ? Math.max(window.devicePixelRatio, 4) : Math.max(window.devicePixelRatio, 2);
+        if (typeof window !== "undefined" && window.devicePixelRatio !== undefined) {
+            config.devicePixelRatio = optimalAtlasSize >= MAX_SPRITE_ATLAS_SIZE ? Math.max(window.devicePixelRatio, 4) : Math.max(window.devicePixelRatio, 2);
+        } else {
+            // Workers do not have access to window
+            config.devicePixelRatio = optimalAtlasSize >= MAX_SPRITE_ATLAS_SIZE ? 4 : 2;
+        }
     }
 
     return config;
