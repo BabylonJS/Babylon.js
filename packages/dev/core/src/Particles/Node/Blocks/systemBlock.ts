@@ -1,4 +1,6 @@
 import type { Nullable } from "core/types";
+import type { Vector3 } from "core/Maths/math.vector";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
@@ -7,7 +9,7 @@ import type { ParticleGradientValueBlock } from "./particleGradientValueBlock";
 import { Constants } from "../../../Engines/constants";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { Vector2 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
@@ -117,6 +119,12 @@ export class SystemBlock extends NodeParticleBlock {
     @editableInPropertyPage("Do no start", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public doNoStart = false;
 
+    /**
+     * Gets or sets the rendering group id for the particle system (0 by default)
+     */
+    @editableInPropertyPage("Rendering group id", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
+    public renderingGroupId = 0;
+
     /** @internal */
     public _internalId = SystemBlock._IdCounter++;
 
@@ -125,6 +133,11 @@ export class SystemBlock extends NodeParticleBlock {
      * This can be used to set your own shader to render the particle system.
      */
     public customShader: Nullable<CustomShader> = null;
+
+    /**
+     * Gets or sets the emitter for the particle system.
+     */
+    public emitter: Nullable<AbstractMesh | Vector3> = null;
 
     /**
      * Create a new SystemBlock
@@ -144,7 +157,6 @@ export class SystemBlock extends NodeParticleBlock {
         this.registerInput("onStart", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("onEnd", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("rampGradient", NodeParticleBlockConnectionPointTypes.Color4, true);
-        this.registerInput("emitterPosition", NodeParticleBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
     }
 
@@ -220,13 +232,6 @@ export class SystemBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the emitterPosition input component
-     */
-    public get emitterPosition(): NodeParticleConnectionPoint {
-        return this._inputs[9];
-    }
-
-    /**
      * Gets the system output component
      */
     public get system(): NodeParticleConnectionPoint {
@@ -261,7 +266,8 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem.textureMask = this.textureMask.getConnectedValue(state) ?? new Color4(1, 1, 1, 1);
         particleSystem.isLocal = this.isLocal;
         particleSystem.disposeOnStop = this.disposeOnStop;
-        particleSystem.emitter = (this.emitterPosition.getConnectedValue(state) as Vector3) ?? Vector3.Zero();
+        particleSystem.renderingGroupId = this.renderingGroupId;
+        particleSystem.emitter = this.emitter;
 
         // Apply custom shader if defined
         if (this.customShader) {
@@ -370,6 +376,7 @@ export class SystemBlock extends NodeParticleBlock {
         serializationObject.isLocal = this.isLocal;
         serializationObject.disposeOnStop = this.disposeOnStop;
         serializationObject.doNoStart = this.doNoStart;
+        serializationObject.renderingGroupId = this.renderingGroupId;
         serializationObject.startDelay = this.startDelay;
         serializationObject.customShader = this.customShader;
 
@@ -393,6 +400,7 @@ export class SystemBlock extends NodeParticleBlock {
         this.isLocal = serializationObject.isLocal ?? false;
         this.disposeOnStop = serializationObject.disposeOnStop ?? false;
         this.doNoStart = !!serializationObject.doNoStart;
+        this.renderingGroupId = serializationObject.renderingGroupId ?? 0;
 
         if (serializationObject.emitRate !== undefined) {
             this.emitRate.value = serializationObject.emitRate;
