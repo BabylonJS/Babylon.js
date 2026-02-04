@@ -578,10 +578,11 @@ export function ComputeLookAtFromYawPitchToRef(yaw: number, pitch: number, cente
     const sinPitch = Math.sin(pitch);
     const cosPitch = Math.cos(pitch);
 
-    // Use quaternion rotation to compute horiz = rotate(north, up, yaw * yawScale)
+    // Use quaternion rotation to compute horiz = rotate(north, up, -yaw * yawScale)
+    // Negating the angle produces: horiz = North*cos(yaw) + East*sin(yaw) (matching original formula)
     const yawScale = useRightHandedSystem ? 1 : -1;
     const yawQuat = TmpVectors.Quaternion[0];
-    Quaternion.RotationAxisToRef(up, yaw * yawScale, yawQuat);
+    Quaternion.RotationAxisToRef(up, -yaw * yawScale, yawQuat);
 
     const horiz = TmpVectors.Vector3[3];
     north.rotateByQuaternionToRef(yawQuat, horiz);
@@ -639,12 +640,10 @@ export function ComputeYawPitchFromLookAtToRef(lookAt: Vector3, center: Vector3,
     // horiz = lookHorizontal / sinPitch
     const horiz = lookHorizontal.scaleInPlace(1 / sinPitch);
 
-    // The quaternion rotation produces: horiz = rotate(north, up, angle)
-    // This is equivalent to: horiz = north*cos(angle) + cross(up, north)*sin(angle) = north*cos(angle) - east*sin(angle)
-    // (since cross(up, north) = -east in our basis)
-    // So: cosYaw = horiz · north, sinYaw = -(horiz · east)
+    // From the forward formula: horiz = North*cos(yaw) + East*sin(yaw)
+    // So: cosYaw = horiz · north, sinYaw = horiz · east
     const cosYaw = Vector3Dot(horiz, north);
-    const sinYaw = -Vector3Dot(horiz, east);
+    const sinYaw = Vector3Dot(horiz, east);
 
     const yawScale = useRightHandedSystem ? 1 : -1;
     result.x = Math.atan2(sinYaw, cosYaw) * yawScale;
