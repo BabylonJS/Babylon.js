@@ -34,10 +34,8 @@ export class TextureDisplayManager implements IDisplayManager {
             contentArea.appendChild(this._previewImage);
             this._previewImage.classList.add(localStyles.empty);
 
-            // Create a hidden canvas for converting texture data to data URL
+            // Create an off-screen canvas for converting texture data to data URL
             this._previewCanvas = contentArea.ownerDocument.createElement("canvas");
-            this._previewCanvas.style.display = "none";
-            contentArea.appendChild(this._previewCanvas);
         }
 
         const url = block.textureDataUrl || block.url;
