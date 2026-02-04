@@ -72,6 +72,7 @@ export class TextureDisplayManager implements IDisplayManager {
         this._previewCanvas.width = width;
         this._previewCanvas.height = height;
         const ctx = this._previewCanvas.getContext("2d");
+
         if (ctx) {
             let imageData: ImageData;
             try {
@@ -85,6 +86,7 @@ export class TextureDisplayManager implements IDisplayManager {
             ctx.putImageData(imageData, 0, 0);
             return this._previewCanvas.toDataURL("image/png");
         }
+
         return "";
     }
 }
