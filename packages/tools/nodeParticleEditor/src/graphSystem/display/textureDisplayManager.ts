@@ -55,8 +55,12 @@ export class TextureDisplayManager implements IDisplayManager {
             const textureData = await block.extractTextureContentAsync();
             if (textureData) {
                 const dataUrl = this._textureDataToDataUrl(textureData.data, textureData.width, textureData.height);
-                this._previewImage.src = dataUrl;
-                this._previewImage.classList.remove(localStyles.empty);
+                if (dataUrl) {
+                    this._previewImage.src = dataUrl;
+                    this._previewImage.classList.remove(localStyles.empty);
+                } else {
+                    this._previewImage.classList.add(localStyles.empty);
+                }
             }
         } catch {
             // If extraction fails, just show empty state
@@ -69,10 +73,15 @@ export class TextureDisplayManager implements IDisplayManager {
         this._previewCanvas.height = height;
         const ctx = this._previewCanvas.getContext("2d");
         if (ctx) {
-            // Create a copy with a fresh ArrayBuffer to ensure compatibility with ImageData
-            const dataCopy = new Uint8ClampedArray(data.length);
-            dataCopy.set(data);
-            const imageData = new ImageData(dataCopy, width, height);
+            let imageData: ImageData;
+            try {
+                // The most common scenario is that the data is already a Uint8ClampedArray with a compatible ArrayBuffer
+                imageData = new ImageData(data as Uint8ClampedArray<ArrayBuffer>, width, height);
+            } catch {
+                // Fallback: create a copy with a fresh ArrayBuffer if the original buffer was not compatible
+                const dataCopy = new Uint8ClampedArray(data);
+                imageData = new ImageData(dataCopy, width, height);
+            }
             ctx.putImageData(imageData, 0, 0);
             return this._previewCanvas.toDataURL("image/png");
         }
