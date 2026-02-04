@@ -27,7 +27,12 @@ export const VideoCaptureTool: FunctionComponent<{ scene: Scene }> = ({ scene })
 
     return (
         <>
-            <ButtonLine label={isRecording ? "Stop Recording" : "Record Video"} icon={isRecording ? RecordStopRegular : RecordRegular} onClick={recordVideoAsync} />
+            <ButtonLine
+                uniqueId="Start/Stop"
+                label={isRecording ? "Stop Recording" : "Record Video"}
+                icon={isRecording ? RecordStopRegular : RecordRegular}
+                onClick={recordVideoAsync}
+            />
         </>
     );
 };

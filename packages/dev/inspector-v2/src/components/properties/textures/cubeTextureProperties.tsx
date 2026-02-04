@@ -20,6 +20,7 @@ export const CubeTextureTransformProperties: FunctionComponent<{ texture: CubeTe
             propertyKey="rotationY"
             min={0}
             max={toDisplayAngle(Math.PI * 2)}
+            step={0.0001}
             convertTo={(value) => toDisplayAngle(value, true)}
             convertFrom={fromDisplayAngle}
         />

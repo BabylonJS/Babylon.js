@@ -645,7 +645,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 delete mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName];
             }
         }
-        this._selection = [];
+        this._selection.length = 0;
         this._meshUniqueIdToSelectionId.length = 0;
 
         this._nextSelectionId = 1;

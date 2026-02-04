@@ -184,7 +184,14 @@ export const PerformanceStats: FunctionComponent<{ context: Scene }> = ({ contex
             {!isOpen && <ButtonLine label="Open Realtime Perf Viewer" onClick={onPerformanceButtonClick} />}
             {!isOpen && <FileUploadLine label="Load Perf Viewer using CSV" accept=".csv" onClick={onLoadClick} />}
             <ButtonLine label="Export Perf to CSV" icon={ArrowDownloadRegular} onClick={onExportClick} />
-            {!isOpen && <ButtonLine label={isRecording ? "Stop Recording" : "Begin Recording"} icon={isRecording ? StopRegular : RecordRegular} onClick={onToggleRecording} />}
+            {!isOpen && (
+                <ButtonLine
+                    uniqueId="Start/Stop"
+                    label={isRecording ? "Stop Recording" : "Begin Recording"}
+                    icon={isRecording ? StopRegular : RecordRegular}
+                    onClick={onToggleRecording}
+                />
+            )}
             <ChildWindow id="performance-viewer" imperativeRef={childWindowRef} onOpenChange={(open) => !open && onClosePerformanceViewer()}>
                 {performanceCollector && (
                     <PerformanceViewer

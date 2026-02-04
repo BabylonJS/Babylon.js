@@ -168,6 +168,7 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
             )}
             {hasAnimations && (
                 <ButtonLine
+                    uniqueId="Start/Stop"
                     label={isPlaying ? "Stop Animation" : "Play Animation"}
                     onClick={() => {
                         if (isPlaying) {

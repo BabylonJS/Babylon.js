@@ -1,8 +1,8 @@
 // samplers
 var maskSamplerSampler: sampler;
-uniform maskSampler: texture_2d<f32>;
+var maskSampler: texture_2d<f32>;
 var depthSamplerSampler: sampler;
-uniform depthSampler: texture_2d<f32>;
+var depthSampler: texture_2d<f32>;
 
 // varyings
 varying vUV: vec2f;

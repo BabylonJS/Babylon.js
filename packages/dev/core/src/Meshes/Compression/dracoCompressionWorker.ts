@@ -28,7 +28,7 @@ export function EncodeMesh(
     attributes: Array<IDracoAttributeData>,
     indices: Nullable<Uint16Array | Uint32Array>,
     options: IDracoEncoderOptions
-): Nullable<IDracoEncodedMeshData> {
+): IDracoEncodedMeshData {
     const encoderModule = module as EncoderModule;
     let encoder: Nullable<Encoder> = null;
     let meshBuilder: Nullable<MeshBuilder> = null;
@@ -39,7 +39,7 @@ export function EncodeMesh(
     // Double-check that at least a position attribute is provided
     const positionAttribute = attributes.find((a) => a.dracoName === "POSITION");
     if (!positionAttribute) {
-        throw new Error("Position attribute is required for Draco encoding");
+        throw new Error("Draco: Missing position attribute for encoding.");
     }
 
     // If no indices are provided, assume mesh is unindexed. Let's generate them, since Draco meshes require them.
@@ -99,7 +99,7 @@ export function EncodeMesh(
         encodedNativeBuffer = new encoderModule.DracoInt8Array();
         const encodedLength = encoder.EncodeMeshToDracoBuffer(mesh, encodedNativeBuffer);
         if (encodedLength <= 0) {
-            throw new Error("Draco encoding failed.");
+            throw new Error("Draco: Failed to encode.");
         }
 
         // Copy the native buffer data to worker heap
@@ -130,7 +130,7 @@ export function EncodeMesh(
  * To be used if a developer wants to create their own worker instance and inject it instead of using the default worker.
  */
 export function EncoderWorkerFunction(): void {
-    let encoderPromise: PromiseLike<EncoderModule> | undefined;
+    let encoderPromise: Promise<EncoderModule> | undefined;
 
     onmessage = (event) => {
         const message = event.data;
@@ -147,13 +147,18 @@ export function EncoderWorkerFunction(): void {
             }
             case "encodeMesh": {
                 if (!encoderPromise) {
-                    throw new Error("Draco encoder module is not available");
+                    throw new Error("Draco: Encoder module is not available.");
                 }
-                // eslint-disable-next-line github/no-then
-                encoderPromise.then((encoder) => {
-                    const result = EncodeMesh(encoder, message.attributes, message.indices, message.options);
-                    postMessage({ id: "encodeMeshDone", encodedMeshData: result }, result ? [result.data.buffer] : undefined);
-                });
+                encoderPromise
+                    // eslint-disable-next-line github/no-then
+                    .then((encoder) => {
+                        const result = EncodeMesh(encoder, message.attributes, message.indices, message.options);
+                        postMessage({ id: "encodeMeshSuccess", encodedMeshData: result }, result ? [result.data.buffer] : undefined);
+                    })
+                    // eslint-disable-next-line github/no-then
+                    .catch((error) => {
+                        postMessage({ id: "encodeMeshError", errorMessage: error.message });
+                    });
                 break;
             }
         }
@@ -219,7 +224,7 @@ export function DecodeMesh(
                 break;
             }
             default: {
-                throw new Error(`Invalid geometry type ${type}`);
+                throw new Error(`Draco: Cannot decode invalid geometry type ${type}`);
             }
         }
 
@@ -244,7 +249,7 @@ export function DecodeMesh(
 
             const info = dataTypeInfo[dataType];
             if (!info) {
-                throw new Error(`Invalid data type ${dataType}`);
+                throw new Error(`Draco: Cannot decode invalid data type ${dataType}`);
             }
 
             const numValues = numPoints * numComponents;
@@ -321,7 +326,7 @@ export function DecoderWorkerFunction(): void {
             }
             case "decodeMesh": {
                 if (!decoderPromise) {
-                    throw new Error("Draco decoder module is not available");
+                    throw new Error("Draco: Decoder module is not available");
                 }
                 // eslint-disable-next-line github/no-then
                 decoderPromise.then((decoder) => {
