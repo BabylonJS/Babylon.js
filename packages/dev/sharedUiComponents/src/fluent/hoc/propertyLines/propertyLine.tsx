@@ -80,6 +80,9 @@ type BasePropertyLineProps = {
     label: string;
     /**
      * The ID of the property line to be used when the label cannot be used as a persistent ID.
+     *
+     * Note that when a property line is used within an accordion section, this ID must be unique within that section in order
+     * for property pinning and filtering to work correctly. If not, error will be shown in console.
      */
     uniqueId?: string;
     /**

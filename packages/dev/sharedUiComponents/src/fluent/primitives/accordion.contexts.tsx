@@ -135,6 +135,8 @@ export type AccordionContextValue = {
     features: AccordionFeatures;
     /** Ref for the pinned items portal container. */
     pinnedContainerRef: RefObject<HTMLDivElement>;
+    /** Set of registered item IDs (for duplicate detection). */
+    registeredItemIds: React.MutableRefObject<Set<string>>;
 };
 
 export const AccordionContext = createContext<AccordionContextValue | undefined>(undefined);
@@ -175,6 +177,7 @@ export function useAccordionContext(props: AccordionProps): AccordionContextValu
     const [state, dispatch] = useReducer(AccordionReducer, initialState);
 
     const pinnedContainerRef = useRef<HTMLDivElement>(null);
+    const registeredItemIds = useRef<Set<string>>(new Set());
 
     // Persist pinnedIds to localStorage when they change
     useEffect(() => {
@@ -201,6 +204,7 @@ export function useAccordionContext(props: AccordionProps): AccordionContextValu
         dispatch,
         features,
         pinnedContainerRef,
+        registeredItemIds,
     };
 }
 
@@ -301,6 +305,25 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         }
         prevItemIdRef.current = itemId;
     }, [itemId, sectionCtx?.sectionId]);
+
+    // Debug: warn if itemUniqueId is not unique (duplicate detection)
+    useEffect(() => {
+        if (!accordionCtx || !itemUniqueId) {
+            return;
+        }
+        const { registeredItemIds } = accordionCtx;
+        if (registeredItemIds.current.has(itemUniqueId)) {
+            Logger.Warn(
+                `Accordion: Duplicate uniqueId "${itemId}" detected in section "${sectionCtx?.sectionId}". ` +
+                    `Each item must have a unique ID within its section for pin/hide persistence to work correctly.`
+            );
+        } else {
+            registeredItemIds.current.add(itemUniqueId);
+        }
+        return () => {
+            registeredItemIds.current.delete(itemUniqueId);
+        };
+    }, [accordionCtx, itemUniqueId, itemId, sectionCtx?.sectionId]);
 
     // If no context, static item, or nested, return undefined
     if (!accordionCtx || staticItem) {
