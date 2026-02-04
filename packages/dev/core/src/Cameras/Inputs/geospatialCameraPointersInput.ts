@@ -23,6 +23,18 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     private _initialPinchSquaredDistance: number = 0;
     private _pinchCentroid: Nullable<PointerTouch> = null;
 
+    /**
+     * Defines the rotation sensitivity of the pointer when rotating camera around the x axis (pitch)
+     * (Multiplied by the true pixel delta of pointer input, before rotation speed factor is applied by movement class)
+     */
+    public pitchSensitivity = 1.0;
+
+    /**
+     * Defines the rotation sensitivity of the pointer when rotating the camera around the Y axis (yaw)
+     * (Multiplied by the true pixel delta of pointer input, before rotation speed factor is applied by movement class)
+     */
+    public yawSensitivity: number = 1.0;
+
     public override getClassName(): string {
         return "GeospatialCameraPointersInput";
     }
@@ -163,7 +175,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     }
 
     private _handleTilt(deltaX: number, deltaY: number): void {
-        this.camera.movement.rotationAccumulatedPixels.y -= deltaX; // yaw - looking side to side
-        this.camera.movement.rotationAccumulatedPixels.x -= deltaY; // pitch - look up towards sky / down towards ground
+        this.camera.movement.rotationAccumulatedPixels.y -= deltaX * this.yawSensitivity; // yaw - looking side to side
+        this.camera.movement.rotationAccumulatedPixels.x -= deltaY * this.pitchSensitivity; // pitch - look up towards sky / down towards ground
     }
 }
