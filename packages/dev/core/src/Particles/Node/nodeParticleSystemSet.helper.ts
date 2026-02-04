@@ -1033,7 +1033,12 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     newSystem.isLocal = oldSystem.isLocal;
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
     newSystem.renderingGroupId = oldSystem.renderingGroupId;
-    newSystem.emitter = oldSystem.emitter;
+    const emitter = oldSystem.emitter;
+    if (emitter instanceof Vector3) {
+        newSystem.emitter = emitter.clone();
+    } else {
+        newSystem.emitter = emitter;
+    }
 
     _SystemCustomShader(oldSystem, newSystem);
     _SystemEmitRateValue(oldSystem.getEmitRateGradients(), oldSystem.targetStopDuration, oldSystem.emitRate, newSystem, context);

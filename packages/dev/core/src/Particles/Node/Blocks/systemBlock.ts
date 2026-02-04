@@ -1,5 +1,4 @@
 import type { Nullable } from "core/types";
-import type { Vector3 } from "core/Maths/math.vector";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
@@ -9,7 +8,7 @@ import type { ParticleGradientValueBlock } from "./particleGradientValueBlock";
 import { Constants } from "../../../Engines/constants";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { RegisterClass } from "core/Misc/typeStore";
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
@@ -137,7 +136,7 @@ export class SystemBlock extends NodeParticleBlock {
     /**
      * Gets or sets the emitter for the particle system.
      */
-    public emitter: Nullable<AbstractMesh | Vector3> = null;
+    public emitter: Nullable<AbstractMesh | Vector3> = Vector3.Zero();
 
     /**
      * Create a new SystemBlock
@@ -267,7 +266,9 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem.isLocal = this.isLocal;
         particleSystem.disposeOnStop = this.disposeOnStop;
         particleSystem.renderingGroupId = this.renderingGroupId;
-        particleSystem.emitter = this.emitter;
+        if (this.emitter) {
+            particleSystem.emitter = this.emitter;
+        }
 
         // Apply custom shader if defined
         if (this.customShader) {
