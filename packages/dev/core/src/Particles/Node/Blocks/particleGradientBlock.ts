@@ -56,13 +56,37 @@ export class ParticleGradientBlock extends NodeParticleBlock {
         this._manageExtendedInputs(this._entryCount);
     }
 
+    private _reduce() {
+        // Remove the last input if it's not connected and we have more than one entry
+        for (let i = this._inputs.length - 2; i >= 1; i--) {
+            if (this._inputs[i].isConnected) {
+                break;
+            }
+            const inputToRemove = this._inputs[i];
+            inputToRemove.dispose();
+            this._inputs.splice(i, 1);
+            this._entryCount--;
+            this.onInputChangedObservable.notifyObservers(inputToRemove);
+        }
+
+        // Rename inputs
+        for (let i = 1; i < this._inputs.length; i++) {
+            this._inputs[i].name = "value" + (i - 1);
+        }
+    }
+
     private _manageExtendedInputs(index: number) {
         this._inputs[index].onConnectionObservable.add(() => {
             if (this._entryCount > index) {
                 return;
             }
 
+            // Need to add a new input
             this._extend();
+        });
+
+        this._inputs[index].onDisconnectionObservable.add(() => {
+            this._reduce();
         });
     }
 
