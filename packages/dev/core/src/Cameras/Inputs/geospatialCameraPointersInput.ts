@@ -35,6 +35,13 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
      */
     public yawSensitivity: number = 1.0;
 
+    /**
+     * Defines the distance used to consider the camera in pan mode vs pinch/zoom.
+     * Basically if your fingers moves away from more than this distance you will be considered
+     * in pinch mode.
+     */
+    public pinchToPanMax: number = 20;
+
     public override getClassName(): string {
         return "GeospatialCameraPointersInput";
     }
@@ -155,7 +162,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
 
         // Use cumulative delta from gesture start for threshold detection (more forgiving than frame-to-frame)
         const cumulativeDelta = Math.abs(Math.sqrt(pinchSquaredDistance) - Math.sqrt(this._initialPinchSquaredDistance));
-        this._shouldStartPinchZoom = this._twoFingerActivityCount < 20 && cumulativeDelta > this.camera.limits.pinchToPanMax;
+        this._shouldStartPinchZoom = this._twoFingerActivityCount < 20 && cumulativeDelta > this.pinchToPanMax;
 
         super.onMultiTouch(pointA, pointB, previousPinchSquaredDistance, pinchSquaredDistance, previousMultiTouchPanPosition, multiTouchPanPosition);
     }

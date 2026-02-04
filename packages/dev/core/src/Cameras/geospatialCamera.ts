@@ -3,6 +3,7 @@ import { Vector3, Matrix, TmpVectors, Quaternion } from "../Maths/math.vector";
 import type { Vector2 } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
 import { Camera } from "./camera";
+import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import type { Scene } from "../scene";
 import type { MeshPredicate } from "../Culling/ray.core";
 import type { DeepImmutable } from "../types";
@@ -16,6 +17,7 @@ import { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavio
 import type { Collider } from "../Collisions/collider";
 import type { EasingFunction } from "../Animations/easing";
 import type { Animation } from "../Animations/animation";
+import { RegisterClass } from "../Misc/typeStore";
 
 export type GeospatialCameraOptions = {
     /**
@@ -55,6 +57,7 @@ export class GeospatialCamera extends Camera {
     /** Public option to customize the collision offset applied each frame - vs the one calculated using internal CollisionCoordinator */
     public perFrameCollisionOffset: Vector3 = new Vector3();
     /** Enable or disable collision checking for this camera. Default is false. */
+    @serialize()
     public checkCollisions: boolean = false;
 
     constructor(name: string, scene: Scene, options: GeospatialCameraOptions) {
@@ -72,6 +75,7 @@ export class GeospatialCamera extends Camera {
         this.inputs.addMouse().addMouseWheel().addKeyboard();
     }
 
+    @serializeAsVector3()
     private _center: Vector3 = new Vector3();
     /** The point on the globe that we are anchoring around. If no alternate rotation point is supplied, this will represent the center of screen*/
     public get center(): Vector3 {
@@ -87,6 +91,7 @@ export class GeospatialCamera extends Camera {
         this._setOrientation(this._yaw, this._pitch, this._radius, this._center);
     }
 
+    @serialize()
     private _yaw: number = 0;
     /**
      * Gets the camera's yaw (rotation around the geocentric normal) in radians
@@ -103,6 +108,7 @@ export class GeospatialCamera extends Camera {
         yaw !== this._yaw && this._setOrientation(yaw, this.pitch, this.radius, this.center);
     }
 
+    @serialize()
     private _pitch: number = 0;
 
     /**
@@ -124,6 +130,7 @@ export class GeospatialCamera extends Camera {
         pitch !== this._pitch && this._setOrientation(this.yaw, pitch, this.radius, this.center);
     }
 
+    @serialize()
     private _radius: number = 0;
     public get radius(): number {
         return this._radius;
@@ -298,6 +305,7 @@ export class GeospatialCamera extends Camera {
         const zoomDistance = Vector3Distance(this.position, destination) * distanceScale;
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(destination, zoomDistance, this._tempCenter);
         await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn, centerHopScale);
+        !this.isDisposed && this._recalculateCenter(false, true /** force */);
     }
 
     private _limits: GeospatialLimits;
@@ -484,12 +492,12 @@ export class GeospatialCamera extends Camera {
 
     private _wasCenterMovingLastFrame = false;
 
-    private _recalculateCenter(isCenterMoving: boolean) {
+    private _recalculateCenter(isCenterMoving: boolean, forceRecalculate: boolean = false): void {
         const shouldRecalculateCenterAfterMove = this._wasCenterMovingLastFrame && !isCenterMoving;
         this._wasCenterMovingLastFrame = isCenterMoving;
 
         // Wait until movement impacting center is complete to avoid wasted raycasting
-        if (shouldRecalculateCenterAfterMove) {
+        if (shouldRecalculateCenterAfterMove || forceRecalculate) {
             const newCenter = this.movement.pickAlongVector(this._lookAtVector);
             if (newCenter?.pickedPoint) {
                 // Direction from new center to origin
@@ -558,7 +566,18 @@ export class GeospatialCamera extends Camera {
     override detachControl(): void {
         this.inputs.detachElement();
     }
+
+    /**
+     * Gets the class name of the camera.
+     * @returns the class name
+     */
+    public override getClassName(): string {
+        return "GeospatialCamera";
+    }
 }
+
+// Register Class Name
+RegisterClass("BABYLON.GeospatialCamera", GeospatialCamera);
 
 /**
  * Compute the lookAt direction vector from yaw and pitch angles at a given center point.
