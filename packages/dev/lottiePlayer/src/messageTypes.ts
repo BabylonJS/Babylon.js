@@ -111,6 +111,8 @@ export type StartAnimationMessagePayload = {
     configuration: Nullable<Partial<AnimationConfiguration>>;
     /** The parsed lottie animation if it is available */
     animationData?: RawLottieAnimation;
+    /** The devicePixelRatio from the main thread (workers can't access window.devicePixelRatio) */
+    mainThreadDevicePixelRatio: number;
 };
 
 /** Payload for the "containerResize" message type */

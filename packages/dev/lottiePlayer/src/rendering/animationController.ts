@@ -84,13 +84,15 @@ export class AnimationController {
      * @param scaleFactor The scale factor between the animation and the container, it will modify the sprites size in the atlas
      * @param variables Map of variables to replace in the animation file.
      * @param configuration The partial configuration for the animation player. Will be finalized after engine creation.
+     * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios).
      */
     public constructor(
         canvas: HTMLCanvasElement | OffscreenCanvas,
         animationData: RawLottieAnimation,
         scaleFactor: number,
         variables: Map<string, string>,
-        configuration: Partial<AnimationConfiguration>
+        configuration: Partial<AnimationConfiguration>,
+        mainThreadDevicePixelRatio?: number
     ) {
         this._isReady = false;
         this._canvas = canvas;
@@ -128,7 +130,7 @@ export class AnimationController {
 
         // Finalize configuration now that we can query GPU capabilities
         const maxTextureSize = this._engine.getCaps().maxTextureSize;
-        this._configuration = UpdateConfiguration(configuration, maxTextureSize);
+        this._configuration = UpdateConfiguration(configuration, maxTextureSize, mainThreadDevicePixelRatio);
         this._loop = this._configuration.loopAnimation;
 
         // Prevent parallel shader compilation to simplify the boot sequence

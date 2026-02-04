@@ -79,9 +79,10 @@ export const DefaultConfiguration = {
  * Computes optimal atlas size and devicePixelRatio based on GPU capabilities when not explicitly provided.
  * @param newConfig The configuration passed by the client.
  * @param maxTextureSize The maximum texture size supported by the GPU.
+ * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios where window is not available).
  * @returns The final animation configuration.
  */
-export function UpdateConfiguration(newConfig: Partial<AnimationConfiguration>, maxTextureSize: number): AnimationConfiguration {
+export function UpdateConfiguration(newConfig: Partial<AnimationConfiguration>, maxTextureSize: number, mainThreadDevicePixelRatio?: number): AnimationConfiguration {
     const config = {
         ...DefaultConfiguration,
         ...newConfig,
@@ -94,15 +95,12 @@ export function UpdateConfiguration(newConfig: Partial<AnimationConfiguration>, 
         config.spriteAtlasHeight = optimalAtlasSize;
     }
 
-    // If devicePixelRatio is 0 (auto-detect), set it based on atlas size
+    // If devicePixelRatio is 0 (auto-detect), set it based on atlas size and system DPR
     if (config.devicePixelRatio === 0) {
+        // Get the system devicePixelRatio - prefer passed value (for workers), fallback to window
+        const systemDpr = mainThreadDevicePixelRatio ?? (typeof window !== "undefined" ? window.devicePixelRatio : 1);
         // 8K atlas can afford higher supersampling (4x), smaller atlas uses 2x
-        if (typeof window !== "undefined" && window.devicePixelRatio !== undefined) {
-            config.devicePixelRatio = optimalAtlasSize >= MAX_SPRITE_ATLAS_SIZE ? Math.max(window.devicePixelRatio, 4) : Math.max(window.devicePixelRatio, 2);
-        } else {
-            // Workers do not have access to window
-            config.devicePixelRatio = optimalAtlasSize >= MAX_SPRITE_ATLAS_SIZE ? 4 : 2;
-        }
+        config.devicePixelRatio = optimalAtlasSize >= MAX_SPRITE_ATLAS_SIZE ? Math.max(systemDpr, 4) : Math.max(systemDpr, 2);
     }
 
     return config;

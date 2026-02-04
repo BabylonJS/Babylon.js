@@ -93,11 +93,6 @@ onmessage = async function (evt) {
             }
 
             const payload = message.payload as StartAnimationMessagePayload;
-            const canvas = payload.canvas;
-            const scaleFactor = payload.scaleFactor;
-            const variables = payload.variables ?? new Map<string, string>();
-            const partialConfig = payload.configuration ?? {};
-
             if (RawAnimation === null && payload.animationData) {
                 RawAnimation = payload.animationData;
             }
@@ -106,7 +101,15 @@ onmessage = async function (evt) {
                 return;
             }
 
-            const controller = new AnimationControllerClass(canvas, RawAnimation, scaleFactor, variables, partialConfig);
+            const controller = new AnimationControllerClass(
+                payload.canvas,
+                RawAnimation,
+                payload.scaleFactor,
+                payload.variables ?? new Map<string, string>(),
+                payload.configuration ?? {},
+                payload.mainThreadDevicePixelRatio
+            );
+
             controller.playAnimation();
             Controller = controller;
             break;
