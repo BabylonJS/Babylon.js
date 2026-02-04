@@ -217,6 +217,7 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
     const classes = useStyles();
     const accordionCtx = useContext(AccordionContext);
     const itemState = useAccordionSectionItemState(props);
+    const [ctrlMode, setCtrlMode] = useState(false);
 
     // If static item or no context, just render children
     if (staticItem || !accordionCtx || !itemState) {
@@ -237,10 +238,23 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
     }
 
     const pinnedContainer = isPinned ? pinnedContainerRef.current : null;
+    const showControls = inEditMode || ctrlMode;
+
+    const onMouseMove = (e: React.MouseEvent) => {
+        if (e.ctrlKey !== ctrlMode) {
+            setCtrlMode(e.ctrlKey);
+        }
+    };
+
+    const onMouseLeave = () => {
+        if (ctrlMode) {
+            setCtrlMode(false);
+        }
+    };
 
     const itemElement = (
-        <div className={classes.sectionItemContainer} style={isPinned ? { order: pinnedIndex } : undefined}>
-            {inEditMode && (
+        <div className={classes.sectionItemContainer} style={isPinned ? { order: pinnedIndex } : undefined} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}>
+            {showControls && (
                 <div className={classes.sectionItemButtons}>
                     {features.hiding && (
                         <Button title={isHidden ? "Unhide" : "Hide"} icon={isHidden ? EyeOffRegular : EyeFilled} appearance="transparent" onClick={actions.toggleHidden} />
