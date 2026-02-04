@@ -252,6 +252,13 @@ export const evaluateInitEngineForVisualization = async ({
     }
     window.engine!.renderEvenInBackground = true;
     window.engine!.getCaps().parallelShaderCompile = undefined;
+
+    if (typeof (window as any).HavokPhysics === "function" && typeof (window as any).HK === "undefined") {
+        try {
+            (window as any).HK = await (window as any).HavokPhysics();
+        } catch {}
+    }
+
     return {
         forceUseReverseDepthBuffer: window.forceUseReverseDepthBuffer,
         forceUseNonCompatibilityMode: window.forceUseNonCompatibilityMode,
