@@ -1555,11 +1555,8 @@ const DrawEffect = (
     const currentDepthFunction = engine.getDepthFunction();
     engine.setDepthFunction(depthFunction);
 
-    // Likewise with the alpha mode, which can affect depth state too.
     const currentAlphaMode = engine.getAlphaMode();
-    if (alphaMode !== Constants.ALPHA_DISABLE) {
-        engine.setAlphaMode(alphaMode);
-    }
+    engine.setAlphaMode(alphaMode, true);
 
     const currentCull = engine.depthCullingState.cull;
 
@@ -1577,7 +1574,7 @@ const DrawEffect = (
 
     // Restore state (order matters!)
     engine.depthCullingState.cull = currentCull;
-    engine.setAlphaMode(currentAlphaMode);
+    engine.setAlphaMode(currentAlphaMode, true);
     if (currentDepthWrite !== undefined) {
         engine.setDepthWrite(currentDepthWrite);
     }
