@@ -252,12 +252,20 @@
         #ifdef ANISOTROPIC_BASE
             var forwardScatteredEnvironmentLight: vec3f = sampleRadianceAnisotropic(roughness_alpha_modified_for_scatter, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
                 , baseGeoInfo
+                #ifdef GEOMETRY_THIN_WALLED
+                , viewDirectionW
+                #else
                 , normalW
+                #endif
                 , viewDirectionW
                 , fragmentInputs.vPositionW
                 , noise
                 , true // isRefraction
-                , specular_ior // Used for refraction
+                #ifdef GEOMETRY_THIN_WALLED
+                    , 1.05f // don't want much refraction for thin-walled but we need some to get an anisotropic effect
+                #else
+                    , specular_ior // Used for refraction
+                #endif
                 , reflectionSampler
                 , reflectionSamplerSampler
                 #ifdef REALTIME_FILTERING
@@ -315,9 +323,6 @@
         #endif
 
         #ifdef SCATTERING
-            #ifdef GEOMETRY_THIN_WALLED
-                iso_scatter_density = vec3f(1.0f);
-            #endif
             #ifdef GEOMETRY_THIN_WALLED
                 var scatterVector: vec3f = normalW;
             #else

@@ -3401,7 +3401,8 @@
         {
             "title": "OpenPBR Transmission Scatter Anisotropy Refract - IBL",
             "playgroundId": "#GRQHVV#220",
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
         },
         {
             "title": "OpenPBR Transmission Scatter Anisotropy Refract - Analytic Lights",
@@ -3427,6 +3428,12 @@
         {
             "title": "OpenPBR Subsurface Radius vs Anisotropy - IBL",
             "playgroundId": "#GRQHVV#224",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 2
+        },
+        {
+            "title": "OpenPBR Subsurface Radius vs Anisotropy - Analytic Lights",
+            "playgroundId": "#GRQHVV#249",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3438,7 +3445,8 @@
         {
             "title": "OpenPBR Subsurface Transmission Blending - IBL",
             "playgroundId": "#GRQHVV#233",
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "renderCount": 2
         },
         {
             "title": "OpenPBR Subsurface Transmission Blending Zero Depth - IBL",
@@ -3449,17 +3457,41 @@
         {
             "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - IBL",
             "playgroundId": "#GRQHVV#240",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Thin Walled Transmission IOR vs Roughness - Analytic Lights",
+            "playgroundId": "#GRQHVV#243",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Walled Anisotropic Transmission - IBL",
+            "playgroundId": "#GRQHVV#247",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Thin Walled Anisotropic Transmission - Analytic Lights",
+            "playgroundId": "#GRQHVV#244",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Thin Walled Subsurface Anisotropy - IBL",
             "playgroundId": "#GRQHVV#241",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Thin Walled Subsurface Anisotropy - Analytic Lights",
+            "playgroundId": "#GRQHVV#248",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Thin Walled Subsurface Transmission Blending - IBL",
             "playgroundId": "#GRQHVV#242",
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
         },
         {
             "title": "Background material blur",
