@@ -122,7 +122,7 @@ export class AnimationController {
                 preserveDrawingBuffer: false,
                 premultipliedAlpha: true, // Using premultiplied alpha to avoid issues with colors bleeding in the texture atlas
                 doNotHandleContextLost: !supportDeviceLost,
-                // Usefull during debug to simulate WebGL1 devices (Safari)
+                // Useful during debug to simulate WebGL1 devices (Safari)
                 // disableWebGL2Support: true,
             },
             false
