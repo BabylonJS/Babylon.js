@@ -1,5 +1,6 @@
-import { FluentProvider, Toast, ToastBody, Toaster, useId, useToastController, useFluent } from "@fluentui/react-components";
 import type { FunctionComponent, PropsWithChildren } from "react";
+
+import { FluentProvider, Toast, Toaster, ToastTitle, useFluent, useId, useToastController } from "@fluentui/react-components";
 import { createContext, useCallback, useContext } from "react";
 
 type ToastContextType = {
@@ -17,9 +18,9 @@ export const ToastProvider: FunctionComponent<PropsWithChildren> = ({ children }
         (message: string) => {
             dispatchToast(
                 <Toast>
-                    <ToastBody>{message}</ToastBody>
+                    <ToastTitle>{message}</ToastTitle>
                 </Toast>,
-                { intent: "success", timeout: 1000 }
+                { intent: "info", timeout: 2000 }
             );
         },
         [dispatchToast]

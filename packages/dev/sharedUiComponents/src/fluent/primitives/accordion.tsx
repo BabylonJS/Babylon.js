@@ -1,33 +1,35 @@
-import type { AccordionToggleData, AccordionToggleEvent, AccordionProps as FluentAccordionProps, AccordionPanelProps } from "@fluentui/react-components";
+import type { AccordionPanelProps, AccordionToggleData, AccordionToggleEvent, AccordionProps as FluentAccordionProps } from "@fluentui/react-components";
 import type { ForwardRefExoticComponent, FunctionComponent, PropsWithChildren, RefAttributes } from "react";
 
-import { Children, forwardRef, isValidElement, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
-    Accordion as FluentAccordion,
-    AccordionItem,
     AccordionHeader,
+    AccordionItem,
     AccordionPanel,
     Divider,
-    Subtitle2Stronger,
-    Portal,
-    SearchBox,
-    makeStyles,
-    tokens,
+    Accordion as FluentAccordion,
     MessageBar,
     MessageBarBody,
+    Portal,
+    SearchBox,
+    Subtitle2Stronger,
+    makeStyles,
+    tokens,
 } from "@fluentui/react-components";
-import { EditRegular, CheckmarkFilled, PinRegular, PinFilled, ArrowCircleUpRegular, EyeFilled, EyeOffRegular, FilterRegular } from "@fluentui/react-icons";
-import { Button } from "./button";
-import { CustomTokens } from "./utils";
+import { ArrowCircleUpRegular, CheckmarkFilled, EditRegular, EyeFilled, EyeOffRegular, FilterRegular, PinFilled, PinRegular } from "@fluentui/react-icons";
+import { Children, forwardRef, isValidElement, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+
 import { ToolContext } from "../hoc/fluentToolWrapper";
+import { useKeyState } from "../hooks/keyboardHooks";
 import {
     AccordionContext,
-    AccordionSectionBlockContext,
     AccordionItemDepthContext,
+    AccordionSectionBlockContext,
     useAccordionContext,
     useAccordionSectionBlockContext,
     useAccordionSectionItemState,
 } from "./accordion.contexts";
+import { Button } from "./button";
+import { CustomTokens } from "./utils";
 
 const useStyles = makeStyles({
     accordion: {
@@ -240,20 +242,20 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
     const pinnedContainer = isPinned ? pinnedContainerRef.current : null;
     const showControls = inEditMode || ctrlMode;
 
-    const onMouseMove = (e: React.MouseEvent) => {
-        if (e.ctrlKey !== ctrlMode) {
-            setCtrlMode(e.ctrlKey);
-        }
-    };
+    const ctrlPressed = useKeyState("Control");
+    const [mouseOver, setMouseOver] = useState(false);
 
-    const onMouseLeave = () => {
-        if (ctrlMode) {
-            setCtrlMode(false);
-        }
-    };
+    useEffect(() => {
+        setCtrlMode(ctrlPressed && mouseOver);
+    }, [ctrlPressed, mouseOver]);
 
     const itemElement = (
-        <div className={classes.sectionItemContainer} style={isPinned ? { order: pinnedIndex } : undefined} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}>
+        <div
+            className={classes.sectionItemContainer}
+            style={isPinned ? { order: pinnedIndex } : undefined}
+            onMouseMove={() => setMouseOver(true)}
+            onMouseLeave={() => setMouseOver(false)}
+        >
             {showControls && (
                 <div className={classes.sectionItemButtons}>
                     {features.hiding && (

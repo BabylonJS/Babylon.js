@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { useKeyListener } from "shared-ui-components/fluent/hooks/keyboardHooks";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 
 export const PickingToolbar: FunctionComponent<{
@@ -23,6 +24,15 @@ export const PickingToolbar: FunctionComponent<{
     const sceneElement = scene.getEngine().getRenderingCanvas()?.parentElement;
 
     const [pickingEnabled, setPickingEnabled] = useState(false);
+
+    // Exit picking mode if the escape key is pressed.
+    useKeyListener({
+        onKeyDown: (e) => {
+            if (e.key === "Escape") {
+                setPickingEnabled(false);
+            }
+        },
+    });
 
     useEffect(() => {
         if (pickingEnabled && sceneElement) {
@@ -95,18 +105,9 @@ export const PickingToolbar: FunctionComponent<{
                 }
             }, PointerEventTypes.POINTERTAP);
 
-            // Exit picking mode if the escape key is pressed.
-            const handleKeyDown = (e: KeyboardEvent) => {
-                if (e.key === "Escape") {
-                    setPickingEnabled(false);
-                }
-            };
-            document.addEventListener("keydown", handleKeyDown);
-
             return () => {
                 sceneElement.style.cursor = originalCursor;
                 pointerObserver.remove();
-                document.removeEventListener("keydown", handleKeyDown);
             };
         }
 

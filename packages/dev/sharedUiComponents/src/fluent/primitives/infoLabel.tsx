@@ -1,6 +1,7 @@
 import type { FunctionComponent, MouseEvent, MouseEventHandler } from "react";
-import { useCallback, useState, useEffect } from "react";
-import { Body1Strong, InfoLabel as FluentInfoLabel, makeStyles, mergeClasses, useFluent } from "@fluentui/react-components";
+import { useCallback } from "react";
+import { Body1Strong, InfoLabel as FluentInfoLabel, makeStyles, mergeClasses } from "@fluentui/react-components";
+import { useKeyState } from "../hooks/keyboardHooks";
 
 export type InfoLabelProps = {
     htmlFor: string; // required ID of the element whose label we are applying
@@ -43,37 +44,8 @@ const useInfoLabelStyles = makeStyles({
 export const InfoLabel: FunctionComponent<InfoLabelProps> = (props) => {
     InfoLabel.displayName = "InfoLabel";
     const classes = useInfoLabelStyles();
-    const { targetDocument } = useFluent();
 
-    const [ctrlPressed, setCtrlPressed] = useState(false);
-
-    useEffect(() => {
-        const targetWindow = targetDocument?.defaultView ?? window;
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.ctrlKey) {
-                setCtrlPressed(true);
-            }
-        };
-        const handleKeyUp = (e: KeyboardEvent) => {
-            if (!e.ctrlKey) {
-                setCtrlPressed(false);
-            }
-        };
-        const handleBlur = () => {
-            setCtrlPressed(false);
-        };
-
-        targetWindow.addEventListener("keydown", handleKeyDown);
-        targetWindow.addEventListener("keyup", handleKeyUp);
-        targetWindow.addEventListener("blur", handleBlur);
-
-        return () => {
-            targetWindow.removeEventListener("keydown", handleKeyDown);
-            targetWindow.removeEventListener("keyup", handleKeyUp);
-            targetWindow.removeEventListener("blur", handleBlur);
-        };
-    }, [targetDocument]);
+    const ctrlPressed = useKeyState("Control");
 
     const infoContent = props.info ? <div className={classes.infoPopup}>{props.info}</div> : undefined;
 
