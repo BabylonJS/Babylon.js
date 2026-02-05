@@ -3414,6 +3414,12 @@
             "title": "NME Particles with PositionW",
             "playgroundId": "#RA18GJ#17",
             "renderCount": 120
+        },
+        {
+            "title": "NPE - ConvertToNodeParticleSystemSetAsync basic",
+            "playgroundId": "#YOURPLAYGROUNDID",
+            "renderCount": 100,
+            "referenceImage": "npe-convert-basic.png"
         }
     ]
 }
