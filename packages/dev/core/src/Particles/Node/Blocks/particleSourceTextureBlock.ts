@@ -168,7 +168,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                         this._cachedData = {
                             width: size.width,
                             height: size.height,
-                            data: data as Uint8ClampedArray,
+                            data: new Uint8ClampedArray(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)),
                         };
                         resolve(this._cachedData);
                     })

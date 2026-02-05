@@ -74,17 +74,7 @@ export class TextureDisplayManager implements IDisplayManager {
         const ctx = this._previewCanvas.getContext("2d");
 
         if (ctx) {
-            let imageData: ImageData;
-
-            try {
-                // The most common scenario is that the data is already a Uint8ClampedArray with a compatible ArrayBuffer
-                imageData = new ImageData(data as Uint8ClampedArray<ArrayBuffer>, width, height);
-            } catch {
-                // Fallback: create a copy with a fresh ArrayBuffer if the original buffer was not compatible
-                const dataCopy = new Uint8ClampedArray(data);
-                imageData = new ImageData(dataCopy, width, height);
-            }
-
+            const imageData = new ImageData(data as Uint8ClampedArray<ArrayBuffer>, width, height);
             ctx.putImageData(imageData, 0, 0);
             return this._previewCanvas.toDataURL("image/png");
         }
