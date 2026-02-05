@@ -695,7 +695,7 @@ export class GaussianSplattingMesh extends Mesh {
                     cameraViewInfos.frameIdLastUpdate = frameId;
                     this._canPostToWorker = false;
                     if (this._worker) {
-                        this._worker!.postMessage(
+                        this._worker.postMessage(
                             {
                                 modelViewProjection: this._modelViewProjectionMatrix.m,
                                 viewProjection: this._viewProjectionMatrix.m,
@@ -1732,7 +1732,7 @@ export class GaussianSplattingMesh extends Mesh {
         };
 
         const firstTime = this._covariancesATexture === null;
-        const textureSizeChanged = this._textureSize.y < textureSize.y;
+        const textureSizeChanged = this._textureSize.y != textureSize.y;
 
         if (!firstTime && !textureSizeChanged) {
             this._delayedTextureUpdate = { covA, covB, colors: colorArray, centers: this._splatPositions!, sh, partIndices };
@@ -1944,7 +1944,7 @@ export class GaussianSplattingMesh extends Mesh {
     // in case size is different
     private _updateSplatIndexBuffer(vertexCount: number): void {
         const paddedVertexCount = (vertexCount + 15) & ~0xf;
-        if (!this._splatIndex || vertexCount > this._splatIndex.length) {
+        if (!this._splatIndex || vertexCount != this._splatIndex.length) {
             this._splatIndex = new Float32Array(paddedVertexCount);
             for (let i = 0; i < paddedVertexCount; i++) {
                 this._splatIndex[i] = i;
@@ -1957,11 +1957,11 @@ export class GaussianSplattingMesh extends Mesh {
         }
 
         // Update depthMix
-        if ((!this._depthMix || vertexCount > this._depthMix.length) && !IsNative) {
+        if ((!this._depthMix || vertexCount != this._depthMix.length) && !IsNative) {
             this._depthMix = new BigInt64Array(paddedVertexCount);
         }
 
-        this.forcedInstanceCount = paddedVertexCount >> 4;
+        this.forcedInstanceCount = Math.max(paddedVertexCount >> 4, 1);
     }
 
     private _updateSubTextures(
@@ -2377,9 +2377,6 @@ export class GaussianSplattingMesh extends Mesh {
             writeIndex++;
         }
 
-        // Update the mesh with the new data
-        this.updateData(newSplatsData.buffer, newShData, { flipY: false }, newPartIndices);
-
         // Remove the part matrix and visibility
         this._partMatrices.splice(index, 1);
         this._partVisibility.splice(index, 1);
@@ -2388,6 +2385,9 @@ export class GaussianSplattingMesh extends Mesh {
         if (this._worker) {
             this._worker.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
         }
+
+        // Update the mesh with the new data
+        this.updateData(newSplatsData.buffer, newShData, { flipY: false }, newPartIndices);
 
         // Dispose and remove the proxy for the removed part
         const proxyToRemove = this._partProxies.get(index);
@@ -2411,7 +2411,5 @@ export class GaussianSplattingMesh extends Mesh {
             proxy.updatePartIndex(oldIndex - 1);
             this._partProxies.set(oldIndex - 1, proxy);
         }
-
-        this._postToWorker(true);
     }
 }
