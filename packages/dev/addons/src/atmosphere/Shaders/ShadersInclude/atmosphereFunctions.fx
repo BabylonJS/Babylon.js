@@ -315,6 +315,7 @@ vec4 sampleTransmittanceLut(sampler2D transmittanceLut, float positionRadius, fl
 
 #ifndef EXCLUDE_RAY_MARCHING_FUNCTIONS
 
+#ifndef COMPUTE_MULTI_SCATTERING
 #define inline
 vec3 sampleMultiScatteringLut(sampler2D multiScatteringLut, float radius, float cosAngleLightToZenith) {
 
@@ -327,6 +328,7 @@ vec3 sampleMultiScatteringLut(sampler2D multiScatteringLut, float radius, float 
     return max(minMultiScattering, multiScattering);
 
 }
+#endif
 
 const float uniformPhase = RECIPROCAL_PI4;
 

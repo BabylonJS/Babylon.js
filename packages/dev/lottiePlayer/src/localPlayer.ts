@@ -1,8 +1,6 @@
 import type { Nullable } from "core/types";
 import type { AnimationInput } from "./types";
-import type { AnimationConfiguration } from "./animationConfiguration";
 import type { RawLottieAnimation } from "./parsing/rawTypes";
-import { DefaultConfiguration } from "./animationConfiguration";
 import { GetRawAnimationDataAsync } from "./parsing/parser";
 import { AnimationController } from "./rendering/animationController";
 import { CalculateScaleFactor } from "./rendering/calculateScaleFactor";
@@ -60,12 +58,13 @@ export class LocalPlayer {
         // Append the canvas to the container
         this._input.container.appendChild(this._canvas);
 
-        const finalConfig: AnimationConfiguration = {
-            ...DefaultConfiguration,
-            ...this._input.configuration,
-        };
-
-        this._animationController = new AnimationController(this._canvas, this._rawAnimation, this._scaleFactor, this._input.variables ?? new Map<string, string>(), finalConfig);
+        this._animationController = new AnimationController(
+            this._canvas,
+            this._rawAnimation,
+            this._scaleFactor,
+            this._input.variables ?? new Map<string, string>(),
+            this._input.configuration ?? {}
+        );
         this._animationController.playAnimation();
         this._playing = true;
 

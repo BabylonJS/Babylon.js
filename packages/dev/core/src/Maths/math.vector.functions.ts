@@ -111,21 +111,21 @@ export function Vector3SubtractToRef<T extends IVector3Like>(a: DeepImmutable<IV
     return result;
 }
 
-export function Vector3CopyToRef<T extends IVector3Like>(source: IVector3Like, result: T): T {
+export function Vector3CopyToRef<T extends IVector3Like>(source: DeepImmutable<IVector3Like>, result: T): T {
     result.x = source.x;
     result.y = source.y;
     result.z = source.z;
     return result;
 }
 
-export function Vector3LerpToRef<T extends IVector3Like>(start: T, end: T, amount: number, result: T): T {
+export function Vector3LerpToRef<T extends IVector3Like>(start: DeepImmutable<IVector3Like>, end: DeepImmutable<IVector3Like>, amount: number, result: T): T {
     result.x = start.x + (end.x - start.x) * amount;
     result.y = start.y + (end.y - start.y) * amount;
     result.z = start.z + (end.z - start.z) * amount;
     return result;
 }
 
-export function Vector3NormalizeToRef<T extends IVector3Like>(vector: DeepImmutable<T>, result: T): T {
+export function Vector3NormalizeToRef<T extends IVector3Like>(vector: DeepImmutable<IVector3Like>, result: T): T {
     const len = Vector3Length(vector);
     if (len === 0) {
         result.x = 0;
@@ -137,6 +137,21 @@ export function Vector3NormalizeToRef<T extends IVector3Like>(vector: DeepImmuta
         result.z = vector.z / len;
     }
     return result;
+}
+
+/**
+ * Computes the signed distance between the specified point and plane.
+ * @param origin defines a point on the plane
+ * @param normal defines the plane normal (assumes normalized)
+ * @param point defines the point to compute the signed distance to
+ * @returns the signed distance
+ */
+export function Vector3SignedDistanceToPlaneFromPositionAndNormal(
+    origin: DeepImmutable<IVector3Like>,
+    normal: DeepImmutable<IVector3Like>,
+    point: DeepImmutable<IVector3Like>
+): number {
+    return (point.x - origin.x) * normal.x + (point.y - origin.y) * normal.y + (point.z - origin.z) * normal.z;
 }
 
 /**

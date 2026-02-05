@@ -2182,6 +2182,16 @@
             "referenceImage": "Load-babylon-files-with-same-geometry-uniqueId.png"
         },
         {
+            "title": "Roundtrip babylon file with node, skeletal, and morph animations; uniqueId",
+            "playgroundId": "#KSGDML#10",
+            "referenceImage": "babylonFileAnimationsUsingUniqueId.png"
+        },
+        {
+            "title": "Roundtrip babylon file with node, skeletal, and morph animations; id only",
+            "playgroundId": "#KSGDML#7",
+            "referenceImage": "babylonFileAnimationsUsingId.png"
+        },
+        {
             "title": "Asset Container Instantiate to Scene",
             "playgroundId": "#5NFRVE#142",
             "referenceImage": "Asset-Container-Instantiate-to-Scene"
@@ -2767,6 +2777,10 @@
             "playgroundId": "#ZNTBN2#10"
         },
         {
+            "title": "FrameGraph nrge selection outline layer",
+            "playgroundId": "#ADUC74#1"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#3",
             "errorRatio": 2
@@ -2844,6 +2858,10 @@
         {
             "title": "FrameGraph multi-render targets",
             "playgroundId": "#XSNYAU#165"
+        },
+        {
+            "title": "FrameGraph selection outline",
+            "playgroundId": "#E1F0GP#4"
         },
         {
             "title": "Render target texture with clustered lights",
@@ -2989,6 +3007,13 @@
             "title": "Atmosphere Day (Planet Origin)",
             "playgroundId": "#VO1Z0C#35",
             "referenceImage": "atmosphere-day.png",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 60
+        },
+        {
+            "title": "Atmosphere Day (Ray Marching)",
+            "playgroundId": "#VO1Z0C#38",
+            "referenceImage": "atmosphere-day-ray-marching.png",
             "excludedEngines": ["webgl1"],
             "renderCount": 60
         },

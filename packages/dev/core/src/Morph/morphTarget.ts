@@ -327,10 +327,12 @@ export class MorphTarget implements IAnimatable {
         serializationObject.name = this.name;
         serializationObject.influence = this.influence;
 
-        serializationObject.positions = Array.prototype.slice.call(this.getPositions());
         if (this.id != null) {
             serializationObject.id = this.id;
         }
+        serializationObject.uniqueId = this.uniqueId;
+
+        serializationObject.positions = Array.prototype.slice.call(this.getPositions());
         if (this.hasNormals) {
             serializationObject.normals = Array.prototype.slice.call(this.getNormals());
         }

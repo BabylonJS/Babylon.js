@@ -154,11 +154,13 @@ export class TransmittanceLut {
             useShaderStore: true,
             shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializations: (_, list) => {
-                if (useWebGPU) {
-                    list.push(Promise.all([import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/transmittance.fragment")]));
-                } else {
-                    list.push(Promise.all([import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/transmittance.fragment")]));
-                }
+                list.push(
+                    Promise.all(
+                        useWebGPU
+                            ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/transmittance.fragment")]
+                            : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/transmittance.fragment")]
+                    )
+                );
             },
         });
 
@@ -220,15 +222,14 @@ export class TransmittanceLut {
             return false;
         }
 
-        const engine = this._atmosphere.scene.getEngine();
+        const effectRenderer = this._effectRenderer!;
+        effectRenderer.saveStates();
 
+        const engine = this._atmosphere.scene.getEngine();
         engine.bindFramebuffer(this.renderTarget.renderTarget!, undefined, undefined, undefined, true);
 
-        const effectRenderer = this._effectRenderer!;
-        effectRenderer.applyEffectWrapper(effectWrapper);
-
-        effectRenderer.saveStates();
         effectRenderer.setViewport();
+        effectRenderer.applyEffectWrapper(effectWrapper);
 
         const effect = effectWrapper.effect;
         effectRenderer.bindBuffers(effect);

@@ -46,7 +46,7 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
     const enableBlending = useProperty(animationGroup, "enableBlending");
     return (
         <>
-            <ButtonLine label={isPlaying ? "Pause" : "Play"} onClick={() => (isPlaying ? animationGroup.pause() : animationGroup.play(true))} />
+            <ButtonLine uniqueId="Start/Stop" label={isPlaying ? "Pause" : "Play"} onClick={() => (isPlaying ? animationGroup.pause() : animationGroup.play(true))} />
             <ButtonLine label="Stop" onClick={() => animationGroup.stop()} />
             <CurveEditorButton
                 scene={scene}

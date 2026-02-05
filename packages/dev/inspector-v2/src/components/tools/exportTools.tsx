@@ -8,6 +8,7 @@ import { useCallback, useState } from "react";
 import type { FunctionComponent } from "react";
 import type { Scene } from "core/scene";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { useProperty } from "../../hooks/compoundPropertyHooks";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import type { Node } from "core/node";
 import { Mesh } from "core/Meshes/mesh";
@@ -35,6 +36,9 @@ interface IBabylonExportOptionsState {
 }
 
 export const ExportBabylonTools: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+    // Track environment texture changes to re-render when it's updated (e.g., when a new HDRI is loaded)
+    const environmentTexture = useProperty(scene, "environmentTexture");
+
     const [babylonExportOptions, setBabylonExportOptions] = useState<Readonly<IBabylonExportOptionsState>>({
         imageTypeIndex: 0,
         imageQuality: 0.8,
@@ -48,12 +52,12 @@ export const ExportBabylonTools: FunctionComponent<{ scene: Scene }> = ({ scene 
     }, [scene]);
 
     const createEnvTexture = useCallback(async () => {
-        if (!scene.environmentTexture) {
+        if (!environmentTexture) {
             return;
         }
 
         try {
-            const buffer = await EnvironmentTextureTools.CreateEnvTextureAsync(scene.environmentTexture as CubeTexture, {
+            const buffer = await EnvironmentTextureTools.CreateEnvTextureAsync(environmentTexture as CubeTexture, {
                 imageType: EnvExportImageTypes[babylonExportOptions.imageTypeIndex].imageType,
                 imageQuality: babylonExportOptions.imageQuality,
                 disableIrradianceTexture: !babylonExportOptions.iblDiffuse,
@@ -64,15 +68,15 @@ export const ExportBabylonTools: FunctionComponent<{ scene: Scene }> = ({ scene 
             Logger.Error(error);
             alert(error);
         }
-    }, [scene, babylonExportOptions]);
+    }, [scene, environmentTexture, babylonExportOptions]);
 
     return (
         <>
             <ButtonLine label="Export to Babylon" icon={ArrowDownloadRegular} onClick={exportBabylon} />
-            {!scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera && (
+            {!scene.getEngine().premultipliedAlpha && environmentTexture && environmentTexture._prefiltered && scene.activeCamera && (
                 <>
-                    <ButtonLine label="Generate .env texture" icon={ArrowDownloadRegular} onClick={createEnvTexture} />
-                    {scene.environmentTexture.irradianceTexture && (
+                    <ButtonLine label="Generate .env Texture" icon={ArrowDownloadRegular} onClick={createEnvTexture} />
+                    {environmentTexture.irradianceTexture && (
                         <SwitchPropertyLine
                             key="iblDiffuse"
                             label="Diffuse Texture"

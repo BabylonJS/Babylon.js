@@ -228,7 +228,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
             passDisabled.setRenderTarget(this.outputTexture);
             passDisabled.setRenderTargetDepth(this.depthAttachmentTexture);
             passDisabled.setExecuteFunc((context) => {
-                if (this.sourceTexture !== undefined) {
+                if (this.sourceTexture !== undefined && this.alphaMode === Constants.ALPHA_DISABLE) {
                     if (this.viewport) {
                         context.setViewport(this.viewport);
                     }
