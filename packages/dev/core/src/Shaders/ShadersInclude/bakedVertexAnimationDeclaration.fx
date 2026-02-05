@@ -1,6 +1,6 @@
 #ifdef BAKED_VERTEX_ANIMATION_TEXTURE
     uniform float bakedVertexAnimationTime;
-    #if !defined(WEBGL2) && !defined(WEBGPU) && !defined(NATIVE)
+    #if !defined(WEBGL2) && !defined(WEBGPU)
         uniform vec2 bakedVertexAnimationTextureSizeInverted;
     #endif
     uniform vec4 bakedVertexAnimationSettings;
@@ -13,7 +13,7 @@
     #define inline
     mat4 readMatrixFromRawSamplerVAT(sampler2D smp, float index, float frame)
     {
-        #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+        #if defined(WEBGL2) || defined(WEBGPU)
             int offset = int(index) * 4;
             int frameUV = int(frame);
             vec4 m0 = texelFetch(smp, ivec2(offset + 0, frameUV), 0);

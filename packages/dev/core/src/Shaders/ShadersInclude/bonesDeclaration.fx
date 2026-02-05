@@ -9,7 +9,7 @@
     #ifndef BAKED_VERTEX_ANIMATION_TEXTURE
         #ifdef BONETEXTURE
             uniform highp sampler2D boneSampler;
-            #if !defined(WEBGL2) && !defined(WEBGPU) && !defined(NATIVE)
+            #if !defined(WEBGL2) && !defined(WEBGPU)
                 uniform float boneTextureWidth;
             #endif
         #else
@@ -24,7 +24,7 @@
             #define inline
             mat4 readMatrixFromRawSampler(sampler2D smp, float index)
             {
-                #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+                #if defined(WEBGL2) || defined(WEBGPU)
                     int offset = int(index)  * 4;	
 
                     vec4 m0 = texelFetch(smp, ivec2(offset + 0, 0), 0);

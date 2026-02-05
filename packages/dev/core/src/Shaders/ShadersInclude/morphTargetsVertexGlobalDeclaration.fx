@@ -8,7 +8,7 @@
 
 		vec3 readVector3FromRawSampler(int targetIndex, float vertexIndex)
 		{			
-			#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+			#if defined(WEBGL2) || defined(WEBGPU)
 				int textureWidth = int(morphTargetTextureInfo.y);
 				int y = int(vertexIndex) / textureWidth;
 				int x = int(vertexIndex) % textureWidth;
@@ -23,7 +23,7 @@
 
 		vec4 readVector4FromRawSampler(int targetIndex, float vertexIndex)
 		{			
-			#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+			#if defined(WEBGL2) || defined(WEBGPU)
 				int textureWidth = int(morphTargetTextureInfo.y);
 				int y = int(vertexIndex) / textureWidth;
 				int x = int(vertexIndex) % textureWidth;
