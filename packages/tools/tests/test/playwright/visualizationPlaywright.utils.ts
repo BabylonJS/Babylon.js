@@ -253,10 +253,9 @@ export const evaluateInitEngineForVisualization = async ({
     window.engine!.renderEvenInBackground = true;
     window.engine!.getCaps().parallelShaderCompile = undefined;
 
-    if (typeof (window as any).HavokPhysics === "function" && typeof (window as any).HK === "undefined") {
-        try {
-            (window as any).HK = await (window as any).HavokPhysics();
-        } catch {}
+    const win = window as any;
+    if (typeof win.HavokPhysics === "function" && typeof win.HK === "undefined") {
+        win.HK = await win.HavokPhysics();
     }
 
     return {
