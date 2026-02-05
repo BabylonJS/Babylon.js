@@ -24,6 +24,12 @@
             "referenceImage": "gsplat-depth.png"
         },
         {
+            "title": "Gaussian Splatting Depth Alpha Blended",
+            "playgroundId": "#V80DRL#19",
+            "renderCount": 15,
+            "referenceImage": "gsplat-depth-alpha-blended.png"
+        },
+        {
             "title": "Gaussian Splatting Compressed ply SH",
             "playgroundId": "#U8O4EP#1",
             "renderCount": 15,
