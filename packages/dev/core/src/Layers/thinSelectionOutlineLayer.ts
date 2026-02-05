@@ -33,6 +33,13 @@ export interface IThinSelectionOutlineLayerOptions extends IThinEffectLayerOptio
      * Specifies whether the depth stored is the Z coordinate in camera space.
      */
     storeCameraSpaceZ?: boolean;
+
+    /**
+     * Outline method to use (default: Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL)
+     *
+     * @see {@link Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL}
+     */
+    outlineMethod?: number;
 }
 
 /**
@@ -110,6 +117,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             mainTextureType: Constants.TEXTURETYPE_FLOAT,
             mainTextureFormat: Constants.TEXTUREFORMAT_RG,
             storeCameraSpaceZ: false,
+            outlineMethod: Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL,
             ...options,
         };
 
@@ -339,6 +347,17 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
     /** @internal */
     public override _createMergeEffect(): Effect {
+        const defines: string[] = [];
+        switch (this._options.outlineMethod) {
+            case Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL:
+                defines.push("#define OUTLINELAYER_SAMPLING_TRIDIRECTIONAL");
+                break;
+            case Constants.OUTLINELAYER_SAMPLING_OCTADIRECTIONAL:
+                defines.push("#define OUTLINELAYER_SAMPLING_OCTADIRECTIONAL");
+                break;
+        }
+        const join = defines.join("\n");
+
         return this._engine.createEffect(
             {
                 // glowMapMerge vertex is just a basic vertex shader for drawing a quad. so we reuse it here
@@ -350,7 +369,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 attributes: [VertexBuffer.PositionKind],
                 uniformsNames: ["screenSize", "outlineColor", "outlineThickness", "occlusionStrength", "occlusionThreshold"],
                 samplers: ["maskSampler", "depthSampler"],
-                defines: "",
+                defines: join,
                 fallbacks: null,
                 onCompiled: null,
                 onError: null,

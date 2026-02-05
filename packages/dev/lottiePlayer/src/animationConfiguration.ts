@@ -1,3 +1,5 @@
+const MAX_SPRITE_ATLAS_SIZE = 8192;
+
 /**
  * Configuration options for the Lottie animation player.
  */
@@ -8,12 +10,14 @@ export type AnimationConfiguration = {
     loopAnimation: boolean;
     /**
      * Width of the sprite atlas texture.
-     * Default is 4096.
+     * Set to 0 for auto-detection based on GPU capabilities (default).
+     * Will use the minimum between GPU max texture size and 8192.
      */
     spriteAtlasWidth: number;
     /**
      * Height of the sprite atlas texture.
-     * Default is 4096.
+     * Set to 0 for auto-detection based on GPU capabilities (default).
+     * Will use the minimum between GPU max texture size and 8192.
      */
     spriteAtlasHeight: number;
     /**
@@ -38,7 +42,8 @@ export type AnimationConfiguration = {
     scaleMultiplier: number;
     /**
      * Scale factor for the rendering.
-     * Default is 1.
+     * Set to 0 for auto-detection based on atlas size (default).
+     * Uses 4x supersampling for 8K atlas, 2x for smaller atlases.
      */
     devicePixelRatio: number;
     /**
@@ -58,13 +63,45 @@ export type AnimationConfiguration = {
  */
 export const DefaultConfiguration = {
     loopAnimation: false, // By default do not loop animations
-    spriteAtlasWidth: 4096, // Size of the texture atlas
-    spriteAtlasHeight: 4096, // Size of the texture atlas
-    gapSize: 5, // Gap around the sprites in the atlas
+    spriteAtlasWidth: 0, // 0 = auto-detect based on GPU capabilities
+    spriteAtlasHeight: 0, // 0 = auto-detect based on GPU capabilities
+    gapSize: 25, // Gap around the sprites in the atlas
     spritesCapacity: 64, // Maximum number of sprites the renderer can handle at once
-    backgroundColor: { r: 1, g: 1, b: 1, a: 1 }, // Background color for the animation canvas
+    backgroundColor: { r: 0, g: 0, b: 0, a: 1 }, // Background color for the animation canvas
     scaleMultiplier: 5, // Minimum scale factor to prevent too small sprites,
-    devicePixelRatio: 1, // Scale factor,
+    devicePixelRatio: 0, // 0 = auto-detect based on atlas size
     easingSteps: 4, // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
-    supportDeviceLost: false, // Whether to support device lost events for WebGL contexts,
+    supportDeviceLost: true, // Whether to support device lost events for WebGL contexts,
 } as const satisfies AnimationConfiguration;
+
+/**
+ * Creates the final animation configuration by merging the provided partial configuration with the default configuration.
+ * Computes optimal atlas size and devicePixelRatio based on GPU capabilities when not explicitly provided.
+ * @param newConfig The configuration passed by the client.
+ * @param maxTextureSize The maximum texture size supported by the GPU.
+ * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios where window is not available).
+ * @returns The final animation configuration.
+ */
+export function UpdateConfiguration(newConfig: Partial<AnimationConfiguration>, maxTextureSize: number, mainThreadDevicePixelRatio?: number): AnimationConfiguration {
+    const config = {
+        ...DefaultConfiguration,
+        ...newConfig,
+    };
+
+    // If atlas dimensions are 0 (auto-detect), calculate optimal values based on GPU capabilities
+    const optimalAtlasSize = Math.min(maxTextureSize, MAX_SPRITE_ATLAS_SIZE);
+    if (config.spriteAtlasHeight === 0 || config.spriteAtlasWidth === 0) {
+        config.spriteAtlasWidth = optimalAtlasSize;
+        config.spriteAtlasHeight = optimalAtlasSize;
+    }
+
+    // If devicePixelRatio is 0 (auto-detect), set it based on atlas size and system DPR
+    if (config.devicePixelRatio === 0) {
+        // Get the system devicePixelRatio - prefer passed value (for workers), fallback to window
+        const systemDpr = mainThreadDevicePixelRatio ?? (typeof window !== "undefined" ? window.devicePixelRatio : 1);
+        // 8K atlas can afford higher supersampling (4x), smaller atlas uses 2x
+        config.devicePixelRatio = optimalAtlasSize >= MAX_SPRITE_ATLAS_SIZE ? Math.max(systemDpr, 4) : Math.max(systemDpr, 2);
+    }
+
+    return config;
+}

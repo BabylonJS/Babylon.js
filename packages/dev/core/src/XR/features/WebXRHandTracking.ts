@@ -24,7 +24,6 @@ import { Material } from "../../Materials/material";
 import { CreateIcoSphere } from "../../Meshes/Builders/icoSphereBuilder";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Axis } from "../../Maths/math.axis";
-import { EngineStore } from "../../Engines/engineStore";
 import { Constants } from "../../Engines/constants";
 import type { WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
 import { Tools } from "core/Misc/tools";
@@ -665,10 +664,10 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     }
 
     private static async _GenerateDefaultHandMeshesAsync(
-        scene: Scene,
         xrSessionManager: WebXRSessionManager,
         options?: IWebXRHandTrackingOptions
     ): Promise<{ left: AbstractMesh; right: AbstractMesh }> {
+        const scene = xrSessionManager.scene;
         // eslint-disable-next-line no-async-promise-executor
         return await new Promise(async (resolve) => {
             const riggedMeshes: { [handedness: string]: AbstractMesh } = {};
@@ -925,7 +924,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         // If they didn't supply custom meshes and are not disabling the default meshes...
         if (!this.options.handMeshes?.customMeshes && !this.options.handMeshes?.disableDefaultMeshes) {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-            WebXRHandTracking._GenerateDefaultHandMeshesAsync(EngineStore.LastCreatedScene!, this._xrSessionManager, this.options).then((defaultHandMeshes) => {
+            WebXRHandTracking._GenerateDefaultHandMeshesAsync(this._xrSessionManager, this.options).then((defaultHandMeshes) => {
                 this._handResources.handMeshes = defaultHandMeshes;
                 this._handResources.rigMappings = {
                     left: WebXRHandTracking._GenerateDefaultHandMeshRigMapping("left"),

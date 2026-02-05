@@ -1,5 +1,33 @@
 # Changelog
 
+## 8.30.5
+
+### Core
+
+- Background material: Fix blur not taken into account - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17251](https://github.com/BabylonJS/Babylon.js/pull/17251))
+- FrameGraph: Add support for convolution post-process - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17248](https://github.com/BabylonJS/Babylon.js/pull/17248))
+- Gaussian Splatting Inspector V2 - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17240](https://github.com/BabylonJS/Babylon.js/pull/17240))
+
+### Loaders
+
+- KHR_materials_openpbr - by [MiiBond](https://github.com/MiiBond) ([#17200](https://github.com/BabylonJS/Babylon.js/pull/17200))
+
+### Viewer
+
+- viewer change _updateSSAOPipeline  to protected - by [alexandremottet](https://github.com/alexandremottet) ([#17249](https://github.com/BabylonJS/Babylon.js/pull/17249))
+
+## 8.30.4
+
+### Core
+
+- FrameGraph: miscellaneous - by [Popov72](https://github.com/Popov72) ([#17242](https://github.com/BabylonJS/Babylon.js/pull/17242))
+
+### Serializers
+
+- glTF Exporter: Subset all indices arrays - by [alexchuber](https://github.com/alexchuber) ([#17244](https://github.com/BabylonJS/Babylon.js/pull/17244))
+- glTF Exporter: Fix spec-gloss conversion - by [alexchuber](https://github.com/alexchuber) ([#17237](https://github.com/BabylonJS/Babylon.js/pull/17237))
+- glTF Exporter: Missing start offset - by [alexchuber](https://github.com/alexchuber) ([#17241](https://github.com/BabylonJS/Babylon.js/pull/17241))
+
 ## 8.30.3
 
 ### Core
@@ -5236,6 +5264,40 @@
 
 - Mesh extrusion: Add an optional scaleVectorFunction parameter to ExtrudeShapeCustom - by [Popov72](https://github.com/Popov72) ([#17752](https://github.com/BabylonJS/Babylon.js/pull/17752))
 
+## 8.50.0
+
+## 8.49.7
+
+### Core
+
+- Updates to vector3.function parameters - by [kircher1](https://github.com/kircher1) ([#17823](https://github.com/BabylonJS/Babylon.js/pull/17823))
+- Inspector v2: Fix texture preview/editor cube map gamma and face orientation bugs + transparency checkerboard - by [ryantrem](https://github.com/ryantrem) ([#17821](https://github.com/BabylonJS/Babylon.js/pull/17821))
+- FrameGraph: add support for the new selection outline layer - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17818](https://github.com/BabylonJS/Babylon.js/pull/17818))
+- Fixing emitter and rendering group - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17814](https://github.com/BabylonJS/Babylon.js/pull/17814))
+- WebGPU: Fix wrong color space conversion when loading images - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17816](https://github.com/BabylonJS/Babylon.js/pull/17816))
+- Improve Gaussian Splatting Compound Splats - by [spsDrop](https://github.com/spsDrop) ([#17808](https://github.com/BabylonJS/Babylon.js/pull/17808))
+- Add new Panner block - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#17813](https://github.com/BabylonJS/Babylon.js/pull/17813))
+- Draco: Handle & bubble up rejected promises - by [alexchuber](https://github.com/alexchuber) ([#17807](https://github.com/BabylonJS/Babylon.js/pull/17807))
+- Fix CSG2 losing uvs data - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#17805](https://github.com/BabylonJS/Babylon.js/pull/17805))
+- Use uniqueIds for animation relationships - [_Breaking Change_] by [alexchuber](https://github.com/alexchuber) ([#17757](https://github.com/BabylonJS/Babylon.js/pull/17757))
+- Introduce selection outline layer - by [noname0310](https://github.com/noname0310) ([#17583](https://github.com/BabylonJS/Babylon.js/pull/17583))
+- FrameGraph: Fix disabled pass when alpha blending is enabled - by [Popov72](https://github.com/Popov72) ([#17801](https://github.com/BabylonJS/Babylon.js/pull/17801))
+- Point to plane distance for math.vector.functions - by [kircher1](https://github.com/kircher1) ([#17797](https://github.com/BabylonJS/Babylon.js/pull/17797))
+- FrameGraph: Add alphaMode property to all post-process tasks - by [Popov72](https://github.com/Popov72) ([#17795](https://github.com/BabylonJS/Babylon.js/pull/17795))
+- FrameGraph: Make alphaMode visible from post-process tasks - by [Popov72](https://github.com/Popov72) ([#17794](https://github.com/BabylonJS/Babylon.js/pull/17794))
+- Improve teleport nme - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#17792](https://github.com/BabylonJS/Babylon.js/pull/17792))
+- Port custom effects - by [VicenteCartas](https://github.com/VicenteCartas) ([#17769](https://github.com/BabylonJS/Babylon.js/pull/17769))
+
+### Node Editor
+
+- Add new Panner block - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#17813](https://github.com/BabylonJS/Babylon.js/pull/17813))
+- Improve teleport nme - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#17792](https://github.com/BabylonJS/Babylon.js/pull/17792))
+- Fix Camera Forward Block - by [sebavan](https://github.com/sebavan) ([#17789](https://github.com/BabylonJS/Babylon.js/pull/17789))
+
+### Serializers
+
+- Draco: Handle & bubble up rejected promises - by [alexchuber](https://github.com/alexchuber) ([#17807](https://github.com/BabylonJS/Babylon.js/pull/17807))
+
 ## 8.49.6
 
 ### Core
@@ -6104,34 +6166,6 @@
 
 ### Playground
 
-
-## 8.30.5
-
-### Core
-
-- Background material: Fix blur not taken into account - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17251](https://github.com/BabylonJS/Babylon.js/pull/17251))
-- FrameGraph: Add support for convolution post-process - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17248](https://github.com/BabylonJS/Babylon.js/pull/17248))
-- Gaussian Splatting Inspector V2 - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17240](https://github.com/BabylonJS/Babylon.js/pull/17240))
-
-### Loaders
-
-- KHR_materials_openpbr - by [MiiBond](https://github.com/MiiBond) ([#17200](https://github.com/BabylonJS/Babylon.js/pull/17200))
-
-### Viewer
-
-- viewer change _updateSSAOPipeline  to protected - by [alexandremottet](https://github.com/alexandremottet) ([#17249](https://github.com/BabylonJS/Babylon.js/pull/17249))
-
-## 8.30.4
-
-### Core
-
-- FrameGraph: miscellaneous - by [Popov72](https://github.com/Popov72) ([#17242](https://github.com/BabylonJS/Babylon.js/pull/17242))
-
-### Serializers
-
-- glTF Exporter: Subset all indices arrays - by [alexchuber](https://github.com/alexchuber) ([#17244](https://github.com/BabylonJS/Babylon.js/pull/17244))
-- glTF Exporter: Fix spec-gloss conversion - by [alexchuber](https://github.com/alexchuber) ([#17237](https://github.com/BabylonJS/Babylon.js/pull/17237))
-- glTF Exporter: Missing start offset - by [alexchuber](https://github.com/alexchuber) ([#17241](https://github.com/BabylonJS/Babylon.js/pull/17241))
 
 ## 6.15.0
 

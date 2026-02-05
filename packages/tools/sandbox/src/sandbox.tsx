@@ -163,6 +163,13 @@ export class Sandbox extends React.Component<
                 info.scene.clearColor = Color4.FromColor3(Color3.FromHexString(`#${this._clearColor}`), 1);
             }
 
+            //After the model is loaded, set the background of the div to a checkerboard pattern. Before having the model, the div had a transparent background.
+            const canvasParentDom = document.getElementById("canvasZone");
+            if (canvasParentDom) {
+                //Add a chessboard-style class
+                canvasParentDom.classList.add("checkerboard");
+            }
+
             if (this._camera != undefined) {
                 info.scene.activeCamera = info.scene.cameras[this._camera];
             }
