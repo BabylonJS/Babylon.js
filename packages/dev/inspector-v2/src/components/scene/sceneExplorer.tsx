@@ -4,6 +4,7 @@ import type { FluentIcon } from "@fluentui/react-icons";
 import type { ComponentType, FunctionComponent } from "react";
 
 import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
+import type { DragDropProps, DropProps } from "./sceneExplorerDragDrop";
 
 import { VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
 import {
@@ -37,8 +38,8 @@ import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
 import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
 import { useCompactMode } from "../../hooks/settingsHooks";
-import { useSceneExplorerDragDrop, type DragDropProps, type SectionDropProps } from "./sceneExplorerDragDrop";
 import { TraverseGraph } from "../../misc/graphUtils";
+import { useSceneExplorerDragDrop } from "./sceneExplorerDragDrop";
 
 type EntityBase = Readonly<{
     uniqueId?: number;
@@ -416,7 +417,8 @@ const useStyles = makeStyles({
         opacity: 0.5,
     },
     treeItemDropTarget: {
-        boxShadow: `inset 0 0 0 2px ${tokens.colorBrandForeground1}`,
+        outline: `${tokens.strokeWidthThick} solid ${tokens.colorBrandForeground1}`,
+        outlineOffset: `-${tokens.strokeWidthThick}`,
     },
 });
 
@@ -508,17 +510,18 @@ const SceneTreeItem: FunctionComponent<{
     );
 };
 
-const SectionTreeItem: FunctionComponent<{
-    scene: Scene;
-    section: SectionTreeItemData;
-    isFiltering: boolean;
-    commandProviders: readonly SceneExplorerCommandProvider<string, "contextMenu">[];
-    expandAll: () => void;
-    collapseAll: () => void;
-    isDropTarget: boolean;
-    dropProps: SectionDropProps;
-}> = (props) => {
-    const { section, isFiltering, commandProviders, expandAll, collapseAll, isDropTarget, dropProps } = props;
+const SectionTreeItem: FunctionComponent<
+    {
+        scene: Scene;
+        section: SectionTreeItemData;
+        isFiltering: boolean;
+        commandProviders: readonly SceneExplorerCommandProvider<string, "contextMenu">[];
+        expandAll: () => void;
+        collapseAll: () => void;
+        isDropTarget: boolean;
+    } & DropProps
+> = (props) => {
+    const { section, isFiltering, commandProviders, expandAll, collapseAll, isDropTarget, ...dropProps } = props;
 
     const classes = useStyles();
     const [compactMode] = useCompactMode();
@@ -551,9 +554,7 @@ const SectionTreeItem: FunctionComponent<{
                     aria-level={1}
                     aria-setsize={1}
                     aria-posinset={1}
-                    onDragOver={dropProps.onDragOver}
-                    onDragLeave={dropProps.onDragLeave}
-                    onDrop={dropProps.onDrop}
+                    {...dropProps}
                 >
                     <TreeItemLayout className={mergeClasses(classes.treeItemLayoutBranch, compactMode ? classes.treeItemLayoutCompact : undefined)}>
                         <Body1Strong wrap={false} truncate>
@@ -582,20 +583,21 @@ const SectionTreeItem: FunctionComponent<{
     );
 };
 
-const EntityTreeItem: FunctionComponent<{
-    scene: Scene;
-    entityItem: EntityTreeItemData;
-    isSelected: boolean;
-    select: () => void;
-    isFiltering: boolean;
-    commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
-    expandAll: () => void;
-    collapseAll: () => void;
-    isDragging: boolean;
-    isDropTarget: boolean;
-    dragProps: DragDropProps;
-}> = (props) => {
-    const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll, isDragging, isDropTarget, dragProps } = props;
+const EntityTreeItem: FunctionComponent<
+    {
+        scene: Scene;
+        entityItem: EntityTreeItemData;
+        isSelected: boolean;
+        select: () => void;
+        isFiltering: boolean;
+        commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
+        expandAll: () => void;
+        collapseAll: () => void;
+        isDragging: boolean;
+        isDropTarget: boolean;
+    } & DragDropProps
+> = (props) => {
+    const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll, isDragging, isDropTarget, ...dragProps } = props;
 
     const classes = useStyles();
     const [compactMode] = useCompactMode();
@@ -714,16 +716,15 @@ const EntityTreeItem: FunctionComponent<{
                     aria-posinset={1}
                     onClick={select}
                     style={{ [treeItemLevelToken]: entityItem.depth }}
-                    draggable={dragProps.draggable}
-                    onDragStart={dragProps.onDragStart}
-                    onDragEnd={dragProps.onDragEnd}
-                    onDragOver={dragProps.onDragOver}
-                    onDragLeave={dragProps.onDragLeave}
-                    onDrop={dragProps.onDrop}
+                    {...dragProps}
                 >
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
-                        className={mergeClasses(hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf, compactMode ? classes.treeItemLayoutCompact : undefined, isDropTarget && classes.treeItemDropTarget)}
+                        className={mergeClasses(
+                            hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf,
+                            compactMode ? classes.treeItemLayoutCompact : undefined,
+                            isDropTarget && classes.treeItemDropTarget
+                        )}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                         actions={actions}
                         aside={{
@@ -856,12 +857,12 @@ export const SceneExplorer: FunctionComponent<{
         for (const section of sections) {
             const rootEntities = section.getRootEntities();
 
-            const sectionTreeItem: SectionTreeItemData = {
+            const sectionTreeItem = {
                 type: "section",
                 sectionName: section.displayName,
                 children: [],
-                dragDropConfig: section.dragDropConfig as SceneExplorerDragDropConfig<unknown> | undefined,
-            };
+                dragDropConfig: section.dragDropConfig,
+            } as const satisfies SectionTreeItemData;
 
             sectionTreeItems.push(sectionTreeItem);
             allTreeItems.set(sectionTreeItem.sectionName, sectionTreeItem);
@@ -1122,8 +1123,8 @@ export const SceneExplorer: FunctionComponent<{
                                     commandProviders={sectionCommandProviders}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
-                                    isDropTarget={dropTargetIsRoot && item.dragDropConfig !== undefined}
-                                    dropProps={createSectionDropProps(item.dragDropConfig)}
+                                    isDropTarget={dropTargetIsRoot && !!item.dragDropConfig}
+                                    {...createSectionDropProps(item.dragDropConfig)}
                                 />
                             );
                         } else {
@@ -1150,7 +1151,7 @@ export const SceneExplorer: FunctionComponent<{
                                     collapseAll={() => collapseAll(item)}
                                     isDragging={draggedEntity === item.entity}
                                     isDropTarget={dropTarget === item.entity}
-                                    dragProps={dragProps}
+                                    {...dragProps}
                                 />
                             );
                         }

@@ -1,3 +1,5 @@
+import type { DragEvent } from "react";
+
 import type { Nullable } from "core/index";
 
 import { tokens } from "@fluentui/react-components";
@@ -6,46 +8,37 @@ import { useCallback, useRef, useState } from "react";
 import type { SceneExplorerDragDropConfig } from "./sceneExplorer";
 
 /**
+ * Props for drop-only event handlers on a section header.
+ */
+export type DropProps = {
+    onDragOver: (e: DragEvent) => void;
+    onDragLeave: (e: DragEvent) => void;
+    onDrop: (e: DragEvent) => void;
+};
+
+/**
  * Props for drag-drop event handlers on a tree item.
  */
 export type DragDropProps = {
     draggable: boolean;
-    onDragStart: (e: React.DragEvent) => void;
-    onDragEnd: (e: React.DragEvent) => void;
-    onDragOver: (e: React.DragEvent) => void;
-    onDragLeave: (e: React.DragEvent) => void;
-    onDrop: (e: React.DragEvent) => void;
-};
+    onDragStart: (e: DragEvent) => void;
+    onDragEnd: (e: DragEvent) => void;
+} & DropProps;
 
-/**
- * Props for drop-only event handlers on a section header.
- */
-export type SectionDropProps = {
-    onDragOver: (e: React.DragEvent) => void;
-    onDragLeave: (e: React.DragEvent) => void;
-    onDrop: (e: React.DragEvent) => void;
-};
-
-const NoOpDragProps: DragDropProps = {
-    draggable: false,
-    onDragStart: () => {},
-    onDragEnd: () => {},
+const NoOpSectionDropProps: DropProps = {
     onDragOver: () => {},
     onDragLeave: () => {},
     onDrop: () => {},
 };
 
-const NoOpSectionDropProps: SectionDropProps = {
-    onDragOver: () => {},
-    onDragLeave: () => {},
-    onDrop: () => {},
-};
-
-// Global drag state - HTML5 drag/drop doesn't allow reading dataTransfer in dragover events.
-let globalDragState: {
-    entity: unknown;
-    config: SceneExplorerDragDropConfig<unknown>;
-} | null = null;
+const NoOpDragProps: DragDropProps = Object.assign(
+    {
+        draggable: false,
+        onDragStart: () => {},
+        onDragEnd: () => {},
+    },
+    NoOpSectionDropProps
+);
 
 /**
  * Options for the drag-drop hook.
@@ -62,22 +55,28 @@ export type SceneExplorerDragDropOptions = {
  * @returns State and props factory for drag-drop functionality.
  */
 export function useSceneExplorerDragDrop(options?: SceneExplorerDragDropOptions) {
-    const [draggedEntity, setDraggedEntity] = useState<unknown>(null);
-    const [dropTarget, setDropTarget] = useState<unknown>(null);
+    // Global drag state - HTML5 drag/drop doesn't allow reading dataTransfer in dragover events.
+    const activeDragState = useRef<{
+        entity: unknown;
+        config: SceneExplorerDragDropConfig<unknown>;
+    } | null>(null);
+
+    const [draggedEntity, setDraggedEntity] = useState<unknown>();
+    const [dropTarget, setDropTarget] = useState<unknown>();
     const [dropTargetIsRoot, setDropTargetIsRoot] = useState(false);
 
     // Ref to track current valid drop for the onDrop handler
     const pendingDropRef = useRef<Nullable<{ target: unknown | null; dragged: unknown; config: SceneExplorerDragDropConfig<unknown> }>>(null);
 
     const resetState = useCallback(() => {
-        setDraggedEntity(null);
-        setDropTarget(null);
+        setDraggedEntity(undefined);
+        setDropTarget(undefined);
         setDropTargetIsRoot(false);
         pendingDropRef.current = null;
     }, []);
 
     const createDragProps = useCallback(
-        (entity: unknown, getName: () => string, dragDropConfig: SceneExplorerDragDropConfig<unknown> | undefined): DragDropProps => {
+        (entity: unknown, getName: () => string, dragDropConfig?: SceneExplorerDragDropConfig<unknown>): DragDropProps => {
             // No drag-drop if section doesn't support it
             if (!dragDropConfig) {
                 return NoOpDragProps;
@@ -88,41 +87,45 @@ export function useSceneExplorerDragDrop(options?: SceneExplorerDragDropOptions)
                 return NoOpDragProps;
             }
 
-            const onDragStart = (e: React.DragEvent) => {
-                globalDragState = { entity, config: dragDropConfig };
+            const onDragStart = (e: DragEvent) => {
+                activeDragState.current = { entity, config: dragDropConfig };
                 setDraggedEntity(entity);
 
                 e.dataTransfer.effectAllowed = "move";
                 e.dataTransfer.setData("text/plain", getName());
 
                 // Create custom drag image (required for Safari preview)
+                const element = e.currentTarget as HTMLElement;
+                const computedStyle = getComputedStyle(element);
                 const dragImage = document.createElement("div");
                 dragImage.textContent = getName();
                 Object.assign(dragImage.style, {
                     position: "absolute",
                     top: "-1000px",
-                    padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
                     background: tokens.colorNeutralBackground1,
                     borderRadius: tokens.borderRadiusMedium,
-                    fontFamily: tokens.fontFamilyBase,
-                    fontSize: tokens.fontSizeBase300,
+                    font: computedStyle.font,
+                    color: computedStyle.color,
                     boxShadow: tokens.shadow8,
                     pointerEvents: "none",
                     whiteSpace: "nowrap",
                 });
                 document.body.appendChild(dragImage);
-                e.dataTransfer.setDragImage(dragImage, 0, 0);
+                e.dataTransfer.setDragImage(dragImage, -16, 0);
                 setTimeout(() => document.body.removeChild(dragImage), 0);
             };
 
             const onDragEnd = () => {
-                globalDragState = null;
+                activeDragState.current = null;
                 resetState();
             };
 
-            const onDragOver = (e: React.DragEvent) => {
-                if (!globalDragState) return;
-                const { entity: dragged, config } = globalDragState;
+            const onDragOver = (e: DragEvent) => {
+                if (!activeDragState.current) {
+                    return;
+                }
+
+                const { entity: dragged, config } = activeDragState.current;
 
                 e.preventDefault();
                 e.stopPropagation();
@@ -130,7 +133,7 @@ export function useSceneExplorerDragDrop(options?: SceneExplorerDragDropOptions)
 
                 // Check if this is a valid drop target
                 if (!config.canDrop(dragged, entity)) {
-                    setDropTarget(null);
+                    setDropTarget(undefined);
                     pendingDropRef.current = null;
                     return;
                 }
@@ -139,13 +142,18 @@ export function useSceneExplorerDragDrop(options?: SceneExplorerDragDropOptions)
                 pendingDropRef.current = { target: entity, dragged, config };
             };
 
-            const onDragLeave = () => {
+            const onDragLeave = (e: DragEvent) => {
+                // Ignore if leaving to a child element (still within the same drop target)
+                const relatedTarget = e.relatedTarget as Node | null;
+                if (relatedTarget && e.currentTarget instanceof Node && e.currentTarget.contains(relatedTarget)) {
+                    return;
+                }
                 if (pendingDropRef.current?.target === entity) {
-                    setDropTarget(null);
+                    setDropTarget(undefined);
                 }
             };
 
-            const onDropHandler = (e: React.DragEvent) => {
+            const onDropHandler = (e: DragEvent) => {
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -155,7 +163,7 @@ export function useSceneExplorerDragDrop(options?: SceneExplorerDragDropOptions)
                     options?.onDrop?.(pending.dragged, pending.target);
                 }
 
-                globalDragState = null;
+                activeDragState.current = null;
                 resetState();
             };
 
@@ -176,38 +184,50 @@ export function useSceneExplorerDragDrop(options?: SceneExplorerDragDropOptions)
      * @param dragDropConfig The drag-drop configuration for the section.
      */
     const createSectionDropProps = useCallback(
-        (dragDropConfig: SceneExplorerDragDropConfig<unknown> | undefined): SectionDropProps => {
+        (dragDropConfig: SceneExplorerDragDropConfig<unknown> | undefined): DropProps => {
             // No drop handling if section doesn't support drag-drop
             if (!dragDropConfig) {
                 return NoOpSectionDropProps;
             }
 
-            const onDragOver = (e: React.DragEvent) => {
-                if (!globalDragState) return;
-                const { entity: dragged, config } = globalDragState;
+            const onDragOver = (e: DragEvent) => {
+                if (!activeDragState.current) {
+                    return;
+                }
+
+                const { entity: dragged, config } = activeDragState.current;
 
                 // Only accept drops from the same section's drag-drop config
-                if (config !== dragDropConfig) return;
+                if (config !== dragDropConfig) {
+                    return;
+                }
 
                 // Check if drop to section root is allowed
-                if (!config.canDrop(dragged, null)) return;
+                if (!config.canDrop(dragged, null)) {
+                    return;
+                }
 
                 e.preventDefault();
                 e.stopPropagation();
                 e.dataTransfer.dropEffect = "move";
 
-                setDropTarget(null);
+                setDropTarget(undefined);
                 setDropTargetIsRoot(true);
                 pendingDropRef.current = { target: null, dragged, config };
             };
 
-            const onDragLeave = () => {
+            const onDragLeave = (e: DragEvent) => {
+                // Ignore if leaving to a child element (still within the same drop target)
+                const relatedTarget = e.relatedTarget as Node | null;
+                if (relatedTarget && e.currentTarget instanceof Node && e.currentTarget.contains(relatedTarget)) {
+                    return;
+                }
                 if (pendingDropRef.current?.target === null) {
                     setDropTargetIsRoot(false);
                 }
             };
 
-            const onDropHandler = (e: React.DragEvent) => {
+            const onDropHandler = (e: DragEvent) => {
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -217,7 +237,7 @@ export function useSceneExplorerDragDrop(options?: SceneExplorerDragDropOptions)
                     options?.onDrop?.(pending.dragged, null);
                 }
 
-                globalDragState = null;
+                activeDragState.current = null;
                 resetState();
             };
 
