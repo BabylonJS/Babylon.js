@@ -1,7 +1,6 @@
 /* eslint-disable require-atomic-updates */
 // Keep only type-only imports at module scope so nothing with side-effects runs in the worker at load time
 import type { Nullable } from "core/types";
-import type { AnimationConfiguration } from "./animationConfiguration";
 import type { RawLottieAnimation } from "./parsing/rawTypes";
 import type { AnimationController } from "./rendering/animationController";
 import type { Message, AnimationSizeMessage, AnimationUrlMessagePayload, StartAnimationMessagePayload, ContainerResizeMessagePayload, WorkerLoadedMessage } from "./messageTypes";
@@ -11,9 +10,8 @@ let Controller: Nullable<AnimationController> = null;
 
 // Pre-warmed module exports - stored during pre-warm phase for faster access
 let GetRawAnimationDataAsync: any = null;
-let DefaultConfiguration: any = null;
 let AnimationControllerClass: any = null;
-let AnimationPromises: any = null;
+let AnimationControllerPromise: any = null;
 
 onmessage = async function (evt) {
     const message = evt.data as Message;
@@ -28,11 +26,10 @@ onmessage = async function (evt) {
             try {
                 // Load modules and store their exports
                 const parserModule = await import("./parsing/parser");
-                const [configModule, controllerModule] = await Promise.all([import("./animationConfiguration"), import("./rendering/animationController")]);
+                const controllerModule = await import("./rendering/animationController");
 
                 // Store the actual exports we'll need
                 GetRawAnimationDataAsync = parserModule.GetRawAnimationDataAsync;
-                DefaultConfiguration = configModule.DefaultConfiguration;
                 AnimationControllerClass = controllerModule.AnimationController;
             } catch (error: unknown) {
                 success = false;
@@ -53,9 +50,9 @@ onmessage = async function (evt) {
         case "animationUrl": {
             const payload = message.payload as AnimationUrlMessagePayload;
 
-            // If the Configuration and Controller were not pre-warmed, start loading them now
-            if (DefaultConfiguration === null || AnimationControllerClass === null) {
-                AnimationPromises = Promise.all([import("./animationConfiguration"), import("./rendering/animationController")]);
+            // If the Controller was not pre-warmed, start loading it now
+            if (AnimationControllerClass === null) {
+                AnimationControllerPromise = import("./rendering/animationController");
             }
 
             // Use pre-warmed parser if available, otherwise load it
@@ -83,30 +80,19 @@ onmessage = async function (evt) {
             break;
         }
         case "startAnimation": {
-            // If we have started loading the Configuration and Controller, finish loading them
-            if (AnimationPromises !== null) {
-                const [configModule, controllerModule] = await AnimationPromises;
-                DefaultConfiguration = configModule.DefaultConfiguration;
+            // If we have started loading the Controller, finish loading it
+            if (AnimationControllerPromise !== null) {
+                const controllerModule = await AnimationControllerPromise;
                 AnimationControllerClass = controllerModule.AnimationController;
             }
 
-            // If we did not attempt to load the Configuration and Controller earlier, load them now
-            if (DefaultConfiguration === null || AnimationControllerClass === null) {
-                const [configModule, controllerModule] = await Promise.all([import("./animationConfiguration"), import("./rendering/animationController")]);
-                DefaultConfiguration = configModule.DefaultConfiguration;
+            // If we did not attempt to load the Controller earlier, load it now
+            if (AnimationControllerClass === null) {
+                const controllerModule = await import("./rendering/animationController");
                 AnimationControllerClass = controllerModule.AnimationController;
             }
 
             const payload = message.payload as StartAnimationMessagePayload;
-            const canvas = payload.canvas;
-            const scaleFactor = payload.scaleFactor;
-            const variables = payload.variables ?? new Map<string, string>();
-            const originalConfig = payload.configuration ?? {};
-            const finalConfig: AnimationConfiguration = {
-                ...DefaultConfiguration,
-                ...originalConfig,
-            };
-
             if (RawAnimation === null && payload.animationData) {
                 RawAnimation = payload.animationData;
             }
@@ -115,7 +101,15 @@ onmessage = async function (evt) {
                 return;
             }
 
-            const controller = new AnimationControllerClass(canvas, RawAnimation, scaleFactor, variables, finalConfig);
+            const controller = new AnimationControllerClass(
+                payload.canvas,
+                RawAnimation,
+                payload.scaleFactor,
+                payload.variables ?? new Map<string, string>(),
+                payload.configuration ?? {},
+                payload.mainThreadDevicePixelRatio
+            );
+
             controller.playAnimation();
             Controller = controller;
             break;
@@ -142,9 +136,8 @@ onmessage = async function (evt) {
             }
 
             GetRawAnimationDataAsync = null;
-            DefaultConfiguration = null;
             AnimationControllerClass = null;
-            AnimationPromises = null;
+            AnimationControllerPromise = null;
             break;
         }
         default:

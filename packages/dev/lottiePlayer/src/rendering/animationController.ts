@@ -2,26 +2,23 @@ import "core/Engines/Extensions/engine.alpha";
 import "core/Shaders/sprites.vertex";
 import "core/Shaders/sprites.fragment";
 
-import { ThinEngine } from "core/Engines/thinEngine";
-import { Viewport } from "core/Maths/math.viewport";
-
-import { RenderingManager } from "./renderingManager";
-
 import type { RawLottieAnimation } from "../parsing/rawTypes";
 import type { AnimationInfo } from "../parsing/parsedTypes";
+import type { Node } from "../nodes/node";
+import type { AnimationConfiguration } from "../animationConfiguration";
+
+import { ThinEngine } from "core/Engines/thinEngine";
+import { Viewport } from "core/Maths/math.viewport";
+import { RenderingManager } from "./renderingManager";
+import { ThinMatrix } from "../maths/matrix";
+import { UpdateConfiguration } from "../animationConfiguration";
 import { Parser } from "../parsing/parser";
 import { SpritePacker } from "../parsing/spritePacker";
-
-import { ThinMatrix } from "../maths/matrix";
-
-import type { Node } from "../nodes/node";
-
-import type { AnimationConfiguration } from "../animationConfiguration";
 
 /**
  * Defines the babylon combine alpha value to prevent a large import.
  */
-const AlphaCombine = 2;
+const ALPHA_PREMULTIPLIED = 7;
 
 /**
  * Class that controls the playing of lottie animations using Babylon.js
@@ -32,7 +29,7 @@ export class AnimationController {
     private readonly _canvas: HTMLCanvasElement | OffscreenCanvas;
     private _scaleFactor: number;
     private readonly _variables: Map<string, string>;
-    private readonly _configuration: AnimationConfiguration;
+    private _configuration: AnimationConfiguration;
     private readonly _engine: ThinEngine;
     private readonly _spritePacker: SpritePacker;
 
@@ -86,20 +83,21 @@ export class AnimationController {
      * @param animationData The raw lottie animation as a JSON object.
      * @param scaleFactor The scale factor between the animation and the container, it will modify the sprites size in the atlas
      * @param variables Map of variables to replace in the animation file.
-     * @param configuration The configuration for the animation player.
+     * @param configuration The partial configuration for the animation player. Will be finalized after engine creation.
+     * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios).
      */
     public constructor(
         canvas: HTMLCanvasElement | OffscreenCanvas,
         animationData: RawLottieAnimation,
         scaleFactor: number,
         variables: Map<string, string>,
-        configuration: AnimationConfiguration
+        configuration: Partial<AnimationConfiguration>,
+        mainThreadDevicePixelRatio?: number
     ) {
         this._isReady = false;
         this._canvas = canvas;
         this._scaleFactor = scaleFactor;
         this._variables = variables;
-        this._configuration = configuration;
         this._currentFrame = 0;
         this._isPlaying = false;
         this._animationFrameId = null;
@@ -107,10 +105,10 @@ export class AnimationController {
         this._deltaTime = 0;
         this._accumulatedTime = 0;
         this._framesToAdvance = 0;
-        this._loop = this._configuration.loopAnimation;
         this._frameDuration = 1000 / 30; // Default to 30 FPS
         this._firstRun = true;
 
+        const supportDeviceLost = configuration.supportDeviceLost ?? true;
         this._engine = new ThinEngine(
             this._canvas,
             false, // Antialias
@@ -122,20 +120,25 @@ export class AnimationController {
                 depth: false,
                 // Important to allow skip frame and tiled optimizations
                 preserveDrawingBuffer: false,
-                premultipliedAlpha: false,
-                doNotHandleContextLost: this._configuration.supportDeviceLost,
-                // Usefull during debug to simulate WebGL1 devices (Safari)
+                premultipliedAlpha: true, // Using premultiplied alpha to avoid issues with colors bleeding in the texture atlas
+                doNotHandleContextLost: !supportDeviceLost,
+                // Useful during debug to simulate WebGL1 devices (Safari)
                 // disableWebGL2Support: true,
             },
             false
         );
+
+        // Finalize configuration now that we can query GPU capabilities
+        const maxTextureSize = this._engine.getCaps().maxTextureSize;
+        this._configuration = UpdateConfiguration(configuration, maxTextureSize, mainThreadDevicePixelRatio);
+        this._loop = this._configuration.loopAnimation;
 
         // Prevent parallel shader compilation to simplify the boot sequence
         // Only a couple of fast compile shaders.
         this._engine.getCaps().parallelShaderCompile = undefined;
         this._engine.depthCullingState.depthTest = false;
         this._engine.stencilState.stencilTest = false;
-        this._engine.setAlphaMode(AlphaCombine);
+        this._engine.setAlphaMode(ALPHA_PREMULTIPLIED);
 
         this._spritePacker = new SpritePacker(this._engine, this._isHtmlCanvas(canvas), this._scaleFactor, this._variables, this._configuration);
         this._renderingManager = new RenderingManager(this._engine, this._spritePacker.texture, this._configuration);

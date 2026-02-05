@@ -73,6 +73,7 @@ export const ParticleSystemSystemProperties: FunctionComponent<{ particleSystem:
 
             {isCpuParticleSystem && (
                 <ButtonLine
+                    uniqueId="View/Edit"
                     label={isNodeGenerated ? "Edit" : "View as Node-Based Particle System"}
                     icon={isNodeGenerated ? EditRegular : EyeRegular}
                     onClick={async () => {

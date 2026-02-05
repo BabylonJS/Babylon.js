@@ -32,6 +32,7 @@ import type { Mesh } from "core/Meshes";
 import type { NodeRenderGraphUtilityLayerRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/utilityLayerRendererBlock";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
 import { Texture } from "core/Materials/Textures/texture";
+import type { NodeRenderGraphSelectionOutlineLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/selectionOutlineLayerBlock";
 
 const DebugTextures = false;
 const LogErrorTrace = true;
@@ -384,6 +385,14 @@ export class PreviewManager {
                     const mesh = this._getMesh();
                     if (mesh) {
                         layer.addMesh(mesh, new Color3(0, 1, 0), false);
+                    }
+                    break;
+                }
+                case "NodeRenderGraphSelectionOutlineLayerBlock": {
+                    const layer = (block as NodeRenderGraphSelectionOutlineLayerBlock).task.layer;
+                    const mesh = this._getMesh();
+                    if (mesh) {
+                        layer.addSelection(mesh);
                     }
                     break;
                 }

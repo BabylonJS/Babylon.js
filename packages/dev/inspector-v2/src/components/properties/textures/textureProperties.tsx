@@ -61,6 +61,7 @@ export const TextureTransformProperties: FunctionComponent<{ texture: Texture; s
                 propertyKey="uAng"
                 min={0}
                 max={toDisplayAngle(Math.PI * 2)}
+                step={0.01}
                 convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />
@@ -71,6 +72,7 @@ export const TextureTransformProperties: FunctionComponent<{ texture: Texture; s
                 propertyKey="vAng"
                 min={0}
                 max={toDisplayAngle(Math.PI * 2)}
+                step={0.01}
                 convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />
@@ -81,6 +83,7 @@ export const TextureTransformProperties: FunctionComponent<{ texture: Texture; s
                 propertyKey="wAng"
                 min={0}
                 max={toDisplayAngle(Math.PI * 2)}
+                step={0.01}
                 convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />

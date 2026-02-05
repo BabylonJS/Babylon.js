@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "8.49.6",
+    "version": "8.50.0",
     "type": "module",
     "main": "lib/index.js",
     "module": "lib/index.js",

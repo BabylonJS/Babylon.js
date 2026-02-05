@@ -57,7 +57,7 @@ export class NodeRenderGraphBasePostProcessBlock extends NodeRenderGraphBlock {
     /** The alpha mode to use when applying the post process. */
     @editableInPropertyPage("Alpha Mode", PropertyTypeForEdition.List, "BASE PROPERTIES", {
         options: [
-            { label: "ALPHA_DISABLE", value: Constants.ALPHA_DISABLE },
+            { label: "Disabled", value: Constants.ALPHA_DISABLE },
             { label: "Combine", value: Constants.ALPHA_COMBINE },
             { label: "One One", value: Constants.ALPHA_ONEONE },
             { label: "Add", value: Constants.ALPHA_ADD },

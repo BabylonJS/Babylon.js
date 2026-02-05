@@ -868,7 +868,7 @@ async function _UploadLevelsAsync(
 
             if (engine._features.forceBitmapOverHTMLImageElement) {
                 // eslint-disable-next-line github/no-then
-                promise = engine.createImageBitmap(blob, { premultiplyAlpha: "none" }).then(async (img) => {
+                promise = engine.createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" }).then(async (img) => {
                     return await _OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
                 });
             } else {

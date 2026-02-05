@@ -125,7 +125,7 @@ function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
         <div className={styles.root}>
             <ErrorCircleRegular className={styles.icon} />
             <div className={styles.title}>Something went wrong</div>
-            <div className={styles.message}>An error occurred in this component. You can try again or continue using other parts of the inspector.</div>
+            <div className={styles.message}>An error occurred in this component. You can try again or continue using other parts of the tool.</div>
             <Button label="Try Again" appearance="primary" onClick={onRetry} />
             {error && <div className={styles.details}>{error.message}</div>}
         </div>

@@ -200,6 +200,7 @@ export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PB
             />
             <BoundProperty
                 component={TextureSelectorPropertyLine}
+                uniqueId="PBRBaseMaterialChannels_Reflection"
                 label="Reflection"
                 target={material}
                 propertyKey="_reflectionTexture"
@@ -325,6 +326,7 @@ export const PBRBaseMaterialMetallicWorkflowProperties: FunctionComponent<{ mate
             <BoundProperty component={SyncedSliderPropertyLine} label="Metallic" target={material} propertyKey="_metallic" min={0} max={1} step={0.01} nullable defaultValue={0} />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
+                uniqueId="PBRBaseMaterialMetallicWorkflow_Roughness"
                 label="Roughness"
                 target={material}
                 propertyKey="_roughness"
@@ -412,6 +414,7 @@ export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: P
                 />
                 <BoundProperty
                     component={SyncedSliderPropertyLine}
+                    uniqueId="PBRBaseMaterialClearCoat_Roughness_1"
                     label="Roughness"
                     target={material.clearCoat}
                     propertyKey="roughness"
@@ -450,6 +453,7 @@ export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: P
                 />
                 <BoundProperty
                     component={TextureSelectorPropertyLine}
+                    uniqueId="PBRBaseMaterialClearCoat_Roughness_2"
                     label="Roughness"
                     target={material.clearCoat}
                     propertyKey="textureRoughness"
@@ -693,6 +697,7 @@ export const PBRBaseMaterialSheenProperties: FunctionComponent<{ material: PBRBa
                 />
                 <BoundProperty
                     component={TextureSelectorPropertyLine}
+                    uniqueId="PBRBaseMaterialSheen_Roughness_1"
                     label="Roughness"
                     target={material.sheen}
                     propertyKey="textureRoughness"
@@ -706,6 +711,7 @@ export const PBRBaseMaterialSheenProperties: FunctionComponent<{ material: PBRBa
                     <BoundProperty
                         nullable
                         component={SyncedSliderPropertyLine}
+                        uniqueId="PBRBaseMaterialSheen_Roughness_2"
                         label="Roughness"
                         target={material.sheen}
                         propertyKey="roughness"

@@ -47,7 +47,13 @@ export class NodePort {
     public set portName(newName: string) {
         if (this._portLabelElement) {
             this.portData.updateDisplayName(newName);
-            this._portLabelElement.innerHTML = newName;
+            this.refreshLabel();
+        }
+    }
+
+    public refreshLabel() {
+        if (this._portLabelElement) {
+            this._portLabelElement.innerHTML = this.portData.name;
         }
     }
 
@@ -108,6 +114,7 @@ export class NodePort {
     }
 
     public refresh() {
+        this.refreshLabel();
         if (this._stateManager.applyNodePortDesign(this.portData, this._element, this._imgHost, this._pip)) {
             this._element.style.background = "#000";
         }
@@ -183,6 +190,11 @@ export class NodePort {
         });
 
         this.refresh();
+    }
+
+    public remove() {
+        this._portContainer.remove();
+        this.dispose();
     }
 
     public dispose() {

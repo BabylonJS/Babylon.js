@@ -6,9 +6,11 @@
     overflow: hidden;
     width: 100%;
     height: calc(100% - var(--footer-height));
-
     &.expanded {
         height: 100%;
+    }
+    &.checkerboard {
+        background: repeating-conic-gradient(#d2d2d2 0% 25%, white 25% 50%) 50% / 20px 20px;
     }
 }
 

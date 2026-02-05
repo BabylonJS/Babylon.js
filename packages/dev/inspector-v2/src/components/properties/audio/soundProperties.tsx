@@ -58,6 +58,7 @@ export const SoundCommandProperties: FunctionComponent<{ sound: Sound }> = (prop
     return (
         <>
             <ButtonLine
+                uniqueId="Start/Stop"
                 label={soundState === "Playing" ? "Pause" : "Play"}
                 icon={soundState === "Playing" ? PauseRegular : PlayRegular}
                 onClick={() => {

@@ -8,6 +8,8 @@ import {
     Copy16Regular,
 } from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren, MouseEvent } from "react";
+import type { AccordionSectionItemProps } from "../../primitives/accordion";
+import { AccordionSectionItem } from "../../primitives/accordion";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef, useCallback } from "react";
 import { Collapse } from "../../primitives/collapse";
 import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
@@ -77,6 +79,13 @@ type BasePropertyLineProps = {
      */
     label: string;
     /**
+     * The ID of the property line to be used when the label cannot be used as a persistent ID.
+     *
+     * Note that when a property line is used within an accordion section, this ID must be unique within that section in order
+     * for property pinning and filtering to work correctly. If not, error will be shown in console.
+     */
+    uniqueId?: string;
+    /**
      * Optional description for the property, shown on hover of the info icon
      */
     description?: string;
@@ -145,7 +154,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     PropertyLine.displayName = "PropertyLine";
     const { disableCopy, size } = useContext(ToolContext);
     const classes = usePropertyLineStyles();
-    const { label, onCopy, expandedContent, children, nullable, ignoreNullable } = props;
+    const { label, uniqueId, onCopy, expandedContent, children, nullable, ignoreNullable } = props;
 
     const [expanded, setExpanded] = useState("expandByDefault" in props ? props.expandByDefault : false);
     const cachedVal = useRef(nullable ? props.value : null);
@@ -181,7 +190,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
             : children;
 
     return (
-        <LineContainer ref={ref}>
+        <LineContainer ref={ref} uniqueId={uniqueId ?? label} label={label}>
             <div className={classes.baseLine}>
                 <InfoLabel className={classes.infoLabel} htmlFor="property" info={description} label={label} flexLabel onContextMenu={onCopy ? handleContextMenu : undefined} />
                 <div className={classes.rightContent} id="property">
@@ -255,14 +264,17 @@ const useLineStyles = makeStyles({
     },
 });
 
-export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren<HTMLProps<HTMLDivElement>>>((props, ref) => {
+export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren<HTMLProps<HTMLDivElement> & AccordionSectionItemProps>>((props, ref) => {
     const { size } = useContext(ToolContext);
+    const { children, uniqueId, label, ...rest } = props;
     const classes = useLineStyles();
 
     return (
-        <div ref={ref} className={mergeClasses(classes.container, size == "small" ? classes.containerSmall : undefined)} {...props}>
-            {props.children}
-        </div>
+        <AccordionSectionItem uniqueId={uniqueId} label={label}>
+            <div ref={ref} className={mergeClasses(classes.container, size == "small" ? classes.containerSmall : undefined)} {...rest}>
+                {children}
+            </div>
+        </AccordionSectionItem>
     );
 });
 
