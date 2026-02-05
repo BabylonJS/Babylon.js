@@ -1,6 +1,6 @@
 import type { ComponentType, PropsWithChildren, Ref } from "react";
 
-import type { AccordionSectionProps } from "shared-ui-components/fluent/primitives/accordion";
+import type { AccordionProps, AccordionSectionProps } from "shared-ui-components/fluent/primitives/accordion";
 
 import { makeStyles } from "@fluentui/react-components";
 import { Children, isValidElement, useImperativeHandle, useLayoutEffect, useMemo, useState } from "react";
@@ -68,16 +68,18 @@ export type SectionsImperativeRef = {
 };
 
 export function ExtensibleAccordion<ContextT = unknown>(
-    props: PropsWithChildren<{
-        sections: readonly DynamicAccordionSection[];
-        sectionContent: readonly DynamicAccordionSectionContent<ContextT>[];
-        context: ContextT;
-        sectionsRef?: Ref<SectionsImperativeRef>;
-    }>
+    props: PropsWithChildren<
+        {
+            sections: readonly DynamicAccordionSection[];
+            sectionContent: readonly DynamicAccordionSectionContent<ContextT>[];
+            context: ContextT;
+            sectionsRef?: Ref<SectionsImperativeRef>;
+        } & AccordionProps
+    >
 ) {
     const classes = useStyles();
 
-    const { children, sections, sectionContent, context, sectionsRef } = props;
+    const { children, sections, sectionContent, context, sectionsRef, ...rest } = props;
 
     const defaultSections = useMemo(() => {
         const defaultSections: DynamicAccordionSection[] = [];
@@ -200,7 +202,7 @@ export function ExtensibleAccordion<ContextT = unknown>(
         <div className={classes.rootDiv}>
             {visibleSections.length > -1 && (
                 <UXContextProvider>
-                    <Accordion highlightSections={highlightSections}>
+                    <Accordion highlightSections={highlightSections} {...rest}>
                         {...visibleSections.map((section) => {
                             return (
                                 <AccordionSection key={section.identity} title={section.identity} collapseByDefault={section.collapseByDefault}>

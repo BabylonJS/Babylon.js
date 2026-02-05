@@ -2777,6 +2777,10 @@
             "playgroundId": "#ZNTBN2#10"
         },
         {
+            "title": "FrameGraph nrge selection outline layer",
+            "playgroundId": "#ADUC74#1"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#3",
             "errorRatio": 2
@@ -2854,6 +2858,10 @@
         {
             "title": "FrameGraph multi-render targets",
             "playgroundId": "#XSNYAU#165"
+        },
+        {
+            "title": "FrameGraph selection outline",
+            "playgroundId": "#E1F0GP#4"
         },
         {
             "title": "Render target texture with clustered lights",

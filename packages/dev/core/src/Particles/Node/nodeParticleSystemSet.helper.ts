@@ -20,7 +20,6 @@ import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBloc
 
 import { Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
-import { TransformNode } from "../../Meshes/transformNode";
 import { FactorGradient } from "core/Misc/gradients";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
@@ -1033,13 +1032,15 @@ function _SystemBlockGroup(updateParticleOutput: NodeParticleConnectionPoint, ol
     newSystem.billBoardMode = oldSystem.billboardMode;
     newSystem.isLocal = oldSystem.isLocal;
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
-
-    _SystemCustomShader(oldSystem, newSystem);
-
-    if (oldSystem.emitter) {
-        _SystemEmitterPosition(oldSystem.emitter, newSystem);
+    newSystem.renderingGroupId = oldSystem.renderingGroupId;
+    const emitter = oldSystem.emitter;
+    if (emitter instanceof Vector3) {
+        newSystem.emitter = emitter.clone();
+    } else {
+        newSystem.emitter = emitter;
     }
 
+    _SystemCustomShader(oldSystem, newSystem);
     _SystemEmitRateValue(oldSystem.getEmitRateGradients(), oldSystem.targetStopDuration, oldSystem.emitRate, newSystem, context);
     _SystemTargetStopDuration(oldSystem.targetStopDuration, newSystem, context);
 
@@ -1093,17 +1094,6 @@ function _SystemCustomShader(oldSystem: ParticleSystem, newSystem: SystemBlock) 
                 },
             };
         }
-    }
-}
-
-function _SystemEmitterPosition(emitter: TransformNode | Vector3, newSystem: SystemBlock): void {
-    if (emitter) {
-        _CreateAndConnectInput(
-            "Emitter Position",
-            emitter instanceof TransformNode ? emitter.position.clone() : emitter.clone(),
-            newSystem.emitterPosition,
-            NodeParticleBlockConnectionPointTypes.Vector3
-        );
     }
 }
 

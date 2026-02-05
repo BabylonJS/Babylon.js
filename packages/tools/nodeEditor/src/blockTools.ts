@@ -63,6 +63,7 @@ import { WorleyNoise3DBlock } from "core/Materials/Node/Blocks/worleyNoise3DBloc
 import { SimplexPerlin3DBlock } from "core/Materials/Node/Blocks/simplexPerlin3DBlock";
 import { NormalBlendBlock } from "core/Materials/Node/Blocks/normalBlendBlock";
 import { Rotate2dBlock } from "core/Materials/Node/Blocks/rotate2dBlock";
+import { PannerBlock } from "core/Materials/Node/Blocks/pannerBlock";
 import { DerivativeBlock } from "core/Materials/Node/Blocks/Fragment/derivativeBlock";
 import { RefractBlock } from "core/Materials/Node/Blocks/refractBlock";
 import { ReflectBlock } from "core/Materials/Node/Blocks/reflectBlock";
@@ -160,6 +161,8 @@ export class BlockTools {
                 return new DerivativeBlock("Derivative");
             case "Rotate2dBlock":
                 return new Rotate2dBlock("Rotate2d");
+            case "PannerBlock":
+                return new PannerBlock("Panner");
             case "NormalBlendBlock":
                 return new NormalBlendBlock("NormalBlend");
             case "WorleyNoise3DBlock":

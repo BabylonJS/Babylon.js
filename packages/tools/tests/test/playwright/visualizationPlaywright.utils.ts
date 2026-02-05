@@ -252,6 +252,12 @@ export const evaluateInitEngineForVisualization = async ({
     }
     window.engine!.renderEvenInBackground = true;
     window.engine!.getCaps().parallelShaderCompile = undefined;
+
+    const win = window as any;
+    if (typeof win.HavokPhysics === "function" && typeof win.HK === "undefined") {
+        win.HK = await win.HavokPhysics();
+    }
+
     return {
         forceUseReverseDepthBuffer: window.forceUseReverseDepthBuffer,
         forceUseNonCompatibilityMode: window.forceUseNonCompatibilityMode,
@@ -311,7 +317,10 @@ export const evaluatePrepareScene = async ({
                 const v2Manifest = JSON.parse(payload.code);
                 code = v2Manifest.files[v2Manifest.entry];
                 // Sanitize two common export types for existing and migrated PGs and newly-created PGs.
-                code = code.replace(/export default \w+/g, "").replace("export const ", "const ");
+                code = code
+                    .replace(/export default \w+/g, "")
+                    .replace(/export const /g, "const ")
+                    .replace(/export var /g, "var ");
             } else {
                 code = payload.code.toString();
             }

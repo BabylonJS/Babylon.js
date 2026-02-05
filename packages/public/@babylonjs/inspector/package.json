@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector-legacy",
-    "version": "8.49.6",
+    "version": "8.50.0",
     "private": true,
     "module": "dist/babylon.inspector.bundle.js",
     "main": "dist/babylon.inspector.bundle.js",
@@ -35,13 +35,13 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/addons": "8.49.6",
-        "@babylonjs/core": "8.49.6",
-        "@babylonjs/gui": "8.49.6",
-        "@babylonjs/gui-editor": "8.49.6",
-        "@babylonjs/loaders": "8.49.6",
-        "@babylonjs/materials": "8.49.6",
-        "@babylonjs/serializers": "8.49.6",
+        "@babylonjs/addons": "8.50.0",
+        "@babylonjs/core": "8.50.0",
+        "@babylonjs/gui": "8.50.0",
+        "@babylonjs/gui-editor": "8.50.0",
+        "@babylonjs/loaders": "8.50.0",
+        "@babylonjs/materials": "8.50.0",
+        "@babylonjs/serializers": "8.50.0",
         "@dev/inspector-legacy": "1.0.0",
         "@lts/gui": "1.0.0",
         "react": "^18.2.0",

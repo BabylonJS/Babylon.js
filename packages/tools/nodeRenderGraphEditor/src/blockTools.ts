@@ -45,6 +45,7 @@ import { NodeRenderGraphSSAO2PostProcessBlock } from "core/FrameGraph/Node/Block
 import { NodeRenderGraphComputeShaderBlock } from "core/FrameGraph/Node/Blocks/computeShaderBlock";
 import { NodeRenderGraphVolumetricLightingBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/volumetricLightingBlock";
 import { NodeRenderGraphLightingVolumeBlock } from "core/FrameGraph/Node/Blocks/lightingVolumeBlock";
+import { NodeRenderGraphSelectionOutlineLayerBlock } from "core/FrameGraph/Node/Blocks/Layers/selectionOutlineLayerBlock";
 
 /**
  * Static class for BlockTools
@@ -202,6 +203,9 @@ export class BlockTools {
             }
             case "LightingVolumeBlock": {
                 return new NodeRenderGraphLightingVolumeBlock("Lighting Volume", frameGraph, scene);
+            }
+            case "SelectionOutlineLayerBlock": {
+                return new NodeRenderGraphSelectionOutlineLayerBlock("Selection Outline Layer", frameGraph, scene);
             }
         }
 

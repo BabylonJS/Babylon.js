@@ -9,6 +9,7 @@ export * from "./resourceContainerBlock";
 
 export * from "./Layers/glowLayerBlock";
 export * from "./Layers/highlightLayerBlock";
+export * from "./Layers/selectionOutlineLayerBlock";
 
 export * from "./PostProcesses/anaglyphPostProcessBlock";
 export * from "./PostProcesses/basePostProcessBlock";
