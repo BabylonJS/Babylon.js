@@ -83,43 +83,58 @@
                     specularColoredFresnel = specularFresnel * specular_color;
                 }
 
-                #ifdef ANISOTROPIC_BASE
-                    preInfoTrans.NdotL = max(dot(-normalW, preInfoTrans.L), 0.0);
+                #ifdef GEOMETRY_THIN_WALLED
+                    let refractNormalW: vec3f = viewDirectionW;
                 #else
-                    preInfoTrans.NdotL = max(dot(-normalW, preInfoTrans.L) * 0.5 + 0.5, 0.0);
+                    let refractNormalW: vec3f = normalW;
                 #endif
 
-                #ifdef DISPERSION
+                preInfoTrans.NdotL = 0.5f * max(dot(-refractNormalW, preInfoTrans.L), 0.0f) + 0.5f;
+
+                #if defined(DISPERSION) && !defined(GEOMETRY_THIN_WALLED)
                     // This is a hack to try to boost the separation of the dispersion effect.
                     // Especially with refraction, this effect is very subtle and we might question
                     // if it's needed for analytical lights at all...
                     var dispersion_iors_local: vec3f = dispersion_iors;
-                    let diff: f32 = min(dispersion_iors_local[2] - dispersion_iors_local[0], max(dispersion_iors_local[0] - 1.0, 1.0));
+                    let diff: f32 = min(dispersion_iors_local[2] - dispersion_iors_local[0], max(dispersion_iors_local[0] - 1.0f, 1.0f));
                     dispersion_iors_local[2] += diff;
                     dispersion_iors_local[0] -= diff;
                     for (var i: i32 = 0; i < 3; i++) {
-                        let eta: f32 = 1.0 / dispersion_iors_local[i];
+                        let eta: f32 = 1.0f / dispersion_iors_local[i];
+                #elif defined(GEOMETRY_THIN_WALLED)
+                    let eta: f32 = 1.0f;
                 #else
-                    let eta: f32 = 1.0 / specular_ior;
+                    let eta: f32 = 1.0f / specular_ior;
                 #endif
-                    preInfoTrans.H = -normalize( preInfoTrans.L + min(eta, 0.95) * viewDirectionW);
-                    preInfoTrans.VdotH = clamp(dot(viewDirectionW, preInfoTrans.H), 0.0, 1.0);
+                    preInfoTrans.H = preInfoTrans.L + min(eta, 0.95f) * viewDirectionW;
+                    let len2: f32 = dot(preInfoTrans.H, preInfoTrans.H);
+                    if (len2 < 1e-6f) {
+                        // Degenerate case: L == -V and etaI == etaT
+                        preInfoTrans.H = preInfoTrans.L;
+                    } else {
+                        preInfoTrans.H = preInfoTrans.H * inverseSqrt(len2);
+                    }
+                    #ifdef ANISOTROPIC_BASE
+                        preInfoTrans.H = -preInfoTrans.H;
+                    #endif
+                    preInfoTrans.VdotH = dot(viewDirectionW, preInfoTrans.H);
                 
-                #ifdef DISPERSION
+                #if defined(DISPERSION) && !defined(GEOMETRY_THIN_WALLED)
                     forwardScatteredLight[i] += 
                 #else
                     forwardScatteredLight += 
                 #endif
-                #ifdef ANISOTROPIC_BASE
-                    computeAnisotropicSpecularLighting(preInfoTrans, viewDirectionW, normalW, 
+                
+                #if defined(ANISOTROPIC_BASE)
+                    computeAnisotropicSpecularLighting(preInfoTrans, viewDirectionW, refractNormalW, 
                         baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 
                         roughness_alpha_modified_for_scatter, lightColor{X}.rgb
                 #else
                     // We're passing in vec3(1.0) for both F0 and F90 here because the actual Fresnel is computed below
                     // Also computeSpecularLighting does some legacy iridescence work using these values that we don't want.
-                    computeSpecularLighting(preInfoTrans, normalW, vec3(1.0), vec3(1.0), roughness_alpha_modified_for_scatter, lightColor{X}.rgb
+                    computeSpecularLighting(preInfoTrans, -refractNormalW, vec3f(1.0f), vec3f(1.0f), roughness_alpha_modified_for_scatter, lightColor{X}.rgb
                 #endif
-                #ifdef DISPERSION
+                #if defined(DISPERSION) && !defined(GEOMETRY_THIN_WALLED)
                     )[i];
                 }
                 #else
@@ -128,7 +143,10 @@
 
                 // Empirical scattered light contribution for transmission
                 // As roughness increases, we add a small ambient term to simulate scattering of internal reflections
-                forwardScatteredLight = mix(forwardScatteredLight, 0.25f * preInfoTrans.attenuation * lightColor{X}.rgb, clamp(1.0f - pow(baseGeoInfo.NdotV, roughness_alpha_modified_for_scatter), 0.0f, 1.0f));
+                // This only makes sense for solid materials, so we skip it for thin-walled geometry.
+                #if !defined(GEOMETRY_THIN_WALLED)
+                    forwardScatteredLight = mix(forwardScatteredLight, 0.25f * preInfoTrans.attenuation * lightColor{X}.rgb, clamp(1.0f - pow(baseGeoInfo.NdotV, roughness_alpha_modified_for_scatter), 0.0f, 1.0f));
+                #endif
 
                 #ifdef REFRACTED_BACKGROUND
                     // Scale the IBL refraction so that we only see it at higher roughnesses
@@ -139,31 +157,40 @@
                 #endif
 
                 #ifdef SCATTERING
-                    // Compute forward-scattered light that has been completely diffused. This will be used when
-                    // scattering is very strong.
-                    preInfoTrans.roughness = 1.0f;
-                    let diffused_forward_scattered_light: vec3f = computeSpecularLighting(preInfoTrans, normalW, vec3f(1.0f), vec3f(1.0f), 1.0f, lightColor{X}.rgb) * volume_absorption;
-                    
-                    // Compute back-scattered light
-                    let back_scattered_normal: vec3f = normalize(normalW + viewDirectionW);
-                    preInfoTrans.NdotL = max(dot(back_scattered_normal, preInfoTrans.L), 0.0f);
-                    preInfoTrans.NdotV = dot(back_scattered_normal, viewDirectionW);
-                    preInfoTrans.H = normalize(viewDirectionW + preInfoTrans.L);
-                    preInfoTrans.VdotH = clamp(dot(viewDirectionW, preInfoTrans.H), 0.0f, 1.0f);
-                    preInfoTrans.roughness = 0.05f;
-                    let back_scattered_light: vec3f = computeSpecularLighting(preInfoTrans, viewDirectionW, vec3f(1.0f), vec3f(1.0f), 0.025f, lightColor{X}.rgb);
-                    // Direct Transmission (aka forward-scattered light from back side)
-                    let forward_scattered_light: vec3f = (forwardScatteredLight * volume_absorption);
-                    
-                    // Use the diffuse lobe as the isotropic scattered light component
-                    let iso_scattered_light: vec3f = slab_diffuse;
-                    // Back Scattering
-                    let back_scattering: vec3f = mix(forward_scattered_light, forward_scattered_light + back_scattered_light * absorption_at_mfp, iso_scatter_density);
-                    // Iso Scattering
-                    let iso_scattering: vec3f = mix(forward_scattered_light, (diffused_forward_scattered_light + iso_scattered_light) * volumeParams.multi_scatter_color, iso_scatter_density);
-                    // Lerp between the three based on the anisotropy
-                    slab_translucent = mix(back_scattering, iso_scattering, back_to_iso_scattering_blend);
-                    slab_translucent = mix(slab_translucent, forward_scattered_light, iso_to_forward_scattering_blend) * transmission_tint;
+                    #ifdef GEOMETRY_THIN_WALLED
+                        // Direct Transmission (aka forward-scattered light from back side) 
+                        let forward_scattered_light: vec3f = forwardScatteredLight * transmission_tint * volumeParams.multi_scatter_color * volumeParams.multi_scatter_color;
+                        // Back Scattering
+                        let back_scattered_light: vec3f = slab_diffuse * volumeParams.multi_scatter_color;
+                        // Lerp between the back and forward scattering.
+                        slab_translucent = mix(back_scattered_light, forward_scattered_light, 0.5f + 0.5f * volumeParams.anisotropy);
+                    #else
+                        // Compute forward-scattered light that has been completely diffused. This will be used when
+                        // scattering is very strong.
+                        preInfoTrans.roughness = 1.0f;
+                        let diffused_forward_scattered_light: vec3f = computeSpecularLighting(preInfoTrans, normalW, vec3f(1.0f), vec3f(1.0f), 1.0f, lightColor{X}.rgb) * volume_absorption;
+                        
+                        // Compute back-scattered light
+                        let back_scattered_normal: vec3f = normalize(normalW + viewDirectionW);
+                        preInfoTrans.NdotL = max(dot(back_scattered_normal, preInfoTrans.L), 0.0f);
+                        preInfoTrans.NdotV = dot(back_scattered_normal, viewDirectionW);
+                        preInfoTrans.H = normalize(viewDirectionW + preInfoTrans.L);
+                        preInfoTrans.VdotH = clamp(dot(viewDirectionW, preInfoTrans.H), 0.0f, 1.0f);
+                        preInfoTrans.roughness = 0.05f;
+                        let back_scattered_light: vec3f = computeSpecularLighting(preInfoTrans, viewDirectionW, vec3f(1.0f), vec3f(1.0f), 0.025f, lightColor{X}.rgb);
+                        // Direct Transmission (aka forward-scattered light from back side)
+                        let forward_scattered_light: vec3f = (forwardScatteredLight * volume_absorption);
+                        
+                        // Use the diffuse lobe as the isotropic scattered light component
+                        let iso_scattered_light: vec3f = slab_diffuse;
+                        // Back Scattering
+                        let back_scattering: vec3f = mix(forward_scattered_light, forward_scattered_light + back_scattered_light * absorption_at_mfp, iso_scatter_density);
+                        // Iso Scattering
+                        let iso_scattering: vec3f = mix(forward_scattered_light, (diffused_forward_scattered_light + iso_scattered_light) * volumeParams.multi_scatter_color, iso_scatter_density);
+                        // Lerp between the three based on the anisotropy
+                        slab_translucent = mix(back_scattering, iso_scattering, back_to_iso_scattering_blend);
+                        slab_translucent = mix(slab_translucent, forward_scattered_light, iso_to_forward_scattering_blend) * transmission_tint;
+                    #endif
                 #else
                     // Simple transmission without scattering
                     slab_translucent = forwardScatteredLight * transmission_tint * volume_absorption;
