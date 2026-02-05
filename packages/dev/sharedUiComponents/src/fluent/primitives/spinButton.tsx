@@ -68,7 +68,17 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
         event.stopPropagation(); // Prevent event propagation
 
         if (event.key !== "Enter") {
-            const currVal = parseFloat((event.target as any).value); // Cannot use currentTarget.value as it won't have the most recently typed value
+            // Allow arbitrary expressions, primarily for math operations (e.g. 10*60 for 10 minutes in seconds).
+            // Use Function constructor to safely evaluate the expression without allowing access to scope.
+            // If the expression is invalid, fallback to NaN which will be caught by validateValue and prevent committing.
+            const currVal = ((val: string): number => {
+                try {
+                    return Number(Function(`"use strict";return (${val})`)());
+                } catch {
+                    return NaN;
+                }
+            })((event.target as any).value);
+
             setValue(currVal);
             tryCommitValue(currVal);
         }
