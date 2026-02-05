@@ -13,5 +13,6 @@ export function CalculateScaleFactor(animationWidth: number | undefined, animati
     // The size of the canvas is the relation between the size of the container div and the size of the animation
     const horizontalScale = container.clientWidth / animationWidth;
     const verticalScale = container.clientHeight / animationHeight;
-    return Math.min(verticalScale, horizontalScale);
+    const minScale = Math.min(verticalScale, horizontalScale);
+    return Math.max(minScale, 1); // Always render at least to 100% to avoid too small sprites
 }

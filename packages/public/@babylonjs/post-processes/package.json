@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/post-processes",
-    "version": "8.49.6",
+    "version": "8.50.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -18,7 +18,7 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "8.49.6",
+        "@babylonjs/core": "8.50.0",
         "@dev/build-tools": "^1.0.0",
         "@lts/post-processes": "^1.0.0"
     },

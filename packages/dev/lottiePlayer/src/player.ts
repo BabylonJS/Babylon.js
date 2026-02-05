@@ -230,6 +230,7 @@ export class Player {
                 variables: this._input.variables,
                 configuration: this._input.configuration,
                 animationData: IsRawLottieAnimation(animationData) ? animationData : undefined,
+                mainThreadDevicePixelRatio: window.devicePixelRatio,
             },
         };
 

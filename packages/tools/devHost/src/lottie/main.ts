@@ -45,17 +45,8 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     }
 
     // This is the configuration for the player, you can pass as much or as little as you want, the rest will be defaulted
-    const configuration: AnimationConfiguration = {
-        loopAnimation: false, // By default do not loop animations
-        spriteAtlasWidth: 4096, // Size of the texture atlas
-        spriteAtlasHeight: 4096, // Size of the texture atlas
-        gapSize: 25, // Gap around the sprites in the atlas
-        spritesCapacity: 64, // Maximum number of sprites the renderer can handle at once
-        backgroundColor: { r: 1, g: 1, b: 1, a: 1 }, // Background color for the animation canvas
-        scaleMultiplier: 5, // Minimum scale factor to prevent too small sprites,
-        devicePixelRatio: Math.ceil(window.devicePixelRatio), // Scale factor,
-        easingSteps: 4, // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
-        supportDeviceLost: false, // Whether to support device lost events for WebGL contexts,
+    const configuration: Partial<AnimationConfiguration> = {
+        backgroundColor: { r: 0 / 255, g: 0 / 255, b: 0 / 255, a: 1 }, // Background color for the animation canvas
     };
 
     // Create the player and play the animation

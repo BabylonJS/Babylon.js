@@ -136,6 +136,7 @@ export class SelectionOutlineLayer extends EffectLayer {
             mainTextureFormat: Constants.TEXTUREFORMAT_RG,
             forceGLSL: false,
             storeCameraSpaceZ: false,
+            outlineMethod: Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL,
             ...options,
         };
 

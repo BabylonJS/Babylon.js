@@ -1416,6 +1416,8 @@ export class Atmosphere implements IDisposable {
  * @param samplerNames - The sampler names to use.
  * @param uniformBuffers - The uniform buffers to use.
  * @param defineNames - Array of define names to prepend with "#define ".
+ * @param useWebGPU - Whether to use WebGPU shaders.
+ * @param extraInitializations - Optional extra initializations callback for loading shaders.
  * @returns The effect wrapper.
  */
 const CreateEffectWrapper = (
@@ -1425,7 +1427,9 @@ const CreateEffectWrapper = (
     uniformNames?: string[],
     samplerNames?: string[],
     uniformBuffers?: string[],
-    defineNames?: string[]
+    defineNames?: string[],
+    useWebGPU = false,
+    extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void
 ): EffectWrapper => {
     const defines = defineNames?.map((defineName) => `#define ${defineName}`) ?? [];
     return new EffectWrapper({
@@ -1439,6 +1443,8 @@ const CreateEffectWrapper = (
         samplerNames,
         defines,
         useShaderStore: true,
+        shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+        extraInitializations,
     });
 };
 
@@ -1549,11 +1555,8 @@ const DrawEffect = (
     const currentDepthFunction = engine.getDepthFunction();
     engine.setDepthFunction(depthFunction);
 
-    // Likewise with the alpha mode, which can affect depth state too.
     const currentAlphaMode = engine.getAlphaMode();
-    if (alphaMode !== Constants.ALPHA_DISABLE) {
-        engine.setAlphaMode(alphaMode);
-    }
+    engine.setAlphaMode(alphaMode, true);
 
     const currentCull = engine.depthCullingState.cull;
 
@@ -1571,7 +1574,7 @@ const DrawEffect = (
 
     // Restore state (order matters!)
     engine.depthCullingState.cull = currentCull;
-    engine.setAlphaMode(currentAlphaMode);
+    engine.setAlphaMode(currentAlphaMode, true);
     if (currentDepthWrite !== undefined) {
         engine.setDepthWrite(currentDepthWrite);
     }
@@ -1772,13 +1775,26 @@ const CreateGlobeAtmosphereCompositorEffectWrapper = (
  * @param uniformBuffer - The uniform buffer to use.
  * @returns The created EffectWrapper.
  */
-const CreateSkyViewEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper =>
-    CreateEffectWrapper(
+const CreateSkyViewEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper => {
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
+    return CreateEffectWrapper(
         engine,
         "atmo-skyView",
         "skyView",
         ["depth", ...(uniformBuffer.useUbo ? [] : uniformBuffer.getUniformNames())],
         ["transmittanceLut", "multiScatteringLut"],
-        uniformBuffer.useUbo ? [uniformBuffer.name] : [],
-        ["POSITION_VEC2"]
+        uniformBuffer.useUbo ? [uboName] : [],
+        ["POSITION_VEC2"],
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                Promise.all(
+                    useWebGPU
+                        ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/skyView.fragment")]
+                        : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/skyView.fragment")]
+                )
+            );
+        }
     );
+};
