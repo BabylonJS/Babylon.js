@@ -39,6 +39,7 @@ export const MaterialsContent: FunctionComponent<MaterialsContentProps> = ({ sce
             }
         } else {
             const nodeMaterial = new NodeMaterial(nodeMaterialName, scene);
+            nodeMaterial.setToDefault();
             nodeMaterial.build();
         }
     };

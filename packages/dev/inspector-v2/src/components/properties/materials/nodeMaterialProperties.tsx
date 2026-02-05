@@ -43,7 +43,7 @@ export const NodeMaterialGeneralProperties: FunctionComponent<{ material: NodeMa
                     //       See the initial attempt here: https://github.com/BabylonJS/Babylon.js/pull/17646
                     // const { NodeEditor } = await import("node-editor/nodeEditor");
                     // NodeEditor.Show({ nodeMaterial: material });
-                    await material.edit();
+                    await material.edit({ nodeEditorConfig: { backgroundColor: material.getScene().clearColor } });
                 }}
             ></ButtonLine>
         </>

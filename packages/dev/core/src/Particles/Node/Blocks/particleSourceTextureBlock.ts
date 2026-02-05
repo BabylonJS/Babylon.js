@@ -79,6 +79,14 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the texture directly set on this block.
+     * This value will not be serialized.
+     */
+    public get sourceTexture(): Nullable<BaseTexture> {
+        return this._sourceTexture;
+    }
+
+    /**
      * Directly sets the texture to be used by this block.
      * This value will not be serialized.
      */
@@ -160,7 +168,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                         this._cachedData = {
                             width: size.width,
                             height: size.height,
-                            data: data as Uint8ClampedArray,
+                            data: new Uint8ClampedArray(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)),
                         };
                         resolve(this._cachedData);
                     })
