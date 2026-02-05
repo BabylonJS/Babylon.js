@@ -6,7 +6,6 @@ import type { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/part
 
 export class TextureDisplayManager implements IDisplayManager {
     private _previewImage: HTMLImageElement;
-    private _previewCanvas: HTMLCanvasElement;
 
     public getHeaderClass() {
         return "";
