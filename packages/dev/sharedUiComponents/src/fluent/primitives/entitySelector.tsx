@@ -1,12 +1,13 @@
 import type { Nullable } from "core/types";
 import type { ImmutablePrimitiveProps, PrimitiveProps } from "./primitive";
 
-import { useMemo, useState } from "react";
+import { makeStyles, tokens, Tooltip } from "@fluentui/react-components";
 import { LinkDismissRegular, LinkEditRegular } from "@fluentui/react-icons";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import { Button } from "./button";
 import { ComboBox } from "./comboBox";
 import { Link } from "./link";
-import { Button } from "./button";
-import { makeStyles, tokens, Tooltip } from "@fluentui/react-components";
 
 type Entity = { uniqueId: number };
 
@@ -66,6 +67,8 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
 
     const classes = useStyles();
 
+    const comboBoxRef = useRef<HTMLInputElement>(null);
+
     // Build options with uniqueId as key
     const options = useMemo(() => {
         return getEntities()
@@ -78,6 +81,13 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
     }, [getEntities, getName, filter]);
 
     const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => {
+        // If the ComboBox ref is valid, then we must be in edit mode, so focus the input.
+        // This is specifically intended for when *entering* edit mode, but if are already
+        // editing then re-focusing doesn't hurt anything.
+        comboBoxRef.current?.focus();
+    }, [value, isEditing]);
 
     const handleEntitySelect = (key: string) => {
         const entity = getEntities().find((e) => e.uniqueId.toString() === key);
@@ -112,7 +122,7 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
         );
     } else {
         // Otherwise, show the ComboBox for selection
-        return <ComboBox label="" options={options} value={currentKey} onChange={handleEntitySelect} />;
+        return <ComboBox ref={comboBoxRef} defaultOpen={true} label="" options={options} value={currentKey} onChange={handleEntitySelect} />;
     }
 }
 EntitySelector.displayName = "EntitySelector";
