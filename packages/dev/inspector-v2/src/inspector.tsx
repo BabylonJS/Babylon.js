@@ -40,6 +40,7 @@ import { TexturePropertiesServiceDefinition } from "./services/panes/properties/
 import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
 import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
 import { AtmosphereExplorerServiceDefinition } from "./services/panes/scene/atmosphereExplorerService";
+import { DisposableCommandServiceDefinition } from "./services/panes/scene/disposableCommandService";
 import { EffectLayerExplorerServiceDefinition } from "./services/panes/scene/effectLayersExplorerService";
 import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
 import { GuiExplorerServiceDefinition } from "./services/panes/scene/guiExplorerService";
@@ -292,6 +293,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             FrameGraphExplorerServiceDefinition,
             AtmosphereExplorerServiceDefinition,
             SoundExplorerServiceDefinition,
+            DisposableCommandServiceDefinition,
 
             // Properties pane tab and related services.
             ScenePropertiesServiceDefinition,

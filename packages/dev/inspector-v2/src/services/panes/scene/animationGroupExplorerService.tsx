@@ -68,6 +68,10 @@ export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISc
                         return `${animationGroup.isPlaying ? "Pause" : "Play"} Animation`;
                     },
                     icon: () => (animationGroup.isPlaying ? <PauseFilled /> : <PlayFilled />),
+                    hotKey: {
+                        keyCode: "Space",
+                        control: true,
+                    },
                     get isEnabled() {
                         return animationGroup.isPlaying;
                     },

@@ -26,4 +26,5 @@ export const enum DefaultCommandsOrder {
     GuiHighlight = 1000,
     MeshVisibility = 1100,
     GuiVisibility = 1100,
+    Dispose = 10000,
 }
