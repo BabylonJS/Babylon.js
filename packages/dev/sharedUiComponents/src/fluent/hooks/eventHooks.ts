@@ -36,6 +36,6 @@ export function useEventListener(source: "document" | "window", eventName: strin
                 };
             }
             return undefined;
-        }, [eventSource, handler]);
+        }, [eventSource, eventName, handler]);
     }
 }

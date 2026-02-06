@@ -1,6 +1,6 @@
 import type { WindowOptions } from "./eventHooks";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { useEventListener } from "./eventHooks";
 
@@ -35,21 +35,32 @@ export function useKeyState(key: string, options?: WindowOptions): boolean {
 
     useKeyListener(
         {
-            onKeyDown: (e) => {
-                if (e.key === key) {
-                    setIsPressed(true);
-                }
-            },
-            onKeyUp: (e) => {
-                if (e.key === key) {
-                    setIsPressed(false);
-                }
-            },
+            onKeyDown: useCallback(
+                (e: KeyboardEvent) => {
+                    if (e.key === key) {
+                        setIsPressed(true);
+                    }
+                },
+                [key]
+            ),
+            onKeyUp: useCallback(
+                (e: KeyboardEvent) => {
+                    if (e.key === key) {
+                        setIsPressed(false);
+                    }
+                },
+                [key]
+            ),
         },
         options
     );
 
-    useEventListener("window", "blur", () => setIsPressed(false), options); // Reset state on window blur to avoid stuck keys
+    useEventListener(
+        "window",
+        "blur",
+        useCallback(() => setIsPressed(false), []),
+        options
+    ); // Reset state on window blur to avoid stuck keys
 
     return isPressed;
 }
