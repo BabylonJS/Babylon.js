@@ -18,10 +18,22 @@
             "referenceImage": "gsplat-ply-sh-reload.png"
         },
         {
+            "title": "Gaussian Splatting Bake Transforms",
+            "playgroundId": "#GU7A98#0",
+            "renderCount": 15,
+            "referenceImage": "gsplat-splat-bake-transforms.png"
+        },
+        {
             "title": "Gaussian Splatting Depth",
             "playgroundId": "#V80DRL#12",
             "renderCount": 15,
             "referenceImage": "gsplat-depth.png"
+        },
+        {
+            "title": "Gaussian Splatting Depth Alpha Blended",
+            "playgroundId": "#V80DRL#19",
+            "renderCount": 15,
+            "referenceImage": "gsplat-depth-alpha-blended.png"
         },
         {
             "title": "Gaussian Splatting Compressed ply SH",
@@ -2779,6 +2791,10 @@
         {
             "title": "FrameGraph nrge selection outline layer",
             "playgroundId": "#ADUC74#1"
+        },
+        {
+            "title": "FrameGraph nrge multi RTT MSAA",
+            "playgroundId": "#JAG54A"
         },
         {
             "title": "FrameGraph nrg gui bloom",

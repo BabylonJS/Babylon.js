@@ -63,6 +63,26 @@ export class DepthRenderer {
     /** Force writing the transparent objects into the depth map */
     public forceDepthWriteTransparentMeshes = false;
 
+    private _alphaBlendedDepth = false;
+    private _alphaBlendedDepthMaterialCache: Map<number, boolean> = new Map();
+
+    /**
+     * Enable or disable the alpha blending for depth rendering. When enabled,
+     * the depth renderer will blend the depth values with the alpha values of
+     * the transparent objects.
+     */
+    public get alphaBlendedDepth(): boolean {
+        return this._alphaBlendedDepth;
+    }
+    public set alphaBlendedDepth(value: boolean) {
+        if (this._alphaBlendedDepth === value) {
+            return;
+        }
+        this._alphaBlendedDepth = value;
+        // Clear the cache so materials will be recreated with the new define
+        this._alphaBlendedDepthMaterialCache.clear();
+    }
+
     /**
      * Specifies that the depth renderer will only be used within
      * the camera it is created for.
@@ -252,12 +272,17 @@ export class DepthRenderer {
                 subMesh._renderId = scene.getRenderId();
 
                 let renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
-                if (renderingMaterial === undefined && effectiveMesh.getClassName() === "GaussianSplattingMesh") {
-                    const gsMaterial = effectiveMesh.material! as GaussianSplattingMaterial;
-                    renderingMaterial = gsMaterial.makeDepthRenderingMaterial(this._scene, this._shaderLanguage);
-                    this.setMaterialForRendering(effectiveMesh, renderingMaterial);
-                    if (!renderingMaterial.isReady()) {
-                        return;
+                if (effectiveMesh.getClassName() === "GaussianSplattingMesh") {
+                    const cachedAlphaBlendedDepth = this._alphaBlendedDepthMaterialCache.get(effectiveMesh.uniqueId);
+                    // Recreate material if it doesn't exist or if alphaBlendedDepth changed
+                    if (renderingMaterial === undefined || cachedAlphaBlendedDepth !== this.alphaBlendedDepth) {
+                        const gsMaterial = effectiveMesh.material! as GaussianSplattingMaterial;
+                        renderingMaterial = gsMaterial.makeDepthRenderingMaterial(this._scene, this._shaderLanguage, this.alphaBlendedDepth);
+                        this.setMaterialForRendering(effectiveMesh, renderingMaterial);
+                        this._alphaBlendedDepthMaterialCache.set(effectiveMesh.uniqueId, this.alphaBlendedDepth);
+                        if (!renderingMaterial.isReady()) {
+                            return;
+                        }
                     }
                 }
 
@@ -336,6 +361,13 @@ export class DepthRenderer {
                     }
                 }
 
+                // Alpha blending for transparent materials
+                if (this.alphaBlendedDepth && material.needAlphaBlendingForMesh(effectiveMesh)) {
+                    engine.setAlphaMode(Constants.ALPHA_COMBINE);
+                } else {
+                    engine.setAlphaMode(Constants.ALPHA_DISABLE);
+                }
+
                 // Draw
                 renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
                     effect.setMatrix("world", world)
@@ -349,6 +381,10 @@ export class DepthRenderer {
             transparentSubMeshes: SmartArray<SubMesh>,
             depthOnlySubMeshes: SmartArray<SubMesh>
         ): void => {
+            const engine = this._scene.getEngine();
+            // Save the current alpha mode to restore it after rendering
+            const previousAlphaMode = engine.getAlphaMode();
+
             let index;
 
             if (depthOnlySubMeshes.length) {
@@ -373,6 +409,10 @@ export class DepthRenderer {
                 for (index = 0; index < transparentSubMeshes.length; index++) {
                     transparentSubMeshes.data[index].getEffectiveMesh()._internalAbstractMeshDataInfo._isActiveIntermediate = false;
                 }
+            }
+
+            if (this.alphaBlendedDepth) {
+                engine.setAlphaMode(previousAlphaMode);
             }
         };
     }

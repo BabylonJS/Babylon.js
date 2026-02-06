@@ -1,5 +1,15 @@
 # Changelog
 
+## 8.31.0
+
+### Core
+
+- FrameGraph: Add support for the sharpen post process - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17254](https://github.com/BabylonJS/Babylon.js/pull/17254))
+- FrameGraph: Add support for the screen space curvature post process - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17253](https://github.com/BabylonJS/Babylon.js/pull/17253))
+
+### Playground
+
+
 ## 8.30.5
 
 ### Core
@@ -5264,6 +5274,22 @@
 
 - Mesh extrusion: Add an optional scaleVectorFunction parameter to ExtrudeShapeCustom - by [Popov72](https://github.com/Popov72) ([#17752](https://github.com/BabylonJS/Babylon.js/pull/17752))
 
+## 8.50.1
+
+### Core
+
+- WebGPU: Fix handling of MSAA textures in MRT case - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17842](https://github.com/BabylonJS/Babylon.js/pull/17842))
+- GS Bake Transforms - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17840](https://github.com/BabylonJS/Babylon.js/pull/17840))
+- SelectionOutlineLayer: Handle thin instances - by [noname0310](https://github.com/noname0310) ([#17838](https://github.com/BabylonJS/Babylon.js/pull/17838))
+- Small fixes to the removePart functionality for Gaussian Splats - by [spsDrop](https://github.com/spsDrop) ([#17834](https://github.com/BabylonJS/Babylon.js/pull/17834))
+- Adding alpha-blended depth rendering for Gaussian Splat - by [raymondyfei](https://github.com/raymondyfei) ([#17827](https://github.com/BabylonJS/Babylon.js/pull/17827))
+- Export KTX2 Worker functions - by [regnaio](https://github.com/regnaio) ([#17833](https://github.com/BabylonJS/Babylon.js/pull/17833))
+- Supporting procedural textures in the texture preview - by [VicenteCartas](https://github.com/VicenteCartas) ([#17824](https://github.com/BabylonJS/Babylon.js/pull/17824))
+- Allow nodes to automatically remove ports - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#17819](https://github.com/BabylonJS/Babylon.js/pull/17819))
+- Use texelFetch/textureLoad for WebGL2/WGSL - by [sebavan](https://github.com/sebavan) ([#17829](https://github.com/BabylonJS/Babylon.js/pull/17829))
+- always create hand meshes in same scene as xrSession - by [wmurphyrd](https://github.com/wmurphyrd) ([#17828](https://github.com/BabylonJS/Babylon.js/pull/17828))
+- Selection Outline Layer: Introduce 8 direction sampling method - by [noname0310](https://github.com/noname0310) ([#17810](https://github.com/BabylonJS/Babylon.js/pull/17810))
+
 ## 8.50.0
 
 ## 8.49.7
@@ -6156,16 +6182,6 @@
 ### Viewer
 
 - viewer variants now work with loaded models - by [alexandremottet](https://github.com/alexandremottet) ([#17267](https://github.com/BabylonJS/Babylon.js/pull/17267))
-
-## 8.31.0
-
-### Core
-
-- FrameGraph: Add support for the sharpen post process - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17254](https://github.com/BabylonJS/Babylon.js/pull/17254))
-- FrameGraph: Add support for the screen space curvature post process - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17253](https://github.com/BabylonJS/Babylon.js/pull/17253))
-
-### Playground
-
 
 ## 6.15.0
 

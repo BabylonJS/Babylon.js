@@ -424,18 +424,36 @@ export class GaussianSplattingMaterial extends PushMaterial {
     protected static _BindEffectUniforms(gsMesh: GaussianSplattingMesh, gsMaterial: GaussianSplattingMaterial, shaderMaterial: ShaderMaterial, scene: Scene): void {
         const engine = scene.getEngine();
         const effect = shaderMaterial.getEffect()!;
+        const camera = scene.activeCamera;
+        if (!camera) {
+            return;
+        }
 
         gsMesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
         shaderMaterial.bindView(effect);
         shaderMaterial.bindViewProjection(effect);
 
-        const renderWidth = engine.getRenderWidth();
-        const renderHeight = engine.getRenderHeight();
+        const renderWidth = engine.getRenderWidth() * camera!.viewport.width;
+        const renderHeight = engine.getRenderHeight() * camera!.viewport.height;
         effect.setFloat2("invViewport", 1 / renderWidth, 1 / renderHeight);
 
-        const projection = scene.getProjectionMatrix();
-        const t = projection.m[5];
-        const focal = (renderWidth * t) / 2.0;
+        let focal = 1000;
+
+        if (camera) {
+            /*
+            more explicit version:
+            const t = camera.getProjectionMatrix().m[5];
+            const FovY = Math.atan(1.0 / t) * 2.0;
+            focal = renderHeight / 2.0 / Math.tan(FovY / 2.0);
+            Using a shorter version here to not have tan(atan) and 2.0 factor
+            */
+            const t = camera.getProjectionMatrix().m[5];
+            if (camera.fovMode == Camera.FOVMODE_VERTICAL_FIXED) {
+                focal = (renderHeight * t) / 2.0;
+            } else {
+                focal = (renderWidth * t) / 2.0;
+            }
+        }
 
         effect.setFloat2("focal", focal, focal);
         effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
@@ -443,10 +461,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         let minZ: number, maxZ: number;
 
-        const camera = scene.activeCamera;
-        if (!camera) {
-            return;
-        }
         const cameraIsOrtho = camera.mode === Camera.ORTHOGRAPHIC_CAMERA;
         if (cameraIsOrtho) {
             minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
@@ -473,9 +487,15 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * Create a depth rendering material for a Gaussian Splatting mesh
      * @param scene scene it belongs to
      * @param shaderLanguage GLSL or WGSL
+     * @param alphaBlendedDepth whether to enable alpha blended depth rendering
      * @returns depth rendering shader material
      */
-    public makeDepthRenderingMaterial(scene: Scene, shaderLanguage: ShaderLanguage): ShaderMaterial {
+    public makeDepthRenderingMaterial(scene: Scene, shaderLanguage: ShaderLanguage, alphaBlendedDepth: boolean = false): ShaderMaterial {
+        const defines = ["#define DEPTH_RENDER"];
+        if (alphaBlendedDepth) {
+            defines.push("#define ALPHA_BLENDED_DEPTH");
+        }
+
         const shaderMaterial = new ShaderMaterial(
             "gaussianSplattingDepthRender",
             scene,
@@ -489,7 +509,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 samplers: GaussianSplattingMaterial._Samplers,
                 uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
                 shaderLanguage: shaderLanguage,
-                defines: ["#define DEPTH_RENDER"],
+                defines: defines,
+                needAlphaBlending: alphaBlendedDepth,
             }
         );
         shaderMaterial.onBindObservable.add((mesh: AbstractMesh) => {

@@ -550,7 +550,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
                 // Selection ID
                 const selectionId = this._meshUniqueIdToSelectionId[renderingMesh.uniqueId];
-                if (!renderingMesh.hasInstances && !renderingMesh.isAnInstance && selectionId !== undefined) {
+                if (!renderingMesh.hasInstances && !renderingMesh.hasThinInstances && !renderingMesh.isAnInstance && selectionId !== undefined) {
                     effect.setFloat("selectionId", selectionId);
                 }
             }
@@ -703,6 +703,13 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 }
 
                 mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] = nextId;
+            } else if (mesh.hasThinInstances) {
+                const thinInstanceCount = (mesh as Mesh).thinInstanceCount;
+                const selectionIdData = new Float32Array(thinInstanceCount);
+                for (let i = 0; i < thinInstanceCount; i++) {
+                    selectionIdData[i] = nextId;
+                }
+                (mesh as Mesh).thinInstanceSetBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, selectionIdData, 1);
             } else {
                 this._meshUniqueIdToSelectionId[mesh.uniqueId] = nextId;
             }
@@ -730,6 +737,8 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
             if (mesh.hasInstances) {
                 mesh.removeVerticesData(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName);
+            } else if (mesh.hasThinInstances) {
+                (mesh as Mesh).thinInstanceSetBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, null);
             }
 
             if (selection.length === 0) {
