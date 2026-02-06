@@ -18,6 +18,12 @@
             "referenceImage": "gsplat-ply-sh-reload.png"
         },
         {
+            "title": "Gaussian Splatting Bake Transforms",
+            "playgroundId": "#GU7A98#0",
+            "renderCount": 15,
+            "referenceImage": "gsplat-splat-bake-transforms.png"
+        },
+        {
             "title": "Gaussian Splatting Depth",
             "playgroundId": "#V80DRL#12",
             "renderCount": 15,

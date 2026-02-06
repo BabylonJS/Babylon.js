@@ -1,5 +1,5 @@
 import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import type { DeepImmutable, Nullable } from "core/types";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { SubMesh } from "../subMesh";
 import type { AbstractMesh } from "../abstractMesh";
@@ -749,9 +749,17 @@ export class GaussianSplattingMesh extends Mesh {
             return this;
         }
 
+        if (this.onBeforeRenderObservable) {
+            this.onBeforeRenderObservable.notifyObservers(this);
+        }
         const mesh = cameraViewInfos.mesh;
         mesh.getWorldMatrix().copyFrom(this.getWorldMatrix());
-        return mesh.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
+        const ret = mesh.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
+
+        if (this.onAfterRenderObservable) {
+            this.onAfterRenderObservable.notifyObservers(this);
+        }
+        return ret;
     }
 
     private static _TypeNameToEnum(name: string): PLYType {
@@ -2413,5 +2421,87 @@ export class GaussianSplattingMesh extends Mesh {
         }
 
         this._postToWorker(true);
+    }
+
+    /**
+     * Modifies the splats according to the passed transformation matrix.
+     * @param transform defines the transform matrix to use
+     * @returns the current mesh
+     */
+    public override bakeTransformIntoVertices(transform: DeepImmutable<Matrix>): Mesh {
+        const arrayBuffer = this.splatsData;
+        if (!arrayBuffer) {
+            Logger.Error("Cannot bake transform into vertices if splatsData is not kept in RAM");
+            return this;
+        }
+
+        // Check for uniform scaling
+        const m = transform.m;
+        const scaleX = Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+        const scaleY = Math.sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
+        const scaleZ = Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
+        const epsilon = 0.001;
+        if (Math.abs(scaleX - scaleY) > epsilon || Math.abs(scaleX - scaleZ) > epsilon) {
+            Logger.Error("Gaussian Splatting bakeTransformIntoVertices does not support non-uniform scaling");
+            return this;
+        }
+
+        const uBuffer = new Uint8Array(arrayBuffer);
+        const fBuffer = new Float32Array(arrayBuffer);
+
+        const temp = TmpVectors.Vector3[0];
+        let index: number;
+        const quaternion = TmpVectors.Quaternion[0];
+        const transformedQuaternion = TmpVectors.Quaternion[1];
+        transform.decompose(temp, transformedQuaternion, temp);
+        for (index = 0; index < this._vertexCount; index++) {
+            const floatIndex = index * 8; // 8 floats per splat (center.x, center.y, center.z, scale.x, scale.y, scale.z, ...)
+            Vector3.TransformCoordinatesFromFloatsToRef(fBuffer[floatIndex], fBuffer[floatIndex + 1], fBuffer[floatIndex + 2], transform, temp);
+            fBuffer[floatIndex] = temp.x;
+            fBuffer[floatIndex + 1] = temp.y;
+            fBuffer[floatIndex + 2] = temp.z;
+
+            // Apply uniform scaling to splat scales
+            fBuffer[floatIndex + 3] *= scaleX;
+            fBuffer[floatIndex + 4] *= scaleX;
+            fBuffer[floatIndex + 5] *= scaleX;
+
+            // Unpack quaternion from uint8array (matching _GetSplat packing convention)
+            quaternion.set(
+                (uBuffer[32 * index + 28 + 1] - 127.5) / 127.5,
+                (uBuffer[32 * index + 28 + 2] - 127.5) / 127.5,
+                (uBuffer[32 * index + 28 + 3] - 127.5) / 127.5,
+                (uBuffer[32 * index + 28 + 0] - 127.5) / 127.5
+            );
+            quaternion.normalize();
+
+            // If there is a negative scaling, we need to flip the quaternion to keep the correct handedness
+            if (this.scaling.x < 0) {
+                quaternion.x = -quaternion.x;
+                quaternion.w = -quaternion.w;
+            }
+            if (this.scaling.y < 0) {
+                quaternion.y = -quaternion.y;
+                quaternion.w = -quaternion.w;
+            }
+            if (this.scaling.z < 0) {
+                quaternion.z = -quaternion.z;
+                quaternion.w = -quaternion.w;
+            }
+
+            // Transform the quaternion
+            transformedQuaternion.multiplyToRef(quaternion, quaternion);
+            quaternion.normalize();
+
+            // Pack quaternion back to uint8array (matching _GetSplat packing convention)
+            uBuffer[32 * index + 28 + 0] = Math.round(quaternion.w * 127.5 + 127.5);
+            uBuffer[32 * index + 28 + 1] = Math.round(quaternion.x * 127.5 + 127.5);
+            uBuffer[32 * index + 28 + 2] = Math.round(quaternion.y * 127.5 + 127.5);
+            uBuffer[32 * index + 28 + 3] = Math.round(quaternion.z * 127.5 + 127.5);
+        }
+
+        this.updateData(arrayBuffer, this.shData ?? undefined, { flipY: false });
+
+        return this;
     }
 }
