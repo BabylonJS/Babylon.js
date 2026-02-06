@@ -34,8 +34,6 @@ module.exports = (env) => {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
-                // Override some monaco editor components with compatible versions - the path here is how it's imported inside monaco
-                "../languages/defaultDocumentColorsComputer.js": path.resolve(__dirname, "src/tools/monaco/compat/defaultDocumentColorsComputer.ts"),
             },
         },
         externals: {
