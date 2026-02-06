@@ -104,7 +104,8 @@ onmessage = async function (evt) {
             const controller = new AnimationControllerClass(
                 payload.canvas,
                 RawAnimation,
-                payload.scaleFactor,
+                payload.canvasScale,
+                payload.atlasScale,
                 payload.variables ?? new Map<string, string>(),
                 payload.configuration ?? {},
                 payload.mainThreadDevicePixelRatio
@@ -120,9 +121,9 @@ onmessage = async function (evt) {
             }
 
             const payload = message.payload as ContainerResizeMessagePayload;
-            const scaleFactor = payload.scaleFactor;
+            const canvasScale = payload.canvasScale;
 
-            Controller.setScale(scaleFactor);
+            Controller.setScale(canvasScale);
             break;
         }
         case "dispose": {
