@@ -48,6 +48,7 @@ export { AttachDebugLayer, DetachDebugLayer } from "./legacy/debugLayer";
 
 // Export the shared hooks that can be used for extending the inspector.
 export * from "shared-ui-components/fluent/hooks/keyboardHooks";
+export * from "shared-ui-components/fluent/hooks/eventHooks";
 
 // Export the shared primitive UI controls that can be used for extending the inspector.
 export * from "shared-ui-components/fluent/primitives/accordion";
