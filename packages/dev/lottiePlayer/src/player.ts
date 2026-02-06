@@ -11,7 +11,7 @@ import type {
     WorkerLoadedMessagePayload,
 } from "./messageTypes";
 import type { RawLottieAnimation } from "./parsing/rawTypes";
-import { CalculateScaleFactor } from "./rendering/calculateScaleFactor";
+import { CalculateScaleFactors } from "./rendering/calculateScaleFactor";
 import type { ScaleFactors } from "./rendering/calculateScaleFactor";
 import { BlobWorkerWrapper as Worker } from "./blobWorkerWrapper";
 
@@ -215,7 +215,7 @@ export class Player {
         this._canvas.id = "babylon-canvas";
 
         // The size of the canvas is the relation between the size of the container div and the size of the animation
-        this._scaleFactors = CalculateScaleFactor(this._animationWidth, this._animationHeight, this._input.container);
+        this._scaleFactors = CalculateScaleFactors(this._animationWidth, this._animationHeight, this._input.container);
         this._canvas.style.width = `${this._animationWidth * this._scaleFactors.canvasScale}px`;
         this._canvas.style.height = `${this._animationHeight * this._scaleFactors.canvasScale}px`;
 
@@ -297,7 +297,7 @@ export class Player {
                 return;
             }
 
-            const newScaleFactors = CalculateScaleFactor(this._animationWidth, this._animationHeight, this._input.container);
+            const newScaleFactors = CalculateScaleFactors(this._animationWidth, this._animationHeight, this._input.container);
             if (this._scaleFactors.canvasScale !== newScaleFactors.canvasScale) {
                 this._scaleFactors = newScaleFactors;
 

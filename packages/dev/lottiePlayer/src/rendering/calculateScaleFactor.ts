@@ -25,9 +25,9 @@ export type ScaleFactors = {
  * @param animationWidth Width of the animation
  * @param animationHeight Height of the animation
  * @param container The container where the animation is getting played
- * @returns The two scale factors
+ * @returns The canvas and atlas scale factors
  */
-export function CalculateScaleFactor(animationWidth: number | undefined, animationHeight: number | undefined, container: HTMLElement): ScaleFactors {
+export function CalculateScaleFactors(animationWidth: number | undefined, animationHeight: number | undefined, container: HTMLElement): ScaleFactors {
     if (animationWidth === undefined || animationHeight === undefined) {
         return { canvasScale: 1, atlasScale: 1 };
     }

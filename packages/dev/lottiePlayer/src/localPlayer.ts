@@ -1,10 +1,11 @@
 import type { Nullable } from "core/types";
 import type { AnimationInput } from "./types";
 import type { RawLottieAnimation } from "./parsing/rawTypes";
+import type { ScaleFactors } from "./rendering/calculateScaleFactor";
+
 import { GetRawAnimationDataAsync } from "./parsing/parser";
 import { AnimationController } from "./rendering/animationController";
-import { CalculateScaleFactor } from "./rendering/calculateScaleFactor";
-import type { ScaleFactors } from "./rendering/calculateScaleFactor";
+import { CalculateScaleFactors } from "./rendering/calculateScaleFactor";
 
 /**
  * Allows you to play Lottie animations using Babylon.js.
@@ -52,7 +53,7 @@ export class LocalPlayer {
         this._canvas.id = "babylon-canvas";
 
         // The size of the canvas is the relation between the size of the container div and the size of the animation
-        this._scaleFactors = CalculateScaleFactor(this._rawAnimation.w, this._rawAnimation.h, this._input.container);
+        this._scaleFactors = CalculateScaleFactors(this._rawAnimation.w, this._rawAnimation.h, this._input.container);
         this._canvas.style.width = `${this._rawAnimation.w * this._scaleFactors.canvasScale}px`;
         this._canvas.style.height = `${this._rawAnimation.h * this._scaleFactors.canvasScale}px`;
 
@@ -123,7 +124,7 @@ export class LocalPlayer {
                 return;
             }
 
-            const newScaleFactors = CalculateScaleFactor(this._rawAnimation.w, this._rawAnimation.h, this._input.container);
+            const newScaleFactors = CalculateScaleFactors(this._rawAnimation.w, this._rawAnimation.h, this._input.container);
             if (this._scaleFactors.canvasScale !== newScaleFactors.canvasScale) {
                 this._scaleFactors = newScaleFactors;
 

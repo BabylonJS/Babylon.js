@@ -121,9 +121,7 @@ onmessage = async function (evt) {
             }
 
             const payload = message.payload as ContainerResizeMessagePayload;
-            const canvasScale = payload.canvasScale;
-
-            Controller.setScale(canvasScale);
+            Controller.setScale(payload.canvasScale);
             break;
         }
         case "dispose": {
