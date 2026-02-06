@@ -30,8 +30,6 @@ import "./Shaders/compositeAerialPerspective.fragment";
 import "./Shaders/compositeSky.fragment";
 import "./Shaders/compositeGlobeAtmosphere.fragment";
 import "./Shaders/fullscreenTriangle.vertex";
-import "./Shaders/skyView.fragment";
-import "./Shaders/aerialPerspective.fragment";
 import "./Shaders/ShadersInclude/atmosphereFragmentDeclaration";
 import "./Shaders/ShadersInclude/atmosphereFunctions";
 import "./Shaders/ShadersInclude/atmosphereUboDeclaration";
