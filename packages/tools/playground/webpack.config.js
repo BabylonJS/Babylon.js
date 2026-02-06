@@ -45,6 +45,21 @@ module.exports = (env) => {
                 includeCSS: true,
                 extraRules: [
                     {
+                        test: /\.m?js$/,
+                        include: /node_modules[\\/]+monaco-editor/,
+                        use: {
+                            loader: "ts-loader",
+                            options: {
+                                transpileOnly: true,
+                                compilerOptions: {
+                                    allowJs: true,
+                                    target: "ES2015",
+                                    module: "ESNext",
+                                },
+                            },
+                        },
+                    },
+                    {
                         test: /\.ttf$/,
                         type: "asset/resource",
                     },
