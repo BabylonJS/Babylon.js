@@ -1634,16 +1634,29 @@ const CreateSkyCompositorEffectWrapper = (
  * @param uniformBuffer - The uniform buffer to use.
  * @returns The created EffectWrapper.
  */
-const CreateAerialPerspectiveEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper =>
-    CreateEffectWrapper(
+const CreateAerialPerspectiveEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper => {
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
+    return CreateEffectWrapper(
         engine,
         "atmo-aerialPerspective",
         "aerialPerspective",
-        ["layerIdx", "depth", ...(uniformBuffer.useUbo ? [] : uniformBuffer.getUniformNames())],
+        ["layerIdx", ...(uniformBuffer.useUbo ? [] : uniformBuffer.getUniformNames())],
         ["transmittanceLut", "multiScatteringLut"],
-        uniformBuffer.useUbo ? [uniformBuffer.name] : [],
-        ["POSITION_VEC2", "COMPUTE_WORLD_RAY"]
+        uniformBuffer.useUbo ? [uboName] : [],
+        ["POSITION_VEC2", "COMPUTE_WORLD_RAY"],
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                Promise.all(
+                    useWebGPU
+                        ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/aerialPerspective.fragment")]
+                        : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/aerialPerspective.fragment")]
+                )
+            );
+        }
     );
+};
 
 /**
  * Creates an EffectWrapper for the aerial perspective compositor.

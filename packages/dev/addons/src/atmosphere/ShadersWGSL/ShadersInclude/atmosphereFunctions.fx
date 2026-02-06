@@ -636,3 +636,67 @@ fn renderSkyView(uv: vec2f, transmittanceLut: texture_2d<f32>, multiScatteringLu
 }
 
 #endif
+
+#if RENDER_CAMERA_VOLUME
+
+fn renderCameraVolume(
+    positionOnNearPlane: vec3f,
+    layerIdx: f32,
+    transmittanceLut: texture_2d<f32>,
+    multiScatteringLut: texture_2d<f32>
+) -> vec4f {
+
+    var result = vec4f(0.);
+
+    let rayDirection = normalize(positionOnNearPlane);
+
+    let layer = layerIdxToAerialPerspectiveLayer(layerIdx);
+    let tMax = toAerialPerspectiveDepth(layer);
+
+    var tMaxMax = tMax;
+
+    var cameraPositionGlobalClampedToTopOfAtmosphere = atmosphere.clampedCameraPositionGlobal;
+    if (atmosphere.clampedCameraRadius >= atmosphere.atmosphereRadius) {
+
+        var intersectsAtmosphere = false;
+        moveToTopAtmosphere(
+            atmosphere.clampedCameraPositionGlobal,
+            atmosphere.clampedCameraRadius,
+            atmosphere.cameraGeocentricNormal,
+            rayDirection,
+            &intersectsAtmosphere,
+            &cameraPositionGlobalClampedToTopOfAtmosphere);
+        if (!intersectsAtmosphere) {
+            return result;
+        }
+
+        let distanceToAtmosphere = distance(atmosphere.clampedCameraPositionGlobal, cameraPositionGlobalClampedToTopOfAtmosphere);
+        if (tMaxMax < distanceToAtmosphere) {
+            return result;
+        }
+
+        tMaxMax = max(0., tMaxMax - distanceToAtmosphere);
+    }
+
+    let sampleCount = i32(min(SkyViewLutSampleCount, 2. * layer + 2.));
+    var transmittance: vec3f;
+    let radiance = integrateScatteredRadiance(
+        true, // isAerialPerspectiveLut
+        atmosphere.lightIntensity,
+        transmittanceLut,
+        multiScatteringLut,
+        atmosphere.multiScatteringIntensity,
+        cameraPositionGlobalClampedToTopOfAtmosphere,
+        rayDirection,
+        atmosphere.directionToLight,
+        tMaxMax,
+        sampleCount,
+        -1., // No planet hit.
+        &transmittance);
+
+    let transparency = 1. - avg(transmittance);
+    result = vec4f(radiance, transparency);
+    return result;
+}
+
+#endif
