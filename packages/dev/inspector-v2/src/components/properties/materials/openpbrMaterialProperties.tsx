@@ -5,7 +5,7 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { BoundProperty } from "../boundProperty";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
+import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { ReadFile } from "core/Misc/fileTools";
 import { Texture } from "core/Materials/Textures/texture";
@@ -473,7 +473,7 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                     }
                 }}
             />
-            <BoundProperty component={BooleanBadgePropertyLine} label="Thin-Walled" target={material} propertyKey="geometryThinWalled" />
+            <BoundProperty component={CheckboxPropertyLine} label="Thin-Walled" target={material} propertyKey="geometryThinWalled" />
             <FileUploadLine
                 label="Geometry Normal"
                 accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"

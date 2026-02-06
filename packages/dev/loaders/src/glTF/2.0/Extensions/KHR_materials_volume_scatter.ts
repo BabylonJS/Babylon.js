@@ -101,39 +101,45 @@ export class KHR_materials_volume_scatter implements IGLTFLoaderExtension {
 
         // If transparency isn't enabled already, this extension shouldn't do anything.
         // i.e. it requires either the KHR_materials_transmission or KHR_materials_diffuse_transmission extensions.
-        if (adapter.transmissionWeight === 0 && adapter.subsurfaceWeight === 0) {
+        // Additionally, this already needs to be a volumetric material to apply this extension.
+        if ((adapter.transmissionWeight === 0 && adapter.subsurfaceWeight === 0) || adapter.geometryThinWalled) {
             return Promise.resolve();
         }
 
         const scatterColor = extension.multiscatterColor !== undefined && extension.multiscatterColor.length == 3 ? Color3.FromArray(extension.multiscatterColor) : Color3.Black();
         const scatterAnisotropy = extension.scatterAnisotropy !== undefined ? extension.scatterAnisotropy : 0;
 
+        // If diffuse_transmission, apply props to subsurface
+        // If transmission, apply props to transmission
+        // Load texture if present
+        let texturePromise: Promise<Nullable<BaseTexture>> = Promise.resolve(null);
+        if (extension.multiscatterColorTexture) {
+            (extension.multiscatterColorTexture as ITextureInfo).nonColorData = true;
+            texturePromise = this._loader.loadTextureInfoAsync(`${context}/multiscatterColorTexture`, extension.multiscatterColorTexture, (texture: BaseTexture) => {
+                texture.name = `${babylonMaterial.name} (Scatter Color)`;
+                if (adapter.transmissionWeight > 0) {
+                    adapter.transmissionScatterTexture = texture;
+                }
+                if (adapter.subsurfaceWeight > 0) {
+                    adapter.subsurfaceColorTexture = texture;
+                }
+            });
+        }
+
+        const extinctionCoefficient = new Vector3(-Math.log(adapter.transmissionColor.r), -Math.log(adapter.transmissionColor.g), -Math.log(adapter.transmissionColor.b));
+        extinctionCoefficient.scaleInPlace(1 / Math.max(adapter.transmissionDepth, 0.001));
+
         // In glTF, both the translucency volume and subsurface volume use the same input parameters.
         // We'll apply them to both, as appropriate.
         if (adapter.transmissionWeight > 0) {
             const singleScatterAlbedo = multiScatterToSingleScatterAlbedo(scatterColor);
-
-            const extinctionCoefficient = new Vector3(-Math.log(adapter.transmissionColor.r), -Math.log(adapter.transmissionColor.g), -Math.log(adapter.transmissionColor.b));
-            extinctionCoefficient.scaleInPlace(1 / Math.max(adapter.transmissionDepth, 0.001));
-
             const scatteringCoefficient = extinctionCoefficient.multiply(singleScatterAlbedo);
 
             // The scattering coefficient in OpenPBR is defined as per unit distance, so we need to scale it back up by the depth.
             scatteringCoefficient.scaleInPlace(adapter.transmissionDepth);
             adapter.transmissionScatter.set(scatteringCoefficient.x, scatteringCoefficient.y, scatteringCoefficient.z);
 
-            // Load texture if present
-            let texturePromise: Promise<Nullable<BaseTexture>> = Promise.resolve(null);
-            if (extension.multiscatterColorTexture) {
-                (extension.multiscatterColorTexture as ITextureInfo).nonColorData = true;
-                texturePromise = this._loader.loadTextureInfoAsync(`${context}/multiscatterColorTexture`, extension.multiscatterColorTexture, (texture: BaseTexture) => {
-                    texture.name = `${babylonMaterial.name} (Transmission)`;
-                    adapter.transmissionWeightTexture = texture;
-                });
-            }
             adapter.transmissionScatterAnisotropy = scatterAnisotropy;
-            // eslint-disable-next-line github/no-then
-            return texturePromise.then(() => {});
         }
         // Subsurface volume
         if (adapter.subsurfaceWeight > 0) {
@@ -141,16 +147,17 @@ export class KHR_materials_volume_scatter implements IGLTFLoaderExtension {
             adapter.subsurfaceColor = scatterColor;
 
             const mfp = new Vector3(
-                adapter.extinctionCoefficient.x !== 0 ? 1.0 / adapter.extinctionCoefficient.x : 1.0,
-                adapter.extinctionCoefficient.y !== 0 ? 1.0 / adapter.extinctionCoefficient.y : 1.0,
-                adapter.extinctionCoefficient.z !== 0 ? 1.0 / adapter.extinctionCoefficient.z : 1.0
+                extinctionCoefficient.x !== 0 ? 1.0 / extinctionCoefficient.x : 1.0,
+                extinctionCoefficient.y !== 0 ? 1.0 / extinctionCoefficient.y : 1.0,
+                extinctionCoefficient.z !== 0 ? 1.0 / extinctionCoefficient.z : 1.0
             );
 
             adapter.subsurfaceRadius = Math.max(mfp.x, mfp.y, mfp.z);
             adapter.subsurfaceRadiusScale = new Color3(mfp.x / adapter.subsurfaceRadius, mfp.y / adapter.subsurfaceRadius, mfp.z / adapter.subsurfaceRadius);
         }
 
-        return Promise.resolve();
+        // eslint-disable-next-line github/no-then
+        return texturePromise.then(() => {});
     }
 }
 

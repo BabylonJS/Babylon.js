@@ -2,7 +2,6 @@ import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import type { Color3 } from "core/Maths/math.color";
-import type { Vector3 } from "core/Maths/math.vector";
 
 /**
  * Interface for material loading adapters that provides a unified OpenPBR-like interface
@@ -273,6 +272,11 @@ export interface IMaterialLoadingAdapter {
     transmissionScatter: Color3;
 
     /**
+     * Sets the transmission scatter texture
+     */
+    transmissionScatterTexture: Nullable<BaseTexture>;
+
+    /**
      * Sets the scattering anisotropy (-1 to 1)
      */
     transmissionScatterAnisotropy: number;
@@ -301,6 +305,13 @@ export interface IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
+    configureVolume(): void;
+
+    /**
+     * Sets whether the material is thin-walled (i.e. non-volumetric) or not.
+     */
+    geometryThinWalled: boolean;
+
     /**
      * Sets the thickness texture
      */
@@ -319,12 +330,6 @@ export interface IMaterialLoadingAdapter {
      * Configures subsurface properties
      */
     configureSubsurface(): void;
-
-    /**
-     * @internal
-     * Sets/gets the extinction coefficient
-     */
-    extinctionCoefficient: Vector3;
 
     /**
      * Sets/gets the subsurface weight
@@ -370,6 +375,11 @@ export interface IMaterialLoadingAdapter {
      * Sets/gets the subsurface scattering anisotropy
      */
     subsurfaceScatterAnisotropy: number;
+
+    /**
+     * Does this material have a translucent surface (i.e. either transmission or subsurface)?
+     */
+    isTranslucent(): boolean;
 
     // ========================================
     // FUZZ LAYER (Sheen)
