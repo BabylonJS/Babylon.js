@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "./button";
 import { ComboBox } from "./comboBox";
 import { Link } from "./link";
+import { useImpulse } from "../hooks/transientStateHooks";
 
 type Entity = { uniqueId: number };
 
@@ -82,12 +83,13 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
 
     const [isEditing, setIsEditing] = useState(false);
 
+    const [enteringEditMode, pulseEnteringEditMode] = useImpulse<true>();
+
     useEffect(() => {
-        // If the ComboBox ref is valid, then we must be in edit mode, so focus the input.
-        // This is specifically intended for when *entering* edit mode, but if are already
-        // editing then re-focusing doesn't hurt anything.
-        comboBoxRef.current?.focus();
-    }, [value, isEditing]);
+        if (enteringEditMode) {
+            comboBoxRef.current?.focus();
+        }
+    }, [enteringEditMode]);
 
     const handleEntitySelect = (key: string) => {
         const entity = getEntities().find((e) => e.uniqueId.toString() === key);
@@ -110,19 +112,31 @@ export function EntitySelector<T extends Entity>(props: EntitySelectorProps<T>):
                     (defaultValue !== undefined ? (
                         // If the defaultValue is specified, then allow resetting to the default
                         <Tooltip content="Unlink" relationship="label">
-                            <Button icon={LinkDismissRegular} onClick={() => onChange(defaultValue)} />
+                            <Button
+                                icon={LinkDismissRegular}
+                                onClick={() => {
+                                    pulseEnteringEditMode(true);
+                                    onChange(defaultValue);
+                                }}
+                            />
                         </Tooltip>
                     ) : (
                         // Otherwise, just allow editing to a new value
                         <Tooltip content="Edit Link" relationship="label">
-                            <Button icon={LinkEditRegular} onClick={() => setIsEditing(true)} />
+                            <Button
+                                icon={LinkEditRegular}
+                                onClick={() => {
+                                    pulseEnteringEditMode(true);
+                                    setIsEditing(true);
+                                }}
+                            />
                         </Tooltip>
                     ))}
             </div>
         );
     } else {
         // Otherwise, show the ComboBox for selection
-        return <ComboBox ref={comboBoxRef} defaultOpen={true} label="" options={options} value={currentKey} onChange={handleEntitySelect} />;
+        return <ComboBox ref={comboBoxRef} defaultOpen={enteringEditMode} label="" options={options} value={currentKey} onChange={handleEntitySelect} />;
     }
 }
 EntitySelector.displayName = "EntitySelector";
