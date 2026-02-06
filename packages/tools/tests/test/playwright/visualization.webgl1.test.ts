@@ -1,3 +1,3 @@
 import { evaluatePlaywrightVisTests } from "./visualizationPlaywright.utils";
 
-evaluatePlaywrightVisTests("webgl1", "config", false, false, true, false);
+evaluatePlaywrightVisTests("webgl1", false, "config", false, false, true, false);
