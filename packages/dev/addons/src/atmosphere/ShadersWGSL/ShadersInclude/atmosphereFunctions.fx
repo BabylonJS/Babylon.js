@@ -92,6 +92,82 @@ fn moveToTopAtmosphere(
     // else, position is inside the atmosphere.
 }
 
+fn getSkyViewUVFromParameters(
+    intersectsGround: bool,
+    cosHorizonAngleFromZenith: f32,
+    cosAngleBetweenViewAndZenith: f32,
+    cosAngleBetweenViewAndLightOnPlane: f32,
+    uv: ptr<function, vec2f>
+) {
+    // The sky view LUT is split into two halves, one half for the sky and one half for the ground.
+    // v = 0 is nadir, v = 0.5 is horizon, v = 1 is zenith.
+
+    var unit = vec2f(0.);
+    if (intersectsGround) {
+        var coord = (cosAngleBetweenViewAndZenith + 1.) / (cosHorizonAngleFromZenith + 1.);
+        coord = sqrtClamped(coord); // more precision at nadir
+        unit.y = .5 * coord; // 0 is nadir, 0.5 is horizon
+    } else {
+        var coord = (cosAngleBetweenViewAndZenith - cosHorizonAngleFromZenith) / (1. - cosHorizonAngleFromZenith);
+        coord = sqrtClamped(coord); // more precision at horizon, less at zenith.
+        unit.y = .5 * coord + .5; // 0.5 is horizon, 1 is zenith
+    }
+
+    unit.x = .5 - .5 * cosAngleBetweenViewAndLightOnPlane;
+
+    // Constrain UVs to valid sub texel range (avoiding zenith derivative issue making LUT usage visible)
+    *uv = unitToUV(unit, SkyViewLutDomainInUVSpace, SkyViewLutHalfTexelSize);
+}
+
+#if USE_SKY_VIEW_LUT && SAMPLE_SKY_VIEW_LUT
+
+fn sampleSkyViewLut(
+    skyViewLut: texture_2d<f32>,
+    positionRadius: f32,
+    geocentricNormal: vec3f,
+    rayDirection: vec3f,
+    directionToLight: vec3f,
+    cosHorizonAngleFromZenith: f32,
+    cosAngleBetweenViewAndZenith: ptr<function, f32>,
+    isRayIntersectingGround: ptr<function, bool>
+) -> vec4f {
+
+    *cosAngleBetweenViewAndZenith = dot(rayDirection, geocentricNormal);
+
+    // If the ray doesn't intersect the atmosphere, early out.
+    if (positionRadius > atmosphere.atmosphereRadius) {
+        let sinAngleBetweenViewAndNadir = sqrtClamped(1. - *cosAngleBetweenViewAndZenith * *cosAngleBetweenViewAndZenith);
+        if (sinAngleBetweenViewAndNadir > atmosphere.sinCameraAtmosphereHorizonAngleFromNadir) {
+            *isRayIntersectingGround = false;
+            return vec4f(0.);
+        }
+    }
+
+    let sideVector = normalize(cross(geocentricNormal, rayDirection));
+    let forwardVector = normalize(cross(sideVector, geocentricNormal));
+    let lightOnPlane = normalize(vec2f(dot(directionToLight, forwardVector), dot(directionToLight, sideVector)));
+    let cosAngleBetweenViewAndLightOnPlane = lightOnPlane.x;
+
+    // Only considering ground intersections that start from rays above the planet's surface.
+    // When inside the atmosphere, adds a factor to avoid seeing the seam between the sky and ground.
+    let rayIntersectionScale = mix(.95, 1., saturate((positionRadius - atmosphere.planetRadius) / atmosphere.atmosphereThickness));
+    *isRayIntersectingGround =
+        positionRadius > atmosphere.planetRadius &&
+        (rayIntersectionScale * *cosAngleBetweenViewAndZenith) <= cosHorizonAngleFromZenith;
+
+    var uv: vec2f;
+    getSkyViewUVFromParameters(
+        *isRayIntersectingGround,
+        cosHorizonAngleFromZenith,
+        *cosAngleBetweenViewAndZenith,
+        cosAngleBetweenViewAndLightOnPlane,
+        &uv);
+
+    return textureSampleLevel(skyViewLut, skyViewLutSampler, uv, 0.);
+}
+
+#endif
+
 fn computeRayleighPhase(onePlusCosThetaSq: f32) -> f32 {
     // 3/(16*Pi) * (1 + cosTheta^2)
     return 0.0596831037 * onePlusCosThetaSq;
