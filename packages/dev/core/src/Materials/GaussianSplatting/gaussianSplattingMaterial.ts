@@ -505,12 +505,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * @param compoundMesh whether the mesh is a compound mesh
      * @returns depth rendering shader material
      */
-    public makeDepthRenderingMaterial(
-        scene: Scene,
-        shaderLanguage: ShaderLanguage,
-        alphaBlendedDepth: boolean = false,
-        compoundMesh: boolean = false
-    ): ShaderMaterial {
+    public makeDepthRenderingMaterial(scene: Scene, shaderLanguage: ShaderLanguage, alphaBlendedDepth: boolean = false, compoundMesh: boolean = false): ShaderMaterial {
         const defines = ["#define DEPTH_RENDER"];
         if (alphaBlendedDepth) {
             defines.push("#define ALPHA_BLENDED_DEPTH");

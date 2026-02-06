@@ -279,12 +279,7 @@ export class DepthRenderer {
                     // Recreate material if it doesn't exist or if alphaBlendedDepth changed
                     if (renderingMaterial === undefined || cachedAlphaBlendedDepth !== this.alphaBlendedDepth) {
                         const gsMaterial = effectiveMesh.material! as GaussianSplattingMaterial;
-                        renderingMaterial = gsMaterial.makeDepthRenderingMaterial(
-                            this._scene,
-                            this._shaderLanguage,
-                            this.alphaBlendedDepth,
-                            compoundMesh
-                        );
+                        renderingMaterial = gsMaterial.makeDepthRenderingMaterial(this._scene, this._shaderLanguage, this.alphaBlendedDepth, compoundMesh);
                         this.setMaterialForRendering(effectiveMesh, renderingMaterial);
                         this._alphaBlendedDepthMaterialCache.set(effectiveMesh.uniqueId, this.alphaBlendedDepth);
                         if (!renderingMaterial.isReady()) {
