@@ -4,7 +4,7 @@ import type { FunctionComponent } from "react";
 import type { AbstractMesh, IMeshDataCache, Scene } from "core/index";
 import type { IGizmoService } from "../services/gizmoService";
 
-import { Menu, MenuItemCheckbox, MenuList, MenuPopover, MenuTrigger, SplitButton, Tooltip } from "@fluentui/react-components";
+import { Menu, MenuItemCheckbox, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
 import { TargetRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -139,8 +139,8 @@ export const PickingToolbar: FunctionComponent<{
                                 menuButton={triggerProps}
                                 primaryActionButton={{ onClick: togglePicking }}
                                 size="small"
-                                appearance={pickingEnabled ? undefined : "transparent"}
-                                icon={<TargetRegular />}
+                                appearance="transparent"
+                                icon={<TargetRegular color={pickingEnabled ? tokens.colorBrandForeground1 : undefined} />}
                             />
                         </Tooltip>
                     )}

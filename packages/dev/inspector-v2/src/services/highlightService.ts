@@ -3,26 +3,34 @@ import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { ISceneContext } from "./sceneContext";
 import type { ISelectionService } from "./selectionService";
 import type { ISettingsContext } from "./settingsContext";
+import type { IThemeService } from "./themeService";
 
 import { SelectionOutlineLayer } from "core/Layers/selectionOutlineLayer";
+import { Color3 } from "core/Maths/math.color";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { SceneContextIdentity } from "./sceneContext";
 import { SelectionServiceIdentity } from "./selectionService";
 import { SettingsContextIdentity } from "./settingsContext";
+import { ThemeServiceIdentity } from "./themeService";
 
-export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionService, ISceneContext, ISettingsContext]> = {
+export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionService, ISceneContext, ISettingsContext, IThemeService]> = {
     friendlyName: "Highlight Service",
-    consumes: [SelectionServiceIdentity, SceneContextIdentity, SettingsContextIdentity],
-    factory: (selectionService, sceneContext, settingsContext) => {
+    consumes: [SelectionServiceIdentity, SceneContextIdentity, SettingsContextIdentity, ThemeServiceIdentity],
+    factory: (selectionService, sceneContext, settingsContext, themeService) => {
         let outlineLayer: Nullable<SelectionOutlineLayer> = null;
         let currentScene: Nullable<Scene> = null;
         let activeCameraObserver: Nullable<Observer<Scene>> = null;
+
+        function updateColor(outlineLayer: SelectionOutlineLayer) {
+            outlineLayer.outlineColor = Color3.FromHexString(themeService.theme.colorBrandForeground1);
+        }
 
         function getOrCreateOutlineLayer(scene: Scene): SelectionOutlineLayer {
             if (!outlineLayer || currentScene !== scene) {
                 outlineLayer?.dispose();
                 outlineLayer = new SelectionOutlineLayer("InspectorSelectionOutline", scene);
+                updateColor(outlineLayer);
                 currentScene = scene;
             }
             return outlineLayer;
@@ -54,6 +62,13 @@ export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionServic
             }
         }
 
+        // React to theme changes.
+        const themeObserver = themeService.onChanged.add(() => {
+            if (outlineLayer) {
+                updateColor(outlineLayer);
+            }
+        });
+
         // React to selection changes.
         const selectionObserver = selectionService.onSelectedEntityChanged.add(updateHighlight);
 
@@ -78,6 +93,7 @@ export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionServic
 
         return {
             dispose: () => {
+                themeObserver.remove();
                 selectionObserver.remove();
                 sceneObserver.remove();
                 settingsObserver.remove();
