@@ -62,6 +62,7 @@ import { GLTFAnimationImportServiceDefinition } from "./services/panes/tools/imp
 import { GLTFLoaderOptionsServiceDefinition } from "./services/panes/tools/import/gltfLoaderOptionsService";
 import { GLTFValidationServiceDefinition } from "./services/panes/tools/import/gltfValidationService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
+import { HighlightServiceDefinition } from "./services/highlightService";
 import { PickingServiceDefinition } from "./services/pickingService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
@@ -347,6 +348,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
 
             // Allows picking objects from the scene to select them.
             PickingServiceDefinition,
+
+            // Highlights the selected mesh in the scene.
+            HighlightServiceDefinition,
 
             // Adds entry points for user feedback on Inspector v2 (probably eventually will be removed).
             UserFeedbackServiceDefinition,

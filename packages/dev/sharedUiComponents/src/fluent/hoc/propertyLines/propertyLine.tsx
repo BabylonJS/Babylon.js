@@ -97,6 +97,10 @@ type BasePropertyLineProps = {
      * Link to the documentation for this property, available from the info icon either linked from the description (if provided) or default 'docs' text
      */
     docLink?: string;
+    /**
+     * If true, the copy button will not be shown even if onCopy is provided.
+     */
+    disableCopy?: boolean;
 };
 
 // Only require value/onChange/defaultValue props if nullable is true
@@ -152,9 +156,10 @@ export type PropertyLineProps<ValueT> = BasePropertyLineProps &
  */
 export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<PropertyLineProps<any>>>((props, ref) => {
     PropertyLine.displayName = "PropertyLine";
-    const { disableCopy, size } = useContext(ToolContext);
+    const { disableCopy: disableCopyFromContext, size } = useContext(ToolContext);
     const classes = usePropertyLineStyles();
-    const { label, uniqueId, onCopy, expandedContent, children, nullable, ignoreNullable } = props;
+    const { label, uniqueId, onCopy, expandedContent, children, nullable, ignoreNullable, disableCopy: disableCopyFromProps } = props;
+    const disableCopy = disableCopyFromContext || disableCopyFromProps;
 
     const [expanded, setExpanded] = useState("expandByDefault" in props ? props.expandByDefault : false);
     const cachedVal = useRef(nullable ? props.value : null);
