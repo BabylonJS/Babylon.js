@@ -27,7 +27,6 @@ import { TransmittanceLut } from "./transmittanceLut";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3 } from "core/Maths/math.vector";
 import "./Shaders/compositeAerialPerspective.fragment";
-import "./Shaders/compositeGlobeAtmosphere.fragment";
 import "./Shaders/fullscreenTriangle.vertex";
 import "./Shaders/ShadersInclude/atmosphereFragmentDeclaration";
 import "./Shaders/ShadersInclude/atmosphereFunctions";
@@ -1746,6 +1745,8 @@ const CreateGlobeAtmosphereCompositorEffectWrapper = (
     hasDepthTexture: boolean
 ): EffectWrapper => {
     const useUbo = uniformBuffer.useUbo;
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
     const defines = ["POSITION_VEC2", "COMPUTE_WORLD_RAY"];
     if (isSkyViewLutEnabled) {
         defines.push("USE_SKY_VIEW_LUT");
@@ -1780,8 +1781,16 @@ const CreateGlobeAtmosphereCompositorEffectWrapper = (
         "compositeGlobeAtmosphere",
         ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
         samplers,
-        useUbo ? [uniformBuffer.name] : [],
-        defines
+        useUbo ? [uboName] : [],
+        defines,
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/compositeGlobeAtmosphere.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/compositeGlobeAtmosphere.fragment")])
+            );
+        }
     );
 };
 
