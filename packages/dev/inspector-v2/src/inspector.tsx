@@ -3,6 +3,7 @@ import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
 import type { ModularToolOptions } from "./modularTool";
 import type { ISceneContext } from "./services/sceneContext";
+import type { IGizmoService, GizmoMode } from "./services/gizmoService";
 import type { IShellService } from "./services/shellService";
 
 import { AsyncLock } from "core/Misc/asyncLock";
@@ -12,7 +13,7 @@ import { useEffect, useRef } from "react";
 import { DefaultInspectorExtensionFeed } from "./extensibility/defaultInspectorExtensionFeed";
 import { LegacyInspectableObjectPropertiesServiceDefinition } from "./legacy/inspectableCustomPropertiesService";
 import { MakeModularTool } from "./modularTool";
-import { GizmoServiceDefinition } from "./services/gizmoService";
+import { GizmoServiceDefinition, GizmoServiceIdentity } from "./services/gizmoService";
 import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
 import { MiniStatsServiceDefinition } from "./services/miniStatsService";
 import { DebugServiceDefinition } from "./services/panes/debugService";
@@ -74,6 +75,7 @@ type LayoutMode = "inline" | "overlay";
 export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & {
     autoResizeEngine?: boolean;
     layoutMode?: LayoutMode;
+    initialGizmoMode?: GizmoMode;
 };
 
 export type InspectorToken = IDisposable & {
@@ -357,6 +359,17 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             // Legacy service to support custom inspectable properties on objects.
             LegacyInspectableObjectPropertiesServiceDefinition
         );
+
+        if (options.initialGizmoMode) {
+            const initialMode = options.initialGizmoMode;
+            serviceDefinitions.push({
+                friendlyName: "Initial Gizmo Mode",
+                consumes: [GizmoServiceIdentity],
+                factory: (gizmoService: IGizmoService) => {
+                    gizmoService.gizmoMode = initialMode;
+                },
+            } satisfies ServiceDefinition<[], [IGizmoService]>);
+        }
 
         const modularTool = MakeModularTool({
             containerElement,
