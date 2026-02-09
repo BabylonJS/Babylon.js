@@ -86,6 +86,11 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "row",
     },
+    sectionItemContent: {
+        flexGrow: 1,
+        minWidth: 0, // Allow content to shrink below its intrinsic width when buttons are shown
+        overflow: "hidden",
+    },
     sectionItemButtons: {
         display: "flex",
         flexDirection: "row",
@@ -264,7 +269,9 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
                     )}
                 </div>
             )}
-            <AccordionItemDepthContext.Provider value={true}>{children}</AccordionItemDepthContext.Provider>
+            <AccordionItemDepthContext.Provider value={true}>
+                <div className={classes.sectionItemContent}>{children}</div>
+            </AccordionItemDepthContext.Provider>
         </div>
     );
 
