@@ -22,13 +22,15 @@ export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionServic
         let currentScene: Nullable<Scene> = null;
         let activeCameraObserver: Nullable<Observer<Scene>> = null;
 
-        function updateColor(outlineLayer: SelectionOutlineLayer) {
-            outlineLayer.outlineColor = Color3.FromHexString(themeService.theme.colorBrandForeground1);
+        function disposeOutlineLayer() {
+            outlineLayer?.dispose();
+            outlineLayer = null;
+            currentScene = null;
         }
 
         function getOrCreateOutlineLayer(scene: Scene): SelectionOutlineLayer {
             if (!outlineLayer || currentScene !== scene) {
-                outlineLayer?.dispose();
+                disposeOutlineLayer();
                 outlineLayer = new SelectionOutlineLayer("InspectorSelectionOutline", scene);
                 updateColor(outlineLayer);
                 currentScene = scene;
@@ -36,21 +38,25 @@ export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionServic
             return outlineLayer;
         }
 
+        function updateColor(outlineLayer: SelectionOutlineLayer) {
+            outlineLayer.outlineColor = Color3.FromHexString(themeService.theme.colorBrandForeground1);
+        }
+
         function updateHighlight() {
             const scene = sceneContext.currentScene;
-            const entity = selectionService.selectedEntity;
+            const entity =
+                selectionService.selectedEntity instanceof AbstractMesh && !(selectionService.selectedEntity instanceof GaussianSplattingMesh)
+                    ? selectionService.selectedEntity
+                    : null;
 
-            if (!settingsContext.highlightSelectedEntity || !scene || !scene.activeCamera) {
-                outlineLayer?.clearSelection();
+            if (!entity || !settingsContext.highlightSelectedEntity || !scene || !scene.activeCamera) {
+                disposeOutlineLayer();
                 return;
             }
 
             const layer = getOrCreateOutlineLayer(scene);
             layer.clearSelection();
-
-            if (entity instanceof AbstractMesh && !(entity instanceof GaussianSplattingMesh)) {
-                layer.addSelection(entity);
-            }
+            layer.addSelection(entity);
         }
 
         function watchActiveCamera(scene: Nullable<Scene>) {
@@ -75,9 +81,7 @@ export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionServic
         // React to scene changes.
         const sceneObserver = sceneContext.currentSceneObservable.add(() => {
             // Dispose the old layer when the scene changes.
-            outlineLayer?.dispose();
-            outlineLayer = null;
-            currentScene = null;
+            disposeOutlineLayer();
             watchActiveCamera(sceneContext.currentScene);
             updateHighlight();
         });
@@ -99,9 +103,7 @@ export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionServic
                 settingsObserver.remove();
                 activeCameraObserver?.remove();
                 activeCameraObserver = null;
-                outlineLayer?.dispose();
-                outlineLayer = null;
-                currentScene = null;
+                disposeOutlineLayer();
             },
         };
     },
