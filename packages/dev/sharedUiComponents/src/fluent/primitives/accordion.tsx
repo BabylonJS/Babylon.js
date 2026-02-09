@@ -229,13 +229,6 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
         setCtrlMode(ctrlPressed && mouseOver);
     }, [ctrlPressed, mouseOver]);
 
-    const ctrlPressed = useKeyState("Control");
-    const [mouseOver, setMouseOver] = useState(false);
-
-    useEffect(() => {
-        setCtrlMode(ctrlPressed && mouseOver);
-    }, [ctrlPressed, mouseOver]);
-
     // If static item or no context, just render children
     if (staticItem || !accordionCtx || !itemState) {
         return <>{children}</>;
