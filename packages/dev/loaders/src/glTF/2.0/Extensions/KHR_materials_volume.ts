@@ -89,14 +89,10 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
             return Promise.resolve();
         }
 
-        adapter.configureVolume();
         adapter.geometryThinWalled = false;
         const attenuationDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
         const attenuationColor = extension.attenuationColor !== undefined && extension.attenuationColor.length == 3 ? Color3.FromArray(extension.attenuationColor) : Color3.White();
-
-        // We clamp attenuation distance to a minimum of 0.001 to avoid division by zero but also because a value of 0 has a different meaning in OpenPBR.
-        adapter.transmissionDepth = Math.max(attenuationDistance, 0.00001);
-        adapter.transmissionColor = attenuationColor;
+        adapter.configureVolume(attenuationColor, attenuationDistance);
 
         adapter.volumeThickness = extension.thicknessFactor ?? 0;
 

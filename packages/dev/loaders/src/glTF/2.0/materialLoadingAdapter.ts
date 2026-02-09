@@ -305,7 +305,7 @@ export interface IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
-    configureVolume(): void;
+    configureVolume(attenuationColor: Color3, attenuationDistance: number): void;
 
     /**
      * Sets whether the material is thin-walled (i.e. non-volumetric) or not.

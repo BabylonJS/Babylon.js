@@ -826,7 +826,10 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
-    public configureVolume(): void {}
+    public configureVolume(attenuationColor: Color3, attenuationDistance: number): void {
+        this.transmissionColor = attenuationColor;
+        this.transmissionDepth = attenuationDistance;
+    }
 
     /**
      * Sets whether the material is thin-walled (i.e. non-volumetric) or not.

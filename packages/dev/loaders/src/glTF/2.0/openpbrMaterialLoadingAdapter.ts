@@ -800,34 +800,42 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
-    public configureVolume(): void {
+    public configureVolume(attenuationColor: Color3, attenuationDistance: number): void {
         // If we're configuring volume, we assume the material is not thin-walled (i.e. it's volumetric).
         this._material.geometryThinWalled = 0.0;
 
-        // If the material is becoming volumetric and we had coloured tinting of the surface via transmission_color (with transmission_depth of 0)
-        // we need to update how that colouring is being applied since the transmission color will now be used for volumetric attenuation.
-        // Let's move the surface tint color to the coat layer.
+        // If the material is becoming volumetric with a non-white attenuation color and we already had coloured tinting of the surface
+        // via transmission_color (with transmission_depth of 0), we need to update how that colouring is being applied since the transmission
+        // color will now be used for volumetric attenuation.
+        // We'll move the surface tint color to the coat layer.
         // TODO: This will possibly conflict with coat tinting used by the glTF so, if the glTF is already using coating, we should consider handling this differently.
         // Perhaps, in this case, we could just multiply the surface tint color and the attenuation color to include both. This will make the surface tint volumetric but
         // might be an acceptable compromise.
         let useCoatForTinting = false;
-        if (this._material.transmissionColorTexture || !this._material.transmissionColor.equals(Color3.White())) {
-            this._material.coatWeight = this.transmissionWeight;
-            this._material.coatWeightTexture = this.transmissionWeightTexture;
-            this._material.coatColor = this._material.transmissionColor;
-            this._material.coatColorTexture = this._material.transmissionColorTexture;
-            this._material.transmissionColor = Color3.White();
-            this._material.transmissionColorTexture = null;
-            useCoatForTinting = true;
-        }
-        if (this._subsurfaceConstantTint) {
-            this._material.coatWeight = this.subsurfaceWeight;
-            this._material.coatWeightTexture = this.subsurfaceWeightTexture;
-            this._material.coatColor = this._material.subsurfaceColor;
-            this._material.coatColorTexture = this._material.subsurfaceColorTexture;
-            this._material.subsurfaceColor = Color3.White();
-            this._material.subsurfaceColorTexture = null;
-            useCoatForTinting = true;
+        if (attenuationColor.equals(Color3.White())) {
+            this.transmissionColor = attenuationColor;
+            this.transmissionDepth = attenuationDistance;
+        } else {
+            if (this._material.transmissionColorTexture || !this._material.transmissionColor.equals(Color3.White())) {
+                this._material.coatWeight = this.transmissionWeight;
+                this._material.coatWeightTexture = this.transmissionWeightTexture;
+                this._material.coatColor = this._material.transmissionColor;
+                this._material.coatColorTexture = this._material.transmissionColorTexture;
+                this._material.transmissionColor = Color3.White();
+                this._material.transmissionColorTexture = null;
+                useCoatForTinting = true;
+            } else if (this._subsurfaceConstantTint) {
+                this._material.coatWeight = this.subsurfaceWeight;
+                this._material.coatWeightTexture = this.subsurfaceWeightTexture;
+                this._material.coatColor = this._material.subsurfaceColor;
+                this._material.coatColorTexture = this._material.subsurfaceColorTexture;
+                this._material.subsurfaceColor = Color3.White();
+                this._material.subsurfaceColorTexture = null;
+                useCoatForTinting = true;
+            } else {
+                this.transmissionColor = attenuationColor;
+                this.transmissionDepth = attenuationDistance;
+            }
         }
         if (useCoatForTinting) {
             this._material.coatIor = this._material.specularIor; // Use the same IOR for the coat as the specular layer to try to match the original reflection as closely as possible.
