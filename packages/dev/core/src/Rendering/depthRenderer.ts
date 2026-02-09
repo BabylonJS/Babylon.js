@@ -22,6 +22,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import type { IEffectCreationOptions } from "core/Materials/effect";
 import type { GaussianSplattingMaterial } from "../Materials/GaussianSplatting/gaussianSplattingMaterial";
+import type { GaussianSplattingMesh } from "../Meshes/GaussianSplatting/gaussianSplattingMesh";
 
 /**
  * This represents a depth renderer in Babylon.
@@ -274,10 +275,11 @@ export class DepthRenderer {
                 let renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
                 if (effectiveMesh.getClassName() === "GaussianSplattingMesh") {
                     const cachedAlphaBlendedDepth = this._alphaBlendedDepthMaterialCache.get(effectiveMesh.uniqueId);
+                    const compoundMesh = (effectiveMesh as GaussianSplattingMesh).isCompound;
                     // Recreate material if it doesn't exist or if alphaBlendedDepth changed
                     if (renderingMaterial === undefined || cachedAlphaBlendedDepth !== this.alphaBlendedDepth) {
                         const gsMaterial = effectiveMesh.material! as GaussianSplattingMaterial;
-                        renderingMaterial = gsMaterial.makeDepthRenderingMaterial(this._scene, this._shaderLanguage, this.alphaBlendedDepth);
+                        renderingMaterial = gsMaterial.makeDepthRenderingMaterial(this._scene, this._shaderLanguage, this.alphaBlendedDepth, compoundMesh);
                         this.setMaterialForRendering(effectiveMesh, renderingMaterial);
                         this._alphaBlendedDepthMaterialCache.set(effectiveMesh.uniqueId, this.alphaBlendedDepth);
                         if (!renderingMaterial.isReady()) {

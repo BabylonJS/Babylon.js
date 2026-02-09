@@ -18,6 +18,12 @@ var covariancesBTexture: texture_2d<f32>;
 var centersTexture: texture_2d<f32>;
 var colorsTexture: texture_2d<f32>;
 
+#if IS_COMPOUND
+uniform partWorld: array<mat4x4<f32>, MAX_PART_COUNT>;
+uniform partVisibility: array<f32, MAX_PART_COUNT>;
+var partIndicesTexture: texture_2d<f32>;
+#endif
+
 varying vPosition: vec2f;
 varying vColor: vec4f;
 
@@ -36,11 +42,25 @@ fn main(input : VertexInputs) -> FragmentInputs {
     var splat: Splat = readSplat(splatIndex, uniforms.dataTextureSize);
     var covA: vec3f = splat.covA.xyz;
     var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);
-    let worldPos: vec4f = mesh.world * vec4f(splat.center.xyz, 1.0);
+
+#if IS_COMPOUND
+    let splatWorld: mat4x4f = getPartWorld(splat.partIndex);
+#else
+    let splatWorld: mat4x4f = mesh.world;
+#endif
+
+    let worldPos: vec4f = splatWorld * vec4f(splat.center.xyz, 1.0);
+
     vertexOutputs.vPosition = input.position.xy;
     vertexOutputs.vColor = splat.color;
     vertexOutputs.vColor.w *= uniforms.alpha;
-    vertexOutputs.position = gaussianSplatting(input.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, mesh.world, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
+
+#if IS_COMPOUND
+    // Apply part visibility (0.0 to 1.0) to alpha
+    vertexOutputs.vColor.w *= uniforms.partVisibility[splat.partIndex];
+#endif
+
+    vertexOutputs.position = gaussianSplatting(input.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
 #ifdef DEPTH_RENDER
     #ifdef USE_REVERSE_DEPTHBUFFER
         vertexOutputs.vDepthMetric = ((-vertexOutputs.position.z + uniforms.depthValues.x) / (uniforms.depthValues.y));

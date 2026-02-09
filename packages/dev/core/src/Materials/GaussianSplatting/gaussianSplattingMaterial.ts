@@ -480,6 +480,20 @@ export class GaussianSplattingMaterial extends PushMaterial {
             effect.setTexture("covariancesBTexture", gsMesh.covariancesBTexture);
             effect.setTexture("centersTexture", gsMesh.centersTexture);
             effect.setTexture("colorsTexture", gsMesh.colorsTexture);
+
+            if (gsMesh.partIndicesTexture) {
+                effect.setTexture("partIndicesTexture", gsMesh.partIndicesTexture);
+                const partWorldData = new Float32Array(gsMesh.partCount * 16);
+                for (let i = 0; i < gsMesh.partCount; i++) {
+                    gsMesh.getWorldMatrixForPart(i).toArray(partWorldData, i * 16);
+                }
+                effect.setMatrices("partWorld", partWorldData);
+                const partVisibilityData: number[] = [];
+                for (let i = 0; i < gsMesh.partCount; i++) {
+                    partVisibilityData.push(gsMesh.partVisibility[i] ?? 1.0);
+                }
+                effect.setArray("partVisibility", partVisibilityData);
+            }
         }
     }
 
@@ -488,12 +502,17 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * @param scene scene it belongs to
      * @param shaderLanguage GLSL or WGSL
      * @param alphaBlendedDepth whether to enable alpha blended depth rendering
+     * @param compoundMesh whether the mesh is a compound mesh
      * @returns depth rendering shader material
      */
-    public makeDepthRenderingMaterial(scene: Scene, shaderLanguage: ShaderLanguage, alphaBlendedDepth: boolean = false): ShaderMaterial {
+    public makeDepthRenderingMaterial(scene: Scene, shaderLanguage: ShaderLanguage, alphaBlendedDepth: boolean = false, compoundMesh: boolean = false): ShaderMaterial {
         const defines = ["#define DEPTH_RENDER"];
         if (alphaBlendedDepth) {
             defines.push("#define ALPHA_BLENDED_DEPTH");
+        }
+        if (compoundMesh) {
+            defines.push("#define IS_COMPOUND");
+            defines.push("#define MAX_PART_COUNT 16");
         }
 
         const shaderMaterial = new ShaderMaterial(
