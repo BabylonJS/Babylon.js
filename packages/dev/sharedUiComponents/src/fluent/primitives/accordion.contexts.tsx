@@ -1,6 +1,6 @@
 import type { RefObject } from "react";
 import type { AccordionProps, AccordionSectionBlockProps, AccordionSectionItemProps } from "./accordion";
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
+import { createContext, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Logger } from "core/Misc/logger";
 
@@ -135,8 +135,8 @@ export type AccordionContextValue = {
     features: AccordionFeatures;
     /** Ref for the pinned items portal container. */
     pinnedContainerRef: RefObject<HTMLDivElement>;
-    /** Set of registered item IDs (for duplicate detection). */
-    registeredItemIds: React.MutableRefObject<Set<string>>;
+    /** Map of registered item IDs to labels (for duplicate detection and section empty checks). */
+    registeredItemIds: React.MutableRefObject<Map<string, string>>;
 };
 
 export const AccordionContext = createContext<AccordionContextValue | undefined>(undefined);
@@ -177,7 +177,7 @@ export function useAccordionContext(props: AccordionProps): AccordionContextValu
     const [state, dispatch] = useReducer(AccordionReducer, initialState);
 
     const pinnedContainerRef = useRef<HTMLDivElement>(null);
-    const registeredItemIds = useRef<Set<string>>(new Set());
+    const registeredItemIds = useRef<Map<string, string>>(new Map());
 
     // Persist pinnedIds to localStorage when they change
     useEffect(() => {
@@ -218,8 +218,6 @@ export function useAccordionContext(props: AccordionProps): AccordionContextValu
 export type AccordionSectionBlockContextValue = {
     /** The section ID. */
     sectionId: string;
-    /** Register an item with this section. Returns an unregister function. */
-    registerItem: (itemUniqueId: string, label: string) => () => void;
 };
 
 export const AccordionSectionBlockContext = createContext<AccordionSectionBlockContextValue | undefined>(undefined);
@@ -235,41 +233,8 @@ export function useAccordionSectionBlockContext(props: AccordionSectionBlockProp
     isEmpty: boolean;
 } {
     const { sectionId } = props;
-    const itemsRef = useRef<Map<string, string>>(new Map());
-    const accordionCtx = useContext(AccordionContext);
-
-    const registerItem = useCallback((itemUniqueId: string, label: string) => {
-        itemsRef.current.set(itemUniqueId, label);
-        return () => {
-            itemsRef.current.delete(itemUniqueId);
-        };
-    }, []);
-
-    const context = useMemo(() => ({ sectionId, registerItem }), [sectionId, registerItem]);
-
-    // Derive isEmpty from accordion state + registered items.
-    // Re-evaluated whenever accordion state changes (which triggers re-render via context).
-    // Uses ref so item registration/unregistration doesn't cause re-render loops.
-    const isEmpty = (() => {
-        if (!accordionCtx || itemsRef.current.size === 0) {
-            return false;
-        }
-        const { state, features } = accordionCtx;
-        const { pinnedIds, hiddenIds, searchTerm, editMode } = state;
-        if (editMode) {
-            return false;
-        }
-        for (const [itemId, itemLabel] of itemsRef.current) {
-            const isPinned = features.pinning && pinnedIds.includes(itemId);
-            const isHidden = features.hiding && hiddenIds.includes(itemId);
-            const searchText = (itemLabel || itemId).toLowerCase();
-            const isMatch = !features.search || !searchTerm || searchText.includes(searchTerm.toLowerCase());
-            if (!isPinned && !isHidden && isMatch) {
-                return false; // At least one item is visible
-            }
-        }
-        return true;
-    })();
+    const context = useMemo(() => ({ sectionId }), [sectionId]);
+    const isEmpty = useIsSectionEmpty(sectionId);
 
     return { context, isEmpty };
 }
@@ -304,7 +269,7 @@ export type AccordionItemState = {
     isMatch: boolean;
     /** The index of this item in the pinned list (for ordering). */
     pinnedIndex: number;
-    /** Whether this pinned item can be moved up (has a visible item above it). */
+    /** Whether this pinned item can be moved up (is not first in the pinned list). */
     canMoveUp: boolean;
     /** Whether edit mode is active. */
     inEditMode: boolean;
@@ -349,7 +314,7 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         prevItemIdRef.current = itemId;
     }, [itemId, sectionCtx?.sectionId]);
 
-    // Debug: warn if itemUniqueId is not unique (duplicate detection)
+    // Register item and detect duplicates
     useEffect(() => {
         if (!accordionCtx || !itemUniqueId) {
             return;
@@ -360,13 +325,12 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
                 `Accordion: Duplicate uniqueId "${itemId}" detected in section "${sectionCtx?.sectionId}". ` +
                     `Each item must have a unique ID within its section for pin/hide persistence to work correctly.`
             );
-        } else {
-            registeredItemIds.current.add(itemUniqueId);
         }
+        registeredItemIds.current.set(itemUniqueId, itemLabel ?? itemId);
         return () => {
             registeredItemIds.current.delete(itemUniqueId);
         };
-    }, [accordionCtx, itemUniqueId, itemId, sectionCtx?.sectionId]);
+    }, [accordionCtx, itemUniqueId, itemId, itemLabel, sectionCtx?.sectionId]);
 
     // If no context, static item, or nested, return undefined
     if (!accordionCtx || staticItem) {
@@ -387,14 +351,6 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
     const searchText = (itemLabel ?? itemId).toLowerCase();
     const isMatch = !features.search || !searchTerm || searchText.includes(searchTerm.toLowerCase());
 
-    // Register item with its section for empty section detection
-    useEffect(() => {
-        if (!sectionCtx || isNested) {
-            return;
-        }
-        return sectionCtx.registerItem(itemUniqueId, itemLabel ?? itemId);
-    }, [sectionCtx, isNested, itemUniqueId, itemLabel, itemId]);
-
     return {
         itemUniqueId,
         isNested,
@@ -410,4 +366,44 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
             movePinnedUp: () => dispatch({ type: "MOVE_PINNED_UP", itemId: itemUniqueId }),
         },
     };
+}
+/**
+ * Hook to determine if a section is empty (has no visible items).
+ * Derived from accordion state + globally registered items filtered by section prefix.
+ *
+ * @param sectionId - The section ID to check.
+ * @returns Whether the section has no visible items.
+ */
+function useIsSectionEmpty(sectionId: string): boolean {
+    const accordionCtx = useContext(AccordionContext);
+
+    if (!accordionCtx) {
+        return false;
+    }
+
+    const { state, features, accordionId, registeredItemIds } = accordionCtx;
+    const { pinnedIds, hiddenIds, searchTerm, editMode } = state;
+
+    if (editMode) {
+        return false;
+    }
+
+    const sectionPrefix = `${accordionId}\0${sectionId}\0`;
+    let hasItems = false;
+
+    for (const [itemId, itemLabel] of registeredItemIds.current) {
+        if (!itemId.startsWith(sectionPrefix)) {
+            continue;
+        }
+        hasItems = true;
+        const isPinned = features.pinning && pinnedIds.includes(itemId);
+        const isHidden = features.hiding && hiddenIds.includes(itemId);
+        const searchText = (itemLabel || itemId).toLowerCase();
+        const isMatch = !features.search || !searchTerm || searchText.includes(searchTerm.toLowerCase());
+        if (!isPinned && !isHidden && isMatch) {
+            return false;
+        }
+    }
+
+    return hasItems;
 }
