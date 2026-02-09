@@ -138,11 +138,10 @@ const AccordionMenuBar: FunctionComponent = () => {
                             icon={EyeOffRegular}
                             appearance="subtle"
                             onClick={() => {
-                                // Hide all visible items - we pass all non-hidden, matching items
-                                // For simplicity, we dispatch with an empty array; the actual filtering
-                                // would need to be done with knowledge of all registered items.
-                                // This is a limitation - in a full implementation, you'd track registered items.
-                                dispatch({ type: "HIDE_ALL_VISIBLE", visibleItemIds: [] });
+                                // Hide all visible (non-hidden) items using the registered item IDs
+                                const { registeredItemIds, state: currentState } = accordionCtx;
+                                const visibleItemIds = Array.from(registeredItemIds.current).filter((id) => !currentState.hiddenIds.includes(id));
+                                dispatch({ type: "HIDE_ALL_VISIBLE", visibleItemIds });
                             }}
                         />
                     </>
@@ -177,14 +176,17 @@ export type AccordionSectionBlockProps = {
  */
 const AccordionSectionBlock: FunctionComponent<PropsWithChildren<AccordionSectionBlockProps>> = (props) => {
     AccordionSectionBlock.displayName = "AccordionSectionBlock";
+    const classes = useStyles();
     const { children, sectionId } = props;
     const accordionCtx = useContext(AccordionContext);
-    const sectionContext = useAccordionSectionBlockContext(props);
+    const { context: sectionContext, isEmpty } = useAccordionSectionBlockContext(props);
 
     if (accordionCtx) {
         return (
             <AccordionSectionBlockContext.Provider value={sectionContext}>
-                <AccordionItem value={sectionId}>{children}</AccordionItem>
+                <AccordionItem value={sectionId} className={isEmpty ? classes.sectionEmpty : undefined}>
+                    {children}
+                </AccordionItem>
             </AccordionSectionBlockContext.Provider>
         );
     }
@@ -221,13 +223,20 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
     const itemState = useAccordionSectionItemState(props);
     const [ctrlMode, setCtrlMode] = useState(false);
 
+    const ctrlPressed = useKeyState("Control");
+    const [mouseOver, setMouseOver] = useState(false);
+
+    useEffect(() => {
+        setCtrlMode(ctrlPressed && mouseOver);
+    }, [ctrlPressed, mouseOver]);
+
     // If static item or no context, just render children
     if (staticItem || !accordionCtx || !itemState) {
         return <>{children}</>;
     }
 
     const { pinnedContainerRef, features } = accordionCtx;
-    const { isNested, isPinned, isHidden, isMatch, pinnedIndex, inEditMode, actions } = itemState;
+    const { isNested, isPinned, isHidden, isMatch, pinnedIndex, canMoveUp, inEditMode, actions } = itemState;
 
     // Nested items just render children (don't show controls)
     if (isNested) {
@@ -241,13 +250,6 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
 
     const pinnedContainer = isPinned ? pinnedContainerRef.current : null;
     const showControls = inEditMode || ctrlMode;
-
-    const ctrlPressed = useKeyState("Control");
-    const [mouseOver, setMouseOver] = useState(false);
-
-    useEffect(() => {
-        setCtrlMode(ctrlPressed && mouseOver);
-    }, [ctrlPressed, mouseOver]);
 
     const itemElement = (
         <div
@@ -264,9 +266,7 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
                     {features.pinning && (
                         <>
                             <Button title={isPinned ? "Unpin" : "Pin"} icon={isPinned ? PinFilled : PinRegular} appearance="transparent" onClick={actions.togglePinned} />
-                            {isPinned && (
-                                <Button title="Move up" icon={ArrowCircleUpRegular} appearance="transparent" disabled={pinnedIndex === 0} onClick={actions.movePinnedUp} />
-                            )}
+                            {isPinned && <Button title="Move up" icon={ArrowCircleUpRegular} appearance="transparent" disabled={!canMoveUp} onClick={actions.movePinnedUp} />}
                         </>
                     )}
                 </div>
