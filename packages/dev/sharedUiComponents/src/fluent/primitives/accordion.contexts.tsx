@@ -1,6 +1,6 @@
 import type { RefObject } from "react";
 import type { AccordionProps, AccordionSectionBlockProps, AccordionSectionItemProps } from "./accordion";
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Logger } from "core/Misc/logger";
 
@@ -243,25 +243,23 @@ export function useAccordionSectionBlockContext(props: AccordionSectionBlockProp
     isEmpty: boolean;
 } {
     const { sectionId } = props;
-    const [items, setItems] = useState<Map<string, string>>(new Map());
+    const itemsRef = useRef<Map<string, string>>(new Map());
     const accordionCtx = useContext(AccordionContext);
 
     const registerItem = useCallback((itemUniqueId: string, label: string) => {
-        setItems((prev) => new Map(prev).set(itemUniqueId, label));
+        itemsRef.current.set(itemUniqueId, label);
         return () => {
-            setItems((prev) => {
-                const next = new Map(prev);
-                next.delete(itemUniqueId);
-                return next;
-            });
+            itemsRef.current.delete(itemUniqueId);
         };
     }, []);
 
     const context = useMemo(() => ({ sectionId, registerItem }), [sectionId, registerItem]);
 
-    // Derive isEmpty from accordion state + registered items
-    const isEmpty = useMemo(() => {
-        if (!accordionCtx || items.size === 0) {
+    // Derive isEmpty from accordion state + registered items.
+    // Re-evaluated whenever accordion state changes (which triggers re-render via context).
+    // Uses ref so item registration/unregistration doesn't cause re-render loops.
+    const isEmpty = (() => {
+        if (!accordionCtx || itemsRef.current.size === 0) {
             return false;
         }
         const { state, features } = accordionCtx;
@@ -269,7 +267,7 @@ export function useAccordionSectionBlockContext(props: AccordionSectionBlockProp
         if (editMode) {
             return false;
         }
-        for (const [itemId, itemLabel] of items) {
+        for (const [itemId, itemLabel] of itemsRef.current) {
             const isPinned = features.pinning && pinnedIds.includes(itemId);
             const isHidden = features.hiding && hiddenIds.includes(itemId);
             const searchText = (itemLabel || itemId).toLowerCase();
@@ -279,7 +277,7 @@ export function useAccordionSectionBlockContext(props: AccordionSectionBlockProp
             }
         }
         return true;
-    }, [accordionCtx, items]);
+    })();
 
     return { context, isEmpty };
 }

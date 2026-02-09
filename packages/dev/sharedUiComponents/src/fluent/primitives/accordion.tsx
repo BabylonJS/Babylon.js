@@ -82,9 +82,6 @@ const useStyles = makeStyles({
         flexGrow: 1,
         justifyContent: "end",
     },
-    sectionEmpty: {
-        display: "none",
-    },
     sectionItemContainer: {
         display: "flex",
         flexDirection: "row",
@@ -176,7 +173,6 @@ export type AccordionSectionBlockProps = {
  */
 const AccordionSectionBlock: FunctionComponent<PropsWithChildren<AccordionSectionBlockProps>> = (props) => {
     AccordionSectionBlock.displayName = "AccordionSectionBlock";
-    const classes = useStyles();
     const { children, sectionId } = props;
     const accordionCtx = useContext(AccordionContext);
     const { context: sectionContext, isEmpty } = useAccordionSectionBlockContext(props);
@@ -184,9 +180,7 @@ const AccordionSectionBlock: FunctionComponent<PropsWithChildren<AccordionSectio
     if (accordionCtx) {
         return (
             <AccordionSectionBlockContext.Provider value={sectionContext}>
-                <AccordionItem value={sectionId} className={isEmpty ? classes.sectionEmpty : undefined}>
-                    {children}
-                </AccordionItem>
+                {!isEmpty && <AccordionItem value={sectionId}>{children}</AccordionItem>}
             </AccordionSectionBlockContext.Provider>
         );
     }
