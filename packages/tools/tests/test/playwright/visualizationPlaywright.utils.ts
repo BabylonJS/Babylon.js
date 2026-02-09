@@ -6,6 +6,7 @@ import { getGlobalConfig } from "@tools/test-tools";
 
 export const evaluatePlaywrightVisTests = async (
     engineType = "webgl2",
+    useLargeWorldRendering = false,
     testFileName = "config",
     debug = false,
     debugWait = false,
@@ -43,7 +44,10 @@ export const evaluatePlaywrightVisTests = async (
             const re = new RegExp(regex, "i");
             return re.test(test.title);
         });
-        return !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
+        return (
+            !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType))) &&
+            useLargeWorldRendering === (test.useLargeWorldRendering ?? false)
+        );
     });
 
     function log(msg: any, title?: string) {
@@ -92,6 +96,7 @@ export const evaluatePlaywrightVisTests = async (
 
         const rendererData = await page.evaluate(evaluateInitEngineForVisualization, {
             engineName: engineType,
+            useLargeWorldRendering: useLargeWorldRendering,
             useReverseDepthBuffer: "false",
             useNonCompatibilityMode: " false",
             baseUrl: getGlobalConfig({ root: config.root }).baseUrl,
@@ -158,11 +163,13 @@ declare const BABYLON: typeof window.BABYLON;
 
 export const evaluateInitEngineForVisualization = async ({
     engineName,
+    useLargeWorldRendering,
     useReverseDepthBuffer,
     useNonCompatibilityMode,
     baseUrl,
 }: {
     engineName: string;
+    useLargeWorldRendering: boolean;
     useReverseDepthBuffer: string | number;
     useNonCompatibilityMode: string | number;
     baseUrl: string;
@@ -227,6 +234,7 @@ export const evaluateInitEngineForVisualization = async ({
             setMaximumLimits: true,
             antialias: false,
             enableGPUDebugMarkers: false,
+            useLargeWorldRendering: useLargeWorldRendering,
         };
 
         const engine = new BABYLON.WebGPUEngine(window.canvas, options);
@@ -243,6 +251,7 @@ export const evaluateInitEngineForVisualization = async ({
             forceSRGBBufferSupportState: true,
             failIfMajorPerformanceCaveat: true,
             powerPreference: "high-performance",
+            useLargeWorldRendering: useLargeWorldRendering,
         });
         engine.enableOfflineSupport = false;
         engine.setDitheringState(false);
@@ -252,6 +261,12 @@ export const evaluateInitEngineForVisualization = async ({
     }
     window.engine!.renderEvenInBackground = true;
     window.engine!.getCaps().parallelShaderCompile = undefined;
+
+    const win = window as any;
+    if (typeof win.HavokPhysics === "function" && typeof win.HK === "undefined") {
+        win.HK = await win.HavokPhysics();
+    }
+
     return {
         forceUseReverseDepthBuffer: window.forceUseReverseDepthBuffer,
         forceUseNonCompatibilityMode: window.forceUseNonCompatibilityMode,
@@ -311,7 +326,10 @@ export const evaluatePrepareScene = async ({
                 const v2Manifest = JSON.parse(payload.code);
                 code = v2Manifest.files[v2Manifest.entry];
                 // Sanitize two common export types for existing and migrated PGs and newly-created PGs.
-                code = code.replace(/export default \w+/g, "").replace("export const ", "const ");
+                code = code
+                    .replace(/export default \w+/g, "")
+                    .replace(/export const /g, "const ")
+                    .replace(/export var /g, "var ");
             } else {
                 code = payload.code.toString();
             }

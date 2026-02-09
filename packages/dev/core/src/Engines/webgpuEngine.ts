@@ -3188,8 +3188,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
                 const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
                 if (gpuMRTWrapper && gpuMRTTexture) {
+                    const depthSlice = mrtTexture.is3D ? (rtWrapper.layerIndices?.[i] ?? 0) : undefined;
                     const baseArrayLayer = rtWrapper.getBaseArrayLayer(i);
-                    const gpuMSAATexture = useMSAA ? gpuMRTWrapper.getMSAATexture(sampleCount, i) : undefined;
+                    const gpuMSAATexture = useMSAA ? gpuMRTWrapper.getMSAATexture(sampleCount, mrtTexture.is3D ? depthSlice : baseArrayLayer) : undefined;
 
                     const viewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
@@ -3211,7 +3212,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture && !rtWrapper.disableAutomaticMSAAResolve && rtWrapper.resolveMSAAColors ? colorTextureView : undefined,
-                        depthSlice: mrtTexture.is3D ? (rtWrapper.layerIndices?.[i] ?? 0) : undefined,
+                        depthSlice,
                         clearValue: index !== 0 && mustClearColor ? (isRtInteger ? clearColorForIntegerRt : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,
@@ -3226,6 +3227,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             if (internalTexture) {
                 const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
                 const gpuTexture = gpuWrapper.underlyingResource!;
+                const layerIndex = this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer;
 
                 let depthSlice: number | undefined = undefined;
 
@@ -3234,7 +3236,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer = 0;
                 }
 
-                const gpuMSAATexture = useMSAA ? gpuWrapper.getMSAATexture(sampleCount) : undefined;
+                const gpuMSAATexture = useMSAA ? gpuWrapper.getMSAATexture(sampleCount, layerIndex) : undefined;
                 const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const isRtInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;

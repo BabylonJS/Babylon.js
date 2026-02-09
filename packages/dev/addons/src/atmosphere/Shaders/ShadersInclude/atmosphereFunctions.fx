@@ -116,16 +116,16 @@ void getSkyViewUVFromParameters(
     // The sky view LUT is split into two halves, one half for the sky and one half for the ground.
     // v = 0 is nadir, v = 0.5 is horizon, v = 1 is zenith.
 
-    vec2 unit = vec2(0.0);
+    vec2 unit = vec2(0.);
     if (intersectsGround) {
 
-        float coord = (cosAngleBetweenViewAndZenith + 1.0) / (cosHorizonAngleFromZenith + 1.0);
+        float coord = (cosAngleBetweenViewAndZenith + 1.) / (cosHorizonAngleFromZenith + 1.);
         coord = sqrtClamped(coord); // more precision at nadir
         unit.y = 0.5 * coord; // 0 is nadir, 0.5 is horizon
 
     } else {
 
-        float coord = (cosAngleBetweenViewAndZenith - cosHorizonAngleFromZenith) / (1.0 - cosHorizonAngleFromZenith);
+        float coord = (cosAngleBetweenViewAndZenith - cosHorizonAngleFromZenith) / (1. - cosHorizonAngleFromZenith);
         coord = sqrtClamped(coord); // more precision at horizon, less at zenith.
         unit.y = 0.5 * coord + 0.5; // 0.5 is horizon, 1 is zenith
     }

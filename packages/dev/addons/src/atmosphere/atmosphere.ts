@@ -26,17 +26,6 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { TransmittanceLut } from "./transmittanceLut";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3 } from "core/Maths/math.vector";
-import "./Shaders/compositeAerialPerspective.fragment";
-import "./Shaders/compositeSky.fragment";
-import "./Shaders/compositeGlobeAtmosphere.fragment";
-import "./Shaders/fullscreenTriangle.vertex";
-import "./Shaders/skyView.fragment";
-import "./Shaders/aerialPerspective.fragment";
-import "./Shaders/ShadersInclude/atmosphereFragmentDeclaration";
-import "./Shaders/ShadersInclude/atmosphereFunctions";
-import "./Shaders/ShadersInclude/atmosphereUboDeclaration";
-import "./Shaders/ShadersInclude/atmosphereVertexDeclaration";
-import "./Shaders/ShadersInclude/depthFunctions";
 
 const MaterialPlugin = "atmo-pbr";
 
@@ -1416,6 +1405,8 @@ export class Atmosphere implements IDisposable {
  * @param samplerNames - The sampler names to use.
  * @param uniformBuffers - The uniform buffers to use.
  * @param defineNames - Array of define names to prepend with "#define ".
+ * @param useWebGPU - Whether to use WebGPU shaders.
+ * @param extraInitializations - Optional extra initializations callback for loading shaders.
  * @returns The effect wrapper.
  */
 const CreateEffectWrapper = (
@@ -1425,7 +1416,9 @@ const CreateEffectWrapper = (
     uniformNames?: string[],
     samplerNames?: string[],
     uniformBuffers?: string[],
-    defineNames?: string[]
+    defineNames?: string[],
+    useWebGPU = false,
+    extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void
 ): EffectWrapper => {
     const defines = defineNames?.map((defineName) => `#define ${defineName}`) ?? [];
     return new EffectWrapper({
@@ -1439,6 +1432,8 @@ const CreateEffectWrapper = (
         samplerNames,
         defines,
         useShaderStore: true,
+        shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+        extraInitializations,
     });
 };
 
@@ -1467,11 +1462,9 @@ const CreateMultiScatteringEffectWrapper = (engine: AbstractEngine, uniformBuffe
         shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
         extraInitializations: (_, list) => {
             list.push(
-                Promise.all(
-                    useWebGPU
-                        ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/multiScattering.fragment")]
-                        : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/multiScattering.fragment")]
-                )
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/multiScattering.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/multiScattering.fragment")])
             );
         },
     });
@@ -1549,11 +1542,8 @@ const DrawEffect = (
     const currentDepthFunction = engine.getDepthFunction();
     engine.setDepthFunction(depthFunction);
 
-    // Likewise with the alpha mode, which can affect depth state too.
     const currentAlphaMode = engine.getAlphaMode();
-    if (alphaMode !== Constants.ALPHA_DISABLE) {
-        engine.setAlphaMode(alphaMode);
-    }
+    engine.setAlphaMode(alphaMode, true);
 
     const currentCull = engine.depthCullingState.cull;
 
@@ -1571,7 +1561,7 @@ const DrawEffect = (
 
     // Restore state (order matters!)
     engine.depthCullingState.cull = currentCull;
-    engine.setAlphaMode(currentAlphaMode);
+    engine.setAlphaMode(currentAlphaMode, true);
     if (currentDepthWrite !== undefined) {
         engine.setDepthWrite(currentDepthWrite);
     }
@@ -1603,6 +1593,8 @@ const CreateSkyCompositorEffectWrapper = (
     applyApproximateTransmittance: boolean
 ): EffectWrapper => {
     const useUbo = uniformBuffer.useUbo;
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
     const defines = ["POSITION_VEC2", "COMPUTE_WORLD_RAY"];
     if (isSkyViewLutEnabled) {
         defines.push("USE_SKY_VIEW_LUT");
@@ -1620,8 +1612,16 @@ const CreateSkyCompositorEffectWrapper = (
         "compositeSky",
         ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
         textures,
-        useUbo ? [uniformBuffer.name] : [],
-        defines
+        useUbo ? [uboName] : [],
+        defines,
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/compositeSky.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/compositeSky.fragment")])
+            );
+        }
     );
 };
 
@@ -1631,16 +1631,27 @@ const CreateSkyCompositorEffectWrapper = (
  * @param uniformBuffer - The uniform buffer to use.
  * @returns The created EffectWrapper.
  */
-const CreateAerialPerspectiveEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper =>
-    CreateEffectWrapper(
+const CreateAerialPerspectiveEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper => {
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
+    return CreateEffectWrapper(
         engine,
         "atmo-aerialPerspective",
         "aerialPerspective",
-        ["layerIdx", "depth", ...(uniformBuffer.useUbo ? [] : uniformBuffer.getUniformNames())],
+        ["layerIdx", ...(uniformBuffer.useUbo ? [] : uniformBuffer.getUniformNames())],
         ["transmittanceLut", "multiScatteringLut"],
-        uniformBuffer.useUbo ? [uniformBuffer.name] : [],
-        ["POSITION_VEC2", "COMPUTE_WORLD_RAY"]
+        uniformBuffer.useUbo ? [uboName] : [],
+        ["POSITION_VEC2", "COMPUTE_WORLD_RAY"],
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/aerialPerspective.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/aerialPerspective.fragment")])
+            );
+        }
     );
+};
 
 /**
  * Creates an EffectWrapper for the aerial perspective compositor.
@@ -1665,6 +1676,8 @@ const CreateAerialPerspectiveCompositorEffectWrapper = (
     aerialPerspectiveRadianceBias: number
 ): EffectWrapper => {
     const useUbo = uniformBuffer.useUbo;
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
     const defines = ["POSITION_VEC2", "COMPUTE_WORLD_RAY"];
     if (isAerialPerspectiveLutEnabled) {
         defines.push("USE_AERIAL_PERSPECTIVE_LUT");
@@ -1699,8 +1712,16 @@ const CreateAerialPerspectiveCompositorEffectWrapper = (
         "compositeAerialPerspective",
         ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
         samplers,
-        useUbo ? [uniformBuffer.name] : [],
-        defines
+        useUbo ? [uboName] : [],
+        defines,
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/compositeAerialPerspective.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/compositeAerialPerspective.fragment")])
+            );
+        }
     );
 };
 
@@ -1727,6 +1748,8 @@ const CreateGlobeAtmosphereCompositorEffectWrapper = (
     hasDepthTexture: boolean
 ): EffectWrapper => {
     const useUbo = uniformBuffer.useUbo;
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
     const defines = ["POSITION_VEC2", "COMPUTE_WORLD_RAY"];
     if (isSkyViewLutEnabled) {
         defines.push("USE_SKY_VIEW_LUT");
@@ -1761,8 +1784,16 @@ const CreateGlobeAtmosphereCompositorEffectWrapper = (
         "compositeGlobeAtmosphere",
         ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
         samplers,
-        useUbo ? [uniformBuffer.name] : [],
-        defines
+        useUbo ? [uboName] : [],
+        defines,
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/compositeGlobeAtmosphere.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/compositeGlobeAtmosphere.fragment")])
+            );
+        }
     );
 };
 
@@ -1772,13 +1803,24 @@ const CreateGlobeAtmosphereCompositorEffectWrapper = (
  * @param uniformBuffer - The uniform buffer to use.
  * @returns The created EffectWrapper.
  */
-const CreateSkyViewEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper =>
-    CreateEffectWrapper(
+const CreateSkyViewEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper => {
+    const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+    const uboName = useWebGPU ? "atmosphere" : uniformBuffer.name;
+    return CreateEffectWrapper(
         engine,
         "atmo-skyView",
         "skyView",
         ["depth", ...(uniformBuffer.useUbo ? [] : uniformBuffer.getUniformNames())],
         ["transmittanceLut", "multiScatteringLut"],
-        uniformBuffer.useUbo ? [uniformBuffer.name] : [],
-        ["POSITION_VEC2"]
+        uniformBuffer.useUbo ? [uboName] : [],
+        ["POSITION_VEC2"],
+        useWebGPU,
+        (_, list) => {
+            list.push(
+                ...(useWebGPU
+                    ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/skyView.fragment")]
+                    : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/skyView.fragment")])
+            );
+        }
     );
+};

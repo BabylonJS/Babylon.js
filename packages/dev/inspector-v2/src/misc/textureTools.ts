@@ -42,7 +42,8 @@ export async function ApplyChannelsToTextureDataAsync(
     channels: TextureChannelsToDisplay,
     lod: number = 0
 ): Promise<Uint8Array> {
-    const data = await GetTextureDataAsync(texture, width, height, face, lod);
+    // For cube maps, force RTT path to ensure correct face orientation and gamma correction
+    const data = await GetTextureDataAsync(texture, width, height, face, lod, texture.isCube);
 
     if (!channels.R || !channels.G || !channels.B || !channels.A) {
         for (let i = 0; i < width * height * 4; i += 4) {

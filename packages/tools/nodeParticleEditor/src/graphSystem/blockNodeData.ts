@@ -23,6 +23,8 @@ export class BlockNodeData implements INodeData {
 
     public onInputCountChanged?: () => void;
 
+    public onInputRemoved?: (index: number) => void;
+
     public get uniqueId(): number {
         return this.data.uniqueId;
     }
@@ -127,6 +129,17 @@ export class BlockNodeData implements INodeData {
         });
 
         this._onInputChangeObserver = data.onInputChangedObservable.add((input) => {
+            for (let i = 0; i < this._inputs.length; i++) {
+                if (this._inputs[i].data === input) {
+                    // It's a remove
+                    this._inputs.splice(i, 1);
+                    if (this.onInputRemoved) {
+                        this.onInputRemoved(i);
+                    }
+                    return;
+                }
+            }
+
             this._inputs.push(new ConnectionPointPortData(input, nodeContainer));
             if (this.onInputCountChanged) {
                 this.onInputCountChanged();

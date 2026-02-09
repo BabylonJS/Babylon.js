@@ -3,7 +3,7 @@
 
 // Assumes infinite far plane (camera.maxZ = 0), forward depth (non-reversed).
 float reconstructDistanceFromCameraPlane(float depth, float cameraNearPlane) {
-    return cameraNearPlane / (1.0 - depth);
+    return cameraNearPlane / (1. - depth);
 }
 
 // If depth is at far plane, returns 0.

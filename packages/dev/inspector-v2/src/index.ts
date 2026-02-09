@@ -2,10 +2,12 @@
 export * from "./components/properties/boundProperty";
 export * from "./components/properties/linkToEntityPropertyLine";
 export type { EntityDisplayInfo, SceneExplorerCommand, SceneExplorerCommandProvider, SceneExplorerSection } from "./components/scene/sceneExplorer";
+export * from "./components/errorBoundary";
 export * from "./components/extensibleAccordion";
 export { SidePaneContainer } from "./components/pane";
 export * from "./components/theme";
 export * from "./components/teachingMoment";
+export * from "./contexts/propertyContext";
 export * from "./extensibility/extensionFeed";
 export * from "./extensibility/builtInsExtensionFeed";
 export * from "./hooks/compoundPropertyHooks";
@@ -44,6 +46,10 @@ export * from "./inspector";
 export { ConvertOptions, Inspector } from "./legacy/inspector";
 export { AttachDebugLayer, DetachDebugLayer } from "./legacy/debugLayer";
 
+// Export the shared hooks that can be used for extending the inspector.
+export * from "shared-ui-components/fluent/hooks/keyboardHooks";
+export * from "shared-ui-components/fluent/hooks/eventHooks";
+
 // Export the shared primitive UI controls that can be used for extending the inspector.
 export * from "shared-ui-components/fluent/primitives/accordion";
 export * from "shared-ui-components/fluent/primitives/button";
@@ -53,22 +59,31 @@ export * from "shared-ui-components/fluent/primitives/colorPicker";
 export * from "shared-ui-components/fluent/primitives/comboBox";
 export * from "shared-ui-components/fluent/primitives/draggable";
 export * from "shared-ui-components/fluent/primitives/dropdown";
+export * from "shared-ui-components/fluent/primitives/entitySelector";
 export * from "shared-ui-components/fluent/primitives/gradient";
 export * from "shared-ui-components/fluent/primitives/infoLabel";
 export * from "shared-ui-components/fluent/primitives/lazyComponent";
 export * from "shared-ui-components/fluent/primitives/link";
 export * from "shared-ui-components/fluent/primitives/list";
+export * from "shared-ui-components/fluent/primitives/materialSelector";
 export * from "shared-ui-components/fluent/primitives/messageBar";
+export * from "shared-ui-components/fluent/primitives/nodeSelector";
+export * from "shared-ui-components/fluent/primitives/popover";
 export * from "shared-ui-components/fluent/primitives/positionedPopover";
 export * from "shared-ui-components/fluent/primitives/primitive";
 export * from "shared-ui-components/fluent/primitives/searchBar";
 export * from "shared-ui-components/fluent/primitives/searchBox";
+export * from "shared-ui-components/fluent/primitives/skeletonSelector";
 export * from "shared-ui-components/fluent/primitives/spinButton";
 export * from "shared-ui-components/fluent/primitives/switch";
 export * from "shared-ui-components/fluent/primitives/syncedSlider";
 export * from "shared-ui-components/fluent/primitives/textarea";
 export * from "shared-ui-components/fluent/primitives/textInput";
+export * from "shared-ui-components/fluent/primitives/textureSelector";
+export * from "shared-ui-components/fluent/primitives/toast";
 export * from "shared-ui-components/fluent/primitives/toggleButton";
+export * from "shared-ui-components/fluent/primitives/tooltip";
+export * from "shared-ui-components/fluent/primitives/uploadButton";
 
 // Export the shared hoc UI controls that can be used for extending the inspector.
 export * from "shared-ui-components/fluent/hoc/buttonLine";
@@ -76,9 +91,11 @@ export * from "shared-ui-components/fluent/hoc/childWindow";
 export * from "shared-ui-components/fluent/hoc/fileUploadLine";
 export * from "shared-ui-components/fluent/hoc/gradientList";
 export * from "shared-ui-components/fluent/hoc/pane";
+export * from "shared-ui-components/fluent/hoc/textureUpload";
 export * from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
+export * from "shared-ui-components/fluent/hoc/propertyLines/comboBoxPropertyLine";
 export { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";

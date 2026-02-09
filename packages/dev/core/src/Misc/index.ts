@@ -80,6 +80,7 @@ export * from "./bitArray";
 export * from "./urlTools";
 export * from "./lazy";
 export * from "./uniqueIdGenerator";
+export { workerFunction as KTX2WorkerFunction, initializeWebWorker as KTX2InitializeWebWorker } from "./khronosTextureContainer2Worker";
 
 // RGBDTextureTools
 export * from "../Shaders/rgbdDecode.fragment";

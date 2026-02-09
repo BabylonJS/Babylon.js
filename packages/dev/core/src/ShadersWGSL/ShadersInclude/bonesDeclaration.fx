@@ -9,7 +9,6 @@
     #ifndef BAKED_VERTEX_ANIMATION_TEXTURE
         #ifdef BONETEXTURE
             var boneSampler : texture_2d<f32>;
-            uniform boneTextureWidth : f32;
         #else
             uniform mBones : array<mat4x4f, BonesPerMesh>;
         #endif

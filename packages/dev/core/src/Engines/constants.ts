@@ -1075,4 +1075,24 @@ export class Constants {
      * The default maxZ value for the far plane of a frustum light
      */
     public static ShadowMaxZ = 10000;
+
+    /**
+     * Used for Selection Outline Layer sampling methods
+     *
+     * Optimized brute force 3 directional sampling
+     *
+     * This method uses 1 center sample and 3 additional samples to compute the outline mask
+     * It is optimized but may produce artifacts when the outline thickness is set to high values.
+     */
+    public static readonly OUTLINELAYER_SAMPLING_TRIDIRECTIONAL = 0;
+
+    /**
+     * Used for Selection Outline Layer sampling methods
+     *
+     * Brute force 8 directional sampling
+     *
+     * This method uses 1 center sample and 8 additional samples to compute the outline mask
+     * It is more precise but less optimized.
+     */
+    public static readonly OUTLINELAYER_SAMPLING_OCTADIRECTIONAL = 1;
 }

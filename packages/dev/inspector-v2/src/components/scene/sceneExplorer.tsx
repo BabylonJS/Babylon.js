@@ -1,9 +1,10 @@
 import type { ScrollToInterface } from "@fluentui-contrib/react-virtualizer";
 import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { FluentIcon } from "@fluentui/react-icons";
-import type { ComponentType, FunctionComponent } from "react";
+import type { ComponentType, FunctionComponent, KeyboardEvent } from "react";
 
 import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
+import type { DragDropProps, DropProps } from "./sceneExplorerDragDrop";
 
 import { VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
 import {
@@ -38,6 +39,7 @@ import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
 import { useCompactMode } from "../../hooks/settingsHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
+import { useSceneExplorerDragDrop } from "./sceneExplorerDragDrop";
 
 type EntityBase = Readonly<{
     uniqueId?: number;
@@ -69,6 +71,33 @@ export type EntityDisplayInfo = Partial<IDisposable> &
          */
         onChange?: IReadonlyObservable<void>;
     }>;
+
+/**
+ * Configuration for drag-and-drop behavior within a section.
+ */
+export type SceneExplorerDragDropConfig<T> = Readonly<{
+    /**
+     * Determines whether an entity can be dragged.
+     * @param entity The entity to check.
+     * @returns True if the entity can be dragged, false otherwise.
+     */
+    canDrag: (entity: T) => boolean;
+
+    /**
+     * Determines whether an entity can be dropped onto a target.
+     * @param draggedEntity The entity being dragged.
+     * @param targetEntity The potential drop target entity, or null if dropping onto the section root.
+     * @returns True if the drop is allowed, false otherwise.
+     */
+    canDrop: (draggedEntity: T, targetEntity: T | null) => boolean;
+
+    /**
+     * Called when a drag-and-drop operation completes.
+     * @param draggedEntity The entity that was dragged.
+     * @param targetEntity The entity it was dropped onto, or null if dropped onto the section root.
+     */
+    onDrop: (draggedEntity: T, targetEntity: T | null) => void;
+}>;
 
 export type SceneExplorerSection<T> = Readonly<{
     /**
@@ -118,6 +147,12 @@ export type SceneExplorerSection<T> = Readonly<{
      * A function that returns an array of observables for when entities are moved (e.g. re-parented) within the scene.
      */
     getEntityMovedObservables?: () => readonly IReadonlyObservable<T>[];
+
+    /**
+     * Optional configuration for drag-and-drop behavior within this section.
+     * If not provided, drag-and-drop is disabled for this section.
+     */
+    dragDropConfig?: SceneExplorerDragDropConfig<T>;
 }>;
 
 type InlineCommand = {
@@ -174,6 +209,17 @@ export type SceneExplorerCommand<ModeT extends CommandMode = CommandMode, TypeT 
         displayName: string;
 
         /**
+         * An optional array of hotkeys that trigger the command.
+         */
+        hotKey?: {
+            keyCode: string;
+            control?: boolean;
+            alt?: boolean;
+            shift?: boolean;
+            meta?: boolean;
+        };
+
+        /**
          * An observable that notifies when the command state changes.
          */
         onChange?: IReadonlyObservable<unknown>;
@@ -205,6 +251,7 @@ type SectionTreeItemData = {
     type: "section";
     sectionName: string;
     children: EntityTreeItemData[];
+    dragDropConfig?: SceneExplorerDragDropConfig<unknown>;
 };
 
 type EntityTreeItemData = {
@@ -219,6 +266,14 @@ type EntityTreeItemData = {
 
 type TreeItemData = SceneTreeItemData | SectionTreeItemData | EntityTreeItemData;
 
+function GetEntitySection(entityItem: EntityTreeItemData): SectionTreeItemData {
+    let current: SectionTreeItemData | EntityTreeItemData = entityItem;
+    while (current.type === "entity") {
+        current = current.parent;
+    }
+    return current;
+}
+
 function ExpandOrCollapseAll(treeItem: SectionTreeItemData | EntityTreeItemData, open: boolean, openItems: Set<TreeItemValue>) {
     const addOrRemove = open ? openItems.add.bind(openItems) : openItems.delete.bind(openItems);
     TraverseGraph(
@@ -226,6 +281,14 @@ function ExpandOrCollapseAll(treeItem: SectionTreeItemData | EntityTreeItemData,
         (treeItem) => treeItem.children,
         (treeItem) => addOrRemove(treeItem.type === "entity" ? GetEntityId(treeItem.entity) : treeItem.sectionName)
     );
+}
+
+function GetCommandHotKeyDescription(command: SceneExplorerCommand): string {
+    if (!command.hotKey) {
+        return "";
+    }
+    const hotKey = command.hotKey;
+    return `${hotKey.control ? "Ctrl+" : ""}${hotKey.alt ? "Alt+" : ""}${hotKey.shift ? "Shift+" : ""}${hotKey.meta ? "Meta+" : ""}${hotKey.keyCode}`;
 }
 
 function useCommandContextMenuState(commands: readonly SceneExplorerCommand<"contextMenu">[]) {
@@ -269,7 +332,12 @@ function useCommandContextMenuState(commands: readonly SceneExplorerCommand<"con
 
     const contextMenuItems = commands.map((command) =>
         command.type === "action" ? (
-            <MenuItem key={command.displayName} icon={command.icon ? <command.icon /> : undefined} onClick={() => command.execute()}>
+            <MenuItem
+                key={command.displayName}
+                icon={command.icon ? <command.icon /> : undefined}
+                secondaryContent={GetCommandHotKeyDescription(command)}
+                onClick={() => command.execute()}
+            >
                 {command.displayName}
             </MenuItem>
         ) : (
@@ -278,6 +346,7 @@ function useCommandContextMenuState(commands: readonly SceneExplorerCommand<"con
                 // Don't show both a checkmark and an icon. null means no checkmark, undefined means default (checkmark).
                 checkmark={command.icon ? null : undefined}
                 icon={command.icon ? <command.icon /> : undefined}
+                secondaryContent={GetCommandHotKeyDescription(command)}
                 name="toggleCommands"
                 value={command.displayName}
             >
@@ -369,19 +438,30 @@ const useStyles = makeStyles({
     treeItemLayoutLeaf: {
         paddingLeft: `calc(var(${treeItemLevelToken}, 1) * ${tokens.spacingHorizontalL} + ${tokens.spacingHorizontalS})`,
     },
+    treeItemDragging: {
+        opacity: 0.5,
+    },
+    treeItemDropTarget: {
+        outline: `${tokens.strokeWidthThick} solid ${tokens.colorBrandForeground1}`,
+        outlineOffset: `-${tokens.strokeWidthThick}`,
+    },
 });
+
+function GetCommandDescription(command: SceneExplorerCommand): string {
+    return command.hotKey ? `${command.displayName} (${GetCommandHotKeyDescription(command)})` : command.displayName;
+}
 
 const ActionCommand: FunctionComponent<{ command: SceneExplorerCommand<"inline", "action"> }> = (props) => {
     const { command } = props;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const [displayName, Icon, execute] = useObservableState(
-        useCallback(() => [command.displayName, command.icon, command.execute] as const, [command]),
+    const [Icon, execute] = useObservableState(
+        useCallback(() => [command.icon, command.execute] as const, [command]),
         command.onChange
     );
 
     return (
-        <Tooltip content={displayName} relationship="label" positioning={"after"}>
+        <Tooltip content={GetCommandDescription(command)} relationship="label" positioning={"after"}>
             <Button icon={<Icon />} appearance="subtle" onClick={() => execute()} />
         </Tooltip>
     );
@@ -391,13 +471,21 @@ const ToggleCommand: FunctionComponent<{ command: SceneExplorerCommand<"inline",
     const { command } = props;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const [displayName, Icon, isEnabled] = useObservableState(
-        useCallback(() => [command.displayName, command.icon, command.isEnabled] as const, [command]),
+    const [Icon, isEnabled] = useObservableState(
+        useCallback(() => [command.icon, command.isEnabled] as const, [command]),
         command.onChange
     );
 
     // TODO-iv2: Consolidate icon prop passing approach for inspector and shared components
-    return <ToggleButton appearance="transparent" title={displayName} checkedIcon={Icon as FluentIcon} value={isEnabled} onChange={(val: boolean) => (command.isEnabled = val)} />;
+    return (
+        <ToggleButton
+            appearance="transparent"
+            title={GetCommandDescription(command)}
+            checkedIcon={Icon as FluentIcon}
+            value={isEnabled}
+            onChange={(val: boolean) => (command.isEnabled = val)}
+        />
+    );
 };
 
 // This "placeholder" command has a blank icon and is a no-op. It is used for aside
@@ -459,15 +547,18 @@ const SceneTreeItem: FunctionComponent<{
     );
 };
 
-const SectionTreeItem: FunctionComponent<{
-    scene: Scene;
-    section: SectionTreeItemData;
-    isFiltering: boolean;
-    commandProviders: readonly SceneExplorerCommandProvider<string, "contextMenu">[];
-    expandAll: () => void;
-    collapseAll: () => void;
-}> = (props) => {
-    const { section, isFiltering, commandProviders, expandAll, collapseAll } = props;
+const SectionTreeItem: FunctionComponent<
+    {
+        scene: Scene;
+        section: SectionTreeItemData;
+        isFiltering: boolean;
+        commandProviders: readonly SceneExplorerCommandProvider<string, "contextMenu">[];
+        expandAll: () => void;
+        collapseAll: () => void;
+        isDropTarget: boolean;
+    } & DropProps
+> = (props) => {
+    const { section, isFiltering, commandProviders, expandAll, collapseAll, isDropTarget, ...dropProps } = props;
 
     const classes = useStyles();
     const [compactMode] = useCompactMode();
@@ -491,7 +582,7 @@ const SectionTreeItem: FunctionComponent<{
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
-                    className={classes.treeItem}
+                    className={mergeClasses(classes.treeItem, isDropTarget && classes.treeItemDropTarget)}
                     key={section.sectionName}
                     value={section.sectionName}
                     // Disable manual expand/collapse when a filter is active.
@@ -500,6 +591,7 @@ const SectionTreeItem: FunctionComponent<{
                     aria-level={1}
                     aria-setsize={1}
                     aria-posinset={1}
+                    {...dropProps}
                 >
                     <TreeItemLayout className={mergeClasses(classes.treeItemLayoutBranch, compactMode ? classes.treeItemLayoutCompact : undefined)}>
                         <Body1Strong wrap={false} truncate>
@@ -528,17 +620,21 @@ const SectionTreeItem: FunctionComponent<{
     );
 };
 
-const EntityTreeItem: FunctionComponent<{
-    scene: Scene;
-    entityItem: EntityTreeItemData;
-    isSelected: boolean;
-    select: () => void;
-    isFiltering: boolean;
-    commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
-    expandAll: () => void;
-    collapseAll: () => void;
-}> = (props) => {
-    const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll } = props;
+const EntityTreeItem: FunctionComponent<
+    {
+        scene: Scene;
+        entityItem: EntityTreeItemData;
+        isSelected: boolean;
+        select: () => void;
+        isFiltering: boolean;
+        commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
+        expandAll: () => void;
+        collapseAll: () => void;
+        isDragging: boolean;
+        isDropTarget: boolean;
+    } & DragDropProps
+> = (props) => {
+    const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll, isDragging, isDropTarget, ...dragProps } = props;
 
     const classes = useStyles();
     const [compactMode] = useCompactMode();
@@ -642,25 +738,60 @@ const EntityTreeItem: FunctionComponent<{
 
     const [checkedContextMenuItems, onContextMenuCheckedValueChange, contextMenuItems] = useCommandContextMenuState(contextMenuCommands);
 
+    const onKeyDown = useCallback(
+        (evt: KeyboardEvent) => {
+            const command = commands.find((command) => {
+                const hotKey = command.hotKey;
+                if (hotKey) {
+                    if (
+                        evt.code.toLowerCase() === hotKey.keyCode.toLowerCase() &&
+                        !!hotKey.control === evt.ctrlKey &&
+                        !!hotKey.alt === evt.altKey &&
+                        !!hotKey.shift === evt.shiftKey &&
+                        !!hotKey.meta === evt.metaKey
+                    ) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            if (command) {
+                if (command.type === "action") {
+                    command.execute();
+                } else {
+                    command.isEnabled = !command.isEnabled;
+                }
+            }
+        },
+        [commands]
+    );
+
     return (
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
-                    className={classes.treeItem}
+                    className={mergeClasses(classes.treeItem, isDragging && classes.treeItemDragging, isDropTarget && classes.treeItemDropTarget)}
                     key={GetEntityId(entityItem.entity)}
                     value={GetEntityId(entityItem.entity)}
                     // Disable manual expand/collapse when a filter is active.
                     itemType={!isFiltering && hasChildren ? "branch" : "leaf"}
-                    parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : GetEntityId(entityItem.entity)}
+                    parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : GetEntityId(entityItem.parent.entity)}
                     aria-level={entityItem.depth}
                     aria-setsize={1}
                     aria-posinset={1}
                     onClick={select}
+                    onKeyDown={onKeyDown}
                     style={{ [treeItemLevelToken]: entityItem.depth }}
+                    {...dragProps}
                 >
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
-                        className={mergeClasses(hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf, compactMode ? classes.treeItemLayoutCompact : undefined)}
+                        className={mergeClasses(
+                            hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf,
+                            compactMode ? classes.treeItemLayoutCompact : undefined,
+                            isDropTarget && classes.treeItemDropTarget
+                        )}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                         actions={actions}
                         aside={{
@@ -724,6 +855,22 @@ export const SceneExplorer: FunctionComponent<{
     const [itemsFilter, setItemsFilter] = useState("");
     const [isSorted, setIsSorted] = useLocalStorage("Babylon/Settings/SceneExplorer/IsSorted", false);
 
+    // Drag-drop state
+    const { draggedEntity, dropTarget, dropTargetIsRoot, createDragProps, createSectionDropProps } = useSceneExplorerDragDrop({
+        onDrop: (draggedEntity, targetEntity) => {
+            // Expand the target so user can see the dropped item (if not dropping to root)
+            if (targetEntity) {
+                setOpenItems((prev) => {
+                    const next = new Set(prev);
+                    next.add(GetEntityId(targetEntity as EntityBase));
+                    return next;
+                });
+            }
+            // Select the dragged entity
+            setSelectedEntity(draggedEntity);
+        },
+    });
+
     useEffect(() => {
         setSceneVersion((version) => version + 1);
     }, [scene]);
@@ -781,6 +928,7 @@ export const SceneExplorer: FunctionComponent<{
                 type: "section",
                 sectionName: section.displayName,
                 children: [],
+                dragDropConfig: section.dragDropConfig,
             } as const satisfies SectionTreeItemData;
 
             sectionTreeItems.push(sectionTreeItem);
@@ -1042,9 +1190,21 @@ export const SceneExplorer: FunctionComponent<{
                                     commandProviders={sectionCommandProviders}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
+                                    isDropTarget={dropTargetIsRoot && !!item.dragDropConfig}
+                                    {...createSectionDropProps(item.dragDropConfig)}
                                 />
                             );
                         } else {
+                            // Get the section's dragDropConfig for this entity
+                            const section = GetEntitySection(item);
+                            const getName = () => {
+                                const displayInfo = item.getDisplayInfo();
+                                const name = displayInfo.name;
+                                displayInfo.dispose?.();
+                                return name;
+                            };
+                            const dragProps = createDragProps(item.entity, getName, section.dragDropConfig);
+
                             return (
                                 <EntityTreeItem
                                     key={item.entity.uniqueId}
@@ -1056,6 +1216,9 @@ export const SceneExplorer: FunctionComponent<{
                                     commandProviders={entityCommandProviders as SceneExplorerCommandProvider<EntityBase>[]}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
+                                    isDragging={draggedEntity === item.entity}
+                                    isDropTarget={dropTarget === item.entity}
+                                    {...dragProps}
                                 />
                             );
                         }

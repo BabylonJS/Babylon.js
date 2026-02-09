@@ -33,6 +33,13 @@ export interface IThinSelectionOutlineLayerOptions extends IThinEffectLayerOptio
      * Specifies whether the depth stored is the Z coordinate in camera space.
      */
     storeCameraSpaceZ?: boolean;
+
+    /**
+     * Outline method to use (default: Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL)
+     *
+     * @see {@link Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL}
+     */
+    outlineMethod?: number;
 }
 
 /**
@@ -110,6 +117,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             mainTextureType: Constants.TEXTURETYPE_FLOAT,
             mainTextureFormat: Constants.TEXTUREFORMAT_RG,
             storeCameraSpaceZ: false,
+            outlineMethod: Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL,
             ...options,
         };
 
@@ -339,6 +347,17 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
     /** @internal */
     public override _createMergeEffect(): Effect {
+        const defines: string[] = [];
+        switch (this._options.outlineMethod) {
+            case Constants.OUTLINELAYER_SAMPLING_TRIDIRECTIONAL:
+                defines.push("#define OUTLINELAYER_SAMPLING_TRIDIRECTIONAL");
+                break;
+            case Constants.OUTLINELAYER_SAMPLING_OCTADIRECTIONAL:
+                defines.push("#define OUTLINELAYER_SAMPLING_OCTADIRECTIONAL");
+                break;
+        }
+        const join = defines.join("\n");
+
         return this._engine.createEffect(
             {
                 // glowMapMerge vertex is just a basic vertex shader for drawing a quad. so we reuse it here
@@ -350,7 +369,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 attributes: [VertexBuffer.PositionKind],
                 uniformsNames: ["screenSize", "outlineColor", "outlineThickness", "occlusionStrength", "occlusionThreshold"],
                 samplers: ["maskSampler", "depthSampler"],
-                defines: "",
+                defines: join,
                 fallbacks: null,
                 onCompiled: null,
                 onError: null,
@@ -531,7 +550,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
                 // Selection ID
                 const selectionId = this._meshUniqueIdToSelectionId[renderingMesh.uniqueId];
-                if (!renderingMesh.hasInstances && !renderingMesh.isAnInstance && selectionId !== undefined) {
+                if (!renderingMesh.hasInstances && !renderingMesh.hasThinInstances && !renderingMesh.isAnInstance && selectionId !== undefined) {
                     effect.setFloat("selectionId", selectionId);
                 }
             }
@@ -684,6 +703,13 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 }
 
                 mesh.instancedBuffers[ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName] = nextId;
+            } else if (mesh.hasThinInstances) {
+                const thinInstanceCount = (mesh as Mesh).thinInstanceCount;
+                const selectionIdData = new Float32Array(thinInstanceCount);
+                for (let i = 0; i < thinInstanceCount; i++) {
+                    selectionIdData[i] = nextId;
+                }
+                (mesh as Mesh).thinInstanceSetBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, selectionIdData, 1);
             } else {
                 this._meshUniqueIdToSelectionId[mesh.uniqueId] = nextId;
             }
@@ -711,6 +737,8 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
             if (mesh.hasInstances) {
                 mesh.removeVerticesData(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName);
+            } else if (mesh.hasThinInstances) {
+                (mesh as Mesh).thinInstanceSetBuffer(ThinSelectionOutlineLayer.InstanceSelectionIdAttributeName, null);
             }
 
             if (selection.length === 0) {

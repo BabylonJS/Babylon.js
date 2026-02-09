@@ -36,6 +36,10 @@ const MultiScatteringLutDomainInUVSpace = (MultiScatteringLutSize - vec2f(1.)) /
 const MultiScatteringLutHalfTexelSize = vec2f(.5) / MultiScatteringLutSize;
 const NumAerialPerspectiveLutLayers = 32.;
 const AerialPerspectiveLutSize = vec3f(16., 64., NumAerialPerspectiveLutLayers);
+const SkyViewLutSize = vec2f(128., 128.);
+const SkyViewLutDomainInUVSpace = (SkyViewLutSize - vec2f(1.)) / SkyViewLutSize;
+const SkyViewLutHalfTexelSize = vec2f(.5) / SkyViewLutSize;
+const SkyViewLutSampleCount = 30;
 
 const AerialPerspectiveLutKMPerSlice = 4.;
 const AerialPerspectiveLutRangeKM = AerialPerspectiveLutKMPerSlice * NumAerialPerspectiveLutLayers;
@@ -64,6 +68,105 @@ fn sphereIntersectNearest(rayOrigin: vec3f, rayDirection: vec3f, sphereRadius: f
     // Ray starts outside, return y; Ray starts inside, return x.
     return select(result.x, result.y, c >= 0.);
 }
+
+fn moveToTopAtmosphere(
+    cameraPosition: vec3f,
+    positionRadius: f32,
+    positionGeocentricNormal: vec3f,
+    rayDirection: vec3f,
+    intersectsAtmosphere: ptr<function, bool>,
+    cameraPositionClampedToTopOfAtmosphere: ptr<function, vec3f>
+) {
+    *intersectsAtmosphere = true;
+    *cameraPositionClampedToTopOfAtmosphere = cameraPosition;
+
+    if (positionRadius > atmosphere.atmosphereRadius) {
+        let tTop = sphereIntersectNearest(cameraPosition, rayDirection, atmosphere.atmosphereRadius);
+        if (tTop >= 0.) {
+            let upOffset = -atmosphere.planetRadiusOffset * positionGeocentricNormal;
+            *cameraPositionClampedToTopOfAtmosphere = cameraPosition + rayDirection * tTop + upOffset;
+        } else {
+            *intersectsAtmosphere = false;
+        }
+    }
+    // else, position is inside the atmosphere.
+}
+
+fn getSkyViewUVFromParameters(
+    intersectsGround: bool,
+    cosHorizonAngleFromZenith: f32,
+    cosAngleBetweenViewAndZenith: f32,
+    cosAngleBetweenViewAndLightOnPlane: f32,
+    uv: ptr<function, vec2f>
+) {
+    // The sky view LUT is split into two halves, one half for the sky and one half for the ground.
+    // v = 0 is nadir, v = 0.5 is horizon, v = 1 is zenith.
+
+    var unit = vec2f(0.);
+    if (intersectsGround) {
+        var coord = (cosAngleBetweenViewAndZenith + 1.) / (cosHorizonAngleFromZenith + 1.);
+        coord = sqrtClamped(coord); // more precision at nadir
+        unit.y = .5 * coord; // 0 is nadir, 0.5 is horizon
+    } else {
+        var coord = (cosAngleBetweenViewAndZenith - cosHorizonAngleFromZenith) / (1. - cosHorizonAngleFromZenith);
+        coord = sqrtClamped(coord); // more precision at horizon, less at zenith.
+        unit.y = .5 * coord + .5; // 0.5 is horizon, 1 is zenith
+    }
+
+    unit.x = .5 - .5 * cosAngleBetweenViewAndLightOnPlane;
+
+    // Constrain UVs to valid sub texel range (avoiding zenith derivative issue making LUT usage visible)
+    *uv = unitToUV(unit, SkyViewLutDomainInUVSpace, SkyViewLutHalfTexelSize);
+}
+
+#if USE_SKY_VIEW_LUT && SAMPLE_SKY_VIEW_LUT
+
+fn sampleSkyViewLut(
+    skyViewLut: texture_2d<f32>,
+    positionRadius: f32,
+    geocentricNormal: vec3f,
+    rayDirection: vec3f,
+    directionToLight: vec3f,
+    cosHorizonAngleFromZenith: f32,
+    cosAngleBetweenViewAndZenith: ptr<function, f32>,
+    isRayIntersectingGround: ptr<function, bool>
+) -> vec4f {
+
+    *cosAngleBetweenViewAndZenith = dot(rayDirection, geocentricNormal);
+
+    // If the ray doesn't intersect the atmosphere, early out.
+    if (positionRadius > atmosphere.atmosphereRadius) {
+        let sinAngleBetweenViewAndNadir = sqrtClamped(1. - *cosAngleBetweenViewAndZenith * *cosAngleBetweenViewAndZenith);
+        if (sinAngleBetweenViewAndNadir > atmosphere.sinCameraAtmosphereHorizonAngleFromNadir) {
+            *isRayIntersectingGround = false;
+            return vec4f(0.);
+        }
+    }
+
+    let sideVector = normalize(cross(geocentricNormal, rayDirection));
+    let forwardVector = normalize(cross(sideVector, geocentricNormal));
+    let lightOnPlane = normalize(vec2f(dot(directionToLight, forwardVector), dot(directionToLight, sideVector)));
+    let cosAngleBetweenViewAndLightOnPlane = lightOnPlane.x;
+
+    // Only considering ground intersections that start from rays above the planet's surface.
+    // When inside the atmosphere, adds a factor to avoid seeing the seam between the sky and ground.
+    let rayIntersectionScale = mix(.95, 1., saturate((positionRadius - atmosphere.planetRadius) / atmosphere.atmosphereThickness));
+    *isRayIntersectingGround =
+        positionRadius > atmosphere.planetRadius &&
+        (rayIntersectionScale * *cosAngleBetweenViewAndZenith) <= cosHorizonAngleFromZenith;
+
+    var uv: vec2f;
+    getSkyViewUVFromParameters(
+        *isRayIntersectingGround,
+        cosHorizonAngleFromZenith,
+        *cosAngleBetweenViewAndZenith,
+        cosAngleBetweenViewAndLightOnPlane,
+        &uv);
+
+    return textureSampleLevel(skyViewLut, skyViewLutSampler, uv, 0.);
+}
+
+#endif
 
 fn computeRayleighPhase(onePlusCosThetaSq: f32) -> f32 {
     // 3/(16*Pi) * (1 + cosTheta^2)
@@ -522,6 +625,154 @@ fn renderMultiScattering(uv: vec2f, transmittanceLut: texture_2d<f32>) -> vec4f 
     let multiScatteringResult = inscattered / max(vec3f(.000001), vec3f(1.) - multiScatteringTotal);
 
     return vec4f(multiScatteringResult, 1.);
+}
+
+#endif
+
+fn computeCosHorizonAngleFromZenith(radius: f32) -> f32 {
+    let sinAngleBetweenHorizonAndNadir = min(1., atmosphere.planetRadius / radius);
+    let cosHorizonAngleFromNadir = sqrt(1. - sinAngleBetweenHorizonAndNadir * sinAngleBetweenHorizonAndNadir);
+    let cosHorizonAngleFromZenith = -cosHorizonAngleFromNadir;
+    return cosHorizonAngleFromZenith;
+}
+
+#if RENDER_SKY_VIEW
+
+fn getSkyViewParametersFromUV(
+    radius: f32,
+    uv: vec2f,
+    cosAngleBetweenViewAndZenith: ptr<function, f32>,
+    cosAngleBetweenViewAndLightOnPlane: ptr<function, f32>
+) {
+    // Constrain UVs to valid sub texel range (avoid zenith derivative issue making LUT usage visible)
+    let unit = uvToUnit(uv, SkyViewLutDomainInUVSpace, SkyViewLutHalfTexelSize);
+
+    let cosHorizonAngleFromZenith = computeCosHorizonAngleFromZenith(radius);
+
+    if (unit.y < .5) {
+        var coord = 2. * unit.y; // 0 to 0.5 ==> 0 to 1 (0 is nadir, 1 is horizon)
+        coord *= coord; // more precision at nadir
+        *cosAngleBetweenViewAndZenith = mix(-1., cosHorizonAngleFromZenith, coord); // cos(PI /* nadir */) ==-> cos(horizon angle)
+        // inverse: coord = (cosAngleBetweenViewAndZenith + 1.0) / (cosHorizonAngleFromZenith + 1.0)
+    } else {
+        var coord = 2. * unit.y - 1.; // 0.5 to 1 ==> 0 to 1 (0 is horizon, 1 is zenith)
+        coord *= coord; // more precision at horizon, less at zenith
+        *cosAngleBetweenViewAndZenith = mix(cosHorizonAngleFromZenith, 1., coord); // cos(horizon angle) ==-> cos(0 /* zenith */)
+        // inverse: coord = (cosAngleBetweenViewAndZenith - cosHorizonAngleFromZenith) / (1.0 - cosHorizonAngleFromZenith);
+    }
+
+    *cosAngleBetweenViewAndLightOnPlane = 1. - 2. * unit.x;
+}
+
+fn renderSkyView(uv: vec2f, transmittanceLut: texture_2d<f32>, multiScatteringLut: texture_2d<f32>) -> vec4f {
+    var cosAngleBetweenViewAndZenith: f32;
+    var cosAngleBetweenViewAndLightOnPlane: f32;
+    getSkyViewParametersFromUV(atmosphere.clampedCameraRadius, uv, &cosAngleBetweenViewAndZenith, &cosAngleBetweenViewAndLightOnPlane);
+
+    let sinAngleBetweenViewAndZenith = sqrtClamped(1. - cosAngleBetweenViewAndZenith * cosAngleBetweenViewAndZenith);
+    let sinAngleBetweenViewAndLightOnPlane = sqrtClamped(1. - cosAngleBetweenViewAndLightOnPlane * cosAngleBetweenViewAndLightOnPlane);
+    let rayDirection =
+        vec3f(
+            sinAngleBetweenViewAndZenith * cosAngleBetweenViewAndLightOnPlane,
+            cosAngleBetweenViewAndZenith,
+            sinAngleBetweenViewAndZenith * sinAngleBetweenViewAndLightOnPlane);
+
+    var intersectsAtmosphere = false;
+    var cameraPositionGlobalClampedToTopOfAtmosphere = vec3f(0.);
+    moveToTopAtmosphere(
+        vec3f(0., atmosphere.clampedCameraRadius, 0.),
+        atmosphere.clampedCameraRadius,
+        vec3f(0., 1., 0.),
+        rayDirection,
+        &intersectsAtmosphere,
+        &cameraPositionGlobalClampedToTopOfAtmosphere
+    );
+    if (!intersectsAtmosphere) {
+        return vec4f(0.);
+    }
+
+    var transmittanceVal: vec3f;
+    let radiance = integrateScatteredRadiance(
+        false, // isAerialPerspectiveLut
+        atmosphere.atmosphereExposure * atmosphere.lightIntensity,
+        transmittanceLut,
+        multiScatteringLut,
+        atmosphere.multiScatteringIntensity,
+        cameraPositionGlobalClampedToTopOfAtmosphere,
+        rayDirection,
+        atmosphere.directionToLightRelativeToCameraGeocentricNormal,
+        100000000.,
+        SkyViewLutSampleCount,
+        -1., // No planet hit.
+        &transmittanceVal
+    );
+
+    let transparency = 1. - avg(transmittanceVal);
+    return vec4f(radiance, transparency);
+}
+
+#endif
+
+#if RENDER_CAMERA_VOLUME
+
+fn renderCameraVolume(
+    positionOnNearPlane: vec3f,
+    layerIdx: f32,
+    transmittanceLut: texture_2d<f32>,
+    multiScatteringLut: texture_2d<f32>
+) -> vec4f {
+
+    var result = vec4f(0.);
+
+    let rayDirection = normalize(positionOnNearPlane);
+
+    let layer = layerIdxToAerialPerspectiveLayer(layerIdx);
+    let tMax = toAerialPerspectiveDepth(layer);
+
+    var tMaxMax = tMax;
+
+    var cameraPositionGlobalClampedToTopOfAtmosphere = atmosphere.clampedCameraPositionGlobal;
+    if (atmosphere.clampedCameraRadius >= atmosphere.atmosphereRadius) {
+
+        var intersectsAtmosphere = false;
+        moveToTopAtmosphere(
+            atmosphere.clampedCameraPositionGlobal,
+            atmosphere.clampedCameraRadius,
+            atmosphere.cameraGeocentricNormal,
+            rayDirection,
+            &intersectsAtmosphere,
+            &cameraPositionGlobalClampedToTopOfAtmosphere);
+        if (!intersectsAtmosphere) {
+            return result;
+        }
+
+        let distanceToAtmosphere = distance(atmosphere.clampedCameraPositionGlobal, cameraPositionGlobalClampedToTopOfAtmosphere);
+        if (tMaxMax < distanceToAtmosphere) {
+            return result;
+        }
+
+        tMaxMax = max(0., tMaxMax - distanceToAtmosphere);
+    }
+
+    let sampleCount = i32(min(SkyViewLutSampleCount, 2. * layer + 2.));
+    var transmittance: vec3f;
+    let radiance = integrateScatteredRadiance(
+        true, // isAerialPerspectiveLut
+        atmosphere.lightIntensity,
+        transmittanceLut,
+        multiScatteringLut,
+        atmosphere.multiScatteringIntensity,
+        cameraPositionGlobalClampedToTopOfAtmosphere,
+        rayDirection,
+        atmosphere.directionToLight,
+        tMaxMax,
+        sampleCount,
+        -1., // No planet hit.
+        &transmittance);
+
+    let transparency = 1. - avg(transmittance);
+    result = vec4f(radiance, transparency);
+    return result;
 }
 
 #endif

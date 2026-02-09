@@ -19,7 +19,6 @@ uniform sampler2D multiScatteringLut;
 #endif
 
 #include<core/helperFunctions>
-#include<depthFunctions>
 #include<atmosphereFunctions>
 
 varying vec2 uv;

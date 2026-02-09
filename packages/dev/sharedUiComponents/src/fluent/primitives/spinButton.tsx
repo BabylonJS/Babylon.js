@@ -6,6 +6,21 @@ import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
 import { CalculatePrecision, HandleKeyDown, HandleOnBlur, useInputStyles } from "./utils";
 import { ToolContext } from "../hoc/fluentToolWrapper";
+import { useKeyState } from "../hooks/keyboardHooks";
+
+function CoerceStepValue(step: number, isAltKeyPressed: boolean, isShiftKeyPressed: boolean): number {
+    // When the alt key is pressed, decrease step by a factor of 10.
+    if (isAltKeyPressed) {
+        return step * 0.1;
+    }
+
+    // When the shift key is pressed, increase step by a factor of 10.
+    if (isShiftKeyPressed) {
+        return step * 10;
+    }
+
+    return step;
+}
 
 export type SpinButtonProps = PrimitiveProps<number> & {
     min?: number;
@@ -29,9 +44,18 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
 
     const [value, setValue] = useState(props.value);
     const lastCommittedValue = useRef(props.value);
+
+    // When the input does not have keyboard focus
+    const isUnfocusedAltKeyPressed = useKeyState("Alt");
+    const isUnfocusedShiftKeyPressed = useKeyState("Shift");
+
+    // When the input does have keyboard focus
+    const [isFocusedAltKeyPressed, setIsFocusedAltKeyPressed] = useState(false);
+    const [isFocusedShiftKeyPressed, setIsFocusedShiftKeyPressed] = useState(false);
+
     // step and forceInt are not mutually exclusive since there could be cases where you want to forceInt but have spinButton jump >1 int per spin
-    const step = props.step != undefined ? props.step : props.forceInt ? 1 : undefined;
-    const precision = Math.min(4, step !== undefined ? Math.max(0, CalculatePrecision(step)) : 2); // If no step, set precision to 2. Regardless, cap precision at 4 to avoid wild numbers
+    const step = CoerceStepValue(props.step ?? 1, isUnfocusedAltKeyPressed || isFocusedAltKeyPressed, isUnfocusedShiftKeyPressed || isFocusedShiftKeyPressed);
+    const precision = Math.min(4, Math.max(0, CalculatePrecision(step))); // Cap precision at 4 to avoid wild numbers
 
     useEffect(() => {
         if (props.value !== lastCommittedValue.current) {
@@ -64,11 +88,37 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
         }
     };
 
+    const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Alt") {
+            setIsFocusedAltKeyPressed(true);
+        } else if (event.key === "Shift") {
+            setIsFocusedShiftKeyPressed(true);
+        }
+
+        HandleKeyDown(event);
+    };
+
     const handleKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
         event.stopPropagation(); // Prevent event propagation
 
         if (event.key !== "Enter") {
-            const currVal = parseFloat((event.target as any).value); // Cannot use currentTarget.value as it won't have the most recently typed value
+            if (event.key === "Alt") {
+                setIsFocusedAltKeyPressed(false);
+            } else if (event.key === "Shift") {
+                setIsFocusedShiftKeyPressed(false);
+            }
+
+            // Allow arbitrary expressions, primarily for math operations (e.g. 10*60 for 10 minutes in seconds).
+            // Use Function constructor to safely evaluate the expression without allowing access to scope.
+            // If the expression is invalid, fallback to NaN which will be caught by validateValue and prevent committing.
+            const currVal = ((val: string): number => {
+                try {
+                    return Number(Function(`"use strict";return (${val})`)());
+                } catch {
+                    return NaN;
+                }
+            })((event.target as any).value);
+
             setValue(currVal);
             tryCommitValue(currVal);
         }
@@ -95,8 +145,8 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
             displayValue={`${value.toFixed(precision)}${props.unit ? " " + props.unit : ""}`}
             value={value}
             onChange={handleChange}
+            onKeyDown={handleKeyDown}
             onKeyUp={handleKeyUp}
-            onKeyDown={HandleKeyDown}
             onBlur={HandleOnBlur}
             className={mergedClassName}
         />
