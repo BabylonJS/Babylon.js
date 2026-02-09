@@ -222,6 +222,12 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
     const accordionCtx = useContext(AccordionContext);
     const itemState = useAccordionSectionItemState(props);
     const [ctrlMode, setCtrlMode] = useState(false);
+    const ctrlPressed = useKeyState("Control");
+    const [mouseOver, setMouseOver] = useState(false);
+
+    useEffect(() => {
+        setCtrlMode(ctrlPressed && mouseOver);
+    }, [ctrlPressed, mouseOver]);
 
     const ctrlPressed = useKeyState("Control");
     const [mouseOver, setMouseOver] = useState(false);

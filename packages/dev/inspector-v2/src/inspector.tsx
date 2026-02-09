@@ -372,6 +372,8 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             extensionFeeds: [DefaultInspectorExtensionFeed, ...(options.extensionFeeds ?? [])],
             toolbarMode: "compact",
             sidePaneRemapper: options.sidePaneRemapper,
+            leftPaneDefaultCollapsed: options.leftPaneDefaultCollapsed,
+            rightPaneDefaultCollapsed: options.rightPaneDefaultCollapsed,
         });
         disposeActions.push(() => modularTool.dispose());
 
