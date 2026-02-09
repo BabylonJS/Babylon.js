@@ -103,8 +103,10 @@ export type AnimationSizeMessagePayload = {
 export type StartAnimationMessagePayload = {
     /** The canvas element to render the animation on. */
     canvas: OffscreenCanvas;
-    /** The scale in which to play the animation. */
-    scaleFactor: number;
+    /** The canvas/viewport scale factor (may be \< 1 when the animation is larger than the container). */
+    canvasScale: number;
+    /** The sprite-atlas scale factor (always \>= 1 so sprites are never rasterised too small). */
+    atlasScale: number;
     /** Optional variables to replace in the animation file. */
     variables: Nullable<Map<string, string>>;
     /** Optional configuration object to customize the animation playback. */
@@ -117,8 +119,8 @@ export type StartAnimationMessagePayload = {
 
 /** Payload for the "containerResize" message type */
 export type ContainerResizeMessagePayload = {
-    /** The new scale after the resize. */
-    scaleFactor: number;
+    /** The new canvas scale after the resize. */
+    canvasScale: number;
 };
 
 /** Payload for the "preWarm" message type */

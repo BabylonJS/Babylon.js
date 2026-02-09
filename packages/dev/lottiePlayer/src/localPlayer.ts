@@ -1,9 +1,11 @@
 import type { Nullable } from "core/types";
 import type { AnimationInput } from "./types";
 import type { RawLottieAnimation } from "./parsing/rawTypes";
+import type { ScaleFactors } from "./rendering/calculateScaleFactor";
+
 import { GetRawAnimationDataAsync } from "./parsing/parser";
 import { AnimationController } from "./rendering/animationController";
-import { CalculateScaleFactor } from "./rendering/calculateScaleFactor";
+import { CalculateScaleFactors } from "./rendering/calculateScaleFactor";
 
 /**
  * Allows you to play Lottie animations using Babylon.js.
@@ -13,7 +15,7 @@ import { CalculateScaleFactor } from "./rendering/calculateScaleFactor";
 export class LocalPlayer {
     private _input: Nullable<AnimationInput> = null;
     private _rawAnimation: RawLottieAnimation | undefined = undefined;
-    private _scaleFactor: number = 1;
+    private _scaleFactors: ScaleFactors = { canvasScale: 1, atlasScale: 1 };
     private _playing = false;
     private _disposed = false;
     private _canvas: HTMLCanvasElement | null = null;
@@ -51,9 +53,9 @@ export class LocalPlayer {
         this._canvas.id = "babylon-canvas";
 
         // The size of the canvas is the relation between the size of the container div and the size of the animation
-        this._scaleFactor = CalculateScaleFactor(this._rawAnimation.w, this._rawAnimation.h, this._input.container);
-        this._canvas.style.width = `${this._rawAnimation.w * this._scaleFactor}px`;
-        this._canvas.style.height = `${this._rawAnimation.h * this._scaleFactor}px`;
+        this._scaleFactors = CalculateScaleFactors(this._rawAnimation.w, this._rawAnimation.h, this._input.container);
+        this._canvas.style.width = `${this._rawAnimation.w * this._scaleFactors.canvasScale}px`;
+        this._canvas.style.height = `${this._rawAnimation.h * this._scaleFactors.canvasScale}px`;
 
         // Append the canvas to the container
         this._input.container.appendChild(this._canvas);
@@ -61,7 +63,8 @@ export class LocalPlayer {
         this._animationController = new AnimationController(
             this._canvas,
             this._rawAnimation,
-            this._scaleFactor,
+            this._scaleFactors.canvasScale,
+            this._scaleFactors.atlasScale,
             this._input.variables ?? new Map<string, string>(),
             this._input.configuration ?? {}
         );
@@ -121,13 +124,13 @@ export class LocalPlayer {
                 return;
             }
 
-            const newScale = CalculateScaleFactor(this._rawAnimation.w, this._rawAnimation.h, this._input.container);
-            if (this._scaleFactor !== newScale) {
-                this._scaleFactor = newScale;
+            const newScaleFactors = CalculateScaleFactors(this._rawAnimation.w, this._rawAnimation.h, this._input.container);
+            if (this._scaleFactors.canvasScale !== newScaleFactors.canvasScale) {
+                this._scaleFactors = newScaleFactors;
 
-                this._canvas.style.width = `${this._rawAnimation.w * newScale}px`;
-                this._canvas.style.height = `${this._rawAnimation.h * newScale}px`;
-                this._animationController.setScale(newScale);
+                this._canvas.style.width = `${this._rawAnimation.w * newScaleFactors.canvasScale}px`;
+                this._canvas.style.height = `${this._rawAnimation.h * newScaleFactors.canvasScale}px`;
+                this._animationController.setScale(newScaleFactors.canvasScale);
             }
         }, this._resizeDebounceMs);
     }

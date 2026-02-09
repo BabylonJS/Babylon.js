@@ -1,7 +1,7 @@
 import type { ScrollToInterface } from "@fluentui-contrib/react-virtualizer";
 import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { FluentIcon } from "@fluentui/react-icons";
-import type { ComponentType, FunctionComponent } from "react";
+import type { ComponentType, FunctionComponent, KeyboardEvent } from "react";
 
 import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
 import type { DragDropProps, DropProps } from "./sceneExplorerDragDrop";
@@ -209,6 +209,17 @@ export type SceneExplorerCommand<ModeT extends CommandMode = CommandMode, TypeT 
         displayName: string;
 
         /**
+         * An optional array of hotkeys that trigger the command.
+         */
+        hotKey?: {
+            keyCode: string;
+            control?: boolean;
+            alt?: boolean;
+            shift?: boolean;
+            meta?: boolean;
+        };
+
+        /**
          * An observable that notifies when the command state changes.
          */
         onChange?: IReadonlyObservable<unknown>;
@@ -272,6 +283,14 @@ function ExpandOrCollapseAll(treeItem: SectionTreeItemData | EntityTreeItemData,
     );
 }
 
+function GetCommandHotKeyDescription(command: SceneExplorerCommand): string {
+    if (!command.hotKey) {
+        return "";
+    }
+    const hotKey = command.hotKey;
+    return `${hotKey.control ? "Ctrl+" : ""}${hotKey.alt ? "Alt+" : ""}${hotKey.shift ? "Shift+" : ""}${hotKey.meta ? "Meta+" : ""}${hotKey.keyCode}`;
+}
+
 function useCommandContextMenuState(commands: readonly SceneExplorerCommand<"contextMenu">[]) {
     const [checkedContextMenuItems, setCheckedContextMenuItems] = useState({ toggleCommands: [] as string[] });
 
@@ -313,7 +332,12 @@ function useCommandContextMenuState(commands: readonly SceneExplorerCommand<"con
 
     const contextMenuItems = commands.map((command) =>
         command.type === "action" ? (
-            <MenuItem key={command.displayName} icon={command.icon ? <command.icon /> : undefined} onClick={() => command.execute()}>
+            <MenuItem
+                key={command.displayName}
+                icon={command.icon ? <command.icon /> : undefined}
+                secondaryContent={GetCommandHotKeyDescription(command)}
+                onClick={() => command.execute()}
+            >
                 {command.displayName}
             </MenuItem>
         ) : (
@@ -322,6 +346,7 @@ function useCommandContextMenuState(commands: readonly SceneExplorerCommand<"con
                 // Don't show both a checkmark and an icon. null means no checkmark, undefined means default (checkmark).
                 checkmark={command.icon ? null : undefined}
                 icon={command.icon ? <command.icon /> : undefined}
+                secondaryContent={GetCommandHotKeyDescription(command)}
                 name="toggleCommands"
                 value={command.displayName}
             >
@@ -422,17 +447,21 @@ const useStyles = makeStyles({
     },
 });
 
+function GetCommandDescription(command: SceneExplorerCommand): string {
+    return command.hotKey ? `${command.displayName} (${GetCommandHotKeyDescription(command)})` : command.displayName;
+}
+
 const ActionCommand: FunctionComponent<{ command: SceneExplorerCommand<"inline", "action"> }> = (props) => {
     const { command } = props;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const [displayName, Icon, execute] = useObservableState(
-        useCallback(() => [command.displayName, command.icon, command.execute] as const, [command]),
+    const [Icon, execute] = useObservableState(
+        useCallback(() => [command.icon, command.execute] as const, [command]),
         command.onChange
     );
 
     return (
-        <Tooltip content={displayName} relationship="label" positioning={"after"}>
+        <Tooltip content={GetCommandDescription(command)} relationship="label" positioning={"after"}>
             <Button icon={<Icon />} appearance="subtle" onClick={() => execute()} />
         </Tooltip>
     );
@@ -442,13 +471,21 @@ const ToggleCommand: FunctionComponent<{ command: SceneExplorerCommand<"inline",
     const { command } = props;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const [displayName, Icon, isEnabled] = useObservableState(
-        useCallback(() => [command.displayName, command.icon, command.isEnabled] as const, [command]),
+    const [Icon, isEnabled] = useObservableState(
+        useCallback(() => [command.icon, command.isEnabled] as const, [command]),
         command.onChange
     );
 
     // TODO-iv2: Consolidate icon prop passing approach for inspector and shared components
-    return <ToggleButton appearance="transparent" title={displayName} checkedIcon={Icon as FluentIcon} value={isEnabled} onChange={(val: boolean) => (command.isEnabled = val)} />;
+    return (
+        <ToggleButton
+            appearance="transparent"
+            title={GetCommandDescription(command)}
+            checkedIcon={Icon as FluentIcon}
+            value={isEnabled}
+            onChange={(val: boolean) => (command.isEnabled = val)}
+        />
+    );
 };
 
 // This "placeholder" command has a blank icon and is a no-op. It is used for aside
@@ -701,6 +738,35 @@ const EntityTreeItem: FunctionComponent<
 
     const [checkedContextMenuItems, onContextMenuCheckedValueChange, contextMenuItems] = useCommandContextMenuState(contextMenuCommands);
 
+    const onKeyDown = useCallback(
+        (evt: KeyboardEvent) => {
+            const command = commands.find((command) => {
+                const hotKey = command.hotKey;
+                if (hotKey) {
+                    if (
+                        evt.code.toLowerCase() === hotKey.keyCode.toLowerCase() &&
+                        !!hotKey.control === evt.ctrlKey &&
+                        !!hotKey.alt === evt.altKey &&
+                        !!hotKey.shift === evt.shiftKey &&
+                        !!hotKey.meta === evt.metaKey
+                    ) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            if (command) {
+                if (command.type === "action") {
+                    command.execute();
+                } else {
+                    command.isEnabled = !command.isEnabled;
+                }
+            }
+        },
+        [commands]
+    );
+
     return (
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
@@ -715,6 +781,7 @@ const EntityTreeItem: FunctionComponent<
                     aria-setsize={1}
                     aria-posinset={1}
                     onClick={select}
+                    onKeyDown={onKeyDown}
                     style={{ [treeItemLevelToken]: entityItem.depth }}
                     {...dragProps}
                 >

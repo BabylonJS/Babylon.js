@@ -46,7 +46,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
 
     // This is the configuration for the player, you can pass as much or as little as you want, the rest will be defaulted
     const configuration: Partial<AnimationConfiguration> = {
-        backgroundColor: { r: 0 / 255, g: 0 / 255, b: 0 / 255, a: 1 }, // Background color for the animation canvas
+        backgroundColor: { r: 255 / 255, g: 255 / 255, b: 255 / 255, a: 1 }, // Background color for the animation canvas, visual tests use white
     };
 
     // Create the player and play the animation

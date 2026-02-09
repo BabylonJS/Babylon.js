@@ -464,6 +464,8 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         }
 
         if (this.targetTexture !== undefined) {
+            // We don't clear the target texture, but we need to add a layout for it in clearAttachmentsLayout to be able to use clearColorAttachments with the correct number of attachments in _prepareRendering.
+            // We also need to add a value in allAttachmentsLayout for the target texture.
             let layout = clearAttachmentsLayout.get(GeometryRenderingTextureClearType.Zero);
             if (layout === undefined) {
                 layout = [];

@@ -914,7 +914,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         }
 
         if (!this._handResources.jointMeshes) {
-            this._originalMesh = this._originalMesh || this.options.jointMeshes?.sourceMesh || CreateIcoSphere("jointParent", WebXRHandTracking._ICOSPHERE_PARAMS);
+            this._originalMesh =
+                this._originalMesh || this.options.jointMeshes?.sourceMesh || CreateIcoSphere("jointParent", WebXRHandTracking._ICOSPHERE_PARAMS, this._xrSessionManager.scene);
             this._originalMesh.isVisible = false;
 
             this._handResources.jointMeshes = WebXRHandTracking._GenerateTrackedJointMeshes(this.options, this._originalMesh);

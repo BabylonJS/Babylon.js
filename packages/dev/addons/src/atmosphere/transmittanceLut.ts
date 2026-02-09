@@ -155,11 +155,9 @@ export class TransmittanceLut {
             shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializations: (_, list) => {
                 list.push(
-                    Promise.all(
-                        useWebGPU
-                            ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/transmittance.fragment")]
-                            : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/transmittance.fragment")]
-                    )
+                    ...(useWebGPU
+                        ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/transmittance.fragment")]
+                        : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/transmittance.fragment")])
                 );
             },
         });

@@ -207,6 +207,10 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                         return `${mesh.isVisible ? "Hide" : "Show"} Mesh`;
                     },
                     icon: () => (mesh.isVisible ? <EyeRegular /> : <EyeOffRegular />),
+                    hotKey: {
+                        keyCode: "Space",
+                        control: true,
+                    },
                     get isEnabled() {
                         return !mesh.isVisible;
                     },

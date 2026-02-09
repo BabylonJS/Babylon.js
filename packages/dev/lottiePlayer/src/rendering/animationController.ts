@@ -27,7 +27,8 @@ export class AnimationController {
     private _isReady: boolean;
 
     private readonly _canvas: HTMLCanvasElement | OffscreenCanvas;
-    private _scaleFactor: number;
+    private _canvasScale: number;
+    private readonly _atlasScale: number;
     private readonly _variables: Map<string, string>;
     private _configuration: AnimationConfiguration;
     private readonly _engine: ThinEngine;
@@ -81,7 +82,8 @@ export class AnimationController {
      * Creates a new instance of the Player.
      * @param canvas The canvas element to render the animation on.
      * @param animationData The raw lottie animation as a JSON object.
-     * @param scaleFactor The scale factor between the animation and the container, it will modify the sprites size in the atlas
+     * @param canvasScale The scale factor for the canvas / viewport (may be \< 1 when the animation is larger than the container).
+     * @param atlasScale The scale factor for the sprite atlas (always \>= 1 to keep sprites crisp).
      * @param variables Map of variables to replace in the animation file.
      * @param configuration The partial configuration for the animation player. Will be finalized after engine creation.
      * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios).
@@ -89,14 +91,16 @@ export class AnimationController {
     public constructor(
         canvas: HTMLCanvasElement | OffscreenCanvas,
         animationData: RawLottieAnimation,
-        scaleFactor: number,
+        canvasScale: number,
+        atlasScale: number,
         variables: Map<string, string>,
         configuration: Partial<AnimationConfiguration>,
         mainThreadDevicePixelRatio?: number
     ) {
         this._isReady = false;
         this._canvas = canvas;
-        this._scaleFactor = scaleFactor;
+        this._canvasScale = canvasScale;
+        this._atlasScale = atlasScale;
         this._variables = variables;
         this._currentFrame = 0;
         this._isPlaying = false;
@@ -140,7 +144,7 @@ export class AnimationController {
         this._engine.stencilState.stencilTest = false;
         this._engine.setAlphaMode(ALPHA_PREMULTIPLIED);
 
-        this._spritePacker = new SpritePacker(this._engine, this._isHtmlCanvas(canvas), this._scaleFactor, this._variables, this._configuration);
+        this._spritePacker = new SpritePacker(this._engine, this._isHtmlCanvas(canvas), this._atlasScale, this._variables, this._configuration);
         this._renderingManager = new RenderingManager(this._engine, this._spritePacker.texture, this._configuration);
 
         this._projectionMatrix = new ThinMatrix();
@@ -156,7 +160,7 @@ export class AnimationController {
         this._frameDuration = 1000 / this._animation.frameRate;
 
         this._cleanTree(this._animation.nodes);
-        this._setSize(animationData.w, animationData.h, this._scaleFactor);
+        this._setSize(animationData.w, animationData.h, this._canvasScale);
 
         this._isReady = true;
     }
@@ -193,16 +197,17 @@ export class AnimationController {
     }
 
     /**
-     * Sets a new scale factor for the animation and updates the rendering size.
-     * @param scale The new scale factor to apply to the animation.
+     * Sets a new canvas scale factor for the animation and updates the rendering size.
+     * This only affects the canvas/viewport size, not the sprite atlas.
+     * @param canvasScale The new canvas scale factor to apply to the animation.
      */
-    public setScale(scale: number): void {
-        if (scale <= 0 || this._animation === undefined) {
+    public setScale(canvasScale: number): void {
+        if (canvasScale <= 0 || this._animation === undefined) {
             return;
         }
 
-        this._scaleFactor = scale;
-        this._setSize(this._animation.widthPx, this._animation.heightPx, this._scaleFactor);
+        this._canvasScale = canvasScale;
+        this._setSize(this._animation.widthPx, this._animation.heightPx, this._canvasScale);
     }
 
     /**
@@ -223,21 +228,38 @@ export class AnimationController {
     }
 
     /**
-     * Sets the rendering size for the engine
+     * Sets the rendering size for the engine.
+     *
+     * The engine back-buffer is sized to the canvas (width * canvasScale * dpr),
+     * but the orthographic projection maps the coordinate space so that sprites
+     * rasterised at `atlasScale` in the atlas are correctly placed in the
+     * `canvasScale`-sized viewport.
+     *
      * @param width Width of the rendering canvas
      * @param height Height of the rendering canvas
-     * @param scale Scale ratio between the container and the animation
+     * @param canvasScale Canvas scale ratio between the container and the animation
      */
-    private _setSize(width: number, height: number, scale: number): void {
+    private _setSize(width: number, height: number, canvasScale: number): void {
         const { _engine, _projectionMatrix, _worldMatrix } = this;
         const devicePixelRatio = this._configuration.devicePixelRatio;
 
-        _engine.setSize(width * scale * devicePixelRatio, height * scale * devicePixelRatio);
+        _engine.setSize(width * canvasScale * devicePixelRatio, height * canvasScale * devicePixelRatio);
 
         const world = _worldMatrix.asArray();
         world[5] = -1; // we are upside down with Lottie
 
-        _projectionMatrix.orthoOffCenterLeftHanded(0, _engine.getRenderWidth() / (devicePixelRatio * scale), _engine.getRenderHeight() / (devicePixelRatio * scale), 0, -100, 100);
+        // The projection always maps the full animation coordinate space [0, width] × [0, height]
+        // into the canvas. Dividing by canvasScale cancels it out from
+        // the engine resolution, so sprites positioned in animation-space render correctly
+        // regardless of whether the canvas is smaller or larger than the animation.
+        _projectionMatrix.orthoOffCenterLeftHanded(
+            0,
+            _engine.getRenderWidth() / (devicePixelRatio * canvasScale),
+            _engine.getRenderHeight() / (devicePixelRatio * canvasScale),
+            0,
+            -100,
+            100
+        );
 
         // If we are not playing anymore (animation finished), resizing clears the buffer.
         // Redraw the last frame so the canvas does not appear blank after a resize.

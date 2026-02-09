@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/smart-filters-blocks",
-    "version": "8.50.0",
+    "version": "8.50.2",
     "description": "Babylon.js Smart Filter Block Library",
     "keywords": [
         "video",
@@ -48,6 +48,6 @@
         "@babylonjs/core": "^7.47.3 || ^8.0.1"
     },
     "dependencies": {
-        "@babylonjs/smart-filters": "8.50.0"
+        "@babylonjs/smart-filters": "8.50.2"
     }
 }
