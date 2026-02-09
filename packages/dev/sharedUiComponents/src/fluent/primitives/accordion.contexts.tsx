@@ -49,7 +49,7 @@ export type AccordionAction =
     | { type: "SET_EDIT_MODE"; enabled: boolean }
     | { type: "TOGGLE_PINNED"; itemId: string }
     | { type: "TOGGLE_HIDDEN"; itemId: string }
-    | { type: "MOVE_PINNED_UP"; itemId: string; hiddenIds: string[] }
+    | { type: "MOVE_PINNED_UP"; itemId: string }
     | { type: "SHOW_ALL" }
     | { type: "HIDE_ALL_VISIBLE"; visibleItemIds: string[] };
 
@@ -98,16 +98,8 @@ const AccordionReducer = (state: AccordionState, action: AccordionAction): Accor
             if (index <= 0) {
                 return state;
             }
-            // Find the previous visible (non-hidden) pinned item to swap with
-            let swapIndex = index - 1;
-            while (swapIndex >= 0 && action.hiddenIds.includes(state.pinnedIds[swapIndex])) {
-                swapIndex--;
-            }
-            if (swapIndex < 0) {
-                return state; // No visible item above to swap with
-            }
             const newPinnedIds = [...state.pinnedIds];
-            [newPinnedIds[swapIndex], newPinnedIds[index]] = [newPinnedIds[index], newPinnedIds[swapIndex]];
+            [newPinnedIds[index - 1], newPinnedIds[index]] = [newPinnedIds[index], newPinnedIds[index - 1]];
             return { ...state, pinnedIds: newPinnedIds };
         }
 
@@ -389,19 +381,7 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
     const isHidden = features.hiding && hiddenIds.includes(itemUniqueId);
     const pinnedIndex = isPinned ? pinnedIds.indexOf(itemUniqueId) : -1;
 
-    // Check if there's a visible (non-hidden) pinned item above this one
-    const canMoveUp = useMemo(() => {
-        if (!isPinned || pinnedIndex <= 0) {
-            return false;
-        }
-        // Check if any item above this one is visible (not hidden)
-        for (let i = pinnedIndex - 1; i >= 0; i--) {
-            if (!hiddenIds.includes(pinnedIds[i])) {
-                return true;
-            }
-        }
-        return false;
-    }, [isPinned, pinnedIndex, pinnedIds, hiddenIds]);
+    const canMoveUp = isPinned && pinnedIndex > 0;
 
     // Search matching
     const searchText = (itemLabel ?? itemId).toLowerCase();
@@ -427,7 +407,7 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         actions: {
             togglePinned: () => dispatch({ type: "TOGGLE_PINNED", itemId: itemUniqueId }),
             toggleHidden: () => dispatch({ type: "TOGGLE_HIDDEN", itemId: itemUniqueId }),
-            movePinnedUp: () => dispatch({ type: "MOVE_PINNED_UP", itemId: itemUniqueId, hiddenIds }),
+            movePinnedUp: () => dispatch({ type: "MOVE_PINNED_UP", itemId: itemUniqueId }),
         },
     };
 }
