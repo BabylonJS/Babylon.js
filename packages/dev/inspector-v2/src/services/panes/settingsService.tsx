@@ -195,7 +195,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                                 <AccordionSection title="Scene">
                                     <SwitchPropertyLine
                                         label="Highlight Selected Entity"
-                                        description="Highlight the selected mesh in the scene."
+                                        description="Highlight the selected mesh in the scene. Enabling this setting may impact rendering performance."
                                         value={highlightSelectedEntity}
                                         onChange={(value) => (settings.highlightSelectedEntity = value)}
                                     />
