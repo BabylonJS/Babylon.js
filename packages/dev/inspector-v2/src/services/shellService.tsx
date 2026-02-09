@@ -284,12 +284,12 @@ export type ShellServiceOptions = {
     /**
      * Whether the left side pane should start collapsed. Default is false.
      */
-    leftPaneStartCollapsed?: boolean;
+    leftPaneDefaultCollapsed?: boolean;
 
     /**
      * Whether the right side pane should start collapsed. Default is false.
      */
-    rightPaneStartCollapsed?: boolean;
+    rightPaneDefaultCollapsed?: boolean;
 
     /**
      * A function that can remap the default location of side panes.
@@ -1115,8 +1115,8 @@ export function MakeShellServiceDefinition({
     leftPaneMinWidth = 350,
     rightPaneDefaultWidth = 350,
     rightPaneMinWidth = 350,
-    leftPaneStartCollapsed = false,
-    rightPaneStartCollapsed = false,
+    leftPaneDefaultCollapsed = false,
+    rightPaneDefaultCollapsed = false,
     toolbarMode = "full",
     sidePaneRemapper = undefined,
 }: ShellServiceOptions = {}): ServiceDefinition<[IShellService, IRootComponentService], []> {
@@ -1137,7 +1137,7 @@ export function MakeShellServiceDefinition({
                 isDocked: true,
                 dock: () => onDockChanged.notifyObservers({ location: "left", dock: true }),
                 undock: () => onDockChanged.notifyObservers({ location: "left", dock: false }),
-                isCollapsed: leftPaneStartCollapsed,
+                isCollapsed: leftPaneDefaultCollapsed,
                 collapse: () => onCollapseChanged.notifyObservers({ location: "left", collapsed: true }),
                 expand: () => onCollapseChanged.notifyObservers({ location: "left", collapsed: false }),
             };
@@ -1146,7 +1146,7 @@ export function MakeShellServiceDefinition({
                 isDocked: true,
                 dock: () => onDockChanged.notifyObservers({ location: "right", dock: true }),
                 undock: () => onDockChanged.notifyObservers({ location: "right", dock: false }),
-                isCollapsed: rightPaneStartCollapsed,
+                isCollapsed: rightPaneDefaultCollapsed,
                 collapse: () => onCollapseChanged.notifyObservers({ location: "right", collapsed: true }),
                 expand: () => onCollapseChanged.notifyObservers({ location: "right", collapsed: false }),
             };
@@ -1329,7 +1329,7 @@ export function MakeShellServiceDefinition({
                     toolbarMode,
                     topBarLeftItems,
                     bottomBarLeftItems,
-                    leftPaneStartCollapsed
+                    leftPaneDefaultCollapsed
                 );
 
                 useEffect(() => {
@@ -1352,7 +1352,7 @@ export function MakeShellServiceDefinition({
                     toolbarMode,
                     topBarRightItems,
                     bottomBarRightItems,
-                    rightPaneStartCollapsed
+                    rightPaneDefaultCollapsed
                 );
 
                 useEffect(() => {
