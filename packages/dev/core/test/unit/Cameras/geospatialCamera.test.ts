@@ -167,6 +167,29 @@ describe("GeospatialCamera", () => {
             // North should have positive Z component (pointing toward north pole)
             expect(north.z).toBeGreaterThan(0);
         });
+
+        it("should flip East direction in left-handed mode to point toward geographic East", () => {
+            const worldPos = new Vector3(6371, 0, 0); // On X+ axis (0° lat, 0° lon)
+            const eastRH = new Vector3();
+            const northRH = new Vector3();
+            const upRH = new Vector3();
+            const eastLH = new Vector3();
+            const northLH = new Vector3();
+            const upLH = new Vector3();
+
+            // Right-handed: East = +Y (toward ECEF 90° longitude)
+            ComputeLocalBasisToRefs(worldPos, eastRH, northRH, upRH, true);
+            expect(vectorsApproxEqual(eastRH, new Vector3(0, 1, 0))).toBe(true);
+
+            // Left-handed: East = -Y (toward Babylon LH 90° longitude)
+            ComputeLocalBasisToRefs(worldPos, eastLH, northLH, upLH, false);
+            expect(vectorsApproxEqual(eastLH, new Vector3(0, -1, 0))).toBe(true);
+
+            // Up and North should be the same in both modes (North is recomputed from Up × East)
+            expect(vectorsApproxEqual(upRH, upLH)).toBe(true);
+            // North will be negated because East is negated: North = Up × East
+            expect(vectorsApproxEqual(northRH, northLH.scale(-1))).toBe(true);
+        });
     });
 
     // ============================================

@@ -170,7 +170,7 @@ export class GeospatialCamera extends Camera {
         this._checkLimits();
 
         // Refresh local basis at center (treat these as read-only for the whole call)
-        ComputeLocalBasisToRefs(this._center, this._tempEast, this._tempNorth, this._tempUp);
+        ComputeLocalBasisToRefs(this._center, this._tempEast, this._tempNorth, this._tempUp, this._scene.useRightHandedSystem);
 
         // Compute lookAt from yaw/pitch
         ComputeLookAtFromYawPitchToRef(this._yaw, this._pitch, this._center, this._scene.useRightHandedSystem, this._lookAtVector);
@@ -181,11 +181,10 @@ export class GeospatialCamera extends Camera {
         Vector3.CrossToRef(this._tempUp, this._lookAtVector, right);
         if (right.lengthSquared() < Epsilon) {
             // Looking straight down (or up) - use quaternion rotation to compute horiz
-            // Must use -yaw * yawScale to match ComputeLookAtFromYawPitchToRef formula
+            // Must use -yaw to match ComputeLookAtFromYawPitchToRef formula
             const horiz = TmpVectors.Vector3[11];
-            const yawScale = this._scene.useRightHandedSystem ? 1 : -1;
             const yawQuat = TmpVectors.Quaternion[1];
-            Quaternion.RotationAxisToRef(this._tempUp, -this._yaw * yawScale, yawQuat);
+            Quaternion.RotationAxisToRef(this._tempUp, -this._yaw, yawQuat);
             this._tempNorth.rotateByQuaternionToRef(yawQuat, horiz);
             // right = cross(horiz, lookAt)
             Vector3.CrossToRef(horiz, this._lookAtVector, right);
@@ -593,16 +592,17 @@ export function ComputeLookAtFromYawPitchToRef(yaw: number, pitch: number, cente
     const east = TmpVectors.Vector3[0];
     const north = TmpVectors.Vector3[1];
     const up = TmpVectors.Vector3[2];
-    ComputeLocalBasisToRefs(center, east, north, up);
+    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem);
 
     const sinPitch = Math.sin(pitch);
     const cosPitch = Math.cos(pitch);
 
-    // Use quaternion rotation to compute horiz = rotate(north, up, -yaw * yawScale)
+    // Use quaternion rotation to compute horiz = rotate(north, up, -yaw)
     // Negating the angle produces: horiz = North*cos(yaw) + East*sin(yaw)
-    const yawScale = useRightHandedSystem ? 1 : -1;
+    // Since East is now correctly defined to point toward geographic East in both
+    // coordinate systems, no yawScale adjustment is needed.
     const yawQuat = TmpVectors.Quaternion[0];
-    Quaternion.RotationAxisToRef(up, -yaw * yawScale, yawQuat);
+    Quaternion.RotationAxisToRef(up, -yaw, yawQuat);
 
     const horiz = TmpVectors.Vector3[3];
     north.rotateByQuaternionToRef(yawQuat, horiz);
@@ -628,7 +628,7 @@ export function ComputeYawPitchFromLookAtToRef(lookAt: Vector3, center: Vector3,
     const east = TmpVectors.Vector3[6];
     const north = TmpVectors.Vector3[7];
     const up = TmpVectors.Vector3[8];
-    ComputeLocalBasisToRefs(center, east, north, up);
+    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem);
 
     // lookAt = horiz*sinPitch - up*cosPitch
     // where horiz = rotate(north, up, yaw * yawScale) via quaternion
@@ -662,11 +662,12 @@ export function ComputeYawPitchFromLookAtToRef(lookAt: Vector3, center: Vector3,
 
     // From the forward formula: horiz = North*cos(yaw) + East*sin(yaw)
     // So: cosYaw = horiz · north, sinYaw = horiz · east
+    // Since East is now correctly defined to point toward geographic East in both
+    // coordinate systems, no yawScale adjustment is needed.
     const cosYaw = Vector3Dot(horiz, north);
     const sinYaw = Vector3Dot(horiz, east);
 
-    const yawScale = useRightHandedSystem ? 1 : -1;
-    result.x = Math.atan2(sinYaw, cosYaw) * yawScale;
+    result.x = Math.atan2(sinYaw, cosYaw);
     result.y = pitch;
     return result;
 }

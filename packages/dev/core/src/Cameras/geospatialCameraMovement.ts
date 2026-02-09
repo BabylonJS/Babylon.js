@@ -92,7 +92,7 @@ export class GeospatialCameraMovement extends CameraMovement {
         this._dragPlaneNormal.scaleToRef(hitPointRadius, this._dragPlaneOriginPointEcef);
 
         // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
-        ComputeLocalBasisToRefs(this._dragPlaneOriginPointEcef, TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2]);
+        ComputeLocalBasisToRefs(this._dragPlaneOriginPointEcef, TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], this._scene.useRightHandedSystem);
         const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], localToEcefResult);
         localToEcef.setTranslationFromFloats(this._dragPlaneOriginPointEcef.x, this._dragPlaneOriginPointEcef.y, this._dragPlaneOriginPointEcef.z);
         const ecefToLocal = localToEcef.invertToRef(TmpVectors.Matrix[1]);
@@ -234,9 +234,16 @@ function IntersectRayWithPlaneToRef(ray: Ray, plane: Plane, ref: Vector3): boole
 
 /**
  * Helper to build east/north/up basis vectors at a world position.
+ * East always points toward geographic East (90° longitude direction).
+ *
+ * @param worldPos - The world position to compute basis at
+ * @param refEast - Output: East direction (toward 90° longitude)
+ * @param refNorth - Output: North direction (toward north pole)
+ * @param refUp - Output: Up direction (away from globe center)
+ * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system (default: true)
  * @internal
  */
-export function ComputeLocalBasisToRefs(worldPos: Vector3, refEast: Vector3, refNorth: Vector3, refUp: Vector3) {
+export function ComputeLocalBasisToRefs(worldPos: Vector3, refEast: Vector3, refNorth: Vector3, refUp: Vector3, useRightHandedSystem: boolean = true) {
     // up = normalized position (geocentric normal)
     refUp.copyFrom(worldPos).normalize();
 
@@ -251,7 +258,14 @@ export function ComputeLocalBasisToRefs(worldPos: Vector3, refEast: Vector3, ref
     }
     refEast.normalize();
 
-    // north = up × east (completes right-handed basis)
+    // north = up × east (completes the basis) - compute before any handedness adjustment
     Vector3.CrossToRef(refUp, refEast, refNorth);
     refNorth.normalize();
+
+    // In left-handed system (Babylon default), geographic East (90° longitude) is at -Y, not +Y.
+    // Negate East so that it always points toward geographic East regardless of coordinate system.
+    // North stays unchanged because it should always point toward the geographic north pole.
+    if (!useRightHandedSystem) {
+        refEast.negateInPlace();
+    }
 }
