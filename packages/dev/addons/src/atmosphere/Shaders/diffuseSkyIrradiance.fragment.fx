@@ -11,7 +11,6 @@ uniform sampler2D transmittanceLut;
 uniform sampler2D multiScatteringLut;
 
 #include<core/helperFunctions>
-#include<depthFunctions>
 #include<atmosphereFunctions>
 
 vec3 integrateForIrradiance(vec3 directionToLight, vec3 rayDirection, vec3 rayOrigin) {

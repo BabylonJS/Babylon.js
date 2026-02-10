@@ -101,6 +101,7 @@ export class SphereBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
+    /** @internal */
     public override autoConfigure() {
         if (!this.diameter.isConnected) {
             const diameterInput = new GeometryInputBlock("Diameter");
@@ -164,6 +165,7 @@ export class SphereBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

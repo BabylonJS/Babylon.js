@@ -4,6 +4,7 @@ import type { IndicesArray } from "../types";
 import { SubMesh } from "./subMesh";
 
 declare module "./subMesh" {
+    /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface SubMesh {
         /** @internal */

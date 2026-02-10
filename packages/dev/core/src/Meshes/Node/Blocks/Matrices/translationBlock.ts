@@ -43,6 +43,7 @@ export class TranslationBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
+    /** @internal */
     public override autoConfigure() {
         if (!this.translation.isConnected) {
             const translationInput = new GeometryInputBlock("Translation");

@@ -232,6 +232,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock implements INodeGeo
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

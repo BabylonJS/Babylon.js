@@ -37,6 +37,9 @@ export { StatsServiceIdentity } from "./services/panes/statsService";
 export type { IToolsService } from "./services/panes/toolsService";
 export { ToolsServiceIdentity } from "./services/panes/toolsService";
 
+export type { IGizmoService, GizmoMode } from "./services/gizmoService";
+export { GizmoServiceIdentity } from "./services/gizmoService";
+
 export * from "./services/sceneContext";
 export * from "./services/selectionService";
 export * from "./services/settingsContext";

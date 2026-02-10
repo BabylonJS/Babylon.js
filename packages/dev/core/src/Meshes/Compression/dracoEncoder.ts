@@ -14,7 +14,6 @@ import { AreIndices32Bits, GetTypedArrayData } from "core/Buffers/bufferUtils";
 // Missing type from types/draco3d. Do not use in public scope; UMD tests will fail because of EncoderModule.
 type DracoEncoderModule = (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoEncoderModule: DracoEncoderModule;
 
 /**

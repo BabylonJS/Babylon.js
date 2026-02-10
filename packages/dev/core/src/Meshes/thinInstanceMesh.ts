@@ -6,6 +6,7 @@ import { Logger } from "../Misc/logger";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 
 declare module "./mesh" {
+    /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Mesh {
         /**
@@ -117,9 +118,13 @@ declare module "./mesh" {
 
         /** @internal */
         _userThinInstanceBuffersStorage: {
+            /** @internal */
             data: { [key: string]: Float32Array };
+            /** @internal */
             sizes: { [key: string]: number };
+            /** @internal */
             vertexBuffers: { [key: string]: Nullable<VertexBuffer> };
+            /** @internal */
             strides: { [key: string]: number };
         };
     }
