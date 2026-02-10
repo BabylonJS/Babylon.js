@@ -3523,93 +3523,159 @@
         },
         {
             "title": "Particles - Change - Size 2",
-            "playgroundId": "##0K3AQ2#3844",
+            "playgroundId": "#0K3AQ2#3844",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-size-2.png"
         },
         {
             "title": "Particles - Change - Color",
-            "playgroundId": "##0K3AQ2#3847",
+            "playgroundId": "#0K3AQ2#3847",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-color.png"
         },
         {
             "title": "Particles - Change - Color 2",
-            "playgroundId": "##0K3AQ2#3851",
+            "playgroundId": "#0K3AQ2#3851",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-color-2.png"
         },
         {
             "title": "Particles - Change - Speed",
-            "playgroundId": "##0K3AQ2#3853",
+            "playgroundId": "#0K3AQ2#3853",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-speed.png"
         },
         {
             "title": "Particles - Change - Speed 2",
-            "playgroundId": "##0K3AQ2#3855",
+            "playgroundId": "#0K3AQ2#3855",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-speed-2.png"
         },
         {
             "title": "Particles - Change - Speed Limit",
-            "playgroundId": "##0K3AQ2#3859",
+            "playgroundId": "#0K3AQ2#3859",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-speed-limit.png"
         },
         {
             "title": "Particles - Change - Angular Speed",
-            "playgroundId": "##0K3AQ2#3862",
+            "playgroundId": "#0K3AQ2#3862",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-angular-speed.png"
         },
         {
             "title": "Particles - Change - Angular Speed 2",
-            "playgroundId": "##0K3AQ2#3865",
+            "playgroundId": "#0K3AQ2#3865",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-angular-speed-2.png"
         },
         {
             "title": "Particles - Change - Drag",
-            "playgroundId": "##0K3AQ2#3868",
+            "playgroundId": "#0K3AQ2#3868",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-drag.png"
         },
         {
             "title": "Particles - Change - Drag 2",
-            "playgroundId": "##0K3AQ2#3872",
+            "playgroundId": "#0K3AQ2#3872",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-drag-2.png"
         },
         {
             "title": "Particles - Change - Emit Rate",
-            "playgroundId": "##0K3AQ2#3875",
+            "playgroundId": "#0K3AQ2#3875",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-emit-rate.png"
         },
         {
             "title": "Particles - Change - Emit Rate 2",
-            "playgroundId": "##0K3AQ2#3879",
+            "playgroundId": "#0K3AQ2#3879",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-emit-rate-2.png"
         },
         {
             "title": "Particles - Change - Lifetime",
-            "playgroundId": "##0K3AQ2#3885",
+            "playgroundId": "#0K3AQ2#3885",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-lifetime.png"
         },
         {
             "title": "Particles - Change - Lifetime 2",
-            "playgroundId": "##0K3AQ2#3890",
+            "playgroundId": "#0K3AQ2#3890",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-lifetime-2.png"
         },
         {
             "title": "Particles - Change - Start Size",
-            "playgroundId": "##0K3AQ2#3897",
+            "playgroundId": "#0K3AQ2#3897",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-start-size.png"
+        },
+        {
+            "title": "Particles - Emitters - Point",
+            "playgroundId": "#WLX2I2#7",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-point.png"
+        },
+        {
+            "title": "Particles - Emitters - Box",
+            "playgroundId": "#WLX2I2#8",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-box.png"
+        },
+        {
+            "title": "Particles - Emitters - Sphere",
+            "playgroundId": "#WLX2I2#9",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-sphere.png"
+        },
+        {
+            "title": "Particles - Emitters - Directed Sphere",
+            "playgroundId": "#WLX2I2#10",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-directed-sphere.png"
+        },
+        {
+            "title": "Particles - Emitters - Hemisphere",
+            "playgroundId": "#WLX2I2#11",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-hemisphere.png"
+        },
+        {
+            "title": "Particles - Emitters - Cylinder",
+            "playgroundId": "#WLX2I2#12",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-cylinder.png"
+        },
+        {
+            "title": "Particles - Emitters - Directed Cylinder",
+            "playgroundId": "#WLX2I2#14",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-directed-cylinder.png"
+        },
+        {
+            "title": "Particles - Emitters - Cone",
+            "playgroundId": "#WLX2I2#16",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-cone.png"
+        },
+        {
+            "title": "Particles - Emitters - Directed Cone",
+            "playgroundId": "#WLX2I2#17",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-directed-cone.png"
+        },
+        {
+            "title": "Particles - Emitters - Mesh",
+            "playgroundId": "#WLX2I2#20",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-mesh.png"
+        },
+        {
+            "title": "Particles - Emitters - Custom",
+            "playgroundId": "#WLX2I2#22",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-custom.png"
         }
     ]
 }
