@@ -1,5 +1,6 @@
-// import type { HorizontalLocation, VerticalLocation } from "../services/shellService";
-import type { SettingDescriptor, SettingValueType } from "../services/settingsStore";
+import type { Dispatch, SetStateAction } from "react";
+
+import type { SettingDescriptor } from "../services/settingsStore";
 
 import { useCallback } from "react";
 
@@ -7,14 +8,23 @@ import { useSettingsStore } from "../contexts/settingsContext";
 import { UseDegreesSettingDescriptor } from "../services/panes/settingsService";
 import { useObservableState } from "./observableHooks";
 
-export function useSetting<T extends Readonly<SettingDescriptor>>(descriptor: T) {
+export function useSetting<T>(descriptor: SettingDescriptor<T>): [T, Dispatch<SetStateAction<T>>, () => void] {
     const settingsStore = useSettingsStore();
+
     const value = useObservableState(
-        useCallback(() => settingsStore?.readSetting<T>(descriptor) ?? (descriptor.defaultValue as SettingValueType<T>), [settingsStore, descriptor]),
+        useCallback(() => settingsStore?.readSetting<T>(descriptor) ?? descriptor.defaultValue, [settingsStore, descriptor]),
         settingsStore?.onChanged
     );
-    const setValue = useCallback((newValue: SettingValueType<T>): void => settingsStore?.writeSetting<T>(descriptor, newValue), [settingsStore, descriptor]);
-    const resetValue = useCallback((): void => settingsStore?.writeSetting<T>(descriptor, descriptor.defaultValue as SettingValueType<T>), [settingsStore, descriptor]);
+
+    const setValue = useCallback(
+        (newValue: SetStateAction<T>): void => {
+            const value = typeof newValue === "function" ? (newValue as (prev: T) => T)(settingsStore?.readSetting<T>(descriptor) ?? descriptor.defaultValue) : newValue;
+            settingsStore?.writeSetting<T>(descriptor, value);
+        },
+        [settingsStore, descriptor]
+    );
+
+    const resetValue = useCallback((): void => settingsStore?.writeSetting<T>(descriptor, descriptor.defaultValue), [settingsStore, descriptor]);
 
     if (!settingsStore) {
         throw new Error("Settings store is not available in context.");
@@ -22,14 +32,6 @@ export function useSetting<T extends Readonly<SettingDescriptor>>(descriptor: T)
 
     return [value, setValue, resetValue] as const;
 }
-
-// /**
-//  * Gets the side pane dock overrides configuration.
-//  * @returns A record mapping side pane IDs to their dock locations.
-//  */
-// export function useSidePaneDockOverrides() {
-//     return useSetting<Record<string, Readonly<{ horizontalLocation: HorizontalLocation; verticalLocation: VerticalLocation }> | undefined>>(SidePaneDockOverridesStorageKey, {});
-// }
 
 const RadiansToDegrees = 180 / Math.PI;
 

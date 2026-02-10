@@ -29,11 +29,10 @@ export interface ISelectionService extends IService<typeof SelectionServiceIdent
     readonly onSelectedEntityChanged: IReadonlyObservable<void>;
 }
 
-const ShowPropertiesOnEntitySelection = {
-    key: "ShowPropertiesOnEntitySelection",
-    type: "boolean",
+const ShowPropertiesOnSelectionSettingDescriptor: SettingDescriptor<boolean> = {
+    key: "ShowPropertiesOnSelection",
     defaultValue: true,
-} as const satisfies SettingDescriptor;
+};
 
 export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], [IShellService, ISettingsStore, ISettingsService]> = {
     friendlyName: "Selection Service",
@@ -44,11 +43,11 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
             key: "Selection Service Settings",
             section: "UI",
             component: () => {
-                const [showPropertiesOnEntitySelection, setShowPropertiesOnEntitySelection] = useSetting(ShowPropertiesOnEntitySelection);
+                const [showPropertiesOnEntitySelection, setShowPropertiesOnEntitySelection] = useSetting(ShowPropertiesOnSelectionSettingDescriptor);
 
                 return (
                     <SwitchPropertyLine
-                        label="Show Properties on Entity Selection"
+                        label="Show Properties on Selection"
                         description="Automatically open the properties pane when an entity is selected."
                         value={showPropertiesOnEntitySelection}
                         onChange={(checked) => {
@@ -82,7 +81,7 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
                 (globalThis as any).debugNode = item;
 
                 // Automatically open the properties pane when an entity is selected.
-                if (item && settingsStore.readSetting(ShowPropertiesOnEntitySelection)) {
+                if (item && settingsStore.readSetting(ShowPropertiesOnSelectionSettingDescriptor)) {
                     shellService.sidePanes.find((pane) => pane.key === "Properties")?.select();
                 }
             }

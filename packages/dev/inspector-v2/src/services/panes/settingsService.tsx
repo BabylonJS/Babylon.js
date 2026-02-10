@@ -36,29 +36,25 @@ export interface ISettingsService extends IService<typeof SettingsServiceIdentit
     addSectionContent(content: DynamicAccordionSectionContent<Scene>): IDisposable;
 }
 
-export const CompactModeSettingDescriptor = {
+export const CompactModeSettingDescriptor: SettingDescriptor<boolean> = {
     key: "CompactMode",
-    type: "boolean",
     defaultValue: !matchMedia("(pointer: coarse)").matches,
-} as const satisfies SettingDescriptor;
+};
 
-export const UseDegreesSettingDescriptor = {
+export const UseDegreesSettingDescriptor: SettingDescriptor<boolean> = {
     key: "UseDegrees",
-    type: "boolean",
     defaultValue: false,
-} as const satisfies SettingDescriptor;
+};
 
-export const UseEulerSettingDescriptor = {
+export const UseEulerSettingDescriptor: SettingDescriptor<boolean> = {
     key: "UseEuler",
-    type: "boolean",
     defaultValue: false,
-} as const satisfies SettingDescriptor;
+};
 
-export const DisableCopySettingDescriptor = {
+export const DisableCopySettingDescriptor: SettingDescriptor<boolean> = {
     key: "DisableCopy",
-    type: "boolean",
     defaultValue: false,
-} as const satisfies SettingDescriptor;
+};
 
 export const SettingsServiceDefinition: ServiceDefinition<[ISettingsService], [IShellService, ISceneContext]> = {
     friendlyName: "Settings",

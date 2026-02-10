@@ -17,11 +17,10 @@ import { SceneContextIdentity } from "./sceneContext";
 import { SelectionServiceIdentity } from "./selectionService";
 import { ShellServiceIdentity } from "./shellService";
 
-const IgnoreBackfacesForPickingSettingDescriptor = {
+const IgnoreBackfacesForPickingSettingDescriptor: SettingDescriptor<boolean> = {
     key: "IgnoreBackfacesForPicking",
-    type: "boolean",
     defaultValue: false,
-} as const satisfies SettingDescriptor;
+};
 
 export const PickingServiceDefinition: ServiceDefinition<[], [ISceneContext, IShellService, ISelectionService, IGizmoService, ISettingsService]> = {
     friendlyName: "Picking Service",

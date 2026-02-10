@@ -6,29 +6,15 @@ import { Observable } from "core/Misc/observable";
 
 export const SettingsStoreIdentity = Symbol("SettingsStore");
 
-export type SettingDescriptor =
-    | {
-          key: string;
-          type: "boolean";
-          defaultValue: boolean;
-      }
-    | {
-          key: string;
-          type: "number";
-          defaultValue: number;
-      }
-    | {
-          key: string;
-          type: "string";
-          defaultValue: string;
-      };
-
-export type SettingValueType<T extends Readonly<SettingDescriptor>> = T["type"] extends "boolean" ? boolean : T["type"] extends "number" ? number : string;
+export type SettingDescriptor<T> = {
+    readonly key: string;
+    readonly defaultValue: T;
+};
 
 export interface ISettingsStore extends IService<typeof SettingsStoreIdentity> {
-    onChanged: IReadonlyObservable<Readonly<SettingDescriptor>>;
-    readSetting<T extends Readonly<SettingDescriptor>>(descriptor: T): SettingValueType<T>;
-    writeSetting<T extends Readonly<SettingDescriptor>>(descriptor: T, value: SettingValueType<T>): void;
+    onChanged: IReadonlyObservable<string>;
+    readSetting<T>(descriptor: SettingDescriptor<T>): T;
+    writeSetting<T>(descriptor: SettingDescriptor<T>, value: T): void;
 }
 
 function GetKey(namespace: string, settingKey: string) {
@@ -36,34 +22,22 @@ function GetKey(namespace: string, settingKey: string) {
 }
 
 export class SettingsStore implements ISettingsStore {
-    private readonly _onChanged = new Observable<Readonly<SettingDescriptor>>();
+    private readonly _onChanged = new Observable<Readonly<string>>();
 
     public constructor(private readonly _namespace: string) {}
 
-    public get onChanged(): IReadonlyObservable<Readonly<SettingDescriptor>> {
+    public get onChanged(): IReadonlyObservable<Readonly<string>> {
         return this._onChanged;
     }
 
-    public readSetting<T extends Readonly<SettingDescriptor>>(descriptor: T): SettingValueType<T> {
+    public readSetting<T>(descriptor: SettingDescriptor<T>): T {
         const key = GetKey(this._namespace, descriptor.key);
-        if (descriptor.type === "boolean") {
-            return DataStorage.ReadBoolean(key, descriptor.defaultValue) as SettingValueType<T>;
-        } else if (descriptor.type === "number") {
-            return DataStorage.ReadNumber(key, descriptor.defaultValue) as SettingValueType<T>;
-        } else {
-            return DataStorage.ReadString(key, descriptor.defaultValue) as SettingValueType<T>;
-        }
+        return DataStorage.ReadJson(key, descriptor.defaultValue);
     }
 
-    public writeSetting<T extends Readonly<SettingDescriptor>>(descriptor: T, value: SettingValueType<T>): void {
+    public writeSetting<T>(descriptor: SettingDescriptor<T>, value: T): void {
         const key = GetKey(this._namespace, descriptor.key);
-        if (descriptor.type === "boolean") {
-            DataStorage.WriteBoolean(key, value as boolean);
-        } else if (descriptor.type === "number") {
-            DataStorage.WriteNumber(key, value as number);
-        } else {
-            DataStorage.WriteString(key, value as string);
-        }
-        this._onChanged.notifyObservers(descriptor);
+        DataStorage.WriteJson(key, value);
+        this._onChanged.notifyObservers(descriptor.key);
     }
 }
