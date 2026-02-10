@@ -138,7 +138,6 @@ export interface AbstractEngineOptions {
     useHighPrecisionMatrix?: boolean;
 
     /**
-     * @experimental
      * LargeWorldRendering helps avoid floating point imprecision of rendering large worlds by
      * 1. Forcing highPrecisionMatrices (matrix computations in 64 bits instead of 32)
      * 2. Enabling floatingOriginMode in all scenes -- offsetting position-related uniform and attribute values before passing to shader so that active camera is centered at origin and world is offset by active camera position

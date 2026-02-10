@@ -3427,6 +3427,12 @@
             "playgroundId": "#MU9P6L#1"
         },
         {
+            "title": "Havok FloatingOrigin Multi-Region",
+            "playgroundId": "#BEDCVY",
+            "useLargeWorldRendering": true,
+            "renderCount": 180
+        },
+        {
             "title": "NME Particles with PositionW",
             "playgroundId": "#RA18GJ#17",
             "renderCount": 120

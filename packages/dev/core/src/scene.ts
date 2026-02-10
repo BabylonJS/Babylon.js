@@ -141,7 +141,6 @@ export interface SceneOptions {
     useClonedMeshMap?: boolean;
 
     /**
-     * @experimental
      * When enabled, the scene can handle large world coordinate rendering without jittering caused by floating point imprecision on the GPU.
      * This mode offsets matrices and position-related attribute values before passing to shaders, centering camera at origin and offsetting other scene objects by camera active position.
      *
@@ -2028,6 +2027,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (engine.getCreationOptions().useLargeWorldRendering || options?.useFloatingOrigin) {
             OverrideMatrixFunctions();
             this._floatingOriginScene = this;
+            FloatingOriginCurrentScene.getScene = this._getFloatingOriginScene;
         }
 
         this._uid = null;
@@ -2819,7 +2819,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _floatingOriginScene: Scene | undefined = undefined;
     /**
-     * @experimental
      * True if floatingOriginMode was passed to engine or this scene creation otions.
      * This mode avoids floating point imprecision in huge coordinate system by offsetting uniform values before passing to shader, centering camera at origin and displacing rest of scene by camera position
      */
@@ -2828,7 +2827,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
-     * @experimental
      * When floatingOriginMode is enabled, offset is equal to the eye position. Default to ZeroReadonly when mode is disabled.
      */
     public get floatingOriginOffset(): Vector3 {
@@ -4981,13 +4979,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this.renderTargetsEnabled) {
             this._intermediateRendering = true;
 
+            let currentBoundingBoxMeshList: Array<BoundingBox> | undefined;
+
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
 
                 // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
                 const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
-
-                let currentBoundingBoxMeshList: Array<BoundingBox> | undefined;
 
                 for (let renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     const renderTarget = this._renderTargets.data[renderIndex];
@@ -5014,8 +5012,25 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 this._renderId++;
             }
 
-            for (const step of this._cameraDrawRenderTargetStage) {
-                needRebind = step.action(this.activeCamera) || needRebind;
+            if (this._cameraDrawRenderTargetStage.length > 0) {
+                // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
+                const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
+
+                if (boundingBoxRenderer && !currentBoundingBoxMeshList) {
+                    // Saves the current bounding box mesh list (potentially built by the call to _evaluateActiveMeshes above), which can be reset/updated during the loop below
+                    currentBoundingBoxMeshList = boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
+                    currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
+                }
+
+                for (const step of this._cameraDrawRenderTargetStage) {
+                    // effect layer call object renderer in this step so bounding box render list must be restored
+                    needRebind = step.action(this.activeCamera) || needRebind;
+                }
+
+                if (boundingBoxRenderer && currentBoundingBoxMeshList) {
+                    boundingBoxRenderer.renderList.data = currentBoundingBoxMeshList;
+                    boundingBoxRenderer.renderList.length = currentBoundingBoxMeshList.length;
+                }
             }
 
             this._intermediateRendering = false;
