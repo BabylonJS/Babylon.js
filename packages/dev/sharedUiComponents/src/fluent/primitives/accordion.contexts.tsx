@@ -136,7 +136,7 @@ export type AccordionContextValue = {
     /** Ref for the pinned items portal container. */
     pinnedContainerRef: RefObject<HTMLDivElement>;
     /** Map of registered item IDs to labels (for duplicate detection and section empty checks). */
-    registeredItemIds: React.MutableRefObject<Map<string, string>>;
+    registeredItemIds: Map<string, string>;
 };
 
 export const AccordionContext = createContext<AccordionContextValue | undefined>(undefined);
@@ -204,7 +204,7 @@ export function useAccordionContext(props: AccordionProps): AccordionContextValu
         dispatch,
         features,
         pinnedContainerRef,
-        registeredItemIds,
+        registeredItemIds: registeredItemIds.current,
     };
 }
 
@@ -299,7 +299,7 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         if (!accordionCtx || !sectionCtx) {
             return "";
         }
-        return `${accordionCtx.accordionId}\0${sectionCtx.sectionId}\0${itemId}`;
+        return `${accordionCtx.accordionId}/${sectionCtx.sectionId}/${itemId}`;
     }, [accordionCtx?.accordionId, sectionCtx?.sectionId, itemId]);
 
     // Debug: warn if itemId changes (should be stable)
@@ -320,15 +320,15 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
             return;
         }
         const { registeredItemIds } = accordionCtx;
-        if (registeredItemIds.current.has(itemUniqueId)) {
+        if (registeredItemIds.has(itemUniqueId)) {
             Logger.Warn(
                 `Accordion: Duplicate uniqueId "${itemId}" detected in section "${sectionCtx?.sectionId}". ` +
                     `Each item must have a unique ID within its section for pin/hide persistence to work correctly.`
             );
         }
-        registeredItemIds.current.set(itemUniqueId, itemLabel ?? itemId);
+        registeredItemIds.set(itemUniqueId, itemLabel ?? itemId);
         return () => {
-            registeredItemIds.current.delete(itemUniqueId);
+            registeredItemIds.delete(itemUniqueId);
         };
     }, [accordionCtx, itemUniqueId, itemId, itemLabel, sectionCtx?.sectionId]);
 
@@ -388,10 +388,10 @@ function useIsSectionEmpty(sectionId: string): boolean {
         return false;
     }
 
-    const sectionPrefix = `${accordionId}\0${sectionId}\0`;
+    const sectionPrefix = `${accordionId}/${sectionId}/`;
     let hasItems = false;
 
-    for (const [itemId, itemLabel] of registeredItemIds.current) {
+    for (const [itemId, itemLabel] of registeredItemIds) {
         if (!itemId.startsWith(sectionPrefix)) {
             continue;
         }

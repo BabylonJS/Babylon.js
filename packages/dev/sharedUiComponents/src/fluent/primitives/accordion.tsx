@@ -142,7 +142,7 @@ const AccordionMenuBar: FunctionComponent = () => {
                             onClick={() => {
                                 // Hide all visible (non-hidden) items using the registered item IDs
                                 const { registeredItemIds, state: currentState } = accordionCtx;
-                                const visibleItemIds = Array.from(registeredItemIds.current.keys()).filter((id) => !currentState.hiddenIds.includes(id));
+                                const visibleItemIds = Array.from(registeredItemIds.keys()).filter((id) => !currentState.hiddenIds.includes(id));
                                 dispatch({ type: "HIDE_ALL_VISIBLE", visibleItemIds });
                             }}
                         />
