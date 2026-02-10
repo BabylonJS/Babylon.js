@@ -5,9 +5,7 @@ import type { DecoderBuffer, Decoder, Mesh, PointCloud, Status, DecoderModule, E
 import { DracoDecoderModule } from "draco3dgltf";
 import type { VertexDataTypedArray } from "core/Buffers/bufferUtils";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;
-// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoEncoderModule: (props: { wasmBinary?: ArrayBuffer }) => Promise<EncoderModule>;
 
 interface IInitDoneMessage {

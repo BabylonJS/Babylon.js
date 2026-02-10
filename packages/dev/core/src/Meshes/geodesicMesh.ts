@@ -9,31 +9,48 @@ import { _IsoVector } from "../Maths/math.isovector";
  * When O is the isovector (0, 0), A is isovector (m, n)
  * @internal
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export class _PrimaryIsoTriangle {
     //properties
+    /** @internal */
     public m: number;
+    /** @internal */
     public n: number;
+    /** @internal */
     public cartesian: Vector3[] = [];
+    /** @internal */
     public vertices: _IsoVector[] = [];
+    /** @internal */
     public max: number[] = [];
+    /** @internal */
     public min: number[] = [];
+    /** @internal */
     public vecToidx: { [key: string]: number };
+    /** @internal */
     public vertByDist: { [key: string]: number[] };
+    /** @internal */
     public closestTo: number[][] = [];
 
+    /** @internal */
     public innerFacets: string[][] = [];
+    /** @internal */
     public isoVecsABOB: _IsoVector[][] = [];
+    /** @internal */
     public isoVecsOBOA: _IsoVector[][] = [];
+    /** @internal */
     public isoVecsBAOA: _IsoVector[][] = [];
+    /** @internal */
     public vertexTypes: number[][] = [];
 
+    /** @internal */
     public coau: number;
+    /** @internal */
     public cobu: number;
+    /** @internal */
     public coav: number;
+    /** @internal */
     public cobv: number;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    /** @internal */
     public IDATA: PolyhedronData = new PolyhedronData(
         "icosahedron",
         "Regular",
@@ -247,6 +264,7 @@ export class _PrimaryIsoTriangle {
         this.vecToidx = vecToidx;
     }
 
+    /** @internal */
     public calcCoeffs() {
         const m = this.m;
         const n = this.n;
@@ -260,6 +278,7 @@ export class _PrimaryIsoTriangle {
         this.cobv = (thirdR3 * (2 * m + n)) / LSQD;
     }
 
+    /** @internal */
     public createInnerFacets() {
         const m = this.m;
         const n = this.n;
@@ -275,6 +294,7 @@ export class _PrimaryIsoTriangle {
         }
     }
 
+    /** @internal */
     public edgeVecsABOB() {
         const m = this.m;
         const n = this.n;
@@ -327,6 +347,7 @@ export class _PrimaryIsoTriangle {
         }
     }
 
+    /** @internal */
     public mapABOBtoOBOA() {
         const point = new _IsoVector(0, 0);
         for (let i = 0; i < this.isoVecsABOB.length; i++) {
@@ -343,6 +364,7 @@ export class _PrimaryIsoTriangle {
         }
     }
 
+    /** @internal */
     public mapABOBtoBAOA() {
         const point = new _IsoVector(0, 0);
         for (let i = 0; i < this.isoVecsABOB.length; i++) {
@@ -359,7 +381,7 @@ export class _PrimaryIsoTriangle {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    /** @internal */
     public MapToFace(faceNb: number, geodesicData: PolyhedronData) {
         const F = this.IDATA.face[faceNb];
         const oidx = F[2];
@@ -546,13 +568,13 @@ export class _PrimaryIsoTriangle {
 /** Builds Polyhedron Data
  * @internal
  */
-
 export class PolyhedronData {
     /**
      * @internal
      */
     public edgematch: (number | string)[][];
 
+    /** @internal */
     constructor(
         /**
          * The name of the polyhedron

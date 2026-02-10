@@ -158,6 +158,7 @@ export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryE
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
