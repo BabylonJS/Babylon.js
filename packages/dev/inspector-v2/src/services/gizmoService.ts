@@ -1,4 +1,4 @@
-import type { Camera, Gizmo, IDisposable, IReadonlyObservable, Light, Node, Nullable, Scene } from "core/index";
+import type { Camera, Gizmo, IDisposable, IReadonlyObservable, Light, Node, Nullable, Scene, TransformNode } from "core/index";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 import type { ISceneContext } from "./sceneContext";
 import type { ISelectionService } from "./selectionService";
@@ -13,7 +13,7 @@ import { LightGizmo } from "core/Gizmos/lightGizmo";
 import { Light as LightClass } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Observable } from "core/Misc/observable";
-import { TransformNode } from "core/Meshes/transformNode";
+import { Node as NodeClass } from "core/node";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "./sceneContext";
@@ -216,13 +216,23 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], [ISceneC
             let resolvedGizmoMode = gizmoModeState;
             if (!resolvedEntity) {
                 resolvedGizmoMode = undefined;
-            } else if (resolvedGizmoMode === "boundingBox") {
-                if (!(resolvedEntity instanceof AbstractMesh)) {
-                    resolvedGizmoMode = undefined;
-                }
-            } else if (resolvedGizmoMode) {
-                if (!(resolvedEntity instanceof TransformNode)) {
-                    resolvedGizmoMode = undefined;
+            } else {
+                if (resolvedGizmoMode === "translate") {
+                    if (!(resolvedEntity as TransformNode).position) {
+                        resolvedGizmoMode = undefined;
+                    }
+                } else if (resolvedGizmoMode === "rotate") {
+                    if (!(resolvedEntity as TransformNode).rotation) {
+                        resolvedGizmoMode = undefined;
+                    }
+                } else if (resolvedGizmoMode === "scale") {
+                    if (!(resolvedEntity as TransformNode).scaling) {
+                        resolvedGizmoMode = undefined;
+                    }
+                } else {
+                    if (!(resolvedEntity instanceof AbstractMesh)) {
+                        resolvedGizmoMode = undefined;
+                    }
                 }
             }
 
@@ -240,7 +250,7 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], [ISceneC
             } else {
                 if (resolvedEntity instanceof AbstractMesh) {
                     currentGizmoManager.attachToMesh(resolvedEntity);
-                } else if (resolvedEntity instanceof TransformNode) {
+                } else if (resolvedEntity instanceof NodeClass) {
                     currentGizmoManager.attachToNode(resolvedEntity);
                 }
             }
