@@ -141,7 +141,6 @@ export interface SceneOptions {
     useClonedMeshMap?: boolean;
 
     /**
-     * @experimental
      * When enabled, the scene can handle large world coordinate rendering without jittering caused by floating point imprecision on the GPU.
      * This mode offsets matrices and position-related attribute values before passing to shaders, centering camera at origin and offsetting other scene objects by camera active position.
      *
@@ -2819,7 +2818,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _floatingOriginScene: Scene | undefined = undefined;
     /**
-     * @experimental
      * True if floatingOriginMode was passed to engine or this scene creation otions.
      * This mode avoids floating point imprecision in huge coordinate system by offsetting uniform values before passing to shader, centering camera at origin and displacing rest of scene by camera position
      */
@@ -2828,7 +2826,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
-     * @experimental
      * When floatingOriginMode is enabled, offset is equal to the eye position. Default to ZeroReadonly when mode is disabled.
      */
     public get floatingOriginOffset(): Vector3 {
