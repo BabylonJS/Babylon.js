@@ -7,11 +7,9 @@ import type { IShellService } from "../shellService";
 
 import { SettingsRegular } from "@fluentui/react-icons";
 
-//import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { ExtensibleAccordion } from "../../components/extensibleAccordion";
-import { useProperty } from "../../hooks/compoundPropertyHooks";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
 import { useSetting } from "../../hooks/settingsHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
@@ -121,8 +119,6 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsService], [I
                                             setDisableCopy(checked);
                                         }}
                                     />
-                                    {/*
-                                    <ButtonLine label="Reset Layout" onClick={resetSidePaneLayout} /> */}
                                 </AccordionSection>
                             </ExtensibleAccordion>
                         )}

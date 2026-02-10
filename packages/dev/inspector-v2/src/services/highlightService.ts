@@ -2,7 +2,7 @@ import type { Nullable, Observer, Scene } from "core/index";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { ISceneContext } from "./sceneContext";
 import type { ISelectionService } from "./selectionService";
-import type { ISettingsContext } from "./settingsContext";
+// import type { ISettingsContext } from "./settingsContext";
 import type { IThemeService } from "./themeService";
 
 import { SelectionOutlineLayer } from "core/Layers/selectionOutlineLayer";
@@ -11,13 +11,13 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { SceneContextIdentity } from "./sceneContext";
 import { SelectionServiceIdentity } from "./selectionService";
-import { SettingsContextIdentity } from "./settingsContext";
+// import { SettingsContextIdentity } from "./settingsContext";
 import { ThemeServiceIdentity } from "./themeService";
 
-export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionService, ISceneContext, ISettingsContext, IThemeService]> = {
+export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionService, ISceneContext, IThemeService]> = {
     friendlyName: "Highlight Service",
-    consumes: [SelectionServiceIdentity, SceneContextIdentity, SettingsContextIdentity, ThemeServiceIdentity],
-    factory: (selectionService, sceneContext, settingsContext, themeService) => {
+    consumes: [SelectionServiceIdentity, SceneContextIdentity, ThemeServiceIdentity],
+    factory: (selectionService, sceneContext, themeService) => {
         let outlineLayer: Nullable<SelectionOutlineLayer> = null;
         let currentScene: Nullable<Scene> = null;
         let activeCameraObserver: Nullable<Observer<Scene>> = null;
@@ -49,7 +49,7 @@ export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionServic
                     ? selectionService.selectedEntity
                     : null;
 
-            if (!entity || !settingsContext.highlightSelectedEntity || !scene || !scene.activeCamera) {
+            if (!entity || /* TODO: check setting */ !scene || !scene.activeCamera) {
                 disposeOutlineLayer();
                 return;
             }
@@ -87,7 +87,7 @@ export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionServic
         });
 
         // React to settings changes.
-        const settingsObserver = settingsContext.settingsChangedObservable.add(updateHighlight);
+        // const settingsObserver = settingsContext.settingsChangedObservable.add(updateHighlight);
 
         // Watch active camera on the initial scene.
         watchActiveCamera(sceneContext.currentScene);
@@ -100,7 +100,7 @@ export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionServic
                 themeObserver.remove();
                 selectionObserver.remove();
                 sceneObserver.remove();
-                settingsObserver.remove();
+                // settingsObserver.remove();
                 activeCameraObserver?.remove();
                 activeCameraObserver = null;
                 disposeOutlineLayer();
