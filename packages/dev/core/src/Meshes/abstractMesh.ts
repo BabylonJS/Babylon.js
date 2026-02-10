@@ -162,7 +162,6 @@ export interface IMeshDataOptions {
 }
 
 /** @internal */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 class _FacetDataStorage {
     // facetData private properties
     public facetPositions: Vector3[]; // facet local positions
@@ -178,14 +177,12 @@ class _FacetDataStorage {
     public subDiv = {
         // actual number of subdivisions per axis for ComputeNormals()
         max: 1,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         X: 1,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         Y: 1,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         Z: 1,
     };
 
+    /** @internal */
     public facetDepthSort: boolean = false; // is the facet depth sort to be computed
     public facetDepthSortEnabled: boolean = false; // is the facet depth sort initialized
     public depthSortedIndices: IndicesArray; // copy of the indices array to store them once sorted
@@ -200,7 +197,6 @@ class _FacetDataStorage {
 /**
  * @internal
  **/
-// eslint-disable-next-line @typescript-eslint/naming-convention
 class _InternalAbstractMeshDataInfo {
     public _hasVertexAlpha = false;
     public _useVertexColors = true;
@@ -1231,7 +1227,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      * @param property if set to "rotation" the objects rotationQuaternion will be set to null
      * @returns this AbstractMesh
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public override markAsDirty(property?: string): AbstractMesh {
         this._currentRenderId = Number.MAX_VALUE;
         super.markAsDirty(property);
