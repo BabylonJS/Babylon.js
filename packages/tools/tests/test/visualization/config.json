@@ -3610,6 +3610,12 @@
             "playgroundId": "##0K3AQ2#3897",
             "renderCount": 120,
             "referenceImage": "particles-basic-change-start-size.png"
+        },
+        {
+            "title": "Havok FloatingOrigin Multi-Region",
+            "playgroundId": "#BEDCVY",
+            "useLargeWorldRendering": true,
+            "renderCount": 180
         }
     ]
 }
