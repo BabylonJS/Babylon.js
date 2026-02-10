@@ -337,13 +337,18 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         return undefined;
     }
 
-    const { state, dispatch, features } = accordionCtx;
+    const { state, dispatch, features, registeredItemIds } = accordionCtx;
     const { pinnedIds, hiddenIds, searchTerm, editMode } = state;
 
     // Compute derived state
     const isPinned = features.pinning && pinnedIds.includes(itemUniqueId);
     const isHidden = features.hiding && hiddenIds.includes(itemUniqueId);
-    const pinnedIndex = isPinned ? pinnedIds.indexOf(itemUniqueId) : -1;
+
+    // Filter pinnedIds to only include items that are actually registered.
+    // Stale IDs from localStorage (for items that no longer exist) must be
+    // excluded so they don't affect visual ordering or the canMoveUp check.
+    const activePinnedIds = pinnedIds.filter((id) => registeredItemIds.has(id));
+    const pinnedIndex = isPinned ? activePinnedIds.indexOf(itemUniqueId) : -1;
 
     const canMoveUp = isPinned && pinnedIndex > 0;
 

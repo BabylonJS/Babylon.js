@@ -85,6 +85,7 @@ const useStyles = makeStyles({
     sectionItemContainer: {
         display: "flex",
         flexDirection: "row",
+        alignItems: "center",
     },
     sectionItemContent: {
         flexGrow: 1,
@@ -94,7 +95,7 @@ const useStyles = makeStyles({
     sectionItemButtons: {
         display: "flex",
         flexDirection: "row",
-        alignItems: "start",
+        alignItems: "center",
         marginRight: tokens.spacingHorizontalXS,
     },
     pinnedContainer: {
@@ -264,7 +265,7 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
                     {features.pinning && (
                         <>
                             <Button title={isPinned ? "Unpin" : "Pin"} icon={isPinned ? PinFilled : PinRegular} appearance="transparent" onClick={actions.togglePinned} />
-                            {isPinned && <Button title="Move up" icon={ArrowCircleUpRegular} appearance="transparent" disabled={!canMoveUp} onClick={actions.movePinnedUp} />}
+                            {isPinned && <Button icon={ArrowCircleUpRegular} appearance="transparent" disabled={!canMoveUp} onClick={actions.movePinnedUp} />}
                         </>
                     )}
                 </div>
