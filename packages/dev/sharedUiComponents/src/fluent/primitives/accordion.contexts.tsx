@@ -50,6 +50,7 @@ export type AccordionAction =
     | { type: "TOGGLE_PINNED"; itemId: string }
     | { type: "TOGGLE_HIDDEN"; itemId: string }
     | { type: "MOVE_PINNED_UP"; itemId: string }
+    | { type: "REMOVE_STALE_IDS"; activeIds: Set<string> }
     | { type: "SHOW_ALL" }
     | { type: "HIDE_ALL_VISIBLE"; visibleItemIds: string[] };
 
@@ -101,6 +102,15 @@ const AccordionReducer = (state: AccordionState, action: AccordionAction): Accor
             const newPinnedIds = [...state.pinnedIds];
             [newPinnedIds[index - 1], newPinnedIds[index]] = [newPinnedIds[index], newPinnedIds[index - 1]];
             return { ...state, pinnedIds: newPinnedIds };
+        }
+
+        case "REMOVE_STALE_IDS": {
+            const pinnedIds = state.pinnedIds.filter((id) => action.activeIds.has(id));
+            const hiddenIds = state.hiddenIds.filter((id) => action.activeIds.has(id));
+            if (pinnedIds.length === state.pinnedIds.length && hiddenIds.length === state.hiddenIds.length) {
+                return state;
+            }
+            return { ...state, pinnedIds, hiddenIds };
         }
 
         case "SHOW_ALL":
@@ -192,6 +202,14 @@ export function useAccordionContext(props: AccordionProps): AccordionContextValu
             WriteToStorage(`Hidden/${accordionId}`, state.hiddenIds);
         }
     }, [accordionId, features.hiding, state.hiddenIds]);
+
+    // Clean stale IDs from localStorage on mount. Parent effects run after
+    // children's, so all items will have registered by the time this fires.
+    useEffect(() => {
+        if (accordionId && hasFeatures) {
+            dispatch({ type: "REMOVE_STALE_IDS", activeIds: new Set(registeredItemIds.current.keys()) });
+        }
+    }, [accordionId, hasFeatures]);
 
     // Return undefined if no accordionId or no features enabled
     if (!accordionId || !hasFeatures) {
@@ -337,18 +355,13 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         return undefined;
     }
 
-    const { state, dispatch, features, registeredItemIds } = accordionCtx;
+    const { state, dispatch, features } = accordionCtx;
     const { pinnedIds, hiddenIds, searchTerm, editMode } = state;
 
     // Compute derived state
     const isPinned = features.pinning && pinnedIds.includes(itemUniqueId);
     const isHidden = features.hiding && hiddenIds.includes(itemUniqueId);
-
-    // Filter pinnedIds to only include items that are actually registered.
-    // Stale IDs from localStorage (for items that no longer exist) must be
-    // excluded so they don't affect visual ordering or the canMoveUp check.
-    const activePinnedIds = pinnedIds.filter((id) => registeredItemIds.has(id));
-    const pinnedIndex = isPinned ? activePinnedIds.indexOf(itemUniqueId) : -1;
+    const pinnedIndex = isPinned ? pinnedIds.indexOf(itemUniqueId) : -1;
 
     const canMoveUp = isPinned && pinnedIndex > 0;
 
