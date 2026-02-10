@@ -1,5 +1,6 @@
 import type { Nullable, Observer, Scene } from "core/index";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
+import type { IGizmoService } from "./gizmoService";
 import type { ISceneContext } from "./sceneContext";
 import type { ISelectionService } from "./selectionService";
 import type { ISettingsStore, SettingDescriptor } from "./settingsStore";
@@ -9,6 +10,7 @@ import { SelectionOutlineLayer } from "core/Layers/selectionOutlineLayer";
 import { Color3 } from "core/Maths/math.color";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { GizmoServiceIdentity } from "./gizmoService";
 import { SceneContextIdentity } from "./sceneContext";
 import { SelectionServiceIdentity } from "./selectionService";
 import { SettingsStoreIdentity } from "./settingsStore";
@@ -19,24 +21,30 @@ export const HighlightSelectedEntitySettingDescriptor: SettingDescriptor<boolean
     defaultValue: true,
 };
 
-export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionService, ISceneContext, ISettingsStore, IThemeService]> = {
+export const HighlightServiceDefinition: ServiceDefinition<[], [ISelectionService, ISceneContext, ISettingsStore, IThemeService, IGizmoService]> = {
     friendlyName: "Highlight Service",
-    consumes: [SelectionServiceIdentity, SceneContextIdentity, SettingsStoreIdentity, ThemeServiceIdentity],
-    factory: (selectionService, sceneContext, settingsStore, themeService) => {
+    consumes: [SelectionServiceIdentity, SceneContextIdentity, SettingsStoreIdentity, ThemeServiceIdentity, GizmoServiceIdentity],
+    factory: (selectionService, sceneContext, settingsStore, themeService, gizmoService) => {
         let outlineLayer: Nullable<SelectionOutlineLayer> = null;
+        let utilityLayer: ReturnType<IGizmoService["getUtilityLayer"]> | null = null;
         let currentScene: Nullable<Scene> = null;
         let activeCameraObserver: Nullable<Observer<Scene>> = null;
 
         function disposeOutlineLayer() {
             outlineLayer?.dispose();
             outlineLayer = null;
+
+            utilityLayer?.dispose();
+            utilityLayer = null;
+
             currentScene = null;
         }
 
         function getOrCreateOutlineLayer(scene: Scene): SelectionOutlineLayer {
             if (!outlineLayer || currentScene !== scene) {
                 disposeOutlineLayer();
-                outlineLayer = new SelectionOutlineLayer("InspectorSelectionOutline", scene);
+                utilityLayer = gizmoService.getUtilityLayer(scene);
+                outlineLayer = new SelectionOutlineLayer("InspectorSelectionOutline", utilityLayer.value.utilityLayerScene);
                 updateColor(outlineLayer);
                 currentScene = scene;
             }

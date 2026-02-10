@@ -923,7 +923,7 @@ export const SceneExplorer: FunctionComponent<{
         };
 
         for (const section of sections) {
-            const rootEntities = section.getRootEntities();
+            const rootEntities = (section.getRootEntities() as EntityBase[]).filter((entity) => !entity.reservedDataStore?.hidden);
 
             const sectionTreeItem = {
                 type: "section",
@@ -1021,9 +1021,6 @@ export const SceneExplorer: FunctionComponent<{
                     // Before traverse
                     (treeItem) => {
                         traversedItems.push(treeItem);
-                        if (treeItem.entity.reservedDataStore?.hidden) {
-                            return; // Don't display the treeItem or its children if reservedDataStore.hidden is true
-                        }
                         if (!filter) {
                             // If there is no filter and we made it this far, then the item's parent is in an open state and this item is visible.
                             visibleItems.add(treeItem);

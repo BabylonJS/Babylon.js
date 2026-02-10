@@ -2,8 +2,9 @@ import type { Dispatch, SetStateAction } from "react";
 
 import type { SettingDescriptor } from "../services/settingsStore";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
+import { Observable } from "core/Misc/observable";
 import { useSettingsStore } from "../contexts/settingsContext";
 import { UseDegreesSettingDescriptor } from "../services/panes/settingsService";
 import { useObservableState } from "./observableHooks";
@@ -11,9 +12,29 @@ import { useObservableState } from "./observableHooks";
 export function useSetting<T>(descriptor: SettingDescriptor<T>): [T, Dispatch<SetStateAction<T>>, () => void] {
     const settingsStore = useSettingsStore();
 
+    // Only watch for this specific setting to change. Otherwise, any time any setting changes we would
+    // call readSetting again, which if it is an object, it will be a new instance, which can cause
+    // unnecessary re-renders in consumers of this hook.
+    const settingObservable = useMemo(() => new Observable<void>(), [settingsStore, descriptor]);
+    useEffect(() => {
+        if (settingsStore) {
+            const observer = settingsStore.onChanged.add((key) => {
+                if (key === descriptor.key) {
+                    settingObservable.notifyObservers();
+                }
+            });
+
+            return () => {
+                observer.remove();
+            };
+        }
+
+        return undefined;
+    }, [settingsStore, descriptor]);
+
     const value = useObservableState(
         useCallback(() => settingsStore?.readSetting<T>(descriptor) ?? descriptor.defaultValue, [settingsStore, descriptor]),
-        settingsStore?.onChanged
+        settingObservable
     );
 
     const setValue = useCallback(
