@@ -37,8 +37,9 @@ import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButto
 import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
 import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
-import { useCompactMode } from "../../hooks/settingsHooks";
+import { useSetting } from "../../hooks/settingsHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
+import { CompactModeSettingDescriptor } from "../../services/panes/settingsService";
 import { useSceneExplorerDragDrop } from "./sceneExplorerDragDrop";
 
 type EntityBase = Readonly<{
@@ -519,7 +520,7 @@ const SceneTreeItem: FunctionComponent<{
     const { isSelected, select } = props;
 
     const classes = useStyles();
-    const [compactMode] = useCompactMode();
+    const [compactMode] = useSetting(CompactModeSettingDescriptor);
     const treeItemLayoutClass = mergeClasses(classes.sceneTreeItemLayout, compactMode ? classes.treeItemLayoutCompact : undefined);
 
     return (
@@ -561,7 +562,7 @@ const SectionTreeItem: FunctionComponent<
     const { section, isFiltering, commandProviders, expandAll, collapseAll, isDropTarget, ...dropProps } = props;
 
     const classes = useStyles();
-    const [compactMode] = useCompactMode();
+    const [compactMode] = useSetting(CompactModeSettingDescriptor);
 
     // Get the commands that apply to this section.
     const commands = useResource(
@@ -637,7 +638,7 @@ const EntityTreeItem: FunctionComponent<
     const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll, isDragging, isDropTarget, ...dragProps } = props;
 
     const classes = useStyles();
-    const [compactMode] = useCompactMode();
+    const [compactMode] = useSetting(CompactModeSettingDescriptor);
 
     const hasChildren = !!entityItem.children?.length;
 

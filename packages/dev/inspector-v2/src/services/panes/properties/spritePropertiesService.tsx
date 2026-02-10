@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISettingsContext } from "../../../services/settingsContext";
 import type { ISelectionService } from "../../selectionService";
 import type { IPropertiesService } from "./propertiesService";
 
@@ -20,14 +19,13 @@ import {
     SpriteOtherProperties,
     SpriteTransformProperties,
 } from "../../../components/properties/sprites/spriteProperties";
-import { SettingsContextIdentity } from "../../../services/settingsContext";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
-export const SpritePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService, ISettingsContext]> = {
+export const SpritePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Sprite Properties",
-    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity, SettingsContextIdentity],
-    factory: (propertiesService, selectionService, settingsContent) => {
+    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
+    factory: (propertiesService, selectionService) => {
         const spriteManagerSectionContentRegistration = propertiesService.addSectionContent({
             key: "Sprite Manager Properties",
             predicate: (entity: unknown) => entity instanceof SpriteManager,
@@ -69,7 +67,7 @@ export const SpritePropertiesServiceDefinition: ServiceDefinition<[], [IProperti
                 },
                 {
                     section: "Transform",
-                    component: ({ context }) => <SpriteTransformProperties sprite={context} settings={settingsContent} />,
+                    component: ({ context }) => <SpriteTransformProperties sprite={context} />,
                 },
                 {
                     section: "Cell",

@@ -1,7 +1,6 @@
 import type { FunctionComponent } from "react";
 
 import type { SkyMaterial } from "materials/sky/skyMaterial";
-import type { ISettingsContext } from "../../../services/settingsContext";
 
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
@@ -9,9 +8,9 @@ import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLin
 import { useAngleConverters } from "../../../hooks/settingsHooks";
 import { BoundProperty } from "../boundProperty";
 
-export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; settings: ISettingsContext }> = (props) => {
-    const { material, settings } = props;
-    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters(settings);
+export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial }> = (props) => {
+    const { material } = props;
+    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters();
 
     return (
         <>

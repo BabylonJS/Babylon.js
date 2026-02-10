@@ -130,7 +130,7 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
 
         return {
             addSection: (section) => sectionsCollection.add(section),
-            addSectionContent: (content) => sectionContentCollection.add(content as DynamicAccordionSectionContent<Scene>),
+            addSectionContent: (content) => sectionContentCollection.add(content),
             dispose: () => registration.dispose(),
         };
     },

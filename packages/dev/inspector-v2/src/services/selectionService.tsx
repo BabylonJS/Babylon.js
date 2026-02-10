@@ -1,11 +1,15 @@
 import type { IDisposable, IReadonlyObservable, Nullable } from "core/index";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
-import type { ISettingsContext } from "./settingsContext";
+import type { ISettingsService } from "./panes/settingsService";
+import type { ISettingsStore, SettingDescriptor } from "./settingsStore";
 import type { IShellService } from "./shellService";
 
 import { Observable } from "core/Misc/observable";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { useSetting } from "../hooks/settingsHooks";
 import { InterceptFunction } from "../instrumentation/functionInstrumentation";
-import { SettingsContextIdentity } from "./settingsContext";
+import { SettingsServiceIdentity } from "./panes/settingsService";
+import { SettingsStoreIdentity } from "./settingsStore";
 import { ShellServiceIdentity } from "./shellService";
 
 export const SelectionServiceIdentity = Symbol("PropertiesService");
@@ -25,11 +29,36 @@ export interface ISelectionService extends IService<typeof SelectionServiceIdent
     readonly onSelectedEntityChanged: IReadonlyObservable<void>;
 }
 
-export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], [IShellService, ISettingsContext]> = {
+const ShowPropertiesOnEntitySelection = {
+    key: "ShowPropertiesOnEntitySelection",
+    type: "boolean",
+    defaultValue: true,
+} as const satisfies SettingDescriptor;
+
+export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], [IShellService, ISettingsStore, ISettingsService]> = {
     friendlyName: "Selection Service",
     produces: [SelectionServiceIdentity],
-    consumes: [ShellServiceIdentity, SettingsContextIdentity],
-    factory: (shellService, settingsContext) => {
+    consumes: [ShellServiceIdentity, SettingsStoreIdentity, SettingsServiceIdentity],
+    factory: (shellService, settingsStore, settingsService) => {
+        settingsService.addSectionContent({
+            key: "Selection Service Settings",
+            section: "UI",
+            component: () => {
+                const [showPropertiesOnEntitySelection, setShowPropertiesOnEntitySelection] = useSetting(ShowPropertiesOnEntitySelection);
+
+                return (
+                    <SwitchPropertyLine
+                        label="Show Properties on Entity Selection"
+                        description="Automatically open the properties pane when an entity is selected."
+                        value={showPropertiesOnEntitySelection}
+                        onChange={(checked) => {
+                            setShowPropertiesOnEntitySelection(checked);
+                        }}
+                    />
+                );
+            },
+        });
+
         let selectedEntityState: Nullable<unknown> = null;
         const selectedEntityObservable = new Observable<void>();
         let disposedHook: Nullable<IDisposable> = null;
@@ -53,7 +82,7 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
                 (globalThis as any).debugNode = item;
 
                 // Automatically open the properties pane when an entity is selected.
-                if (item && settingsContext.showPropertiesOnEntitySelection) {
+                if (item && settingsStore.readSetting(ShowPropertiesOnEntitySelection)) {
                     shellService.sidePanes.find((pane) => pane.key === "Properties")?.select();
                 }
             }

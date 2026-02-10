@@ -39,7 +39,7 @@ export { ToolsServiceIdentity } from "./services/panes/toolsService";
 
 export * from "./services/sceneContext";
 export * from "./services/selectionService";
-export * from "./services/settingsContext";
+export * from "./services/settingsStore";
 export type { IShellService, ToolbarItemDefinition, SidePaneDefinition, CentralContentDefinition } from "./services/shellService";
 export { ShellServiceIdentity } from "./services/shellService";
 export * from "./inspector";

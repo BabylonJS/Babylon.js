@@ -1,7 +1,6 @@
 import type { FunctionComponent } from "react";
 
 import type { GeospatialCamera } from "core/Cameras/geospatialCamera";
-import type { ISettingsContext } from "../../../services/settingsContext";
 
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
@@ -11,10 +10,10 @@ import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
 import { BoundProperty } from "../boundProperty";
 
-export const GeospatialCameraTransformProperties: FunctionComponent<{ camera: GeospatialCamera; settings: ISettingsContext }> = (props) => {
-    const { camera, settings } = props;
+export const GeospatialCameraTransformProperties: FunctionComponent<{ camera: GeospatialCamera }> = (props) => {
+    const { camera } = props;
 
-    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters(settings);
+    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters();
 
     const limits = useProperty(camera, "limits");
     const yawMin = limits?.yawMin ?? -Math.PI;

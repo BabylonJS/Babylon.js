@@ -3,7 +3,7 @@ import type { ComponentType, PropsWithChildren, Ref } from "react";
 import type { AccordionProps, AccordionSectionProps } from "shared-ui-components/fluent/primitives/accordion";
 
 import { makeStyles } from "@fluentui/react-components";
-import { Children, isValidElement, useImperativeHandle, useLayoutEffect, useMemo, useState } from "react";
+import { Children, isValidElement, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { UXContextProvider } from "../components/uxContextProvider";
@@ -97,16 +97,37 @@ export function ExtensibleAccordion<ContextT = unknown>(
         return AsReadonlyArray(defaultSections);
     }, [children]);
 
+    // Cache stable component wrappers for static (children-based) sections so that
+    // React does not unmount/remount them on every re-render. The components read
+    // the latest child element from `elements` so they always render fresh content.
+    const staticComponentCacheRef = useRef<{
+        elements: Map<string, React.ReactNode>;
+        components: Map<string, ComponentType<{ context: ContextT }>>;
+    }>({ elements: new Map(), components: new Map() });
+
     const defaultSectionContent = useMemo(() => {
+        const cache = staticComponentCacheRef.current;
+        cache.elements.clear();
         const defaultSectionContent: DynamicAccordionSectionContent<ContextT>[] = [];
         if (children) {
             Children.forEach(children, (child, index) => {
                 if (isValidElement(child)) {
                     const childProps = child.props as AccordionSectionProps;
+                    const key = child.key ?? childProps.title;
+
+                    // Update the element so the stable component renders the latest content.
+                    cache.elements.set(key, child);
+
+                    // Create a stable component wrapper only once per key.
+                    if (!cache.components.has(key)) {
+                        const capturedKey = key;
+                        cache.components.set(capturedKey, () => <>{cache.elements.get(capturedKey)}</>);
+                    }
+
                     defaultSectionContent.push({
-                        key: child.key ?? childProps.title,
+                        key,
                         section: defaultSections[index].identity,
-                        component: () => child,
+                        component: cache.components.get(key)!,
                     });
                 }
             });
@@ -127,7 +148,7 @@ export function ExtensibleAccordion<ContextT = unknown>(
     }, [defaultSectionContent, sectionContent]);
 
     const mergedSections = useMemo(() => {
-        const mergedSections = [...defaultSections, ...sections];
+        const mergedSections = [...defaultSections.map((s) => ({ ...s, isDefault: true as const })), ...sections.map((s) => ({ ...s, isDefault: false as const }))];
 
         // Check for implicit sections (e.g. sections that were not explicitly defined, but referenced by content).
         const implicitSections: DynamicAccordionSection[] = [];
@@ -138,7 +159,7 @@ export function ExtensibleAccordion<ContextT = unknown>(
         }
 
         return AsReadonlyArray(
-            [...implicitSections, ...mergedSections].map((section, index) => {
+            [...implicitSections.map((s) => ({ ...s, isDefault: false as const })), ...mergedSections].map((section, index) => {
                 return {
                     ...section,
                     order: section.order ?? index,
@@ -153,7 +174,13 @@ export function ExtensibleAccordion<ContextT = unknown>(
             return [];
         }
 
-        const sortedSections = [...mergedSections].sort((a, b) => a.order - b.order);
+        const sortedSections = [...mergedSections].sort((a, b) => {
+            // Default sections always come before non-default sections.
+            if (a.isDefault !== b.isDefault) {
+                return a.isDefault ? -1 : 1;
+            }
+            return a.order - b.order;
+        });
 
         return sortedSections
             .map((section) => {

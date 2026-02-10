@@ -3,11 +3,12 @@ import type { ContextType, FunctionComponent, PropsWithChildren } from "react";
 import { useMemo } from "react";
 
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
-import { useCompactMode, useDisableCopy } from "../hooks/settingsHooks";
+import { useSetting } from "../hooks/settingsHooks";
+import { CompactModeSettingDescriptor, DisableCopySettingDescriptor } from "../services/panes/settingsService";
 
 export const UXContextProvider: FunctionComponent<PropsWithChildren> = (props) => {
-    const [compactMode] = useCompactMode();
-    const [disableCopy] = useDisableCopy();
+    const [compactMode] = useSetting(CompactModeSettingDescriptor);
+    const [disableCopy] = useSetting(DisableCopySettingDescriptor);
 
     const toolsContext = useMemo(() => {
         return {

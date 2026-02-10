@@ -1,22 +1,22 @@
 import type { FunctionComponent } from "react";
 
 import type { Nullable, Quaternion, Vector3 } from "core/index";
-import type { ISettingsContext } from "../../services/settingsContext";
 
 import { QuaternionPropertyLine, RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useQuaternionProperty } from "../../hooks/compoundPropertyHooks";
-import { useObservableState } from "../../hooks/observableHooks";
+import { useSetting } from "../../hooks/settingsHooks";
+import { UseDegreesSettingDescriptor, UseEulerSettingDescriptor } from "../../services/panes/settingsService";
 import { BoundProperty, Property } from "./boundProperty";
 
 export type Transform = { position: Vector3; rotation: Vector3; rotationQuaternion: Nullable<Quaternion>; scaling: Vector3 };
 
-export const TransformProperties: FunctionComponent<{ transform: Transform; settings: ISettingsContext }> = (props) => {
-    const { transform, settings } = props;
+export const TransformProperties: FunctionComponent<{ transform: Transform }> = (props) => {
+    const { transform } = props;
 
     const quatRotation = useQuaternionProperty(transform, "rotationQuaternion");
 
-    const useDegrees = useObservableState(() => settings.useDegrees, settings.settingsChangedObservable);
-    const useEuler = useObservableState(() => settings.useEuler, settings.settingsChangedObservable);
+    const [useDegrees] = useSetting(UseDegreesSettingDescriptor);
+    const [useEuler] = useSetting(UseEulerSettingDescriptor);
 
     return (
         <>

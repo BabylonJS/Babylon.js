@@ -359,6 +359,7 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         );
 
         const modularTool = MakeModularTool({
+            namespace: "Inspector",
             containerElement,
             serviceDefinitions: [
                 // Default Inspector services.

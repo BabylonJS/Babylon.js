@@ -2,7 +2,6 @@ import type { FunctionComponent } from "react";
 
 import type { Sprite } from "core/index";
 import type { ISelectionService } from "../../../services/selectionService";
-import type { ISettingsContext } from "../../../services/settingsContext";
 
 import { PlayFilled, StopFilled } from "@fluentui/react-icons";
 import { useCallback } from "react";
@@ -60,10 +59,10 @@ export const SpriteGeneralProperties: FunctionComponent<{ sprite: Sprite; select
     );
 };
 
-export const SpriteTransformProperties: FunctionComponent<{ sprite: Sprite; settings: ISettingsContext }> = (props) => {
-    const { sprite, settings } = props;
+export const SpriteTransformProperties: FunctionComponent<{ sprite: Sprite }> = (props) => {
+    const { sprite } = props;
 
-    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters(settings);
+    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters();
 
     return (
         <>

@@ -1,7 +1,6 @@
 import type { FunctionComponent } from "react";
 
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import type { ISettingsContext } from "../../../services/settingsContext";
 
 import { Camera } from "core/Cameras/camera";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
@@ -23,10 +22,10 @@ const CameraModes = [
  * @param props - The component props containing the camera and settings context.
  * @returns JSX.Element
  */
-export const CameraGeneralProperties: FunctionComponent<{ camera: Camera; settings: ISettingsContext }> = (props) => {
-    const { camera, settings } = props;
+export const CameraGeneralProperties: FunctionComponent<{ camera: Camera }> = (props) => {
+    const { camera } = props;
 
-    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters(settings);
+    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters();
 
     const mode = useProperty(camera, "mode");
 

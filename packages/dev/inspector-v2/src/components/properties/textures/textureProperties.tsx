@@ -1,5 +1,4 @@
 import type { Texture } from "core/index";
-import type { ISettingsContext } from "../../../services/settingsContext";
 
 import type { FunctionComponent } from "react";
 
@@ -41,10 +40,10 @@ export const TextureGeneralProperties: FunctionComponent<{ texture: Texture }> =
     );
 };
 
-export const TextureTransformProperties: FunctionComponent<{ texture: Texture; settings: ISettingsContext }> = (props) => {
-    const { texture, settings } = props;
+export const TextureTransformProperties: FunctionComponent<{ texture: Texture }> = (props) => {
+    const { texture } = props;
 
-    const [toDisplayAngle, fromDisplayAngle] = useAngleConverters(settings);
+    const [toDisplayAngle, fromDisplayAngle] = useAngleConverters();
     const wrapU = useProperty(texture, "wrapU");
     const wrapV = useProperty(texture, "wrapV");
 

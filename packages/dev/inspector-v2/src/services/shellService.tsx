@@ -3,6 +3,7 @@ import type { ComponentType, FunctionComponent } from "react";
 
 import type { IDisposable, Nullable } from "core/index";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
+// import type { SettingDescriptor } from "./settingsStore";
 
 import {
     Button,
@@ -47,7 +48,7 @@ import { ErrorBoundary } from "../components/errorBoundary";
 import { TeachingMoment } from "../components/teachingMoment";
 import { Theme } from "../components/theme";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
-import { useSidePaneDockOverrides } from "../hooks/settingsHooks";
+// import { useSetting } from "../hooks/settingsHooks";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { useResizeHandle } from "../hooks/useResizeHandle";
 import { ObservableCollection } from "../misc/observableCollection";
@@ -1154,7 +1155,16 @@ export function MakeShellServiceDefinition({
             const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
 
-                const [sidePaneDockOverrides, setSidePaneDockOverrides] = useSidePaneDockOverrides();
+                //const [sidePaneDockOverrides, setSidePaneDockOverrides] = useSidePaneDockOverrides();
+                const sidePaneDockOverrides: Record<string, any> = useMemo(() => ({}), []);
+                const setSidePaneDockOverrides = useCallback(
+                    (
+                        updater: (
+                            current: Record<string, { horizontalLocation: HorizontalLocation; verticalLocation: VerticalLocation }>
+                        ) => Record<string, { horizontalLocation: HorizontalLocation; verticalLocation: VerticalLocation }>
+                    ) => {},
+                    []
+                );
 
                 // This function returns a promise that resolves after the dock change takes effect so that
                 // we can then select the re-docked pane.
