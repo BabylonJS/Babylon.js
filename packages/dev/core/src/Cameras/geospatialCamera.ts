@@ -181,9 +181,11 @@ export class GeospatialCamera extends Camera {
         Vector3.CrossToRef(this._tempUp, this._lookAtVector, right);
         if (right.lengthSquared() < Epsilon) {
             // Looking straight down (or up) - use quaternion rotation to compute horiz
+            // Must use -yaw * yawScale to match ComputeLookAtFromYawPitchToRef formula
             const horiz = TmpVectors.Vector3[11];
+            const yawScale = this._scene.useRightHandedSystem ? 1 : -1;
             const yawQuat = TmpVectors.Quaternion[1];
-            Quaternion.RotationAxisToRef(this._tempUp, -this._yaw, yawQuat);
+            Quaternion.RotationAxisToRef(this._tempUp, -this._yaw * yawScale, yawQuat);
             this._tempNorth.rotateByQuaternionToRef(yawQuat, horiz);
             // right = cross(horiz, lookAt)
             Vector3.CrossToRef(horiz, this._lookAtVector, right);
@@ -383,10 +385,7 @@ export class GeospatialCamera extends Camera {
         const rotationDeltaCurrentFrame = this.movement.rotationDeltaCurrentFrame;
         if (rotationDeltaCurrentFrame.x !== 0 || rotationDeltaCurrentFrame.y !== 0) {
             const pitch = rotationDeltaCurrentFrame.x !== 0 ? Clamp(this._pitch + rotationDeltaCurrentFrame.x, 0, 0.5 * Math.PI - Epsilon) : this._pitch;
-            // In LH mode, LookAtLH mirrors screen left-right, so negate the yaw input delta
-            // to keep the visual rotation direction consistent with the mouse drag direction.
-            const yawInputScale = this._scene.useRightHandedSystem ? 1 : -1;
-            const yaw = rotationDeltaCurrentFrame.y !== 0 ? this._yaw + rotationDeltaCurrentFrame.y * yawInputScale : this._yaw;
+            const yaw = rotationDeltaCurrentFrame.y !== 0 ? this._yaw + rotationDeltaCurrentFrame.y : this._yaw;
 
             this._setOrientation(yaw, pitch, this._radius, this._center);
         }
@@ -599,11 +598,11 @@ export function ComputeLookAtFromYawPitchToRef(yaw: number, pitch: number, cente
     const sinPitch = Math.sin(pitch);
     const cosPitch = Math.cos(pitch);
 
-    // Use quaternion rotation to compute horiz = rotate(north, up, -yaw)
+    // Use quaternion rotation to compute horiz = rotate(north, up, -yaw * yawScale)
     // Negating the angle produces: horiz = North*cos(yaw) + East*sin(yaw)
-    // The quaternion rotation is handedness-independent since it only uses north and up.
+    const yawScale = useRightHandedSystem ? 1 : -1;
     const yawQuat = TmpVectors.Quaternion[0];
-    Quaternion.RotationAxisToRef(up, -yaw, yawQuat);
+    Quaternion.RotationAxisToRef(up, -yaw * yawScale, yawQuat);
 
     const horiz = TmpVectors.Vector3[3];
     north.rotateByQuaternionToRef(yawQuat, horiz);
@@ -666,7 +665,8 @@ export function ComputeYawPitchFromLookAtToRef(lookAt: Vector3, center: Vector3,
     const cosYaw = Vector3Dot(horiz, north);
     const sinYaw = Vector3Dot(horiz, east);
 
-    result.x = Math.atan2(sinYaw, cosYaw);
+    const yawScale = useRightHandedSystem ? 1 : -1;
+    result.x = Math.atan2(sinYaw, cosYaw) * yawScale;
     result.y = pitch;
     return result;
 }
