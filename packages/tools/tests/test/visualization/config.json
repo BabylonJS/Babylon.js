@@ -3694,6 +3694,12 @@
             "playgroundId": "#2MI0A1#8",
             "renderCount": 120,
             "referenceImage": "particles-animations-2.png"
+        },
+        {
+            "title": "Particles - Effects ",
+            "playgroundId": "#1ASENS#424",
+            "renderCount": 120,
+            "referenceImage": "particles-effects.png"
         }
     ]
 }
