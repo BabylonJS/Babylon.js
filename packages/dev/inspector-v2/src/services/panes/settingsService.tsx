@@ -13,8 +13,9 @@ import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { ExtensibleAccordion } from "../../components/extensibleAccordion";
+import { useProperty } from "../../hooks/compoundPropertyHooks";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
-import { useCompactMode, useSidePaneDockOverrides, useDisableCopy } from "../../hooks/settingsHooks";
+import { useCompactMode, useDisableCopy, useSidePaneDockOverrides } from "../../hooks/settingsHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { SettingsContextIdentity } from "../settingsContext";
@@ -51,6 +52,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
         let useEuler = DataStorage.ReadBoolean("Babylon/Settings/UseEuler", false);
         let ignoreBackfacesForPicking = DataStorage.ReadBoolean("Babylon/Settings/IgnoreBackfacesForPicking", false);
         let showPropertiesOnEntitySelection = DataStorage.ReadBoolean("Babylon/Settings/ShowPropertiesOnEntitySelection", true);
+        let highlightSelectedEntity = DataStorage.ReadBoolean("Babylon/Settings/HighlightSelectedEntity", true);
 
         const settings = {
             get useDegrees() {
@@ -102,6 +104,18 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                 DataStorage.WriteBoolean("Babylon/Settings/ShowPropertiesOnEntitySelection", showPropertiesOnEntitySelection);
                 this.settingsChangedObservable.notifyObservers(this);
             },
+            get highlightSelectedEntity() {
+                return highlightSelectedEntity;
+            },
+            set highlightSelectedEntity(value: boolean) {
+                if (highlightSelectedEntity === value) {
+                    return; // No change, no need to notify
+                }
+                highlightSelectedEntity = value;
+
+                DataStorage.WriteBoolean("Babylon/Settings/HighlightSelectedEntity", highlightSelectedEntity);
+                this.settingsChangedObservable.notifyObservers(this);
+            },
             settingsChangedObservable: new Observable<ISettingsContext>(),
             addSection: (section: DynamicAccordionSection) => sectionsCollection.add(section),
             addSectionContent: (content: DynamicAccordionSectionContent<Scene>) => sectionContentCollection.add(content),
@@ -125,6 +139,12 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                 const [disableCopy, setDisableCopy] = useDisableCopy();
                 const [, , resetSidePaneLayout] = useSidePaneDockOverrides();
 
+                const useDegrees = useProperty(settings, "useDegrees");
+                const useEuler = useProperty(settings, "useEuler");
+                const ignoreBackfacesForPicking = useProperty(settings, "ignoreBackfacesForPicking");
+                const showPropertiesOnEntitySelection = useProperty(settings, "showPropertiesOnEntitySelection");
+                const highlightSelectedEntity = useProperty(settings, "highlightSelectedEntity");
+
                 return (
                     <>
                         {scene && (
@@ -141,34 +161,26 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                                     <SwitchPropertyLine
                                         label="Use Degrees"
                                         description="Using degrees instead of radians."
-                                        value={settings.useDegrees}
-                                        onChange={(checked) => {
-                                            settings.useDegrees = checked;
-                                        }}
+                                        value={useDegrees}
+                                        onChange={(checked) => (settings.useDegrees = checked)}
                                     />
                                     <SwitchPropertyLine
                                         label="Only Show Euler Angles"
                                         description="Only show Euler angles in rotation properties, rather than quaternions."
-                                        value={settings.useEuler}
-                                        onChange={(checked) => {
-                                            settings.useEuler = checked;
-                                        }}
+                                        value={useEuler}
+                                        onChange={(checked) => (settings.useEuler = checked)}
                                     />
                                     <SwitchPropertyLine
                                         label="Ignore Backfaces for Picking"
                                         description="Ignore backfaces when picking."
-                                        value={settings.ignoreBackfacesForPicking}
-                                        onChange={(checked) => {
-                                            settings.ignoreBackfacesForPicking = checked;
-                                        }}
+                                        value={ignoreBackfacesForPicking}
+                                        onChange={(checked) => (settings.ignoreBackfacesForPicking = checked)}
                                     />
                                     <SwitchPropertyLine
                                         label="Show Properties on Selection"
                                         description="Shows the Properties pane when an entity is selected."
-                                        value={settings.showPropertiesOnEntitySelection}
-                                        onChange={(checked) => {
-                                            settings.showPropertiesOnEntitySelection = checked;
-                                        }}
+                                        value={showPropertiesOnEntitySelection}
+                                        onChange={(checked) => (settings.showPropertiesOnEntitySelection = checked)}
                                     />
                                     <SwitchPropertyLine
                                         label="Disable Copy Button"
@@ -179,6 +191,14 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                                         }}
                                     />
                                     <ButtonLine label="Reset Layout" onClick={resetSidePaneLayout} />
+                                </AccordionSection>
+                                <AccordionSection title="Scene">
+                                    <SwitchPropertyLine
+                                        label="Highlight Selected Entity"
+                                        description="Highlight the selected mesh in the scene. Enabling this setting may impact rendering performance."
+                                        value={highlightSelectedEntity}
+                                        onChange={(value) => (settings.highlightSelectedEntity = value)}
+                                    />
                                 </AccordionSection>
                             </ExtensibleAccordion>
                         )}

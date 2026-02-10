@@ -134,14 +134,6 @@ export const GeospatialCameraLimitsProperties: FunctionComponent<{ camera: Geosp
                 propertyKey="radiusMax"
                 propertyPath="limits.radiusMax"
             />
-            <BoundProperty
-                component={NumberInputPropertyLine}
-                label="Pinch to Pan Max"
-                description="Distance threshold for pinch vs pan mode"
-                target={limits}
-                propertyKey="pinchToPanMax"
-                propertyPath="limits.pinchToPanMax"
-            />
         </>
     );
 };

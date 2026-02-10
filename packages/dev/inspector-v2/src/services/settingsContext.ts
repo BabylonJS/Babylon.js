@@ -28,6 +28,11 @@ export interface ISettingsContext extends IService<typeof SettingsContextIdentit
     showPropertiesOnEntitySelection: boolean;
 
     /**
+     * Highlight the selected mesh in the scene using the selection outline layer.
+     */
+    highlightSelectedEntity: boolean;
+
+    /**
      * Observable that fires whenever a setting changes.
      */
     readonly settingsChangedObservable: IReadonlyObservable<ISettingsContext>;

@@ -163,6 +163,9 @@ type SidePaneContainer = {
     readonly isDocked: boolean;
     dock(): void;
     undock(): void;
+    readonly isCollapsed: boolean;
+    collapse(): void;
+    expand(): void;
 };
 
 /**
@@ -277,6 +280,16 @@ export type ShellServiceOptions = {
      * In "compact" mode, toolbars are displayed at the top and bottom of the left and right side panes.
      */
     toolbarMode?: ToolbarMode;
+
+    /**
+     * Whether the left side pane should start collapsed. Default is false.
+     */
+    leftPaneDefaultCollapsed?: boolean;
+
+    /**
+     * Whether the right side pane should start collapsed. Default is false.
+     */
+    rightPaneDefaultCollapsed?: boolean;
 
     /**
      * A function that can remap the default location of side panes.
@@ -695,13 +708,14 @@ function usePane(
     dockOperations: Map<DockLocation, (sidePaneKey: string) => void>,
     toolbarMode: ToolbarMode,
     topBarItems: Readonly<ToolbarItemDefinition[]>,
-    bottomBarItems: Readonly<ToolbarItemDefinition[]>
+    bottomBarItems: Readonly<ToolbarItemDefinition[]>,
+    initialCollapsed: boolean
 ) {
     const classes = useStyles();
 
     const [topSelectedTab, setTopSelectedTab] = useState<SidePaneDefinition>();
     const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePaneDefinition>();
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(initialCollapsed);
     const childWindow = useRef<ChildWindow>(null);
     const [isChildWindowOpen, setIsChildWindowOpen] = useState(false);
     const paneContainerRef = useRef<HTMLDivElement>(null);
@@ -1091,7 +1105,9 @@ function usePane(
         );
     }, [collapsed, corePane]);
 
-    return [topPaneTabList, pane, collapsed, setCollapsed, isChildWindowOpen, setUndocked] as const;
+    const hasPanes = topPanes.length > 0 || bottomPanes.length > 0;
+
+    return [topPaneTabList, pane, collapsed, setCollapsed, isChildWindowOpen, setUndocked, hasPanes] as const;
 }
 
 export function MakeShellServiceDefinition({
@@ -1099,6 +1115,8 @@ export function MakeShellServiceDefinition({
     leftPaneMinWidth = 350,
     rightPaneDefaultWidth = 350,
     rightPaneMinWidth = 350,
+    leftPaneDefaultCollapsed = false,
+    rightPaneDefaultCollapsed = false,
     toolbarMode = "full",
     sidePaneRemapper = undefined,
 }: ShellServiceOptions = {}): ServiceDefinition<[IShellService, IRootComponentService], []> {
@@ -1113,17 +1131,24 @@ export function MakeShellServiceDefinition({
             const onSelectSidePane = new Observable<string>(undefined, true);
 
             const onDockChanged = new Observable<{ location: HorizontalLocation; dock: boolean }>(undefined, true);
+            const onCollapseChanged = new Observable<{ location: HorizontalLocation; collapsed: boolean }>();
             const leftSidePaneContainerState = {
                 isPresent: false,
                 isDocked: true,
                 dock: () => onDockChanged.notifyObservers({ location: "left", dock: true }),
                 undock: () => onDockChanged.notifyObservers({ location: "left", dock: false }),
+                isCollapsed: leftPaneDefaultCollapsed,
+                collapse: () => onCollapseChanged.notifyObservers({ location: "left", collapsed: true }),
+                expand: () => onCollapseChanged.notifyObservers({ location: "left", collapsed: false }),
             };
             const rightSidePaneContainerState = {
                 isPresent: false,
                 isDocked: true,
                 dock: () => onDockChanged.notifyObservers({ location: "right", dock: true }),
                 undock: () => onDockChanged.notifyObservers({ location: "right", dock: false }),
+                isCollapsed: rightPaneDefaultCollapsed,
+                collapse: () => onCollapseChanged.notifyObservers({ location: "right", collapsed: true }),
+                expand: () => onCollapseChanged.notifyObservers({ location: "right", collapsed: false }),
             };
 
             const rootComponent: FunctionComponent = () => {
@@ -1294,7 +1319,7 @@ export function MakeShellServiceDefinition({
 
                 const centralContents = useOrderedObservableCollection(centralContentCollection);
 
-                const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed, leftPaneUndocked, setLeftPaneUndocked] = usePane(
+                const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed, leftPaneUndocked, setLeftPaneUndocked, leftPaneHasPanes] = usePane(
                     "left",
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
@@ -1303,7 +1328,8 @@ export function MakeShellServiceDefinition({
                     sidePaneDockOperations,
                     toolbarMode,
                     topBarLeftItems,
-                    bottomBarLeftItems
+                    bottomBarLeftItems,
+                    leftPaneDefaultCollapsed
                 );
 
                 useEffect(() => {
@@ -1311,7 +1337,12 @@ export function MakeShellServiceDefinition({
                     leftSidePaneContainerState.isDocked = !leftPaneUndocked;
                 }, [leftPaneUndocked]);
 
-                const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed, rightPaneUndocked, setRightPaneUndocked] = usePane(
+                useEffect(() => {
+                    // Propagate shorter lived React component state out to longer lived service state.
+                    leftSidePaneContainerState.isCollapsed = leftPaneCollapsed;
+                }, [leftPaneCollapsed]);
+
+                const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed, rightPaneUndocked, setRightPaneUndocked, rightPaneHasPanes] = usePane(
                     "right",
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
@@ -1320,13 +1351,19 @@ export function MakeShellServiceDefinition({
                     sidePaneDockOperations,
                     toolbarMode,
                     topBarRightItems,
-                    bottomBarRightItems
+                    bottomBarRightItems,
+                    rightPaneDefaultCollapsed
                 );
 
                 useEffect(() => {
                     // Propagate shorter lived React component state out to longer lived service state.
                     rightSidePaneContainerState.isDocked = !rightPaneUndocked;
                 }, [rightPaneUndocked]);
+
+                useEffect(() => {
+                    // Propagate shorter lived React component state out to longer lived service state.
+                    rightSidePaneContainerState.isCollapsed = rightPaneCollapsed;
+                }, [rightPaneCollapsed]);
 
                 useEffect(() => {
                     // If at the service level dock state change is requested, propagate to the React component state.
@@ -1344,6 +1381,23 @@ export function MakeShellServiceDefinition({
                         rightSidePaneContainerState.isDocked = true;
                     };
                 }, [setLeftPaneUndocked, setRightPaneUndocked]);
+
+                useEffect(() => {
+                    // If at the service level collapse state change is requested, propagate to the React component state.
+                    const observer = onCollapseChanged.add(({ location, collapsed }) => {
+                        if (location === "left") {
+                            setLeftPaneCollapsed(collapsed);
+                        } else {
+                            setRightPaneCollapsed(collapsed);
+                        }
+                    });
+
+                    return () => {
+                        observer.remove();
+                        leftSidePaneContainerState.isCollapsed = false;
+                        rightSidePaneContainerState.isCollapsed = false;
+                    };
+                }, [setLeftPaneCollapsed, setRightPaneCollapsed]);
 
                 return (
                     <div className={classes.mainView}>
@@ -1372,14 +1426,14 @@ export function MakeShellServiceDefinition({
                                 ))}
                                 {toolbarMode === "compact" && (
                                     <>
-                                        <FluentFade visible={leftPaneCollapsed} delay={50} duration={100} unmountOnExit>
+                                        <FluentFade visible={leftPaneCollapsed && leftPaneHasPanes} delay={50} duration={100} unmountOnExit>
                                             <div className={mergeClasses(classes.expandButtonContainer, classes.expandButtonContainerLeft)}>
                                                 <Tooltip content="Show Side Pane">
                                                     <Button className={classes.expandButton} icon={<PanelLeftExpandRegular />} onClick={() => setLeftPaneCollapsed(false)} />
                                                 </Tooltip>
                                             </div>
                                         </FluentFade>
-                                        <FluentFade visible={rightPaneCollapsed} delay={50} duration={100} unmountOnExit>
+                                        <FluentFade visible={rightPaneCollapsed && rightPaneHasPanes} delay={50} duration={100} unmountOnExit>
                                             <div className={mergeClasses(classes.expandButtonContainer, classes.expandButtonContainerRight)}>
                                                 <Tooltip content="Show Side Pane">
                                                     <Button className={classes.expandButton} icon={<PanelRightExpandRegular />} onClick={() => setRightPaneCollapsed(false)} />

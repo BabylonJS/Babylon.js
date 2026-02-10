@@ -23,6 +23,25 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     private _initialPinchSquaredDistance: number = 0;
     private _pinchCentroid: Nullable<PointerTouch> = null;
 
+    /**
+     * Defines the rotation sensitivity of the pointer when rotating camera around the x axis (pitch)
+     * (Multiplied by the true pixel delta of pointer input, before rotation speed factor is applied by movement class)
+     */
+    public pitchSensitivity = 1.0;
+
+    /**
+     * Defines the rotation sensitivity of the pointer when rotating the camera around the Y axis (yaw)
+     * (Multiplied by the true pixel delta of pointer input, before rotation speed factor is applied by movement class)
+     */
+    public yawSensitivity: number = 1.0;
+
+    /**
+     * Defines the distance used to consider the camera in pan mode vs pinch/zoom.
+     * Basically if your fingers moves away from more than this distance you will be considered
+     * in pinch mode.
+     */
+    public pinchToPanMax: number = 20;
+
     public override getClassName(): string {
         return "GeospatialCameraPointersInput";
     }
@@ -143,7 +162,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
 
         // Use cumulative delta from gesture start for threshold detection (more forgiving than frame-to-frame)
         const cumulativeDelta = Math.abs(Math.sqrt(pinchSquaredDistance) - Math.sqrt(this._initialPinchSquaredDistance));
-        this._shouldStartPinchZoom = this._twoFingerActivityCount < 20 && cumulativeDelta > this.camera.limits.pinchToPanMax;
+        this._shouldStartPinchZoom = this._twoFingerActivityCount < 20 && cumulativeDelta > this.pinchToPanMax;
 
         super.onMultiTouch(pointA, pointB, previousPinchSquaredDistance, pinchSquaredDistance, previousMultiTouchPanPosition, multiTouchPanPosition);
     }
@@ -163,7 +182,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     }
 
     private _handleTilt(deltaX: number, deltaY: number): void {
-        this.camera.movement.rotationAccumulatedPixels.y -= deltaX; // yaw - looking side to side
-        this.camera.movement.rotationAccumulatedPixels.x -= deltaY; // pitch - look up towards sky / down towards ground
+        this.camera.movement.rotationAccumulatedPixels.y -= deltaX * this.yawSensitivity; // yaw - looking side to side
+        this.camera.movement.rotationAccumulatedPixels.x -= deltaY * this.pitchSensitivity; // pitch - look up towards sky / down towards ground
     }
 }

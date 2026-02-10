@@ -10,7 +10,6 @@ import type { Nullable } from "../../types";
 import { DecodeMesh, DecoderWorkerFunction } from "./dracoCompressionWorker";
 import type { IAttributeData, MeshData, DecoderMessage } from "./dracoDecoder.types";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let DracoDecoderModule: DracoDecoderModule;
 
 /**

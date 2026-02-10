@@ -27,7 +27,18 @@ export const PickingServiceDefinition: ServiceDefinition<[], [ISceneContext, ISh
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
                 const selectEntity = useCallback((entity: unknown) => (selectionService.selectedEntity = entity), []);
                 const ignoreBackfacesForPicking = useObservableState(() => settingsContext.ignoreBackfacesForPicking, settingsContext.settingsChangedObservable);
-                return scene ? <PickingToolbar scene={scene} selectEntity={selectEntity} gizmoService={gizmoService} ignoreBackfaces={ignoreBackfacesForPicking} /> : null;
+                const highlightSelectedEntity = useObservableState(() => settingsContext.highlightSelectedEntity, settingsContext.settingsChangedObservable);
+                const onHighlightSelectedEntityChange = useCallback((value: boolean) => (settingsContext.highlightSelectedEntity = value), []);
+                return scene ? (
+                    <PickingToolbar
+                        scene={scene}
+                        selectEntity={selectEntity}
+                        gizmoService={gizmoService}
+                        ignoreBackfaces={ignoreBackfacesForPicking}
+                        highlightSelectedEntity={highlightSelectedEntity}
+                        onHighlightSelectedEntityChange={onHighlightSelectedEntityChange}
+                    />
+                ) : null;
             },
         });
     },

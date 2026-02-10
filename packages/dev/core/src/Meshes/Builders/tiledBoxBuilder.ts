@@ -26,19 +26,6 @@ const OP_SUB = -1;
  * * faceColors an array of 6 Color4 elements used to set different colors to each box side
  * * alignHorizontal places whole tiles aligned to the center, left or right of a row
  * * alignVertical places whole tiles aligned to the center, left or right of a column
- * @param options.pattern
- * @param options.size
- * @param options.width
- * @param options.height
- * @param options.depth
- * @param options.tileSize
- * @param options.tileWidth
- * @param options.tileHeight
- * @param options.faceUV
- * @param options.faceColors
- * @param options.alignHorizontal
- * @param options.alignVertical
- * @param options.sideOrientation
  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
  * @returns the VertexData of the TiledBox
  */
@@ -249,19 +236,6 @@ export function CreateTiledBoxVertexData(options: {
  * * alignHorizontal places whole tiles aligned to the center, left or right of a row
  * * alignVertical places whole tiles aligned to the center, left or right of a column
  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
- * @param options.pattern
- * @param options.width
- * @param options.height
- * @param options.depth
- * @param options.tileSize
- * @param options.tileWidth
- * @param options.tileHeight
- * @param options.alignHorizontal
- * @param options.alignVertical
- * @param options.faceUV
- * @param options.faceColors
- * @param options.sideOrientation
- * @param options.updatable
  * @param scene defines the hosting scene
  * @returns the box mesh
  */

@@ -218,6 +218,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         }
     }
 
+    /** @internal */
     public override dispose() {
         this.onValueChangedObservable.clear();
 
@@ -265,6 +266,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         return super._dumpPropertiesCode() + codes.join(";\n");
     }
 
+    /** @internal */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -288,6 +290,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
