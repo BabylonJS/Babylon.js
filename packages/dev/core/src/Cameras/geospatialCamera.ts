@@ -305,7 +305,7 @@ export class GeospatialCamera extends Camera {
         const zoomDistance = Vector3Distance(this.position, destination) * distanceScale;
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(destination, zoomDistance, this._tempCenter);
         await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn, centerHopScale);
-        !this.isDisposed && this._recalculateCenter(false, true /** force */);
+        !this.isDisposed() && this._recalculateCenter(false, true /** force */);
     }
 
     private _limits: GeospatialLimits;
