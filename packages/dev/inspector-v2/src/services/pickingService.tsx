@@ -16,6 +16,7 @@ import { SettingsServiceIdentity } from "./panes/settingsService";
 import { SceneContextIdentity } from "./sceneContext";
 import { SelectionServiceIdentity } from "./selectionService";
 import { ShellServiceIdentity } from "./shellService";
+import { HighlightSelectedEntitySettingDescriptor } from "./highlightService";
 
 const IgnoreBackfacesForPickingSettingDescriptor: SettingDescriptor<boolean> = {
     key: "IgnoreBackfacesForPicking",
@@ -31,15 +32,27 @@ export const PickingServiceDefinition: ServiceDefinition<[], [ISceneContext, ISh
             section: "Scene",
             component: () => {
                 const [ignoreBackfacesForPicking, setIgnoreBackfacesForPicking] = useSetting(IgnoreBackfacesForPickingSettingDescriptor);
+                const [highlightSelectedEntity, setHighlightSelectedEntity] = useSetting(HighlightSelectedEntitySettingDescriptor);
+
                 return (
-                    <SwitchPropertyLine
-                        label="Ignore Backfaces for Picking"
-                        description="Ignore backfaces when picking."
-                        value={ignoreBackfacesForPicking}
-                        onChange={(checked) => {
-                            setIgnoreBackfacesForPicking(checked);
-                        }}
-                    />
+                    <>
+                        <SwitchPropertyLine
+                            label="Ignore Backfaces for Picking"
+                            description="Ignore backfaces when picking."
+                            value={ignoreBackfacesForPicking}
+                            onChange={(checked) => {
+                                setIgnoreBackfacesForPicking(checked);
+                            }}
+                        />
+                        <SwitchPropertyLine
+                            label="Highlight Selected Entity"
+                            description="Highlight the selected entity."
+                            value={highlightSelectedEntity}
+                            onChange={(checked) => {
+                                setHighlightSelectedEntity(checked);
+                            }}
+                        />
+                    </>
                 );
             },
         });
@@ -53,16 +66,15 @@ export const PickingServiceDefinition: ServiceDefinition<[], [ISceneContext, ISh
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
                 const selectEntity = useCallback((entity: unknown) => (selectionService.selectedEntity = entity), []);
                 const [ignoreBackfacesForPicking] = useSetting(IgnoreBackfacesForPickingSettingDescriptor);
-                // const highlightSelectedEntity = useObservableState(() => settingsContext.highlightSelectedEntity, settingsContext.settingsChangedObservable);
-                // const onHighlightSelectedEntityChange = useCallback((value: boolean) => (settingsContext.highlightSelectedEntity = value), []);
+                const [highlightSelectedEntity, setHighlightSelectedEntity] = useSetting(HighlightSelectedEntitySettingDescriptor);
                 return scene ? (
                     <PickingToolbar
                         scene={scene}
                         selectEntity={selectEntity}
                         gizmoService={gizmoService}
                         ignoreBackfaces={ignoreBackfacesForPicking}
-                        // highlightSelectedEntity={highlightSelectedEntity}
-                        // onHighlightSelectedEntityChange={onHighlightSelectedEntityChange}
+                        highlightSelectedEntity={highlightSelectedEntity}
+                        onHighlightSelectedEntityChange={setHighlightSelectedEntity}
                     />
                 ) : null;
             },
