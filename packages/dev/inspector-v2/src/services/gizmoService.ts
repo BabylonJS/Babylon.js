@@ -13,7 +13,7 @@ import { LightGizmo } from "core/Gizmos/lightGizmo";
 import { Light as LightClass } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Observable } from "core/Misc/observable";
-import { Node as NodeClass } from "core/node";
+import { TransformNode } from "core/Meshes/transformNode";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "./sceneContext";
@@ -221,7 +221,7 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], [ISceneC
                     resolvedGizmoMode = undefined;
                 }
             } else if (resolvedGizmoMode) {
-                if (!(resolvedEntity instanceof NodeClass)) {
+                if (!(resolvedEntity instanceof TransformNode)) {
                     resolvedGizmoMode = undefined;
                 }
             }
@@ -240,7 +240,7 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], [ISceneC
             } else {
                 if (resolvedEntity instanceof AbstractMesh) {
                     currentGizmoManager.attachToMesh(resolvedEntity);
-                } else if (resolvedEntity instanceof NodeClass) {
+                } else if (resolvedEntity instanceof TransformNode) {
                     currentGizmoManager.attachToNode(resolvedEntity);
                 }
             }
@@ -248,11 +248,10 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], [ISceneC
 
         // Recreate the GizmoManager when the active scene changes.
         const sceneObserver = sceneContext.currentSceneObservable.add((scene) => {
+            destroyGizmoManager();
             if (scene) {
                 createGizmoManager(scene);
                 syncGizmoManager();
-            } else {
-                destroyGizmoManager();
             }
         });
 
