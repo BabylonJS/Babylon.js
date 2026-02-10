@@ -4981,13 +4981,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this.renderTargetsEnabled) {
             this._intermediateRendering = true;
 
+            let currentBoundingBoxMeshList: Array<BoundingBox> | undefined;
+
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
 
                 // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
                 const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
-
-                let currentBoundingBoxMeshList: Array<BoundingBox> | undefined;
 
                 for (let renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     const renderTarget = this._renderTargets.data[renderIndex];
@@ -5014,8 +5014,26 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 this._renderId++;
             }
 
-            for (const step of this._cameraDrawRenderTargetStage) {
-                needRebind = step.action(this.activeCamera) || needRebind;
+            if (this._cameraDrawRenderTargetStage.length > 0) {
+                // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
+                const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
+
+                let currentBoundingBoxMeshList: Array<BoundingBox> | undefined;
+                if (boundingBoxRenderer && !currentBoundingBoxMeshList) {
+                    // Saves the current bounding box mesh list (potentially built by the call to _evaluateActiveMeshes above), which will be reset/updated when processing this target
+                    currentBoundingBoxMeshList = boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
+                    currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
+                }
+
+                for (const step of this._cameraDrawRenderTargetStage) {
+                    // effect layer call object renderer in this step so bounding box render list must be restored
+                    needRebind = step.action(this.activeCamera) || needRebind;
+                }
+
+                if (boundingBoxRenderer && currentBoundingBoxMeshList) {
+                    boundingBoxRenderer.renderList.data = currentBoundingBoxMeshList;
+                    boundingBoxRenderer.renderList.length = currentBoundingBoxMeshList.length;
+                }
             }
 
             this._intermediateRendering = false;
