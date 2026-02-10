@@ -10,7 +10,6 @@ import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
  * @returns the capsule VertexData
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/capsule
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function CreateCapsuleVertexData(
     options: ICreateCapsuleOptions = {
         subdivisions: 2,
@@ -260,7 +259,6 @@ export interface ICreateCapsuleOptions {
  * @param scene The scene the mesh is scoped to.
  * @returns Capsule Mesh
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function CreateCapsule(
     name: string,
     options: ICreateCapsuleOptions = {
@@ -284,7 +282,6 @@ export function CreateCapsule(
  * Class containing static functions to help procedurally build meshes
  * @deprecated please use CreateCapsule directly
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export const CapsuleBuilder = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CreateCapsule,
