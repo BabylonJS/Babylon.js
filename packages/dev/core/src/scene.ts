@@ -5018,7 +5018,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
                 const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
 
-                let currentBoundingBoxMeshList: Array<BoundingBox> | undefined;
                 if (boundingBoxRenderer && !currentBoundingBoxMeshList) {
                     // Saves the current bounding box mesh list (potentially built by the call to _evaluateActiveMeshes above), which will be reset/updated when processing this target
                     currentBoundingBoxMeshList = boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
