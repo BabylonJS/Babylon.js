@@ -19,6 +19,7 @@ import { DepthReducer } from "../../Misc/depthReducer";
 import { Logger } from "../../Misc/logger";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Camera } from "../../Cameras/camera";
+import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { FloatingOriginCurrentScene, GetOffsetTransformMatrices } from "../../Materials/floatingOriginMatrixOverrides";
 
 interface ICascade {
@@ -733,8 +734,14 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     protected _recreateSceneUBOs(): void {
         this._disposeSceneUBOs();
         if (this._sceneUBOs) {
+            const engine = this._scene.getEngine();
             for (let i = 0; i < this._numCascades; ++i) {
-                this._sceneUBOs.push(this._scene.createSceneUniformBuffer(`Scene for CSM Shadow Generator (light "${this._light.name}" cascade #${i})`));
+                const ubo = new UniformBuffer(engine, undefined, false, `Scene for CSM Shadow Generator (light "${this._light.name}" cascade #${i})`);
+                ubo.addUniform("viewProjection", 16);
+                ubo.addUniform("view", 16);
+                ubo.addUniform("projection", 16);
+                ubo.addUniform("vEyePosition", 4);
+                this._sceneUBOs.push(ubo);
             }
         }
     }

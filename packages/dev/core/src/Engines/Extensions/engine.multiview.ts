@@ -175,6 +175,8 @@ declare module "../../scene" {
         /** @internal */
         _multiviewSceneUbo: Nullable<UniformBuffer>;
         /** @internal */
+        _multiviewSceneUboIsActive: boolean;
+        /** @internal */
         _createMultiviewUbo(): void;
         /** @internal */
         _updateMultiviewUbo(viewR?: Matrix, projectionR?: Matrix): void;
@@ -197,11 +199,13 @@ const CurrentCreateSceneUniformBuffer = Scene.prototype.createSceneUniformBuffer
 
 Scene.prototype._transformMatrixR = Matrix.Zero();
 Scene.prototype._multiviewSceneUbo = null;
+Scene.prototype._multiviewSceneUboIsActive = false;
 Scene.prototype._createMultiviewUbo = function () {
     this._multiviewSceneUbo = CreateMultiviewUbo(this.getEngine(), "scene_multiview");
+    this._multiviewSceneUboIsActive = true;
 };
 Scene.prototype.createSceneUniformBuffer = function (name?: string, trackUBOsInFrame?: boolean): UniformBuffer {
-    if (this._multiviewSceneUbo) {
+    if (this._multiviewSceneUboIsActive) {
         return CreateMultiviewUbo(this.getEngine(), name, trackUBOsInFrame);
     }
     return CurrentCreateSceneUniformBuffer.bind(this)(name, trackUBOsInFrame);

@@ -5,7 +5,7 @@
  */
 import { Constants } from "core/Engines/constants";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
-import type { UniformBuffer } from "core/Materials/uniformBuffer";
+import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Matrix, TmpVectors } from "core/Maths/math.vector";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -214,7 +214,11 @@ export class ReflectiveShadowMap {
         const useUBO = this._scene.getEngine().supportsUniformBuffers;
 
         if (useUBO) {
-            sceneUBO = this._scene.createSceneUniformBuffer(`Scene for RSM (light "${name}")`);
+            sceneUBO = new UniformBuffer(this._scene.getEngine(), undefined, false, `Scene for RSM (light "${name}")`);
+            sceneUBO.addUniform("viewProjection", 16);
+            sceneUBO.addUniform("view", 16);
+            sceneUBO.addUniform("projection", 16);
+            sceneUBO.addUniform("vEyePosition", 4);
         }
 
         let shadowEnabled: boolean;

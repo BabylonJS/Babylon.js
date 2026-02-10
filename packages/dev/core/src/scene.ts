@@ -2751,11 +2751,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param projectionR defines the right Projection matrix to use (if provided)
      */
     public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
-        // clear the multiviewSceneUbo if no viewR and projectionR are defined
-        if (!viewR && !projectionR && this._multiviewSceneUbo) {
-            this._multiviewSceneUbo.dispose();
-            this._multiviewSceneUbo = null;
-        }
+        // Toggle the multiview flag based on whether stereo matrices are provided.
+        // The multiview UBO itself is kept alive for the XR session lifetime to avoid per-frame GPU alloc/dealloc.
+        this._multiviewSceneUboIsActive = !!(viewR && projectionR && this._multiviewSceneUbo);
         if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
@@ -2774,7 +2772,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
         }
 
-        if (this._multiviewSceneUbo && this._multiviewSceneUbo.useUbo) {
+        if (this._multiviewSceneUboIsActive && this._multiviewSceneUbo!.useUbo) {
             this._updateMultiviewUbo(viewR, projectionR);
         } else if (this._sceneUbo.useUbo) {
             this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
@@ -2788,7 +2786,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns a UniformBuffer
      */
     public getSceneUniformBuffer(): UniformBuffer {
-        return this._multiviewSceneUbo ? this._multiviewSceneUbo : this._sceneUbo;
+        return this._multiviewSceneUboIsActive && this._multiviewSceneUbo ? this._multiviewSceneUbo : this._sceneUbo;
     }
 
     /**
