@@ -62,7 +62,7 @@ describe("GeospatialCamera", () => {
             const north = new Vector3();
             const up = new Vector3();
 
-            ComputeLocalBasisToRefs(worldPos, east, north, up);
+            ComputeLocalBasisToRefs(worldPos, east, north, up, true);
 
             // Up should point outward (same direction as position)
             expect(vectorsApproxEqual(up, new Vector3(1, 0, 0))).toBe(true);
@@ -88,7 +88,7 @@ describe("GeospatialCamera", () => {
             const north = new Vector3();
             const up = new Vector3();
 
-            ComputeLocalBasisToRefs(worldPos, east, north, up);
+            ComputeLocalBasisToRefs(worldPos, east, north, up, true);
 
             // Up should point toward Y+
             expect(vectorsApproxEqual(up, new Vector3(0, 1, 0))).toBe(true);
@@ -108,7 +108,7 @@ describe("GeospatialCamera", () => {
             const north = new Vector3();
             const up = new Vector3();
 
-            ComputeLocalBasisToRefs(worldPos, east, north, up);
+            ComputeLocalBasisToRefs(worldPos, east, north, up, true);
 
             // Up should point toward Z+ (outward from north pole)
             expect(vectorsApproxEqual(up, new Vector3(0, 0, 1))).toBe(true);
@@ -128,7 +128,7 @@ describe("GeospatialCamera", () => {
             const north = new Vector3();
             const up = new Vector3();
 
-            ComputeLocalBasisToRefs(worldPos, east, north, up);
+            ComputeLocalBasisToRefs(worldPos, east, north, up, true);
 
             // Up should point toward Z- (outward from south pole)
             expect(vectorsApproxEqual(up, new Vector3(0, 0, -1))).toBe(true);
@@ -150,7 +150,7 @@ describe("GeospatialCamera", () => {
             const north = new Vector3();
             const up = new Vector3();
 
-            ComputeLocalBasisToRefs(worldPos, east, north, up);
+            ComputeLocalBasisToRefs(worldPos, east, north, up, true);
 
             // Up should be normalized position
             const expectedUp = worldPos.clone().normalize();

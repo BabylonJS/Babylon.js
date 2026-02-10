@@ -92,7 +92,7 @@ export class GeospatialCameraMovement extends CameraMovement {
         this._dragPlaneNormal.scaleToRef(hitPointRadius, this._dragPlaneOriginPointEcef);
 
         // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
-        ComputeLocalBasisToRefs(this._dragPlaneOriginPointEcef, TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2]);
+        ComputeLocalBasisToRefs(this._dragPlaneOriginPointEcef, TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], this._scene.useRightHandedSystem);
         const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], localToEcefResult);
         localToEcef.setTranslationFromFloats(this._dragPlaneOriginPointEcef.x, this._dragPlaneOriginPointEcef.y, this._dragPlaneOriginPointEcef.z);
         const ecefToLocal = localToEcef.invertToRef(TmpVectors.Matrix[1]);
@@ -234,24 +234,42 @@ function IntersectRayWithPlaneToRef(ray: Ray, plane: Plane, ref: Vector3): boole
 
 /**
  * Helper to build east/north/up basis vectors at a world position.
+ * Cross product order is swapped based on handedness so that the east vector
+ * encodes the coordinate-system convention, removing the need for a separate yawScale.
+ * @param worldPos - The position on the globe
+ * @param refEast - Receives the east direction
+ * @param refNorth - Receives the north direction
+ * @param refUp - Receives the up (outward) direction
+ * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
  * @internal
  */
-export function ComputeLocalBasisToRefs(worldPos: Vector3, refEast: Vector3, refNorth: Vector3, refUp: Vector3) {
+export function ComputeLocalBasisToRefs(worldPos: Vector3, refEast: Vector3, refNorth: Vector3, refUp: Vector3, useRightHandedSystem: boolean) {
     // up = normalized position (geocentric normal)
     refUp.copyFrom(worldPos).normalize();
 
-    // east = normalize(worldNorth × up)
-    // (cross product of Earth rotation axis with up gives east except near poles)
+    // east – cross product order determines handedness
     const worldNorth = Vector3.LeftHandedForwardReadOnly; // (0,0,1)
-    Vector3.CrossToRef(worldNorth, refUp, refEast);
+    if (useRightHandedSystem) {
+        Vector3.CrossToRef(worldNorth, refUp, refEast);
+    } else {
+        Vector3.CrossToRef(refUp, worldNorth, refEast);
+    }
 
     // at poles, cross with worldRight instead
     if (refEast.lengthSquared() < Epsilon) {
-        Vector3.CrossToRef(Vector3.Right(), refUp, refEast);
+        if (useRightHandedSystem) {
+            Vector3.CrossToRef(Vector3.Right(), refUp, refEast);
+        } else {
+            Vector3.CrossToRef(refUp, Vector3.Right(), refEast);
+        }
     }
     refEast.normalize();
 
-    // north = up × east (completes right-handed basis)
-    Vector3.CrossToRef(refUp, refEast, refNorth);
+    // north – completes the basis (cross order also swapped for handedness)
+    if (useRightHandedSystem) {
+        Vector3.CrossToRef(refUp, refEast, refNorth);
+    } else {
+        Vector3.CrossToRef(refEast, refUp, refNorth);
+    }
     refNorth.normalize();
 }
