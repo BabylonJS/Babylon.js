@@ -1,3 +1,4 @@
+import type { Theme as FluentTheme } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 import type { TernaryDarkMode } from "usehooks-ts";
 
@@ -7,6 +8,7 @@ import type { IExtension, InstallFailedInfo } from "./extensibility/extensionMan
 import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
 import type { ISettingsStore } from "./services/settingsStore";
 import type { IRootComponentService, ShellServiceOptions } from "./services/shellService";
+import type { IThemeService } from "./services/themeService";
 
 import {
     Body1,
@@ -29,8 +31,9 @@ import { createRoot } from "react-dom/client";
 
 import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
+import { Observable } from "core/Misc/observable";
 import { ToastProvider } from "shared-ui-components/fluent/primitives/toast";
-import { Theme } from "./components/theme";
+import { Theme, useTheme } from "./components/theme";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { SettingsStoreContext } from "./contexts/settingsContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
@@ -39,6 +42,7 @@ import { ServiceContainer } from "./modularity/serviceContainer";
 import { SettingsStore, SettingsStoreIdentity } from "./services/settingsStore";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
+import { ThemeServiceIdentity } from "./services/themeService";
 
 const useStyles = makeStyles({
     app: {
@@ -113,6 +117,9 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
     // Create the settings store immediately as it will be exposed to services and through React context.
     const settingsStore = new SettingsStore(namespace);
 
+    let theme: FluentTheme;
+    const themeChangedObservable = new Observable<void>();
+
     const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
         const [extensionManagerContext, setExtensionManagerContext] = useState<ExtensionManagerContext>();
@@ -121,6 +128,12 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         const [extensionInstallError, setExtensionInstallError] = useState<InstallFailedInfo>();
 
         const [rootComponent, setRootComponent] = useState<ComponentType>();
+
+        theme = useTheme();
+
+        useEffect(() => {
+            themeChangedObservable.notifyObservers();
+        }, [theme]);
 
         // This is the main async initialization.
         useEffect(() => {
@@ -146,6 +159,21 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                         setRootComponent(() => rootComponentService.rootComponent);
                         return {
                             dispose: () => setRootComponent(undefined),
+                        };
+                    },
+                });
+
+                // Register a service that exposes the raw theme to other services outside the React tree.
+                // React components can access the raw theme via the useTheme hook, or theme tokens via Fluent's tokens object.
+                await serviceContainer.addServiceAsync<[IThemeService], []>({
+                    friendlyName: "Theme Service",
+                    produces: [ThemeServiceIdentity],
+                    factory: () => {
+                        return {
+                            get theme() {
+                                return theme;
+                            },
+                            onChanged: themeChangedObservable,
                         };
                     },
                 });
@@ -316,6 +344,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
             // Unmount and restore the original container element display.
             if (!disposed) {
                 disposed = true;
+                themeChangedObservable.clear();
                 reactRoot.unmount();
                 containerElement.style.display = originalContainerElementDisplay;
             }

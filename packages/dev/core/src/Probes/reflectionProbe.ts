@@ -191,7 +191,7 @@ export class ReflectionProbe {
             const engine = scene.getEngine();
             this._currentSceneUBO = scene.getSceneUniformBuffer();
             if (engine._enableGPUDebugMarkers) {
-                engine.restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer(true);
                 engine._debugPushGroup?.(`reflection probe generation for ${name}`);
             }
             currentApplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;

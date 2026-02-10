@@ -42,6 +42,7 @@ import type { ProximityCastResult } from "../../proximityCastResult";
 import type { IPhysicsShapeProximityCastQuery } from "../../physicsShapeProximityCastQuery";
 import type { IPhysicsShapeCastQuery } from "../../physicsShapeCastQuery";
 import type { ShapeCastResult } from "../../shapeCastResult";
+import { FloatingOriginCurrentScene } from "../../../Materials/floatingOriginMatrixOverrides";
 declare let HK: any;
 
 /**
@@ -217,6 +218,13 @@ class BodyPluginData {
     public worldTransformOffset: number;
 
     public userMassProps: PhysicsMassProperties;
+
+    /**
+     * Reference to the world region this body belongs to.
+     * Used for floating origin mode to ensure consistent coordinate transformation.
+     * Will be undefined for non-floating-origin worlds (uses the default world).
+     */
+    public worldRegion?: PhysicsWorldRegion;
 }
 
 /*
@@ -278,6 +286,27 @@ export interface HavokPluginParameters {
      * Maximum number of raycast hits to process
      */
     maxQueryCollectorHits?: number;
+    /**
+     * Radius of each floating origin world region.
+     * Bodies within this radius of a world region's origin will use that world.
+     * Bodies created outside existing regions will create a new region.
+     * Default is 100000 units.
+     */
+    floatingOriginWorldRadius?: number;
+}
+
+/**
+ * Represents a physics world region with a fixed floating origin.
+ * Bodies within a certain radius of this origin are simulated in this world.
+ * @internal
+ */
+interface PhysicsWorldRegion {
+    /** The Havok world handle */
+    world: any;
+    /** The fixed floating origin for this world region (in world coordinates) */
+    floatingOrigin: Vector3;
+    /** The gravity for this world region (can be different per region for planetary scenarios) */
+    gravity: number[];
 }
 
 /**
@@ -289,7 +318,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     public _hknp: any = {};
     /**
-     * Created Havok world which physics bodies are added to
+     * Created Havok world which physics bodies are added to (default world for non-floating-origin)
      */
     public world: any;
     /**
@@ -311,6 +340,67 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     // Map from constraint id to the pair of bodies, where the first is the parent and the second is the child
     private _constraintToBodyIdPair = new Map<bigint, [bigint, bigint]>();
     private _bodyCollisionEndedObservable = new Map<bigint, Observable<IBasePhysicsCollisionEvent>>();
+    /**
+     * Array of world regions. The first region is always the default world with origin at Vector3.Zero.
+     * Additional regions are created as needed for floating origin mode.
+     */
+    private _worldRegions: PhysicsWorldRegion[] = [];
+    /**
+     * Stored gravity value to apply to new world regions.
+     */
+    private _currentGravity: number[] = [0, -9.81, 0];
+    /**
+     * Radius of each floating origin world region.
+     * Bodies within this radius of a world region's origin will use that world.
+     */
+    private _floatingOriginWorldRadius: number = 100000;
+
+    /**
+     * Finds an existing world region that contains the given world position,
+     * or creates a new world region centered at that position.
+     *
+     * When floatingOriginMode is enabled, we use multiple Havok worlds to maintain
+     * float32 precision across a large world. Each world region has its own fixed
+     * floating origin, and bodies within that region are simulated relative to it.
+     *
+     * @param worldPosition - The world position of the body being created
+     * @returns The world region to use for this body
+     */
+    private _getOrCreateWorldRegion(worldPosition: Vector3): PhysicsWorldRegion {
+        // Check if floating origin mode is enabled
+        const scene = FloatingOriginCurrentScene.getScene();
+        if (!scene?.floatingOriginMode) {
+            // When floating origin mode is disabled, use the default world region
+            return this._worldRegions[0];
+        }
+
+        // Find an existing region that contains this position
+        for (const region of this._worldRegions) {
+            const distance = Vector3.Distance(worldPosition, region.floatingOrigin);
+            if (distance <= this._floatingOriginWorldRadius) {
+                return region;
+            }
+        }
+
+        // No existing region found - create a new one centered at this position
+        const newWorld = this._hknp.HP_World_Create()[1];
+
+        // Apply stored gravity to new world
+        this._hknp.HP_World_SetGravity(newWorld, this._currentGravity);
+
+        // Copy velocity limits from main world
+        this._hknp.HP_World_SetSpeedLimit(newWorld, this.getMaxLinearVelocity(), this.getMaxAngularVelocity());
+
+        const newRegion: PhysicsWorldRegion = {
+            world: newWorld,
+            floatingOrigin: worldPosition.clone(),
+            gravity: [...this._currentGravity],
+        };
+
+        this._worldRegions.push(newRegion);
+        return newRegion;
+    }
+
     /**
      * Observable for collision started and collision continued events
      */
@@ -342,8 +432,16 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
         this.world = this._hknp.HP_World_Create()[1];
 
+        // Add the default world as the first region with origin at zero
+        this._worldRegions.push({
+            world: this.world,
+            floatingOrigin: Vector3.Zero(),
+            gravity: [...this._currentGravity],
+        });
+
         this._queryCollector = this._hknp.HP_QueryCollector_Create(1)[1];
         this.setMaxQueryCollectorHits(parameters.maxQueryCollectorHits ?? 1);
+        this._floatingOriginWorldRadius = parameters.floatingOriginWorldRadius ?? 100000;
     }
     /**
      * If this plugin is supported
@@ -357,10 +455,42 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Sets the gravity of the physics world.
      *
      * @param gravity - The gravity vector to set.
-     *
+     * @param worldPosition - Optional world position to specify which region's gravity to set.
+     *                        If provided, only the region containing this position will be updated.
+     *                        If not provided, all regions will be updated (default behavior).
+     *                        This is useful for planetary scenarios where gravity direction varies by location.
      */
-    public setGravity(gravity: Vector3): void {
-        this._hknp.HP_World_SetGravity(this.world, this._bVecToV3(gravity));
+    public setGravity(gravity: Vector3, worldPosition?: Vector3): void {
+        const gravityArray = this._bVecToV3(gravity);
+
+        if (worldPosition) {
+            // Set gravity for a specific region based on world position
+            const region = this._getOrCreateWorldRegion(worldPosition);
+            region.gravity = gravityArray;
+            this._hknp.HP_World_SetGravity(region.world, gravityArray);
+        } else {
+            // Set gravity for all regions (default behavior)
+            this._currentGravity = gravityArray;
+            for (const region of this._worldRegions) {
+                region.gravity = gravityArray;
+                this._hknp.HP_World_SetGravity(region.world, gravityArray);
+            }
+        }
+    }
+
+    /**
+     * Gets the gravity of the physics world or a specific region.
+     *
+     * @param worldPosition - Optional world position to get the gravity for that region.
+     *                        If not provided, returns the default gravity.
+     * @returns The gravity vector.
+     */
+    public getGravity(worldPosition?: Vector3): Vector3 {
+        if (worldPosition) {
+            const region = this._getOrCreateWorldRegion(worldPosition);
+            return new Vector3(region.gravity[0], region.gravity[1], region.gravity[2]);
+        }
+        return new Vector3(this._currentGravity[0], this._currentGravity[1], this._currentGravity[2]);
     }
 
     /**
@@ -431,18 +561,26 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
 
         const deltaTime = this._useDeltaForWorldStep ? delta : this._fixedTimeStep;
-        this._hknp.HP_World_SetIdealStepTime(this.world, deltaTime);
-        this._hknp.HP_World_Step(this.world, deltaTime);
 
+        // Step all world regions
+        for (const region of this._worldRegions) {
+            this._hknp.HP_World_SetIdealStepTime(region.world, deltaTime);
+            this._hknp.HP_World_Step(region.world, deltaTime);
+        }
+        // Get body buffer from the default world (first region)
         this._bodyBuffer = this._hknp.HP_World_GetBodyBuffer(this.world)[1];
+
         for (const physicsBody of physicsBodies) {
             if (!physicsBody.disableSync) {
                 this.sync(physicsBody);
             }
         }
 
-        this._notifyCollisions();
-        this._notifyTriggers();
+        // Notify collisions and triggers for all world regions
+        for (const region of this._worldRegions) {
+            this._notifyCollisions(region.world);
+            this._notifyTriggers(region.world);
+        }
     }
 
     /**
@@ -462,7 +600,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param maxAngularVelocity maximum allowed angular velocity
      */
     setVelocityLimits(maxLinearVelocity: number, maxAngularVelocity: number): void {
-        this._hknp.HP_World_SetSpeedLimit(this.world, maxLinearVelocity, maxAngularVelocity);
+        for (const region of this._worldRegions) {
+            this._hknp.HP_World_SetSpeedLimit(region.world, maxLinearVelocity, maxAngularVelocity);
+        }
     }
 
     /**
@@ -496,10 +636,14 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         body._pluginData = new BodyPluginData(this._hknp.HP_Body_Create()[1]);
 
         this._internalSetMotionType(body._pluginData, motionType);
-        const transform = [this._bVecToV3(position), this._bQuatToV4(orientation)]; //<todo temp transform?
-        this._hknp.HP_Body_SetQTransform(body._pluginData.hpBodyId, transform);
 
-        this._hknp.HP_World_AddBody(this.world, body._pluginData.hpBodyId, body.startAsleep);
+        // Get the world region for this body's position
+        const worldRegion = this._getOrCreateWorldRegion(position);
+        body._pluginData.worldRegion = worldRegion;
+        const offset = worldRegion.floatingOrigin;
+        const transform = [[position._x - offset._x, position._y - offset._y, position._z - offset._z], this._bQuatToV4(orientation)];
+        this._hknp.HP_Body_SetQTransform(body._pluginData.hpBodyId, transform);
+        this._hknp.HP_World_AddBody(worldRegion.world, body._pluginData.hpBodyId, body.startAsleep);
         this._bodies.set(body._pluginData.hpBodyId[0], { body: body, index: 0 });
     }
 
@@ -512,13 +656,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         if (body._pluginDataInstances && body._pluginDataInstances.length > 0) {
             for (const instance of body._pluginDataInstances) {
                 this._bodyCollisionObservable.delete(instance.hpBodyId[0]);
-                this._hknp.HP_World_RemoveBody(this.world, instance.hpBodyId);
+                this._hknp.HP_World_RemoveBody(instance.worldRegion.world, instance.hpBodyId);
                 this._bodies.delete(instance.hpBodyId[0]);
             }
         }
         if (body._pluginData) {
             this._bodyCollisionObservable.delete(body._pluginData.hpBodyId[0]);
-            this._hknp.HP_World_RemoveBody(this.world, body._pluginData.hpBodyId);
+            this._hknp.HP_World_RemoveBody(body._pluginData.worldRegion.world, body._pluginData.hpBodyId);
             this._bodies.delete(body._pluginData.hpBodyId[0]);
         }
     }
@@ -552,14 +696,34 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     private _createOrUpdateBodyInstances(body: PhysicsBody, motionType: PhysicsMotionType, matrixData: Float32Array, startIndex: number, endIndex: number, update: boolean): void {
         const rotation = TmpVectors.Quaternion[0];
         const rotationMatrix = Matrix.Identity();
+        const worldPos = TmpVectors.Vector3[0];
+
         for (let i = startIndex; i < endIndex; i++) {
-            const position = [matrixData[i * 16 + 12], matrixData[i * 16 + 13], matrixData[i * 16 + 14]];
+            // Get world position for this instance
+            worldPos.set(matrixData[i * 16 + 12], matrixData[i * 16 + 13], matrixData[i * 16 + 14]);
+
             let hkbody;
+            let pluginData: BodyPluginData;
             if (!update) {
                 hkbody = this._hknp.HP_Body_Create()[1];
+                pluginData = new BodyPluginData(hkbody);
+
+                if (body._pluginDataInstances.length) {
+                    // If an instance already exists, copy any user-provided mass properties
+                    pluginData.userMassProps = body._pluginDataInstances[0].userMassProps;
+                }
             } else {
-                hkbody = body._pluginDataInstances[i].hpBodyId;
+                pluginData = body._pluginDataInstances[i];
+                hkbody = pluginData.hpBodyId;
             }
+
+            // Get the world region for this instance's position
+            const worldRegion = this._getOrCreateWorldRegion(worldPos);
+            const offset = worldRegion.floatingOrigin;
+
+            // Subtract floating origin offset to get small coordinates for Havok (float32 precision)
+            const position = [worldPos._x - offset._x, worldPos._y - offset._y, worldPos._z - offset._z];
+
             rotationMatrix.setRowFromFloats(0, matrixData[i * 16 + 0], matrixData[i * 16 + 1], matrixData[i * 16 + 2], 0);
             rotationMatrix.setRowFromFloats(1, matrixData[i * 16 + 4], matrixData[i * 16 + 5], matrixData[i * 16 + 6], 0);
             rotationMatrix.setRowFromFloats(2, matrixData[i * 16 + 8], matrixData[i * 16 + 9], matrixData[i * 16 + 10], 0);
@@ -567,15 +731,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             const transform = [position, [rotation.x, rotation.y, rotation.z, rotation.w]];
             this._hknp.HP_Body_SetQTransform(hkbody, transform);
             if (!update) {
-                const pluginData = new BodyPluginData(hkbody);
-                if (body._pluginDataInstances.length) {
-                    // If an instance already exists, copy any user-provided mass properties
-                    pluginData.userMassProps = body._pluginDataInstances[0].userMassProps;
-                }
                 this._internalSetMotionType(pluginData, motionType);
                 this._internalUpdateMassProperties(pluginData);
                 body._pluginDataInstances.push(pluginData);
-                this._hknp.HP_World_AddBody(this.world, hkbody, body.startAsleep);
+                // Add to the appropriate world
+                pluginData.worldRegion = worldRegion;
+                this._hknp.HP_World_AddBody(worldRegion.world, hkbody, body.startAsleep);
                 pluginData.worldTransformOffset = this._hknp.HP_Body_GetWorldTransformOffset(hkbody)[1];
             }
         }
@@ -613,7 +774,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             for (let i = 0; i < instancesToRemove; i++) {
                 const hkbody = body._pluginDataInstances.pop();
                 this._bodies.delete(hkbody.hpBodyId[0]);
-                this._hknp.HP_World_RemoveBody(this.world, hkbody.hpBodyId);
+                this._hknp.HP_World_RemoveBody(hkbody.worldRegion.world, hkbody.hpBodyId);
                 this._hknp.HP_Body_Release(hkbody.hpBodyId);
             }
             this._createOrUpdateBodyInstances(body, motionType, matrixData, 0, instancesCount, true);
@@ -646,6 +807,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * physical behavior of the body.
      */
     syncTransform(body: PhysicsBody, transformNode: TransformNode): void {
+        // Get the floating origin offset - this was subtracted when positions were sent to Havok
+        // We need to add it back to get the correct world position
+
         if (body._pluginDataInstances.length) {
             // instances
             const m = transformNode as Mesh;
@@ -655,8 +819,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             }
             const instancesCount = body._pluginDataInstances.length;
             for (let i = 0; i < instancesCount; i++) {
-                const bufOffset = body._pluginDataInstances[i].worldTransformOffset;
-                const transformBuffer = new Float32Array(this._hknp.HEAPU8.buffer, this._bodyBuffer + bufOffset, 16);
+                const pluginData = body._pluginDataInstances[i];
+                // Use instance's world region offset
+                const instanceOffset = pluginData.worldRegion.floatingOrigin;
+                const bodyBuffer = this._bodyBuffer;
+                const bufOffset = pluginData.worldTransformOffset;
+                const transformBuffer = new Float32Array(this._hknp.HEAPU8.buffer, bodyBuffer + bufOffset, 16);
                 const index = i * 16;
 
                 for (let mi = 0; mi < 15; mi++) {
@@ -664,18 +832,29 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                         matrixData[index + mi] = transformBuffer[mi];
                     }
                 }
+                // Add back the floating origin offset to get world position
+                // (Havok stores position - offset, so we add offset back)
+                matrixData[index + 12] += instanceOffset._x;
+                matrixData[index + 13] += instanceOffset._y;
+                matrixData[index + 14] += instanceOffset._z;
                 matrixData[index + 15] = 1;
             }
             m.thinInstanceBufferUpdated("matrix");
         } else {
             try {
-                // regular
                 const bodyTransform = this._hknp.HP_Body_GetQTransform(body._pluginData.hpBodyId)[1];
                 const bodyTranslation = bodyTransform[0];
                 const bodyOrientation = bodyTransform[1];
                 const quat = TmpVectors.Quaternion[0];
+                // Use body's world region offset
+                const offset = body._pluginData.worldRegion.floatingOrigin;
 
                 quat.set(bodyOrientation[0], bodyOrientation[1], bodyOrientation[2], bodyOrientation[3]);
+
+                // Add back the floating origin offset to get world position
+                const worldX = bodyTranslation[0] + offset._x;
+                const worldY = bodyTranslation[1] + offset._y;
+                const worldZ = bodyTranslation[2] + offset._z;
 
                 const parent = transformNode.parent as TransformNode;
                 // transform position/orientation in parent space
@@ -687,7 +866,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                     quat.normalize();
                     const finalTransform = TmpVectors.Matrix[0];
                     const finalTranslation = TmpVectors.Vector3[0];
-                    finalTranslation.copyFromFloats(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
+                    finalTranslation.copyFromFloats(worldX, worldY, worldZ);
                     Matrix.ComposeToRef(transformNode.absoluteScaling, quat, finalTranslation, finalTransform);
 
                     const parentInverseTransform = TmpVectors.Matrix[1];
@@ -700,7 +879,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                     // Keep original scaling. Re-injecting scaling can introduce discontinuity between frames. Basically, it grows or shrinks.
                     transformNode.scaling.copyFrom(TmpVectors.Vector3[1]);
                 } else {
-                    transformNode.position.set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
+                    transformNode.position.set(worldX, worldY, worldZ);
                     if (transformNode.rotationQuaternion) {
                         transformNode.rotationQuaternion.copyFrom(quat);
                     } else {
@@ -1100,7 +1279,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         this._applyToBodyOrInstances(
             body,
             (pluginRef) => {
-                this._hknp.HP_Body_ApplyImpulse(pluginRef.hpBodyId, this._bVecToV3(location), this._bVecToV3(impulse));
+                const offset = pluginRef.worldRegion.floatingOrigin;
+                this._hknp.HP_Body_ApplyImpulse(pluginRef.hpBodyId, this._bVecToV3WithOffset(location, offset), this._bVecToV3(impulse));
             },
             instanceIndex
         );
@@ -1212,8 +1392,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 const instancesCount = body.numInstances;
                 this._createOrUpdateBodyInstances(body, body.getMotionType(), matrixData, 0, instancesCount, true);
             } else {
-                // regular
-                this._hknp.HP_Body_SetQTransform(body._pluginData.hpBodyId, this._getTransformInfos(node));
+                // regular - use body's world region offset
+                const offset = body._pluginData.worldRegion.floatingOrigin;
+                this._hknp.HP_Body_SetQTransform(body._pluginData.hpBodyId, this._getTransformInfos(node, offset));
             }
         } else if (body.getPrestepType() == PhysicsPrestepType.ACTION) {
             this.setTargetTransform(body, node.absolutePosition, node.absoluteRotationQuaternion);
@@ -1235,7 +1416,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         this._applyToBodyOrInstances(
             body,
             (pluginRef) => {
-                this._hknp.HP_Body_SetTargetQTransform(pluginRef.hpBodyId, [this._bVecToV3(position), this._bQuatToV4(rotation)]);
+                const offset = pluginRef.worldRegion.floatingOrigin;
+                this._hknp.HP_Body_SetTargetQTransform(pluginRef.hpBodyId, [this._bVecToV3WithOffset(position, offset), this._bQuatToV4(rotation)]);
             },
             instanceIndex
         );
@@ -1552,12 +1734,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * It first checks if the node has a rotation quaternion, and if not, it creates one from the node's rotation.
      * It then creates an array containing the position and orientation of the node and returns it.
      * @param node - The transform node.
+     * @param offset - The floating origin offset to apply.
      * @returns An array containing the position and orientation of the node.
      */
-    private _getTransformInfos(node: TransformNode): any[] {
+    private _getTransformInfos(node: TransformNode, offset?: Vector3): any[] {
         if (node.parent) {
             node.computeWorldMatrix(true);
-            return [this._bVecToV3(node.absolutePosition), this._bQuatToV4(node.absoluteRotationQuaternion)];
+            return [this._bVecToV3WithOffset(node.absolutePosition, offset), this._bQuatToV4(node.absoluteRotationQuaternion)];
         }
 
         let orientation = TmpVectors.Quaternion[0];
@@ -1567,7 +1750,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             const r = node.rotation;
             Quaternion.FromEulerAnglesToRef(r.x, r.y, r.z, orientation);
         }
-        const transform = [this._bVecToV3(node.position), this._bQuatToV4(orientation)];
+        const transform = [this._bVecToV3WithOffset(node.position, offset), this._bQuatToV4(orientation)];
         return transform;
     }
 
@@ -2154,7 +2337,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const hitNormal = hitData[4];
         const hitTriangle = hitData[5];
 
-        result.setHitData({ x: hitNormal[0], y: hitNormal[1], z: hitNormal[2] }, { x: hitPos[0], y: hitPos[1], z: hitPos[2] }, hitTriangle);
+        // Add floating origin offset back to hit position using the hit body's world region offset
+        // If no hit body (shouldn't happen), use zero offset from default region
+        const offset = hitBody?.body?._pluginData?.worldRegion?.floatingOrigin ?? this._worldRegions[0].floatingOrigin;
+        result.setHitData({ x: hitNormal[0], y: hitNormal[1], z: hitNormal[2] }, { x: hitPos[0] + offset._x, y: hitPos[1] + offset._y, z: hitPos[2] + offset._z }, hitTriangle);
     }
 
     /**
@@ -2181,9 +2367,16 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             raycastResult.reset(from, to);
         }
 
-        const hkQuery = [this._bVecToV3(from), this._bVecToV3(to), [queryMembership, queryCollideWith], shouldHitTriggers, bodyToIgnore];
+        // Use the ignored body's world region if available, otherwise use default region
+        const worldRegion = query?.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
+        const offset = worldRegion.floatingOrigin;
+        const world = worldRegion.world;
+        const offsetFrom = this._bVecToV3WithOffset(from, offset);
+        const offsetTo = this._bVecToV3WithOffset(to, offset);
+
+        const hkQuery = [offsetFrom, offsetTo, [queryMembership, queryCollideWith], shouldHitTriggers, bodyToIgnore];
         const queryCollector = results.length === 1 || !this._multiQueryCollector ? this._queryCollector : this._multiQueryCollector;
-        this._hknp.HP_World_CastRayWithCollector(this.world, queryCollector, hkQuery);
+        this._hknp.HP_World_CastRayWithCollector(world, queryCollector, hkQuery);
 
         const numHits = this._hknp.HP_QueryCollector_GetNumHits(queryCollector)[1];
         if (numHits <= 0) {
@@ -2204,7 +2397,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             const [, hitData] = this._hknp.HP_QueryCollector_GetCastRayResult(queryCollector, i)[1];
 
             const hitPos = hitData[3];
-            from.subtractFromFloatsToRef(hitPos[0], hitPos[1], hitPos[2], this._tmpVec3[0]);
+            // Use offsetFrom for distance calculation since hitPos is in Havok's offset space
+            this._tmpVec3[0].set(offsetFrom[0] - hitPos[0], offsetFrom[1] - hitPos[1], offsetFrom[2] - hitPos[2]);
             const distance = this._tmpVec3[0].lengthSquared();
 
             hitDatas[i] = {
@@ -2237,9 +2431,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         result.reset();
 
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+        // Use the ignored body's world region if available, otherwise use default region
+        const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
+        const offset = worldRegion.floatingOrigin;
+        const world = worldRegion.world;
 
-        const hkQuery = [this._bVecToV3(query.position), query.maxDistance, [queryMembership, queryCollideWith], query.shouldHitTriggers, bodyToIgnore];
-        this._hknp.HP_World_PointProximityWithCollector(this.world, this._queryCollector, hkQuery);
+        const hkQuery = [this._bVecToV3WithOffset(query.position, offset), query.maxDistance, [queryMembership, queryCollideWith], query.shouldHitTriggers, bodyToIgnore];
+        this._hknp.HP_World_PointProximityWithCollector(world, this._queryCollector, hkQuery);
 
         if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
             const [distance, hitData] = this._hknp.HP_QueryCollector_GetPointProximityResult(this._queryCollector, 0)[1];
@@ -2260,9 +2458,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         hitShapeResult.reset();
         const shapeId = query.shape._pluginData;
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+        // Use the ignored body's world region if available, otherwise use default region
+        const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
+        const offset = worldRegion.floatingOrigin;
+        const world = worldRegion.world;
 
-        const hkQuery = [shapeId, this._bVecToV3(query.position), this._bQuatToV4(query.rotation), query.maxDistance, query.shouldHitTriggers, bodyToIgnore];
-        this._hknp.HP_World_ShapeProximityWithCollector(this.world, this._queryCollector, hkQuery);
+        const hkQuery = [shapeId, this._bVecToV3WithOffset(query.position, offset), this._bQuatToV4(query.rotation), query.maxDistance, query.shouldHitTriggers, bodyToIgnore];
+        this._hknp.HP_World_ShapeProximityWithCollector(world, this._queryCollector, hkQuery);
 
         if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
             const [distance, hitInputData, hitShapeData] = this._hknp.HP_QueryCollector_GetShapeProximityResult(this._queryCollector, 0)[1];
@@ -2287,9 +2489,20 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
         const shapeId = query.shape._pluginData;
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+        // Use the ignored body's world region if available, otherwise use default region
+        const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
+        const offset = worldRegion.floatingOrigin;
+        const world = worldRegion.world;
 
-        const hkQuery = [shapeId, this._bQuatToV4(query.rotation), this._bVecToV3(query.startPosition), this._bVecToV3(query.endPosition), query.shouldHitTriggers, bodyToIgnore];
-        this._hknp.HP_World_ShapeCastWithCollector(this.world, this._queryCollector, hkQuery);
+        const hkQuery = [
+            shapeId,
+            this._bQuatToV4(query.rotation),
+            this._bVecToV3WithOffset(query.startPosition, offset),
+            this._bVecToV3WithOffset(query.endPosition, offset),
+            query.shouldHitTriggers,
+            bodyToIgnore,
+        ];
+        this._hknp.HP_World_ShapeCastWithCollector(world, this._queryCollector, hkQuery);
 
         if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
             const [fractionAlongRay, hitInputData, hitShapeData] = this._hknp.HP_QueryCollector_GetShapeCastResult(this._queryCollector, 0)[1];
@@ -2373,8 +2586,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
-    private _notifyTriggers() {
-        let eventAddress = this._hknp.HP_World_GetTriggerEvents(this.world)[1];
+    private _notifyTriggers(world?: any) {
+        const targetWorld = world ?? this.world;
+        let eventAddress = this._hknp.HP_World_GetTriggerEvents(targetWorld)[1];
         const event = new TriggerEvent();
         while (eventAddress) {
             TriggerEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
@@ -2394,21 +2608,30 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 this.onTriggerCollisionObservable.notifyObservers(triggerCollisionInfo);
             }
 
-            eventAddress = this._hknp.HP_World_GetNextTriggerEvent(this.world, eventAddress);
+            eventAddress = this._hknp.HP_World_GetNextTriggerEvent(targetWorld, eventAddress);
         }
     }
 
     /**
      * Runs thru all detected collisions and filter by body
+     * @param world optional world to check collisions for (defaults to main world)
      */
-    private _notifyCollisions() {
-        let eventAddress = this._hknp.HP_World_GetCollisionEvents(this.world)[1];
+    private _notifyCollisions(world?: any) {
+        const targetWorld = world ?? this.world;
+        let eventAddress = this._hknp.HP_World_GetCollisionEvents(targetWorld)[1];
         const event = new CollisionEvent();
-        const worldAddr = Number(this.world);
+        const worldAddr = Number(targetWorld);
         while (eventAddress) {
             CollisionEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
             const bodyInfoA = this._bodies.get(event.contactOnA.bodyId);
             const bodyInfoB = this._bodies.get(event.contactOnB.bodyId);
+
+            // Add floating origin offset back to collision contact positions using the body's world region offset
+            // If body doesn't exist, use default region's offset (zero)
+            const offsetA = bodyInfoA?.body?._pluginData?.worldRegion?.floatingOrigin ?? this._worldRegions[0].floatingOrigin;
+            event.contactOnA.position.addInPlace(offsetA);
+            const offsetB = bodyInfoB?.body?._pluginData?.worldRegion?.floatingOrigin ?? this._worldRegions[0].floatingOrigin;
+            event.contactOnB.position.addInPlace(offsetB);
 
             // Bodies may have been disposed between events. Check both still exist.
             if (bodyInfoA && bodyInfoB) {
@@ -2499,12 +2722,17 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
         if (this._multiQueryCollector) {
             this._hknp.HP_QueryCollector_Release(this._multiQueryCollector);
-            this._multiQueryCollector;
+            this._multiQueryCollector = undefined;
         }
-        if (this.world) {
-            this._hknp.HP_World_Release(this.world);
-            this.world = undefined;
+
+        // Dispose all world regions (includes the default world)
+        for (const region of this._worldRegions) {
+            if (region.world) {
+                this._hknp.HP_World_Release(region.world);
+            }
         }
+        this._worldRegions.length = 0;
+        this.world = undefined;
     }
 
     private _v3ToBvecRef(v: any, vec3: Vector3): void {
@@ -2512,6 +2740,20 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     private _bVecToV3(v: any): any {
+        return [v._x, v._y, v._z];
+    }
+
+    /**
+     * Converts a Vector3 to Havok format with floating origin offset subtracted.
+     * Use this for world-space positions being sent to Havok.
+     * @param v - The vector to convert
+     * @param offset - Optional offset to use. If not provided, no offset is applied.
+     * @returns The converted vector
+     */
+    private _bVecToV3WithOffset(v: Vector3, offset?: Vector3): any {
+        if (offset) {
+            return [v._x - offset._x, v._y - offset._y, v._z - offset._z];
+        }
         return [v._x, v._y, v._z];
     }
 

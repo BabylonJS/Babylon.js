@@ -325,6 +325,143 @@ describe("GeospatialCamera", () => {
     });
 
     // ============================================
+    // UNIT TESTS: Yaw direction convention (East = +π/2)
+    // ============================================
+    describe("Yaw direction convention", () => {
+        /**
+         * These tests verify that the yaw direction follows the convention:
+         * - yaw = 0 → looking North
+         * - yaw = +π/2 → looking East
+         * - yaw = -π/2 → looking West
+         * - yaw = π → looking South
+         *
+         * At the equator on the X+ axis (0° lat, 0° lon):
+         * - North = (0, 0, 1)
+         * - East = (0, 1, 0)
+         * - Up = (1, 0, 0)
+         */
+
+        it("should have yaw=0 pointing North (right-handed)", () => {
+            const center = new Vector3(6371, 0, 0); // Equator, 0° lon
+            const lookAt = new Vector3();
+            const pitch = Math.PI / 4; // 45° pitch to avoid straight down
+            const yaw = 0;
+
+            ComputeLookAtFromYawPitchToRef(yaw, pitch, center, true, lookAt);
+
+            // At yaw=0, the horizontal component should be North = (0, 0, 1)
+            // lookAt = horiz * sin(pitch) - up * cos(pitch)
+            // The Z component of lookAt should be positive (pointing toward North)
+            // and the Y component should be near zero (no East/West tilt)
+            expect(lookAt.z).toBeGreaterThan(0); // Pointing North
+            expect(Math.abs(lookAt.y)).toBeLessThan(0.0001); // No East/West component
+        });
+
+        it("should have yaw=+π/2 pointing East (right-handed)", () => {
+            const center = new Vector3(6371, 0, 0); // Equator, 0° lon
+            const lookAt = new Vector3();
+            const pitch = Math.PI / 4; // 45° pitch
+            const yaw = Math.PI / 2; // 90° = East
+
+            ComputeLookAtFromYawPitchToRef(yaw, pitch, center, true, lookAt);
+
+            // At yaw=+π/2, the horizontal component should be East = (0, 1, 0)
+            // The Y component of lookAt should be positive (pointing toward East)
+            // and the Z component should be near zero (no North/South tilt)
+            expect(lookAt.y).toBeGreaterThan(0); // Pointing East
+            expect(Math.abs(lookAt.z)).toBeLessThan(0.0001); // No North/South component
+        });
+
+        it("should have yaw=-π/2 pointing West (right-handed)", () => {
+            const center = new Vector3(6371, 0, 0); // Equator, 0° lon
+            const lookAt = new Vector3();
+            const pitch = Math.PI / 4; // 45° pitch
+            const yaw = -Math.PI / 2; // -90° = West
+
+            ComputeLookAtFromYawPitchToRef(yaw, pitch, center, true, lookAt);
+
+            // At yaw=-π/2, the horizontal component should be West = (0, -1, 0)
+            // The Y component of lookAt should be negative (pointing toward West)
+            expect(lookAt.y).toBeLessThan(0); // Pointing West
+            expect(Math.abs(lookAt.z)).toBeLessThan(0.0001); // No North/South component
+        });
+
+        it("should have yaw=π pointing South (right-handed)", () => {
+            const center = new Vector3(6371, 0, 0); // Equator, 0° lon
+            const lookAt = new Vector3();
+            const pitch = Math.PI / 4; // 45° pitch
+            const yaw = Math.PI; // 180° = South
+
+            ComputeLookAtFromYawPitchToRef(yaw, pitch, center, true, lookAt);
+
+            // At yaw=π, the horizontal component should be South = (0, 0, -1)
+            // The Z component of lookAt should be negative (pointing toward South)
+            expect(lookAt.z).toBeLessThan(0); // Pointing South
+            expect(Math.abs(lookAt.y)).toBeLessThan(0.0001); // No East/West component
+        });
+
+        it("should recover yaw=+π/2 (East) from inverse function", () => {
+            const center = new Vector3(6371, 0, 0);
+            const lookAt = new Vector3();
+            const result = new Vector2();
+            const yaw = Math.PI / 2; // East
+            const pitch = Math.PI / 4;
+
+            ComputeLookAtFromYawPitchToRef(yaw, pitch, center, true, lookAt);
+            ComputeYawPitchFromLookAtToRef(lookAt, center, true, 0, result);
+
+            expect(result.x).toBeCloseTo(yaw, 5); // Should recover +π/2
+            expect(result.y).toBeCloseTo(pitch, 5);
+        });
+
+        it("should recover yaw=-π/2 (West) from inverse function", () => {
+            const center = new Vector3(6371, 0, 0);
+            const lookAt = new Vector3();
+            const result = new Vector2();
+            const yaw = -Math.PI / 2; // West
+            const pitch = Math.PI / 4;
+
+            ComputeLookAtFromYawPitchToRef(yaw, pitch, center, true, lookAt);
+            ComputeYawPitchFromLookAtToRef(lookAt, center, true, 0, result);
+
+            expect(result.x).toBeCloseTo(yaw, 5); // Should recover -π/2
+            expect(result.y).toBeCloseTo(pitch, 5);
+        });
+
+        it("should have consistent yaw direction at different center positions", () => {
+            // Test at 90° longitude (Y+ axis)
+            // Here: Up = (0, 1, 0), North = (0, 0, 1), East = (-1, 0, 0)
+            const center = new Vector3(0, 6371, 0);
+            const lookAt = new Vector3();
+            const pitch = Math.PI / 4;
+
+            // yaw = +π/2 should point East = (-1, 0, 0)
+            ComputeLookAtFromYawPitchToRef(Math.PI / 2, pitch, center, true, lookAt);
+            expect(lookAt.x).toBeLessThan(0); // Pointing toward -X (East at this location)
+            expect(Math.abs(lookAt.z)).toBeLessThan(0.0001);
+
+            // yaw = 0 should point North = (0, 0, 1)
+            ComputeLookAtFromYawPitchToRef(0, pitch, center, true, lookAt);
+            expect(lookAt.z).toBeGreaterThan(0); // Pointing North
+        });
+
+        it("should work correctly in left-handed system", () => {
+            const center = new Vector3(6371, 0, 0);
+            const lookAt = new Vector3();
+            const pitch = Math.PI / 4;
+
+            ComputeLookAtFromYawPitchToRef(Math.PI / 2, pitch, center, false, lookAt);
+            // In LH system, east is along the negative Y axis
+            expect(lookAt.y).toBeLessThan(0); // Pointing East
+            expect(Math.abs(lookAt.z)).toBeLessThan(0.0001);
+
+            // yaw = 0 should point North
+            ComputeLookAtFromYawPitchToRef(0, pitch, center, false, lookAt);
+            expect(lookAt.z).toBeGreaterThan(0); // Pointing North
+        });
+    });
+
+    // ============================================
     // TESTS: GeospatialCamera class construction
     // ============================================
     describe("GeospatialCamera construction", () => {

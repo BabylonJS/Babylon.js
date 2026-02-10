@@ -1049,7 +1049,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._shadowMap.onBeforeBindObservable.add(() => {
             this._currentSceneUBO = this._scene.getSceneUniformBuffer();
             if (engine._enableGPUDebugMarkers) {
-                engine.restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer(true);
                 engine._debugPushGroup?.(`Shadow map generation for pass id ${engine.currentRenderPassId}`);
             }
         });

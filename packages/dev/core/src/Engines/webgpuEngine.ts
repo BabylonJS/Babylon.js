@@ -3587,14 +3587,15 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
     }
 
-    /**
-     * Unbind the current render target
-     */
-    public restoreDefaultFramebuffer(): void {
+    public restoreDefaultFramebuffer(unbindOnly?: boolean): void {
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
-        } else if (this._currentRenderPass) {
-            this._endCurrentRenderPass();
+        } else {
+            if (!this._currentRenderPass && !unbindOnly) {
+                this._startMainRenderPass(false);
+            } else {
+                this._endCurrentRenderPass();
+            }
         }
 
         if (this._cachedViewport) {

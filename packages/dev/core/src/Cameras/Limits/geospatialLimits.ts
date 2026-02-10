@@ -28,12 +28,6 @@ export class GeospatialLimits {
 
     /** Gets the maximum yaw angle (rotation around up axis) */
     public yawMax: number = Infinity;
-    /**
-     * Defines the distance used to consider the camera in pan mode vs pinch/zoom.
-     * Basically if your fingers moves away from more than this distance you will be considered
-     * in pinch mode.
-     */
-    public pinchToPanMax: number = 20;
 
     /**
      * @param planetRadius The radius of the planet

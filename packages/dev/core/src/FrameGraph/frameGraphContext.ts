@@ -39,7 +39,7 @@ export class FrameGraphContext {
 
         if (this._engine._currentRenderTarget !== currentRenderTarget) {
             if (!currentRenderTarget) {
-                this._engine.restoreDefaultFramebuffer();
+                this._engine.restoreDefaultFramebuffer(true);
             } else {
                 this._engine.bindFramebuffer(currentRenderTarget);
             }

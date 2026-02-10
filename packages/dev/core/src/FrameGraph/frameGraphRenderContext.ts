@@ -378,7 +378,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * Restores the default framebuffer (back buffer) as the current render target
      */
     public restoreDefaultFramebuffer(): void {
-        this._engine.restoreDefaultFramebuffer();
+        this._engine.restoreDefaultFramebuffer(true);
         this._renderTargetIsBound = false;
         this._currentRenderTarget = undefined;
     }
@@ -393,7 +393,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
 
         if (renderTargetWrapper === undefined) {
             if (this._engine._currentRenderTarget) {
-                this._engine.restoreDefaultFramebuffer();
+                this._engine.restoreDefaultFramebuffer(true);
             }
         } else if (this._engine._currentRenderTarget !== renderTargetWrapper) {
             if (this._engine._currentRenderTarget) {
