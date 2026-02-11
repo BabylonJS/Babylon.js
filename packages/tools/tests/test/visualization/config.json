@@ -3732,12 +3732,6 @@
             "referenceImage": "particles-multiply-blend.png"
         },
         {
-            "title": "Particles - Add Blend",
-            "playgroundId": "#M1HYFH#9",
-            "renderCount": 120,
-            "referenceImage": "particles-add-blend.png"
-        },
-        {
             "title": "Particles - Ramp Blend",
             "playgroundId": "#XPVJMM#2",
             "renderCount": 120,
