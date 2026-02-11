@@ -170,7 +170,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 await serviceContainer.addServicesAsync(...serviceDefinitions);
 
                 // Create the extension manager, passing along the registry for runtime changes to the registered services.
-                const extensionManager = await ExtensionManager.CreateAsync(serviceContainer, extensionFeeds, setExtensionInstallError);
+                const extensionManager = await ExtensionManager.CreateAsync(namespace, serviceContainer, extensionFeeds, setExtensionInstallError);
 
                 // Check query params for required extensions. This lets users share links with sets of extensions.
                 const queryParams = new URLSearchParams(window.location.search);

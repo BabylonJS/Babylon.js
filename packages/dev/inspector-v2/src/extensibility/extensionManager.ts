@@ -64,9 +64,9 @@ type InstalledExtension = {
     registrationToken?: IDisposable;
 };
 
-const InstalledExtensionsKey = "Babylon/Extensions/InstalledExtensions";
+const InstalledExtensionsKey = "Extensions/InstalledExtensions";
 
-const ExtensionInstalledKeyPrefix = "Babylon/Extensions/IsExtensionInstalled";
+const ExtensionInstalledKeyPrefix = "Extensions/IsExtensionInstalled";
 function GetExtensionInstalledKey(name: string): string {
     return `${ExtensionInstalledKeyPrefix}/${name}`;
 }
@@ -90,7 +90,7 @@ export interface IExtensionQuery {
 }
 
 function GetExtensionIdentity(feed: string, name: string) {
-    return `${feed}|${name}`;
+    return `${feed}/${name}`;
 }
 
 /**
@@ -102,6 +102,7 @@ export class ExtensionManager implements IDisposable {
     private readonly _stateChangedHandlers = new Map<string, Set<() => void>>();
 
     private constructor(
+        private readonly _namespace: string,
         private readonly _serviceContainer: ServiceContainer,
         private readonly _feeds: readonly IExtensionFeed[],
         private readonly _onInstallFailed: (info: InstallFailedInfo) => void
@@ -110,22 +111,26 @@ export class ExtensionManager implements IDisposable {
     /**
      * Creates a new instance of the ExtensionManager.
      * This will automatically rehydrate previously installed and enabled extensions.
+     * @param namespace The namespace to use for storing extension state in local storage.
      * @param serviceContainer The service container to use.
      * @param feeds The extension feeds to include.
      * @param onInstallFailed A callback that is called when an extension installation fails.
      * @returns A promise that resolves to the new instance of the ExtensionManager.
      */
     public static async CreateAsync(
+        namespace: string,
         serviceContainer: ServiceContainer,
         feeds: readonly IExtensionFeed[],
         onInstallFailed: (info: InstallFailedInfo) => void
     ): Promise<ExtensionManager> {
-        const extensionManager = new ExtensionManager(serviceContainer, feeds, onInstallFailed);
+        namespace = `Babylon/${namespace}`;
+
+        const extensionManager = new ExtensionManager(namespace, serviceContainer, feeds, onInstallFailed);
 
         // Rehydrate installed extensions.
-        const installedExtensionNames = JSON.parse(localStorage.getItem(InstalledExtensionsKey) ?? "[]") as string[];
+        const installedExtensionNames = JSON.parse(localStorage.getItem(`${namespace}/${InstalledExtensionsKey}`) ?? "[]") as string[];
         for (const installedExtensionName of installedExtensionNames) {
-            const installedExtensionRaw = localStorage.getItem(GetExtensionInstalledKey(installedExtensionName));
+            const installedExtensionRaw = localStorage.getItem(`${namespace}/${GetExtensionInstalledKey(installedExtensionName)}`);
             if (installedExtensionRaw) {
                 const installedExtensionData = JSON.parse(installedExtensionRaw) as {
                     feed: string;
@@ -255,14 +260,14 @@ export class ExtensionManager implements IDisposable {
 
             // Mark the extension as being installed.
             localStorage.setItem(
-                GetExtensionInstalledKey(GetExtensionIdentity(feed.name, metadata.name)),
+                `${this._namespace}/${GetExtensionInstalledKey(GetExtensionIdentity(feed.name, metadata.name))}`,
                 JSON.stringify({
                     feed: feed.name,
                     metadata,
                 })
             );
             localStorage.setItem(
-                InstalledExtensionsKey,
+                `${this._namespace}/${InstalledExtensionsKey}`,
                 JSON.stringify(Array.from(this._installedExtensions.values()).map((extension) => GetExtensionIdentity(extension.feed.name, extension.metadata.name)))
             );
         }
@@ -283,8 +288,8 @@ export class ExtensionManager implements IDisposable {
                 this._installedExtensions.delete(metadata.name);
 
                 // Mark the extension as being uninstalled.
-                localStorage.removeItem(GetExtensionInstalledKey(GetExtensionIdentity(installedExtension.feed.name, metadata.name)));
-                localStorage.setItem(InstalledExtensionsKey, JSON.stringify(Array.from(this._installedExtensions.keys())));
+                localStorage.removeItem(`${this._namespace}/${GetExtensionInstalledKey(GetExtensionIdentity(installedExtension.feed.name, metadata.name))}`);
+                localStorage.setItem(`${this._namespace}/${InstalledExtensionsKey}`, JSON.stringify(Array.from(this._installedExtensions.keys())));
             } finally {
                 !isNestedStateChange && (installedExtension.isStateChanging = false);
             }

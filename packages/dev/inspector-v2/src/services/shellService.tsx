@@ -255,11 +255,6 @@ export interface IShellService extends IService<typeof ShellServiceIdentity> {
     addCentralContent(content: Readonly<CentralContentDefinition>): IDisposable;
 
     /**
-     * Resets the side pane layout to the default configuration.
-     */
-    resetSidePaneLayout(): void;
-
-    /**
      * The left side pane container.
      */
     readonly leftSidePaneContainer: Nullable<SidePaneContainer>;
@@ -1498,7 +1493,6 @@ export function MakeShellServiceDefinition({
                     return sidePaneCollection.add(entry);
                 },
                 addCentralContent: (entry) => centralContentCollection.add(entry),
-                resetSidePaneLayout: () => localStorage.removeItem("Babylon/Settings/SidePaneDockOverrides"),
                 get leftSidePaneContainer() {
                     return leftSidePaneContainerState.isPresent ? leftSidePaneContainerState : null;
                 },
