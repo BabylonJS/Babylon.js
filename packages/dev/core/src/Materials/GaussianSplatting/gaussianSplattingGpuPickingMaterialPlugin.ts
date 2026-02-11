@@ -7,7 +7,8 @@ import type { MaterialDefines } from "../materialDefines";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { ShaderLanguage } from "../shaderLanguage";
 import { RegisterClass } from "../../Misc/typeStore";
-import { GaussianSplattingMaxPartCount, type GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
+import { GaussianSplattingMaxPartCount } from "./gaussianSplattingMaterial";
+import type { GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
 
 /**
  * Plugin for GaussianSplattingMaterial that replaces per-splat color output with
