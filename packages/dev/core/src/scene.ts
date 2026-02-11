@@ -106,6 +106,16 @@ import type { BoundingBoxRenderer } from "./Rendering/boundingBoxRenderer";
 import type { BoundingBox } from "./Culling/boundingBox";
 
 /**
+ * Options for creating a scene uniform buffer
+ */
+export interface ICreateSceneUboOptions {
+    /** Define if the UBOs should be tracked in the frame (default: undefined - will use the value from Engine._features.trackUbosInFrame) */
+    trackUBOsInFrame?: boolean;
+    /** When true, always creates a mono (non-multiview) UBO, bypassing any multiview override */
+    forceMono?: boolean;
+}
+
+/**
  * Define an interface for all classes that will hold resources
  */
 export interface IDisposable {
@@ -2795,7 +2805,16 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param trackUBOsInFrame define if the UBOs should be tracked in the frame (default: undefined - will use the value from Engine._features.trackUbosInFrame)
      * @returns a new ubo
      */
-    public createSceneUniformBuffer(name?: string, trackUBOsInFrame?: boolean): UniformBuffer {
+    public createSceneUniformBuffer(name?: string, trackUBOsInFrame?: boolean): UniformBuffer;
+    /**
+     * Creates a scene UBO
+     * @param name name of the uniform buffer (optional, for debugging purpose only)
+     * @param options options for creating the scene uniform buffer
+     * @returns a new ubo
+     */
+    public createSceneUniformBuffer(name?: string, options?: ICreateSceneUboOptions): UniformBuffer;
+    public createSceneUniformBuffer(name?: string, trackUBOsInFrameOrOptions?: boolean | ICreateSceneUboOptions): UniformBuffer {
+        const trackUBOsInFrame = typeof trackUBOsInFrameOrOptions === "boolean" ? trackUBOsInFrameOrOptions : trackUBOsInFrameOrOptions?.trackUBOsInFrame;
         const sceneUbo = new UniformBuffer(this._engine, undefined, false, name ?? "scene", undefined, trackUBOsInFrame);
         sceneUbo.addUniform("viewProjection", 16);
         sceneUbo.addUniform("view", 16);

@@ -9,7 +9,7 @@ import type { ImageProcessingConfiguration } from "../../Materials/imageProcessi
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { Constants } from "../../Engines/constants";
 import { Plane } from "../../Maths/math.plane";
-import { UniformBuffer } from "../uniformBuffer";
+import type { UniformBuffer } from "../uniformBuffer";
 import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 
 /**
@@ -191,11 +191,7 @@ export class MirrorTexture extends RenderTargetTexture {
         const engine = scene.getEngine();
 
         if (engine.supportsUniformBuffers) {
-            this._sceneUBO = new UniformBuffer(engine, undefined, false, `Scene for Mirror Texture (name "${name}")`);
-            this._sceneUBO.addUniform("viewProjection", 16);
-            this._sceneUBO.addUniform("view", 16);
-            this._sceneUBO.addUniform("projection", 16);
-            this._sceneUBO.addUniform("vEyePosition", 4);
+            this._sceneUBO = scene.createSceneUniformBuffer(`Scene for Mirror Texture (name "${name}")`, { forceMono: true });
         }
 
         let saveClipPlane: Nullable<Plane>;

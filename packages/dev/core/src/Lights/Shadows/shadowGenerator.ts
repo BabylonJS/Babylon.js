@@ -23,7 +23,7 @@ import { _WarnImport } from "../../Misc/devTools";
 import { EffectFallbacks } from "../../Materials/effectFallbacks";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { DrawWrapper } from "../../Materials/drawWrapper";
-import { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import type { Camera } from "../../Cameras/camera";
 
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
@@ -915,12 +915,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._useUBO = this._scene.getEngine().supportsUniformBuffers;
 
         if (this._useUBO) {
-            const ubo = new UniformBuffer(this._scene.getEngine(), undefined, false, `Scene for Shadow Generator (light "${this._light.name}")`);
-            ubo.addUniform("viewProjection", 16);
-            ubo.addUniform("view", 16);
-            ubo.addUniform("projection", 16);
-            ubo.addUniform("vEyePosition", 4);
-            this._sceneUBOs = [ubo];
+            this._sceneUBOs = [this._scene.createSceneUniformBuffer(`Scene for Shadow Generator (light "${this._light.name}")`, { forceMono: true })];
         }
 
         ShadowGenerator._SceneComponentInitialization(this._scene);

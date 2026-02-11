@@ -1,6 +1,6 @@
 import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
-import { Scene } from "../../scene";
+import { Scene, type ICreateSceneUboOptions } from "../../scene";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
@@ -204,11 +204,13 @@ Scene.prototype._createMultiviewUbo = function () {
     this._multiviewSceneUbo = CreateMultiviewUbo(this.getEngine(), "scene_multiview");
     this._multiviewSceneUboIsActive = true;
 };
-Scene.prototype.createSceneUniformBuffer = function (name?: string, trackUBOsInFrame?: boolean): UniformBuffer {
-    if (this._multiviewSceneUboIsActive) {
+Scene.prototype.createSceneUniformBuffer = function (name?: string, trackUBOsInFrameOrOptions?: boolean | ICreateSceneUboOptions): UniformBuffer {
+    const forceMono = typeof trackUBOsInFrameOrOptions === "object" && !!trackUBOsInFrameOrOptions?.forceMono;
+    if (!forceMono && this._multiviewSceneUboIsActive) {
+        const trackUBOsInFrame = typeof trackUBOsInFrameOrOptions === "boolean" ? trackUBOsInFrameOrOptions : trackUBOsInFrameOrOptions?.trackUBOsInFrame;
         return CreateMultiviewUbo(this.getEngine(), name, trackUBOsInFrame);
     }
-    return CurrentCreateSceneUniformBuffer.bind(this)(name, trackUBOsInFrame);
+    return CurrentCreateSceneUniformBuffer.bind(this)(name, trackUBOsInFrameOrOptions);
 };
 Scene.prototype._updateMultiviewUbo = function (viewR?: Matrix, projectionR?: Matrix) {
     if (viewR && projectionR) {

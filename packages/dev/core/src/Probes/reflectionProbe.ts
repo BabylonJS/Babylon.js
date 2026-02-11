@@ -6,7 +6,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
-import { UniformBuffer } from "../Materials/uniformBuffer";
+import type { UniformBuffer } from "../Materials/uniformBuffer";
 import type { IAssetContainer } from "core/IAssetContainer";
 
 declare module "../scene" {
@@ -113,12 +113,7 @@ export class ReflectionProbe {
         if (scene.getEngine().supportsUniformBuffers) {
             this._sceneUBOs = [];
             for (let i = 0; i < 6; ++i) {
-                const ubo = new UniformBuffer(scene.getEngine(), undefined, false, `Scene for Reflection Probe (name "${name}") face #${i}`);
-                ubo.addUniform("viewProjection", 16);
-                ubo.addUniform("view", 16);
-                ubo.addUniform("projection", 16);
-                ubo.addUniform("vEyePosition", 4);
-                this._sceneUBOs.push(ubo);
+                this._sceneUBOs.push(scene.createSceneUniformBuffer(`Scene for Reflection Probe (name "${name}") face #${i}`, { forceMono: true }));
             }
         }
 
