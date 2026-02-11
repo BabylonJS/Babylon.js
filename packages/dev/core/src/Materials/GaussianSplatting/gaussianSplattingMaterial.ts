@@ -262,6 +262,11 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             AddClipPlaneUniforms(uniforms);
 
+            // Let plugin manager prepare its uniform/sampler/ubo lists
+            if (!this._uniformBufferLayoutBuilt) {
+                this.buildUniformLayout();
+            }
+
             // Prepare plugin effect
             this._eventInfo.fallbackRank = 0;
             this._eventInfo.defines = defines;
@@ -286,7 +291,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: {},
-                    processFinalCode: this._eventInfo.customCode,
+                    processCodeAfterIncludes: this._eventInfo.customCode,
                     shaderLanguage: this._shaderLanguage,
                     extraInitializationsAsync: async () => {
                         if (this._shaderLanguage === ShaderLanguage.WGSL) {
