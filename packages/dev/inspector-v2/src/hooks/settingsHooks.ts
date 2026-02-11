@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo } from "react";
 
 import { Observable } from "core/Misc/observable";
 import { useSettingsStore } from "../contexts/settingsContext";
-import { UseDegreesSettingDescriptor } from "../services/panes/settingsService";
+import { UseDegreesSettingDescriptor } from "../services/globalSettings";
 import { useObservableState } from "./observableHooks";
 
 export function useSetting<T>(descriptor: SettingDescriptor<T>): [T, Dispatch<SetStateAction<T>>, () => void] {

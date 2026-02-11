@@ -7,7 +7,7 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { QuaternionPropertyLine, RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useSetting } from "../../../hooks/settingsHooks";
-import { UseDegreesSettingDescriptor, UseEulerSettingDescriptor } from "../../../services/panes/settingsService";
+import { UseDegreesSettingDescriptor, UseEulerSettingDescriptor } from "../../../services/globalSettings";
 import { BoundProperty, Property } from "../boundProperty";
 
 export const FreeCameraTransformProperties: FunctionComponent<{ camera: FreeCamera }> = (props) => {

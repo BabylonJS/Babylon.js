@@ -2,7 +2,6 @@ import type { IDisposable, Scene } from "core/index";
 import type { DynamicAccordionSection, DynamicAccordionSectionContent } from "../../components/extensibleAccordion";
 import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { ISceneContext } from "../sceneContext";
-import type { SettingDescriptor } from "../settingsStore";
 import type { IShellService } from "../shellService";
 
 import { SettingsRegular } from "@fluentui/react-icons";
@@ -13,6 +12,7 @@ import { ExtensibleAccordion } from "../../components/extensibleAccordion";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
 import { useSetting } from "../../hooks/settingsHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
+import { CompactModeSettingDescriptor, DisableCopySettingDescriptor, UseDegreesSettingDescriptor, UseEulerSettingDescriptor } from "../globalSettings";
 import { SceneContextIdentity } from "../sceneContext";
 import { ShellServiceIdentity } from "../shellService";
 
@@ -34,28 +34,6 @@ export interface ISettingsService extends IService<typeof SettingsServiceIdentit
      */
     addSectionContent(content: DynamicAccordionSectionContent<Scene>): IDisposable;
 }
-
-// These are all "global" settings that aren't produced/owned by a specific service,
-// so we just add them by default directly in the SettingsService.
-export const CompactModeSettingDescriptor: SettingDescriptor<boolean> = {
-    key: "CompactMode",
-    defaultValue: !matchMedia("(pointer: coarse)").matches,
-};
-
-export const UseDegreesSettingDescriptor: SettingDescriptor<boolean> = {
-    key: "UseDegrees",
-    defaultValue: false,
-};
-
-export const UseEulerSettingDescriptor: SettingDescriptor<boolean> = {
-    key: "UseEuler",
-    defaultValue: false,
-};
-
-export const DisableCopySettingDescriptor: SettingDescriptor<boolean> = {
-    key: "DisableCopy",
-    defaultValue: false,
-};
 
 export const SettingsServiceDefinition: ServiceDefinition<[ISettingsService], [IShellService, ISceneContext]> = {
     friendlyName: "Settings",

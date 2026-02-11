@@ -38,7 +38,7 @@ import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
 import { useSetting } from "../../hooks/settingsHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
-import { CompactModeSettingDescriptor } from "../../services/panes/settingsService";
+import { CompactModeSettingDescriptor } from "../../services/globalSettings";
 import { useSceneExplorerDragDrop } from "./sceneExplorerDragDrop";
 
 type EntityBase = Readonly<{

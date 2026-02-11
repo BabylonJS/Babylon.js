@@ -5,7 +5,7 @@ import type { Nullable, Quaternion, Vector3 } from "core/index";
 import { QuaternionPropertyLine, RotationVectorPropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useQuaternionProperty } from "../../hooks/compoundPropertyHooks";
 import { useSetting } from "../../hooks/settingsHooks";
-import { UseDegreesSettingDescriptor, UseEulerSettingDescriptor } from "../../services/panes/settingsService";
+import { UseDegreesSettingDescriptor, UseEulerSettingDescriptor } from "../../services/globalSettings";
 import { BoundProperty, Property } from "./boundProperty";
 
 export type Transform = { position: Vector3; rotation: Vector3; rotationQuaternion: Nullable<Quaternion>; scaling: Vector3 };

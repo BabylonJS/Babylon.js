@@ -4,7 +4,7 @@ import { useMemo } from "react";
 
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { useSetting } from "../hooks/settingsHooks";
-import { CompactModeSettingDescriptor, DisableCopySettingDescriptor } from "../services/panes/settingsService";
+import { CompactModeSettingDescriptor, DisableCopySettingDescriptor } from "../services/globalSettings";
 
 export const UXContextProvider: FunctionComponent<PropsWithChildren> = (props) => {
     const [compactMode] = useSetting(CompactModeSettingDescriptor);
