@@ -755,7 +755,23 @@ export class GaussianSplattingMesh extends Mesh {
         }
         const mesh = cameraViewInfos.mesh;
         mesh.getWorldMatrix().copyFrom(this.getWorldMatrix());
+
+        // Propagate render pass material overrides (e.g., GPU picking) to the inner camera mesh.
+        // When this mesh is rendered into a RenderTargetTexture with a material override (via setMaterialForRendering),
+        // the override is set on this proxy mesh but needs to be applied to the actual camera mesh that does the rendering.
+        const engine = this._scene.getEngine();
+        const renderPassId = engine.currentRenderPassId;
+        const renderPassMaterial = this.getMaterialForRenderPass(renderPassId);
+        if (renderPassMaterial) {
+            mesh.setMaterialForRenderPass(renderPassId, renderPassMaterial);
+        }
+
         const ret = mesh.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
+
+        // Clean up the temporary override to avoid affecting other render passes
+        if (renderPassMaterial) {
+            mesh.setMaterialForRenderPass(renderPassId, undefined);
+        }
 
         if (this.onAfterRenderObservable) {
             this.onAfterRenderObservable.notifyObservers(this);

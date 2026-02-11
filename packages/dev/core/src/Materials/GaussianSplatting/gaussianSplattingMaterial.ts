@@ -23,6 +23,10 @@ import "../../Shaders/gaussianSplattingDepth.fragment";
 import "../../Shaders/gaussianSplattingDepth.vertex";
 import "../../ShadersWGSL/gaussianSplattingDepth.fragment";
 import "../../ShadersWGSL/gaussianSplattingDepth.vertex";
+import "../../Shaders/gaussianSplattingPicking.fragment";
+import "../../Shaders/gaussianSplattingPicking.vertex";
+import "../../ShadersWGSL/gaussianSplattingPicking.fragment";
+import "../../ShadersWGSL/gaussianSplattingPicking.vertex";
 import {
     BindFogParameters,
     BindLogDepth,
@@ -539,6 +543,67 @@ export class GaussianSplattingMaterial extends PushMaterial {
         });
         return shaderMaterial;
     }
+    /**
+     * The uniforms used by the picking shader material
+     */
+    protected static _PickingUniforms = [
+        "world",
+        "view",
+        "projection",
+        "invViewport",
+        "dataTextureSize",
+        "focal",
+        "kernelSize",
+        "alpha",
+        "meshID",
+        "partWorld",
+        "partVisibility",
+        "partMeshID",
+    ];
+
+    /**
+     * The samplers used by the picking shader material
+     */
+    protected static _PickingSamplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "partIndicesTexture"];
+
+    /**
+     * Create a GPU picking material for a Gaussian Splatting mesh.
+     * This material renders splats with a picking color ID instead of their normal appearance,
+     * enabling GPU-based picking (hit testing) for Gaussian Splatting meshes and compound meshes.
+     * @param scene scene it belongs to
+     * @param shaderLanguage GLSL or WGSL
+     * @param compoundMesh whether the mesh is a compound mesh with per-part picking
+     * @returns picking shader material
+     */
+    public static MakePickingMaterial(scene: Scene, shaderLanguage: ShaderLanguage, compoundMesh: boolean = false): ShaderMaterial {
+        const defines: string[] = [];
+        if (compoundMesh) {
+            defines.push("#define IS_COMPOUND");
+            defines.push("#define MAX_PART_COUNT 16");
+        }
+
+        const shaderMaterial = new ShaderMaterial(
+            "gaussianSplattingPicking",
+            scene,
+            {
+                vertex: "gaussianSplattingPicking",
+                fragment: "gaussianSplattingPicking",
+            },
+            {
+                attributes: GaussianSplattingMaterial._Attribs,
+                uniforms: GaussianSplattingMaterial._PickingUniforms,
+                samplers: GaussianSplattingMaterial._PickingSamplers,
+                uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
+                shaderLanguage: shaderLanguage,
+                defines: defines,
+                needAlphaBlending: false,
+            }
+        );
+        shaderMaterial.backFaceCulling = false;
+
+        return shaderMaterial;
+    }
+
     protected static _MakeGaussianSplattingShadowDepthWrapper(scene: Scene, shaderLanguage: ShaderLanguage): ShadowDepthWrapper {
         const shaderMaterial = new ShaderMaterial(
             "gaussianSplattingDepth",
