@@ -240,10 +240,10 @@ function IntersectRayWithPlaneToRef(ray: Ray, plane: Plane, ref: Vector3): boole
  * @param refEast - Receives the east direction
  * @param refNorth - Receives the north direction
  * @param refUp - Receives the up (outward) direction
- * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
+ * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system (default: false)
  * @internal
  */
-export function ComputeLocalBasisToRefs(worldPos: Vector3, refEast: Vector3, refNorth: Vector3, refUp: Vector3, useRightHandedSystem: boolean) {
+export function ComputeLocalBasisToRefs(worldPos: Vector3, refEast: Vector3, refNorth: Vector3, refUp: Vector3, useRightHandedSystem: boolean = false) {
     // up = normalized position (geocentric normal)
     refUp.copyFrom(worldPos).normalize();
 
