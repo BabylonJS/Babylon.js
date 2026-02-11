@@ -152,7 +152,7 @@ export type PropertyLineProps<ValueT> = BasePropertyLineProps &
  */
 export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<PropertyLineProps<any>>>((props, ref) => {
     PropertyLine.displayName = "PropertyLine";
-    const { disableCopy, size } = useContext(ToolContext);
+    const { size } = useContext(ToolContext);
     const classes = usePropertyLineStyles();
     const { label, uniqueId, onCopy, expandedContent, children, nullable, ignoreNullable } = props;
 
@@ -226,11 +226,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                         </Tooltip>
                     )}
                     <div className={classes.childWrapper}>{processedChildren}</div>
-                    {onCopy && !disableCopy && (
-                        <Tooltip content="Copy to Clipboard">
-                            <Button className={classes.copy} appearance="transparent" icon={size === "small" ? Copy16Regular : CopyRegular} onClick={handleCopy} />
-                        </Tooltip>
-                    )}
+                    {onCopy && <CopyButton onCopy={handleCopy} />}
                 </div>
             </div>
             {expandedContent && (
@@ -277,6 +273,26 @@ export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren<HTMLPr
         </AccordionSectionItem>
     );
 });
+
+/**
+ * Copy button that reads ToolContext at its own position in the tree.
+ * This allows AccordionSectionItem's ToolContext.Provider override (e.g. ctrl+hover) to control visibility.
+ * @returns The copy button element.
+ */
+const CopyButton: FunctionComponent<{ onCopy: () => void }> = ({ onCopy }) => {
+    const { disableCopy, size } = useContext(ToolContext);
+    const classes = usePropertyLineStyles();
+
+    if (disableCopy) {
+        return null;
+    }
+
+    return (
+        <Tooltip content="Copy to Clipboard">
+            <Button className={classes.copy} appearance="transparent" icon={size === "small" ? Copy16Regular : CopyRegular} onClick={onCopy} />
+        </Tooltip>
+    );
+};
 
 export const PlaceholderPropertyLine: FunctionComponent<PrimitiveProps<any> & PropertyLineProps<any>> = (props) => {
     return (

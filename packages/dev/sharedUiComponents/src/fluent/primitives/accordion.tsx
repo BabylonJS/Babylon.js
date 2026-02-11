@@ -229,6 +229,12 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
         setCtrlMode(ctrlPressed && mouseOver);
     }, [ctrlPressed, mouseOver]);
 
+    // Override disableCopy so copy buttons appear when ctrl+hovering on this item or when edit mode is active
+    const parentToolContext = useContext(ToolContext);
+    const editMode = accordionCtx?.state.editMode ?? false;
+    const showCopy = ctrlMode || editMode;
+    const itemToolContext = useMemo(() => (showCopy ? { ...parentToolContext, disableCopy: false } : parentToolContext), [parentToolContext, showCopy]);
+
     // If static item or no context, just render children
     if (staticItem || !accordionCtx || !itemState) {
         return <>{children}</>;
@@ -251,29 +257,31 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
     const showControls = inEditMode || ctrlMode;
 
     const itemElement = (
-        <div
-            className={classes.sectionItemContainer}
-            style={isPinned ? { order: pinnedIndex } : undefined}
-            onMouseMove={() => setMouseOver(true)}
-            onMouseLeave={() => setMouseOver(false)}
-        >
-            {showControls && (
-                <div className={classes.sectionItemButtons}>
-                    {features.hiding && (
-                        <Button title={isHidden ? "Unhide" : "Hide"} icon={isHidden ? EyeOffRegular : EyeFilled} appearance="transparent" onClick={actions.toggleHidden} />
-                    )}
-                    {features.pinning && (
-                        <>
-                            <Button title={isPinned ? "Unpin" : "Pin"} icon={isPinned ? PinFilled : PinRegular} appearance="transparent" onClick={actions.togglePinned} />
-                            {isPinned && <Button icon={ArrowCircleUpRegular} appearance="transparent" disabled={!canMoveUp} onClick={actions.movePinnedUp} />}
-                        </>
-                    )}
-                </div>
-            )}
-            <AccordionItemDepthContext.Provider value={true}>
-                <div className={classes.sectionItemContent}>{children}</div>
-            </AccordionItemDepthContext.Provider>
-        </div>
+        <ToolContext.Provider value={itemToolContext}>
+            <div
+                className={classes.sectionItemContainer}
+                style={isPinned ? { order: pinnedIndex } : undefined}
+                onMouseMove={() => setMouseOver(true)}
+                onMouseLeave={() => setMouseOver(false)}
+            >
+                {showControls && (
+                    <div className={classes.sectionItemButtons}>
+                        {features.hiding && (
+                            <Button title={isHidden ? "Unhide" : "Hide"} icon={isHidden ? EyeOffRegular : EyeFilled} appearance="transparent" onClick={actions.toggleHidden} />
+                        )}
+                        {features.pinning && (
+                            <>
+                                <Button title={isPinned ? "Unpin" : "Pin"} icon={isPinned ? PinFilled : PinRegular} appearance="transparent" onClick={actions.togglePinned} />
+                                {isPinned && <Button icon={ArrowCircleUpRegular} appearance="transparent" disabled={!canMoveUp} onClick={actions.movePinnedUp} />}
+                            </>
+                        )}
+                    </div>
+                )}
+                <AccordionItemDepthContext.Provider value={true}>
+                    <div className={classes.sectionItemContent}>{children}</div>
+                </AccordionItemDepthContext.Provider>
+            </div>
+        </ToolContext.Provider>
     );
 
     return pinnedContainer ? <Portal mountNode={pinnedContainer}>{itemElement}</Portal> : itemElement;
