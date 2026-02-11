@@ -18,7 +18,7 @@ export const PHI = (1 + Math.sqrt(5)) / 2;
 
 /**
  * Constant used to define the minimal number value in Babylon.js
- * Forced to "let" so the users can change it if they want to use another epsilon value
+ * Exported as "let" so advanced users can override the epsilon value in supported build targets (for example via the global BABYLON.Epsilon)
  * @ignorenaming
  */
 // eslint-disable-next-line prefer-const
