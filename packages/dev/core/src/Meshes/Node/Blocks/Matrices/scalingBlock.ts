@@ -43,6 +43,7 @@ export class ScalingBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
+    /** @internal */
     public override autoConfigure() {
         if (!this.scale.isConnected) {
             const scaleInput = new GeometryInputBlock("Scale");

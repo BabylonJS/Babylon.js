@@ -13,11 +13,11 @@ import { useOpenGLOrientationForUV } from "../../Compat/compatibilityOptions";
 /**
  * Creates the VertexData for a Ground
  * @param options an object used to set the following optional parameters for the Ground, required but can be empty
- * @param options.width the width (x direction) of the ground, optional, default 1
- * @param options.height the height (z direction) of the ground, optional, default 1
- * @param options.subdivisions the number of subdivisions per side, optional, default 1
- * @param options.subdivisionsX the number of subdivisions in the x direction, overrides options.subdivisions, optional, default undefined
- * @param options.subdivisionsY the number of subdivisions in the y direction, overrides options.subdivisions, optional, default undefined
+ * - `width` the width (x direction) of the ground, optional, default 1
+ * - `height` the height (z direction) of the ground, optional, default 1
+ * - `subdivisions` the number of subdivisions per side, optional, default 1
+ * - `subdivisionsX` the number of subdivisions in the x direction, overrides options.subdivisions, optional, default undefined
+ * - `subdivisionsY` the number of subdivisions in the y direction, overrides options.subdivisions, optional, default undefined
  * @returns the VertexData of the Ground
  */
 export function CreateGroundVertexData(options: {
@@ -76,16 +76,12 @@ export function CreateGroundVertexData(options: {
 /**
  * Creates the VertexData for a TiledGround by subdividing the ground into tiles
  * @param options an object used to set the following optional parameters for the Ground
- * @param options.xmin ground minimum X coordinate, default -1
- * @param options.zmin ground minimum Z coordinate, default -1
- * @param options.xmax ground maximum X coordinate, default 1
- * @param options.zmax ground maximum Z coordinate, default 1
- * @param options.subdivisions a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default {w: 6, h: 6}
- * @param options.subdivisions.w positive integer, default 6
- * @param options.subdivisions.h positive integer, default 6
- * @param options.precision a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the tile width and height, default {w: 2, h: 2}
- * @param options.precision.w positive integer, default 2
- * @param options.precision.h positive integer, default 2
+ * - `xmin` ground minimum X coordinate, default -1
+ * - `zmin` ground minimum Z coordinate, default -1
+ * - `xmax` ground maximum X coordinate, default 1
+ * - `zmax` ground maximum Z coordinate, default 1
+ * - `subdivisions` a javascript object `\{w: positive integer, h: positive integer\}`, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default `\{w: 6, h: 6\}`
+ * - `precision` a javascript object `\{w: positive integer, h: positive integer\}`, `w` and `h` are the numbers of subdivisions on the tile width and height, default `\{w: 2, h: 2\}`
  * @returns the VertexData of the TiledGround
  */
 export function CreateTiledGroundVertexData(options: {
@@ -172,17 +168,17 @@ export function CreateTiledGroundVertexData(options: {
 /**
  * Creates the VertexData of the Ground designed from a heightmap
  * @param options an object used to set the following parameters for the Ground, required and provided by CreateGroundFromHeightMap
- * @param options.width the width (x direction) of the ground
- * @param options.height the height (z direction) of the ground
- * @param options.subdivisions the number of subdivisions per side
- * @param options.minHeight the minimum altitude on the ground, optional, default 0
- * @param options.maxHeight the maximum altitude on the ground, optional default 1
- * @param options.colorFilter the filter to apply to the image pixel colors to compute the height, optional Color3, default (0.3, 0.59, 0.11)
- * @param options.buffer the array holding the image color data
- * @param options.bufferWidth the width of image
- * @param options.bufferHeight the height of image
- * @param options.alphaFilter Remove any data where the alpha channel is below this value, defaults 0 (all data visible)
- * @param options.heightBuffer a array of floats where the height data can be saved, if its length is greater than zero.
+ * - `width` the width (x direction) of the ground
+ * - `height` the height (z direction) of the ground
+ * - `subdivisions` the number of subdivisions per side
+ * - `minHeight` the minimum altitude on the ground, optional, default 0
+ * - `maxHeight` the maximum altitude on the ground, optional default 1
+ * - `colorFilter` the filter to apply to the image pixel colors to compute the height, optional Color3, default (0.3, 0.59, 0.11)
+ * - `buffer` the array holding the image color data
+ * - `bufferWidth` the width of image
+ * - `bufferHeight` the height of image
+ * - `alphaFilter` Remove any data where the alpha channel is below this value, defaults 0 (all data visible)
+ * - `heightBuffer` a array of floats where the height data can be saved, if its length is greater than zero.
  * @returns the VertexData of the Ground designed from a heightmap
  */
 export function CreateGroundFromHeightMapVertexData(options: {
@@ -307,12 +303,12 @@ export function CreateGroundFromHeightMapVertexData(options: {
  * Creates a ground mesh
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.width set the width size (float, default 1)
- * @param options.height set the height size (float, default 1)
- * @param options.subdivisions sets the number of subdivision per side (default 1)
- * @param options.subdivisionsX sets the number of subdivision on the X axis (overrides subdivisions)
- * @param options.subdivisionsY sets the number of subdivision on the Y axis (overrides subdivisions)
- * @param options.updatable defines if the mesh must be flagged as updatable (default false)
+ * - `width` set the width size (float, default 1)
+ * - `height` set the height size (float, default 1)
+ * - `subdivisions` sets the number of subdivision per side (default 1)
+ * - `subdivisionsX` sets the number of subdivision on the X axis (overrides subdivisions)
+ * - `subdivisionsY` sets the number of subdivision on the Y axis (overrides subdivisions)
+ * - `updatable` defines if the mesh must be flagged as updatable (default false)
  * @param scene defines the hosting scene
  * @returns the ground mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#ground
@@ -346,17 +342,17 @@ export function CreateGround(
  * Creates a tiled ground mesh
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.xmin ground minimum X coordinate (float, default -1)
- * @param options.zmin ground minimum Z coordinate (float, default -1)
- * @param options.xmax ground maximum X coordinate (float, default 1)
- * @param options.zmax ground maximum Z coordinate (float, default 1)
- * @param options.subdivisions a javascript object `{w: positive integer, h: positive integer}` (default `{w: 6, h: 6}`). `w` and `h` are the numbers of subdivisions on the ground width and height. Each subdivision is called a tile
- * @param options.subdivisions.w positive integer, default 6
- * @param options.subdivisions.h positive integer, default 6
- * @param options.precision a javascript object `{w: positive integer, h: positive integer}` (default `{w: 2, h: 2}`). `w` and `h` are the numbers of subdivisions on the ground width and height of each tile
- * @param options.precision.w positive integer, default 2
- * @param options.precision.h positive integer, default 2
- * @param options.updatable boolean, default false, true if the mesh must be flagged as updatable
+ * - `xmin` ground minimum X coordinate (float, default -1)
+ * - `zmin` ground minimum Z coordinate (float, default -1)
+ * - `xmax` ground maximum X coordinate (float, default 1)
+ * - `zmax` ground maximum Z coordinate (float, default 1)
+ * - `subdivisions` a javascript object `{w: positive integer, h: positive integer}` (default `{w: 6, h: 6}`). `w` and `h` are the numbers of subdivisions on the ground width and height. Each subdivision is called a tile
+ * - `subdivisions.w` positive integer, default 6
+ * - `subdivisions.h` positive integer, default 6
+ * - `precision` a javascript object `{w: positive integer, h: positive integer}` (default `{w: 2, h: 2}`). `w` and `h` are the numbers of subdivisions on the ground width and height of each tile
+ * - `precision.w` positive integer, default 2
+ * - `precision.h` positive integer, default 2
+ * - `updatable` boolean, default false, true if the mesh must be flagged as updatable
  * @param scene defines the hosting scene
  * @returns the tiled ground mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#tiled-ground
@@ -382,17 +378,17 @@ export function CreateTiledGround(
  * @param name defines the name of the mesh
  * @param url sets the URL of the height map image resource.
  * @param options defines the options used to create the mesh
- * @param options.width sets the ground width size (positive float, default 10)
- * @param options.height sets the ground height size (positive float, default 10)
- * @param options.subdivisions sets the number of subdivision per side (positive integer, default 1)
- * @param options.minHeight is the minimum altitude on the ground (float, default 0)
- * @param options.maxHeight is the maximum altitude on the ground (float, default 1)
- * @param options.colorFilter is the filter to apply to the image pixel colors to compute the height (optional Color3, default (0.3, 0.59, 0.11) )
- * @param options.alphaFilter will filter any data where the alpha channel is below this value, defaults 0 (all data visible)
- * @param options.updatable defines if the mesh must be flagged as updatable
- * @param options.onReady is a javascript callback function that will be called once the mesh is just built (the height map download can last some time)
- * @param options.onError is a javascript callback function that will be called if there is an error
- * @param options.passHeightBufferInCallback a boolean that indicates if the calculated height data will be passed in the onReady callback. Useful if you need the height data for physics, for example.
+ * - `width` sets the ground width size (positive float, default 10)
+ * - `height` sets the ground height size (positive float, default 10)
+ * - `subdivisions` sets the number of subdivision per side (positive integer, default 1)
+ * - `minHeight` is the minimum altitude on the ground (float, default 0)
+ * - `maxHeight` is the maximum altitude on the ground (float, default 1)
+ * - `colorFilter` is the filter to apply to the image pixel colors to compute the height (optional Color3, default (0.3, 0.59, 0.11) )
+ * - `alphaFilter` will filter any data where the alpha channel is below this value, defaults 0 (all data visible)
+ * - `updatable` defines if the mesh must be flagged as updatable
+ * - `onReady` is a javascript callback function that will be called once the mesh is just built (the height map download can last some time)
+ * - `onError` is a javascript callback function that will be called if there is an error
+ * - `passHeightBufferInCallback` a boolean that indicates if the calculated height data will be passed in the onReady callback. Useful if you need the height data for physics, for example.
  * @param scene defines the hosting scene
  * @returns the ground mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/height_map

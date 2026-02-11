@@ -39,6 +39,9 @@ export { ThemeServiceIdentity } from "./services/themeService";
 export type { ISettingsStore, SettingDescriptor } from "./services/settingsStore";
 export { SettingsStoreIdentity } from "./services/settingsStore";
 
+export type { IGizmoService, GizmoMode } from "./services/gizmoService";
+export { GizmoServiceIdentity } from "./services/gizmoService";
+
 export * from "./services/sceneContext";
 export * from "./services/selectionService";
 export * from "./services/settingsStore";

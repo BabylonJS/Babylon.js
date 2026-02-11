@@ -3682,6 +3682,24 @@
             "playgroundId": "#WLX2I2#22",
             "renderCount": 120,
             "referenceImage": "particles-emitters-custom.png"
+        },
+        {
+            "title": "Particles - Animations",
+            "playgroundId": "#2MI0A1#7",
+            "renderCount": 120,
+            "referenceImage": "particles-animations.png"
+        },
+        {
+            "title": "Particles - Animations 2",
+            "playgroundId": "#2MI0A1#8",
+            "renderCount": 120,
+            "referenceImage": "particles-animations-2.png"
+        },
+        {
+            "title": "Particles - Effects",
+            "playgroundId": "#1ASENS#424",
+            "renderCount": 120,
+            "referenceImage": "particles-effects.png"
         }
     ]
 }

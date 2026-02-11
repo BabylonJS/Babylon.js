@@ -8,7 +8,7 @@ import { VertexData } from "../mesh.vertexData";
 import { Matrix, TmpVectors, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Quaternion } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
-import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { GaussianSplattingMaterial, GaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import "core/Meshes/thinInstanceMesh";
@@ -28,7 +28,6 @@ declare const _native: INative;
 
 const IsNative = typeof _native !== "undefined";
 const Native = IsNative ? _native : null;
-
 interface IDelayedTextureUpdate {
     covA: Uint16Array;
     covB: Uint16Array;
@@ -2215,6 +2214,10 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns a placeholder mesh that can be used to manipulate the part transform
      */
     public addPart(other: GaussianSplattingMesh, disposeOther: boolean = true): Mesh {
+        if (this.partCount >= GaussianSplattingMaxPartCount) {
+            throw new Error(`Cannot add part, as the maximum part count (${GaussianSplattingMaxPartCount}) has been reached`);
+        }
+
         const splatCountA = this._vertexCount;
         const splatsDataA = splatCountA == 0 ? new ArrayBuffer(0) : this.splatsData;
         const shDataA = this.shData;

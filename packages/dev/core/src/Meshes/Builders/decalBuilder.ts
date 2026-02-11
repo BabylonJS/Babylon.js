@@ -17,6 +17,7 @@ const ZnAxis = new Vector3(0, 0, -1);
 
 /** @internal */
 class DecalVertex {
+    /** @internal */
     constructor(
         public position: Vector3 = Vector3.Zero(),
         public normal: Vector3 = Vector3.Up(),
@@ -28,6 +29,7 @@ class DecalVertex {
         public matrixIndicesOverride: Nullable<number[]> = null,
         public matrixWeightsOverride: Nullable<number[]> = null
     ) {}
+    /** @internal */
     public clone(): DecalVertex {
         return new DecalVertex(
             this.position.clone(),

@@ -11,9 +11,9 @@ import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like } from "core/
 import type { Nullable } from "core/types";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderStore } from "core/Engines/shaderStore";
 import { Vector3Dot } from "core/Maths/math.vector.functions";
-import "./Shaders/diffuseSkyIrradiance.fragment";
-import "./Shaders/fullscreenTriangle.vertex";
 
 const RaySamples = 128;
 const LutWidthPx = 64;
@@ -100,8 +100,9 @@ export class DiffuseSkyIrradianceLut {
 
         const atmosphereUbo = atmosphere.uniformBuffer;
         const useUbo = atmosphereUbo.useUbo;
+        const useWebGPU = engine.isWebGPU && !EffectWrapper.ForceGLSL;
+        const uboName = useWebGPU ? "atmosphere" : atmosphereUbo.name;
 
-        const heightParam = engine.isWebGPU ? "radius" : "filteringInfo.x";
         this._effectWrapper = new EffectWrapper({
             engine,
             name,
@@ -109,16 +110,33 @@ export class DiffuseSkyIrradianceLut {
             fragmentShader: "diffuseSkyIrradiance",
             attributeNames: ["position"],
             uniformNames: ["depth", ...(useUbo ? [] : atmosphereUbo.getUniformNames())],
-            uniformBuffers: useUbo ? [atmosphereUbo.name] : [],
-            defines: [
-                "#define POSITION_VEC2",
-                `#define NUM_SAMPLES ${RaySamples}u`,
-                "#define CUSTOM_IRRADIANCE_FILTERING_INPUT /* empty */", // empty, no input texture needed as the radiance is procedurally generated from ray marching.
-                // The following ray marches the atmosphere to get the radiance.
-                `#define CUSTOM_IRRADIANCE_FILTERING_FUNCTION vec3 c = integrateForIrradiance(n, Ls, vec3(0., ${heightParam}, 0.));`,
-            ],
+            uniformBuffers: useUbo ? [uboName] : [],
+            defines: ["#define POSITION_VEC2", `#define NUM_SAMPLES ${RaySamples}u`, "#define CUSTOM_IRRADIANCE_FILTERING_INPUT", "#define CUSTOM_IRRADIANCE_FILTERING_FUNCTION"],
             samplers: ["transmittanceLut", "multiScatteringLut"],
             useShaderStore: true,
+            shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializationsAsync: async () => {
+                await Promise.all(
+                    useWebGPU
+                        ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/diffuseSkyIrradiance.fragment")]
+                        : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/diffuseSkyIrradiance.fragment")]
+                );
+
+                // Replace the CUSTOM_IRRADIANCE_FILTERING placeholder with call to integrateForIrradiance.
+                const includeStore = useWebGPU ? ShaderStore.IncludesShadersStoreWGSL : ShaderStore.IncludesShadersStore;
+                let patchedInclude = includeStore["hdrFilteringFunctions"];
+                patchedInclude = patchedInclude.replace(/^(?!.*#(?:ifdef|ifndef)\s).*CUSTOM_IRRADIANCE_FILTERING_INPUT/gm, "");
+                patchedInclude = patchedInclude.replace(
+                    /^(?!.*#(?:ifdef|ifndef)\s).*CUSTOM_IRRADIANCE_FILTERING_FUNCTION/gm,
+                    useWebGPU ? "var c = integrateForIrradiance(n, Ls, vec3f(0., filteringInfo.x, 0.));" : "vec3 c = integrateForIrradiance(n, Ls, vec3(0., filteringInfo.x, 0.));"
+                );
+
+                // Replace the existing #include<hdrFilteringFunctions> with the patched include.
+                const shaderStore = useWebGPU ? ShaderStore.ShadersStoreWGSL : ShaderStore.ShadersStore;
+                let shader = shaderStore["diffuseSkyIrradiancePixelShader"];
+                shader = shader.replace("#include<hdrFilteringFunctions>", patchedInclude);
+                shaderStore["diffuseSkyIrradiancePixelShader"] = shader;
+            },
         });
 
         this._effectRenderer = new EffectRenderer(engine, {

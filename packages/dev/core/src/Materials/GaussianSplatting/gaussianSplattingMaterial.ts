@@ -34,6 +34,9 @@ import {
 } from "../materialHelper.functions";
 import { ShaderLanguage } from "../shaderLanguage";
 
+// Can be up to 256, then we'll need to change the partIndices texture format to uint16
+export const GaussianSplattingMaxPartCount = 256;
+
 /**
  * @internal
  */
@@ -50,7 +53,7 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
     public SH_DEGREE = 0;
     public COMPENSATION = false;
     public IS_COMPOUND = false;
-    public MAX_PART_COUNT = 16; // Can be up to 256, then we'll need to change the partIndices texture format to uint16
+    public MAX_PART_COUNT = GaussianSplattingMaxPartCount;
 
     /**
      * Constructor of the defines.
@@ -507,12 +510,14 @@ export class GaussianSplattingMaterial extends PushMaterial {
      */
     public makeDepthRenderingMaterial(scene: Scene, shaderLanguage: ShaderLanguage, alphaBlendedDepth: boolean = false, compoundMesh: boolean = false): ShaderMaterial {
         const defines = ["#define DEPTH_RENDER"];
+
         if (alphaBlendedDepth) {
             defines.push("#define ALPHA_BLENDED_DEPTH");
         }
+
         if (compoundMesh) {
             defines.push("#define IS_COMPOUND");
-            defines.push("#define MAX_PART_COUNT 16");
+            defines.push(`#define MAX_PART_COUNT ${GaussianSplattingMaxPartCount}`);
         }
 
         const shaderMaterial = new ShaderMaterial(

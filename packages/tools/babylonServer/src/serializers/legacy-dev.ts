@@ -32,6 +32,13 @@ if (typeof GlobalObject !== "undefined") {
     }
 }
 
+import * as tmfSerializers from "../../../../dev/serializers/src/3MF/index";
+if (typeof GlobalObject !== "undefined") {
+    for (const serializer in tmfSerializers) {
+        (<any>GlobalObject).BABYLON[serializer] = (<any>tmfSerializers)[serializer];
+    }
+}
+
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as Exporters from "../../../../dev/serializers/src/glTF/glTFFileExporter";
 import * as Datas from "../../../../dev/serializers/src/glTF/2.0/glTFData";

@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-render-graph-editor",
-    "version": "8.50.4",
+    "version": "8.50.5",
     "main": "dist/babylon.nodeRenderGraphEditor.js",
     "module": "dist/babylon.nodeRenderGraphEditor.js",
     "esnext": "dist/babylon.nodeRenderGraphEditor.js",
@@ -23,7 +23,7 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "8.50.4",
+        "@babylonjs/core": "8.50.5",
         "@tools/node-render-graph-editor": "1.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"

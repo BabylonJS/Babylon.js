@@ -5329,6 +5329,14 @@
 
 - Mesh extrusion: Add an optional scaleVectorFunction parameter to ExtrudeShapeCustom - by [Popov72](https://github.com/Popov72) ([#17752](https://github.com/BabylonJS/Babylon.js/pull/17752))
 
+## 8.50.5
+
+### Core
+
+
+### Playground
+
+
 ## 8.50.4
 
 ## 8.50.3
