@@ -5,7 +5,6 @@ import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import type { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
 import type { GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh";
-import { GaussianSplattingMaxPartCount } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { MaterialDefines } from "../../Materials/materialDefines";
@@ -34,6 +33,9 @@ import {
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
 import { ShaderLanguage } from "../shaderLanguage";
+
+// Can be up to 256, then we'll need to change the partIndices texture format to uint16
+export const GaussianSplattingMaxPartCount = 256;
 
 /**
  * @internal
