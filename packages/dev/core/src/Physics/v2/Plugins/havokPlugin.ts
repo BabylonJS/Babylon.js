@@ -430,15 +430,30 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             return; // still in region (with hysteresis), nothing to do
         }
 
-        // Body has left its region - find or create the correct one
-        const newRegion = this._getOrCreateWorldRegion(worldPos);
-        if (newRegion === currentRegion) {
-            return; // _getOrCreateWorldRegion returned same region (shouldn't happen, but guard)
-        }
-
-        // Save velocity before removing from old world
+        // Body has left its region. Use velocity to look ahead and find the best
+        // region to join. This prevents creating throwaway intermediate regions
+        // when a fast body is heading toward an existing region (e.g. a target).
         const linVel = this._hknp.HP_Body_GetLinearVelocity(pluginData.hpBodyId)[1];
         const angVel = this._hknp.HP_Body_GetAngularVelocity(pluginData.hpBodyId)[1];
+
+        // Project position forward by one second of travel to find a suitable existing region.
+        // This is purely for region selection — the body's actual position is not changed.
+        const lookAheadPos = TmpVectors.Vector3[3];
+        lookAheadPos.set(worldPos._x + linVel[0], worldPos._y + linVel[1], worldPos._z + linVel[2]);
+
+        // Try to find the best region: first check if look-ahead position falls in an existing region
+        let newRegion = this._findExistingRegion(lookAheadPos);
+        if (!newRegion || newRegion === currentRegion) {
+            // Fall back to current position
+            newRegion = this._findExistingRegion(worldPos);
+        }
+        if (!newRegion || newRegion === currentRegion) {
+            // No existing region works — create one at the current position
+            newRegion = this._getOrCreateWorldRegion(worldPos);
+        }
+        if (newRegion === currentRegion) {
+            return;
+        }
 
         // Remove from old world
         this._hknp.HP_World_RemoveBody(currentRegion.world, pluginData.hpBodyId);
@@ -458,6 +473,38 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         // Update the region reference and world transform offset
         pluginData.worldRegion = newRegion;
         pluginData.worldTransformOffset = this._hknp.HP_Body_GetWorldTransformOffset(pluginData.hpBodyId)[1];
+
+        // Garbage-collect the old region if it has no bodies left and it's not the default world
+        if (currentRegion !== this._worldRegions[0]) {
+            const bodyCount = this._hknp.HP_World_GetNumBodies(currentRegion.world)[1];
+            if (bodyCount === 0) {
+                this._hknp.HP_World_Release(currentRegion.world);
+                const idx = this._worldRegions.indexOf(currentRegion);
+                if (idx > 0) {
+                    this._worldRegions.splice(idx, 1);
+                }
+            }
+        }
+    }
+
+    /**
+     * Searches existing world regions for one that contains the given position.
+     * @param worldPosition - The world position to find a region for
+     * @returns null if no existing region contains it (does NOT create a new one).
+     */
+    private _findExistingRegion(worldPosition: Vector3): PhysicsWorldRegion | null {
+        const scene = FloatingOriginCurrentScene.getScene();
+        if (!scene?.floatingOriginMode) {
+            return this._worldRegions[0];
+        }
+
+        for (const region of this._worldRegions) {
+            const distance = Vector3.Distance(worldPosition, region.floatingOrigin);
+            if (distance <= this._floatingOriginWorldRadius) {
+                return region;
+            }
+        }
+        return null;
     }
 
     /**
@@ -1465,7 +1512,47 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 const instancesCount = body.numInstances;
                 this._createOrUpdateBodyInstances(body, body.getMotionType(), matrixData, 0, instancesCount, true);
             } else {
-                // regular - use body's world region offset
+                // Check if the node's new world position requires a region change.
+                // This ensures teleports (e.g. toggling disablePreStep after moving
+                // the transform node) immediately land in the correct region with
+                // correct local coordinates, avoiding a one-frame precision glitch.
+                const pluginData = body._pluginData;
+                if (pluginData.worldRegion && (this._worldRegions.length > 1 || FloatingOriginCurrentScene.getScene()?.floatingOriginMode)) {
+                    // Get world position of the node
+                    const worldPos = TmpVectors.Vector3[3];
+                    if (node.parent) {
+                        node.computeWorldMatrix(true);
+                        worldPos.copyFrom(node.absolutePosition);
+                    } else {
+                        worldPos.copyFrom(node.position);
+                    }
+
+                    const currentRegion = pluginData.worldRegion;
+                    const distToCurrent = Vector3.Distance(worldPos, currentRegion.floatingOrigin);
+                    if (distToCurrent > this._floatingOriginWorldRadius * 1.2) {
+                        // Teleporting outside current region - re-region before setting transform
+                        const newRegion = this._getOrCreateWorldRegion(worldPos);
+                        if (newRegion !== currentRegion) {
+                            // Save velocity before removing from old world
+                            const linVel = this._hknp.HP_Body_GetLinearVelocity(pluginData.hpBodyId)[1];
+                            const angVel = this._hknp.HP_Body_GetAngularVelocity(pluginData.hpBodyId)[1];
+
+                            // Remove from old world, add to new world
+                            this._hknp.HP_World_RemoveBody(currentRegion.world, pluginData.hpBodyId);
+                            this._hknp.HP_World_AddBody(newRegion.world, pluginData.hpBodyId, false);
+
+                            // Restore velocity
+                            this._hknp.HP_Body_SetLinearVelocity(pluginData.hpBodyId, linVel);
+                            this._hknp.HP_Body_SetAngularVelocity(pluginData.hpBodyId, angVel);
+
+                            // Update region reference and cached world transform offset
+                            pluginData.worldRegion = newRegion;
+                            pluginData.worldTransformOffset = this._hknp.HP_Body_GetWorldTransformOffset(pluginData.hpBodyId)[1];
+                        }
+                    }
+                }
+
+                // Set transform using the (possibly updated) region offset
                 const offset = body._pluginData.worldRegion.floatingOrigin;
                 this._hknp.HP_Body_SetQTransform(body._pluginData.hpBodyId, this._getTransformInfos(node, offset));
             }
