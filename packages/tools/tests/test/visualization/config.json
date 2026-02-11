@@ -3682,6 +3682,66 @@
             "playgroundId": "#WLX2I2#22",
             "renderCount": 120,
             "referenceImage": "particles-emitters-custom.png"
+        },
+        {
+            "title": "Particles - Animations",
+            "playgroundId": "#2MI0A1#7",
+            "renderCount": 120,
+            "referenceImage": "particles-animations.png"
+        },
+        {
+            "title": "Particles - Animations 2",
+            "playgroundId": "#2MI0A1#8",
+            "renderCount": 120,
+            "referenceImage": "particles-animations-2.png"
+        },
+        {
+            "title": "Particles - Ramp Gradient",
+            "playgroundId": "#I2D9MM#10",
+            "renderCount": 120,
+            "referenceImage": "particles-ramp-gradient.png"
+        },
+        {
+            "title": "Particles - Ramp Gradient Remap",
+            "playgroundId": "#I2D9MM#11",
+            "renderCount": 120,
+            "referenceImage": "particles-ramp-gradient-remap.png"
+        },
+        {
+            "title": "Particles - Ramp Gradient Remap Alpha",
+            "playgroundId": "#I2D9MM#13",
+            "renderCount": 120,
+            "referenceImage": "particles-ramp-gradient-remap-alpha.png"
+        },
+        {
+            "title": "Particles - Billboard Y",
+            "playgroundId": "#T3ZCP7#5",
+            "renderCount": 180,
+            "referenceImage": "particles-billboard-y.png"
+        },
+        {
+            "title": "Particles - Billboard False",
+            "playgroundId": "#XWG0HV#4",
+            "renderCount": 120,
+            "referenceImage": "particles-billboard-false.png"
+        },
+        {
+            "title": "Particles - Multiply Blend",
+            "playgroundId": "#M1HYFH#6",
+            "renderCount": 120,
+            "referenceImage": "particles-multiply-blend.png"
+        },
+        {
+            "title": "Particles - Ramp Blend",
+            "playgroundId": "#XPVJMM#2",
+            "renderCount": 120,
+            "referenceImage": "particles-ramp-blend.png"
+        },
+        {
+            "title": "Particles - Effects",
+            "playgroundId": "#1ASENS#424",
+            "renderCount": 120,
+            "referenceImage": "particles-effects.png"
         }
     ]
 }

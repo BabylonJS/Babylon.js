@@ -15,7 +15,6 @@ import { Vector3 } from "core/Maths/math.vector";
 /**
  * Main manifold library
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 let Manifold: any;
 
 /**
@@ -27,7 +26,6 @@ let ManifoldPromise: Promise<{ Manifold: any; Mesh: any }>;
 /**
  * Manifold mesh
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 let ManifoldMesh: any;
 
 /**
@@ -506,6 +504,7 @@ export async function InitializeCSG2Async(options?: Partial<ICSG2Options>) {
         );
 
         const result = await ManifoldPromise;
+        // eslint-disable-next-line require-atomic-updates
         Manifold = result.Manifold;
         ManifoldMesh = result.Mesh;
     }

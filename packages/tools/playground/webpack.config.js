@@ -77,6 +77,7 @@ module.exports = (env) => {
                     },
                 ],
                 tsOptions: {
+                    transpileOnly: true,
                     compilerOptions: {
                         rootDir: "../../",
                     },

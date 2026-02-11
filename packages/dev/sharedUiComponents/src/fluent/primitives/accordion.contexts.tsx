@@ -50,6 +50,7 @@ export type AccordionAction =
     | { type: "TOGGLE_PINNED"; itemId: string }
     | { type: "TOGGLE_HIDDEN"; itemId: string }
     | { type: "MOVE_PINNED_UP"; itemId: string }
+    | { type: "REMOVE_STALE_IDS"; activeIds: Set<string> }
     | { type: "SHOW_ALL" }
     | { type: "HIDE_ALL_VISIBLE"; visibleItemIds: string[] };
 
@@ -103,6 +104,15 @@ const AccordionReducer = (state: AccordionState, action: AccordionAction): Accor
             return { ...state, pinnedIds: newPinnedIds };
         }
 
+        case "REMOVE_STALE_IDS": {
+            const pinnedIds = state.pinnedIds.filter((id) => action.activeIds.has(id));
+            const hiddenIds = state.hiddenIds.filter((id) => action.activeIds.has(id));
+            if (pinnedIds.length === state.pinnedIds.length && hiddenIds.length === state.hiddenIds.length) {
+                return state;
+            }
+            return { ...state, pinnedIds, hiddenIds };
+        }
+
         case "SHOW_ALL":
             return { ...state, hiddenIds: [] };
 
@@ -135,8 +145,8 @@ export type AccordionContextValue = {
     features: AccordionFeatures;
     /** Ref for the pinned items portal container. */
     pinnedContainerRef: RefObject<HTMLDivElement>;
-    /** Set of registered item IDs (for duplicate detection). */
-    registeredItemIds: React.MutableRefObject<Set<string>>;
+    /** Map of registered item IDs to labels (for duplicate detection and section empty checks). */
+    registeredItemIds: Map<string, string>;
 };
 
 export const AccordionContext = createContext<AccordionContextValue | undefined>(undefined);
@@ -177,7 +187,7 @@ export function useAccordionContext(props: AccordionProps): AccordionContextValu
     const [state, dispatch] = useReducer(AccordionReducer, initialState);
 
     const pinnedContainerRef = useRef<HTMLDivElement>(null);
-    const registeredItemIds = useRef<Set<string>>(new Set());
+    const registeredItemIds = useRef<Map<string, string>>(new Map());
 
     // Persist pinnedIds to localStorage when they change
     useEffect(() => {
@@ -193,6 +203,14 @@ export function useAccordionContext(props: AccordionProps): AccordionContextValu
         }
     }, [accordionId, features.hiding, state.hiddenIds]);
 
+    // Clean stale IDs from localStorage on mount. Parent effects run after
+    // children's, so all items will have registered by the time this fires.
+    useEffect(() => {
+        if (accordionId && hasFeatures) {
+            dispatch({ type: "REMOVE_STALE_IDS", activeIds: new Set(registeredItemIds.current.keys()) });
+        }
+    }, [accordionId, hasFeatures]);
+
     // Return undefined if no accordionId or no features enabled
     if (!accordionId || !hasFeatures) {
         return undefined;
@@ -204,7 +222,7 @@ export function useAccordionContext(props: AccordionProps): AccordionContextValu
         dispatch,
         features,
         pinnedContainerRef,
-        registeredItemIds,
+        registeredItemIds: registeredItemIds.current,
     };
 }
 
@@ -226,11 +244,17 @@ export const AccordionSectionBlockContext = createContext<AccordionSectionBlockC
  * Hook to create the AccordionSectionBlockContext value.
  *
  * @param props - AccordionSectionBlockProps
- * @returns AccordionSectionBlockContextValue
+ * @returns AccordionSectionBlockContextValue and isEmpty state
  */
-export function useAccordionSectionBlockContext(props: AccordionSectionBlockProps): AccordionSectionBlockContextValue {
+export function useAccordionSectionBlockContext(props: AccordionSectionBlockProps): {
+    context: AccordionSectionBlockContextValue;
+    isEmpty: boolean;
+} {
     const { sectionId } = props;
-    return useMemo(() => ({ sectionId }), [sectionId]);
+    const context = useMemo(() => ({ sectionId }), [sectionId]);
+    const isEmpty = useIsSectionEmpty(sectionId);
+
+    return { context, isEmpty };
 }
 
 // ============================================================================
@@ -263,6 +287,8 @@ export type AccordionItemState = {
     isMatch: boolean;
     /** The index of this item in the pinned list (for ordering). */
     pinnedIndex: number;
+    /** Whether this pinned item can be moved up (is not first in the pinned list). */
+    canMoveUp: boolean;
     /** Whether edit mode is active. */
     inEditMode: boolean;
     /** Callbacks to modify state. */
@@ -291,7 +317,7 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         if (!accordionCtx || !sectionCtx) {
             return "";
         }
-        return `${accordionCtx.accordionId}\0${sectionCtx.sectionId}\0${itemId}`;
+        return `${accordionCtx.accordionId}/${sectionCtx.sectionId}/${itemId}`;
     }, [accordionCtx?.accordionId, sectionCtx?.sectionId, itemId]);
 
     // Debug: warn if itemId changes (should be stable)
@@ -306,24 +332,23 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         prevItemIdRef.current = itemId;
     }, [itemId, sectionCtx?.sectionId]);
 
-    // Debug: warn if itemUniqueId is not unique (duplicate detection)
+    // Register item and detect duplicates
     useEffect(() => {
         if (!accordionCtx || !itemUniqueId) {
             return;
         }
         const { registeredItemIds } = accordionCtx;
-        if (registeredItemIds.current.has(itemUniqueId)) {
+        if (registeredItemIds.has(itemUniqueId)) {
             Logger.Warn(
                 `Accordion: Duplicate uniqueId "${itemId}" detected in section "${sectionCtx?.sectionId}". ` +
                     `Each item must have a unique ID within its section for pin/hide persistence to work correctly.`
             );
-        } else {
-            registeredItemIds.current.add(itemUniqueId);
         }
+        registeredItemIds.set(itemUniqueId, itemLabel ?? itemId);
         return () => {
-            registeredItemIds.current.delete(itemUniqueId);
+            registeredItemIds.delete(itemUniqueId);
         };
-    }, [accordionCtx, itemUniqueId, itemId, sectionCtx?.sectionId]);
+    }, [accordionCtx, itemUniqueId, itemId, itemLabel, sectionCtx?.sectionId]);
 
     // If no context, static item, or nested, return undefined
     if (!accordionCtx || staticItem) {
@@ -338,6 +363,8 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
     const isHidden = features.hiding && hiddenIds.includes(itemUniqueId);
     const pinnedIndex = isPinned ? pinnedIds.indexOf(itemUniqueId) : -1;
 
+    const canMoveUp = isPinned && pinnedIndex > 0;
+
     // Search matching
     const searchText = (itemLabel ?? itemId).toLowerCase();
     const isMatch = !features.search || !searchTerm || searchText.includes(searchTerm.toLowerCase());
@@ -349,6 +376,7 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         isHidden,
         isMatch,
         pinnedIndex,
+        canMoveUp,
         inEditMode: editMode,
         actions: {
             togglePinned: () => dispatch({ type: "TOGGLE_PINNED", itemId: itemUniqueId }),
@@ -357,54 +385,43 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         },
     };
 }
-
-// ============================================================================
-// Helper hook to check if a section is empty
-// ============================================================================
-
 /**
- * Hook to determine if a section should be hidden because it has no visible items.
- * This is computed during render based on the current state.
+ * Hook to determine if a section is empty (has no visible items).
+ * Derived from accordion state + globally registered items filtered by section prefix.
  *
  * @param sectionId - The section ID to check.
- * @param registeredItems - Map of item IDs to their labels in this section.
- * @returns Whether the section is empty (has no visible items).
+ * @returns Whether the section has no visible items.
  */
-export function useIsSectionEmpty(sectionId: string, registeredItems: Map<string, string>): boolean {
+function useIsSectionEmpty(sectionId: string): boolean {
     const accordionCtx = useContext(AccordionContext);
 
     if (!accordionCtx) {
-        return false; // No context means no filtering, section is not empty
+        return false;
     }
 
-    const { state, features, accordionId } = accordionCtx;
+    const { state, features, accordionId, registeredItemIds } = accordionCtx;
     const { pinnedIds, hiddenIds, searchTerm, editMode } = state;
 
-    // In edit mode, always show sections
     if (editMode) {
         return false;
     }
 
-    // Check if any item in this section is visible
-    for (const [itemId, itemLabel] of registeredItems) {
-        const itemUniqueId = `${accordionId}\0${sectionId}\0${itemId}`;
-        const isPinned = features.pinning && pinnedIds.includes(itemUniqueId);
-        const isHidden = features.hiding && hiddenIds.includes(itemUniqueId);
-        const searchText = (itemLabel ?? itemId).toLowerCase();
-        const isMatch = !features.search || !searchTerm || searchText.includes(searchTerm.toLowerCase());
+    const sectionPrefix = `${accordionId}/${sectionId}/`;
+    let hasItems = false;
 
-        // For the Pinned section, show items that are pinned and match
-        if (sectionId === "Pinned") {
-            if (isPinned && isMatch) {
-                return false;
-            }
-        } else {
-            // For regular sections, show items that are not pinned, not hidden, and match
-            if (!isPinned && !isHidden && isMatch) {
-                return false;
-            }
+    for (const [itemId, itemLabel] of registeredItemIds) {
+        if (!itemId.startsWith(sectionPrefix)) {
+            continue;
+        }
+        hasItems = true;
+        const isPinned = features.pinning && pinnedIds.includes(itemId);
+        const isHidden = features.hiding && hiddenIds.includes(itemId);
+        const searchText = (itemLabel || itemId).toLowerCase();
+        const isMatch = !features.search || !searchTerm || searchText.includes(searchTerm.toLowerCase());
+        if (!isPinned && !isHidden && isMatch) {
+            return false;
         }
     }
 
-    return true;
+    return hasItems;
 }

@@ -82,17 +82,20 @@ const useStyles = makeStyles({
         flexGrow: 1,
         justifyContent: "end",
     },
-    sectionEmpty: {
-        display: "none",
-    },
     sectionItemContainer: {
         display: "flex",
         flexDirection: "row",
+        alignItems: "center",
+    },
+    sectionItemContent: {
+        flexGrow: 1,
+        minWidth: 0, // Allow content to shrink below its intrinsic width when buttons are shown
+        overflow: "hidden",
     },
     sectionItemButtons: {
         display: "flex",
         flexDirection: "row",
-        alignItems: "start",
+        alignItems: "center",
         marginRight: tokens.spacingHorizontalXS,
     },
     pinnedContainer: {
@@ -138,11 +141,10 @@ const AccordionMenuBar: FunctionComponent = () => {
                             icon={EyeOffRegular}
                             appearance="subtle"
                             onClick={() => {
-                                // Hide all visible items - we pass all non-hidden, matching items
-                                // For simplicity, we dispatch with an empty array; the actual filtering
-                                // would need to be done with knowledge of all registered items.
-                                // This is a limitation - in a full implementation, you'd track registered items.
-                                dispatch({ type: "HIDE_ALL_VISIBLE", visibleItemIds: [] });
+                                // Hide all visible (non-hidden) items using the registered item IDs
+                                const { registeredItemIds, state: currentState } = accordionCtx;
+                                const visibleItemIds = Array.from(registeredItemIds.keys()).filter((id) => !currentState.hiddenIds.includes(id));
+                                dispatch({ type: "HIDE_ALL_VISIBLE", visibleItemIds });
                             }}
                         />
                     </>
@@ -179,12 +181,12 @@ const AccordionSectionBlock: FunctionComponent<PropsWithChildren<AccordionSectio
     AccordionSectionBlock.displayName = "AccordionSectionBlock";
     const { children, sectionId } = props;
     const accordionCtx = useContext(AccordionContext);
-    const sectionContext = useAccordionSectionBlockContext(props);
+    const { context: sectionContext, isEmpty } = useAccordionSectionBlockContext(props);
 
     if (accordionCtx) {
         return (
             <AccordionSectionBlockContext.Provider value={sectionContext}>
-                <AccordionItem value={sectionId}>{children}</AccordionItem>
+                {!isEmpty && <AccordionItem value={sectionId}>{children}</AccordionItem>}
             </AccordionSectionBlockContext.Provider>
         );
     }
@@ -233,7 +235,7 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
     }
 
     const { pinnedContainerRef, features } = accordionCtx;
-    const { isNested, isPinned, isHidden, isMatch, pinnedIndex, inEditMode, actions } = itemState;
+    const { isNested, isPinned, isHidden, isMatch, pinnedIndex, canMoveUp, inEditMode, actions } = itemState;
 
     // Nested items just render children (don't show controls)
     if (isNested) {
@@ -263,14 +265,14 @@ export const AccordionSectionItem: FunctionComponent<PropsWithChildren<Accordion
                     {features.pinning && (
                         <>
                             <Button title={isPinned ? "Unpin" : "Pin"} icon={isPinned ? PinFilled : PinRegular} appearance="transparent" onClick={actions.togglePinned} />
-                            {isPinned && (
-                                <Button title="Move up" icon={ArrowCircleUpRegular} appearance="transparent" disabled={pinnedIndex === 0} onClick={actions.movePinnedUp} />
-                            )}
+                            {isPinned && <Button icon={ArrowCircleUpRegular} appearance="transparent" disabled={!canMoveUp} onClick={actions.movePinnedUp} />}
                         </>
                     )}
                 </div>
             )}
-            <AccordionItemDepthContext.Provider value={true}>{children}</AccordionItemDepthContext.Provider>
+            <AccordionItemDepthContext.Provider value={true}>
+                <div className={classes.sectionItemContent}>{children}</div>
+            </AccordionItemDepthContext.Provider>
         </div>
     );
 

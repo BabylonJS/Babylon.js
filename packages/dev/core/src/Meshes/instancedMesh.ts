@@ -102,14 +102,17 @@ export class InstancedMesh extends AbstractMesh {
         return this._sourceMesh._lightSources;
     }
 
+    /** @internal */
     public override _resyncLightSources(): void {
         // Do nothing as all the work will be done by source mesh
     }
 
+    /** @internal */
     public override _resyncLightSource(): void {
         // Do nothing as all the work will be done by source mesh
     }
 
+    /** @internal */
     public override _removeLightSource(): void {
         // Do nothing as all the work will be done by source mesh
     }
@@ -225,7 +228,7 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * Is this node ready to be used/rendered
      * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
-     * @returns {boolean} is it ready
+     * @returns is it ready
      */
     public override isReady(completeCheck = false): boolean {
         return this._sourceMesh.isReady(completeCheck, true);
@@ -242,10 +245,12 @@ export class InstancedMesh extends AbstractMesh {
         return this._sourceMesh.getVerticesData(kind, copyWhenShared, forceCopy);
     }
 
+    /** @internal */
     public override copyVerticesData(kind: string, vertexData: { [kind: string]: Float32Array }): void {
         this._sourceMesh.copyVerticesData(kind, vertexData);
     }
 
+    /** @internal */
     public override getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer> {
         return this._sourceMesh.getVertexBuffer(kind, bypassInstanceData);
     }
@@ -368,10 +373,12 @@ export class InstancedMesh extends AbstractMesh {
         return this._sourceMesh.getIndices();
     }
 
+    /** @internal */
     public override get _positions(): Nullable<Vector3[]> {
         return this._sourceMesh._positions;
     }
 
+    /** @internal */
     public override refreshBoundingInfo(applySkeletonOrOptions: boolean | IMeshDataOptions = false, applyMorph: boolean = false): InstancedMesh {
         if (this.hasBoundingInfo && this.getBoundingInfo().isLocked) {
             return this;
@@ -447,6 +454,7 @@ export class InstancedMesh extends AbstractMesh {
         }
     }
 
+    /** @internal */
     public override getWorldMatrix(): Matrix {
         if (
             this._currentLOD &&
@@ -470,6 +478,7 @@ export class InstancedMesh extends AbstractMesh {
         return super.getWorldMatrix();
     }
 
+    /** @internal */
     public override get isAnInstance(): boolean {
         return true;
     }
@@ -631,8 +640,6 @@ export class InstancedMesh extends AbstractMesh {
      * Instantiate (when possible) or clone that node with its hierarchy
      * @param newParent defines the new parent to use for the instance (or clone)
      * @param options defines options to configure how copy is done
-     * @param options.doNotInstantiate defines if the model must be instantiated or just cloned
-     * @param options.newSourcedMesh newSourcedMesh the new source mesh for the instance (or clone)
      * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
      * @returns an instance (or a clone) of the current node with its hierarchy
      */
@@ -658,6 +665,7 @@ export class InstancedMesh extends AbstractMesh {
 }
 
 declare module "./mesh" {
+    /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Mesh {
         /**
@@ -680,11 +688,17 @@ declare module "./mesh" {
 
         /** @internal */
         _userInstancedBuffersStorage: {
+            /** @internal */
             data: { [key: string]: Float32Array };
+            /** @internal */
             sizes: { [key: string]: number };
+            /** @internal */
             vertexBuffers: { [key: string]: Nullable<VertexBuffer> };
+            /** @internal */
             strides: { [key: string]: number };
+            /** @internal */
             vertexArrayObjects?: { [key: string]: WebGLVertexArrayObject };
+            /** @internal */
             renderPasses?: {
                 [renderPassId: number]: { [kind: string]: Nullable<VertexBuffer> };
             };
@@ -693,6 +707,7 @@ declare module "./mesh" {
 }
 
 declare module "./abstractMesh" {
+    /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractMesh {
         /**

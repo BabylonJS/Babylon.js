@@ -11,6 +11,7 @@ module.exports = (env) => {
             obj: "./src/obj.ts",
             stl: "./src/stl.ts",
             usdz: "./src/USDZ.ts",
+            threemf: "./src/3mf.ts",
         },
         alias: {
             serializers: path.resolve(__dirname, "../../../dev/serializers/src"),

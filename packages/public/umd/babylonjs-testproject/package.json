@@ -1,7 +1,7 @@
 {
     "name": "babylonjs-testproject",
     "private": true,
-    "version": "8.50.4",
+    "version": "8.50.5",
     "files": [
         "*"
     ],

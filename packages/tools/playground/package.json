@@ -6,6 +6,7 @@
         "build": "webpack",
         "build:declaration": "build-tools -c pud --config ./config.json",
         "build:deployment": "npm run clean && webpack --env mode=production",
+        "typecheck": "tsc -p tsconfig.build.json --noEmit",
         "serve": "webpack serve",
         "serve:prod": "webpack serve --env mode=production",
         "serve:https": "webpack serve --env mode=development --server-type https --host ::",

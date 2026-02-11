@@ -1,14 +1,29 @@
-import type { Camera, Gizmo, IDisposable, Light, Node, Scene } from "core/index";
+import type { Camera, Gizmo, IDisposable, IReadonlyObservable, Light, Node, Nullable, Scene, TransformNode } from "core/index";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
+import type { ISceneContext } from "./sceneContext";
+import type { ISelectionService } from "./selectionService";
 
+import { Bone } from "core/Bones/bone";
+import { Camera as CameraClass } from "core/Cameras/camera";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
+import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 import { CameraGizmo } from "core/Gizmos/cameraGizmo";
+import { GizmoManager } from "core/Gizmos/gizmoManager";
 import { LightGizmo } from "core/Gizmos/lightGizmo";
+import { Light as LightClass } from "core/Lights/light";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Observable } from "core/Misc/observable";
+import { Node as NodeClass } from "core/node";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
+import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
+import { SceneContextIdentity } from "./sceneContext";
+import { SelectionServiceIdentity } from "./selectionService";
 
 type Reference<T> = {
     value: T;
 } & IDisposable;
+
+export type GizmoMode = "translate" | "rotate" | "scale" | "boundingBox";
 
 export const GizmoServiceIdentity = Symbol("GizmoService");
 
@@ -18,12 +33,20 @@ export interface IGizmoService extends IService<typeof GizmoServiceIdentity> {
     getLightGizmo(light: Light): Reference<LightGizmo>;
     getCameraGizmos(scene: Scene): readonly CameraGizmo[];
     getLightGizmos(scene: Scene): readonly LightGizmo[];
+
+    gizmoMode: GizmoMode | undefined;
+    readonly onGizmoModeChanged: IReadonlyObservable<void>;
+
+    coordinatesMode: GizmoCoordinatesMode;
+    readonly onCoordinatesModeChanged: IReadonlyObservable<void>;
 }
 
-export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], []> = {
+export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], [ISceneContext, ISelectionService]> = {
     friendlyName: "Gizmo Service",
     produces: [GizmoServiceIdentity],
-    factory: () => {
+    consumes: [SceneContextIdentity, SelectionServiceIdentity],
+    factory: (sceneContext, selectionService) => {
+        // Ref-counted utility layers, shared across consumers.
         const utilityLayers = new WeakMap<Scene, Map<string, { utilityLayer: UtilityLayerRenderer; refCount: number }>>();
         const getUtilityLayer = (scene: Scene, layer = "default") => {
             let utilityLayerInfoForScene = utilityLayers.get(scene);
@@ -59,6 +82,7 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], []> = {
             } satisfies Reference<UtilityLayerRenderer>;
         };
 
+        // Ref-counted camera/light visualization gizmos.
         function getGizmo<NodeT extends Node, GizmoT extends Gizmo>(
             node: NodeT,
             scene: Scene,
@@ -108,12 +132,190 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], []> = {
         const lightGizmos = new WeakMap<Light, { gizmo: LightGizmo; refCount: number }>();
         const getLightGizmo = (light: Light) => getGizmo(light, light.getScene(), LightGizmo, lightGizmos, (light, gizmo) => (gizmo.light = light));
 
+        // Gizmo mode/coordinates state and GizmoManager lifecycle.
+        let gizmoModeState: GizmoMode | undefined = undefined;
+        const gizmoModeObservable = new Observable<void>();
+
+        let coordinatesModeState: GizmoCoordinatesMode = GizmoCoordinatesMode.Local;
+        const coordinatesModeObservable = new Observable<void>();
+
+        let currentGizmoManager: Nullable<GizmoManager> = null;
+        let currentUtilityLayerRef: Nullable<Reference<UtilityLayerRenderer>> = null;
+        let currentKeepDepthUtilityLayerRef: Nullable<Reference<UtilityLayerRenderer>> = null;
+        let coordinatesModeInterceptToken: Nullable<IDisposable> = null;
+        let currentVisualizationGizmoRef: Nullable<IDisposable> = null;
+
+        function createGizmoManager(scene: Scene) {
+            destroyGizmoManager();
+
+            currentUtilityLayerRef = getUtilityLayer(scene);
+            currentKeepDepthUtilityLayerRef = getUtilityLayer(scene, "keepDepth");
+            const gm = new GizmoManager(scene, undefined, currentUtilityLayerRef.value, currentKeepDepthUtilityLayerRef.value);
+            gm.usePointerToAttachGizmos = false;
+
+            const originalDispose = gm.dispose.bind(gm);
+            gm.dispose = () => {
+                originalDispose();
+                currentUtilityLayerRef?.dispose();
+                currentKeepDepthUtilityLayerRef?.dispose();
+                currentUtilityLayerRef = null;
+                currentKeepDepthUtilityLayerRef = null;
+            };
+
+            gm.coordinatesMode = coordinatesModeState;
+
+            coordinatesModeInterceptToken = InterceptProperty(gm, "coordinatesMode", {
+                afterSet: (value: GizmoCoordinatesMode) => {
+                    if (value !== coordinatesModeState) {
+                        coordinatesModeState = value;
+                        coordinatesModeObservable.notifyObservers();
+                    }
+                },
+            });
+
+            currentGizmoManager = gm;
+        }
+
+        function destroyGizmoManager() {
+            currentVisualizationGizmoRef?.dispose();
+            currentVisualizationGizmoRef = null;
+            coordinatesModeInterceptToken?.dispose();
+            coordinatesModeInterceptToken = null;
+            if (currentGizmoManager) {
+                currentGizmoManager.attachToNode(null);
+                currentGizmoManager.dispose();
+                currentGizmoManager = null;
+            }
+        }
+
+        function syncGizmoManager() {
+            currentVisualizationGizmoRef?.dispose();
+            currentVisualizationGizmoRef = null;
+
+            if (!currentGizmoManager) {
+                return;
+            }
+
+            const entity = selectionService.selectedEntity;
+            let resolvedEntity = entity;
+
+            if (gizmoModeState) {
+                if (entity instanceof CameraClass) {
+                    const cameraGizmoRef = getCameraGizmo(entity);
+                    currentVisualizationGizmoRef = cameraGizmoRef;
+                    resolvedEntity = cameraGizmoRef.value.attachedNode;
+                } else if (entity instanceof LightClass) {
+                    const lightGizmoRef = getLightGizmo(entity);
+                    currentVisualizationGizmoRef = lightGizmoRef;
+                    resolvedEntity = lightGizmoRef.value.attachedNode;
+                } else if (entity instanceof Bone) {
+                    resolvedEntity = entity.getTransformNode() ?? entity;
+                }
+            }
+
+            let resolvedGizmoMode = gizmoModeState;
+            if (!resolvedEntity) {
+                resolvedGizmoMode = undefined;
+            } else {
+                if (resolvedGizmoMode === "translate") {
+                    if (!(resolvedEntity as TransformNode).position) {
+                        resolvedGizmoMode = undefined;
+                    }
+                } else if (resolvedGizmoMode === "rotate") {
+                    if (!(resolvedEntity as TransformNode).rotation) {
+                        resolvedGizmoMode = undefined;
+                    }
+                } else if (resolvedGizmoMode === "scale") {
+                    if (!(resolvedEntity as TransformNode).scaling) {
+                        resolvedGizmoMode = undefined;
+                    }
+                } else {
+                    if (!(resolvedEntity instanceof AbstractMesh)) {
+                        resolvedGizmoMode = undefined;
+                    }
+                }
+            }
+
+            currentGizmoManager.positionGizmoEnabled = resolvedGizmoMode === "translate";
+            currentGizmoManager.rotationGizmoEnabled = resolvedGizmoMode === "rotate";
+            currentGizmoManager.scaleGizmoEnabled = resolvedGizmoMode === "scale";
+            currentGizmoManager.boundingBoxGizmoEnabled = resolvedGizmoMode === "boundingBox";
+
+            if (currentGizmoManager.gizmos.boundingBoxGizmo) {
+                currentGizmoManager.gizmos.boundingBoxGizmo.fixedDragMeshScreenSize = true;
+            }
+
+            if (!resolvedGizmoMode) {
+                currentGizmoManager.attachToNode(null);
+            } else {
+                if (resolvedEntity instanceof AbstractMesh) {
+                    currentGizmoManager.attachToMesh(resolvedEntity);
+                } else if (resolvedEntity instanceof NodeClass) {
+                    currentGizmoManager.attachToNode(resolvedEntity);
+                }
+            }
+        }
+
+        // Recreate the GizmoManager when the active scene changes.
+        const sceneObserver = sceneContext.currentSceneObservable.add((scene) => {
+            destroyGizmoManager();
+            if (scene) {
+                createGizmoManager(scene);
+                syncGizmoManager();
+            }
+        });
+
+        // Re-attach gizmos when the selected entity changes.
+        const selectionObserver = selectionService.onSelectedEntityChanged.add(() => {
+            syncGizmoManager();
+        });
+
+        // If a scene is already active, initialize immediately.
+        if (sceneContext.currentScene) {
+            createGizmoManager(sceneContext.currentScene);
+            syncGizmoManager();
+        }
+
         return {
             getUtilityLayer,
             getCameraGizmo,
             getLightGizmo,
             getCameraGizmos: (scene) => scene.cameras.map((camera) => cameraGizmos.get(camera)?.gizmo).filter(Boolean) as readonly CameraGizmo[],
             getLightGizmos: (scene) => scene.lights.map((light) => lightGizmos.get(light)?.gizmo).filter(Boolean) as readonly LightGizmo[],
+
+            get gizmoMode() {
+                return gizmoModeState;
+            },
+            set gizmoMode(mode: GizmoMode | undefined) {
+                if (mode !== gizmoModeState) {
+                    gizmoModeState = mode;
+                    gizmoModeObservable.notifyObservers();
+                    syncGizmoManager();
+                }
+            },
+            onGizmoModeChanged: gizmoModeObservable as IReadonlyObservable<void>,
+
+            get coordinatesMode() {
+                return coordinatesModeState;
+            },
+            set coordinatesMode(mode: GizmoCoordinatesMode) {
+                if (mode !== coordinatesModeState) {
+                    coordinatesModeState = mode;
+                    if (currentGizmoManager) {
+                        currentGizmoManager.coordinatesMode = mode;
+                    }
+                    coordinatesModeObservable.notifyObservers();
+                }
+            },
+            onCoordinatesModeChanged: coordinatesModeObservable as IReadonlyObservable<void>,
+
+            dispose: () => {
+                sceneObserver.remove();
+                selectionObserver.remove();
+                destroyGizmoManager();
+                gizmoModeObservable.clear();
+                coordinatesModeObservable.clear();
+            },
         };
     },
 };
