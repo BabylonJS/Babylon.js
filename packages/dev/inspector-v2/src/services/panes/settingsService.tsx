@@ -60,7 +60,6 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsService], [I
                 const [useDegrees, setUseDegrees] = useSetting(UseDegreesSettingDescriptor);
                 const [useEuler, setUseEuler] = useSetting(UseEulerSettingDescriptor);
                 const [disableCopy, setDisableCopy] = useSetting(DisableCopySettingDescriptor);
-                // const [, , resetSidePaneLayout] = useSidePaneDockOverrides();
 
                 return (
                     <>
