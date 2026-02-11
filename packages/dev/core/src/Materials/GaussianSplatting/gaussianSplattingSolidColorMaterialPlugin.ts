@@ -8,7 +8,7 @@ import { Color3 } from "../../Maths/math.color";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { ShaderLanguage } from "../shaderLanguage";
 import { RegisterClass } from "../../Misc/typeStore";
-import type { GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
+import { GaussianSplattingMaxPartCount, type GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
 
 /**
  * Plugin for GaussianSplattingMaterial that replaces per-splat colors with a
@@ -23,9 +23,9 @@ export class GaussianSplattingSolidColorMaterialPlugin extends MaterialPluginBas
      * Creates a new GaussianSplatSolidColorPlugin.
      * @param material The GaussianSplattingMaterial to attach the plugin to.
      * @param partColors A map from part index to the solid Color3 for that part.
-     * @param maxPartCount The maximum number of parts supported (default 256). This determines the size of the uniform array.
+     * @param maxPartCount The maximum number of parts supported. This determines the size of the uniform array.
      */
-    constructor(material: GaussianSplattingMaterial, partColors: Color3[], maxPartCount = 256) {
+    constructor(material: GaussianSplattingMaterial, partColors: Color3[], maxPartCount = GaussianSplattingMaxPartCount) {
         super(material, "GaussianSplatSolidColor", 200);
 
         this._partColors = partColors;
@@ -85,7 +85,7 @@ export class GaussianSplattingSolidColorMaterialPlugin extends MaterialPluginBas
      * @returns null or a map of injection point names to code strings
      */
     public override getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
-        const maxPartCount = this._maxPartCount ?? 256;
+        const maxPartCount = this._maxPartCount ?? GaussianSplattingMaxPartCount;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
             return this._getCustomCodeWGSL(shaderType, maxPartCount);

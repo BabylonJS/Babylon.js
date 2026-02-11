@@ -7,7 +7,7 @@ import type { MaterialDefines } from "../materialDefines";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { ShaderLanguage } from "../shaderLanguage";
 import { RegisterClass } from "../../Misc/typeStore";
-import type { GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
+import { GaussianSplattingMaxPartCount, type GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
 
 /**
  * Plugin for GaussianSplattingMaterial that replaces per-splat color output with
@@ -26,9 +26,9 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
     /**
      * Creates a new GaussianSplattingGpuPickingMaterialPlugin.
      * @param material The GaussianSplattingMaterial to attach the plugin to.
-     * @param maxPartCount The maximum number of parts supported for compound meshes (default 256).
+     * @param maxPartCount The maximum number of parts supported for compound meshes.
      */
-    constructor(material: GaussianSplattingMaterial, maxPartCount = 256) {
+    constructor(material: GaussianSplattingMaterial, maxPartCount = GaussianSplattingMaxPartCount) {
         super(material, "GaussianSplatGpuPicking", 200);
 
         this._maxPartCount = maxPartCount;
