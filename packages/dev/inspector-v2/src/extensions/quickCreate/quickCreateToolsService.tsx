@@ -1,15 +1,19 @@
 import type { ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../services/sceneContext";
+import type { ISelectionService } from "../../services/selectionService";
 import type { IShellService } from "../../services/shellService";
 import { Accordion as BabylonAccordion, AccordionSection as BabylonAccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { ShellServiceIdentity } from "../../services/shellService";
 
 import { CollectionsAdd20Regular } from "@fluentui/react-icons";
 import { SceneContextIdentity } from "../../services/sceneContext";
+import { SelectionServiceIdentity } from "../../services/selectionService";
 import { useObservableState } from "../../hooks/observableHooks";
 
 // Side-effect import needed for GPUParticleSystem
 import "core/Particles/webgl2ParticleSystem";
+// Side-effect import needed for enablePrePassRenderer (used by SSAO2, SSR, etc.)
+import "core/Rendering/prePassRendererSceneComponent";
 import { MeshesContent } from "./meshes";
 import { MaterialsContent } from "./materials";
 import { LightsContent } from "./lights";
@@ -20,10 +24,10 @@ import { FrameGraphsContent } from "./frameGraphs";
 import { SpriteManagersContent } from "./spriteManagers";
 
 // TODO: This is just a placeholder for a dynamically installed extension that brings in asset creation tools (node materials, etc.).
-export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext]> = {
+export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext, ISelectionService]> = {
     friendlyName: "Creation Tools",
-    consumes: [ShellServiceIdentity, SceneContextIdentity],
-    factory: (shellService, sceneContext) => {
+    consumes: [ShellServiceIdentity, SceneContextIdentity, SelectionServiceIdentity],
+    factory: (shellService, sceneContext, selectionService) => {
         const registration = shellService.addSidePane({
             key: "Create",
             title: "Creation Tools",
@@ -38,28 +42,28 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                         <>
                             <BabylonAccordion>
                                 <BabylonAccordionSection title="Meshes">
-                                    <MeshesContent scene={scene} />
+                                    <MeshesContent scene={scene} selectionService={selectionService} />
                                 </BabylonAccordionSection>
                                 <BabylonAccordionSection title="Materials">
-                                    <MaterialsContent scene={scene} />
+                                    <MaterialsContent scene={scene} selectionService={selectionService} />
                                 </BabylonAccordionSection>
                                 <BabylonAccordionSection title="Lights">
-                                    <LightsContent scene={scene} />
+                                    <LightsContent scene={scene} selectionService={selectionService} />
                                 </BabylonAccordionSection>
                                 <BabylonAccordionSection title="Particles">
-                                    <ParticlesContent scene={scene} />
+                                    <ParticlesContent scene={scene} selectionService={selectionService} />
                                 </BabylonAccordionSection>
                                 <BabylonAccordionSection title="Cameras">
-                                    <CamerasContent scene={scene} />
+                                    <CamerasContent scene={scene} selectionService={selectionService} />
                                 </BabylonAccordionSection>
                                 <BabylonAccordionSection title="Rendering Pipelines">
-                                    <RenderingPipelinesContent scene={scene} />
+                                    <RenderingPipelinesContent scene={scene} selectionService={selectionService} />
                                 </BabylonAccordionSection>
                                 <BabylonAccordionSection title="Frame Graphs">
-                                    <FrameGraphsContent scene={scene} />
+                                    <FrameGraphsContent scene={scene} selectionService={selectionService} />
                                 </BabylonAccordionSection>
                                 <BabylonAccordionSection title="Sprite Managers">
-                                    <SpriteManagersContent scene={scene} />
+                                    <SpriteManagersContent scene={scene} selectionService={selectionService} />
                                 </BabylonAccordionSection>
                             </BabylonAccordion>
                         </>

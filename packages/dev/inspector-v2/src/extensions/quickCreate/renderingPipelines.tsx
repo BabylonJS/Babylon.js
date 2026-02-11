@@ -1,11 +1,10 @@
 import type { Scene } from "core/scene";
 import { useState } from "react";
 import type { FunctionComponent } from "react";
-import { Button } from "shared-ui-components/fluent/primitives/button";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
-import { SettingsPopover } from "./settingsPopover";
-import { QuickCreateSection, QuickCreateRow } from "./quickCreateLayout";
+import { QuickCreateSection, QuickCreateItem } from "./quickCreateLayout";
+import type { ISelectionService } from "../../services/selectionService";
 import { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
 import { SSAORenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline";
 import { SSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
@@ -15,6 +14,7 @@ import { useProperty } from "../../hooks/compoundPropertyHooks";
 
 type RenderingPipelinesContentProps = {
     scene: Scene;
+    selectionService: ISelectionService;
 };
 
 const GetUniquePipelineName = (baseName: string, scene: Scene): string => {
@@ -39,7 +39,7 @@ const GetUniquePipelineName = (baseName: string, scene: Scene): string => {
  * @param props - Component props
  * @returns React component
  */
-export const RenderingPipelinesContent: FunctionComponent<RenderingPipelinesContentProps> = ({ scene }) => {
+export const RenderingPipelinesContent: FunctionComponent<RenderingPipelinesContentProps> = ({ scene, selectionService }) => {
     // Default Rendering Pipeline state
     const [defaultPipelineName, setDefaultPipelineName] = useState("Default rendering pipeline");
 
@@ -55,29 +55,29 @@ export const RenderingPipelinesContent: FunctionComponent<RenderingPipelinesCont
     // IBL Shadows Pipeline state
     const [iblShadowsPipelineName, setIblShadowsPipelineName] = useState("IBL Shadows rendering pipeline");
 
-    const handleCreateDefaultPipeline = () => {
+    const createDefaultPipeline = () => {
         const name = GetUniquePipelineName(defaultPipelineName, scene);
-        new DefaultRenderingPipeline(name, true, scene, scene.cameras);
+        return new DefaultRenderingPipeline(name, true, scene, scene.cameras);
     };
 
-    const handleCreateSSAOPipeline = () => {
+    const createSSAOPipeline = () => {
         const name = GetUniquePipelineName(ssaoPipelineName, scene);
-        new SSAORenderingPipeline(name, scene, 1, scene.cameras);
+        return new SSAORenderingPipeline(name, scene, 1, scene.cameras);
     };
 
-    const handleCreateSSAO2Pipeline = () => {
+    const createSSAO2Pipeline = () => {
         const name = GetUniquePipelineName(ssao2PipelineName, scene);
-        new SSAO2RenderingPipeline(name, scene, 1, scene.cameras);
+        return new SSAO2RenderingPipeline(name, scene, 1, scene.cameras);
     };
 
-    const handleCreateSSRPipeline = () => {
+    const createSSRPipeline = () => {
         const name = GetUniquePipelineName(ssrPipelineName, scene);
-        new SSRRenderingPipeline(name, scene, scene.cameras);
+        return new SSRRenderingPipeline(name, scene, scene.cameras);
     };
 
-    const handleCreateIBLShadowsPipeline = () => {
+    const createIBLShadowsPipeline = () => {
         const name = GetUniquePipelineName(iblShadowsPipelineName, scene);
-        new IblShadowsRenderPipeline(name, scene, {}, scene.cameras);
+        return new IblShadowsRenderPipeline(name, scene, {}, scene.cameras);
     };
 
     const caps = scene.getEngine().getCaps();
@@ -91,54 +91,34 @@ export const RenderingPipelinesContent: FunctionComponent<RenderingPipelinesCont
             ) : (
                 <>
                     {/* Default Rendering Pipeline */}
-                    <QuickCreateRow>
-                        <Button onClick={handleCreateDefaultPipeline} label="Default Pipeline" />
-                        <SettingsPopover>
-                            <TextInputPropertyLine label="Name" value={defaultPipelineName} onChange={(value) => setDefaultPipelineName(value)} />
-                            <Button appearance="primary" onClick={handleCreateDefaultPipeline} label="Create" />
-                        </SettingsPopover>
-                    </QuickCreateRow>
+                    <QuickCreateItem selectionService={selectionService} label="Default Pipeline" onCreate={() => createDefaultPipeline()}>
+                        <TextInputPropertyLine label="Name" value={defaultPipelineName} onChange={(value) => setDefaultPipelineName(value)} />
+                    </QuickCreateItem>
 
                     {/* SSAO Pipeline */}
-                    <QuickCreateRow>
-                        <Button onClick={handleCreateSSAOPipeline} label="SSAO Pipeline" />
-                        <SettingsPopover>
-                            <TextInputPropertyLine label="Name" value={ssaoPipelineName} onChange={(value) => setSsaoPipelineName(value)} />
-                            <Button appearance="primary" onClick={handleCreateSSAOPipeline} label="Create" />
-                        </SettingsPopover>
-                    </QuickCreateRow>
+                    <QuickCreateItem selectionService={selectionService} label="SSAO Pipeline" onCreate={() => createSSAOPipeline()}>
+                        <TextInputPropertyLine label="Name" value={ssaoPipelineName} onChange={(value) => setSsaoPipelineName(value)} />
+                    </QuickCreateItem>
 
                     {/* SSAO2 Pipeline */}
                     {hasDrawBuffers && (
-                        <QuickCreateRow>
-                            <Button onClick={handleCreateSSAO2Pipeline} label="SSAO2 Pipeline" />
-                            <SettingsPopover>
-                                <TextInputPropertyLine label="Name" value={ssao2PipelineName} onChange={(value) => setSsao2PipelineName(value)} />
-                                <Button appearance="primary" onClick={handleCreateSSAO2Pipeline} label="Create" />
-                            </SettingsPopover>
-                        </QuickCreateRow>
+                        <QuickCreateItem selectionService={selectionService} label="SSAO2 Pipeline" onCreate={() => createSSAO2Pipeline()}>
+                            <TextInputPropertyLine label="Name" value={ssao2PipelineName} onChange={(value) => setSsao2PipelineName(value)} />
+                        </QuickCreateItem>
                     )}
 
                     {/* SSR Pipeline */}
                     {hasDrawBuffers && hasTexelFetch && (
-                        <QuickCreateRow>
-                            <Button onClick={handleCreateSSRPipeline} label="SSR Pipeline" />
-                            <SettingsPopover>
-                                <TextInputPropertyLine label="Name" value={ssrPipelineName} onChange={(value) => setSsrPipelineName(value)} />
-                                <Button appearance="primary" onClick={handleCreateSSRPipeline} label="Create" />
-                            </SettingsPopover>
-                        </QuickCreateRow>
+                        <QuickCreateItem selectionService={selectionService} label="SSR Pipeline" onCreate={() => createSSRPipeline()}>
+                            <TextInputPropertyLine label="Name" value={ssrPipelineName} onChange={(value) => setSsrPipelineName(value)} />
+                        </QuickCreateItem>
                     )}
 
                     {/* IBL Shadows Pipeline */}
                     {hasDrawBuffers && hasTexelFetch && (
-                        <QuickCreateRow>
-                            <Button onClick={handleCreateIBLShadowsPipeline} label="IBL Shadows Pipeline" />
-                            <SettingsPopover>
-                                <TextInputPropertyLine label="Name" value={iblShadowsPipelineName} onChange={(value) => setIblShadowsPipelineName(value)} />
-                                <Button appearance="primary" onClick={handleCreateIBLShadowsPipeline} label="Create" />
-                            </SettingsPopover>
-                        </QuickCreateRow>
+                        <QuickCreateItem selectionService={selectionService} label="IBL Shadows Pipeline" onCreate={() => createIBLShadowsPipeline()}>
+                            <TextInputPropertyLine label="Name" value={iblShadowsPipelineName} onChange={(value) => setIblShadowsPipelineName(value)} />
+                        </QuickCreateItem>
                     )}
                 </>
             )}

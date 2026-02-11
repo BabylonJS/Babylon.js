@@ -9,7 +9,8 @@ import { FilesInput } from "core/Misc/filesInput";
 import { SettingsPopover } from "./settingsPopover";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { QuickCreateSection, QuickCreateRow } from "./quickCreateLayout";
+import { QuickCreateSection, QuickCreateRow, QuickCreateItem } from "./quickCreateLayout";
+import type { ISelectionService } from "../../services/selectionService";
 
 const SetCamera = function (scene: Scene) {
     const camera = scene.activeCamera as ArcRotateCamera;
@@ -72,7 +73,7 @@ type GroundParams = {
 /**
  * @internal
  */
-export const MeshesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+export const MeshesContent: FunctionComponent<{ scene: Scene; selectionService: ISelectionService }> = ({ scene, selectionService }) => {
     const [sphereParams, setSphereParams] = useState<SphereParams>({
         name: "Sphere",
         segments: 32,
@@ -204,239 +205,201 @@ export const MeshesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) =>
 
     return (
         <QuickCreateSection>
-            <QuickCreateRow>
-                <Button
-                    onClick={() => {
-                        MeshBuilder.CreateSphere("Sphere", {}, scene);
-                        SetCamera(scene);
-                    }}
-                    label="Sphere"
-                />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={sphereParams.name} onChange={(val: string) => handleSphereParamChange("name", val)} />
-                    <SpinButtonPropertyLine label="Segments" value={sphereParams.segments} min={0} onChange={(val: number) => handleSphereParamChange("segments", val)} />
-                    <SpinButtonPropertyLine
-                        label="Diameter"
-                        value={sphereParams.diameter}
-                        min={0}
-                        step={0.1}
-                        onChange={(val: number) => handleSphereParamChange("diameter", val)}
-                        disabled={!sphereParams.uniform}
-                    />
-                    <CheckboxPropertyLine label="Uniform" value={sphereParams.uniform} onChange={(checked) => handleSphereParamChange("uniform", checked)} />
-                    <SpinButtonPropertyLine
-                        label="Diameter X"
-                        value={sphereParams.diameterX}
-                        min={0}
-                        step={0.1}
-                        onChange={(val: number) => handleSphereParamChange("diameterX", val)}
-                        disabled={sphereParams.uniform}
-                    />
-                    <SpinButtonPropertyLine
-                        label="Diameter Y"
-                        value={sphereParams.diameterY}
-                        min={0}
-                        step={0.1}
-                        onChange={(val: number) => handleSphereParamChange("diameterY", val)}
-                        disabled={sphereParams.uniform}
-                    />
-                    <SpinButtonPropertyLine
-                        label="Diameter Z"
-                        value={sphereParams.diameterZ}
-                        min={0}
-                        step={0.1}
-                        onChange={(val: number) => handleSphereParamChange("diameterZ", val)}
-                        disabled={sphereParams.uniform}
-                    />
-                    <SpinButtonPropertyLine label="Arc" value={sphereParams.arc} min={0} max={1} step={0.1} onChange={(val: number) => handleSphereParamChange("arc", val)} />
-                    <SpinButtonPropertyLine label="Slice" value={sphereParams.slice} min={0} max={1} step={0.1} onChange={(val: number) => handleSphereParamChange("slice", val)} />
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                        <Button
-                            appearance="primary"
-                            onClick={() => {
-                                // Create params object based on uniform checkbox
-                                const createParams: Partial<SphereParams> = {
-                                    segments: sphereParams.segments,
-                                    arc: sphereParams.arc,
-                                    slice: sphereParams.slice,
-                                };
+            <QuickCreateItem
+                selectionService={selectionService}
+                label="Sphere"
+                onCreate={() => {
+                    const mesh = MeshBuilder.CreateSphere("Sphere", {}, scene);
+                    SetCamera(scene);
+                    return mesh;
+                }}
+                onSettingsCreate={() => {
+                    const createParams: Partial<SphereParams> = {
+                        segments: sphereParams.segments,
+                        arc: sphereParams.arc,
+                        slice: sphereParams.slice,
+                    };
 
-                                if (sphereParams.uniform) {
-                                    // If uniform is checked, use diameter
-                                    createParams.diameter = sphereParams.diameter;
-                                } else {
-                                    // If uniform is unchecked, use individual diameters
-                                    createParams.diameterX = sphereParams.diameterX;
-                                    createParams.diameterY = sphereParams.diameterY;
-                                    createParams.diameterZ = sphereParams.diameterZ;
-                                }
+                    if (sphereParams.uniform) {
+                        createParams.diameter = sphereParams.diameter;
+                    } else {
+                        createParams.diameterX = sphereParams.diameterX;
+                        createParams.diameterY = sphereParams.diameterY;
+                        createParams.diameterZ = sphereParams.diameterZ;
+                    }
 
-                                MeshBuilder.CreateSphere(sphereParams.name, createParams, scene);
-                                SetCamera(scene);
-                            }}
-                            label="Create"
-                        />
-                    </div>
-                </SettingsPopover>
-            </QuickCreateRow>
-            <QuickCreateRow>
-                <Button
-                    onClick={() => {
-                        MeshBuilder.CreateBox("Box", {}, scene);
-                        SetCamera(scene);
-                    }}
-                    label="Box"
+                    const mesh = MeshBuilder.CreateSphere(sphereParams.name, createParams, scene);
+                    SetCamera(scene);
+                    return mesh;
+                }}
+            >
+                <TextInputPropertyLine label="Name" value={sphereParams.name} onChange={(val: string) => handleSphereParamChange("name", val)} />
+                <SpinButtonPropertyLine label="Segments" value={sphereParams.segments} min={0} onChange={(val: number) => handleSphereParamChange("segments", val)} />
+                <SpinButtonPropertyLine
+                    label="Diameter"
+                    value={sphereParams.diameter}
+                    min={0}
+                    step={0.1}
+                    onChange={(val: number) => handleSphereParamChange("diameter", val)}
+                    disabled={!sphereParams.uniform}
                 />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={boxParams.name} onChange={(val: string) => handleBoxParamChange("name", val)} />
-                    <SpinButtonPropertyLine label="Size" value={boxParams.size} min={0} step={0.1} onChange={(val: number) => handleBoxParamChange("size", val)} />
-                    <SpinButtonPropertyLine label="Width" value={boxParams.width} min={0} step={0.1} onChange={(val: number) => handleBoxParamChange("width", val)} />
-                    <SpinButtonPropertyLine label="Height" value={boxParams.height} min={0} step={0.1} onChange={(val: number) => handleBoxParamChange("height", val)} />
-                    <SpinButtonPropertyLine label="Depth" value={boxParams.depth} min={0} step={0.1} onChange={(val: number) => handleBoxParamChange("depth", val)} />
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                        <Button
-                            appearance="primary"
-                            onClick={() => {
-                                MeshBuilder.CreateBox(boxParams.name, boxParams, scene);
-                                SetCamera(scene);
-                            }}
-                            label="Create"
-                        />
-                    </div>
-                </SettingsPopover>
-            </QuickCreateRow>
-            <QuickCreateRow>
-                <Button
-                    onClick={() => {
-                        MeshBuilder.CreateCylinder("Cylinder", {}, scene);
-                        SetCamera(scene);
-                    }}
-                    label="Cylinder"
+                <CheckboxPropertyLine label="Uniform" value={sphereParams.uniform} onChange={(checked) => handleSphereParamChange("uniform", checked)} />
+                <SpinButtonPropertyLine
+                    label="Diameter X"
+                    value={sphereParams.diameterX}
+                    min={0}
+                    step={0.1}
+                    onChange={(val: number) => handleSphereParamChange("diameterX", val)}
+                    disabled={sphereParams.uniform}
                 />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={cylinderParams.name} onChange={(val: string) => handleCylinderParamChange("name", val)} />
-                    <SpinButtonPropertyLine label="Height" value={cylinderParams.height} min={0} step={0.1} onChange={(val: number) => handleCylinderParamChange("height", val)} />
-                    <SpinButtonPropertyLine
-                        label="Diameter Top"
-                        value={cylinderParams.diameterTop}
-                        min={0}
-                        step={0.1}
-                        onChange={(val: number) => handleCylinderParamChange("diameterTop", val)}
-                    />
-                    <SpinButtonPropertyLine
-                        label="Diameter Bottom"
-                        value={cylinderParams.diameterBottom}
-                        min={0}
-                        step={0.1}
-                        onChange={(val: number) => handleCylinderParamChange("diameterBottom", val)}
-                    />
-                    <SpinButtonPropertyLine
-                        label="Diameter"
-                        value={cylinderParams.diameter}
-                        min={0}
-                        step={0.1}
-                        onChange={(val: number) => handleCylinderParamChange("diameter", val)}
-                    />
-                    <SpinButtonPropertyLine
-                        label="Tessellation"
-                        value={cylinderParams.tessellation}
-                        min={3}
-                        onChange={(val: number) => handleCylinderParamChange("tessellation", val)}
-                    />
-                    <SpinButtonPropertyLine
-                        label="Subdivisions"
-                        value={cylinderParams.subdivisions}
-                        min={1}
-                        onChange={(val: number) => handleCylinderParamChange("subdivisions", val)}
-                    />
-                    <SpinButtonPropertyLine label="Arc" value={cylinderParams.arc} min={0} max={1} step={0.1} onChange={(val: number) => handleCylinderParamChange("arc", val)} />
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                        <Button
-                            appearance="primary"
-                            onClick={() => {
-                                MeshBuilder.CreateCylinder(cylinderParams.name, cylinderParams, scene);
-                                SetCamera(scene);
-                            }}
-                            label="Create"
-                        />
-                    </div>
-                </SettingsPopover>
-            </QuickCreateRow>
-            <QuickCreateRow>
-                <Button
-                    onClick={() => {
-                        MeshBuilder.CreateCylinder("Cone", { diameterTop: 0 }, scene);
-                        SetCamera(scene);
-                    }}
-                    label="Cone"
+                <SpinButtonPropertyLine
+                    label="Diameter Y"
+                    value={sphereParams.diameterY}
+                    min={0}
+                    step={0.1}
+                    onChange={(val: number) => handleSphereParamChange("diameterY", val)}
+                    disabled={sphereParams.uniform}
                 />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={coneParams.name} onChange={(val: string) => handleConeParamChange("name", val)} />
-                    <SpinButtonPropertyLine label="Height" value={coneParams.height} min={0} step={0.1} onChange={(val: number) => handleConeParamChange("height", val)} />
-                    <SpinButtonPropertyLine label="Diameter" value={coneParams.diameter} min={0} step={0.1} onChange={(val: number) => handleConeParamChange("diameter", val)} />
-                    <SpinButtonPropertyLine label="Tessellation" value={coneParams.tessellation} min={3} onChange={(val: number) => handleConeParamChange("tessellation", val)} />
-                    <SpinButtonPropertyLine label="Subdivisions" value={coneParams.subdivisions} min={1} onChange={(val: number) => handleConeParamChange("subdivisions", val)} />
-                    <SpinButtonPropertyLine label="Arc" value={coneParams.arc} min={0} max={1} step={0.1} onChange={(val: number) => handleConeParamChange("arc", val)} />
-                    <CheckboxPropertyLine label="Up" value={coneUp} onChange={(val: boolean) => setConeUp(val)} />
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                        <Button
-                            appearance="primary"
-                            onClick={() => {
-                                const coneParamsToUse = {
-                                    ...coneParams,
-                                    diameterTop: coneUp ? 0 : coneParams.diameterTop,
-                                    diameterBottom: coneUp ? coneParams.diameterBottom : 0,
-                                };
-                                MeshBuilder.CreateCylinder(coneParams.name, coneParamsToUse, scene);
-                                SetCamera(scene);
-                            }}
-                            label="Create"
-                        />
-                    </div>
-                </SettingsPopover>
-            </QuickCreateRow>
-            <QuickCreateRow>
-                <Button
-                    onClick={() => {
-                        MeshBuilder.CreateGround("Ground", {}, scene);
-                        SetCamera(scene);
-                    }}
-                    label="Ground"
+                <SpinButtonPropertyLine
+                    label="Diameter Z"
+                    value={sphereParams.diameterZ}
+                    min={0}
+                    step={0.1}
+                    onChange={(val: number) => handleSphereParamChange("diameterZ", val)}
+                    disabled={sphereParams.uniform}
                 />
-                <SettingsPopover>
-                    <TextInputPropertyLine label="Name" value={groundParams.name} onChange={(val: string) => handleGroundParamChange("name", val)} />
-                    <SpinButtonPropertyLine label="Width" value={groundParams.width} min={0} step={0.1} onChange={(val: number) => handleGroundParamChange("width", val)} />
-                    <SpinButtonPropertyLine label="Height" value={groundParams.height} min={0} step={0.1} onChange={(val: number) => handleGroundParamChange("height", val)} />
-                    <SpinButtonPropertyLine
-                        label="Subdivisions"
-                        value={groundParams.subdivisions}
-                        min={1}
-                        onChange={(val: number) => handleGroundParamChange("subdivisions", val)}
-                    />
-                    <SpinButtonPropertyLine
-                        label="Subdivisions X"
-                        value={groundParams.subdivisionsX}
-                        min={1}
-                        onChange={(val: number) => handleGroundParamChange("subdivisionsX", val)}
-                    />
-                    <SpinButtonPropertyLine
-                        label="Subdivisions Y"
-                        value={groundParams.subdivisionsY}
-                        min={1}
-                        onChange={(val: number) => handleGroundParamChange("subdivisionsY", val)}
-                    />
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                        <Button
-                            appearance="primary"
-                            onClick={() => {
-                                MeshBuilder.CreateGround(groundParams.name, groundParams, scene);
-                                SetCamera(scene);
-                            }}
-                            label="Create"
-                        />
-                    </div>
-                </SettingsPopover>
-            </QuickCreateRow>
+                <SpinButtonPropertyLine label="Arc" value={sphereParams.arc} min={0} max={1} step={0.1} onChange={(val: number) => handleSphereParamChange("arc", val)} />
+                <SpinButtonPropertyLine label="Slice" value={sphereParams.slice} min={0} max={1} step={0.1} onChange={(val: number) => handleSphereParamChange("slice", val)} />
+            </QuickCreateItem>
+            <QuickCreateItem
+                selectionService={selectionService}
+                label="Box"
+                onCreate={() => {
+                    const mesh = MeshBuilder.CreateBox("Box", {}, scene);
+                    SetCamera(scene);
+                    return mesh;
+                }}
+                onSettingsCreate={() => {
+                    const mesh = MeshBuilder.CreateBox(boxParams.name, boxParams, scene);
+                    SetCamera(scene);
+                    return mesh;
+                }}
+            >
+                <TextInputPropertyLine label="Name" value={boxParams.name} onChange={(val: string) => handleBoxParamChange("name", val)} />
+                <SpinButtonPropertyLine label="Size" value={boxParams.size} min={0} step={0.1} onChange={(val: number) => handleBoxParamChange("size", val)} />
+                <SpinButtonPropertyLine label="Width" value={boxParams.width} min={0} step={0.1} onChange={(val: number) => handleBoxParamChange("width", val)} />
+                <SpinButtonPropertyLine label="Height" value={boxParams.height} min={0} step={0.1} onChange={(val: number) => handleBoxParamChange("height", val)} />
+                <SpinButtonPropertyLine label="Depth" value={boxParams.depth} min={0} step={0.1} onChange={(val: number) => handleBoxParamChange("depth", val)} />
+            </QuickCreateItem>
+            <QuickCreateItem
+                selectionService={selectionService}
+                label="Cylinder"
+                onCreate={() => {
+                    const mesh = MeshBuilder.CreateCylinder("Cylinder", {}, scene);
+                    SetCamera(scene);
+                    return mesh;
+                }}
+                onSettingsCreate={() => {
+                    const mesh = MeshBuilder.CreateCylinder(cylinderParams.name, cylinderParams, scene);
+                    SetCamera(scene);
+                    return mesh;
+                }}
+            >
+                <TextInputPropertyLine label="Name" value={cylinderParams.name} onChange={(val: string) => handleCylinderParamChange("name", val)} />
+                <SpinButtonPropertyLine label="Height" value={cylinderParams.height} min={0} step={0.1} onChange={(val: number) => handleCylinderParamChange("height", val)} />
+                <SpinButtonPropertyLine
+                    label="Diameter Top"
+                    value={cylinderParams.diameterTop}
+                    min={0}
+                    step={0.1}
+                    onChange={(val: number) => handleCylinderParamChange("diameterTop", val)}
+                />
+                <SpinButtonPropertyLine
+                    label="Diameter Bottom"
+                    value={cylinderParams.diameterBottom}
+                    min={0}
+                    step={0.1}
+                    onChange={(val: number) => handleCylinderParamChange("diameterBottom", val)}
+                />
+                <SpinButtonPropertyLine
+                    label="Diameter"
+                    value={cylinderParams.diameter}
+                    min={0}
+                    step={0.1}
+                    onChange={(val: number) => handleCylinderParamChange("diameter", val)}
+                />
+                <SpinButtonPropertyLine
+                    label="Tessellation"
+                    value={cylinderParams.tessellation}
+                    min={3}
+                    onChange={(val: number) => handleCylinderParamChange("tessellation", val)}
+                />
+                <SpinButtonPropertyLine
+                    label="Subdivisions"
+                    value={cylinderParams.subdivisions}
+                    min={1}
+                    onChange={(val: number) => handleCylinderParamChange("subdivisions", val)}
+                />
+                <SpinButtonPropertyLine label="Arc" value={cylinderParams.arc} min={0} max={1} step={0.1} onChange={(val: number) => handleCylinderParamChange("arc", val)} />
+            </QuickCreateItem>
+            <QuickCreateItem
+                selectionService={selectionService}
+                label="Cone"
+                onCreate={() => {
+                    const mesh = MeshBuilder.CreateCylinder("Cone", { diameterTop: 0 }, scene);
+                    SetCamera(scene);
+                    return mesh;
+                }}
+                onSettingsCreate={() => {
+                    const coneParamsToUse = {
+                        ...coneParams,
+                        diameterTop: coneUp ? 0 : coneParams.diameterTop,
+                        diameterBottom: coneUp ? coneParams.diameterBottom : 0,
+                    };
+                    const mesh = MeshBuilder.CreateCylinder(coneParams.name, coneParamsToUse, scene);
+                    SetCamera(scene);
+                    return mesh;
+                }}
+            >
+                <TextInputPropertyLine label="Name" value={coneParams.name} onChange={(val: string) => handleConeParamChange("name", val)} />
+                <SpinButtonPropertyLine label="Height" value={coneParams.height} min={0} step={0.1} onChange={(val: number) => handleConeParamChange("height", val)} />
+                <SpinButtonPropertyLine label="Diameter" value={coneParams.diameter} min={0} step={0.1} onChange={(val: number) => handleConeParamChange("diameter", val)} />
+                <SpinButtonPropertyLine label="Tessellation" value={coneParams.tessellation} min={3} onChange={(val: number) => handleConeParamChange("tessellation", val)} />
+                <SpinButtonPropertyLine label="Subdivisions" value={coneParams.subdivisions} min={1} onChange={(val: number) => handleConeParamChange("subdivisions", val)} />
+                <SpinButtonPropertyLine label="Arc" value={coneParams.arc} min={0} max={1} step={0.1} onChange={(val: number) => handleConeParamChange("arc", val)} />
+                <CheckboxPropertyLine label="Up" value={coneUp} onChange={(val: boolean) => setConeUp(val)} />
+            </QuickCreateItem>
+            <QuickCreateItem
+                selectionService={selectionService}
+                label="Ground"
+                onCreate={() => {
+                    const mesh = MeshBuilder.CreateGround("Ground", {}, scene);
+                    SetCamera(scene);
+                    return mesh;
+                }}
+                onSettingsCreate={() => {
+                    const mesh = MeshBuilder.CreateGround(groundParams.name, groundParams, scene);
+                    SetCamera(scene);
+                    return mesh;
+                }}
+            >
+                <TextInputPropertyLine label="Name" value={groundParams.name} onChange={(val: string) => handleGroundParamChange("name", val)} />
+                <SpinButtonPropertyLine label="Width" value={groundParams.width} min={0} step={0.1} onChange={(val: number) => handleGroundParamChange("width", val)} />
+                <SpinButtonPropertyLine label="Height" value={groundParams.height} min={0} step={0.1} onChange={(val: number) => handleGroundParamChange("height", val)} />
+                <SpinButtonPropertyLine label="Subdivisions" value={groundParams.subdivisions} min={1} onChange={(val: number) => handleGroundParamChange("subdivisions", val)} />
+                <SpinButtonPropertyLine
+                    label="Subdivisions X"
+                    value={groundParams.subdivisionsX}
+                    min={1}
+                    onChange={(val: number) => handleGroundParamChange("subdivisionsX", val)}
+                />
+                <SpinButtonPropertyLine
+                    label="Subdivisions Y"
+                    value={groundParams.subdivisionsY}
+                    min={1}
+                    onChange={(val: number) => handleGroundParamChange("subdivisionsY", val)}
+                />
+            </QuickCreateItem>
             <QuickCreateRow>
                 <Button
                     onClick={() => {
