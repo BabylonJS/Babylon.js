@@ -247,7 +247,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         return (
             // Expose the settings store as a React context so that UI components can read/write
             // settings without the ISettingsService needing to be explicitly passed around.
-            <SettingsStoreContext.Provider value={{ settingsStore }}>
+            <SettingsStoreContext.Provider value={settingsStore}>
                 <ExtensionManagerContext.Provider value={extensionManagerContext}>
                     <Theme className={classes.app}>
                         <ToastProvider>

@@ -35,6 +35,8 @@ export interface ISettingsService extends IService<typeof SettingsServiceIdentit
     addSectionContent(content: DynamicAccordionSectionContent<Scene>): IDisposable;
 }
 
+// These are all "global" settings that aren't produced/owned by a specific service,
+// so we just add them by default directly in the SettingsService.
 export const CompactModeSettingDescriptor: SettingDescriptor<boolean> = {
     key: "CompactMode",
     defaultValue: !matchMedia("(pointer: coarse)").matches,
