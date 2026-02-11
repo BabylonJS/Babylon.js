@@ -97,7 +97,7 @@ export class GaussianSplattingSolidColorMaterialPlugin extends MaterialPluginBas
         if (shaderType === "vertex") {
             return {
                 CUSTOM_VERTEX_DEFINITIONS: `varying float vPartIndex;`,
-                CUSTOM_VERTEX_UPDATE_COLOR: `
+                CUSTOM_VERTEX_UPDATE: `
 #if IS_COMPOUND
     vPartIndex = float(splat.partIndex);
 #else
@@ -124,7 +124,7 @@ finalColor = vec4(partColors[partIdx], finalColor.w);
         if (shaderType === "vertex") {
             return {
                 CUSTOM_VERTEX_DEFINITIONS: `varying vPartIndex: f32;`,
-                CUSTOM_VERTEX_UPDATE_COLOR: `
+                CUSTOM_VERTEX_UPDATE: `
 #if IS_COMPOUND
     vertexOutputs.vPartIndex = f32(splat.partIndex);
 #else

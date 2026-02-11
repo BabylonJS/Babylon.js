@@ -87,7 +87,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vColor.w *= uniforms.partVisibility[splat.partIndex];
 #endif
 
-#define CUSTOM_VERTEX_UPDATE_COLOR
+#define CUSTOM_VERTEX_UPDATE
 
     vertexOutputs.position = gaussianSplatting(input.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
 

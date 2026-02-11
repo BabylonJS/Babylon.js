@@ -85,7 +85,7 @@ void main () {
     vColor.w *= partVisibility[splat.partIndex];
 #endif
 
-#define CUSTOM_VERTEX_UPDATE_COLOR
+#define CUSTOM_VERTEX_UPDATE
 
     gl_Position = gaussianSplatting(position.xy, worldPos.xyz, vec2(1.,1.), covA, covB, splatWorld, view, projection);
 
