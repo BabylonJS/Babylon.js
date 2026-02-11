@@ -1,15 +1,16 @@
 import type { ThemeMode } from "../services/themeService";
 
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 
 import { useSettingsStore } from "../contexts/settingsContext";
 import { ThemeModeSettingDescriptor, ThemeResolver } from "../services/themeService";
 import { DarkTheme, LightTheme } from "../themes/babylonTheme";
 import { useObservableState } from "./observableHooks";
+import { useResource } from "./resourceHooks";
 
 export function useThemeMode() {
     const settingsStore = useSettingsStore();
-    const themeResolver = useMemo(() => (settingsStore ? new ThemeResolver(settingsStore) : undefined), [settingsStore]);
+    const themeResolver = useResource(useCallback(() => (settingsStore ? new ThemeResolver(settingsStore) : undefined), [settingsStore]));
 
     const state = useObservableState(
         useCallback(
