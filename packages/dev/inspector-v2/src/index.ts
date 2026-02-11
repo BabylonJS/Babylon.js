@@ -17,6 +17,7 @@ export * from "./hooks/pollingHooks";
 export * from "./hooks/resourceHooks";
 export * from "./hooks/settingsHooks";
 export * from "./hooks/teachingMomentHooks";
+export * from "./hooks/themeHooks";
 export * from "./instrumentation/functionInstrumentation";
 export * from "./instrumentation/propertyInstrumentation";
 export * from "./misc/observableCollection";
@@ -27,15 +28,16 @@ export type { ISceneExplorerService } from "./services/panes/scene/sceneExplorer
 export { SceneExplorerServiceIdentity } from "./services/panes/scene/sceneExplorerService";
 export type { IDebugService } from "./services/panes/debugService";
 export { DebugServiceIdentity } from "./services/panes/debugService";
-
 export type { ISettingsService } from "./services/panes/settingsService";
 export { SettingsServiceIdentity } from "./services/panes/settingsService";
-
 export type { IStatsService } from "./services/panes/statsService";
 export { StatsServiceIdentity } from "./services/panes/statsService";
-
 export type { IToolsService } from "./services/panes/toolsService";
 export { ToolsServiceIdentity } from "./services/panes/toolsService";
+export type { IThemeService } from "./services/themeService";
+export { ThemeServiceIdentity } from "./services/themeService";
+export type { ISettingsStore, SettingDescriptor } from "./services/settingsStore";
+export { SettingsStoreIdentity } from "./services/settingsStore";
 
 export * from "./services/sceneContext";
 export * from "./services/selectionService";

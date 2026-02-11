@@ -12,11 +12,11 @@ import { PickingToolbar } from "../components/pickingToolbar";
 import { useObservableState } from "../hooks/observableHooks";
 import { useSetting } from "../hooks/settingsHooks";
 import { GizmoServiceIdentity } from "./gizmoService";
+import { HighlightSelectedEntitySettingDescriptor } from "./highlightService";
 import { SettingsServiceIdentity } from "./panes/settingsService";
 import { SceneContextIdentity } from "./sceneContext";
 import { SelectionServiceIdentity } from "./selectionService";
 import { ShellServiceIdentity } from "./shellService";
-import { HighlightSelectedEntitySettingDescriptor } from "./highlightService";
 
 const IgnoreBackfacesForPickingSettingDescriptor: SettingDescriptor<boolean> = {
     key: "IgnoreBackfacesForPicking",

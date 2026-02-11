@@ -1,4 +1,3 @@
-import type { Theme as FluentTheme } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 import type { TernaryDarkMode } from "usehooks-ts";
 
@@ -8,7 +7,6 @@ import type { IExtension, InstallFailedInfo } from "./extensibility/extensionMan
 import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
 import type { ISettingsStore } from "./services/settingsStore";
 import type { IRootComponentService, ShellServiceOptions } from "./services/shellService";
-import type { IThemeService } from "./services/themeService";
 
 import {
     Body1,
@@ -31,18 +29,16 @@ import { createRoot } from "react-dom/client";
 
 import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
-import { Observable } from "core/Misc/observable";
 import { ToastProvider } from "shared-ui-components/fluent/primitives/toast";
-import { Theme, useTheme } from "./components/theme";
+import { Theme } from "./components/theme";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { SettingsStoreContext } from "./contexts/settingsContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
-import { SetThemeMode } from "./hooks/themeHooks";
 import { ServiceContainer } from "./modularity/serviceContainer";
 import { SettingsStore, SettingsStoreIdentity } from "./services/settingsStore";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
-import { ThemeServiceIdentity } from "./services/themeService";
+import { ThemeModeSettingDescriptor, ThemeServiceDefinition } from "./services/themeService";
 
 const useStyles = makeStyles({
     app: {
@@ -110,15 +106,14 @@ export type ModularToolOptions = {
  */
 export function MakeModularTool(options: ModularToolOptions): IDisposable {
     const { namespace, containerElement, serviceDefinitions, themeMode, showThemeSelector = true, extensionFeeds = [] } = options;
-    if (themeMode) {
-        SetThemeMode(themeMode);
-    }
 
     // Create the settings store immediately as it will be exposed to services and through React context.
     const settingsStore = new SettingsStore(namespace);
 
-    let theme: FluentTheme;
-    const themeChangedObservable = new Observable<void>();
+    // If a theme mode is provided, just write the setting so it is the active theme.
+    if (themeMode) {
+        settingsStore.writeSetting(ThemeModeSettingDescriptor, themeMode);
+    }
 
     const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
@@ -128,12 +123,6 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         const [extensionInstallError, setExtensionInstallError] = useState<InstallFailedInfo>();
 
         const [rootComponent, setRootComponent] = useState<ComponentType>();
-
-        theme = useTheme();
-
-        useEffect(() => {
-            themeChangedObservable.notifyObservers();
-        }, [theme]);
 
         // This is the main async initialization.
         useEffect(() => {
@@ -163,30 +152,18 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     },
                 });
 
-                // Register a service that exposes the raw theme to other services outside the React tree.
-                // React components can access the raw theme via the useTheme hook, or theme tokens via Fluent's tokens object.
-                await serviceContainer.addServiceAsync<[IThemeService], []>({
-                    friendlyName: "Theme Service",
-                    produces: [ThemeServiceIdentity],
-                    factory: () => {
-                        return {
-                            get theme() {
-                                return theme;
-                            },
-                            onChanged: themeChangedObservable,
-                        };
-                    },
-                });
+                // Register the theme service (exposes the current theme to other services).
+                await serviceContainer.addServiceAsync(ThemeServiceDefinition);
+
+                // Register the theme selector service (for selecting the theme) if theming is configured.
+                if (showThemeSelector) {
+                    await serviceContainer.addServiceAsync(ThemeSelectorServiceDefinition);
+                }
 
                 // Register the extension list service (for browsing/installing extensions) if extension feeds are provided.
                 if (extensionFeeds.length > 0) {
                     const { ExtensionListServiceDefinition } = await import("./services/extensionsListService");
                     await serviceContainer.addServiceAsync(ExtensionListServiceDefinition);
-                }
-
-                // Register the theme selector service (for selecting the theme) if theming is configured.
-                if (showThemeSelector) {
-                    await serviceContainer.addServiceAsync(ThemeSelectorServiceDefinition);
                 }
 
                 // Register all external services (that make up a unique tool).
@@ -344,7 +321,6 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
             // Unmount and restore the original container element display.
             if (!disposed) {
                 disposed = true;
-                themeChangedObservable.clear();
                 reactRoot.unmount();
                 containerElement.style.display = originalContainerElementDisplay;
             }
