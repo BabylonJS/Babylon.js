@@ -240,6 +240,17 @@ export class ExtensionManager implements IDisposable {
         this._stateChangedHandlers.clear();
     }
 
+    private _getInstalledExtensionStorageKey(metadata: ExtensionMetadata, feed: IExtensionFeed): string {
+        return `${this._namespace}/${GetExtensionInstalledKey(GetExtensionIdentity(feed.name, metadata.name))}`;
+    }
+
+    private _updateInstalledExtensionsStorage() {
+        localStorage.setItem(
+            `${this._namespace}/${InstalledExtensionsKey}`,
+            JSON.stringify(Array.from(this._installedExtensions.values()).map((extension) => GetExtensionIdentity(extension.feed.name, extension.metadata.name)))
+        );
+    }
+
     private async _installAsync(metadata: ExtensionMetadata, feed: IExtensionFeed, isNestedStateChange: boolean): Promise<InstalledExtension> {
         let installedExtension = this._installedExtensions.get(metadata.name);
 
@@ -260,16 +271,13 @@ export class ExtensionManager implements IDisposable {
 
             // Mark the extension as being installed.
             localStorage.setItem(
-                `${this._namespace}/${GetExtensionInstalledKey(GetExtensionIdentity(feed.name, metadata.name))}`,
+                this._getInstalledExtensionStorageKey(metadata, feed),
                 JSON.stringify({
                     feed: feed.name,
                     metadata,
                 })
             );
-            localStorage.setItem(
-                `${this._namespace}/${InstalledExtensionsKey}`,
-                JSON.stringify(Array.from(this._installedExtensions.values()).map((extension) => GetExtensionIdentity(extension.feed.name, extension.metadata.name)))
-            );
+            this._updateInstalledExtensionsStorage();
         }
 
         return installedExtension;
@@ -288,8 +296,8 @@ export class ExtensionManager implements IDisposable {
                 this._installedExtensions.delete(metadata.name);
 
                 // Mark the extension as being uninstalled.
-                localStorage.removeItem(`${this._namespace}/${GetExtensionInstalledKey(GetExtensionIdentity(installedExtension.feed.name, metadata.name))}`);
-                localStorage.setItem(`${this._namespace}/${InstalledExtensionsKey}`, JSON.stringify(Array.from(this._installedExtensions.keys())));
+                localStorage.removeItem(this._getInstalledExtensionStorageKey(metadata, installedExtension.feed));
+                this._updateInstalledExtensionsStorage();
             } finally {
                 !isNestedStateChange && (installedExtension.isStateChanging = false);
             }
