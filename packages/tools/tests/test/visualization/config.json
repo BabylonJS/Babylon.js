@@ -3775,7 +3775,7 @@
         },
         {
             "title": "Particles - Flowmaps 2",
-            "playgroundId": "##PPC2EI#5",
+            "playgroundId": "#PPC2EI#5",
             "renderCount": 120,
             "referenceImage": "particles-flowmaps-2.png"
         }
