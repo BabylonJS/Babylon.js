@@ -1,3 +1,4 @@
+import type { Camera } from "core/Cameras/camera";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { UniversalCamera } from "core/Cameras/universalCamera";
 import { FreeCamera } from "core/Cameras/freeCamera";
@@ -57,9 +58,9 @@ export const CamerasContent: FunctionComponent<CamerasContentProps> = ({ scene, 
     const [geospatialCameraName, setGeospatialCameraName] = useState("Geospatial Camera");
     const [geospatialCameraPlanetRadius, setGeospatialCameraPlanetRadius] = useState(6371000);
 
-    const setAsActiveIfNeeded = (camera: { attachControl: (arg0: boolean) => void }) => {
+    const setAsActiveIfNeeded = (camera: Camera) => {
         if (!scene.activeCamera) {
-            scene.activeCamera = camera as ArcRotateCamera;
+            scene.activeCamera = camera;
         }
     };
 

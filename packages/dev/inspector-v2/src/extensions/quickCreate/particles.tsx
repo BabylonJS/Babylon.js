@@ -72,11 +72,15 @@ export const ParticlesContent: FunctionComponent<ParticlesContentProps> = ({ sce
             nodeParticleSet = NodeParticleSystemSet.CreateDefault(nodeParticleSystemName);
         }
         const particleSystemSet = await nodeParticleSet.buildAsync(scene);
-        for (const system of particleSystemSet.systems) {
+        const systems = particleSystemSet.systems;
+        if (systems.length === 0) {
+            throw new Error("No particle systems were produced by the node particle system.");
+        }
+        for (const system of systems) {
             system.name = nodeParticleSystemName;
         }
         particleSystemSet.start();
-        return particleSystemSet.systems[0];
+        return systems[0];
     };
 
     return (

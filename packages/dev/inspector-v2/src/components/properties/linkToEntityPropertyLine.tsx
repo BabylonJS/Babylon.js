@@ -1,5 +1,4 @@
 import type { FunctionComponent } from "react";
-import { useEffect, useState } from "react";
 
 import type { Nullable } from "core/types";
 import { Link } from "shared-ui-components/fluent/primitives/link";
@@ -22,16 +21,11 @@ export type LinkToEntityProps = {
  * @returns A link component, or null
  */
 export const LinkToEntity: FunctionComponent<LinkToEntityProps> = ({ entity, selectionService }) => {
-    const [linkedEntity, setLinkedEntity] = useState(entity);
-    useEffect(() => {
-        setLinkedEntity(entity);
-    }, [entity]);
-
-    if (!linkedEntity || linkedEntity.reservedDataStore?.hidden) {
+    if (!entity || entity.reservedDataStore?.hidden) {
         return null;
     }
 
-    return <Link value={linkedEntity.name} onLink={() => (selectionService.selectedEntity = linkedEntity)} />;
+    return <Link value={entity.name} onLink={() => (selectionService.selectedEntity = entity)} />;
 };
 
 /**
