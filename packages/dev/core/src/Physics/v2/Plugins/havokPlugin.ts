@@ -335,7 +335,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     private _tmpVec3 = BuildArray(3, Vector3.Zero);
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
     private _shapes = new Map<bigint, PhysicsShape>();
-    private _bodyBuffer: number;
     private _bodyCollisionObservable = new Map<bigint, Observable<IPhysicsCollisionEvent>>();
     // Map from constraint id to the pair of bodies, where the first is the parent and the second is the child
     private _constraintToBodyIdPair = new Map<bigint, [bigint, bigint]>();
@@ -399,6 +398,66 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
         this._worldRegions.push(newRegion);
         return newRegion;
+    }
+
+    /**
+     * Checks if a body's world position has left its current region and, if so,
+     * moves it to the correct region (existing or newly created).
+     * This preserves linear and angular velocity across the transition.
+     *
+     * @param pluginData - The plugin data for the body (or instance) to check
+     */
+    private _reRegionBodyPluginData(pluginData: BodyPluginData): void {
+        const currentRegion = pluginData.worldRegion;
+        if (!currentRegion) {
+            return;
+        }
+
+        // Read the body's current local transform from Havok
+        const bodyTransform = this._hknp.HP_Body_GetQTransform(pluginData.hpBodyId)[1];
+        const localPos = bodyTransform[0];
+        const orientation = bodyTransform[1];
+
+        // Compute world position = local position + floating origin
+        const worldPos = TmpVectors.Vector3[2];
+        worldPos.set(localPos[0] + currentRegion.floatingOrigin._x, localPos[1] + currentRegion.floatingOrigin._y, localPos[2] + currentRegion.floatingOrigin._z);
+
+        // Check if still within the current region.
+        // Use a 20% hysteresis margin so that bodies near the boundary
+        // don't oscillate between regions every frame.
+        const distToCurrent = Vector3.Distance(worldPos, currentRegion.floatingOrigin);
+        if (distToCurrent <= this._floatingOriginWorldRadius * 1.2) {
+            return; // still in region (with hysteresis), nothing to do
+        }
+
+        // Body has left its region - find or create the correct one
+        const newRegion = this._getOrCreateWorldRegion(worldPos);
+        if (newRegion === currentRegion) {
+            return; // _getOrCreateWorldRegion returned same region (shouldn't happen, but guard)
+        }
+
+        // Save velocity before removing from old world
+        const linVel = this._hknp.HP_Body_GetLinearVelocity(pluginData.hpBodyId)[1];
+        const angVel = this._hknp.HP_Body_GetAngularVelocity(pluginData.hpBodyId)[1];
+
+        // Remove from old world
+        this._hknp.HP_World_RemoveBody(currentRegion.world, pluginData.hpBodyId);
+
+        // Set transform relative to the new region's floating origin
+        const newOffset = newRegion.floatingOrigin;
+        const newLocalPos = [worldPos._x - newOffset._x, worldPos._y - newOffset._y, worldPos._z - newOffset._z];
+        this._hknp.HP_Body_SetQTransform(pluginData.hpBodyId, [newLocalPos, orientation]);
+
+        // Add to new world
+        this._hknp.HP_World_AddBody(newRegion.world, pluginData.hpBodyId, false);
+
+        // Restore velocity
+        this._hknp.HP_Body_SetLinearVelocity(pluginData.hpBodyId, linVel);
+        this._hknp.HP_Body_SetAngularVelocity(pluginData.hpBodyId, angVel);
+
+        // Update the region reference and world transform offset
+        pluginData.worldRegion = newRegion;
+        pluginData.worldTransformOffset = this._hknp.HP_Body_GetWorldTransformOffset(pluginData.hpBodyId)[1];
     }
 
     /**
@@ -553,6 +612,21 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * to accurately simulate the physics bodies in the world.
      */
     public executeStep(delta: number, physicsBodies: Array<PhysicsBody>): void {
+        // Re-region bodies that have moved outside their current world region
+        // BEFORE pre-step and stepping, so the body participates in the correct
+        // world's step and its body buffer transform is valid when sync reads it.
+        if (this._worldRegions.length > 1 || FloatingOriginCurrentScene.getScene()?.floatingOriginMode) {
+            for (const physicsBody of physicsBodies) {
+                if (physicsBody._pluginDataInstances.length > 0) {
+                    for (const instance of physicsBody._pluginDataInstances) {
+                        this._reRegionBodyPluginData(instance);
+                    }
+                } else if (physicsBody._pluginData) {
+                    this._reRegionBodyPluginData(physicsBody._pluginData);
+                }
+            }
+        }
+
         for (const physicsBody of physicsBodies) {
             if (physicsBody.disablePreStep) {
                 continue;
@@ -567,8 +641,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             this._hknp.HP_World_SetIdealStepTime(region.world, deltaTime);
             this._hknp.HP_World_Step(region.world, deltaTime);
         }
-        // Get body buffer from the default world (first region)
-        this._bodyBuffer = this._hknp.HP_World_GetBodyBuffer(this.world)[1];
 
         for (const physicsBody of physicsBodies) {
             if (!physicsBody.disableSync) {
@@ -822,7 +894,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 const pluginData = body._pluginDataInstances[i];
                 // Use instance's world region offset
                 const instanceOffset = pluginData.worldRegion.floatingOrigin;
-                const bodyBuffer = this._bodyBuffer;
+                // Get body buffer from the instance's own world region (not always the default world)
+                const bodyBuffer = this._hknp.HP_World_GetBodyBuffer(pluginData.worldRegion.world)[1];
                 const bufOffset = pluginData.worldTransformOffset;
                 const transformBuffer = new Float32Array(this._hknp.HEAPU8.buffer, bodyBuffer + bufOffset, 16);
                 const index = i * 16;
@@ -2621,17 +2694,21 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         let eventAddress = this._hknp.HP_World_GetCollisionEvents(targetWorld)[1];
         const event = new CollisionEvent();
         const worldAddr = Number(targetWorld);
+
+        // Find the region for this world to get the correct floating origin offset.
+        // All bodies in a collision share the same world, so use one offset for both.
+        const region = this._worldRegions.find((r) => Number(r.world) === worldAddr) ?? this._worldRegions[0];
+        const regionOffset = region.floatingOrigin;
+
         while (eventAddress) {
             CollisionEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
             const bodyInfoA = this._bodies.get(event.contactOnA.bodyId);
             const bodyInfoB = this._bodies.get(event.contactOnB.bodyId);
 
-            // Add floating origin offset back to collision contact positions using the body's world region offset
-            // If body doesn't exist, use default region's offset (zero)
-            const offsetA = bodyInfoA?.body?._pluginData?.worldRegion?.floatingOrigin ?? this._worldRegions[0].floatingOrigin;
-            event.contactOnA.position.addInPlace(offsetA);
-            const offsetB = bodyInfoB?.body?._pluginData?.worldRegion?.floatingOrigin ?? this._worldRegions[0].floatingOrigin;
-            event.contactOnB.position.addInPlace(offsetB);
+            // Add floating origin offset back to collision contact positions.
+            // Both contacts are in the same world, so use the region's floating origin.
+            event.contactOnA.position.addInPlace(regionOffset);
+            event.contactOnB.position.addInPlace(regionOffset);
 
             // Bodies may have been disposed between events. Check both still exist.
             if (bodyInfoA && bodyInfoB) {
