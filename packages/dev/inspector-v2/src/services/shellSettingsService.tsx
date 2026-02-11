@@ -4,7 +4,13 @@ import type { ISettingsService } from "./panes/settingsService";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { useSetting } from "../hooks/settingsHooks";
 import { SettingsServiceIdentity } from "./panes/settingsService";
-import { SidePaneDockOverridesSettingDescriptor } from "./shellService";
+import {
+    SidePaneDockOverridesSettingDescriptor,
+    LeftSidePaneWidthAdjustSettingDescriptor,
+    LeftSidePaneHeightAdjustSettingDescriptor,
+    RightSidePaneHeightAdjustSettingDescriptor,
+    RightSidePaneWidthAdjustSettingDescriptor,
+} from "./shellService";
 
 export const ShellSettingsServiceDefinition: ServiceDefinition<[], [ISettingsService]> = {
     friendlyName: "Shell Settings Service",
@@ -15,7 +21,22 @@ export const ShellSettingsServiceDefinition: ServiceDefinition<[], [ISettingsSer
             section: "UI",
             component: () => {
                 const [, , resetSidePaneDockOverrides] = useSetting(SidePaneDockOverridesSettingDescriptor);
-                return <ButtonLine label="Reset Layout" onClick={resetSidePaneDockOverrides} />;
+                const [, , resetLeftPaneWidthAdjust] = useSetting(LeftSidePaneWidthAdjustSettingDescriptor);
+                const [, , resetLeftPaneHeightAdjust] = useSetting(LeftSidePaneHeightAdjustSettingDescriptor);
+                const [, , resetRightPaneWidthAdjust] = useSetting(RightSidePaneWidthAdjustSettingDescriptor);
+                const [, , resetRightPaneHeightAdjust] = useSetting(RightSidePaneHeightAdjustSettingDescriptor);
+                return (
+                    <ButtonLine
+                        label="Reset Layout"
+                        onClick={() => {
+                            resetSidePaneDockOverrides();
+                            resetLeftPaneWidthAdjust();
+                            resetLeftPaneHeightAdjust();
+                            resetRightPaneWidthAdjust();
+                            resetRightPaneHeightAdjust();
+                        }}
+                    />
+                );
             },
         });
 

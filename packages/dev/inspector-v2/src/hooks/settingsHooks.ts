@@ -15,7 +15,7 @@ export function useSetting<T>(descriptor: SettingDescriptor<T>): [T, Dispatch<Se
     // Only watch for this specific setting to change. Otherwise, any time any setting changes we would
     // call readSetting again, which if it is an object, it will be a new instance, which can cause
     // unnecessary re-renders in consumers of this hook.
-    const settingObservable = useMemo(() => new Observable<void>(), [settingsStore, descriptor]);
+    const settingObservable = useMemo(() => new Observable<void>(), []);
     useEffect(() => {
         if (settingsStore) {
             const observer = settingsStore.onChanged.add((key) => {
@@ -30,10 +30,10 @@ export function useSetting<T>(descriptor: SettingDescriptor<T>): [T, Dispatch<Se
         }
 
         return undefined;
-    }, [settingsStore, descriptor]);
+    }, [settingsStore, descriptor.key]);
 
     const value = useObservableState(
-        useCallback(() => settingsStore?.readSetting<T>(descriptor) ?? descriptor.defaultValue, [settingsStore, descriptor]),
+        useCallback(() => settingsStore?.readSetting<T>(descriptor) ?? descriptor.defaultValue, [settingsStore, descriptor.key, descriptor.defaultValue]),
         settingObservable
     );
 
@@ -42,10 +42,10 @@ export function useSetting<T>(descriptor: SettingDescriptor<T>): [T, Dispatch<Se
             const value = typeof newValue === "function" ? (newValue as (prev: T) => T)(settingsStore?.readSetting<T>(descriptor) ?? descriptor.defaultValue) : newValue;
             settingsStore?.writeSetting<T>(descriptor, value);
         },
-        [settingsStore, descriptor]
+        [settingsStore, descriptor.key, descriptor.defaultValue]
     );
 
-    const resetValue = useCallback((): void => settingsStore?.writeSetting<T>(descriptor, descriptor.defaultValue), [settingsStore, descriptor]);
+    const resetValue = useCallback((): void => settingsStore?.writeSetting<T>(descriptor, descriptor.defaultValue), [settingsStore, descriptor.key, descriptor.defaultValue]);
 
     if (!settingsStore) {
         throw new Error("Settings store is not available in context.");

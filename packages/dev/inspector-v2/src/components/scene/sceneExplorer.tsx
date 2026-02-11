@@ -30,7 +30,6 @@ import {
 } from "@fluentui/react-components";
 import { ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular, TextSortAscendingRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
 
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
@@ -854,7 +853,7 @@ export const SceneExplorer: FunctionComponent<{
     };
 
     const [itemsFilter, setItemsFilter] = useState("");
-    const [isSorted, setIsSorted] = useLocalStorage("Babylon/Settings/SceneExplorer/IsSorted", false);
+    const [isSorted, setIsSorted] = useSetting({ key: "SceneExplorer/IsSorted", defaultValue: false });
 
     // Drag-drop state
     const { draggedEntity, dropTarget, dropTargetIsRoot, createDragProps, createSectionDropProps } = useSceneExplorerDragDrop({

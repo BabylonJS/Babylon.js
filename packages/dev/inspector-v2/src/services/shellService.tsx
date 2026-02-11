@@ -60,6 +60,26 @@ export const SidePaneDockOverridesSettingDescriptor: SettingDescriptor<
     defaultValue: {},
 };
 
+export const LeftSidePaneWidthAdjustSettingDescriptor: SettingDescriptor<number> = {
+    key: "Shell/LeftPane/WidthAdjust",
+    defaultValue: 0,
+};
+
+export const LeftSidePaneHeightAdjustSettingDescriptor: SettingDescriptor<number> = {
+    key: "Shell/LeftPane/HeightAdjust",
+    defaultValue: 0,
+};
+
+export const RightSidePaneWidthAdjustSettingDescriptor: SettingDescriptor<number> = {
+    key: "Shell/RightPane/WidthAdjust",
+    defaultValue: 0,
+};
+
+export const RightSidePaneHeightAdjustSettingDescriptor: SettingDescriptor<number> = {
+    key: "Shell/RightPane/HeightAdjust",
+    defaultValue: 0,
+};
+
 export type HorizontalLocation = "left" | "right";
 export type VerticalLocation = "top" | "bottom";
 
@@ -732,8 +752,8 @@ function usePane(
         setCollapsed((collapsed) => !collapsed);
     }, []);
 
-    const widthStorageKey = `Babylon/Settings/${location}Pane/WidthAdjust`;
-    const heightStorageKey = `Babylon/Settings/${location}Pane/HeightAdjust`;
+    const [paneWidthSetting, setPaneWidthSetting] = useSetting(location === "left" ? LeftSidePaneWidthAdjustSettingDescriptor : RightSidePaneWidthAdjustSettingDescriptor);
+    const [paneHeightSetting, setPaneHeightSetting] = useSetting(location === "left" ? LeftSidePaneHeightAdjustSettingDescriptor : RightSidePaneHeightAdjustSettingDescriptor);
 
     const currentSidePanes = useMemo(() => sidePanes.filter((entry) => entry.horizontalLocation === location), [sidePanes, location]);
     const topPanes = useMemo(() => currentSidePanes.filter((entry) => entry.verticalLocation === "top"), [currentSidePanes]);
@@ -946,7 +966,7 @@ function usePane(
         minValue: minWidth - defaultWidth,
         onChange: (value) => {
             // Whenever the width is adjusted, store the value.
-            localStorage.setItem(widthStorageKey, value.toString());
+            setPaneWidthSetting(value);
         },
     });
 
@@ -961,22 +981,15 @@ function usePane(
         variableName: paneHeightAdjustCSSVar,
         onChange: (value) => {
             // Whenever the height is adjusted, store the value.
-            localStorage.setItem(heightStorageKey, value.toString());
+            setPaneHeightSetting(value);
         },
     });
 
     // This ensures that when the component is first rendered, the CSS variable is set from storage.
     useLayoutEffect(() => {
-        const storedPaneWidthAdjust = localStorage.getItem(widthStorageKey);
-        if (storedPaneWidthAdjust) {
-            setPaneWidthAdjust(Number.parseInt(storedPaneWidthAdjust));
-        }
-
-        const storedPaneHeightAdjust = localStorage.getItem(heightStorageKey);
-        if (storedPaneHeightAdjust) {
-            setPaneHeightAdjust(Number.parseInt(storedPaneHeightAdjust));
-        }
-    }, []);
+        setPaneWidthAdjust(paneWidthSetting);
+        setPaneHeightAdjust(paneHeightSetting);
+    }, [paneWidthSetting, paneHeightSetting]);
 
     // This effect closes the window if all panes have been removed.
     useEffect(() => {
