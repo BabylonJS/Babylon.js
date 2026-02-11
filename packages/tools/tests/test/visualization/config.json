@@ -3742,6 +3742,12 @@
             "playgroundId": "#XPVJMM#2",
             "renderCount": 120,
             "referenceImage": "particles-ramp-blend.png"
+        },
+        {
+            "title": "Particles - Effects",
+            "playgroundId": "#1ASENS#424",
+            "renderCount": 120,
+            "referenceImage": "particles-effects.png"
         }
     ]
 }
