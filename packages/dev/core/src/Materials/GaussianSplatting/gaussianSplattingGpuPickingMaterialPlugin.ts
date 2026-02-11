@@ -11,19 +11,16 @@ import type { GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
 
 /**
  * Plugin for GaussianSplattingMaterial that replaces per-splat color output with
- * an encoded picking ID for GPU-based hit testing. Each splat outputs a 24-bit
- * picking ID encoded as RGB, enabling efficient GPU picking of Gaussian Splatting
- * meshes and compound mesh parts.
+ * a pre-computed picking color for GPU-based hit testing.
  *
- * For non-compound meshes, a single `meshID` uniform is used for the entire mesh.
- * For compound meshes, per-part picking IDs are looked up from the `partMeshID` array
- * using the splat's partIndex.
+ * The picking color is computed on the CPU by encoding a 24-bit picking ID as RGB
+ * (matching the readback decoding in GPUPicker).
  * @experimental
  */
 export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBase {
-    private _meshId: number = 0;
+    private _pickingColor: [number, number, number] = [0, 0, 0];
     private _isCompound: boolean = false;
-    private _partMeshIds: number[] = [];
+    private _partPickingColors: number[] = [];
     private _maxPartCount: number;
 
     /**
@@ -39,18 +36,21 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
     }
 
     /**
-     * Sets the picking ID for a non-compound mesh.
-     * @param id The 24-bit picking ID to encode in the output color.
+     * Encodes a 24-bit picking ID into normalized RGB components.
+     * @param id The picking ID to encode
+     * @returns A tuple [r, g, b] with values in [0, 1]
      */
-    public set meshId(id: number) {
-        this._meshId = id;
+    public static EncodeIdToColor(id: number): [number, number, number] {
+        return [((id >> 16) & 0xff) / 255, ((id >> 8) & 0xff) / 255, (id & 0xff) / 255];
     }
 
     /**
-     * Gets the picking ID for a non-compound mesh.
+     * Sets the picking color for a non-compound mesh from a picking ID.
+     * The ID is encoded into an RGB color on the CPU.
+     * @param id The 24-bit picking ID.
      */
-    public get meshId(): number {
-        return this._meshId;
+    public set meshId(id: number) {
+        this._pickingColor = GaussianSplattingGpuPickingMaterialPlugin.EncodeIdToColor(id);
     }
 
     /**
@@ -69,21 +69,18 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
     }
 
     /**
-     * Sets the per-part picking IDs for a compound mesh.
+     * Sets the per-part picking colors from an array of picking IDs.
+     * Each ID is encoded into an RGB color on the CPU.
      * @param ids Array mapping part index to picking ID.
      */
     public set partMeshIds(ids: number[]) {
-        this._partMeshIds = ids;
+        const colors: number[] = [];
+        for (let i = 0; i < this._maxPartCount; i++) {
+            const c = i < ids.length ? GaussianSplattingGpuPickingMaterialPlugin.EncodeIdToColor(ids[i]) : ([0, 0, 0] as [number, number, number]);
+            colors.push(c[0], c[1], c[2]);
+        }
+        this._partPickingColors = colors;
     }
-
-    /**
-     * Gets the per-part picking IDs.
-     */
-    public get partMeshIds(): number[] {
-        return this._partMeshIds;
-    }
-
-    // --- Plugin overrides ---
 
     /**
      * @returns the class name
@@ -120,107 +117,81 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
     }
 
     /**
-     * Returns custom shader code fragments to inject GPU picking rendering.
-     *
-     * The vertex shader passes the picking mesh ID as a flat varying.
-     * The fragment shader replaces the final color output with the encoded picking ID.
+     * Returns custom shader code to inject GPU picking color output.
      *
      * @param shaderType "vertex" or "fragment"
      * @param shaderLanguage the shader language to use (default: GLSL)
      * @returns null or a map of injection point names to code strings
      */
     public override getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
-        const maxPartCount = this._maxPartCount ?? 16;
-
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            return this._getCustomCodeWGSL(shaderType, maxPartCount);
+            return this._getCustomCodeWGSL(shaderType);
         }
-        return this._getCustomCodeGLSL(shaderType, maxPartCount);
+        return this._getCustomCodeGLSL(shaderType);
     }
 
-    private _getCustomCodeGLSL(shaderType: string, maxPartCount: number): Nullable<{ [pointName: string]: string }> {
+    private _getCustomCodeGLSL(shaderType: string): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
             return {
-                CUSTOM_VERTEX_DEFINITIONS: `
-flat varying float vPickingMeshID;
-#if IS_COMPOUND
-uniform float partMeshID[${maxPartCount}];
-#else
-uniform float meshID;
-#endif
-                `,
+                CUSTOM_VERTEX_DEFINITIONS: `varying float vPartIndex;`,
                 CUSTOM_VERTEX_UPDATE: `
 #if IS_COMPOUND
-    vPickingMeshID = partMeshID[splat.partIndex];
+    vPartIndex = float(splat.partIndex);
 #else
-    vPickingMeshID = meshID;
+    vPartIndex = 0.0;
 #endif
                 `,
             };
         } else if (shaderType === "fragment") {
             return {
                 CUSTOM_FRAGMENT_DEFINITIONS: `
-flat varying float vPickingMeshID;
+varying float vPartIndex;
+#if IS_COMPOUND
+uniform vec3 partPickingColors[${this._maxPartCount}];
+#else
+uniform vec3 pickingColor;
+#endif
                 `,
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
-{
-#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
-    int pickId = int(vPickingMeshID);
-    vec3 pickColor = vec3(
-        float((pickId >> 16) & 0xFF),
-        float((pickId >> 8) & 0xFF),
-        float(pickId & 0xFF)
-    ) / 255.0;
+#if IS_COMPOUND
+    finalColor = vec4(partPickingColors[int(vPartIndex + 0.5)], 1.0);
 #else
-    float pickId = floor(vPickingMeshID + 0.5);
-    vec3 pickColor = vec3(
-        floor(mod(pickId, 16777216.0) / 65536.0),
-        floor(mod(pickId, 65536.0) / 256.0),
-        mod(pickId, 256.0)
-    ) / 255.0;
+    finalColor = vec4(pickingColor, 1.0);
 #endif
-    finalColor = vec4(pickColor, 1.0);
-}
                 `,
             };
         }
         return null;
     }
 
-    private _getCustomCodeWGSL(shaderType: string, maxPartCount: number): Nullable<{ [pointName: string]: string }> {
+    private _getCustomCodeWGSL(shaderType: string): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
             return {
-                CUSTOM_VERTEX_DEFINITIONS: `
-    flat varying vPickingMeshID: f32;
-#if IS_COMPOUND
-uniform partMeshID: array<f32, ${maxPartCount}>;
-#else
-uniform meshID: f32;
-#endif
-                `,
+                CUSTOM_VERTEX_DEFINITIONS: `varying vPartIndex: f32;`,
                 CUSTOM_VERTEX_UPDATE: `
 #if IS_COMPOUND
-    vertexOutputs.vPickingMeshID = uniforms.partMeshID[splat.partIndex];
+    vertexOutputs.vPartIndex = f32(splat.partIndex);
 #else
-    vertexOutputs.vPickingMeshID = uniforms.meshID;
+    vertexOutputs.vPartIndex = 0.0;
 #endif
                 `,
             };
         } else if (shaderType === "fragment") {
             return {
                 CUSTOM_FRAGMENT_DEFINITIONS: `
-flat varying vPickingMeshID: f32;
+varying vPartIndex: f32;
+#if IS_COMPOUND
+uniform partPickingColors: array<vec3f, ${this._maxPartCount}>;
+#else
+uniform pickingColor: vec3f;
+#endif
                 `,
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
-{
-    var pickId: i32 = i32(fragmentInputs.vPickingMeshID);
-    var pickColor = vec3f(
-        f32((pickId >> 16) & 0xFF),
-        f32((pickId >> 8) & 0xFF),
-        f32(pickId & 0xFF),
-    ) / 255.0;
-    finalColor = vec4f(pickColor, 1.0);
-}
+#if IS_COMPOUND
+    finalColor = vec4f(uniforms.partPickingColors[i32(fragmentInputs.vPartIndex + 0.5)], 1.0);
+#else
+    finalColor = vec4f(uniforms.pickingColor, 1.0);
+#endif
                 `,
             };
         }
@@ -228,8 +199,7 @@ flat varying vPickingMeshID: f32;
     }
 
     /**
-     * Registers the picking uniforms with the engine so that
-     * the Effect can resolve their locations.
+     * Registers the picking uniforms with the engine.
      * @returns uniform descriptions
      */
     public override getUniforms(): {
@@ -239,12 +209,12 @@ flat varying vPickingMeshID: f32;
         externalUniforms?: string[];
     } {
         return {
-            externalUniforms: ["meshID", "partMeshID"],
+            externalUniforms: ["pickingColor", "partPickingColors"],
         };
     }
 
     /**
-     * Binds the picking uniforms each frame.
+     * Binds the picking color uniform(s) each frame.
      * @param _uniformBuffer the uniform buffer (unused — we bind directly on the effect)
      * @param _scene the current scene
      * @param _engine the current engine
@@ -257,13 +227,9 @@ flat varying vPickingMeshID: f32;
         }
 
         if (this._isCompound) {
-            const partMeshIdData: number[] = new Array(this._maxPartCount).fill(0);
-            for (let i = 0; i < this._partMeshIds.length && i < this._maxPartCount; i++) {
-                partMeshIdData[i] = this._partMeshIds[i];
-            }
-            effect.setArray("partMeshID", partMeshIdData);
+            effect.setArray3("partPickingColors", this._partPickingColors);
         } else {
-            effect.setFloat("meshID", this._meshId);
+            effect.setFloat3("pickingColor", this._pickingColor[0], this._pickingColor[1], this._pickingColor[2]);
         }
     }
 }

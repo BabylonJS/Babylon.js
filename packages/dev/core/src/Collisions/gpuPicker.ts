@@ -727,6 +727,7 @@ export class GPUPicker {
                     // Do the actual picking
                     if (await this._readTexturePixelsAsync(x, y)) {
                         const colorId = this._getColorIdFromReadBuffer(0);
+
                         // Thin?
                         if (this._thinIdMap[colorId]) {
                             pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
