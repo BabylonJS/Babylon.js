@@ -46,9 +46,13 @@ uniform sampler2D partIndicesTexture;
 varying vec4 vColor;
 varying vec2 vPosition;
 
+#define CUSTOM_VERTEX_DEFINITIONS
+
 #include<gaussianSplatting>
 
 void main () {
+#define CUSTOM_VERTEX_MAIN_BEGIN
+
     float splatIndex = getSplatIndex(int(position.z + 0.5));
     Splat splat = readSplat(splatIndex);
     vec3 covA = splat.covA.xyz;
@@ -81,9 +85,15 @@ void main () {
     vColor.w *= partVisibility[splat.partIndex];
 #endif
 
-    gl_Position = gaussianSplatting(position.xy, worldPos.xyz, vec2(1.,1.), covA, covB, splatWorld, view, projection);
+    vec2 scale = vec2(1., 1.);
+
+#define CUSTOM_VERTEX_UPDATE
+
+    gl_Position = gaussianSplatting(position.xy, worldPos.xyz, scale, covA, covB, splatWorld, view, projection);
 
 #include<clipPlaneVertex>
 #include<fogVertex>
 #include<logDepthVertex>
+
+#define CUSTOM_VERTEX_MAIN_END
 }

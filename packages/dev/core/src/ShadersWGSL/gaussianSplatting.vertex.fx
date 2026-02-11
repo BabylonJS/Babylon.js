@@ -47,10 +47,13 @@ var partIndicesTexture: texture_2d<f32>;
 varying vColor: vec4f;
 varying vPosition: vec2f;
 
+#define CUSTOM_VERTEX_DEFINITIONS
+
 #include<gaussianSplatting>
 
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
+#define CUSTOM_VERTEX_MAIN_BEGIN
 
     let splatIndex: f32 = getSplatIndex(i32(input.position.z + 0.5), input.splatIndex0, input.splatIndex1, input.splatIndex2, input.splatIndex3);
 
@@ -84,9 +87,15 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vColor.w *= uniforms.partVisibility[splat.partIndex];
 #endif
 
-    vertexOutputs.position = gaussianSplatting(input.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
+    let scale: vec2f = vec2f(1., 1.);
+
+#define CUSTOM_VERTEX_UPDATE
+
+    vertexOutputs.position = gaussianSplatting(input.position.xy, worldPos.xyz, scale, covA, covB, splatWorld, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
 
 #include<clipPlaneVertex>
 #include<fogVertex>
 #include<logDepthVertex>
+
+#define CUSTOM_VERTEX_MAIN_END
 }
