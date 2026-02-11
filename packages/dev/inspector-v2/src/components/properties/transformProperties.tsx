@@ -24,7 +24,7 @@ export const TransformProperties: FunctionComponent<{ transform: Transform }> = 
             {quatRotation ? (
                 <Property
                     component={QuaternionPropertyLine}
-                    label="Rotation (Quat)"
+                    label="Rotation Quaternion"
                     propertyPath="rotationQuaternion"
                     value={quatRotation}
                     onChange={(val) => (transform.rotationQuaternion = val)}
