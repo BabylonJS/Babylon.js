@@ -1,5 +1,4 @@
 import type { ComponentType, FunctionComponent } from "react";
-import type { TernaryDarkMode } from "usehooks-ts";
 
 import type { IDisposable } from "core/index";
 import type { IExtensionFeed } from "./extensibility/extensionFeed";
@@ -7,6 +6,7 @@ import type { IExtension, InstallFailedInfo } from "./extensibility/extensionMan
 import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
 import type { ISettingsStore } from "./services/settingsStore";
 import type { IRootComponentService, ShellServiceOptions } from "./services/shellService";
+import type { ThemeMode } from "./services/themeService";
 
 import {
     Body1,
@@ -86,7 +86,7 @@ export type ModularToolOptions = {
     /**
      * The theme mode to use. If not specified, the default is "system", which uses the system/browser preference, and the last used mode is persisted.
      */
-    themeMode?: TernaryDarkMode;
+    themeMode?: ThemeMode;
 
     /**
      * Whether to show the theme selector in the toolbar. Default is true.

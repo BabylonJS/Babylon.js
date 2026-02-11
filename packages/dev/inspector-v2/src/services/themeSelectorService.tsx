@@ -1,7 +1,7 @@
 import type { MenuButtonProps, MenuCheckedValueChangeData, MenuCheckedValueChangeEvent } from "@fluentui/react-components";
-import type { TernaryDarkMode } from "usehooks-ts";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IShellService } from "../services/shellService";
+import type { ThemeMode } from "../services/themeService";
 
 import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, Tooltip } from "@fluentui/react-components";
 import { WeatherMoonRegular, WeatherSunnyRegular } from "@fluentui/react-icons";
@@ -35,7 +35,7 @@ export const ThemeSelectorServiceDefinition: ServiceDefinition<[], [IShellServic
                 const { isDarkMode, themeMode, setThemeMode } = useThemeMode();
 
                 const onSelectedThemeChange = useCallback((e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
-                    setThemeMode(data.checkedItems.includes("System") ? "system" : (data.checkedItems[0].toLocaleLowerCase() as TernaryDarkMode));
+                    setThemeMode(data.checkedItems.includes("System") ? "system" : (data.checkedItems[0].toLocaleLowerCase() as ThemeMode));
                 }, []);
 
                 const toggleTheme = useCallback(() => {
@@ -62,13 +62,13 @@ export const ThemeSelectorServiceDefinition: ServiceDefinition<[], [IShellServic
 
                         <MenuPopover className={classes.themeMenuPopover}>
                             <MenuList>
-                                <MenuItemRadio name="theme" value={"system" satisfies TernaryDarkMode}>
+                                <MenuItemRadio name="theme" value={"system" satisfies ThemeMode}>
                                     System
                                 </MenuItemRadio>
-                                <MenuItemRadio name="theme" value={"light" satisfies TernaryDarkMode}>
+                                <MenuItemRadio name="theme" value={"light" satisfies ThemeMode}>
                                     Light
                                 </MenuItemRadio>
-                                <MenuItemRadio name="theme" value={"dark" satisfies TernaryDarkMode}>
+                                <MenuItemRadio name="theme" value={"dark" satisfies ThemeMode}>
                                     Dark
                                 </MenuItemRadio>
                             </MenuList>
