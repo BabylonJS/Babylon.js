@@ -1,3 +1,5 @@
+import { Logger } from "./logger";
+
 interface IStorage {
     getItem: (key: string) => string | null;
     setItem: (key: string, value: string) => void;
@@ -96,7 +98,12 @@ export class DataStorage {
      */
     public static ReadJson<T>(key: string, defaultValue: T): T {
         const value = this._Storage.getItem(key);
-        return value !== null ? JSON.parse(value) : defaultValue;
+        try {
+            return value !== null ? JSON.parse(value) : defaultValue;
+        } catch (e) {
+            Logger.Warn(`Failed to parse JSON from storage for key "${key}". Returning default value.`, e);
+            return defaultValue;
+        }
     }
 
     /**
