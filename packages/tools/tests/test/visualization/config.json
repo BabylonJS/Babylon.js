@@ -3742,6 +3742,42 @@
             "playgroundId": "#1ASENS#424",
             "renderCount": 120,
             "referenceImage": "particles-effects.png"
+        },
+        {
+            "title": "Particles - Helper - Sun",
+            "playgroundId": "#A97UQ6#5",
+            "renderCount": 120,
+            "referenceImage": "particles-helper-sun.png"
+        },
+        {
+            "title": "Particles - Helper - Smoke",
+            "playgroundId": "#XRRTC0#2",
+            "renderCount": 120,
+            "referenceImage": "particles-helper-smoke.png"
+        },
+        {
+            "title": "Particles - Helper - Fire",
+            "playgroundId": "#I2D9MM#14",
+            "renderCount": 120,
+            "referenceImage": "particles-helper-fire.png"
+        },
+        {
+            "title": "Particles - Attractors",
+            "playgroundId": "#DEZ79M#73",
+            "renderCount": 240,
+            "referenceImage": "particles-attractors.png"
+        },
+        {
+            "title": "Particles - Flowmaps",
+            "playgroundId": "#M58G3X#4",
+            "renderCount": 240,
+            "referenceImage": "particles-flowmaps.png"
+        },
+        {
+            "title": "Particles - Flowmaps 2",
+            "playgroundId": "##PPC2EI#5",
+            "renderCount": 120,
+            "referenceImage": "particles-flowmaps-2.png"
         }
     ]
 }
