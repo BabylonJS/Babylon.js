@@ -723,6 +723,7 @@ export class TextureBlock extends NodeMaterialBlock {
      */
     public override serialize(): any {
         const serializationObject = super.serialize();
+        serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
         serializationObject.fragmentOnly = this._fragmentOnly;
         serializationObject.disableLevelMultiplication = this.disableLevelMultiplication;
