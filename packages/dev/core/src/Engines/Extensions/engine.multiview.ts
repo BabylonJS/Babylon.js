@@ -1,6 +1,7 @@
 import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
-import { Scene, type ICreateSceneUboOptions } from "../../scene";
+import type { ICreateSceneUboOptions } from "../../scene";
+import { Scene } from "../../scene";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
