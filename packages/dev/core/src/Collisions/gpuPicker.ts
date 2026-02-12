@@ -371,7 +371,7 @@ export class GPUPicker {
         let nextFreeId = this._nextFreeId;
 
         // Collect GaussianSplatting part proxy groups for compound picking
-        const gsCompoundGroups = new Map<number, { compound: AbstractMesh; partEntries: { proxy: AbstractMesh; globalIndex: number }[] }>();
+        const gsCompoundGroups: { compound: AbstractMesh; partEntries: { proxy: AbstractMesh; globalIndex: number }[] }[] = [];
 
         for (let index = 0; index < newPickableMeshes.length; index++) {
             const mesh = newPickableMeshes[index];
@@ -383,10 +383,10 @@ export class GPUPicker {
                 const compound = proxy.compoundSplatMesh;
                 const globalIndex = index + pickableMeshOffset;
 
-                let group = gsCompoundGroups.get(compound.uniqueId);
+                let group = gsCompoundGroups[compound.uniqueId];
                 if (!group) {
                     group = { compound, partEntries: [] };
-                    gsCompoundGroups.set(compound.uniqueId, group);
+                    gsCompoundGroups[compound.uniqueId] = group;
                 }
                 group.partEntries.push({ proxy, globalIndex });
                 continue; // Don't add to render list - the compound mesh will render for all parts
@@ -474,7 +474,10 @@ export class GPUPicker {
         }
 
         // Process GaussianSplatting compound groups (part proxy meshes)
-        for (const [, group] of gsCompoundGroups) {
+        for (const group of gsCompoundGroups) {
+            if (!group) {
+                continue;
+            }
             const compound = group.compound;
 
             // Assign picking IDs for each part
