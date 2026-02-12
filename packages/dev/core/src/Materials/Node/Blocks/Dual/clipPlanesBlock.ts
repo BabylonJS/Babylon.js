@@ -93,7 +93,7 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
     public override set target(value: NodeMaterialBlockTargets) {}
 
     /**
-     * Checks if the block is ready
+     * Prepares the shader defines related to clip planes for the given mesh
      * @param defines - the material defines
      * @param nodeMaterial - the node material
      * @param mesh - the mesh to prepare for
