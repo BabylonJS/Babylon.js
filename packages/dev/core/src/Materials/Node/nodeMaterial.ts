@@ -572,7 +572,7 @@ export class NodeMaterial extends NodeMaterialBase {
      */
     public addOutputNode(node: NodeMaterialBlock) {
         if (node.target === null) {
-            throw "This node is not meant to be an output node. You may want to explicitly set its target value.";
+            throw new Error("This node is not meant to be an output node. You may want to explicitly set its target value.");
         }
 
         if ((node.target & NodeMaterialBlockTargets.Vertex) !== 0) {
