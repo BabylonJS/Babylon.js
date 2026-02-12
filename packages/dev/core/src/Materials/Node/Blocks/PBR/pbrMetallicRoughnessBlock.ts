@@ -696,6 +696,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return this._outputs[12];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.cameraPosition.isConnected) {
             let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition && additionalFilteringInfo(b));
@@ -718,6 +723,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines to update
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to prepare defines for
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
         if (!mesh) {
             return;
@@ -834,6 +845,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Update the uniforms and samples
+     * @param state - the build state
+     * @param nodeMaterial - the node material
+     * @param defines - the list of defines
+     * @param uniformBuffers - the uniform buffers
+     */
     public override updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
         for (let lightIndex = 0; lightIndex < nodeMaterial.maxSimultaneousLights; lightIndex++) {
             if (!defines["LIGHT" + lightIndex]) {
@@ -854,6 +872,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Checks if the block is ready
+     * @param mesh - the mesh to check
+     * @param nodeMaterial - the node material
+     * @param defines - the list of defines
+     * @returns true if ready
+     */
     public override isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (this._environmentBRDFTexture && !this._environmentBRDFTexture.isReady()) {
             return false;
@@ -868,6 +893,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return true;
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind data to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind data for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
@@ -1548,6 +1579,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -1577,6 +1612,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the object to deserialize from
+     * @param scene - the scene to deserialize in
+     * @param rootUrl - the root URL for assets
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

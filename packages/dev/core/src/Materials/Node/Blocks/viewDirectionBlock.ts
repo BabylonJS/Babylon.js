@@ -53,6 +53,11 @@ export class ViewDirectionBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.cameraPosition.isConnected) {
             let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition && additionalFilteringInfo(b));

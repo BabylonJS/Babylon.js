@@ -73,6 +73,12 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         state._excludeVariableName("dataTextureSize");
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - defines the effect to bind data to
+     * @param nodeMaterial - defines the node material
+     * @param mesh - defines the mesh to bind data for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;

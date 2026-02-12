@@ -145,12 +145,23 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentOutputsColor" : "gl_FragColor";
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the material defines
+     * @param nodeMaterial - the node material
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial) {
         defines.setValue(this._linearDefineName, this.convertToLinearSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
         defines.setValue(this._additionalColorDefineName, this.additionalColor.connectedPoint && nodeMaterial._useAdditionalColor, true);
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if ((this.useLogarithmicDepth || nodeMaterial.useLogarithmicDepth) && mesh) {
             BindLogDepth(undefined, effect, mesh.getScene());
@@ -273,6 +284,10 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -283,6 +298,12 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root url
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

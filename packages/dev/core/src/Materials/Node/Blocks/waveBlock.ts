@@ -98,6 +98,10 @@ export class WaveBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -106,6 +110,12 @@ export class WaveBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block from a serialization object
+     * @param serializationObject - the object to deserialize from
+     * @param scene - the current scene
+     * @param rootUrl - the root URL for loading
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

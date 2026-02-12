@@ -141,6 +141,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         state._excludeVariableName(this.samplerName);
     }
 
+    /** {@inheritDoc} */
     public override get target() {
         if (!this.uv.isConnected) {
             return NodeMaterialBlockTargets.VertexAndFragment;
@@ -153,11 +154,19 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         return NodeMaterialBlockTargets.Fragment;
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the material defines
+     */
     public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue(this._linearDefineName, this.convertToGammaSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToLinearSpace, true);
     }
 
+    /**
+     * Checks if the block is ready
+     * @returns true if ready
+     */
     public override isReady() {
         if (this.texture && !this.texture.isReadyOrNotBlocking()) {
             return false;
@@ -166,7 +175,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         return true;
     }
 
-    protected _getMainUvName(state: NodeMaterialBuildState): string {
+    protected _getMainUvName(_state: NodeMaterialBuildState): string {
         return "vMain" + this.uv.associatedVariableName;
     }
 
@@ -305,6 +314,10 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -317,6 +330,12 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root url
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

@@ -252,6 +252,11 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - defines the effect to bind data to
+     * @param nodeMaterial - defines the node material
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial) {
         const scene = nodeMaterial.getScene();
         const prePassRenderer = scene.enablePrePassRenderer();

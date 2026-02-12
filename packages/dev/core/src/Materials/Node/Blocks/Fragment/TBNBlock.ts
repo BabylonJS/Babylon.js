@@ -15,7 +15,6 @@ import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 /**
  * Block used to implement TBN matrix
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export class TBNBlock extends NodeMaterialBlock {
     /**
      * Create a new TBNBlock
@@ -86,7 +85,6 @@ export class TBNBlock extends NodeMaterialBlock {
     /**
      * Gets the TBN output component
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     public get TBN(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
@@ -112,12 +110,23 @@ export class TBNBlock extends NodeMaterialBlock {
         return this._outputs[3];
     }
 
+    /**
+     * Gets the block target
+     */
     public override get target() {
         return NodeMaterialBlockTargets.Fragment;
     }
 
+    /**
+     * Sets the block target
+     */
     public override set target(value: NodeMaterialBlockTargets) {}
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - defines the hosting NodeMaterial
+     * @param additionalFilteringInfo - defines additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.world.isConnected) {
             let worldInput = material.getInputBlockByPredicate((b) => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World && additionalFilteringInfo(b));
@@ -152,6 +161,12 @@ export class TBNBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - defines the list of defines to update
+     * @param nodeMaterial - defines the node material requesting the update
+     * @param mesh - defines the mesh to bind data for
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
         if (!mesh) {
             return;

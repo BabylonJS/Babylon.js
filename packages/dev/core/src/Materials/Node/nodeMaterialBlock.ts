@@ -253,7 +253,6 @@ export class NodeMaterialBlock {
     public _setInitialTarget(target: NodeMaterialBlockTargets): void {
         this._target = target;
         // marked as read only
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         (this._originalTargetIsNeutral as boolean) = target === NodeMaterialBlockTargets.Neutral;
     }
 
@@ -440,9 +439,6 @@ export class NodeMaterialBlock {
      * Connect current block with another block
      * @param other defines the block to connect with
      * @param options define the various options to help pick the right connections
-     * @param options.input
-     * @param options.output
-     * @param options.outputSwizzle
      * @returns the current block
      */
     public connectTo(
@@ -467,7 +463,6 @@ export class NodeMaterialBlock {
                 output.connectTo(input);
                 notFound = false;
             } else if (!output) {
-                // eslint-disable-next-line no-throw-literal
                 throw "Unable to find a compatible match";
             } else {
                 output = this.getSiblingOutput(output);

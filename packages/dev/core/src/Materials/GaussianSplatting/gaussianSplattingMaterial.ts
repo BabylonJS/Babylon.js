@@ -43,18 +43,31 @@ export const GaussianSplattingMaxPartCount = 256;
  * @internal
  */
 class GaussianSplattingMaterialDefines extends MaterialDefines {
+    /** Defines whether fog is enabled */
     public FOG = false;
+    /** Defines whether thin instances are used */
     public THIN_INSTANCES = true;
+    /** Defines whether logarithmic depth is enabled */
     public LOGARITHMICDEPTH = false;
+    /** Defines whether clip plane 1 is enabled */
     public CLIPPLANE = false;
+    /** Defines whether clip plane 2 is enabled */
     public CLIPPLANE2 = false;
+    /** Defines whether clip plane 3 is enabled */
     public CLIPPLANE3 = false;
+    /** Defines whether clip plane 4 is enabled */
     public CLIPPLANE4 = false;
+    /** Defines whether clip plane 5 is enabled */
     public CLIPPLANE5 = false;
+    /** Defines whether clip plane 6 is enabled */
     public CLIPPLANE6 = false;
+    /** Defines the spherical harmonics degree */
     public SH_DEGREE = 0;
+    /** Defines whether compensation is applied */
     public COMPENSATION = false;
+    /** Defines whether this is a compound splat */
     public IS_COMPOUND = false;
+    /** Defines the maximum number of parts */
     public MAX_PART_COUNT = GaussianSplattingMaxPartCount;
 
     /**

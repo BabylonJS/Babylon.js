@@ -128,6 +128,10 @@ export class LoopBlock extends NodeMaterialBlock {
         return super._dumpPropertiesCode() + `${this._codeVariableName}.iterations = ${this.iterations};\n`;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -136,6 +140,12 @@ export class LoopBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root URL
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

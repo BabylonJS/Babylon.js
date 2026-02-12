@@ -125,6 +125,11 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         }
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - optional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.uv.isConnected) {
             let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "postprocess_uv" && additionalFilteringInfo(b));
@@ -137,16 +142,27 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
         }
     }
 
+    /** {@inheritDoc} */
     public override _postBuildBlock(): void {
         this._firstInit = true;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.isMainInput = this.isMainInput;
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root url
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
         this.isMainInput = serializationObject.isMainInput;

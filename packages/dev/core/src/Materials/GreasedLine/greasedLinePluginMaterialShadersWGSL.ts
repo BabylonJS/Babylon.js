@@ -109,7 +109,6 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
         if (cameraFacing) {
             obj["!vertexOutputs\\.position\\s=\\sscene\\.viewProjection\\s\\*\\sworldPos;"] = "//"; // not needed for camera facing GRL
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return obj;
     }
 

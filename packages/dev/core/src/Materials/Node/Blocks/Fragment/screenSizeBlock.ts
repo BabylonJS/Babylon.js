@@ -63,6 +63,10 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - defines the effect to bind data to
+     */
     public override bind(effect: Effect) {
         const engine = this._scene.getEngine();
 

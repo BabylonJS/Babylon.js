@@ -122,6 +122,12 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Dumps the code for the block
+     * @param uniqueNames - the unique names
+     * @param alreadyDumped - the already dumped blocks
+     * @returns the code string
+     */
     public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
         let codeString: string = "";
         if (this.entryPoint) {
@@ -133,6 +139,11 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         return codeString + super._dumpCode(uniqueNames, alreadyDumped);
     }
 
+    /**
+     * Dumps the code for output connections
+     * @param alreadyDumped - the already dumped blocks
+     * @returns the code string
+     */
     public override _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]) {
         let codeString = super._dumpCodeForOutputConnections(alreadyDumped);
 
@@ -164,6 +175,12 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root URL
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

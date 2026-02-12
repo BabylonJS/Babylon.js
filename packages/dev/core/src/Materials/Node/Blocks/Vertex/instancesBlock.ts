@@ -91,6 +91,11 @@ export class InstancesBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.world0.connectedPoint) {
             let world0Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world0" && additionalFilteringInfo(b));
@@ -141,6 +146,14 @@ export class InstancesBlock extends NodeMaterialBlock {
         this.world.define = "!INSTANCES || THIN_INSTANCES";
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh
+     * @param useInstances - whether to use instances
+     * @param subMesh - the sub mesh
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh, useInstances: boolean = false, subMesh?: SubMesh) {
         let changed = false;
         if (defines["INSTANCES"] !== useInstances) {

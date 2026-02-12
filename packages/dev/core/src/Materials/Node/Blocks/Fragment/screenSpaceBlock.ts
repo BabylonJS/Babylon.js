@@ -73,6 +73,11 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - defines the hosting NodeMaterial
+     * @param additionalFilteringInfo - defines additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.worldViewProjection.isConnected) {
             let worldViewProjectionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.WorldViewProjection && additionalFilteringInfo(b));

@@ -123,6 +123,11 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         state._excludeVariableName("diffuseSampler");
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - defines the node material
+     * @param additionalFilteringInfo - defines additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.uv.isConnected) {
             let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "particle_uv" && additionalFilteringInfo(b));
@@ -135,11 +140,19 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - defines the list of defines
+     */
     public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue(this._linearDefineName, this.convertToGammaSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToLinearSpace, true);
     }
 
+    /**
+     * Checks if the block is ready
+     * @returns true if ready
+     */
     public override isReady() {
         if (this.texture && !this.texture.isReadyOrNotBlocking()) {
             return false;
@@ -192,6 +205,10 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -204,6 +221,12 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - defines the serialized object
+     * @param scene - defines the scene
+     * @param rootUrl - defines the root URL
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

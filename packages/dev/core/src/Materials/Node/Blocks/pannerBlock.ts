@@ -64,6 +64,11 @@ export class PannerBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.uv.isConnected) {
             if (material.mode !== NodeMaterialModes.PostProcess && material.mode !== NodeMaterialModes.ProceduralTexture) {

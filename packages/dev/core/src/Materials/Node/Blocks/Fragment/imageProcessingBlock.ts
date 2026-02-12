@@ -112,6 +112,13 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
+    /**
+     * Checks if the block is ready
+     * @param mesh - the mesh to check
+     * @param nodeMaterial - the node material
+     * @param defines - the material defines
+     * @returns true if ready
+     */
     public override isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (defines._areImageProcessingDirty && nodeMaterial.imageProcessingConfiguration) {
             if (!nodeMaterial.imageProcessingConfiguration.isReady()) {
@@ -121,12 +128,23 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         return true;
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the material defines
+     * @param nodeMaterial - the node material
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial) {
         if (defines._areImageProcessingDirty && nodeMaterial.imageProcessingConfiguration) {
             nodeMaterial.imageProcessingConfiguration.prepareDefines(defines);
         }
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
@@ -214,6 +232,10 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -222,6 +244,12 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root url
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

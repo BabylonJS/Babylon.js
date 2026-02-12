@@ -270,7 +270,6 @@ export class InputBlock extends NodeMaterialBlock {
      * Please note that this value will be ignored if valueCallback is defined
      */
     public get value(): any {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._storedValue;
     }
 
@@ -446,6 +445,9 @@ export class InputBlock extends NodeMaterialBlock {
         return `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
     }
 
+    /**
+     * Initialize the block
+     */
     public override initialize() {
         this.associatedVariableName = "";
     }
@@ -865,12 +867,19 @@ export class InputBlock extends NodeMaterialBlock {
         return super._dumpPropertiesCode();
     }
 
+    /**
+     * Releases the resources held by the block
+     */
     public override dispose() {
         this.onValueChangedObservable.clear();
 
         super.dispose();
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -900,6 +909,12 @@ export class InputBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - defines the serialized object
+     * @param scene - defines the scene
+     * @param rootUrl - defines the root URL
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this._mode = serializationObject.mode;
         super._deserialize(serializationObject, scene, rootUrl);

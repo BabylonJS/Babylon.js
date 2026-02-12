@@ -334,12 +334,19 @@ export class TextureBlock extends NodeMaterialBlock {
         return NodeMaterialBlockTargets.VertexAndFragment;
     }
 
+    /** {@inheritDoc} */
     public override get target() {
         return this._getEffectiveTarget();
     }
 
+    /** {@inheritDoc} */
     public override set target(value: NodeMaterialBlockTargets) {}
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - optional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.uv.isConnected) {
             if (material.mode === NodeMaterialModes.PostProcess) {
@@ -362,6 +369,10 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Initialize the list of defines
+     * @param defines - the material defines
+     */
     public override initializeDefines(defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
@@ -372,6 +383,10 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the material defines
+     */
     public override prepareDefines(defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
@@ -405,6 +420,10 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Checks if the block is ready
+     * @returns true if ready
+     */
     public override isReady() {
         if (this._isSourcePrePass) {
             return true;
@@ -417,6 +436,10 @@ export class TextureBlock extends NodeMaterialBlock {
         return true;
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     */
     public override bind(effect: Effect) {
         if (this._isSourcePrePass) {
             effect.setFloat(this._textureInfoName, 1);
@@ -694,10 +717,12 @@ export class TextureBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
-
-        serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
         serializationObject.fragmentOnly = this._fragmentOnly;
         serializationObject.disableLevelMultiplication = this.disableLevelMultiplication;
@@ -713,6 +738,13 @@ export class TextureBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root url
+     * @param urlRewriter - optional url rewriter
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string, urlRewriter?: (url: string) => string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

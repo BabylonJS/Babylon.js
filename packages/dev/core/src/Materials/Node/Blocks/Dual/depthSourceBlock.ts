@@ -28,6 +28,11 @@ export class DepthSourceBlock extends ImageSourceBlock {
         // Do nothing, we always use the depth texture from the scene
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial) {
         const scene = nodeMaterial.getScene();
         const renderer = scene.enableDepthRenderer();
@@ -37,6 +42,10 @@ export class DepthSourceBlock extends ImageSourceBlock {
         super.bind(effect, nodeMaterial);
     }
 
+    /**
+     * Checks if the block is ready
+     * @returns true if ready
+     */
     public override isReady() {
         return true;
     }
@@ -53,6 +62,10 @@ export class DepthSourceBlock extends ImageSourceBlock {
         return super._dumpPropertiesCode(true);
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         return super.serialize(true);
     }

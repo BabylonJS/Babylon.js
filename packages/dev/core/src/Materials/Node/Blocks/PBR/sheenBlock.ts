@@ -99,6 +99,10 @@ export class SheenBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines
+     */
     public override prepareDefines(defines: NodeMaterialDefines) {
         defines.setValue("SHEEN", true);
         defines.setValue("SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE", true, true);
@@ -209,6 +213,10 @@ export class SheenBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -218,6 +226,12 @@ export class SheenBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root URL
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

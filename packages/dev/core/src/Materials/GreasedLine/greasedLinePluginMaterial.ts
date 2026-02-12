@@ -28,34 +28,28 @@ export class MaterialGreasedLineDefines extends MaterialDefines {
     /**
      * The material has a color option specified
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_HAS_COLOR = false;
     /**
      * The material's size attenuation optiom
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_SIZE_ATTENUATION = false;
     /**
      * The type of color distribution is set to line this value equals to true.
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = false;
     /**
      * True if scene is in right handed coordinate system.
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM = false;
 
     /**
      * True if the line is in camera facing mode
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_CAMERA_FACING = true;
 
     /**
      * True if the line uses offsets
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_USE_OFFSETS = false;
 }
 

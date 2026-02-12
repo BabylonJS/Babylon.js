@@ -162,6 +162,10 @@ export class LightBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
+    /**
+     * Initialize the block
+     * @param state - the build state
+     */
     public override initialize(state: NodeMaterialBuildState) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
@@ -200,6 +204,11 @@ export class LightBlock extends NodeMaterialBlock {
         this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - optional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.cameraPosition.isConnected) {
             let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition && additionalFilteringInfo(b));
@@ -212,6 +221,12 @@ export class LightBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the material defines
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to prepare for
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
         if (!mesh || !defines._areLightsDirty) {
             return;
@@ -238,6 +253,13 @@ export class LightBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Update the uniforms and samples
+     * @param state - the build state
+     * @param nodeMaterial - the node material
+     * @param defines - the material defines
+     * @param uniformBuffers - the uniform buffers
+     */
     public override updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
         state.samplers.push("areaLightsLTC1Sampler");
         state.samplers.push("areaLightsLTC2Sampler");
@@ -260,6 +282,12 @@ export class LightBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
@@ -477,6 +505,10 @@ export class LightBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -489,6 +521,12 @@ export class LightBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the serialization object
+     * @param scene - the scene
+     * @param rootUrl - the root url
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
