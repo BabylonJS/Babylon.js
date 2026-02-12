@@ -34,7 +34,6 @@ export class EditorHost {
             selectionHighlight: false,
             readOnly: false,
             theme: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "vs-dark" : "vs-light",
-            contextmenu: false,
             folding: true,
             showFoldingControls: "always",
             fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
