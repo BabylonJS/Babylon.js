@@ -59,6 +59,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
             horizontalLocation: "left",
             verticalLocation: "top",
             suppressTeachingMoment: true,
+            keepMounted: true,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const entityCommands = useOrderedObservableCollection(entityCommandsCollection);

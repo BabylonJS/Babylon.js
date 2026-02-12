@@ -180,6 +180,12 @@ export type SidePaneDefinition = {
      * Teaching moments are more helpful for dynamically added panes, possibly from extensions.
      */
     suppressTeachingMoment?: boolean;
+
+    /**
+     * Keep the pane mounted even when it is not visible. This is useful if you don't want the
+     * user to lose the complex visual state when switching between tabs.
+     */
+    keepMounted?: boolean;
 };
 
 type RegisteredSidePane = {
@@ -1017,13 +1023,15 @@ function usePane(
                             <>
                                 <PaneHeader id={topSelectedTab.key} title={topSelectedTab.title} dockOptions={validTopDockOptions} />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
-                                {topPanes.map((pane) => (
-                                    <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== topSelectedTab.key ? classes.unselectedPane : undefined)}>
-                                        <ErrorBoundary name={pane.title}>
-                                            <pane.content />
-                                        </ErrorBoundary>
-                                    </div>
-                                ))}
+                                {topPanes
+                                    .filter((pane) => pane.key === topSelectedTab.key || pane.keepMounted)
+                                    .map((pane) => (
+                                        <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== topSelectedTab.key ? classes.unselectedPane : undefined)}>
+                                            <ErrorBoundary name={pane.title}>
+                                                <pane.content />
+                                            </ErrorBoundary>
+                                        </div>
+                                    ))}
                             </>
                         )}
                     </div>
@@ -1050,13 +1058,15 @@ function usePane(
                             <>
                                 <PaneHeader id={bottomSelectedTab.key} title={bottomSelectedTab.title} dockOptions={validBottomDockOptions} />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
-                                {bottomPanes.map((pane) => (
-                                    <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== bottomSelectedTab.key ? classes.unselectedPane : undefined)}>
-                                        <ErrorBoundary name={pane.title}>
-                                            <pane.content />
-                                        </ErrorBoundary>
-                                    </div>
-                                ))}
+                                {bottomPanes
+                                    .filter((pane) => pane.key === bottomSelectedTab.key || pane.keepMounted)
+                                    .map((pane) => (
+                                        <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== bottomSelectedTab.key ? classes.unselectedPane : undefined)}>
+                                            <ErrorBoundary name={pane.title}>
+                                                <pane.content />
+                                            </ErrorBoundary>
+                                        </div>
+                                    ))}
                             </>
                         )}
                     </div>
