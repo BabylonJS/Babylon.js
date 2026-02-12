@@ -1,21 +1,22 @@
-import type { FunctionComponent } from "react";
 import type { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
+import type { FunctionComponent } from "react";
 import type { ISelectionService } from "../../../services/selectionService";
+
 import { EditRegular, EyeRegular } from "@fluentui/react-icons";
 
 import { ParticleSystem } from "core/Particles/particleSystem";
-import { ConvertToNodeParticleSystemSetAsync } from "core/Particles/Node/nodeParticleSystemSet.helper";
 import { BlendModeOptions, ParticleBillboardModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
-import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
+import { EditParticleSystem } from "../../../misc/nodeParticleEditor";
 import { BoundProperty } from "../boundProperty";
 
 /**
@@ -76,17 +77,7 @@ export const ParticleSystemSystemProperties: FunctionComponent<{ particleSystem:
                     uniqueId="View/Edit"
                     label={isNodeGenerated ? "Edit" : "View as Node-Based Particle System"}
                     icon={isNodeGenerated ? EditRegular : EyeRegular}
-                    onClick={async () => {
-                        const scene = system.getScene();
-                        if (!scene) {
-                            return;
-                        }
-
-                        const systemSet = isNodeGenerated ? system.source : await ConvertToNodeParticleSystemSetAsync("source", [system]);
-                        if (systemSet) {
-                            await systemSet.editAsync({ nodeEditorConfig: { backgroundColor: scene.clearColor, disposeOnClose: !isNodeGenerated } });
-                        }
-                    }}
+                    onClick={async () => await EditParticleSystem(system)}
                 />
             )}
         </>

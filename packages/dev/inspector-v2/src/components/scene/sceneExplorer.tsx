@@ -187,7 +187,7 @@ type ActionCommand = {
     /**
      * The function that executes the command.
      */
-    execute(): void;
+    execute(): unknown | Promise<unknown>;
 };
 
 type ToggleCommand = {

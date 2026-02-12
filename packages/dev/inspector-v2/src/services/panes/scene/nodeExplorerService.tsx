@@ -8,6 +8,7 @@ import {
     BorderNoneRegular,
     BorderOutsideRegular,
     CameraRegular,
+    EditRegular,
     EyeOffRegular,
     EyeRegular,
     FlashlightOffRegular,
@@ -18,15 +19,17 @@ import {
     VideoRegular,
 } from "@fluentui/react-icons";
 
-import { Node } from "core/node";
 import { Camera } from "core/Cameras/camera";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Observable } from "core/Misc/observable";
+import { Node } from "core/node";
 import { MeshIcon } from "shared-ui-components/fluent/icons";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
+import { EditNodeGeometry, GetNodeGeometry } from "../../../misc/nodeGeometryEditor";
 import { GizmoServiceIdentity } from "../../gizmoService";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
@@ -325,6 +328,25 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
         const lightGizmoCommandRegistration = addGizmoCommand(Light, gizmoService.getLightGizmo.bind(gizmoService));
 
+        const editNodeGeometryCommandRegistration = sceneExplorerService.addEntityCommand({
+            predicate: (entity: unknown): entity is Mesh => entity instanceof Mesh && !!GetNodeGeometry(entity),
+            order: DefaultCommandsOrder.EditNodeGeometry,
+            getCommand: (mesh) => {
+                return {
+                    type: "action",
+                    displayName: "Edit in Node Geometry Editor",
+                    icon: () => <EditRegular />,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    execute: async () => {
+                        const nodeGeometry = GetNodeGeometry(mesh);
+                        if (nodeGeometry) {
+                            await EditNodeGeometry(nodeGeometry, mesh.getScene());
+                        }
+                    },
+                };
+            },
+        });
+
         return {
             dispose: () => {
                 sectionRegistration.dispose();
@@ -334,6 +356,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 cameraGizmoCommandRegistration.dispose();
                 lightEnabledCommandRegistration.dispose();
                 lightGizmoCommandRegistration.dispose();
+                editNodeGeometryCommandRegistration.dispose();
             },
         };
     },

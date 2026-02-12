@@ -2,12 +2,14 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { DropRegular } from "@fluentui/react-icons";
+import { DropRegular, EditRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
+import { ParticleSystem } from "core/Particles/particleSystem";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
+import { EditParticleSystem } from "../../../misc/nodeParticleEditor";
 import { SceneContextIdentity } from "../../sceneContext";
-import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
+import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
@@ -48,9 +50,24 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
             getEntityRemovedObservables: () => [scene.onParticleSystemRemovedObservable],
         });
 
+        const editParticleSystemCommandRegistration = sceneExplorerService.addEntityCommand({
+            predicate: (entity): entity is ParticleSystem => entity instanceof ParticleSystem && entity.isNodeGenerated,
+            order: DefaultCommandsOrder.EditParticleSystem,
+            getCommand: (particleSystem) => {
+                return {
+                    type: "action",
+                    displayName: "Edit in Node Particle System Editor",
+                    icon: () => <EditRegular />,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    execute: async () => await EditParticleSystem(particleSystem),
+                };
+            },
+        });
+
         return {
             dispose: () => {
                 sectionRegistration.dispose();
+                editParticleSystemCommandRegistration.dispose();
             },
         };
     },

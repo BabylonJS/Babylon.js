@@ -22,6 +22,7 @@ import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { GroupBy } from "../../../misc/arrayUtils";
 import { BoundProperty } from "../boundProperty";
+import { EditNodeMaterial } from "../../../misc/nodeMaterialEditor";
 
 const useStyles = makeStyles({
     subsection: {
@@ -35,17 +36,7 @@ export const NodeMaterialGeneralProperties: FunctionComponent<{ material: NodeMa
     return (
         <>
             <BoundProperty component={SwitchPropertyLine} label="Ignore Alpha" target={material} propertyKey="ignoreAlpha" />
-            <ButtonLine
-                label="Edit"
-                icon={EditRegular}
-                onClick={async () => {
-                    // TODO: Figure out how to get all the various build steps to work with this.
-                    //       See the initial attempt here: https://github.com/BabylonJS/Babylon.js/pull/17646
-                    // const { NodeEditor } = await import("node-editor/nodeEditor");
-                    // NodeEditor.Show({ nodeMaterial: material });
-                    await material.edit({ nodeEditorConfig: { backgroundColor: material.getScene().clearColor } });
-                }}
-            ></ButtonLine>
+            <ButtonLine label="Edit" icon={EditRegular} onClick={async () => await EditNodeMaterial(material)}></ButtonLine>
         </>
     );
 };

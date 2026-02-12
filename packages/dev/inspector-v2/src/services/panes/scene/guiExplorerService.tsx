@@ -3,7 +3,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { AppGenericRegular, BorderNoneRegular, BorderOutsideRegular, EyeOffRegular, EyeRegular, RectangleLandscapeRegular } from "@fluentui/react-icons";
+import { AppGenericRegular, BorderNoneRegular, BorderOutsideRegular, EditRegular, EyeOffRegular, EyeRegular, RectangleLandscapeRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
@@ -103,6 +103,23 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
             getEntityRemovedObservables: () => [guiEntityRemovedObservable],
         });
 
+        const editGuiCommandRegistration = sceneExplorerService.addEntityCommand({
+            predicate: (entity: unknown): entity is AdvancedDynamicTexture => IsAdvancedDynamicTexture(entity),
+            order: DefaultCommandsOrder.EditNodeMaterial,
+            getCommand: (texture) => {
+                return {
+                    type: "action",
+                    displayName: "Edit in GUI Editor",
+                    icon: () => <EditRegular />,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    execute: async () => {
+                        const { GUIEditor } = await import("gui-editor/guiEditor");
+                        await GUIEditor.Show({ liveGuiTexture: texture });
+                    },
+                };
+            },
+        });
+
         const highlightControlCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown): entity is Control => IsControl(entity),
             order: DefaultCommandsOrder.GuiHighlight,
@@ -159,6 +176,7 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
                 textureAddedObserver.remove();
                 textureRemovedObserver.remove();
                 sectionRegistration.dispose();
+                editGuiCommandRegistration.dispose();
                 highlightControlCommandRegistration.dispose();
                 controlVisibilityCommandRegistration.dispose();
             },

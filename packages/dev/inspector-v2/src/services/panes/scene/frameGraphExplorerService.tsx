@@ -2,11 +2,12 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { FrameRegular, PlayFilled, PlayRegular } from "@fluentui/react-icons";
+import { EditRegular, FrameRegular, PlayFilled, PlayRegular } from "@fluentui/react-icons";
 
 import { FrameGraph } from "core/FrameGraph/frameGraph";
 import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
+import { EditNodeRenderGraph } from "../../../misc/nodeRenderGraphEditor";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
@@ -79,10 +80,31 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
             },
         });
 
+        const editNodeRenderGraphCommandRegistration = sceneExplorerService.addEntityCommand({
+            predicate: (entity: unknown): entity is FrameGraph => entity instanceof FrameGraph && !!entity.getLinkedNodeRenderGraph(),
+            order: DefaultCommandsOrder.EditNodeRenderGraph,
+            getCommand: (frameGraph) => {
+                const renderGraph = frameGraph.getLinkedNodeRenderGraph();
+
+                return {
+                    type: "action",
+                    displayName: "Edit Graph",
+                    icon: () => <EditRegular />,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    execute: async () => {
+                        if (renderGraph) {
+                            await EditNodeRenderGraph(renderGraph);
+                        }
+                    },
+                };
+            },
+        });
+
         return {
             dispose: () => {
                 sectionRegistration.dispose();
                 activeFrameGraphCommandRegistration.dispose();
+                editNodeRenderGraphCommandRegistration.dispose();
             },
         };
     },
