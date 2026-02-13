@@ -42,6 +42,16 @@ Before submitting your PR, just check that everything goes well by [creating the
 
 You should read the [how to contribute documentation](https://doc.babylonjs.com/contribute/toBabylon/) before working on your PR.
 
+### Automated Code Simplification
+
+We have an automated [Code Simplifier workflow](docs/CODE_SIMPLIFIER.md) that runs weekly to identify and fix common code patterns that can be simplified. You can also run it locally before submitting your PR:
+
+```bash
+node scripts/code-simplifier.js --dry-run --verbose
+```
+
+This helps maintain consistent code quality across the codebase.
+
 If you intend to only update the doc, this [documentation](https://doc.babylonjs.com/contribute/contributeToDocs/) would detail the process.
 
 To validate your PR, please follow these steps:

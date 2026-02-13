@@ -46,6 +46,22 @@ class CodeSimplifier {
             }
             
             const result = [];
+            const stat = fs.statSync(dir);
+            
+            // If it's a file, check if it matches
+            if (stat.isFile()) {
+                const ext = path.extname(dir);
+                if (['.ts', '.tsx', '.js', '.jsx'].includes(ext)) {
+                    return [dir];
+                }
+                return [];
+            }
+            
+            // If it's a directory, recurse
+            if (!stat.isDirectory()) {
+                return [];
+            }
+            
             const entries = fs.readdirSync(dir, { withFileTypes: true });
             
             for (const entry of entries) {
@@ -74,10 +90,17 @@ class CodeSimplifier {
             return result;
         };
         
-        // Start from packages directory by default
-        const packagesDir = path.join(process.cwd(), 'packages');
-        if (fs.existsSync(packagesDir)) {
-            files.push(...findFilesRecursive(packagesDir, this.options.patterns));
+        // If patterns are provided as arguments, use those
+        if (this.options.patterns.length > 0) {
+            for (const pattern of this.options.patterns) {
+                files.push(...findFilesRecursive(pattern, []));
+            }
+        } else {
+            // Start from packages directory by default
+            const packagesDir = path.join(process.cwd(), 'packages');
+            if (fs.existsSync(packagesDir)) {
+                files.push(...findFilesRecursive(packagesDir, this.options.patterns));
+            }
         }
         
         return [...new Set(files)]; // Remove duplicates
@@ -99,14 +122,14 @@ class CodeSimplifier {
         // x ? false : true -> !x
         const ternaryBoolPattern1 = /(\w+)\s*\?\s*true\s*:\s*false/g;
         if (ternaryBoolPattern1.test(simplified)) {
-            simplified = simplified.replace(ternaryBoolPattern1, '$1');
+            simplified = simplified.replace(/(\w+)\s*\?\s*true\s*:\s*false/g, '$1');
             appliedPatterns.push('unnecessary-ternary-bool');
             changesMade = true;
         }
 
         const ternaryBoolPattern2 = /(\w+)\s*\?\s*false\s*:\s*true/g;
-        if (ternaryBoolPattern2.test(content)) {
-            simplified = content.replace(ternaryBoolPattern2, '!$1');
+        if (ternaryBoolPattern2.test(simplified)) {
+            simplified = simplified.replace(/(\w+)\s*\?\s*false\s*:\s*true/g, '!$1');
             appliedPatterns.push('unnecessary-ternary-bool-negated');
             changesMade = true;
         }
