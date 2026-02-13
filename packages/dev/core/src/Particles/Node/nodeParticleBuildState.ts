@@ -116,10 +116,10 @@ export class NodeParticleBuildState {
             case NodeParticleContextualSources.Direction:
                 return this.particleContext.direction;
             case NodeParticleContextualSources.DirectionScale:
-                return this.particleContext._directionScale;
+                return this.systemContext._directionScale;
             case NodeParticleContextualSources.ScaledDirection:
-                this.particleContext.direction.scaleToRef(this.particleContext._directionScale, this.particleContext._scaledDirection);
-                return this.particleContext._scaledDirection;
+                this.particleContext.direction.scaleToRef(this.systemContext._directionScale, this.systemContext._scaledDirection);
+                return this.systemContext._scaledDirection;
             case NodeParticleContextualSources.Color:
                 return this.particleContext.color;
             case NodeParticleContextualSources.InitialColor:
@@ -152,8 +152,8 @@ export class NodeParticleBuildState {
                 this.particleContext.colorStep.scaleToRef(this.systemContext._scaledUpdateSpeed, this.systemContext._scaledColorStep);
                 return this.systemContext._scaledColorStep;
             case NodeParticleContextualSources.LocalPositionUpdated:
-                this.particleContext.direction.scaleToRef(this.particleContext._directionScale, this.particleContext._scaledDirection);
-                this.particleContext._localPosition!.addInPlace(this.particleContext._scaledDirection);
+                this.particleContext.direction.scaleToRef(this.systemContext._directionScale, this.systemContext._scaledDirection);
+                this.particleContext._localPosition!.addInPlace(this.systemContext._scaledDirection);
                 Vector3.TransformCoordinatesToRef(this.particleContext._localPosition!, this.systemContext._emitterWorldMatrix, this.particleContext.position);
                 return this.particleContext.position;
         }

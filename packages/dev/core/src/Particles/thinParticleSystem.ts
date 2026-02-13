@@ -60,7 +60,6 @@ import {
     _ProcessAngularSpeedGradients,
     _ProcessColor,
     _ProcessColorGradients,
-    _ProcessDirection,
     _ProcessDragGradients,
     _ProcessGravity,
     _ProcessLimitVelocityGradients,
@@ -116,9 +115,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._startDirectionFunction = value;
 
         if (value) {
-            this._directionProcessing.process = _CreateCustomDirectionData;
+            this._directionCreation.process = _CreateCustomDirectionData;
         } else {
-            this._directionProcessing.process = _CreateDirectionData;
+            this._directionCreation.process = _CreateDirectionData;
         }
     }
 
@@ -198,6 +197,11 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     public _colorDiff = new Color4(0, 0, 0, 0);
     /** @internal */
     public _scaledGravity = Vector3.Zero();
+    /** @internal */
+    public _scaledDirection = Vector3.Zero();
+    /** @internal */
+    public _directionScale: number;
+    /** @internal */
     private _currentRenderId = -1;
     private _alive: boolean;
     private _useInstancing = false;
@@ -247,7 +251,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     protected _angularSpeedGradientProcessing: _IExecutionQueueItem;
     protected _angularSpeedProcessing: _IExecutionQueueItem;
     protected _velocityGradientProcessing: _IExecutionQueueItem;
-    protected _directionProcessing: _IExecutionQueueItem;
     protected _limitVelocityGradientProcessing: _IExecutionQueueItem;
     protected _positionProcessing: _IExecutionQueueItem;
     protected _dragGradientProcessing: _IExecutionQueueItem;
@@ -646,19 +649,12 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             };
             _ConnectAfter(this._angularSpeedProcessing, this._colorProcessing);
 
-            this._directionProcessing = {
-                process: _ProcessDirection,
-                previousItem: null,
-                nextItem: null,
-            };
-            _ConnectAfter(this._directionProcessing, this._angularSpeedProcessing);
-
             this._positionProcessing = {
                 process: _ProcessPosition,
                 previousItem: null,
                 nextItem: null,
             };
-            _ConnectAfter(this._positionProcessing, this._directionProcessing);
+            _ConnectAfter(this._positionProcessing, this._angularSpeedProcessing);
 
             this._gravityProcessing = {
                 process: _ProcessGravity,
@@ -720,7 +716,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 }
 
                 this._ratio = particle.age / particle.lifeTime;
-                particle._directionScale = this._tempScaledUpdateSpeed;
+                this._directionScale = this._tempScaledUpdateSpeed;
+                particle.direction.scaleToRef(this._directionScale, this._scaledDirection);
 
                 // Processing queue
                 let currentQueueItem = this._updateQueueStart;
@@ -1058,7 +1055,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 previousItem: null,
                 nextItem: null,
             };
-            _ConnectBefore(this._velocityGradientProcessing, this._directionProcessing);
+            _ConnectBefore(this._velocityGradientProcessing, this._angularSpeedProcessing);
         }
 
         this._addFactorGradient(this._velocityGradients, gradient, factor, factor2);
@@ -1107,7 +1104,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 previousItem: null,
                 nextItem: null,
             };
-            _ConnectAfter(this._limitVelocityGradientProcessing, this._directionProcessing);
+            _ConnectAfter(this._limitVelocityGradientProcessing, this._angularSpeedProcessing);
         }
 
         this._addFactorGradient(this._limitVelocityGradients, gradient, factor, factor2);

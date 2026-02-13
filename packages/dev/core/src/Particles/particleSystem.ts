@@ -161,7 +161,7 @@ export class ParticleSystem extends ThinParticleSystem {
                 previousItem: null,
                 nextItem: null,
             };
-            _ConnectAfter(this._flowMapUpdate, this._directionProcessing!);
+            _ConnectAfter(this._flowMapUpdate, this._angularSpeedProcessing!);
         }
     }
 
@@ -199,7 +199,7 @@ export class ParticleSystem extends ThinParticleSystem {
                 previousItem: null,
                 nextItem: null,
             };
-            _ConnectAfter(this._attractorUpdate, this._directionProcessing!);
+            _ConnectAfter(this._attractorUpdate, this._angularSpeedProcessing!);
         }
     }
 
