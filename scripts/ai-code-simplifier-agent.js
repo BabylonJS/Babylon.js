@@ -288,6 +288,8 @@ class AICodeSimplifierAgent {
 
     /**
      * Analyze function lengths in the code
+     * Note: This is a simplified heuristic. For production use with real codebases,
+     * consider using an AST parser for more accurate function detection.
      */
     analyzeFunctionLengths(content, lines) {
         const functions = [];
@@ -295,22 +297,34 @@ class AICodeSimplifierAgent {
         let braceCount = 0;
         
         lines.forEach((line, index) => {
-            // Detect function start (simplified)
-            const functionMatch = line.match(/(?:function|const|let)\s+(\w+)\s*(?:=\s*)?(?:async\s*)?\(|(\w+)\s*\([^)]*\)\s*{/);
-            if (functionMatch && !currentFunction) {
+            // Skip comments and strings (simplified check)
+            const trimmed = line.trim();
+            if (trimmed.startsWith('//') || trimmed.startsWith('*')) {
+                return;
+            }
+            
+            // Detect function start (simplified - matches common patterns)
+            // Matches: function name(...), const name = function(...), const name = async (...) =>, etc.
+            const functionMatch = line.match(/(?:function\s+(\w+)|const\s+(\w+)\s*=\s*(?:async\s+)?function|const\s+(\w+)\s*=\s*(?:async\s+)?\([^)]*\)\s*=>|(\w+)\s*\([^)]*\)\s*\{)/);
+            
+            if (functionMatch && !currentFunction && braceCount === 0) {
                 currentFunction = {
-                    name: functionMatch[1] || functionMatch[2] || 'anonymous',
+                    name: functionMatch[1] || functionMatch[2] || functionMatch[3] || functionMatch[4] || 'anonymous',
                     start: index + 1,
-                    braceCount: 0
+                    initialBraceCount: 0
                 };
+                braceCount = 0;
             }
             
             if (currentFunction) {
-                // Count braces
-                braceCount += (line.match(/{/g) || []).length;
-                braceCount -= (line.match(/}/g) || []).length;
+                // Count braces (simplified - doesn't account for strings/comments)
+                const openBraces = (line.match(/{/g) || []).length;
+                const closeBraces = (line.match(/}/g) || []).length;
                 
-                if (braceCount === 0 && line.includes('}')) {
+                braceCount += openBraces - closeBraces;
+                
+                // Function ends when we return to initial brace level
+                if (braceCount === 0 && closeBraces > 0 && index > currentFunction.start) {
                     currentFunction.end = index + 1;
                     currentFunction.length = currentFunction.end - currentFunction.start + 1;
                     functions.push(currentFunction);

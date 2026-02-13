@@ -42,15 +42,11 @@ Before submitting your PR, just check that everything goes well by [creating the
 
 You should read the [how to contribute documentation](https://doc.babylonjs.com/contribute/toBabylon/) before working on your PR.
 
-### Automated Code Simplification
+### AI Code Simplifier Agent
 
-We have an automated [Code Simplifier workflow](docs/CODE_SIMPLIFIER.md) that runs weekly to identify and fix common code patterns that can be simplified. You can also run it locally before submitting your PR:
+We have an [AI Code Simplifier Agent](docs/AI_CODE_SIMPLIFIER.md) that runs daily to analyze recent code changes and suggest intelligent simplifications. The agent goes beyond simple pattern matching to understand context and suggest meaningful improvements.
 
-```bash
-node scripts/code-simplifier.js --dry-run --verbose
-```
-
-This helps maintain consistent code quality across the codebase.
+The agent automatically reviews code daily and creates GitHub issues with suggestions. You can also run it manually to analyze your changes before submitting a PR.
 
 If you intend to only update the doc, this [documentation](https://doc.babylonjs.com/contribute/contributeToDocs/) would detail the process.
 
