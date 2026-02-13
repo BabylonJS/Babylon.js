@@ -1,7 +1,7 @@
 import type { MenuButtonProps } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
 
-import type { AbstractMesh, IMeshDataCache, Scene } from "core/index";
+import type { AbstractMesh, IMeshDataCache, Nullable, Scene } from "core/index";
 import type { IGizmoService } from "../services/gizmoService";
 
 import { Menu, MenuItemCheckbox, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
@@ -14,7 +14,7 @@ import { useKeyListener } from "shared-ui-components/fluent/hooks/keyboardHooks"
 
 export const PickingToolbar: FunctionComponent<{
     scene: Scene;
-    selectEntity: (entity: unknown) => void;
+    selectEntity: (entity: Nullable<object>) => void;
     gizmoService: IGizmoService;
     ignoreBackfaces?: boolean;
     highlightSelectedEntity?: boolean;
@@ -43,7 +43,7 @@ export const PickingToolbar: FunctionComponent<{
             sceneElement.style.cursor = "crosshair";
 
             const pointerObserver = scene.onPrePointerObservable.add(() => {
-                let pickedEntity: unknown = null;
+                let pickedEntity: Nullable<object> = null;
 
                 // Check camera gizmos.
                 if (!pickedEntity) {

@@ -25,7 +25,7 @@ export interface ISceneExplorerService extends IService<typeof SceneExplorerServ
      * Adds a new section (e.g. "Nodes", "Materials", etc.) (this includes all descendants within the scene graph).
      * @param section A description of the section to add.
      */
-    addSection<T>(section: SceneExplorerSection<T>): IDisposable;
+    addSection<T extends object>(section: SceneExplorerSection<T>): IDisposable;
 
     /**
      * Adds a new command (e.g. "Delete", "Rename", etc.) that can be executed on entities in the scene explorer.
@@ -48,7 +48,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
     produces: [SceneExplorerServiceIdentity],
     consumes: [SceneContextIdentity, ShellServiceIdentity, SelectionServiceIdentity],
     factory: (sceneContext, shellService, selectionService) => {
-        const sectionsCollection = new ObservableCollection<SceneExplorerSection<unknown>>();
+        const sectionsCollection = new ObservableCollection<SceneExplorerSection<object>>();
         const entityCommandsCollection = new ObservableCollection<SceneExplorerCommandProvider<unknown>>();
         const sectionCommandsCollection = new ObservableCollection<SceneExplorerCommandProvider<string, "contextMenu">>();
 
@@ -85,7 +85,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
         });
 
         return {
-            addSection: (section) => sectionsCollection.add(section as SceneExplorerSection<unknown>),
+            addSection: (section) => sectionsCollection.add(section as unknown as SceneExplorerSection<object>),
             addEntityCommand: (command) => entityCommandsCollection.add(command as SceneExplorerCommandProvider<unknown>),
             addSectionCommand: (command) => sectionCommandsCollection.add(command as unknown as SceneExplorerCommandProvider<string, "contextMenu">),
             dispose: () => registration.dispose(),

@@ -12,7 +12,7 @@ import { Engine } from "core/Engines/engine";
 import { ImportMeshAsync, LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { Vector3 } from "core/Maths/math.vector";
-import type { PhysicsMotionType, PhysicsShapeType } from "core/Physics/v2";
+import { PhysicsMotionType, PhysicsShapeType } from "core/Physics/v2/IPhysicsEnginePlugin";
 import { PhysicsAggregate } from "core/Physics/v2/physicsAggregate";
 import { HavokPlugin } from "core/Physics/v2/Plugins/havokPlugin";
 import { Scene } from "core/scene";

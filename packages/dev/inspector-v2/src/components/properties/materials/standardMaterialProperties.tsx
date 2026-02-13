@@ -46,7 +46,7 @@ export const StandardMaterialTexturesProperties: FunctionComponent<{ material: S
     const { material, selectionService } = props;
     const scene = material.getScene();
 
-    const selectEntity = (entity: unknown) => (selectionService.selectedEntity = entity);
+    const selectEntity = (entity: object) => (selectionService.selectedEntity = entity);
 
     return (
         <>
