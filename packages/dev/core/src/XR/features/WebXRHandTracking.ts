@@ -652,9 +652,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                         newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, props ? { mass: 0, ...props } : { mass: 0 });
                     }
                 }
-                if (options.jointMeshes?.invisible) {
-                    newInstance.isVisible = false;
-                }
+                newInstance.isVisible = false;
                 newInstance.rotationQuaternion = new Quaternion();
                 trackedMeshes.push(newInstance);
             }
