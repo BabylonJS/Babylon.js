@@ -1075,7 +1075,7 @@ export const SceneExplorer: FunctionComponent<{
     const selectEntity = useCallback(
         (selectedEntity: unknown) => {
             const entity = selectedEntity as Nullable<EntityBase>;
-            if (entity && entity.uniqueId != undefined) {
+            if (entity && GetEntityId(entity) != undefined) {
                 const parentStack = getParentStack(entity);
                 if (parentStack.length > 0) {
                     const newOpenItems = new Set<TreeItemValue>(openItems);
@@ -1204,7 +1204,7 @@ export const SceneExplorer: FunctionComponent<{
 
                             return (
                                 <EntityTreeItem
-                                    key={item.entity.uniqueId}
+                                    key={GetEntityId(item.entity)}
                                     scene={scene}
                                     entityItem={item}
                                     isSelected={selectedEntity === item.entity}

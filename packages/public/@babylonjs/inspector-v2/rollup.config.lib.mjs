@@ -1,6 +1,7 @@
 import typescript from "@rollup/plugin-typescript";
 import { dts } from "rollup-plugin-dts";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
 import alias from "@rollup/plugin-alias";
 import path from "path";
 
@@ -45,13 +46,9 @@ const jsConfig = {
         }),
         typescript({ tsconfig: "tsconfig.build.lib.json" }),
         nodeResolve({ mainFields: ["browser", "module", "main"] }),
+        commonjs(),
     ],
     onwarn(warning, warn) {
-        // Ignore warning over "this" being undefined in ES when converting gif.js from UMD to ES.
-        if (warning.code === "THIS_IS_UNDEFINED" && warning.loc && warning.loc.file && warning.loc.file.endsWith("node_modules/gif.js.optimized/dist/gif.js")) {
-            return;
-        }
-
         // Treat all other warnings as errors.
         throw new Error(warning.message);
     },

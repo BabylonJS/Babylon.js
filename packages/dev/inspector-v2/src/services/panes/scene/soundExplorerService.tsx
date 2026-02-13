@@ -1,4 +1,4 @@
-import type { Sound } from "core/index";
+import type { IDisposable, Sound, SoundTrack } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
@@ -24,18 +24,38 @@ export const SoundExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplor
         const soundAddedObservable = new Observable<Sound>();
         const soundRemovedObservable = new Observable<Sound>();
 
-        const addSoundHook = InterceptFunction(scene.mainSoundTrack, "addSound", {
-            afterCall: (sound) => soundAddedObservable.notifyObservers(sound),
-        });
+        let addSoundHook: IDisposable | undefined;
+        let removeSoundHook: IDisposable | undefined;
 
-        const removeSoundHook = InterceptFunction(scene.mainSoundTrack, "removeSound", {
-            afterCall: (sound) => soundRemovedObservable.notifyObservers(sound),
+        const hookMainSoundTrack = (mainSoundTrack: SoundTrack | undefined) => {
+            addSoundHook?.dispose();
+            addSoundHook = undefined;
+            removeSoundHook?.dispose();
+            removeSoundHook = undefined;
+
+            if (mainSoundTrack) {
+                addSoundHook = InterceptFunction(mainSoundTrack, "addSound", {
+                    afterCall: (sound) => soundAddedObservable.notifyObservers(sound),
+                });
+
+                removeSoundHook = InterceptFunction(mainSoundTrack, "removeSound", {
+                    afterCall: (sound) => soundRemovedObservable.notifyObservers(sound),
+                });
+            }
+        };
+
+        // If _mainSoundTrack is already defined, set up hooks immediately.
+        hookMainSoundTrack(scene.mainSoundTrack);
+
+        // Watch for _mainSoundTrack being set (it is lazily created by the mainSoundTrack getter in audioSceneComponent.ts).
+        const mainSoundTrackHook = InterceptProperty(scene, "_mainSoundTrack", {
+            afterSet: () => hookMainSoundTrack(scene._mainSoundTrack),
         });
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Sounds",
             order: DefaultSectionsOrder.Sounds,
-            getRootEntities: () => scene.mainSoundTrack.soundCollection,
+            getRootEntities: () => scene.mainSoundTrack?.soundCollection ?? [],
             getEntityDisplayInfo: (sound) => {
                 const onChangeObservable = new Observable<void>();
 
@@ -70,8 +90,9 @@ export const SoundExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplor
 
         return {
             dispose: () => {
-                addSoundHook.dispose();
-                removeSoundHook.dispose();
+                mainSoundTrackHook.dispose();
+                addSoundHook?.dispose();
+                removeSoundHook?.dispose();
                 soundAddedObservable.clear();
                 soundRemovedObservable.clear();
                 sectionRegistration.dispose();

@@ -12,7 +12,8 @@ import { Engine } from "core/Engines/engine";
 import { ImportMeshAsync, LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { Vector3 } from "core/Maths/math.vector";
-import { PhysicsAggregate, PhysicsMotionType, PhysicsShapeType } from "core/Physics/v2";
+import type { PhysicsMotionType, PhysicsShapeType } from "core/Physics/v2";
+import { PhysicsAggregate } from "core/Physics/v2/physicsAggregate";
 import { HavokPlugin } from "core/Physics/v2/Plugins/havokPlugin";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
@@ -28,10 +29,9 @@ import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Button } from "gui/2D/controls/button";
-import "core/Audio/audioSceneComponent";
-import "core/Audio/audioEngine";
 import { Sound } from "core/Audio/sound";
 import { ShowInspector } from "../../src/inspector";
+// import "../../src/legacy/legacy";
 
 // TODO: Get this working automatically without requiring an explicit import. Inspector v2 should dynamically import these when needed.
 //       See the initial attempt here: https://github.com/BabylonJS/Babylon.js/pull/17646
@@ -189,7 +189,10 @@ function createGui() {
     advancedTexture.addControl(button);
 }
 
-function createSound() {
+async function createSound() {
+    await import("core/Audio/audioSceneComponent");
+    await import("core/Audio/audioEngine");
+
     const sound = new Sound("Music", "https://playground.babylonjs.com/sounds/violons11.wav", scene, null, {
         loop: true,
         autoplay: false,
@@ -246,3 +249,4 @@ function createSound() {
 })();
 
 ShowInspector(scene);
+// scene.debugLayer.show();
