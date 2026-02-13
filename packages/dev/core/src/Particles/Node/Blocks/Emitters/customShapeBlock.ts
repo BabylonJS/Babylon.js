@@ -91,7 +91,7 @@ export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
                 Vector3.TransformNormalToRef(tmpVector, state.emitterWorldMatrix!, particle.direction);
             }
 
-            particle._initialDirection = particle.direction.clone();
+            particle._properties.initialDirection = particle.direction.clone();
         };
 
         system._positionCreation.process = (particle: Particle) => {

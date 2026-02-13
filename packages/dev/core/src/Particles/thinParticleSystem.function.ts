@@ -23,14 +23,14 @@ export function _CreateColorDeadData(particle: Particle, system: ThinParticleSys
 
 /** @internal */
 export function _CreateColorGradientsData(particle: Particle, system: ThinParticleSystem) {
-    particle._currentColorGradient = system._colorGradients![0];
-    particle._currentColorGradient.getColorToRef(particle.color);
-    particle._currentColor1.copyFrom(particle.color);
+    particle._properties.currentColorGradient = system._colorGradients![0];
+    particle._properties.currentColorGradient.getColorToRef(particle.color);
+    particle._properties.currentColor1.copyFrom(particle.color);
 
     if (system._colorGradients!.length > 1) {
-        system._colorGradients![1].getColorToRef(particle._currentColor2);
+        system._colorGradients![1].getColorToRef(particle._properties.currentColor2);
     } else {
-        particle._currentColor2.copyFrom(particle.color);
+        particle._properties.currentColor2.copyFrom(particle.color);
     }
 }
 
@@ -38,12 +38,12 @@ export function _CreateColorGradientsData(particle: Particle, system: ThinPartic
 export function _ProcessColorGradients(particle: Particle, system: ThinParticleSystem) {
     const colorGradients = system._colorGradients;
     GradientHelper.GetCurrentGradient(system._ratio, colorGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== particle._currentColorGradient) {
-            particle._currentColor1.copyFrom(particle._currentColor2);
-            (<ColorGradient>nextGradient).getColorToRef(particle._currentColor2);
-            particle._currentColorGradient = <ColorGradient>currentGradient;
+        if (currentGradient !== particle._properties.currentColorGradient) {
+            particle._properties.currentColor1.copyFrom(particle._properties.currentColor2);
+            (<ColorGradient>nextGradient).getColorToRef(particle._properties.currentColor2);
+            particle._properties.currentColorGradient = <ColorGradient>currentGradient;
         }
-        Color4.LerpToRef(particle._currentColor1, particle._currentColor2, scale, particle.color);
+        Color4.LerpToRef(particle._properties.currentColor1, particle._properties.currentColor2, scale, particle.color);
 
         if (particle.color.a < 0) {
             particle.color.a = 0;
@@ -66,12 +66,12 @@ export function _ProcessColor(particle: Particle, system: ThinParticleSystem) {
 /** @internal */
 export function _ProcessAngularSpeedGradients(particle: Particle, system: ThinParticleSystem) {
     GradientHelper.GetCurrentGradient(system._ratio, system._angularSpeedGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== particle._currentAngularSpeedGradient) {
-            particle._currentAngularSpeed1 = particle._currentAngularSpeed2;
-            particle._currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();
-            particle._currentAngularSpeedGradient = <FactorGradient>currentGradient;
+        if (currentGradient !== particle._properties.currentAngularSpeedGradient) {
+            particle._properties.currentAngularSpeed1 = particle._properties.currentAngularSpeed2;
+            particle._properties.currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();
+            particle._properties.currentAngularSpeedGradient = <FactorGradient>currentGradient;
         }
-        particle.angularSpeed = Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
+        particle.angularSpeed = Lerp(particle._properties.currentAngularSpeed1, particle._properties.currentAngularSpeed2, scale);
     });
 }
 
@@ -94,50 +94,50 @@ export function _CreateCustomDirectionData(particle: Particle, system: ThinParti
 
 /** @internal */
 export function _CreateVelocityGradients(particle: Particle, system: ThinParticleSystem) {
-    particle._currentVelocityGradient = system._velocityGradients![0];
-    particle._currentVelocity1 = particle._currentVelocityGradient.getFactor();
+    particle._properties.currentVelocityGradient = system._velocityGradients![0];
+    particle._properties.currentVelocity1 = particle._properties.currentVelocityGradient.getFactor();
 
     if (system._velocityGradients!.length > 1) {
-        particle._currentVelocity2 = system._velocityGradients![1].getFactor();
+        particle._properties.currentVelocity2 = system._velocityGradients![1].getFactor();
     } else {
-        particle._currentVelocity2 = particle._currentVelocity1;
+        particle._properties.currentVelocity2 = particle._properties.currentVelocity1;
     }
 }
 
 /** @internal */
 export function _CreateLimitVelocityGradients(particle: Particle, system: ThinParticleSystem) {
-    particle._currentLimitVelocityGradient = system._limitVelocityGradients![0];
-    particle._currentLimitVelocity1 = particle._currentLimitVelocityGradient.getFactor();
+    particle._properties.currentLimitVelocityGradient = system._limitVelocityGradients![0];
+    particle._properties.currentLimitVelocity1 = particle._properties.currentLimitVelocityGradient.getFactor();
 
     if (system._limitVelocityGradients!.length > 1) {
-        particle._currentLimitVelocity2 = system._limitVelocityGradients![1].getFactor();
+        particle._properties.currentLimitVelocity2 = system._limitVelocityGradients![1].getFactor();
     } else {
-        particle._currentLimitVelocity2 = particle._currentLimitVelocity1;
+        particle._properties.currentLimitVelocity2 = particle._properties.currentLimitVelocity1;
     }
 }
 
 /** @internal */
 export function _ProcessVelocityGradients(particle: Particle, system: ThinParticleSystem) {
     GradientHelper.GetCurrentGradient(system._ratio, system._velocityGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== particle._currentVelocityGradient) {
-            particle._currentVelocity1 = particle._currentVelocity2;
-            particle._currentVelocity2 = (<FactorGradient>nextGradient).getFactor();
-            particle._currentVelocityGradient = <FactorGradient>currentGradient;
+        if (currentGradient !== particle._properties.currentVelocityGradient) {
+            particle._properties.currentVelocity1 = particle._properties.currentVelocity2;
+            particle._properties.currentVelocity2 = (<FactorGradient>nextGradient).getFactor();
+            particle._properties.currentVelocityGradient = <FactorGradient>currentGradient;
         }
-        particle._directionScale *= Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
+        particle._properties.directionScale *= Lerp(particle._properties.currentVelocity1, particle._properties.currentVelocity2, scale);
     });
 }
 
 /** @internal */
 export function _ProcessLimitVelocityGradients(particle: Particle, system: ThinParticleSystem) {
     GradientHelper.GetCurrentGradient(system._ratio, system._limitVelocityGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== particle._currentLimitVelocityGradient) {
-            particle._currentLimitVelocity1 = particle._currentLimitVelocity2;
-            particle._currentLimitVelocity2 = (<FactorGradient>nextGradient).getFactor();
-            particle._currentLimitVelocityGradient = <FactorGradient>currentGradient;
+        if (currentGradient !== particle._properties.currentLimitVelocityGradient) {
+            particle._properties.currentLimitVelocity1 = particle._properties.currentLimitVelocity2;
+            particle._properties.currentLimitVelocity2 = (<FactorGradient>nextGradient).getFactor();
+            particle._properties.currentLimitVelocityGradient = <FactorGradient>currentGradient;
         }
 
-        const limitVelocity = Lerp(particle._currentLimitVelocity1, particle._currentLimitVelocity2, scale);
+        const limitVelocity = Lerp(particle._properties.currentLimitVelocity1, particle._properties.currentLimitVelocity2, scale);
         const currentVelocity = particle.direction.length();
 
         if (currentVelocity > limitVelocity) {
@@ -148,7 +148,7 @@ export function _ProcessLimitVelocityGradients(particle: Particle, system: ThinP
 
 /** @internal */
 export function _ProcessDirection(particle: Particle) {
-    particle.direction.scaleToRef(particle._directionScale, particle._scaledDirection);
+    particle.direction.scaleToRef(particle._properties.directionScale, particle._properties.scaledDirection);
 }
 
 /** Position */
@@ -165,21 +165,21 @@ export function _CreateCustomPositionData(particle: Particle, system: ThinPartic
 
 /** @internal */
 export function _CreateIsLocalData(particle: Particle, system: ThinParticleSystem) {
-    if (!particle._localPosition) {
-        particle._localPosition = particle.position.clone();
+    if (!particle._properties.localPosition) {
+        particle._properties.localPosition = particle.position.clone();
     } else {
-        particle._localPosition.copyFrom(particle.position);
+        particle._properties.localPosition.copyFrom(particle.position);
     }
-    Vector3.TransformCoordinatesToRef(particle._localPosition, system._emitterWorldMatrix, particle.position);
+    Vector3.TransformCoordinatesToRef(particle._properties.localPosition, system._emitterWorldMatrix, particle.position);
 }
 
 /** @internal */
 export function _ProcessPosition(particle: Particle, system: ThinParticleSystem) {
-    if (system.isLocal && particle._localPosition) {
-        particle._localPosition!.addInPlace(particle._scaledDirection);
-        Vector3.TransformCoordinatesToRef(particle._localPosition!, system._emitterWorldMatrix, particle.position);
+    if (system.isLocal && particle._properties.localPosition) {
+        particle._properties.localPosition!.addInPlace(particle._properties.scaledDirection);
+        Vector3.TransformCoordinatesToRef(particle._properties.localPosition!, system._emitterWorldMatrix, particle.position);
     } else {
-        particle.position.addInPlace(particle._scaledDirection);
+        particle.position.addInPlace(particle._properties.scaledDirection);
     }
 }
 
@@ -187,28 +187,28 @@ export function _ProcessPosition(particle: Particle, system: ThinParticleSystem)
 
 /** @internal */
 export function _CreateDragData(particle: Particle, system: ThinParticleSystem) {
-    particle._currentDragGradient = system._dragGradients![0];
-    particle._currentDrag1 = particle._currentDragGradient.getFactor();
+    particle._properties.currentDragGradient = system._dragGradients![0];
+    particle._properties.currentDrag1 = particle._properties.currentDragGradient.getFactor();
 
     if (system._dragGradients!.length > 1) {
-        particle._currentDrag2 = system._dragGradients![1].getFactor();
+        particle._properties.currentDrag2 = system._dragGradients![1].getFactor();
     } else {
-        particle._currentDrag2 = particle._currentDrag1;
+        particle._properties.currentDrag2 = particle._properties.currentDrag1;
     }
 }
 
 /** @internal */
 export function _ProcessDragGradients(particle: Particle, system: ThinParticleSystem) {
     GradientHelper.GetCurrentGradient(system._ratio, system._dragGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== particle._currentDragGradient) {
-            particle._currentDrag1 = particle._currentDrag2;
-            particle._currentDrag2 = (<FactorGradient>nextGradient).getFactor();
-            particle._currentDragGradient = <FactorGradient>currentGradient;
+        if (currentGradient !== particle._properties.currentDragGradient) {
+            particle._properties.currentDrag1 = particle._properties.currentDrag2;
+            particle._properties.currentDrag2 = (<FactorGradient>nextGradient).getFactor();
+            particle._properties.currentDragGradient = <FactorGradient>currentGradient;
         }
 
-        const drag = Lerp(particle._currentDrag1, particle._currentDrag2, scale);
+        const drag = Lerp(particle._properties.currentDrag1, particle._properties.currentDrag2, scale);
 
-        particle._scaledDirection.scaleInPlace(1.0 - drag);
+        particle._properties.scaledDirection.scaleInPlace(1.0 - drag);
     });
 }
 
@@ -216,12 +216,12 @@ export function _ProcessDragGradients(particle: Particle, system: ThinParticleSy
 
 /** @internal */
 export function _CreateNoiseData(particle: Particle, _system: ThinParticleSystem) {
-    if (particle._randomNoiseCoordinates1 && particle._randomNoiseCoordinates2) {
-        particle._randomNoiseCoordinates1.copyFromFloats(Math.random(), Math.random(), Math.random());
-        particle._randomNoiseCoordinates2.copyFromFloats(Math.random(), Math.random(), Math.random());
+    if (particle._properties.randomNoiseCoordinates1 && particle._properties.randomNoiseCoordinates2) {
+        particle._properties.randomNoiseCoordinates1.copyFromFloats(Math.random(), Math.random(), Math.random());
+        particle._properties.randomNoiseCoordinates2.copyFromFloats(Math.random(), Math.random(), Math.random());
     } else {
-        particle._randomNoiseCoordinates1 = new Vector3(Math.random(), Math.random(), Math.random());
-        particle._randomNoiseCoordinates2 = new Vector3(Math.random(), Math.random(), Math.random());
+        particle._properties.randomNoiseCoordinates1 = new Vector3(Math.random(), Math.random(), Math.random());
+        particle._properties.randomNoiseCoordinates2 = new Vector3(Math.random(), Math.random(), Math.random());
     }
 }
 
@@ -230,24 +230,24 @@ export function _ProcessNoise(particle: Particle, system: ThinParticleSystem) {
     const noiseTextureData = system._noiseTextureData;
     const noiseTextureSize = system._noiseTextureSize;
 
-    if (noiseTextureData && noiseTextureSize && particle._randomNoiseCoordinates1 && particle._randomNoiseCoordinates2) {
+    if (noiseTextureData && noiseTextureSize && particle._properties.randomNoiseCoordinates1 && particle._properties.randomNoiseCoordinates2) {
         const fetchedColorR = system._fetchR(
-            particle._randomNoiseCoordinates1.x,
-            particle._randomNoiseCoordinates1.y,
+            particle._properties.randomNoiseCoordinates1.x,
+            particle._properties.randomNoiseCoordinates1.y,
             noiseTextureSize.width,
             noiseTextureSize.height,
             noiseTextureData
         );
         const fetchedColorG = system._fetchR(
-            particle._randomNoiseCoordinates1.z,
-            particle._randomNoiseCoordinates2.x,
+            particle._properties.randomNoiseCoordinates1.z,
+            particle._properties.randomNoiseCoordinates2.x,
             noiseTextureSize.width,
             noiseTextureSize.height,
             noiseTextureData
         );
         const fetchedColorB = system._fetchR(
-            particle._randomNoiseCoordinates2.y,
-            particle._randomNoiseCoordinates2.z,
+            particle._properties.randomNoiseCoordinates2.y,
+            particle._properties.randomNoiseCoordinates2.z,
             noiseTextureSize.width,
             noiseTextureSize.height,
             noiseTextureData
@@ -281,14 +281,14 @@ export function _CreateSizeData(particle: Particle, system: ThinParticleSystem) 
 
 /** @internal */
 export function _CreateSizeGradientsData(particle: Particle, system: ThinParticleSystem) {
-    particle._currentSizeGradient = system._sizeGradients![0];
-    particle._currentSize1 = particle._currentSizeGradient.getFactor();
-    particle.size = particle._currentSize1;
+    particle._properties.currentSizeGradient = system._sizeGradients![0];
+    particle._properties.currentSize1 = particle._properties.currentSizeGradient.getFactor();
+    particle.size = particle._properties.currentSize1;
 
     if (system._sizeGradients!.length > 1) {
-        particle._currentSize2 = system._sizeGradients![1].getFactor();
+        particle._properties.currentSize2 = system._sizeGradients![1].getFactor();
     } else {
-        particle._currentSize2 = particle._currentSize1;
+        particle._properties.currentSize2 = particle._properties.currentSize1;
     }
 
     particle.scale.copyFromFloats(RandomRange(system.minScaleX, system.maxScaleX), RandomRange(system.minScaleY, system.maxScaleY));
@@ -312,12 +312,12 @@ export function _CreateStartSizeGradientsData(particle: Particle, system: ThinPa
 /** @internal */
 export function _ProcessSizeGradients(particle: Particle, system: ThinParticleSystem) {
     GradientHelper.GetCurrentGradient(system._ratio, system._sizeGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== particle._currentSizeGradient) {
-            particle._currentSize1 = particle._currentSize2;
-            particle._currentSize2 = (<FactorGradient>nextGradient).getFactor();
-            particle._currentSizeGradient = <FactorGradient>currentGradient;
+        if (currentGradient !== particle._properties.currentSizeGradient) {
+            particle._properties.currentSize1 = particle._properties.currentSize2;
+            particle._properties.currentSize2 = (<FactorGradient>nextGradient).getFactor();
+            particle._properties.currentSizeGradient = <FactorGradient>currentGradient;
         }
-        particle.size = Lerp(particle._currentSize1, particle._currentSize2, scale);
+        particle.size = Lerp(particle._properties.currentSize1, particle._properties.currentSize2, scale);
     });
 }
 
@@ -380,14 +380,14 @@ export function _CreateLifetimeData(particle: Particle, system: ThinParticleSyst
 /** @internal */
 export function _CreateEmitPowerData(particle: Particle, system: ThinParticleSystem) {
     if (system._emitPower === 0) {
-        if (!particle._initialDirection) {
-            particle._initialDirection = particle.direction.clone();
+        if (!particle._properties.initialDirection) {
+            particle._properties.initialDirection = particle.direction.clone();
         } else {
-            particle._initialDirection.copyFrom(particle.direction);
+            particle._properties.initialDirection.copyFrom(particle.direction);
         }
         particle.direction.set(0, 0, 0);
     } else {
-        particle._initialDirection = null;
+        particle._properties.initialDirection = null;
         particle.direction.scaleInPlace(system._emitPower);
     }
 
@@ -405,14 +405,14 @@ export function _CreateAngleData(particle: Particle, system: ThinParticleSystem)
 
 /** @internal */
 export function _CreateAngleGradientsData(particle: Particle, system: ThinParticleSystem) {
-    particle._currentAngularSpeedGradient = system._angularSpeedGradients![0];
-    particle.angularSpeed = particle._currentAngularSpeedGradient.getFactor();
-    particle._currentAngularSpeed1 = particle.angularSpeed;
+    particle._properties.currentAngularSpeedGradient = system._angularSpeedGradients![0];
+    particle.angularSpeed = particle._properties.currentAngularSpeedGradient.getFactor();
+    particle._properties.currentAngularSpeed1 = particle.angularSpeed;
 
     if (system._angularSpeedGradients!.length > 1) {
-        particle._currentAngularSpeed2 = system._angularSpeedGradients![1].getFactor();
+        particle._properties.currentAngularSpeed2 = system._angularSpeedGradients![1].getFactor();
     } else {
-        particle._currentAngularSpeed2 = particle._currentAngularSpeed1;
+        particle._properties.currentAngularSpeed2 = particle._properties.currentAngularSpeed1;
     }
     particle.angle = RandomRange(system.minInitialRotation, system.maxInitialRotation);
 }
@@ -421,7 +421,7 @@ export function _CreateAngleGradientsData(particle: Particle, system: ThinPartic
 
 /** @internal */
 export function _CreateSheetData(particle: Particle, system: ThinParticleSystem) {
-    particle._initialStartSpriteCellId = system.startSpriteCellID;
-    particle._initialEndSpriteCellId = system.endSpriteCellID;
-    particle._initialSpriteCellLoop = system.spriteCellLoop;
+    particle._properties.initialStartSpriteCellId = system.startSpriteCellID;
+    particle._properties.initialEndSpriteCellId = system.endSpriteCellID;
+    particle._properties.initialSpriteCellLoop = system.spriteCellLoop;
 }

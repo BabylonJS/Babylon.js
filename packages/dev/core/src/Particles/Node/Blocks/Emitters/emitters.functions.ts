@@ -5,9 +5,9 @@ import type { Particle } from "core/Particles/particle";
  * @param particle The particle to update
  */
 export function _CreateLocalPositionData(particle: Particle): void {
-    if (!particle._localPosition) {
-        particle._localPosition = particle.position.clone();
+    if (!particle._properties.localPosition) {
+        particle._properties.localPosition = particle.position.clone();
     } else {
-        particle._localPosition.copyFrom(particle.position);
+        particle._properties.localPosition.copyFrom(particle.position);
     }
 }
