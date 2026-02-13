@@ -120,15 +120,16 @@ class CodeSimplifier {
         // Pattern 1: Unnecessary ternary returning boolean
         // x ? true : false -> x
         // x ? false : true -> !x
-        const ternaryBoolPattern1 = /(\w+)\s*\?\s*true\s*:\s*false/g;
-        if (ternaryBoolPattern1.test(simplified)) {
+        // Note: Using replace with regex directly to avoid stateful regex issues
+        let pattern1Matches = /(\w+)\s*\?\s*true\s*:\s*false/g.test(simplified);
+        if (pattern1Matches) {
             simplified = simplified.replace(/(\w+)\s*\?\s*true\s*:\s*false/g, '$1');
             appliedPatterns.push('unnecessary-ternary-bool');
             changesMade = true;
         }
 
-        const ternaryBoolPattern2 = /(\w+)\s*\?\s*false\s*:\s*true/g;
-        if (ternaryBoolPattern2.test(simplified)) {
+        let pattern2Matches = /(\w+)\s*\?\s*false\s*:\s*true/g.test(simplified);
+        if (pattern2Matches) {
             simplified = simplified.replace(/(\w+)\s*\?\s*false\s*:\s*true/g, '!$1');
             appliedPatterns.push('unnecessary-ternary-bool-negated');
             changesMade = true;
@@ -139,30 +140,26 @@ class CodeSimplifier {
         // x === false -> !x
         // x !== false -> x
         // x !== true -> !x
-        const boolComparePattern1 = /(\w+)\s*===\s*true(?!\w)/g;
-        if (boolComparePattern1.test(simplified)) {
-            simplified = simplified.replace(boolComparePattern1, '$1');
+        if (/(\w+)\s*===\s*true(?!\w)/.test(simplified)) {
+            simplified = simplified.replace(/(\w+)\s*===\s*true(?!\w)/g, '$1');
             appliedPatterns.push('redundant-bool-compare-true');
             changesMade = true;
         }
 
-        const boolComparePattern2 = /(\w+)\s*===\s*false(?!\w)/g;
-        if (boolComparePattern2.test(simplified)) {
-            simplified = simplified.replace(boolComparePattern2, '!$1');
+        if (/(\w+)\s*===\s*false(?!\w)/.test(simplified)) {
+            simplified = simplified.replace(/(\w+)\s*===\s*false(?!\w)/g, '!$1');
             appliedPatterns.push('redundant-bool-compare-false');
             changesMade = true;
         }
 
-        const boolComparePattern3 = /(\w+)\s*!==\s*false(?!\w)/g;
-        if (boolComparePattern3.test(simplified)) {
-            simplified = simplified.replace(boolComparePattern3, '$1');
+        if (/(\w+)\s*!==\s*false(?!\w)/.test(simplified)) {
+            simplified = simplified.replace(/(\w+)\s*!==\s*false(?!\w)/g, '$1');
             appliedPatterns.push('redundant-bool-compare-not-false');
             changesMade = true;
         }
 
-        const boolComparePattern4 = /(\w+)\s*!==\s*true(?!\w)/g;
-        if (boolComparePattern4.test(simplified)) {
-            simplified = simplified.replace(boolComparePattern4, '!$1');
+        if (/(\w+)\s*!==\s*true(?!\w)/.test(simplified)) {
+            simplified = simplified.replace(/(\w+)\s*!==\s*true(?!\w)/g, '!$1');
             appliedPatterns.push('redundant-bool-compare-not-true');
             changesMade = true;
         }
