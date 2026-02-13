@@ -1,0 +1,217 @@
+name: Continuous Code Simplifier Agent
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC to review previous day's changes
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      days_back:
+        description: 'Number of days back to analyze (default: 1)'
+        required: false
+        default: '1'
+      create_pr:
+        description: 'Create PR with suggestions (true/false)'
+        required: false
+        default: 'true'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  analyze-and-simplify:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for analyzing recent changes
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Analyze recent changes
+        id: analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DAYS_BACK="${{ github.event.inputs.days_back || '1' }}"
+          
+          # Get commits from the last N days
+          SINCE_DATE=$(date -u -d "$DAYS_BACK days ago" +"%Y-%m-%d")
+          echo "Analyzing commits since: $SINCE_DATE"
+          
+          # Get list of changed files
+          git log --since="$SINCE_DATE" --name-only --pretty=format: | sort -u > /tmp/changed_files.txt
+          
+          # Filter to only source files
+          grep -E '\.(ts|tsx|js|jsx)$' /tmp/changed_files.txt | grep -v node_modules | grep -v dist | grep -v build > /tmp/source_files.txt || true
+          
+          FILE_COUNT=$(wc -l < /tmp/source_files.txt)
+          echo "Found $FILE_COUNT changed source files"
+          echo "changed_files=$FILE_COUNT" >> $GITHUB_OUTPUT
+          
+          # Save the commit info for the agent
+          git log --since="$SINCE_DATE" --pretty=format:"%H|%an|%s" > /tmp/recent_commits.txt
+          COMMIT_COUNT=$(wc -l < /tmp/recent_commits.txt)
+          echo "Found $COMMIT_COUNT commits in the last $DAYS_BACK day(s)"
+          echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+      
+      - name: Run AI Code Simplifier Agent
+        if: steps.analyze.outputs.changed_files > 0
+        id: agent
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🤖 Starting AI Code Simplifier Agent..."
+          echo ""
+          echo "This agent will analyze recent code changes and suggest simplifications."
+          echo "The agent uses AI to understand context and suggest meaningful improvements."
+          echo ""
+          
+          # Create output directory
+          mkdir -p /tmp/agent_output
+          
+          # Run the AI agent script
+          node scripts/ai-code-simplifier-agent.js \
+            --changed-files /tmp/source_files.txt \
+            --commits /tmp/recent_commits.txt \
+            --output /tmp/agent_output \
+            --github-token "$GITHUB_TOKEN" \
+            --repository "${{ github.repository }}"
+          
+          # Check if agent produced any suggestions
+          if [ -f /tmp/agent_output/suggestions.json ]; then
+            SUGGESTION_COUNT=$(jq length /tmp/agent_output/suggestions.json)
+            echo "suggestions_found=$SUGGESTION_COUNT" >> $GITHUB_OUTPUT
+            echo "Found $SUGGESTION_COUNT simplification suggestions"
+          else
+            echo "suggestions_found=0" >> $GITHUB_OUTPUT
+            echo "No suggestions generated"
+          fi
+      
+      - name: Create Issue with Suggestions
+        if: steps.agent.outputs.suggestions_found > 0
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const suggestions = JSON.parse(fs.readFileSync('/tmp/agent_output/suggestions.json', 'utf8'));
+            
+            let issueBody = `## 🤖 Daily Code Simplification Suggestions
+            
+            The AI Code Simplifier Agent has analyzed recent changes and found **${suggestions.length}** opportunities for code simplification.
+            
+            ### Analysis Period
+            - **Commits analyzed**: ${{ steps.analyze.outputs.commit_count }}
+            - **Files reviewed**: ${{ steps.analyze.outputs.changed_files }}
+            - **Date**: ${new Date().toISOString().split('T')[0]}
+            
+            ---
+            
+            `;
+            
+            suggestions.forEach((suggestion, index) => {
+              issueBody += `
+            ### ${index + 1}. ${suggestion.title}
+            
+            **File**: \`${suggestion.file}\`
+            **Lines**: ${suggestion.lines}
+            **Priority**: ${suggestion.priority}
+            
+            **Current Code**:
+            \`\`\`${suggestion.language}
+            ${suggestion.current_code}
+            \`\`\`
+            
+            **Suggested Simplification**:
+            \`\`\`${suggestion.language}
+            ${suggestion.suggested_code}
+            \`\`\`
+            
+            **Rationale**: ${suggestion.rationale}
+            
+            **Impact**: ${suggestion.impact}
+            
+            ---
+            `;
+            });
+            
+            issueBody += `
+            
+            ### Next Steps
+            
+            1. Review each suggestion carefully
+            2. Decide which simplifications to implement
+            3. Create a PR with approved changes
+            4. Close this issue once addressed
+            
+            *This issue was automatically generated by the [Code Simplifier Agent](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})*
+            `;
+            
+            const { data: issue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🤖 Code Simplification Suggestions - ${new Date().toISOString().split('T')[0]}`,
+              body: issueBody,
+              labels: ['code-quality', 'automated', 'simplification']
+            });
+            
+            console.log(`Issue created: ${issue.html_url}`);
+            
+            // Save issue URL for next step
+            fs.writeFileSync('/tmp/agent_output/issue_url.txt', issue.html_url);
+      
+      - name: Create PR with Auto-Apply (Optional)
+        if: steps.agent.outputs.suggestions_found > 0 && github.event.inputs.create_pr == 'true'
+        run: |
+          echo "🔧 Creating PR with auto-applied simplifications..."
+          
+          # Create a new branch
+          BRANCH_NAME="code-simplifier/auto-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH_NAME"
+          
+          # Apply suggestions if auto-apply script exists
+          if [ -f /tmp/agent_output/apply_changes.sh ]; then
+            bash /tmp/agent_output/apply_changes.sh
+            
+            # Commit changes
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add .
+            git commit -m "chore: apply AI-suggested code simplifications
+
+            Applied simplifications suggested by the AI Code Simplifier Agent.
+            See issue: $(cat /tmp/agent_output/issue_url.txt)
+            
+            Generated on: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+            
+            git push origin "$BRANCH_NAME"
+            
+            echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Summary
+        if: always()
+        run: |
+          echo "📊 Code Simplifier Agent Summary"
+          echo "=================================="
+          echo "Commits analyzed: ${{ steps.analyze.outputs.commit_count }}"
+          echo "Files reviewed: ${{ steps.analyze.outputs.changed_files }}"
+          echo "Suggestions found: ${{ steps.agent.outputs.suggestions_found || 0 }}"
+          echo ""
+          
+          if [ "${{ steps.agent.outputs.suggestions_found || 0 }}" -gt "0" ]; then
+            echo "✅ Suggestions created - check the issue for details"
+          else
+            echo "ℹ️ No simplifications needed - code looks good!"
+          fi
