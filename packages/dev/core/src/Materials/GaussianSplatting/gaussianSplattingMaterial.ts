@@ -683,4 +683,3 @@ export class GaussianSplattingMaterial extends PushMaterial {
 }
 
 RegisterClass("BABYLON.GaussianSplattingMaterial", GaussianSplattingMaterial);
-
