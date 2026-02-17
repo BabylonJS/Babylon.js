@@ -37,7 +37,9 @@ import {
 import { ShaderLanguage } from "../shaderLanguage";
 
 // Can be up to 256, then we'll need to change the partIndices texture format to uint16
-export const GaussianSplattingMaxPartCount = 256;
+// with Mac WebGL 2 on Apple Silicon, we can encounter lower MAX_UNIFORM_BLOCK_SIZE limits (16 KB compared to 64 KB)
+// Using 128 to be conservative and not fail to compile splat shaders.
+export const GaussianSplattingMaxPartCount = 128;
 
 /**
  * @internal

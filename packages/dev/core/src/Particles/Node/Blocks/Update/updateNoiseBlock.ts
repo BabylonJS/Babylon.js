@@ -117,31 +117,31 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
                 return;
             }
 
-            if (!particle._randomNoiseCoordinates1) {
-                particle._randomNoiseCoordinates1 = new Vector3(Math.random(), Math.random(), Math.random());
+            if (!particle._properties.randomNoiseCoordinates1) {
+                particle._properties.randomNoiseCoordinates1 = new Vector3(Math.random(), Math.random(), Math.random());
             }
 
-            if (!particle._randomNoiseCoordinates2) {
-                particle._randomNoiseCoordinates2 = new Vector3(Math.random(), Math.random(), Math.random());
+            if (!particle._properties.randomNoiseCoordinates2) {
+                particle._properties.randomNoiseCoordinates2 = new Vector3(Math.random(), Math.random(), Math.random());
             }
 
             const fetchedColorR = system._fetchR(
-                particle._randomNoiseCoordinates1.x,
-                particle._randomNoiseCoordinates1.y,
+                particle._properties.randomNoiseCoordinates1.x,
+                particle._properties.randomNoiseCoordinates1.y,
                 noiseTextureSize.width,
                 noiseTextureSize.height,
                 noiseTextureData
             );
             const fetchedColorG = system._fetchR(
-                particle._randomNoiseCoordinates1.z,
-                particle._randomNoiseCoordinates2.x,
+                particle._properties.randomNoiseCoordinates1.z,
+                particle._properties.randomNoiseCoordinates2.x,
                 noiseTextureSize.width,
                 noiseTextureSize.height,
                 noiseTextureData
             );
             const fetchedColorB = system._fetchR(
-                particle._randomNoiseCoordinates2.y,
-                particle._randomNoiseCoordinates2.z,
+                particle._properties.randomNoiseCoordinates2.y,
+                particle._properties.randomNoiseCoordinates2.z,
                 noiseTextureSize.width,
                 noiseTextureSize.height,
                 noiseTextureData

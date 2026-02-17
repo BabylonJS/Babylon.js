@@ -116,9 +116,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this._startDirectionFunction = value;
 
         if (value) {
-            this._directionProcessing.process = _CreateCustomDirectionData;
+            this._directionCreation.process = _CreateCustomDirectionData;
         } else {
-            this._directionProcessing.process = _CreateDirectionData;
+            this._directionCreation.process = _CreateDirectionData;
         }
     }
 
@@ -720,7 +720,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 }
 
                 this._ratio = particle.age / particle.lifeTime;
-                particle._directionScale = this._tempScaledUpdateSpeed;
+                particle._properties.directionScale = this._tempScaledUpdateSpeed;
 
                 // Processing queue
                 let currentQueueItem = this._updateQueueStart;
@@ -740,12 +740,12 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 if (particle.age >= particle.lifeTime) {
                     // Recycle by swapping with last particle
                     this._emitFromParticle(particle);
-                    if (particle._attachedSubEmitters) {
-                        for (const subEmitter of particle._attachedSubEmitters) {
+                    if (particle._properties.attachedSubEmitters) {
+                        for (const subEmitter of particle._properties.attachedSubEmitters) {
                             subEmitter.particleSystem.disposeOnStop = true;
                             subEmitter.particleSystem.stop();
                         }
-                        particle._attachedSubEmitters = null;
+                        particle._properties.attachedSubEmitters = null;
                     }
                     this.recycleParticle(particle);
                     if (sameParticleArray) {
@@ -1705,8 +1705,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         if (!this._isBillboardBased) {
-            if (particle._initialDirection) {
-                let initialDirection = particle._initialDirection;
+            if (particle._properties.initialDirection) {
+                let initialDirection = particle._properties.initialDirection;
                 if (this.isLocal) {
                     Vector3.TransformNormalToRef(initialDirection, this._emitterWorldMatrix, TmpVectors.Vector3[0]);
                     initialDirection = TmpVectors.Vector3[0];
