@@ -32,6 +32,7 @@ import { ParticleGradientValueBlock } from "./Blocks/particleGradientValueBlock"
 import { ParticleInputBlock } from "./Blocks/particleInputBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
 import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
+import { ParticleLerpBlock } from "./Blocks/particleLerpBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 import { ParticleVectorLengthBlock } from "./Blocks/particleVectorLengthBlock";
 import { SystemBlock } from "./Blocks/systemBlock";
@@ -249,10 +250,15 @@ function _CreateParticleColorBlockGroup(oldSystem: ParticleSystem, context: Runt
         context.colorGradientValue0Output = _CreateParticleInitialValueFromGradient(oldSystem._colorGradients);
         return context.colorGradientValue0Output;
     } else {
-        const randomColorBlock = new ParticleRandomBlock("Random color");
-        _CreateAndConnectInput("Color 1", oldSystem.color1.clone(), randomColorBlock.min);
-        _CreateAndConnectInput("Color 2", oldSystem.color2.clone(), randomColorBlock.max);
-        return randomColorBlock.output;
+        const randomStepBlock = new ParticleRandomBlock("Random color step");
+        _CreateAndConnectInput("Min", 0, randomStepBlock.min);
+        _CreateAndConnectInput("Max", 1, randomStepBlock.max);
+
+        const lerpColorBlock = new ParticleLerpBlock("Lerp color");
+        _CreateAndConnectInput("Color 1", oldSystem.color1.clone(), lerpColorBlock.left);
+        _CreateAndConnectInput("Color 2", oldSystem.color2.clone(), lerpColorBlock.right);
+        randomStepBlock.output.connectTo(lerpColorBlock.gradient);
+        return lerpColorBlock.output;
     }
 }
 
