@@ -332,9 +332,9 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         prevItemIdRef.current = itemId;
     }, [itemId, sectionCtx?.sectionId]);
 
-    // Register item and detect duplicates
+    // Register item and detect duplicates (skip nested items as children of other AccordionSectionItem should not participate in pin/hide/search
     useEffect(() => {
-        if (!accordionCtx || !itemUniqueId) {
+        if (!accordionCtx || !itemUniqueId || isNested) {
             return;
         }
         const { registeredItemIds } = accordionCtx;
@@ -348,7 +348,7 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         return () => {
             registeredItemIds.delete(itemUniqueId);
         };
-    }, [accordionCtx, itemUniqueId, itemId, itemLabel, sectionCtx?.sectionId]);
+    }, [accordionCtx, itemUniqueId, itemId, itemLabel, sectionCtx?.sectionId, isNested]);
 
     // If no context, static item, or nested, return undefined
     if (!accordionCtx || staticItem) {
