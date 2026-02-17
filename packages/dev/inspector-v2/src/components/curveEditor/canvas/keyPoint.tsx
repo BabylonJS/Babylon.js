@@ -514,7 +514,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                     if (state.activeKeyPoints && state.activeKeyPoints.length > 1) {
                         const info: MainKeyPointInfo = { x: currentXRef.current, y: currentYRef.current, curve, keyId };
                         actions.setMainKeyPoint({ curve, keyId });
-                        setTimeout(() => {
+                        queueMicrotask(() => {
                             observables.onMainKeyPointSet.notifyObservers(info);
                         });
                     } else {
@@ -542,20 +542,13 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                     if ((state.activeKeyPoints?.length ?? 0) + 1 > 1) {
                         const info: MainKeyPointInfo = { x: currentXRef.current, y: currentYRef.current, curve, keyId };
                         actions.setMainKeyPoint({ curve, keyId });
-                        setTimeout(() => {
+                        queueMicrotask(() => {
                             observables.onMainKeyPointSet.notifyObservers(info);
                         });
                     } else {
                         actions.setMainKeyPoint(null);
                     }
                 }
-            }
-
-            // Set up multi-point movement data for non-ctrl single-click that adds new selection
-            if (!evt.ctrlKey && !isSelected()) {
-                // Was just selected as single point — data is set above (mainKeyPoint = null)
-            } else if (!evt.ctrlKey && isSelected() && state.activeKeyPoints && state.activeKeyPoints.length > 1) {
-                // Already handled above for promotion case
             }
 
             observables.onActiveKeyPointChanged.notifyObservers();
@@ -638,7 +631,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 // Notify other selected key points to follow (multi-point movement)
                 const activeKeyPoints = activeKeyPointsRef.current;
                 if (activeKeyPoints && activeKeyPoints.length > 1) {
-                    setTimeout(() => {
+                    requestAnimationFrame(() => {
                         observables.onMainKeyPointMoved.notifyObservers({ x: newX, y: newY });
                     });
                 }

@@ -310,15 +310,15 @@ export const AddAnimationPanel: FunctionComponent<AddAnimationPanelProps> = ({ o
             }
         }
 
-        // Close first so AnimationList mounts, then notify
-        onClose();
-        observables.onAnimationsLoaded.notifyObservers();
-
         // Auto-select the newly created animation
         actions.setActiveAnimations([animation]);
         actions.resetAllActiveChannels();
+
+        // Close panel, then notify so listeners (e.g. AnimationList) can react
+        onClose();
+        observables.onAnimationsLoaded.notifyObservers();
         observables.onActiveAnimationChanged.notifyObservers({});
-    }, [name, currentProperty, currentType, loopMode, fps, minFrame, maxFrame, state, actions, observables, onClose]);
+    }, [name, currentProperty, currentType, loopMode, fps, minFrame, maxFrame, state.target, actions, observables, onClose]);
 
     return (
         <div className={styles.root}>
