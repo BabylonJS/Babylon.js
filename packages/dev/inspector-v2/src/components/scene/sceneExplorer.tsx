@@ -632,7 +632,7 @@ const EntityTreeItem: FunctionComponent<
         isSelected: boolean;
         select: () => void;
         isFiltering: boolean;
-        commandProviders: readonly SceneExplorerCommandProvider<unknown>[];
+        commandProviders: readonly SceneExplorerCommandProvider<object>[];
         expandAll: () => void;
         collapseAll: () => void;
         isDragging: boolean;
@@ -837,7 +837,7 @@ const EntityTreeItem: FunctionComponent<
 
 export const SceneExplorer: FunctionComponent<{
     sections: readonly SceneExplorerSection<object>[];
-    entityCommandProviders: readonly SceneExplorerCommandProvider<unknown>[];
+    entityCommandProviders: readonly SceneExplorerCommandProvider<object>[];
     sectionCommandProviders: readonly SceneExplorerCommandProvider<string, "contextMenu">[];
     scene: Scene;
     selectedEntity?: Nullable<object>;
