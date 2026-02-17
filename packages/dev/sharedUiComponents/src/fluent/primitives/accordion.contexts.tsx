@@ -332,7 +332,7 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         prevItemIdRef.current = itemId;
     }, [itemId, sectionCtx?.sectionId]);
 
-    // Register item and detect duplicates (skip nested items as children of other AccordionSectionItem should not participate in pin/hide/search
+    // Register item and detect duplicates (skip nested items, as children of other AccordionSectionItem should not participate in pin/hide/search).
     useEffect(() => {
         if (!accordionCtx || !itemUniqueId || isNested) {
             return;
