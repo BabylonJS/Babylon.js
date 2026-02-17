@@ -157,7 +157,7 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
                 const sceneExplorerCommandRegistrations = explorerExtensibility.flatMap((command) =>
                     command.entries.map((entry) =>
                         sceneExplorerService.addEntityCommand({
-                            predicate: (entity): entity is unknown => command.predicate(entity),
+                            predicate: (entity): entity is object => typeof entity === "object" && command.predicate(entity),
                             getCommand: (entity) => {
                                 return {
                                     displayName: entry.label,
