@@ -1,9 +1,10 @@
 import type { FunctionComponent } from "react";
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { Animation } from "core/Animations/animation";
 import type { CurveData } from "./curveData";
+import { useObservableState } from "../../../hooks/observableHooks";
 
 type CurveProps = {
     curve: CurveData;
@@ -19,16 +20,11 @@ type CurveProps = {
 export const Curve: FunctionComponent<CurveProps> = ({ curve, convertX, convertY }) => {
     const isQuaternion = curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION;
 
-    // Subscribe to curve data updates to re-render when keys change
-    const [, setUpdateCounter] = useState(0);
-    useEffect(() => {
-        const observer = curve.onDataUpdatedObservable.add(() => {
-            setUpdateCounter((v) => v + 1);
-        });
-        return () => {
-            curve.onDataUpdatedObservable.remove(observer);
-        };
-    }, [curve]);
+    // Derive path data, recomputing whenever the curve's key data changes
+    const pathData = useObservableState(
+        useCallback(() => curve.getPathData(convertX, convertY), [curve, convertX, convertY]),
+        curve.onDataUpdatedObservable
+    );
 
     // Path style - same as v1
     const pathStyle: React.CSSProperties = {
@@ -44,7 +40,7 @@ export const Curve: FunctionComponent<CurveProps> = ({ curve, convertX, convertY
 
     return (
         <svg style={{ cursor: "pointer", overflow: "auto" }}>
-            <path d={curve.getPathData(convertX, convertY)} style={pathStyle} />
+            <path d={pathData} style={pathStyle} />
         </svg>
     );
 };

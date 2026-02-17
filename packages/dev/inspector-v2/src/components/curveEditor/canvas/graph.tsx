@@ -3,7 +3,7 @@ import type { Animation } from "core/Animations/animation";
 import type { IAnimationKey } from "core/Animations/animationKey";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Animation as AnimationEnum } from "core/Animations/animation";
 import { Vector2 } from "core/Maths/math.vector";
 import { Vector3 } from "core/Maths/math.vector";
@@ -342,15 +342,15 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         return result;
     }, [state.activeAnimations, state.activeChannels]);
 
-    // Force re-render when any curve's key data is mutated (e.g. sibling frame sync)
-    // This ensures key point diamond positions stay in sync with their curve paths
-    const [, setCurveDataVersion] = useState(0);
+    // Re-render when any curve's key data is mutated (e.g. sibling frame sync)
+    // so key point positions stay in sync with their curve paths
+    const [, invalidateKeyPoints] = useReducer((c: number) => c + 1, 0);
     useEffect(() => {
-        const observers = curves.map((curve) => curve.onDataUpdatedObservable.add(() => setCurveDataVersion((v) => v + 1)));
+        const observers = curves.map((curve) => curve.onDataUpdatedObservable.add(invalidateKeyPoints));
         return () => {
             curves.forEach((curve, i) => curve.onDataUpdatedObservable.remove(observers[i]));
         };
-    }, [curves]);
+    }, [curves, invalidateKeyPoints]);
 
     // Calculate value range
     const valueRange = useMemo(() => {
