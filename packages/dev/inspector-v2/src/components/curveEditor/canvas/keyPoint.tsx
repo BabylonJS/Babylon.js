@@ -149,7 +149,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
         }
     }, [state.activeKeyPoints, state.mainKeyPoint, curve, keyId, isSelected, curvesMatch, observables, invertX, invertY]);
 
-    // Extract slope from a tangent vector (matches v1's _extractSlope)
+    // Extract slope from a tangent vector
     const extractSlope = useCallback(
         (vec: Vector2, storedLength: number, isIn: boolean) => {
             const keys = curve.keys;
@@ -198,7 +198,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 curve.updateOutTangentFromControlPoint(keyId, 0);
             }
         }
-        // Notify curve to re-render path (like v1 via onInterpolationModeSet → updateInterpolationMode)
+        // Notify curve to re-render path
         curve.onDataUpdatedObservable.notifyObservers();
         setForceUpdate((v) => v + 1);
     }, [keyId, tangentSelectedIndex, curve]);

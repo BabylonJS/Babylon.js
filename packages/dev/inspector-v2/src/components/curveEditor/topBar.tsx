@@ -87,17 +87,14 @@ export const TopBar: FunctionComponent = () => {
 
         const onActiveKeyPointChangedObserver = observables.onActiveKeyPointChanged.add(() => {
             const numKeys = state.activeKeyPoints?.length || 0;
-            // Count unique animation IDs among active key points (like v1)
             const numAnims = state.activeKeyPoints ? new Set(state.activeKeyPoints.map((kp) => kp.curve.animation.uniqueId)).size : 0;
-
-            // Check for quaternion animations (like v1's hasActiveQuaternionAnimationKeyPoints)
             const hasActiveQuaternion = state.activeKeyPoints?.some((kp) => kp.curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION) ?? false;
 
             const frameEnabled = ((numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1)) && !hasActiveQuaternion;
             setFrameControlEnabled(frameEnabled);
             setValueControlEnabled(numKeys > 0 && !hasActiveQuaternion);
 
-            // Reset values when no keys are selected (like v1 which always resets then gets re-populated by onFrameSet/onValueSet)
+            // Reset values when no keys are selected
             if (numKeys === 0) {
                 setKeyFrameValue(null);
                 setKeyValue(null);

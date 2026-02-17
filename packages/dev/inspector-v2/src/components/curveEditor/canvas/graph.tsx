@@ -80,6 +80,141 @@ type GraphProps = {
 };
 
 /**
+ * Evaluates active animations and produces CurveData instances with extracted key values.
+ * @param activeAnimations - The currently active animations to evaluate
+ * @param activeChannels - The currently active channels to determine which curves to show for multi-channel animations
+ * @returns An array of CurveData instances representing the curves to display in the graph
+ */
+function EvaluateKeys(activeAnimations: Animation[], activeChannels: Record<number, string>): CurveData[] {
+    const result: CurveData[] = [];
+
+    // Helper to set default tangents across all curves
+    const setDefaultInTangent = (keyId: number) => {
+        for (const curve of result) {
+            curve.storeDefaultInTangent(keyId);
+        }
+    };
+    const setDefaultOutTangent = (keyId: number) => {
+        for (const curve of result) {
+            curve.storeDefaultOutTangent(keyId);
+        }
+    };
+
+    for (const animation of activeAnimations) {
+        const keys = animation.getKeys();
+        if (keys.length === 0) {
+            continue;
+        }
+
+        const channelColor = activeChannels[animation.uniqueId];
+        const curvesToAdd: CurveData[] = [];
+
+        // Create curves based on data type
+        switch (animation.dataType) {
+            case AnimationEnum.ANIMATIONTYPE_FLOAT:
+                curvesToAdd.push(new CurveData(channelColor || DefaultCurveColor, animation));
+                break;
+            case AnimationEnum.ANIMATIONTYPE_VECTOR2:
+                if (!channelColor || channelColor === ChannelColors.X) {
+                    curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => Vector2.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                if (!channelColor || channelColor === ChannelColors.Y) {
+                    curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => Vector2.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                break;
+            case AnimationEnum.ANIMATIONTYPE_VECTOR3:
+                if (!channelColor || channelColor === ChannelColors.X) {
+                    curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                if (!channelColor || channelColor === ChannelColors.Y) {
+                    curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                if (!channelColor || channelColor === ChannelColors.Z) {
+                    curvesToAdd.push(new CurveData(ChannelColors.Z, animation, "z", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                break;
+            case AnimationEnum.ANIMATIONTYPE_COLOR3:
+                if (!channelColor || channelColor === ColorChannelColors.R) {
+                    curvesToAdd.push(new CurveData(ColorChannelColors.R, animation, "r", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                if (!channelColor || channelColor === ColorChannelColors.G) {
+                    curvesToAdd.push(new CurveData(ColorChannelColors.G, animation, "g", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                if (!channelColor || channelColor === ColorChannelColors.B) {
+                    curvesToAdd.push(new CurveData(ColorChannelColors.B, animation, "b", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                break;
+            case AnimationEnum.ANIMATIONTYPE_COLOR4:
+                if (!channelColor || channelColor === ColorChannelColors.R) {
+                    curvesToAdd.push(new CurveData(ColorChannelColors.R, animation, "r", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                if (!channelColor || channelColor === ColorChannelColors.G) {
+                    curvesToAdd.push(new CurveData(ColorChannelColors.G, animation, "g", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                if (!channelColor || channelColor === ColorChannelColors.B) {
+                    curvesToAdd.push(new CurveData(ColorChannelColors.B, animation, "b", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                if (!channelColor || channelColor === ColorChannelColors.A) {
+                    curvesToAdd.push(new CurveData(ColorChannelColors.A, animation, "a", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                break;
+            case AnimationEnum.ANIMATIONTYPE_QUATERNION:
+                if (!channelColor || channelColor === ChannelColors.X) {
+                    curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                if (!channelColor || channelColor === ChannelColors.Y) {
+                    curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                if (!channelColor || channelColor === ChannelColors.Z) {
+                    curvesToAdd.push(new CurveData(ChannelColors.Z, animation, "z", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                if (!channelColor || channelColor === ChannelColors.W) {
+                    curvesToAdd.push(new CurveData(ChannelColors.W, animation, "w", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
+                }
+                break;
+        }
+
+        ExtractValuesFromKeys(keys, curvesToAdd);
+
+        // Wire up siblings so frame changes sync across all curves for the same animation
+        for (const curve of curvesToAdd) {
+            curve.siblings = curvesToAdd;
+        }
+
+        result.push(...curvesToAdd);
+    }
+
+    return result;
+}
+
+/**
+ * Extracts key values, tangents, and interpolation data from animation keys into CurveData instances.
+ * @param keys - The animation keys to extract data from
+ * @param curves - CurveData to push changes to
+ */
+function ExtractValuesFromKeys(keys: IAnimationKey[], curves: CurveData[]): void {
+    for (const key of keys) {
+        const lockedTangent = key.lockedTangent ?? true;
+
+        for (const curve of curves) {
+            const prop = curve.property;
+            const value = prop ? (key.value as Record<string, number>)[prop] : (key.value as number);
+            const inTangent = prop ? key.inTangent?.[prop] : (key.inTangent as number | undefined);
+            const outTangent = prop ? key.outTangent?.[prop] : (key.outTangent as number | undefined);
+
+            curve.keys.push({
+                frame: key.frame,
+                value,
+                inTangent,
+                outTangent,
+                lockedTangent,
+                interpolation: key.interpolation,
+            });
+        }
+    }
+}
+
+/**
  * Main graph area for displaying and editing animation curves
  * @returns The graph component
  */
@@ -190,13 +325,12 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             }
 
             // Delete keys from each animation (in reverse order to maintain indices)
-            // Like v1: skip first (index 0) and last keys to preserve animation boundaries
             for (const [animation, keyIndices] of keysByAnimation) {
                 const keys = animation.getKeys();
                 const sortedIndices = Array.from(keyIndices).sort((a, b) => b - a); // Sort descending
                 for (const index of sortedIndices) {
                     if (index === 0 || index === keys.length - 1) {
-                        continue; // Cannot delete first or last key (like v1)
+                        continue; // Cannot delete first or last key
                     }
                     if (index >= 0 && index < keys.length) {
                         keys.splice(index, 1);
@@ -212,7 +346,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         });
 
         // Note: Tangent operations (flatten, linear, break, unify, step) are handled by KeyPointComponent
-        // Each selected keypoint subscribes to the observables and handles its own tangent updates (like v1)
+        // Each selected keypoint subscribes to the observables and handles its own tangent updates
 
         return () => {
             observables.onCreateOrUpdateKeyPointRequired.remove(onCreateOrUpdateKeyPointRequired);
@@ -221,126 +355,7 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         };
     }, [observables, state.activeAnimations, state.activeFrame, state.activeKeyPoints, actions]);
 
-    const curves = useMemo((): CurveData[] => {
-        const result: CurveData[] = [];
-
-        // Helper to set default tangents across all curves (like v1)
-        const setDefaultInTangent = (keyId: number) => {
-            for (const curve of result) {
-                curve.storeDefaultInTangent(keyId);
-            }
-        };
-        const setDefaultOutTangent = (keyId: number) => {
-            for (const curve of result) {
-                curve.storeDefaultOutTangent(keyId);
-            }
-        };
-
-        for (const animation of state.activeAnimations) {
-            const keys = animation.getKeys();
-            if (keys.length === 0) {
-                continue;
-            }
-
-            const channelColor = state.activeChannels[animation.uniqueId];
-            const curvesToAdd: CurveData[] = [];
-
-            // Create curves based on data type (like v1's _evaluateKeys)
-            switch (animation.dataType) {
-                case AnimationEnum.ANIMATIONTYPE_FLOAT:
-                    curvesToAdd.push(new CurveData(channelColor || DefaultCurveColor, animation));
-                    break;
-                case AnimationEnum.ANIMATIONTYPE_VECTOR2:
-                    if (!channelColor || channelColor === ChannelColors.X) {
-                        curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => Vector2.Zero(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    if (!channelColor || channelColor === ChannelColors.Y) {
-                        curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => Vector2.Zero(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    break;
-                case AnimationEnum.ANIMATIONTYPE_VECTOR3:
-                    if (!channelColor || channelColor === ChannelColors.X) {
-                        curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    if (!channelColor || channelColor === ChannelColors.Y) {
-                        curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    if (!channelColor || channelColor === ChannelColors.Z) {
-                        curvesToAdd.push(new CurveData(ChannelColors.Z, animation, "z", () => Vector3.Zero(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    break;
-                case AnimationEnum.ANIMATIONTYPE_COLOR3:
-                    if (!channelColor || channelColor === ColorChannelColors.R) {
-                        curvesToAdd.push(new CurveData(ColorChannelColors.R, animation, "r", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    if (!channelColor || channelColor === ColorChannelColors.G) {
-                        curvesToAdd.push(new CurveData(ColorChannelColors.G, animation, "g", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    if (!channelColor || channelColor === ColorChannelColors.B) {
-                        curvesToAdd.push(new CurveData(ColorChannelColors.B, animation, "b", () => Color3.Black(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    break;
-                case AnimationEnum.ANIMATIONTYPE_COLOR4:
-                    if (!channelColor || channelColor === ColorChannelColors.R) {
-                        curvesToAdd.push(new CurveData(ColorChannelColors.R, animation, "r", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    if (!channelColor || channelColor === ColorChannelColors.G) {
-                        curvesToAdd.push(new CurveData(ColorChannelColors.G, animation, "g", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    if (!channelColor || channelColor === ColorChannelColors.B) {
-                        curvesToAdd.push(new CurveData(ColorChannelColors.B, animation, "b", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    if (!channelColor || channelColor === ColorChannelColors.A) {
-                        curvesToAdd.push(new CurveData(ColorChannelColors.A, animation, "a", () => new Color4(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    break;
-                case AnimationEnum.ANIMATIONTYPE_QUATERNION:
-                    if (!channelColor || channelColor === ChannelColors.X) {
-                        curvesToAdd.push(new CurveData(ChannelColors.X, animation, "x", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    if (!channelColor || channelColor === ChannelColors.Y) {
-                        curvesToAdd.push(new CurveData(ChannelColors.Y, animation, "y", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    if (!channelColor || channelColor === ChannelColors.Z) {
-                        curvesToAdd.push(new CurveData(ChannelColors.Z, animation, "z", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    if (!channelColor || channelColor === ChannelColors.W) {
-                        curvesToAdd.push(new CurveData(ChannelColors.W, animation, "w", () => new Quaternion(), setDefaultInTangent, setDefaultOutTangent));
-                    }
-                    break;
-            }
-
-            // Populate keys for each curve (like v1's _extractValuesFromKeys)
-            for (const key of keys) {
-                const lockedTangent = key.lockedTangent ?? true;
-
-                for (const curve of curvesToAdd) {
-                    const prop = curve.property;
-                    const value = prop ? (key.value as Record<string, number>)[prop] : (key.value as number);
-                    const inTangent = prop ? key.inTangent?.[prop] : (key.inTangent as number | undefined);
-                    const outTangent = prop ? key.outTangent?.[prop] : (key.outTangent as number | undefined);
-
-                    curve.keys.push({
-                        frame: key.frame,
-                        value,
-                        inTangent,
-                        outTangent,
-                        lockedTangent,
-                        interpolation: key.interpolation,
-                    });
-                }
-            }
-
-            // Wire up siblings so frame changes sync across all curves for the same animation
-            for (const curve of curvesToAdd) {
-                curve.siblings = curvesToAdd;
-            }
-
-            result.push(...curvesToAdd);
-        }
-
-        return result;
-    }, [state.activeAnimations, state.activeChannels]);
+    const curves = useMemo(() => EvaluateKeys(state.activeAnimations, state.activeChannels), [state.activeAnimations, state.activeChannels]);
 
     // Re-render when any curve's key data is mutated (e.g. sibling frame sync)
     // so key point positions stay in sync with their curve paths
