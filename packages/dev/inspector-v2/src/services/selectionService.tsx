@@ -72,7 +72,7 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
 
                 if (item) {
                     const disposable = item as Partial<IDisposable>;
-                    if (disposable.dispose) {
+                    if (typeof disposable.dispose === "function") {
                         disposedHook = InterceptFunction(disposable, "dispose", { afterCall: () => setSelectedItem(null) });
                     }
                 }
