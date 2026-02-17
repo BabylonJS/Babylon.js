@@ -10,7 +10,7 @@ import type { Nullable } from "core/types";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CurveData } from "./curveData";
-import type { KeyPoint } from "../curveEditorContext";
+import type { KeyPoint, MainKeyPointInfo, MainKeyPointPosition } from "../curveEditorContext";
 import { useCurveEditor } from "../curveEditorContext";
 
 // Inline SVG data URIs for key point icons
@@ -410,22 +410,18 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
 
     // When a main key point is set (multi-selection), store offset from it
     useEffect(() => {
-        const observer = observables.onMainKeyPointSet.add(() => {
-            // Check if WE are the main key point by comparing stored identity
-            const mainKp = (observables as any)._mainKeyPointCurve;
-            const mainKeyId = (observables as any)._mainKeyPointKeyId;
-            if (mainKp === curve && mainKeyId === keyId) {
+        const observer = observables.onMainKeyPointSet.add((info: MainKeyPointInfo) => {
+            // Check if WE are the main key point
+            if (info.curve === curve && info.keyId === keyId) {
                 isMainKeyPoint.current = true;
                 return;
             }
             isMainKeyPoint.current = false;
 
             // Store offset from the main key point position
-            const mainX = (observables as any)._mainKeyPointX ?? 0;
-            const mainY = (observables as any)._mainKeyPointY ?? 0;
             offsetToMain.current = {
-                x: currentXRef.current - mainX,
-                y: currentYRef.current - mainY,
+                x: currentXRef.current - info.x,
+                y: currentYRef.current - info.y,
             };
         });
 
@@ -436,7 +432,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
 
     // When the main key point moves, follow it with offset
     useEffect(() => {
-        const observer = observables.onMainKeyPointMoved.add(() => {
+        const observer = observables.onMainKeyPointMoved.add((pos: MainKeyPointPosition) => {
             // Skip if we ARE the main key point
             if (isMainKeyPoint.current) {
                 return;
@@ -446,12 +442,9 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 return;
             }
 
-            const mainX = (observables as any)._mainKeyPointX ?? 0;
-            const mainY = (observables as any)._mainKeyPointY ?? 0;
-
             // Move frame for selected + siblings (but not first key)
             if (keyId !== 0) {
-                const newX = mainX + offsetToMain.current.x;
+                const newX = pos.x + offsetToMain.current.x;
                 currentXRef.current = newX;
                 setCurrentX(newX);
                 onFrameValueChanged(invertX(newX));
@@ -459,7 +452,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
 
             // Move value only for directly selected points
             if (selectedState === SelectionState.Selected) {
-                const newY = mainY + offsetToMain.current.y;
+                const newY = pos.y + offsetToMain.current.y;
                 currentYRef.current = newY;
                 setCurrentY(newY);
                 onKeyValueChanged(invertY(newY));
@@ -519,14 +512,10 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                     // If >1 selected, promote this to mainKeyPoint (DON'T clear others — v1 behavior)
                     // If only 1, mainKeyPoint = null
                     if (state.activeKeyPoints && state.activeKeyPoints.length > 1) {
-                        // Store position and identity for multi-point coordination
-                        (observables as any)._mainKeyPointX = currentXRef.current;
-                        (observables as any)._mainKeyPointY = currentYRef.current;
-                        (observables as any)._mainKeyPointCurve = curve;
-                        (observables as any)._mainKeyPointKeyId = keyId;
+                        const info: MainKeyPointInfo = { x: currentXRef.current, y: currentYRef.current, curve, keyId };
                         actions.setMainKeyPoint({ curve, keyId });
                         setTimeout(() => {
-                            observables.onMainKeyPointSet.notifyObservers();
+                            observables.onMainKeyPointSet.notifyObservers(info);
                         });
                     } else {
                         actions.setMainKeyPoint(null);
@@ -551,13 +540,10 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                     });
                     // Multi selection is now engaged
                     if ((state.activeKeyPoints?.length ?? 0) + 1 > 1) {
-                        (observables as any)._mainKeyPointX = currentXRef.current;
-                        (observables as any)._mainKeyPointY = currentYRef.current;
-                        (observables as any)._mainKeyPointCurve = curve;
-                        (observables as any)._mainKeyPointKeyId = keyId;
+                        const info: MainKeyPointInfo = { x: currentXRef.current, y: currentYRef.current, curve, keyId };
                         actions.setMainKeyPoint({ curve, keyId });
                         setTimeout(() => {
-                            observables.onMainKeyPointSet.notifyObservers();
+                            observables.onMainKeyPointSet.notifyObservers(info);
                         });
                     } else {
                         actions.setMainKeyPoint(null);
@@ -652,10 +638,8 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 // Notify other selected key points to follow (multi-point movement)
                 const activeKeyPoints = activeKeyPointsRef.current;
                 if (activeKeyPoints && activeKeyPoints.length > 1) {
-                    (observables as any)._mainKeyPointX = newX;
-                    (observables as any)._mainKeyPointY = newY;
                     setTimeout(() => {
-                        observables.onMainKeyPointMoved.notifyObservers();
+                        observables.onMainKeyPointMoved.notifyObservers({ x: newX, y: newY });
                     });
                 }
             } else {

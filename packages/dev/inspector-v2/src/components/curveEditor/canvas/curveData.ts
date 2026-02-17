@@ -22,7 +22,6 @@ export class CurveData {
     public tangentBuilder?: () => any;
     public setDefaultInTangent?: (keyId: number) => any;
     public setDefaultOutTangent?: (keyId: number) => any;
-    /** Sibling curves (same animation, different property) for frame sync */
     public siblings: CurveData[] = [];
 
     public static readonly TangentLength = 50;

@@ -355,7 +355,16 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
         };
     }, [observables, state.activeAnimations, state.activeFrame, state.activeKeyPoints, actions]);
 
-    const curves = useMemo(() => EvaluateKeys(state.activeAnimations, state.activeChannels), [state.activeAnimations, state.activeChannels]);
+    // Invalidation counter — incremented when keys are added/deleted so curves recompute
+    const [curveVersion, invalidateCurves] = useReducer((c: number) => c + 1, 0);
+    useEffect(() => {
+        const observer = observables.onActiveAnimationChanged.add(() => invalidateCurves());
+        return () => {
+            observables.onActiveAnimationChanged.remove(observer);
+        };
+    }, [observables]);
+
+    const curves = useMemo(() => EvaluateKeys(state.activeAnimations, state.activeChannels), [state.activeAnimations, state.activeChannels, curveVersion]);
 
     // Re-render when any curve's key data is mutated (e.g. sibling frame sync)
     // so key point positions stay in sync with their curve paths
