@@ -119,6 +119,9 @@ export const BottomBar: FunctionComponent = () => {
     const effectiveClipLength = state.clipLength > 0 ? state.clipLength : state.referenceMaxFrame;
     const [clipLength, setClipLength] = useState(effectiveClipLength);
 
+    // Track whether the clip length input is focused to avoid syncing mid-typing
+    const clipLengthFocused = useRef(false);
+
     // Keep a ref to current toKey for use in observers
     const toKeyRef = useRef(state.toKey);
     toKeyRef.current = state.toKey;
@@ -141,10 +144,12 @@ export const BottomBar: FunctionComponent = () => {
         }
     }, [state.activeFrame, state.isPlaying]);
 
-    // Sync clip length with state
+    // Sync clip length with state (but not while the user is typing)
     useEffect(() => {
-        const newClipLength = state.clipLength > 0 ? state.clipLength : state.referenceMaxFrame;
-        setClipLength(newClipLength);
+        if (!clipLengthFocused.current) {
+            const newClipLength = state.clipLength > 0 ? state.clipLength : state.referenceMaxFrame;
+            setClipLength(newClipLength);
+        }
     }, [state.clipLength, state.referenceMaxFrame]);
 
     // Subscribe to clip length change observables
@@ -153,22 +158,66 @@ export const BottomBar: FunctionComponent = () => {
             setClipLength(newLength);
             actions.setClipLength(newLength);
             actions.setReferenceMaxFrame(newLength);
+
+            // Move playhead to new clip end (like v1)
+            observables.onMoveToFrameRequired.notifyObservers(newLength);
+
+            // Create a key at the boundary if one doesn't exist (like v1's getKeyAtAnyFrameIndex check)
+            let keyExists = false;
+            for (const animation of state.activeAnimations) {
+                const keys = animation.getKeys();
+                for (const key of keys) {
+                    if (Math.floor(newLength - key.frame) === 0) {
+                        keyExists = true;
+                        break;
+                    }
+                }
+                if (keyExists) {
+                    break;
+                }
+            }
+            if (!keyExists) {
+                observables.onCreateOrUpdateKeyPointRequired.notifyObservers();
+            }
         });
         const onClipLengthDecreased = observables.onClipLengthDecreased.add((newLength) => {
             setClipLength(newLength);
             actions.setClipLength(newLength);
             actions.setReferenceMaxFrame(newLength);
-            // Clamp toKey to new clip length
+
+            // Move playhead to new clip end (like v1)
+            observables.onMoveToFrameRequired.notifyObservers(newLength);
+
+            // Create a key at the boundary if one doesn't exist (like v1)
+            let keyExists = false;
+            for (const animation of state.activeAnimations) {
+                const keys = animation.getKeys();
+                for (const key of keys) {
+                    if (Math.floor(newLength - key.frame) === 0) {
+                        keyExists = true;
+                        break;
+                    }
+                }
+                if (keyExists) {
+                    break;
+                }
+            }
+            if (!keyExists) {
+                observables.onCreateOrUpdateKeyPointRequired.notifyObservers();
+            }
+
+            // Clamp toKey to new clip length (like v1)
             if (toKeyRef.current > newLength) {
                 actions.setToKey(newLength);
             }
+            observables.onRangeUpdated.notifyObservers();
         });
 
         return () => {
             observables.onClipLengthIncreased.remove(onClipLengthIncreased);
             observables.onClipLengthDecreased.remove(onClipLengthDecreased);
         };
-    }, [observables, actions]);
+    }, [observables, actions, state.activeAnimations]);
 
     const handlePlayForward = useCallback(() => {
         actions.play(true);
@@ -260,7 +309,19 @@ export const BottomBar: FunctionComponent = () => {
 
             <div className={styles.clipLengthSection}>
                 <div className={styles.frameLabel}>Clip Length:</div>
-                <SpinButton className={styles.spinButton} value={clipLength} onChange={handleClipLengthChange} min={1} disabled={!hasActiveAnimations} />
+                <div
+                    onFocusCapture={() => {
+                        clipLengthFocused.current = true;
+                    }}
+                    onBlurCapture={() => {
+                        clipLengthFocused.current = false;
+                        // Sync the final value on blur
+                        const newClipLength = state.clipLength > 0 ? state.clipLength : state.referenceMaxFrame;
+                        setClipLength(newClipLength);
+                    }}
+                >
+                    <SpinButton className={styles.spinButton} value={clipLength} onChange={handleClipLengthChange} min={1} disabled={!hasActiveAnimations} />
+                </div>
             </div>
         </div>
     );

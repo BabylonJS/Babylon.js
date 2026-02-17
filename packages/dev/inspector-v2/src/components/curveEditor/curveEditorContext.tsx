@@ -106,6 +106,8 @@ export type CurveEditorActions = {
     setFocusedInput: Dispatch<SetStateAction<boolean>>;
     /** Set active key points */
     setActiveKeyPoints: Dispatch<SetStateAction<Nullable<KeyPoint[]>>>;
+    /** Set main key point */
+    setMainKeyPoint: Dispatch<SetStateAction<Nullable<KeyPoint>>>;
     /** Set active channels */
     setActiveChannels: Dispatch<SetStateAction<{ [key: number]: string }>>;
     /** Play animation */
@@ -254,8 +256,7 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
     const [activeAnimations, setActiveAnimations] = useState<Animation[]>([]);
     const [activeChannels, setActiveChannels] = useState<{ [key: number]: string }>({});
     const [activeKeyPoints, setActiveKeyPoints] = useState<Nullable<KeyPoint[]>>(null);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [mainKeyPoint, _setMainKeyPoint] = useState<Nullable<KeyPoint>>(null);
+    const [mainKeyPoint, setMainKeyPoint] = useState<Nullable<KeyPoint>>(null);
     const [activeFrame, setActiveFrame] = useState(0);
     const [fromKey, setFromKey] = useState(0);
     const [toKey, setToKey] = useState(100);
@@ -554,6 +555,7 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
             setReferenceMaxFrame,
             setFocusedInput,
             setActiveKeyPoints,
+            setMainKeyPoint,
             setActiveChannels,
             play,
             stop,

@@ -124,6 +124,10 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
         if (isSelected()) {
             // This keypoint is directly selected
             setSelectedState(SelectionState.Selected);
+
+            // Notify frame/value observers so the top bar displays correct values (like v1's _onActiveKeyPointChanged)
+            observables.onFrameSet.notifyObservers(invertX(currentXRef.current));
+            observables.onValueSet.notifyObservers(invertY(currentYRef.current));
         } else if (state.activeKeyPoints) {
             // Check if a sibling (same keyId, different curve, same animation) is selected
             let isSibling = false;
@@ -143,7 +147,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             setSelectedState(SelectionState.None);
             setTangentSelectedIndex(-1);
         }
-    }, [state.activeKeyPoints, state.mainKeyPoint, curve, keyId, isSelected, curvesMatch]);
+    }, [state.activeKeyPoints, state.mainKeyPoint, curve, keyId, isSelected, curvesMatch, observables, invertX, invertY]);
 
     // Extract slope from a tangent vector (matches v1's _extractSlope)
     const extractSlope = useCallback(
@@ -164,12 +168,15 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             currentPosition.normalize();
             currentPosition.scaleInPlace(storedLength);
 
-            const value = isIn ? keyValue - invertY(currentPosition.y + currentY) : invertY(currentPosition.y + currentY) - keyValue;
-            const frame = isIn ? keyFrame - invertX(currentPosition.x + currentX) : invertX(currentPosition.x + currentX) - keyFrame;
+            // Use refs for current position to avoid stale closure during drag
+            const cx = currentXRef.current;
+            const cy = currentYRef.current;
+            const value = isIn ? keyValue - invertY(currentPosition.y + cy) : invertY(currentPosition.y + cy) - keyValue;
+            const frame = isIn ? keyFrame - invertX(currentPosition.x + cx) : invertX(currentPosition.x + cx) - keyFrame;
 
             return value / frame;
         },
-        [curve, keyId, invertX, invertY, currentX, currentY]
+        [curve, keyId, invertX, invertY]
     );
 
     // Tangent operations
@@ -191,6 +198,8 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 curve.updateOutTangentFromControlPoint(keyId, 0);
             }
         }
+        // Notify curve to re-render path (like v1 via onInterpolationModeSet → updateInterpolationMode)
+        curve.onDataUpdatedObservable.notifyObservers();
         setForceUpdate((v) => v + 1);
     }, [keyId, tangentSelectedIndex, curve]);
 
@@ -324,6 +333,54 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
         };
     }, [observables, curve, keyId, actions]);
 
+    // Handle frame manually entered from top bar
+    useEffect(() => {
+        const observer = observables.onFrameManuallyEntered.add((newValue) => {
+            if (selectedState === SelectionState.None) {
+                return;
+            }
+
+            let newX = convertX(newValue);
+
+            // Clamp to neighbors
+            const previousX = getPreviousX();
+            const nextX = getNextX();
+            if (previousX !== null) {
+                newX = Math.max(previousX, newX);
+            }
+            if (nextX !== null) {
+                newX = Math.min(nextX, newX);
+            }
+
+            const frame = invertX(newX);
+            currentXRef.current = newX;
+            setCurrentX(newX);
+            onFrameValueChanged(frame);
+        });
+
+        return () => {
+            observables.onFrameManuallyEntered.remove(observer);
+        };
+    }, [observables, selectedState, convertX, invertX, getPreviousX, getNextX, onFrameValueChanged]);
+
+    // Handle value manually entered from top bar
+    useEffect(() => {
+        const observer = observables.onValueManuallyEntered.add((newValue) => {
+            if (selectedState !== SelectionState.Selected) {
+                return;
+            }
+
+            const newY = convertY(newValue);
+            currentYRef.current = newY;
+            setCurrentY(newY);
+            onKeyValueChanged(newValue);
+        });
+
+        return () => {
+            observables.onValueManuallyEntered.remove(observer);
+        };
+    }, [observables, selectedState, convertY, onKeyValueChanged]);
+
     // Handle select all keys
     useEffect(() => {
         const observer = observables.onSelectAllKeys.add(() => {
@@ -342,6 +399,77 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             observables.onSelectAllKeys.remove(observer);
         };
     }, [observables, actions, curve, keyId]);
+
+    // Track active key points count in a ref to avoid stale closure in handlePointerMove
+    const activeKeyPointsRef = useRef(state.activeKeyPoints);
+    activeKeyPointsRef.current = state.activeKeyPoints;
+
+    // Multi-point movement: store offset from main key point
+    const offsetToMain = useRef({ x: 0, y: 0 });
+    const isMainKeyPoint = useRef(false);
+
+    // When a main key point is set (multi-selection), store offset from it
+    useEffect(() => {
+        const observer = observables.onMainKeyPointSet.add(() => {
+            // Check if WE are the main key point by comparing stored identity
+            const mainKp = (observables as any)._mainKeyPointCurve;
+            const mainKeyId = (observables as any)._mainKeyPointKeyId;
+            if (mainKp === curve && mainKeyId === keyId) {
+                isMainKeyPoint.current = true;
+                return;
+            }
+            isMainKeyPoint.current = false;
+
+            // Store offset from the main key point position
+            const mainX = (observables as any)._mainKeyPointX ?? 0;
+            const mainY = (observables as any)._mainKeyPointY ?? 0;
+            offsetToMain.current = {
+                x: currentXRef.current - mainX,
+                y: currentYRef.current - mainY,
+            };
+        });
+
+        return () => {
+            observables.onMainKeyPointSet.remove(observer);
+        };
+    }, [observables, curve, keyId]);
+
+    // When the main key point moves, follow it with offset
+    useEffect(() => {
+        const observer = observables.onMainKeyPointMoved.add(() => {
+            // Skip if we ARE the main key point
+            if (isMainKeyPoint.current) {
+                return;
+            }
+
+            if (selectedState === SelectionState.None) {
+                return;
+            }
+
+            const mainX = (observables as any)._mainKeyPointX ?? 0;
+            const mainY = (observables as any)._mainKeyPointY ?? 0;
+
+            // Move frame for selected + siblings (but not first key)
+            if (keyId !== 0) {
+                const newX = mainX + offsetToMain.current.x;
+                currentXRef.current = newX;
+                setCurrentX(newX);
+                onFrameValueChanged(invertX(newX));
+            }
+
+            // Move value only for directly selected points
+            if (selectedState === SelectionState.Selected) {
+                const newY = mainY + offsetToMain.current.y;
+                currentYRef.current = newY;
+                setCurrentY(newY);
+                onKeyValueChanged(invertY(newY));
+            }
+        });
+
+        return () => {
+            observables.onMainKeyPointMoved.remove(observer);
+        };
+    }, [observables, curve, keyId, selectedState, invertX, invertY, onFrameValueChanged, onKeyValueChanged]);
 
     // Mouse/pointer handlers
     const handlePointerDown = useCallback(
@@ -379,22 +507,69 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             accumulatedX.current = 0;
             accumulatedY.current = 0;
 
-            // Handle selection
+            // Handle selection (matches v1's _select logic)
             if (!evt.ctrlKey) {
                 if (!isSelected()) {
+                    // Not in list, not multi-select: clear and add self
                     actions.setActiveKeyPoints([{ curve, keyId }]);
+                    // Single selection → no mainKeyPoint (like v1)
+                    actions.setMainKeyPoint(null);
+                } else {
+                    // Already in list, not multi-select:
+                    // If >1 selected, promote this to mainKeyPoint (DON'T clear others — v1 behavior)
+                    // If only 1, mainKeyPoint = null
+                    if (state.activeKeyPoints && state.activeKeyPoints.length > 1) {
+                        // Store position and identity for multi-point coordination
+                        (observables as any)._mainKeyPointX = currentXRef.current;
+                        (observables as any)._mainKeyPointY = currentYRef.current;
+                        (observables as any)._mainKeyPointCurve = curve;
+                        (observables as any)._mainKeyPointKeyId = keyId;
+                        actions.setMainKeyPoint({ curve, keyId });
+                        setTimeout(() => {
+                            observables.onMainKeyPointSet.notifyObservers();
+                        });
+                    } else {
+                        actions.setMainKeyPoint(null);
+                    }
                 }
             } else {
-                actions.setActiveKeyPoints((prev) => {
-                    const current = prev || [];
-                    const matchesCurve = (kp: KeyPoint) => kp.curve.animation.uniqueId === curve.animation.uniqueId && kp.curve.property === curve.property && kp.keyId === keyId;
-                    const isCurrentlySelected = current.some(matchesCurve);
-                    if (isCurrentlySelected) {
+                // Ctrl-click: toggle selection
+                if (isSelected()) {
+                    // Remove from list
+                    actions.setActiveKeyPoints((prev) => {
+                        const current = prev || [];
+                        const matchesCurve = (kp: KeyPoint) =>
+                            kp.curve.animation.uniqueId === curve.animation.uniqueId && kp.curve.property === curve.property && kp.keyId === keyId;
                         return current.filter((kp) => !matchesCurve(kp));
-                    } else {
+                    });
+                    actions.setMainKeyPoint(null);
+                } else {
+                    // Add to list
+                    actions.setActiveKeyPoints((prev) => {
+                        const current = prev || [];
                         return [...current, { curve, keyId }];
+                    });
+                    // Multi selection is now engaged
+                    if ((state.activeKeyPoints?.length ?? 0) + 1 > 1) {
+                        (observables as any)._mainKeyPointX = currentXRef.current;
+                        (observables as any)._mainKeyPointY = currentYRef.current;
+                        (observables as any)._mainKeyPointCurve = curve;
+                        (observables as any)._mainKeyPointKeyId = keyId;
+                        actions.setMainKeyPoint({ curve, keyId });
+                        setTimeout(() => {
+                            observables.onMainKeyPointSet.notifyObservers();
+                        });
+                    } else {
+                        actions.setMainKeyPoint(null);
                     }
-                });
+                }
+            }
+
+            // Set up multi-point movement data for non-ctrl single-click that adds new selection
+            if (!evt.ctrlKey && !isSelected()) {
+                // Was just selected as single point — data is set above (mainKeyPoint = null)
+            } else if (!evt.ctrlKey && isSelected() && state.activeKeyPoints && state.activeKeyPoints.length > 1) {
+                // Already handled above for promotion case
             }
 
             observables.onActiveKeyPointChanged.notifyObservers();
@@ -402,7 +577,7 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
             // Capture pointer for drag
             (evt.target as SVGSVGElement).setPointerCapture(evt.pointerId);
         },
-        [curve, keyId, actions, observables, isSelected]
+        [curve, keyId, actions, observables, isSelected, state.activeKeyPoints]
     );
 
     const handlePointerMove = useCallback(
@@ -473,6 +648,16 @@ export const KeyPointComponent: React.FunctionComponent<IKeyPointComponentProps>
                 currentYRef.current = newY;
                 setCurrentX(newX);
                 setCurrentY(newY);
+
+                // Notify other selected key points to follow (multi-point movement)
+                const activeKeyPoints = activeKeyPointsRef.current;
+                if (activeKeyPoints && activeKeyPoints.length > 1) {
+                    (observables as any)._mainKeyPointX = newX;
+                    (observables as any)._mainKeyPointY = newY;
+                    setTimeout(() => {
+                        observables.onMainKeyPointMoved.notifyObservers();
+                    });
+                }
             } else {
                 // Tangent manipulation
                 const keys = curve.keys;

@@ -190,10 +190,14 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
             }
 
             // Delete keys from each animation (in reverse order to maintain indices)
+            // Like v1: skip first (index 0) and last keys to preserve animation boundaries
             for (const [animation, keyIndices] of keysByAnimation) {
                 const keys = animation.getKeys();
                 const sortedIndices = Array.from(keyIndices).sort((a, b) => b - a); // Sort descending
                 for (const index of sortedIndices) {
+                    if (index === 0 || index === keys.length - 1) {
+                        continue; // Cannot delete first or last key (like v1)
+                    }
                     if (index >= 0 && index < keys.length) {
                         keys.splice(index, 1);
                     }
@@ -327,11 +331,26 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                 }
             }
 
+            // Wire up siblings so frame changes sync across all curves for the same animation
+            for (const curve of curvesToAdd) {
+                curve.siblings = curvesToAdd;
+            }
+
             result.push(...curvesToAdd);
         }
 
         return result;
     }, [state.activeAnimations, state.activeChannels]);
+
+    // Force re-render when any curve's key data is mutated (e.g. sibling frame sync)
+    // This ensures key point diamond positions stay in sync with their curve paths
+    const [, setCurveDataVersion] = useState(0);
+    useEffect(() => {
+        const observers = curves.map((curve) => curve.onDataUpdatedObservable.add(() => setCurveDataVersion((v) => v + 1)));
+        return () => {
+            curves.forEach((curve, i) => curve.onDataUpdatedObservable.remove(observers[i]));
+        };
+    }, [curves]);
 
     // Calculate value range
     const valueRange = useMemo(() => {
