@@ -51,7 +51,6 @@ export class GraphFrame {
     private _headerTextElement: HTMLDivElement;
     private _headerCollapseElement: HTMLDivElement;
     private _headerCloseElement: HTMLDivElement;
-    private _headerFocusElement: HTMLDivElement;
     private _commentsElement: HTMLDivElement;
     private _portContainer: HTMLDivElement;
     private _outputPortContainer: HTMLDivElement;
@@ -83,7 +82,6 @@ export class GraphFrame {
     private readonly _closeSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M16,15l5.85,5.84-1,1L15,15.93,9.15,21.78l-1-1L14,15,8.19,9.12l1-1L15,14l5.84-5.84,1,1Z"/></g></svg>`;
     private readonly _expandSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-6.75,6.75H11.06V14.44h3.38V11.06h1.12v3.38h3.38v1.12H15.56v3.38H14.44Z"/></g></svg>`;
     private readonly _collapseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-2.25,6.75H11.06V14.44h7.88Z"/></g></svg>`;
-    private readonly _focusSVG = `<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6.24992 4.5C5.28344 4.5 4.49996 5.2835 4.49996 6.25V17.75C4.49996 18.7165 5.28344 19.5 6.24992 19.5H17.7496C18.7161 19.5 19.4996 18.7165 19.4996 17.75V13.75C19.4996 13.3358 19.8354 13 20.2496 13C20.6638 13 20.9995 13.3358 20.9995 13.75V17.75C20.9995 19.5449 19.5445 21 17.7496 21H6.24992C4.45504 21 3 19.5449 3 17.75V6.25C3 4.45507 4.45504 3 6.24992 3H10.2498C10.664 3 10.9998 3.33579 10.9998 3.75C10.9998 4.16421 10.664 4.5 10.2498 4.5H6.24992ZM12.9997 3.75C12.9997 3.33579 13.3355 3 13.7497 3H20.25C20.6642 3 21 3.33579 21 3.75V10.25C21 10.6642 20.6642 11 20.25 11C19.8358 11 19.5 10.6642 19.5 10.25V5.56074L14.28 10.7804C13.9871 11.0732 13.5123 11.0732 13.2194 10.7803C12.9265 10.4874 12.9265 10.0125 13.2194 9.71964L18.4395 4.5H13.7497C13.3355 4.5 12.9997 4.16421 12.9997 3.75Z" /></svg>`;
 
     public get id() {
         return this._id;
@@ -382,6 +380,11 @@ export class GraphFrame {
 
         // Need to delegate the outside ports to the frame
         if (value) {
+            // Exit focus mode when collapsing
+            if (this._isFocused) {
+                this.switchFocusMode();
+            }
+
             this.element.classList.add(styles.collapsed);
             this.element.classList.remove(styles.expanded);
             this._headerElement.classList.add(styles.collapsedHeader);
@@ -430,7 +433,7 @@ export class GraphFrame {
         // UI
         if (this._isCollapsed) {
             this._headerCollapseElement.innerHTML = this._expandSVG;
-            this._headerCollapseElement.title = "Expand";
+            this._headerCollapseElement.title = "Expand (Shift+click for focus mode)";
         } else {
             this._headerCollapseElement.innerHTML = this._collapseSVG;
             this._headerCollapseElement.title = "Collapse";
@@ -623,22 +626,6 @@ export class GraphFrame {
         this._headerTextElement.classList.add(styles["frame-box-header-title"]);
         this._headerElement.appendChild(this._headerTextElement);
 
-        // Focus
-        this._headerFocusElement = root.ownerDocument.createElement("div");
-        this._headerFocusElement.classList.add(styles["frame-box-header-focus"]);
-        this._headerFocusElement.classList.add(styles["frame-box-header-button"]);
-        this._headerFocusElement.title = "Switch focus mode";
-        this._headerFocusElement.ondragstart = () => false;
-        this._headerFocusElement.addEventListener("pointerdown", (evt) => {
-            evt.stopPropagation();
-        });
-        this._headerFocusElement.addEventListener("pointerup", (evt) => {
-            evt.stopPropagation();
-            this.switchFocusMode();
-        });
-        this._headerFocusElement.innerHTML = this._focusSVG;
-        this._headerElement.appendChild(this._headerFocusElement);
-
         // Collapse
         this._headerCollapseElement = root.ownerDocument.createElement("div");
         this._headerCollapseElement.classList.add(styles["frame-box-header-collapse"]);
@@ -652,7 +639,15 @@ export class GraphFrame {
         this._headerCollapseElement.addEventListener("pointerup", (evt) => {
             evt.stopPropagation();
             this._headerCollapseElement.classList.remove("down");
-            this.isCollapsed = !this.isCollapsed;
+            if (evt.shiftKey) {
+                // Shift+click toggles focus mode without changing collapse state
+                if (this._isCollapsed) {
+                    this.isCollapsed = false;
+                }
+                this.switchFocusMode();
+            } else {
+                this.isCollapsed = !this.isCollapsed;
+            }
         });
         this._headerCollapseElement.innerHTML = this._collapseSVG;
         this._headerElement.appendChild(this._headerCollapseElement);

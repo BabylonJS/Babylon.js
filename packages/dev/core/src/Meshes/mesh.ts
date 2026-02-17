@@ -123,6 +123,10 @@ class _InstanceDataStorage {
     /** @internal */
     public renderPasses: { [id: number]: _InstanceDataStorageRenderPass } = {};
     /** @internal */
+    public dataStorageRenderPass: _InstanceDataStorageRenderPass; // used over renderPasses when useMonoDataStorageRenderPass is true
+    /** @internal */
+    public useMonoDataStorageRenderPass: boolean;
+    /** @internal */
     public overridenInstanceCount: number;
     /** @internal */
     public isFrozen: boolean;
@@ -654,13 +658,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
     public get worldMatrixInstancedBuffer(): Float32Array {
-        const instanceDataStorage = this._instanceDataStorage.renderPasses[this._instanceDataStorage.engine.isWebGPU ? this._instanceDataStorage.engine.currentRenderPassId : 0];
+        const instanceDataStorage = this._instanceDataStorage.useMonoDataStorageRenderPass
+            ? this._instanceDataStorage.dataStorageRenderPass
+            : this._instanceDataStorage.renderPasses[this._instanceDataStorage.engine.currentRenderPassId];
         return instanceDataStorage ? instanceDataStorage.instancesData : (undefined as any);
     }
 
     /** Gets the array buffer used to store the instanced buffer used for instances' previous world matrices */
     public get previousWorldMatrixInstancedBuffer(): Float32Array {
-        const instanceDataStorage = this._instanceDataStorage.renderPasses[this._instanceDataStorage.engine.isWebGPU ? this._instanceDataStorage.engine.currentRenderPassId : 0];
+        const instanceDataStorage = this._instanceDataStorage.useMonoDataStorageRenderPass
+            ? this._instanceDataStorage.dataStorageRenderPass
+            : this._instanceDataStorage.renderPasses[this._instanceDataStorage.engine.currentRenderPassId];
         return instanceDataStorage ? instanceDataStorage.instancesPreviousData : (undefined as any);
     }
 
@@ -924,6 +932,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         this._instanceDataStorage = new _InstanceDataStorage();
         this._instanceDataStorage.engine = scene.getEngine();
+        this._instanceDataStorage.useMonoDataStorageRenderPass = !this._instanceDataStorage.engine.isWebGPU;
+        if (this._instanceDataStorage.useMonoDataStorageRenderPass) {
+            this._instanceDataStorage.dataStorageRenderPass = new _InstanceDataStorageRenderPass();
+        }
 
         if (this._scene.useRightHandedSystem) {
             this.sideOrientation = Constants.MATERIAL_ClockWiseSideOrientation;
@@ -1593,7 +1605,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @internal */
     public _getInstanceDataStorage(): _InstanceDataStorageRenderPass {
-        const renderPassId = this._instanceDataStorage.engine.isWebGPU ? this._instanceDataStorage.engine.currentRenderPassId : 0;
+        if (this._instanceDataStorage.useMonoDataStorageRenderPass) {
+            return this._instanceDataStorage.dataStorageRenderPass;
+        }
+
+        const renderPassId = this._instanceDataStorage.engine.currentRenderPassId;
 
         let instanceDataStorage = this._instanceDataStorage.renderPasses[renderPassId];
         if (!instanceDataStorage) {
@@ -1614,7 +1630,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         internalDataInfo._preActivateId = sceneRenderId;
-        this._getInstanceDataStorage().visibleInstances = null;
+        if (this._instanceDataStorage.useMonoDataStorageRenderPass) {
+            this._instanceDataStorage.dataStorageRenderPass.visibleInstances = null;
+        } else {
+            this._getInstanceDataStorage().visibleInstances = null;
+        }
         return this;
     }
 
@@ -1622,7 +1642,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public override _preActivateForIntermediateRendering(renderId: number): Mesh {
-        const instanceDataStorage = this._getInstanceDataStorage();
+        const instanceDataStorage = this._instanceDataStorage.useMonoDataStorageRenderPass ? this._instanceDataStorage.dataStorageRenderPass : this._getInstanceDataStorage();
         if (instanceDataStorage.visibleInstances) {
             instanceDataStorage.visibleInstances.intermediateDefaultRenderId = renderId;
         }
@@ -1633,7 +1653,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh {
-        const instanceDataStorage = this._getInstanceDataStorage();
+        const instanceDataStorage = this._instanceDataStorage.useMonoDataStorageRenderPass ? this._instanceDataStorage.dataStorageRenderPass : this._getInstanceDataStorage();
         if (!instanceDataStorage.visibleInstances) {
             instanceDataStorage.visibleInstances = {
                 defaultRenderId: renderId,
@@ -2085,7 +2105,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._geometry._bind(effect, indexToBind);
         } else {
             if (
-                this._instanceDataStorage.engine.isWebGPU &&
+                !this._instanceDataStorage.useMonoDataStorageRenderPass &&
                 this._userInstancedBuffersStorage.renderPasses &&
                 this._userInstancedBuffersStorage.renderPasses[this._instanceDataStorage.engine.currentRenderPassId]
             ) {
@@ -2176,7 +2196,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public _getInstancesRenderList(subMeshId: number, isReplacementMode: boolean = false): _InstancesBatch {
-        const instanceDataStorage = this._getInstanceDataStorage();
+        const instanceDataStorage = this._instanceDataStorage.useMonoDataStorageRenderPass ? this._instanceDataStorage.dataStorageRenderPass : this._getInstanceDataStorage();
         if (this._instanceDataStorage.isFrozen) {
             if (isReplacementMode) {
                 instanceDataStorage.batchCacheReplacementModeInFrozenMode.hardwareInstancedRendering[subMeshId] = false;
@@ -2325,7 +2345,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             let vertexAndArrayObjectBuffers;
-            if (this._instanceDataStorage.engine.isWebGPU) {
+            if (!this._instanceDataStorage.useMonoDataStorageRenderPass) {
                 if (!this._userInstancedBuffersStorage.renderPasses) {
                     this._userInstancedBuffersStorage.renderPasses = {};
                 }
@@ -2524,20 +2544,25 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this;
     }
 
+    private _disposeInstanceDataStorageRenderPass(dataStorage?: _InstanceDataStorageRenderPass, dispose = false) {
+        if (dataStorage?.instancesBuffer) {
+            // Dispose instance buffer to be recreated in _renderWithInstances when rendered
+            if (dispose) {
+                dataStorage.instancesBuffer.dispose();
+            }
+            dataStorage.instancesBuffer = null;
+        }
+    }
+
     /**
      * @internal
      */
     public override _rebuild(dispose = false): void {
         for (const renderPassId in this._instanceDataStorage.renderPasses) {
             const instanceDataStorage = this._instanceDataStorage.renderPasses[renderPassId];
-            if (instanceDataStorage.instancesBuffer) {
-                // Dispose instance buffer to be recreated in _renderWithInstances when rendered
-                if (dispose) {
-                    instanceDataStorage.instancesBuffer.dispose();
-                }
-                instanceDataStorage.instancesBuffer = null;
-            }
+            this._disposeInstanceDataStorageRenderPass(instanceDataStorage, dispose);
         }
+        this._disposeInstanceDataStorageRenderPass(this._instanceDataStorage.dataStorageRenderPass, dispose);
         if (this._userInstancedBuffersStorage) {
             for (const kind in this._userInstancedBuffersStorage.vertexBuffers) {
                 const buffer = this._userInstancedBuffersStorage.vertexBuffers[kind];
@@ -2578,6 +2603,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (const renderPassId in this._instanceDataStorage.renderPasses) {
             const instanceDataStorage = this._instanceDataStorage.renderPasses[renderPassId];
             instanceDataStorage.previousBatch = null;
+        }
+        if (this._instanceDataStorage.dataStorageRenderPass) {
+            this._instanceDataStorage.dataStorageRenderPass.previousBatch = null;
         }
     }
 

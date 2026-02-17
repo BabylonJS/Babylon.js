@@ -850,6 +850,7 @@ Mesh.prototype._disposeInstanceSpecificData = function () {
         this._instanceDataStorage.renderPasses[renderPassId].instancesBuffer?.dispose();
     }
     this._instanceDataStorage.renderPasses = {};
+    this._instanceDataStorage.dataStorageRenderPass?.instancesBuffer?.dispose();
 
     while (this.instances.length) {
         this.instances[0].dispose();
