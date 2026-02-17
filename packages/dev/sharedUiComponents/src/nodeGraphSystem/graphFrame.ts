@@ -639,8 +639,11 @@ export class GraphFrame {
         this._headerCollapseElement.addEventListener("pointerup", (evt) => {
             evt.stopPropagation();
             this._headerCollapseElement.classList.remove("down");
-            if (this._isCollapsed && evt.shiftKey) {
-                this.isCollapsed = false;
+            if (evt.shiftKey) {
+                // Shift+click toggles focus mode without changing collapse state
+                if (this._isCollapsed) {
+                    this.isCollapsed = false;
+                }
                 this.switchFocusMode();
             } else {
                 this.isCollapsed = !this.isCollapsed;
