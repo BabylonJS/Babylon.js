@@ -5,6 +5,7 @@ import type { IAnimationKey } from "core/Animations/animationKey";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Animation as AnimationEnum } from "core/Animations/animation";
+import { Scalar } from "core/Maths/math.scalar";
 import { Vector2 } from "core/Maths/math.vector";
 import { Vector3 } from "core/Maths/math.vector";
 import { Quaternion } from "core/Maths/math.vector";
@@ -288,6 +289,66 @@ export const Graph: FunctionComponent<GraphProps> = ({ width, height }) => {
                         value: value,
                         lockedTangent: true,
                     };
+
+                    // Compute Hermite 1st-derivative tangents so the curve shape is preserved (like v1)
+                    if (leftKey?.outTangent !== undefined && rightKey?.inTangent !== undefined) {
+                        const invFrameDelta = 1.0 / (rightKey.frame - leftKey.frame);
+                        const cutTime = (currentFrame - leftKey.frame) * invFrameDelta;
+                        let derivative: any = null;
+
+                        switch (currentAnimation.dataType) {
+                            case AnimationEnum.ANIMATIONTYPE_FLOAT:
+                                derivative = Scalar.Hermite1stDerivative(
+                                    leftKey.value * invFrameDelta,
+                                    leftKey.outTangent,
+                                    rightKey.value * invFrameDelta,
+                                    rightKey.inTangent,
+                                    cutTime
+                                );
+                                break;
+                            case AnimationEnum.ANIMATIONTYPE_VECTOR2:
+                                derivative = Vector2.Hermite1stDerivative(
+                                    leftKey.value.scale(invFrameDelta),
+                                    leftKey.outTangent,
+                                    rightKey.value.scale(invFrameDelta),
+                                    rightKey.inTangent,
+                                    cutTime
+                                );
+                                break;
+                            case AnimationEnum.ANIMATIONTYPE_VECTOR3:
+                                derivative = Vector3.Hermite1stDerivative(
+                                    leftKey.value.scale(invFrameDelta),
+                                    leftKey.outTangent,
+                                    rightKey.value.scale(invFrameDelta),
+                                    rightKey.inTangent,
+                                    cutTime
+                                );
+                                break;
+                            case AnimationEnum.ANIMATIONTYPE_COLOR3:
+                                derivative = Color3.Hermite1stDerivative(
+                                    leftKey.value.scale(invFrameDelta),
+                                    leftKey.outTangent,
+                                    rightKey.value.scale(invFrameDelta),
+                                    rightKey.inTangent,
+                                    cutTime
+                                );
+                                break;
+                            case AnimationEnum.ANIMATIONTYPE_COLOR4:
+                                derivative = Color4.Hermite1stDerivative(
+                                    leftKey.value.scale(invFrameDelta),
+                                    leftKey.outTangent,
+                                    rightKey.value.scale(invFrameDelta),
+                                    rightKey.inTangent,
+                                    cutTime
+                                );
+                                break;
+                        }
+
+                        if (derivative !== null) {
+                            newKey.inTangent = derivative;
+                            newKey.outTangent = derivative.clone ? derivative.clone() : derivative;
+                        }
+                    }
 
                     keys.splice(indexToAdd + 1, 0, newKey);
                 }
