@@ -21,7 +21,7 @@
         "@types/puppeteer": "~5.4.4",
         "@typescript-eslint/eslint-plugin": "^8.29.0",
         "@typescript-eslint/parser": "^8.29.0",
-        "ajv": "~8.12.0",
+        "ajv": "~8.18.0",
         "chokidar": "~3.6.0",
         "dotenv": "~16.0.0",
         "es-check": "^7.1.1",
