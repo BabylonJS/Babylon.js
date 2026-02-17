@@ -190,22 +190,9 @@ export const ChildWindow: FunctionComponent<PropsWithChildren<ChildWindowProps>>
             body.style.display = "flex";
             body.style.overflow = "hidden";
 
-            const applyWindowState = () => {
-                // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
-                setWindowState({ mountNode: body, renderer: createDOMRenderer(childWindow.document) });
-                onOpenChange?.(true);
-            };
-
-            // Once the child window document is ready, setup the window state which will trigger another effect that renders into the child window.
-            if (childWindow.document.readyState === "complete") {
-                applyWindowState();
-            } else {
-                const onChildWindowLoad = () => {
-                    applyWindowState();
-                };
-                childWindow.addEventListener("load", onChildWindowLoad, { once: true });
-                disposeActions.push(() => childWindow.removeEventListener("load", onChildWindowLoad));
-            }
+            // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
+            setWindowState({ mountNode: body, renderer: createDOMRenderer(childWindow.document) });
+            onOpenChange?.(true);
 
             // When the child window is closed for any reason, transition back to a closed state.
             const onChildWindowUnload = () => {
