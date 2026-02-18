@@ -22,6 +22,7 @@ export class CurveData {
     public tangentBuilder?: () => any;
     public setDefaultInTangent?: (keyId: number) => any;
     public setDefaultOutTangent?: (keyId: number) => any;
+    public siblings: CurveData[] = [];
 
     public static readonly TangentLength = 50;
 
@@ -261,6 +262,14 @@ export class CurveData {
         originalKey.frame = frame;
 
         this.keys[keyId].frame = frame;
+
+        // Sync frame to all sibling curves (same animation, different property)
+        for (const sibling of this.siblings) {
+            if (sibling !== this && sibling.keys[keyId]) {
+                sibling.keys[keyId].frame = frame;
+                sibling.onDataUpdatedObservable.notifyObservers();
+            }
+        }
 
         this.onDataUpdatedObservable.notifyObservers();
     }

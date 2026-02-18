@@ -17,6 +17,20 @@ export type KeyPoint = {
     keyId: number;
 };
 
+/** Payload sent when a main key point is designated for multi-point coordination */
+export type MainKeyPointInfo = {
+    x: number;
+    y: number;
+    curve: CurveData;
+    keyId: number;
+};
+
+/** Payload sent when the main key point moves during drag */
+export type MainKeyPointPosition = {
+    x: number;
+    y: number;
+};
+
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Observable } from "core/Misc/observable";
 
@@ -106,6 +120,8 @@ export type CurveEditorActions = {
     setFocusedInput: Dispatch<SetStateAction<boolean>>;
     /** Set active key points */
     setActiveKeyPoints: Dispatch<SetStateAction<Nullable<KeyPoint[]>>>;
+    /** Set main key point */
+    setMainKeyPoint: Dispatch<SetStateAction<Nullable<KeyPoint>>>;
     /** Set active channels */
     setActiveChannels: Dispatch<SetStateAction<{ [key: number]: string }>>;
     /** Play animation */
@@ -154,10 +170,10 @@ export type CurveEditorObservables = {
     onFrameSet: Observable<number>;
     /** Fired when frame is manually entered */
     onFrameManuallyEntered: Observable<number>;
-    /** Fired when main key point is set */
-    onMainKeyPointSet: Observable<void>;
-    /** Fired when main key point is moved */
-    onMainKeyPointMoved: Observable<void>;
+    /** Fired when main key point is set for multi-point coordination */
+    onMainKeyPointSet: Observable<MainKeyPointInfo>;
+    /** Fired when main key point moves during drag */
+    onMainKeyPointMoved: Observable<MainKeyPointPosition>;
     /** Fired when value is set */
     onValueSet: Observable<number>;
     /** Fired when value is manually entered */
@@ -254,8 +270,7 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
     const [activeAnimations, setActiveAnimations] = useState<Animation[]>([]);
     const [activeChannels, setActiveChannels] = useState<{ [key: number]: string }>({});
     const [activeKeyPoints, setActiveKeyPoints] = useState<Nullable<KeyPoint[]>>(null);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [mainKeyPoint, _setMainKeyPoint] = useState<Nullable<KeyPoint>>(null);
+    const [mainKeyPoint, setMainKeyPoint] = useState<Nullable<KeyPoint>>(null);
     const [activeFrame, setActiveFrame] = useState(0);
     const [fromKey, setFromKey] = useState(0);
     const [toKey, setToKey] = useState(100);
@@ -554,6 +569,7 @@ export const CurveEditorProvider: FunctionComponent<PropsWithChildren<CurveEdito
             setReferenceMaxFrame,
             setFocusedInput,
             setActiveKeyPoints,
+            setMainKeyPoint,
             setActiveChannels,
             play,
             stop,

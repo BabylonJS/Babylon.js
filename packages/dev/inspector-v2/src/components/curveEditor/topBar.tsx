@@ -4,6 +4,7 @@ import { makeStyles, tokens, Divider } from "@fluentui/react-components";
 import { useCallback, useEffect, useState } from "react";
 import { AddRegular, DeleteRegular, FullScreenMaximizeRegular } from "@fluentui/react-icons";
 
+import { Animation } from "core/Animations/animation";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
 import { FlatTangentIcon, LinearTangentIcon, BreakTangentIcon, UnifyTangentIcon, StepTangentIcon } from "shared-ui-components/fluent/icons";
@@ -86,13 +87,18 @@ export const TopBar: FunctionComponent = () => {
 
         const onActiveKeyPointChangedObserver = observables.onActiveKeyPointChanged.add(() => {
             const numKeys = state.activeKeyPoints?.length || 0;
-            // TODO: Properly type KeyPointComponent to access curve.animation
-            const numAnims = numKeys;
+            const numAnims = state.activeKeyPoints ? new Set(state.activeKeyPoints.map((kp) => kp.curve.animation.uniqueId)).size : 0;
+            const hasActiveQuaternion = state.activeKeyPoints?.some((kp) => kp.curve.animation.dataType === Animation.ANIMATIONTYPE_QUATERNION) ?? false;
 
-            const frameEnabled = (numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1);
+            const frameEnabled = ((numKeys === 1 && numAnims === 1) || (numKeys > 1 && numAnims > 1)) && !hasActiveQuaternion;
             setFrameControlEnabled(frameEnabled);
-            setValueControlEnabled(numKeys > 0);
-            // Don't reset values here - they are set by onFrameSet/onValueSet observers
+            setValueControlEnabled(numKeys > 0 && !hasActiveQuaternion);
+
+            // Reset values when no keys are selected
+            if (numKeys === 0) {
+                setKeyFrameValue(null);
+                setKeyValue(null);
+            }
         });
 
         return () => {

@@ -4,10 +4,29 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { PlayRegular, PreviousRegular, NextRegular, ArrowPreviousRegular, ArrowNextRegular, RecordStopRegular, TriangleLeftRegular } from "@fluentui/react-icons";
 
+import type { Animation } from "core/Animations/animation";
+
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { SpinButton } from "shared-ui-components/fluent/primitives/spinButton";
 import { useCurveEditor } from "./curveEditorContext";
 import { RangeSelector } from "./rangeSelector";
+
+/**
+ * Checks whether any of the given animations has a key at the specified frame.
+ * @param animations - The animations to check for keys
+ * @param frame - The frame index to check for keys at
+ * @returns True if a key exists at the frame, false otherwise.
+ */
+function GetKeyAtAnyFrameIndex(animations: Animation[], frame: number): boolean {
+    for (const animation of animations) {
+        for (const key of animation.getKeys()) {
+            if (Math.floor(frame - key.frame) === 0) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 const useStyles = makeStyles({
     root: {
@@ -153,22 +172,40 @@ export const BottomBar: FunctionComponent = () => {
             setClipLength(newLength);
             actions.setClipLength(newLength);
             actions.setReferenceMaxFrame(newLength);
+
+            // Move playhead to new clip end
+            observables.onMoveToFrameRequired.notifyObservers(newLength);
+
+            // Create a key at the boundary if one doesn't exist
+            if (!GetKeyAtAnyFrameIndex(state.activeAnimations, newLength)) {
+                observables.onCreateOrUpdateKeyPointRequired.notifyObservers();
+            }
         });
         const onClipLengthDecreased = observables.onClipLengthDecreased.add((newLength) => {
             setClipLength(newLength);
             actions.setClipLength(newLength);
             actions.setReferenceMaxFrame(newLength);
+
+            // Move playhead to new clip end
+            observables.onMoveToFrameRequired.notifyObservers(newLength);
+
+            // Create a key at the boundary if one doesn't exist
+            if (!GetKeyAtAnyFrameIndex(state.activeAnimations, newLength)) {
+                observables.onCreateOrUpdateKeyPointRequired.notifyObservers();
+            }
+
             // Clamp toKey to new clip length
             if (toKeyRef.current > newLength) {
                 actions.setToKey(newLength);
             }
+            observables.onRangeUpdated.notifyObservers();
         });
 
         return () => {
             observables.onClipLengthIncreased.remove(onClipLengthIncreased);
             observables.onClipLengthDecreased.remove(onClipLengthDecreased);
         };
-    }, [observables, actions]);
+    }, [observables, actions, state.activeAnimations]);
 
     const handlePlayForward = useCallback(() => {
         actions.play(true);

@@ -1090,20 +1090,20 @@ export class Texture extends BaseTexture {
                     let texture: Texture;
 
                     if (parsedTexture.base64String && !internalTexture) {
-                        // name and url are the same to ensure caching happens from the actual base64 string
-                        texture = Texture.CreateFromBase64String(
-                            parsedTexture.base64String,
-                            parsedTexture.base64String,
-                            scene,
-                            !generateMipMaps,
-                            parsedTexture.invertY,
-                            parsedTexture.samplingMode,
-                            () => {
+                        const options: ITextureCreationOptions = {
+                            buffer: parsedTexture.base64String,
+                            noMipmap: !generateMipMaps,
+                            invertY: parsedTexture.invertY,
+                            samplingMode: parsedTexture.samplingMode,
+                            useSRGBBuffer: parsedTexture._useSRGBBuffer ?? false,
+                            creationFlags: parsedTexture._creationFlags ?? 0,
+                            onLoad: () => {
                                 onLoaded(texture);
                             },
-                            parsedTexture._creationFlags ?? 0,
-                            parsedTexture._useSRGBBuffer ?? false
-                        );
+                        };
+
+                        // use the base64 string as the texture name for caching; the actual payload comes from options.buffer
+                        texture = Texture.CreateFromBase64String("", parsedTexture.base64String, scene, options);
 
                         // prettier name to fit with the loaded data
                         texture.name = parsedTexture.name;
@@ -1123,6 +1123,8 @@ export class Texture extends BaseTexture {
                             noMipmap: !generateMipMaps,
                             invertY: parsedTexture.invertY,
                             samplingMode: parsedTexture.samplingMode,
+                            useSRGBBuffer: parsedTexture._useSRGBBuffer ?? false,
+                            creationFlags: parsedTexture._creationFlags ?? 0,
                             onLoad: () => {
                                 onLoaded(texture);
                             },

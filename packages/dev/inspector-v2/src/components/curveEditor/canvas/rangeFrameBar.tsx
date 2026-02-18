@@ -14,7 +14,8 @@ const useStyles = makeStyles({
         backgroundColor: tokens.colorNeutralBackground2,
         overflow: "hidden",
         userSelect: "none",
-        pointerEvents: "none",
+        cursor: "pointer",
+        touchAction: "none",
     },
     svg: {
         width: "100%",
@@ -53,10 +54,11 @@ const OFFSET_X = 10;
  */
 export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) => {
     const styles = useStyles();
-    const { state, observables } = useCurveEditor();
+    const { state, actions, observables } = useCurveEditor();
     const svgRef = useRef<SVGSVGElement>(null);
     const [viewWidth, setViewWidth] = useState(width);
     const [displayFrame, setDisplayFrame] = useState(state.activeFrame);
+    const pointerIsDown = useRef(false);
 
     // Re-render when range updates
     // useCallback stabilizes the accessor to prevent infinite re-render loops
@@ -91,6 +93,39 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
             setDisplayFrame(state.activeFrame);
         }
     }, [state.activeFrame, state.isPlaying]);
+
+    // Playhead scrubbing — linear interpolation from pointer position to frame
+    const pointerToFrame = useCallback(
+        (offsetX: number) => {
+            const { fromKey, toKey } = state;
+            return Math.round(Math.max(fromKey, Math.min(toKey, (offsetX / viewWidth) * (toKey - fromKey) + fromKey)));
+        },
+        [state.fromKey, state.toKey, viewWidth]
+    );
+
+    const handlePointerDown = useCallback(
+        (evt: React.PointerEvent<HTMLDivElement>) => {
+            pointerIsDown.current = true;
+            evt.currentTarget.setPointerCapture(evt.pointerId);
+            actions.moveToFrame(pointerToFrame(evt.nativeEvent.offsetX));
+        },
+        [actions, pointerToFrame]
+    );
+
+    const handlePointerMove = useCallback(
+        (evt: React.PointerEvent<HTMLDivElement>) => {
+            if (!pointerIsDown.current) {
+                return;
+            }
+            actions.moveToFrame(pointerToFrame(evt.nativeEvent.offsetX));
+        },
+        [actions, pointerToFrame]
+    );
+
+    const handlePointerUp = useCallback((evt: React.PointerEvent<HTMLDivElement>) => {
+        pointerIsDown.current = false;
+        evt.currentTarget.releasePointerCapture(evt.pointerId);
+    }, []);
 
     // Compute frame ticks
     const frameTicks = useMemo(() => {
@@ -164,7 +199,7 @@ export const RangeFrameBar: FunctionComponent<RangeFrameBarProps> = ({ width }) 
     const viewBox = `${-OFFSET_X} 0 ${viewWidth + OFFSET_X * 4} 40`;
 
     return (
-        <div className={styles.root}>
+        <div className={styles.root} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}>
             <svg ref={svgRef} className={styles.svg} viewBox={viewBox}>
                 {/* Frame tick marks with labels */}
                 {frameTicks.map((frame, i) => {
