@@ -7,6 +7,7 @@ import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer
 import type { ISettingsStore } from "./services/settingsStore";
 import type { IRootComponentService, ShellServiceOptions } from "./services/shellService";
 import type { ThemeMode } from "./services/themeService";
+import type { IWatcher } from "./services/watcherService";
 
 import {
     Body1,
@@ -33,12 +34,14 @@ import { ToastProvider } from "shared-ui-components/fluent/primitives/toast";
 import { Theme } from "./components/theme";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { SettingsStoreContext } from "./contexts/settingsContext";
+import { WatcherContext } from "./contexts/watcherContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
 import { ServiceContainer } from "./modularity/serviceContainer";
 import { SettingsStore, SettingsStoreIdentity } from "./services/settingsStore";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
 import { ThemeModeSettingDescriptor, ThemeServiceDefinition } from "./services/themeService";
+import { Watcher, WatcherServiceIdentity } from "./services/watcherService";
 
 const useStyles = makeStyles({
     app: {
@@ -115,6 +118,8 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         settingsStore.writeSetting(ThemeModeSettingDescriptor, themeMode);
     }
 
+    const watcher = new Watcher(settingsStore);
+
     const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
         const [extensionManagerContext, setExtensionManagerContext] = useState<ExtensionManagerContext>();
@@ -134,6 +139,12 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                     friendlyName: "Settings Store",
                     produces: [SettingsStoreIdentity],
                     factory: () => settingsStore,
+                });
+
+                await serviceContainer.addServiceAsync<[IWatcher], []>({
+                    friendlyName: "Watcher Service",
+                    produces: [WatcherServiceIdentity],
+                    factory: () => watcher,
                 });
 
                 // Register the shell service (top level toolbar/side pane UI layout).
@@ -248,61 +259,63 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
             // Expose the settings store as a React context so that UI components can read/write
             // settings without the ISettingsService needing to be explicitly passed around.
             <SettingsStoreContext.Provider value={settingsStore}>
-                <ExtensionManagerContext.Provider value={extensionManagerContext}>
-                    <Theme className={classes.app}>
-                        <ToastProvider>
-                            <Dialog open={!!requiredExtensions} modalType="alert">
-                                <DialogSurface>
-                                    <DialogBody>
-                                        <DialogTitle>Required Extensions</DialogTitle>
-                                        <DialogContent>
-                                            Opening this URL requires the following extensions to be installed and enabled:
-                                            <ul>{requiredExtensions?.map((name) => <li key={name}>{name}</li>)}</ul>
-                                        </DialogContent>
-                                        <DialogActions>
-                                            <Button appearance="primary" onClick={onAcceptRequiredExtensions}>
-                                                Install & Enable
-                                            </Button>
-                                            <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
-                                                No Thanks
-                                            </Button>
-                                        </DialogActions>
-                                    </DialogBody>
-                                </DialogSurface>
-                            </Dialog>
-                            <Dialog open={!!extensionInstallError} modalType="alert">
-                                <DialogSurface>
-                                    <DialogBody>
-                                        <DialogTitle>
-                                            <div className={classes.extensionErrorTitleDiv}>
-                                                Extension Install Error
-                                                <ErrorCircleRegular className={classes.extensionErrorIcon} />
-                                            </div>
-                                        </DialogTitle>
-                                        <DialogContent>
-                                            <List>
-                                                <ListItem>
-                                                    <Body1>{`Extension "${extensionInstallError?.extension.name}" failed to install and was removed.`}</Body1>
-                                                </ListItem>
-                                                <ListItem>
-                                                    <Body1>{`${extensionInstallError?.error}`}</Body1>
-                                                </ListItem>
-                                            </List>
-                                        </DialogContent>
-                                        <DialogActions>
-                                            <Button appearance="primary" onClick={onAcknowledgedExtensionInstallError}>
-                                                Close
-                                            </Button>
-                                        </DialogActions>
-                                    </DialogBody>
-                                </DialogSurface>
-                            </Dialog>
-                            <Suspense fallback={<Spinner className={classes.spinner} />}>
-                                <Content />
-                            </Suspense>
-                        </ToastProvider>
-                    </Theme>
-                </ExtensionManagerContext.Provider>
+                <WatcherContext.Provider value={watcher}>
+                    <ExtensionManagerContext.Provider value={extensionManagerContext}>
+                        <Theme className={classes.app}>
+                            <ToastProvider>
+                                <Dialog open={!!requiredExtensions} modalType="alert">
+                                    <DialogSurface>
+                                        <DialogBody>
+                                            <DialogTitle>Required Extensions</DialogTitle>
+                                            <DialogContent>
+                                                Opening this URL requires the following extensions to be installed and enabled:
+                                                <ul>{requiredExtensions?.map((name) => <li key={name}>{name}</li>)}</ul>
+                                            </DialogContent>
+                                            <DialogActions>
+                                                <Button appearance="primary" onClick={onAcceptRequiredExtensions}>
+                                                    Install & Enable
+                                                </Button>
+                                                <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
+                                                    No Thanks
+                                                </Button>
+                                            </DialogActions>
+                                        </DialogBody>
+                                    </DialogSurface>
+                                </Dialog>
+                                <Dialog open={!!extensionInstallError} modalType="alert">
+                                    <DialogSurface>
+                                        <DialogBody>
+                                            <DialogTitle>
+                                                <div className={classes.extensionErrorTitleDiv}>
+                                                    Extension Install Error
+                                                    <ErrorCircleRegular className={classes.extensionErrorIcon} />
+                                                </div>
+                                            </DialogTitle>
+                                            <DialogContent>
+                                                <List>
+                                                    <ListItem>
+                                                        <Body1>{`Extension "${extensionInstallError?.extension.name}" failed to install and was removed.`}</Body1>
+                                                    </ListItem>
+                                                    <ListItem>
+                                                        <Body1>{`${extensionInstallError?.error}`}</Body1>
+                                                    </ListItem>
+                                                </List>
+                                            </DialogContent>
+                                            <DialogActions>
+                                                <Button appearance="primary" onClick={onAcknowledgedExtensionInstallError}>
+                                                    Close
+                                                </Button>
+                                            </DialogActions>
+                                        </DialogBody>
+                                    </DialogSurface>
+                                </Dialog>
+                                <Suspense fallback={<Spinner className={classes.spinner} />}>
+                                    <Content />
+                                </Suspense>
+                            </ToastProvider>
+                        </Theme>
+                    </ExtensionManagerContext.Provider>
+                </WatcherContext.Provider>
             </SettingsStoreContext.Provider>
         );
     };

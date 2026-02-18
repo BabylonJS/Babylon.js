@@ -1,20 +1,21 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
+import type { IWatcher } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { WeatherSunnyLowFilled } from "@fluentui/react-icons";
 
+import type { Atmosphere } from "addons/atmosphere/atmosphere";
 import { Observable } from "core/Misc/observable";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
-import type { Atmosphere } from "addons/atmosphere/atmosphere";
 
-export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcher]> = {
     friendlyName: "Atmosphere Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, watcher) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -26,11 +27,7 @@ export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
             getEntityDisplayInfo: (atmosphere) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(atmosphere, "name", {
-                    afterSet: () => {
-                        onChangeObservable.notifyObservers();
-                    },
-                });
+                const nameHookToken = watcher.watchProperty(atmosphere, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {

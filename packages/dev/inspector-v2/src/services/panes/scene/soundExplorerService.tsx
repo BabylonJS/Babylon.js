@@ -2,20 +2,22 @@ import type { IDisposable, Sound, SoundTrack } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
+import type { IWatcher } from "../../watcherService";
 
 import { SoundWaveCircleRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { InterceptFunction } from "../../../instrumentation/functionInstrumentation";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
+// import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
+import { WatcherServiceIdentity } from "../../watcherService";
 
-export const SoundExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const SoundExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcher]> = {
     friendlyName: "Sound Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, watcher) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -48,9 +50,7 @@ export const SoundExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplor
         hookMainSoundTrack(scene.mainSoundTrack);
 
         // Watch for _mainSoundTrack being set (it is lazily created by the mainSoundTrack getter in audioSceneComponent.ts).
-        const mainSoundTrackHook = InterceptProperty(scene, "_mainSoundTrack", {
-            afterSet: () => hookMainSoundTrack(scene._mainSoundTrack),
-        });
+        const mainSoundTrackHook = watcher.watchProperty(scene, "_mainSoundTrack", () => hookMainSoundTrack(scene._mainSoundTrack));
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Sounds",
@@ -59,17 +59,8 @@ export const SoundExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplor
             getEntityDisplayInfo: (sound) => {
                 const onChangeObservable = new Observable<void>();
 
-                const displayNameHookToken = InterceptProperty(sound, "name", {
-                    afterSet: () => {
-                        onChangeObservable.notifyObservers();
-                    },
-                });
-
-                const nameHookToken = InterceptProperty(sound, "name", {
-                    afterSet: () => {
-                        onChangeObservable.notifyObservers();
-                    },
-                });
+                const displayNameHookToken = watcher.watchProperty(sound, "name", () => onChangeObservable.notifyObservers());
+                const nameHookToken = watcher.watchProperty(sound, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {

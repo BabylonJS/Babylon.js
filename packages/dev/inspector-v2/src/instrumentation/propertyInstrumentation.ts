@@ -1,7 +1,5 @@
 import type { IDisposable, Nullable } from "core/index";
 
-import { Observable } from "core/Misc/observable";
-
 /**
  * Gets the property descriptor for a property on an object, including inherited properties.
  * @param target The object containing the property.
@@ -35,7 +33,7 @@ export function IsPropertyReadonly(propertyDescriptor: PropertyDescriptor): bool
     return propertyDescriptor.writable === false || (propertyDescriptor.writable === undefined && !propertyDescriptor.set);
 }
 
-type PropertyHooks<T = unknown> = {
+export type PropertyHooks<T = unknown> = {
     /**
      * This function will be called after the hooked property is set.
      * @param value The new value that was set on the property.
@@ -43,56 +41,25 @@ type PropertyHooks<T = unknown> = {
     afterSet?: (value: T) => void;
 };
 
-export type InterceptPropertyOptions<T = unknown> = PropertyHooks<T> & {
-    pollingObservable?: Observable<void>;
-};
-
-const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, InterceptPropertyOptions<unknown>[]>>();
-
-const PollingObservable = new Observable<void>();
-setInterval(() => PollingObservable.notifyObservers(), 1000);
+const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, PropertyHooks<unknown>[]>>();
 
 /**
  * Intercepts a property on an object and allows you to add hooks that will be called when the property is get or set.
  * @param target The object containing the property to intercept.
  * @param propertyKey The key of the property to intercept.
- * @param options The hooks to call when the property is get or set.
+ * @param hooks The hooks to call when the property is get or set.
  * @returns A disposable that removes the hooks when disposed and returns the object to its original state.
  */
 // This overload only matches when K is a specific literal key (not a union like keyof T)
 export function InterceptProperty<T extends object, K extends keyof T>(
     target: T,
     propertyKey: string extends K ? never : number extends K ? never : symbol extends K ? never : K,
-    options: InterceptPropertyOptions<NonNullable<T[K]>>
+    hooks: PropertyHooks<NonNullable<T[K]>>
 ): IDisposable;
 // Fallback overload for generic/dynamic cases where the property type cannot be inferred
-export function InterceptProperty<T extends object>(target: T, propertyKey: keyof T, options: InterceptPropertyOptions): IDisposable;
+export function InterceptProperty<T extends object>(target: T, propertyKey: keyof T, hooks: PropertyHooks): IDisposable;
 /** @internal */
-export function InterceptProperty<T extends object>(target: T, propertyKey: keyof T, options: InterceptPropertyOptions): IDisposable {
-    options.pollingObservable = PollingObservable;
-    if (options.pollingObservable) {
-        return PollProperty(target, propertyKey, options, options.pollingObservable);
-    } else {
-        return HookProperty(target, propertyKey, options);
-    }
-}
-
-function PollProperty<T extends object>(target: T, propertyKey: keyof T, hooks: PropertyHooks, pollingObservable: Observable<void>): IDisposable {
-    let previousValue = target[propertyKey];
-    const observer = pollingObservable.add(() => {
-        const currentValue = target[propertyKey];
-        if (!Object.is(previousValue, currentValue)) {
-            previousValue = currentValue;
-            hooks.afterSet?.(currentValue);
-        }
-    });
-
-    return {
-        dispose: () => observer.remove(),
-    };
-}
-
-function HookProperty<T extends object>(target: T, propertyKey: keyof T, hooks: PropertyHooks): IDisposable {
+export function InterceptProperty<T extends object>(target: T, propertyKey: keyof T, hooks: PropertyHooks): IDisposable {
     // Find the property descriptor and note the owning object (might be inherited through the prototype chain).
     const ownerAndDescriptor = GetPropertyDescriptor(target, propertyKey);
 
@@ -159,14 +126,14 @@ function HookProperty<T extends object>(target: T, propertyKey: keyof T, hooks: 
             throw new Error(`Failed to define new property "${propertyKey.toString()}" on object "${target}".`);
         }
     }
-    hooksForKey.push(hooks as InterceptPropertyOptions<unknown>);
+    hooksForKey.push(hooks as PropertyHooks<unknown>);
 
     let isDisposed = false;
     return {
         dispose: () => {
             if (!isDisposed) {
                 // Remove the hooks from the hooks array for the property key.
-                hooksForKey.splice(hooksForKey.indexOf(hooks as InterceptPropertyOptions<unknown>), 1);
+                hooksForKey.splice(hooksForKey.indexOf(hooks as PropertyHooks<unknown>), 1);
 
                 // If there are no more hooks for the property key, remove the property from the hooks map.
                 if (hooksForKey.length === 0) {
