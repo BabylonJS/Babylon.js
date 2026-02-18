@@ -59,9 +59,9 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     const valuePrecision = Math.max(0, CalculatePrecision(value));
     // Display precision: controls how many decimals are shown in the formatted displayValue. Cap at 4 to avoid wild numbers
     const displayPrecision = Math.min(4, Math.max(stepPrecision, valuePrecision));
-    // Set to const val of 4 to prevent Fluent from rounding user-entered values on commit (ex: if we set precision to 2 but user enters a value with more decimals, allow for the more precise value to be displayed without rounding).
+    // Set to large const to prevent Fluent from rounding user-entered values on commit
     // We control display formatting ourselves via displayValue, so this only affects internal rounding. The value stored internally will still have max precision
-    const fluentPrecision = 4;
+    const fluentPrecision = 20;
 
     useEffect(() => {
         if (props.value !== lastCommittedValue.current) {
@@ -121,6 +121,16 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
             setIsFocusedShiftKeyPressed(true);
         }
 
+        // Evaluate on Enter in keyDown (before Fluent's internal commit clears the raw text
+        // and re-renders with the truncated displayValue).
+        if (event.key === "Enter") {
+            const currVal = evaluateExpression((event.target as HTMLInputElement).value);
+            if (!isNaN(currVal)) {
+                setValue(currVal);
+                tryCommitValue(currVal);
+            }
+        }
+
         HandleKeyDown(event);
     };
 
@@ -131,6 +141,12 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
             setIsFocusedAltKeyPressed(false);
         } else if (event.key === "Shift") {
             setIsFocusedShiftKeyPressed(false);
+        }
+
+        // Skip Enter — it's handled in keyDown before Fluent's internal commit
+        // clears the raw text and replaces it with the truncated displayValue.
+        if (event.key === "Enter") {
+            return;
         }
 
         const currVal = evaluateExpression((event.target as any).value);
