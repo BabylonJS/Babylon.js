@@ -104,14 +104,12 @@
 
 .comments {
     position: absolute;
-    top: -50px;
+    bottom: calc(100% + 5px);
     width: 200px;
-    height: 45px;
-    overflow: hidden;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
     font-style: italic;
     opacity: 0.8;
-    display: grid;
-    align-items: flex-end;
     pointer-events: none;
 }
 
