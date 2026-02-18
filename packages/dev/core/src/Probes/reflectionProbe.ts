@@ -104,18 +104,18 @@ export class ReflectionProbe {
     ) {
         this._scene = scene;
 
-        if (scene.getEngine().supportsUniformBuffers) {
-            this._sceneUBOs = [];
-            for (let i = 0; i < 6; ++i) {
-                this._sceneUBOs.push(scene.createSceneUniformBuffer(`Scene for Reflection Probe (name "${name}") face #${i}`));
-            }
-        }
-
         // Create the scene field if not exist.
         if (!this._scene.reflectionProbes) {
             this._scene.reflectionProbes = [] as ReflectionProbe[];
         }
         this._scene.reflectionProbes.push(this);
+
+        if (scene.getEngine().supportsUniformBuffers) {
+            this._sceneUBOs = [];
+            for (let i = 0; i < 6; ++i) {
+                this._sceneUBOs.push(scene.createSceneUniformBuffer(`Scene for Reflection Probe (name "${name}") face #${i}`, { forceMono: true }));
+            }
+        }
 
         let textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (useFloat) {
@@ -181,6 +181,9 @@ export class ReflectionProbe {
                 if (scene.activeCamera.isRigCamera && !this._renderTargetTexture.activeCamera) {
                     this._renderTargetTexture.activeCamera = scene.activeCamera.rigParent || null;
                 }
+            }
+            if (this._sceneUBOs) {
+                scene.finalizeSceneUbo();
             }
             scene._forcedViewPosition = this.position;
         });

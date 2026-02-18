@@ -45,7 +45,7 @@ const NoOpDragProps: DragDropProps = Object.assign(
  */
 export type SceneExplorerDragDropOptions = {
     /** Called after a successful drop with the dragged entity and target (entity or null for section root). */
-    onDrop?: (draggedEntity: unknown, targetEntity: unknown | null) => void;
+    onDrop?: (draggedEntity: object, targetEntity: object | null) => void;
 };
 
 /**
@@ -57,16 +57,16 @@ export type SceneExplorerDragDropOptions = {
 export function useSceneExplorerDragDrop(options?: SceneExplorerDragDropOptions) {
     // Global drag state - HTML5 drag/drop doesn't allow reading dataTransfer in dragover events.
     const activeDragState = useRef<{
-        entity: unknown;
-        config: SceneExplorerDragDropConfig<unknown>;
+        entity: object;
+        config: SceneExplorerDragDropConfig<object>;
     } | null>(null);
 
-    const [draggedEntity, setDraggedEntity] = useState<unknown>();
-    const [dropTarget, setDropTarget] = useState<unknown>();
+    const [draggedEntity, setDraggedEntity] = useState<object>();
+    const [dropTarget, setDropTarget] = useState<object>();
     const [dropTargetIsRoot, setDropTargetIsRoot] = useState(false);
 
     // Ref to track current valid drop for the onDrop handler
-    const pendingDropRef = useRef<Nullable<{ target: unknown | null; dragged: unknown; config: SceneExplorerDragDropConfig<unknown> }>>(null);
+    const pendingDropRef = useRef<Nullable<{ target: object | null; dragged: object; config: SceneExplorerDragDropConfig<object> }>>(null);
 
     const resetState = useCallback(() => {
         setDraggedEntity(undefined);
@@ -76,7 +76,7 @@ export function useSceneExplorerDragDrop(options?: SceneExplorerDragDropOptions)
     }, []);
 
     const createDragProps = useCallback(
-        (entity: unknown, getName: () => string, dragDropConfig?: SceneExplorerDragDropConfig<unknown>): DragDropProps => {
+        (entity: object, getName: () => string, dragDropConfig?: SceneExplorerDragDropConfig<object>): DragDropProps => {
             // No drag-drop if section doesn't support it
             if (!dragDropConfig) {
                 return NoOpDragProps;
@@ -184,7 +184,7 @@ export function useSceneExplorerDragDrop(options?: SceneExplorerDragDropOptions)
      * @param dragDropConfig The drag-drop configuration for the section.
      */
     const createSectionDropProps = useCallback(
-        (dragDropConfig: SceneExplorerDragDropConfig<unknown> | undefined): DropProps => {
+        (dragDropConfig: SceneExplorerDragDropConfig<object> | undefined): DropProps => {
             // No drop handling if section doesn't support drag-drop
             if (!dragDropConfig) {
                 return NoOpSectionDropProps;

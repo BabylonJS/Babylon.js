@@ -734,7 +734,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._disposeSceneUBOs();
         if (this._sceneUBOs) {
             for (let i = 0; i < this._numCascades; ++i) {
-                this._sceneUBOs.push(this._scene.createSceneUniformBuffer(`Scene for CSM Shadow Generator (light "${this._light.name}" cascade #${i})`));
+                this._sceneUBOs.push(this._scene.createSceneUniformBuffer(`Scene for CSM Shadow Generator (light "${this._light.name}" cascade #${i})`, { forceMono: true }));
             }
         }
     }

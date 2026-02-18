@@ -191,7 +191,7 @@ export class MirrorTexture extends RenderTargetTexture {
         const engine = scene.getEngine();
 
         if (engine.supportsUniformBuffers) {
-            this._sceneUBO = scene.createSceneUniformBuffer(`Scene for Mirror Texture (name "${name}")`);
+            this._sceneUBO = scene.createSceneUniformBuffer(`Scene for Mirror Texture (name "${name}")`, { forceMono: true });
         }
 
         let saveClipPlane: Nullable<Plane>;

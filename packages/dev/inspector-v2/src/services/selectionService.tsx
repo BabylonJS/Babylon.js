@@ -21,7 +21,7 @@ export interface ISelectionService extends IService<typeof SelectionServiceIdent
     /**
      * Gets or sets the currently selected entity.
      */
-    selectedEntity: Nullable<unknown>;
+    selectedEntity: Nullable<object>;
 
     /**
      * An observable that notifies when the selected entity changes.
@@ -58,11 +58,11 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
             },
         });
 
-        let selectedEntityState: Nullable<unknown> = null;
+        let selectedEntityState: Nullable<object> = null;
         const selectedEntityObservable = new Observable<void>();
         let disposedHook: Nullable<IDisposable> = null;
 
-        const setSelectedItem = (item: Nullable<unknown>) => {
+        const setSelectedItem = (item: Nullable<object>) => {
             if (item !== selectedEntityState) {
                 disposedHook?.dispose();
                 disposedHook = null;
@@ -72,13 +72,13 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
 
                 if (item) {
                     const disposable = item as Partial<IDisposable>;
-                    if (disposable.dispose) {
+                    if (typeof disposable.dispose === "function") {
                         disposedHook = InterceptFunction(disposable, "dispose", { afterCall: () => setSelectedItem(null) });
                     }
                 }
 
                 // Expose the selected entity through a global variable. This is an Inspector v1 feature that people have found useful.
-                (globalThis as any).debugNode = item;
+                (globalThis as Record<string, unknown>).debugNode = item;
 
                 // Automatically open the properties pane when an entity is selected.
                 if (item && settingsStore.readSetting(ShowPropertiesOnSelectionSettingDescriptor)) {
@@ -91,7 +91,7 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
             get selectedEntity() {
                 return selectedEntityState;
             },
-            set selectedEntity(item: Nullable<unknown>) {
+            set selectedEntity(item: Nullable<object>) {
                 setSelectedItem(item);
             },
             onSelectedEntityChanged: selectedEntityObservable,

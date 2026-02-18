@@ -34,7 +34,7 @@ export const ParticleSystemSystemProperties: FunctionComponent<{ particleSystem:
     const capacity = useObservableState(() => system.getCapacity());
     const activeCount = useObservableState(() => system.getActiveCount(), scene?.onBeforeRenderObservable);
 
-    const selectEntity = (entity: unknown) => (selectionService.selectedEntity = entity);
+    const selectEntity = (entity: object) => (selectionService.selectedEntity = entity);
 
     return (
         <>

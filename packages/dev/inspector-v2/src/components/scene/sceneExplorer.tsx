@@ -41,14 +41,9 @@ import { TraverseGraph } from "../../misc/graphUtils";
 import { CompactModeSettingDescriptor } from "../../services/globalSettings";
 import { useSceneExplorerDragDrop } from "./sceneExplorerDragDrop";
 
-type EntityBase = Readonly<{
-    uniqueId?: number;
-    reservedDataStore?: Record<PropertyKey, unknown>;
-}>;
-
-const SyntheticUniqueIds = new WeakMap<EntityBase, number>();
-function GetEntityId(entity: EntityBase): number {
-    if (entity.uniqueId !== undefined) {
+const SyntheticUniqueIds = new WeakMap<object, number>();
+function GetEntityId(entity: object): number {
+    if ("uniqueId" in entity && typeof entity.uniqueId === "number") {
         return entity.uniqueId;
     }
 
@@ -57,6 +52,16 @@ function GetEntityId(entity: EntityBase): number {
         SyntheticUniqueIds.set(entity, (id = UniqueIdGenerator.UniqueId));
     }
     return id;
+}
+
+function IsEntityHidden(entity: object) {
+    return (
+        "reservedDataStore" in entity &&
+        typeof entity.reservedDataStore === "object" &&
+        entity.reservedDataStore &&
+        "hidden" in entity.reservedDataStore &&
+        entity.reservedDataStore.hidden === true
+    );
 }
 
 export type EntityDisplayInfo = Partial<IDisposable> &
@@ -99,7 +104,7 @@ export type SceneExplorerDragDropConfig<T> = Readonly<{
     onDrop: (draggedEntity: T, targetEntity: T | null) => void;
 }>;
 
-export type SceneExplorerSection<T> = Readonly<{
+export type SceneExplorerSection<T extends object> = Readonly<{
     /**
      * The display name of the section (e.g. "Nodes", "Materials", etc.).
      */
@@ -251,16 +256,16 @@ type SectionTreeItemData = {
     type: "section";
     sectionName: string;
     children: EntityTreeItemData[];
-    dragDropConfig?: SceneExplorerDragDropConfig<unknown>;
+    dragDropConfig?: SceneExplorerDragDropConfig<object>;
 };
 
 type EntityTreeItemData = {
     type: "entity";
-    entity: EntityBase;
+    entity: object;
     depth: number;
     parent: SectionTreeItemData | EntityTreeItemData;
     children?: EntityTreeItemData[];
-    icon?: ComponentType<{ entity: unknown }>;
+    icon?: ComponentType<{ entity: object }>;
     getDisplayInfo: () => EntityDisplayInfo;
 };
 
@@ -627,7 +632,7 @@ const EntityTreeItem: FunctionComponent<
         isSelected: boolean;
         select: () => void;
         isFiltering: boolean;
-        commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
+        commandProviders: readonly SceneExplorerCommandProvider<object>[];
         expandAll: () => void;
         collapseAll: () => void;
         isDragging: boolean;
@@ -831,23 +836,23 @@ const EntityTreeItem: FunctionComponent<
 };
 
 export const SceneExplorer: FunctionComponent<{
-    sections: readonly SceneExplorerSection<unknown>[];
-    entityCommandProviders: readonly SceneExplorerCommandProvider<unknown>[];
+    sections: readonly SceneExplorerSection<object>[];
+    entityCommandProviders: readonly SceneExplorerCommandProvider<object>[];
     sectionCommandProviders: readonly SceneExplorerCommandProvider<string, "contextMenu">[];
     scene: Scene;
-    selectedEntity?: unknown;
-    setSelectedEntity?: (entity: unknown) => void;
+    selectedEntity?: Nullable<object>;
+    setSelectedEntity?: (entity: Nullable<object>) => void;
 }> = (props) => {
     const classes = useStyles();
 
-    const { sections, entityCommandProviders, sectionCommandProviders, scene, selectedEntity } = props;
+    const { sections, entityCommandProviders, sectionCommandProviders, scene, selectedEntity = null } = props;
 
     const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
     const [sceneVersion, setSceneVersion] = useState(0);
     const scrollViewRef = useRef<ScrollToInterface>(null);
     // We only want to scroll to the selected item if it was externally selected (outside of SceneExplorer).
     const previousSelectedEntity = useRef(selectedEntity);
-    const setSelectedEntity = (entity: unknown) => {
+    const setSelectedEntity = (entity: Nullable<object>) => {
         previousSelectedEntity.current = entity;
         props.setSelectedEntity?.(entity);
     };
@@ -862,7 +867,7 @@ export const SceneExplorer: FunctionComponent<{
             if (targetEntity) {
                 setOpenItems((prev) => {
                     const next = new Set(prev);
-                    next.add(GetEntityId(targetEntity as EntityBase));
+                    next.add(GetEntityId(targetEntity));
                     return next;
                 });
             }
@@ -880,10 +885,10 @@ export const SceneExplorer: FunctionComponent<{
             setSceneVersion((version) => version + 1);
         };
 
-        const onSceneItemRemoved = (item: unknown) => {
+        const onSceneItemRemoved = (item: object) => {
             setSceneVersion((version) => version + 1);
 
-            if (openItems.delete(GetEntityId(item as EntityBase))) {
+            if (openItems.delete(GetEntityId(item))) {
                 setOpenItems(new Set(openItems));
             }
 
@@ -922,7 +927,7 @@ export const SceneExplorer: FunctionComponent<{
         };
 
         for (const section of sections) {
-            const rootEntities = (section.getRootEntities() as EntityBase[]).filter((entity) => !entity.reservedDataStore?.hidden);
+            const rootEntities = section.getRootEntities().filter((entity) => !IsEntityHidden(entity));
 
             const sectionTreeItem = {
                 type: "section",
@@ -935,7 +940,7 @@ export const SceneExplorer: FunctionComponent<{
             allTreeItems.set(sectionTreeItem.sectionName, sectionTreeItem);
 
             let depth = 2;
-            const createEntityTreeItemData = (entity: EntityBase, parent: SectionTreeItemData | EntityTreeItemData) => {
+            const createEntityTreeItemData = (entity: object, parent: SectionTreeItemData | EntityTreeItemData) => {
                 const treeItemData = {
                     type: "entity",
                     entity,
@@ -954,15 +959,15 @@ export const SceneExplorer: FunctionComponent<{
                 return treeItemData;
             };
 
-            const rootEntityTreeItems = rootEntities.map((entity) => createEntityTreeItemData(entity as EntityBase, sectionTreeItem));
+            const rootEntityTreeItems = rootEntities.map((entity) => createEntityTreeItemData(entity, sectionTreeItem));
 
             TraverseGraph(
                 rootEntityTreeItems,
                 // Get children
                 (treeItem) => {
                     if (section.getEntityChildren) {
-                        const children = section.getEntityChildren(treeItem.entity) as EntityBase[];
-                        return children.filter((child) => !child.reservedDataStore?.hidden).map((child) => createEntityTreeItemData(child, treeItem));
+                        const children = section.getEntityChildren(treeItem.entity);
+                        return children.filter((child) => !IsEntityHidden(child)).map((child) => createEntityTreeItemData(child, treeItem));
                     }
                     return null;
                 },
@@ -1060,7 +1065,7 @@ export const SceneExplorer: FunctionComponent<{
     }, [sceneTreeItem, sectionTreeItems, allTreeItems, openItems, itemsFilter, isSorted]);
 
     const getParentStack = useCallback(
-        (entity: EntityBase) => {
+        (entity: object) => {
             const parentStack: TreeItemValue[] = [];
             for (let treeItem = allTreeItems.get(GetEntityId(entity)); treeItem; treeItem = treeItem?.type === "entity" ? treeItem.parent : undefined) {
                 parentStack.push(treeItem.type === "entity" ? GetEntityId(treeItem.entity) : treeItem.sectionName);
@@ -1073,8 +1078,8 @@ export const SceneExplorer: FunctionComponent<{
     );
 
     const selectEntity = useCallback(
-        (selectedEntity: unknown) => {
-            const entity = selectedEntity as Nullable<EntityBase>;
+        (selectedEntity: Nullable<object>) => {
+            const entity = selectedEntity;
             if (entity && GetEntityId(entity) != undefined) {
                 const parentStack = getParentStack(entity);
                 if (parentStack.length > 0) {
@@ -1210,7 +1215,7 @@ export const SceneExplorer: FunctionComponent<{
                                     isSelected={selectedEntity === item.entity}
                                     select={() => setSelectedEntity?.(item.entity)}
                                     isFiltering={!!itemsFilter}
-                                    commandProviders={entityCommandProviders as SceneExplorerCommandProvider<EntityBase>[]}
+                                    commandProviders={entityCommandProviders}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
                                     isDragging={draggedEntity === item.entity}

@@ -1,3 +1,4 @@
+import type { Nullable } from "core/index";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IGizmoService } from "./gizmoService";
 import type { ISettingsService } from "./panes/settingsService";
@@ -64,7 +65,7 @@ export const PickingServiceDefinition: ServiceDefinition<[], [ISceneContext, ISh
             suppressTeachingMoment: true,
             component: () => {
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
-                const selectEntity = useCallback((entity: unknown) => (selectionService.selectedEntity = entity), []);
+                const selectEntity = useCallback((entity: Nullable<object>) => (selectionService.selectedEntity = entity), []);
                 const [ignoreBackfacesForPicking] = useSetting(IgnoreBackfacesForPickingSettingDescriptor);
                 const [highlightSelectedEntity, setHighlightSelectedEntity] = useSetting(HighlightSelectedEntitySettingDescriptor);
                 return scene ? (

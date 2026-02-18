@@ -158,7 +158,7 @@ export const PBRBaseMaterialChannelsProperties: FunctionComponent<{ material: PB
     const { material, selectionService } = props;
     const scene = material.getScene();
 
-    const selectEntity = (entity: unknown) => (selectionService.selectedEntity = entity);
+    const selectEntity = (entity: object) => (selectionService.selectedEntity = entity);
 
     return (
         <>
@@ -319,7 +319,7 @@ export const PBRBaseMaterialMetallicWorkflowProperties: FunctionComponent<{ mate
     const { material, selectionService } = props;
     const scene = material.getScene();
 
-    const selectEntity = (entity: unknown) => (selectionService.selectedEntity = entity);
+    const selectEntity = (entity: object) => (selectionService.selectedEntity = entity);
 
     return (
         <>
@@ -392,7 +392,7 @@ export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: P
     const { material, selectionService } = props;
     const scene = material.getScene();
 
-    const selectEntity = (entity: unknown) => (selectionService.selectedEntity = entity);
+    const selectEntity = (entity: object) => (selectionService.selectedEntity = entity);
 
     const isEnabled = useProperty(material.clearCoat, "isEnabled");
     const isTintEnabled = useProperty(material.clearCoat, "isTintEnabled");
@@ -541,7 +541,7 @@ export const PBRBaseMaterialIridescenceProperties: FunctionComponent<{ material:
     const { material, selectionService } = props;
     const scene = material.getScene();
 
-    const selectEntity = (entity: unknown) => (selectionService.selectedEntity = entity);
+    const selectEntity = (entity: object) => (selectionService.selectedEntity = entity);
 
     const isEnabled = useProperty(material.iridescence, "isEnabled");
 
@@ -619,7 +619,7 @@ export const PBRBaseMaterialAnisotropicProperties: FunctionComponent<{ material:
     const { material, selectionService } = props;
     const scene = material.getScene();
 
-    const selectEntity = (entity: unknown) => (selectionService.selectedEntity = entity);
+    const selectEntity = (entity: object) => (selectionService.selectedEntity = entity);
 
     const isEnabled = useProperty(material.anisotropy, "isEnabled");
 
@@ -658,7 +658,7 @@ export const PBRBaseMaterialSheenProperties: FunctionComponent<{ material: PBRBa
     const { material, selectionService } = props;
     const scene = material.getScene();
 
-    const selectEntity = (entity: unknown) => (selectionService.selectedEntity = entity);
+    const selectEntity = (entity: object) => (selectionService.selectedEntity = entity);
 
     const isEnabled = useProperty(material.sheen, "isEnabled");
     const useRoughness = useProperty(material.sheen, "_useRoughness");
@@ -739,7 +739,7 @@ export const PBRBaseMaterialSubSurfaceProperties: FunctionComponent<{ material: 
     const { material, selectionService } = props;
     const scene = material.getScene();
 
-    const selectEntity = (entity: unknown) => (selectionService.selectedEntity = entity);
+    const selectEntity = (entity: object) => (selectionService.selectedEntity = entity);
 
     const useScattering = useProperty(material.subSurface, "isScatteringEnabled") && !!material.getScene().prePassRenderer && !!material.getScene().subSurfaceConfiguration;
     const useRefraction = useProperty(material.subSurface, "isRefractionEnabled");
