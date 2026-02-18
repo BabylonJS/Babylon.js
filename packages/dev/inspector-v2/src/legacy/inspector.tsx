@@ -7,7 +7,7 @@ import type { IPropertiesService } from "../services/panes/properties/properties
 import type { ISceneExplorerService } from "../services/panes/scene/sceneExplorerService";
 import type { ISelectionService } from "../services/selectionService";
 import type { IShellService } from "../services/shellService";
-import type { IWatcher } from "../services/watcherService";
+import type { IWatcherService } from "../services/watcherService";
 
 import { BranchRegular } from "@fluentui/react-icons";
 
@@ -104,10 +104,10 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
 
     if (v1Options.additionalNodes && v1Options.additionalNodes.length > 0) {
         const { additionalNodes } = v1Options;
-        const additionalNodesServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, IWatcher]> = {
+        const additionalNodesServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, IWatcherService]> = {
             friendlyName: "Additional Nodes (Backward Compatibility)",
             consumes: [SceneExplorerServiceIdentity, WatcherServiceIdentity],
-            factory: (sceneExplorerService, watcher) => {
+            factory: (sceneExplorerService, watcherService) => {
                 const sceneExplorerSectionRegistrations = additionalNodes.map((node) =>
                     sceneExplorerService.addSection({
                         displayName: node.name,
@@ -116,7 +116,7 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
                         getEntityDisplayInfo: (entity) => {
                             const onChangeObservable = new Observable<void>();
 
-                            const nameHookToken = watcher.watchProperty(entity, "name", () => onChangeObservable.notifyObservers());
+                            const nameHookToken = watcherService.watchProperty(entity, "name", () => onChangeObservable.notifyObservers());
 
                             return {
                                 get name() {

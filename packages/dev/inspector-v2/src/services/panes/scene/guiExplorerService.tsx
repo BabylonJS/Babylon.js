@@ -1,7 +1,7 @@
 import type { AdvancedDynamicTexture, Container, Control } from "gui/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
-import type { IWatcher } from "../../watcherService";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { AppGenericRegular, BorderNoneRegular, BorderOutsideRegular, EditRegular, EyeOffRegular, EyeRegular, RectangleLandscapeRegular } from "@fluentui/react-icons";
@@ -27,10 +27,10 @@ function IsControl(entity: unknown): entity is Control {
     return (entity as Control)?._currentMeasure !== undefined && (entity as Control)?.onPointerDownObservable !== undefined;
 }
 
-export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcher]> = {
+export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "GUI Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
-    factory: (sceneExplorerService, sceneContext, watcher) => {
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -62,7 +62,7 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
                 const onChangeObservable = new Observable<void>();
                 disposeActions.push(() => onChangeObservable.clear());
 
-                const nameHookToken = watcher.watchProperty(entity, "name", () => {
+                const nameHookToken = watcherService.watchProperty(entity, "name", () => {
                     onChangeObservable.notifyObservers();
                 });
                 disposeActions.push(() => nameHookToken.dispose());
@@ -124,7 +124,7 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
             order: DefaultCommandsOrder.GuiHighlight,
             getCommand: (control) => {
                 const onChangeObservable = new Observable<void>();
-                const showBoundingBoxHook = watcher.watchProperty(control, "isHighlighted", () => onChangeObservable.notifyObservers());
+                const showBoundingBoxHook = watcherService.watchProperty(control, "isHighlighted", () => onChangeObservable.notifyObservers());
 
                 return {
                     type: "toggle",

@@ -1,6 +1,6 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
-import type { IWatcher } from "../../watcherService";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { EditRegular, FrameRegular, PlayFilled, PlayRegular } from "@fluentui/react-icons";
@@ -13,10 +13,10 @@ import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcher]> = {
+export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Frame Graph Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
-    factory: (sceneExplorerService, sceneContext, watcher) => {
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -29,7 +29,7 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
             getEntityDisplayInfo: (frameGraph) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = watcher.watchProperty(frameGraph, "name", () => onChangeObservable.notifyObservers());
+                const nameHookToken = watcherService.watchProperty(frameGraph, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {
@@ -52,7 +52,7 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
             order: DefaultCommandsOrder.FrameGraphPlay,
             getCommand: (frameGraph) => {
                 const onChangeObservable = new Observable<void>();
-                const frameGraphHook = watcher.watchProperty(scene, "frameGraph", () => onChangeObservable.notifyObservers());
+                const frameGraphHook = watcherService.watchProperty(scene, "frameGraph", () => onChangeObservable.notifyObservers());
 
                 return {
                     type: "toggle",

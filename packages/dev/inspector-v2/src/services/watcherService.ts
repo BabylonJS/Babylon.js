@@ -1,9 +1,10 @@
-import type { IDisposable, IObserver, Nullable } from "core/index";
-import type { IService } from "../modularity/serviceDefinition";
+import type { IDisposable, Nullable } from "core/index";
+import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 import type { ISettingsStore, SettingDescriptor } from "./settingsStore";
 
 import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
+import { SettingsStoreIdentity } from "./settingsStore";
 
 type InterceptSettings = {
     mode: "intercept";
@@ -23,7 +24,7 @@ const WatcherSettingDescriptor: SettingDescriptor<InterceptSettings | PollingSet
 
 export const WatcherServiceIdentity = Symbol("WatcherService");
 
-export interface IWatcher extends IService<typeof WatcherServiceIdentity> {
+export interface IWatcherService extends IService<typeof WatcherServiceIdentity> {
     watchProperty<T extends object, K extends keyof T>(
         target: T,
         propertyKey: string extends K ? never : number extends K ? never : symbol extends K ? never : K,
@@ -33,69 +34,72 @@ export interface IWatcher extends IService<typeof WatcherServiceIdentity> {
     watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable;
 }
 
-export class Watcher implements IWatcher, IDisposable {
-    private readonly _settingsStoreObserver: IObserver;
-    private _pollingObservable: Nullable<Observable<void>> = null;
-    private _pollingHandle: Nullable<number> = null;
+export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISettingsStore]> = {
+    friendlyName: "Watcher Service",
+    produces: [WatcherServiceIdentity],
+    consumes: [SettingsStoreIdentity],
+    factory: (settingsStore) => {
+        let pollingObservable: Nullable<Observable<void>> = null;
+        let pollingHandle: Nullable<number> = null;
 
-    public constructor(private readonly _settingsStore: ISettingsStore) {
         const applySettings = () => {
-            const settings = this._settingsStore.readSetting(WatcherSettingDescriptor);
-            if (this._pollingHandle !== null) {
-                clearInterval(this._pollingHandle);
-                this._pollingHandle = null;
+            const settings = settingsStore.readSetting(WatcherSettingDescriptor);
+            if (pollingHandle !== null) {
+                clearInterval(pollingHandle);
+                pollingHandle = null;
             }
 
             if (settings.mode === "intercept") {
-                if (this._pollingObservable) {
-                    this._pollingObservable.clear();
-                    this._pollingObservable = null;
+                if (pollingObservable) {
+                    pollingObservable.clear();
+                    pollingObservable = null;
                 }
             } else if (settings.mode === "polling") {
-                const pollingObservable = this._pollingObservable ?? (this._pollingObservable = new Observable<void>());
-                this._pollingHandle = window.setInterval(() => {
-                    pollingObservable.notifyObservers();
+                const _pollingObservable = pollingObservable ?? (pollingObservable = new Observable<void>());
+                pollingHandle = window.setInterval(() => {
+                    _pollingObservable.notifyObservers();
                 }, settings.interval);
             }
         };
 
-        this._settingsStoreObserver = this._settingsStore.onChanged.add((key: string) => {
+        const settingsStoreObserver = settingsStore.onChanged.add((key: string) => {
             if (key === WatcherSettingDescriptor.key) {
                 applySettings();
             }
         });
 
         applySettings();
-    }
 
-    public watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable {
-        if (this._pollingObservable) {
-            let previousValue = target[propertyKey];
-            const observer = this._pollingObservable.add(() => {
-                const currentValue = target[propertyKey];
-                if (!Object.is(previousValue, currentValue)) {
-                    previousValue = currentValue;
-                    onChanged(currentValue);
+        return {
+            watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable {
+                if (pollingObservable) {
+                    let previousValue = target[propertyKey];
+                    const observer = pollingObservable.add(() => {
+                        const currentValue = target[propertyKey];
+                        if (!Object.is(previousValue, currentValue)) {
+                            previousValue = currentValue;
+                            onChanged(currentValue);
+                        }
+                    });
+
+                    return {
+                        dispose: () => observer.remove(),
+                    };
+                } else {
+                    return InterceptProperty(target, propertyKey, {
+                        afterSet: (value) => onChanged(value),
+                    });
                 }
-            });
+            },
+            dispose: () => {
+                if (pollingHandle !== null) {
+                    clearInterval(pollingHandle);
+                    pollingHandle = null;
+                }
 
-            return {
-                dispose: () => observer.remove(),
-            };
-        } else {
-            return InterceptProperty(target, propertyKey, {
-                afterSet: (value) => onChanged(value),
-            });
-        }
-    }
-
-    public dispose(): void {
-        if (this._pollingHandle !== null) {
-            clearInterval(this._pollingHandle);
-            this._pollingHandle = null;
-        }
-
-        this._pollingObservable?.clear();
-        this._settingsStoreObserver.remove();
-    }
-}
+                pollingObservable?.clear();
+                settingsStoreObserver.remove();
+            },
+        };
+    },
+};

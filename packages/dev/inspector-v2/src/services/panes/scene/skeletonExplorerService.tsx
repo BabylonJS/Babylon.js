@@ -1,7 +1,7 @@
 import type { Bone } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
-import type { IWatcher } from "../../watcherService";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { DataLineRegular, PersonWalkingRegular } from "@fluentui/react-icons";
@@ -13,10 +13,10 @@ import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcher]> = {
+export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Skeleton Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
-    factory: (sceneExplorerService, sceneContext, watcher) => {
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -32,10 +32,10 @@ export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
             getEntityDisplayInfo: (skeletonOrBone) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = watcher.watchProperty(skeletonOrBone, "name", () => onChangeObservable.notifyObservers());
+                const nameHookToken = watcherService.watchProperty(skeletonOrBone, "name", () => onChangeObservable.notifyObservers());
 
                 const parentHookToken =
-                    skeletonOrBone instanceof Skeleton ? null : watcher.watchProperty(skeletonOrBone, "parent", () => boneMovedObservable.notifyObservers(skeletonOrBone));
+                    skeletonOrBone instanceof Skeleton ? null : watcherService.watchProperty(skeletonOrBone, "parent", () => boneMovedObservable.notifyObservers(skeletonOrBone));
 
                 return {
                     get name() {

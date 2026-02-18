@@ -1,6 +1,6 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
-import type { IWatcher } from "../../watcherService";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { WeatherSunnyLowFilled } from "@fluentui/react-icons";
@@ -12,10 +12,10 @@ import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcher]> = {
+export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Atmosphere Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
-    factory: (sceneExplorerService, sceneContext, watcher) => {
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -27,7 +27,7 @@ export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
             getEntityDisplayInfo: (atmosphere) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = watcher.watchProperty(atmosphere, "name", () => onChangeObservable.notifyObservers());
+                const nameHookToken = watcherService.watchProperty(atmosphere, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {

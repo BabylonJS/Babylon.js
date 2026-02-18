@@ -1,7 +1,7 @@
 import type { ISpriteManager } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
-import type { IWatcher } from "../../watcherService";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { LayerDiagonalPersonRegular, PersonSquareRegular, PlayFilled, StopFilled } from "@fluentui/react-icons";
@@ -16,10 +16,10 @@ import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 import "core/Sprites/spriteSceneComponent";
 import { InterceptFunction } from "../../../instrumentation/functionInstrumentation";
 
-export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcher]> = {
+export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Sprite Manager Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
-    factory: (sceneExplorerService, sceneContext, watcher) => {
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -33,7 +33,7 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
             getEntityDisplayInfo: (spriteEntity) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = watcher.watchProperty(spriteEntity, "name", () => onChangeObservable.notifyObservers());
+                const nameHookToken = watcherService.watchProperty(spriteEntity, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {

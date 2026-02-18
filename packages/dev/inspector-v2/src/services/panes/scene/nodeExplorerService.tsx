@@ -2,7 +2,7 @@ import type { IDisposable, Nullable } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IGizmoService } from "../../gizmoService";
 import type { ISceneContext } from "../../sceneContext";
-import type { IWatcher } from "../../watcherService";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import {
@@ -38,10 +38,10 @@ import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Rendering/boundingBoxRenderer";
 
-export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService, IWatcher]> = {
+export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService, IWatcherService]> = {
     friendlyName: "Node Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, GizmoServiceIdentity, WatcherServiceIdentity],
-    factory: (sceneExplorerService, sceneContext, gizmoService, watcher) => {
+    factory: (sceneExplorerService, sceneContext, gizmoService, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -88,9 +88,9 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             getEntityDisplayInfo: (node) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = watcher.watchProperty(node, "name", () => onChangeObservable.notifyObservers());
+                const nameHookToken = watcherService.watchProperty(node, "name", () => onChangeObservable.notifyObservers());
 
-                const parentHookToken = watcher.watchProperty(node, "parent", () => nodeMovedObservable.notifyObservers(node));
+                const parentHookToken = watcherService.watchProperty(node, "parent", () => nodeMovedObservable.notifyObservers(node));
 
                 return {
                     get name() {
@@ -165,7 +165,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             order: DefaultCommandsOrder.MeshBoundingBox,
             getCommand: (mesh) => {
                 const onChangeObservable = new Observable<void>();
-                const showBoundingBoxHook = watcher.watchProperty(mesh, "showBoundingBox", () => onChangeObservable.notifyObservers());
+                const showBoundingBoxHook = watcherService.watchProperty(mesh, "showBoundingBox", () => onChangeObservable.notifyObservers());
 
                 return {
                     type: "toggle",
@@ -193,7 +193,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             order: DefaultCommandsOrder.MeshVisibility,
             getCommand: (mesh) => {
                 const onChangeObservable = new Observable<void>();
-                const isVisibleHook = watcher.watchProperty(mesh, "isVisible", () => onChangeObservable.notifyObservers());
+                const isVisibleHook = watcherService.watchProperty(mesh, "isVisible", () => onChangeObservable.notifyObservers());
 
                 return {
                     type: "toggle",

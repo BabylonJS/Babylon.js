@@ -1,11 +1,11 @@
 import type { IDisposable } from "core/index";
-import type { IWatcher } from "../services/watcherService";
+import type { IWatcherService } from "../services/watcherService";
 
 import { createContext, useContext } from "react";
 
 import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 
-const DefaultWatcher: IWatcher = {
+const DefaultWatcher: IWatcherService = {
     watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable {
         return InterceptProperty(target, propertyKey, {
             afterSet: (value) => onChanged(value),
@@ -13,7 +13,7 @@ const DefaultWatcher: IWatcher = {
     },
 };
 
-export const WatcherContext = createContext<IWatcher>(DefaultWatcher);
+export const WatcherContext = createContext<IWatcherService>(DefaultWatcher);
 
 export function useWatcher() {
     return useContext(WatcherContext);
