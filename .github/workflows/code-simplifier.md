@@ -6,9 +6,6 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
-imports:
-- github/gh-aw/.github/workflows/shared/mood.md@f88ec26c65cc20ebb8ceabe809c9153385945bfe
-- github/gh-aw/.github/workflows/shared/reporting.md@f88ec26c65cc20ebb8ceabe809c9153385945bfe
 safe-outputs:
   create-pull-request:
     expires: 1d
