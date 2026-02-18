@@ -28,6 +28,7 @@ import type { GeospatialCamera } from "./geospatialCamera";
 export class GeospatialCameraMovement extends CameraMovement {
     /** Predicate function to determine which meshes to pick against (e.g., globe mesh) */
     public pickPredicate?: MeshPredicate;
+    public calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3;
 
     /** World-space picked point under cursor for zoom-to-cursor behavior (may be undefined) */
     public computedPerFrameZoomPickPoint?: Vector3;
@@ -50,10 +51,12 @@ export class GeospatialCameraMovement extends CameraMovement {
         private _cameraCenter: Vector3,
         private _cameraLookAt: Vector3,
         pickPredicate?: MeshPredicate,
-        behavior?: InterpolatingBehavior<GeospatialCamera>
+        behavior?: InterpolatingBehavior<GeospatialCamera>,
+        calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3
     ) {
         super(scene, cameraPosition, behavior);
         this.pickPredicate = pickPredicate;
+        this.calculateUpVectorFromPoint = calculateUpVectorFromPoint;
         this._tempPickingRay = new Ray(this._cameraPosition, this._cameraLookAt);
         this.panInertia = 0;
         this.rotationInertia = 0;
@@ -92,7 +95,14 @@ export class GeospatialCameraMovement extends CameraMovement {
         this._dragPlaneNormal.scaleToRef(hitPointRadius, this._dragPlaneOriginPointEcef);
 
         // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
-        ComputeLocalBasisToRefs(this._dragPlaneOriginPointEcef, TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], this._scene.useRightHandedSystem);
+        ComputeLocalBasisToRefs(
+            this._dragPlaneOriginPointEcef,
+            TmpVectors.Vector3[0],
+            TmpVectors.Vector3[1],
+            TmpVectors.Vector3[2],
+            this._scene.useRightHandedSystem,
+            this.calculateUpVectorFromPoint
+        );
         const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], localToEcefResult);
         localToEcef.setTranslationFromFloats(this._dragPlaneOriginPointEcef.x, this._dragPlaneOriginPointEcef.y, this._dragPlaneOriginPointEcef.z);
         const ecefToLocal = localToEcef.invertToRef(TmpVectors.Matrix[1]);
@@ -243,9 +253,20 @@ function IntersectRayWithPlaneToRef(ray: Ray, plane: Plane, ref: Vector3): boole
  * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system (default: false)
  * @internal
  */
-export function ComputeLocalBasisToRefs(worldPos: Vector3, refEast: Vector3, refNorth: Vector3, refUp: Vector3, useRightHandedSystem: boolean = false) {
-    // up = normalized position (geocentric normal)
-    refUp.copyFrom(worldPos).normalize();
+export function ComputeLocalBasisToRefs(
+    worldPos: Vector3,
+    refEast: Vector3,
+    refNorth: Vector3,
+    refUp: Vector3,
+    useRightHandedSystem: boolean = false,
+    calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3
+): void {
+    if (calculateUpVectorFromPoint) {
+        calculateUpVectorFromPoint(worldPos, refUp);
+    } else {
+        // up = normalized position (geocentric normal)
+        refUp.copyFrom(worldPos).normalize();
+    }
 
     // east – cross product order determines handedness
     const worldNorth = Vector3.LeftHandedForwardReadOnly; // (0,0,1)
