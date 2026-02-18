@@ -140,6 +140,9 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 });
 
                 // Register watcher service early since many other services will rely on it.
+                // TODO: Really this should be in the Inspector layer, but we would need a way
+                //       to setup the WatcherContext.Provider before the root component is rendered
+                //       for that to work, since components will use the WatcherContext.
                 await serviceContainer.addServiceAsync(WatcherServiceDefinition);
 
                 // Register the shell service (top level toolbar/side pane UI layout).
