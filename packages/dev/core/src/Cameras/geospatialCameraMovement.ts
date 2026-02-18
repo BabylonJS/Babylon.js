@@ -51,12 +51,10 @@ export class GeospatialCameraMovement extends CameraMovement {
         private _cameraCenter: Vector3,
         private _cameraLookAt: Vector3,
         pickPredicate?: MeshPredicate,
-        behavior?: InterpolatingBehavior<GeospatialCamera>,
-        calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3
+        behavior?: InterpolatingBehavior<GeospatialCamera>
     ) {
         super(scene, cameraPosition, behavior);
         this.pickPredicate = pickPredicate;
-        this.calculateUpVectorFromPoint = calculateUpVectorFromPoint;
         this._tempPickingRay = new Ray(this._cameraPosition, this._cameraLookAt);
         this.panInertia = 0;
         this.rotationInertia = 0;
