@@ -94,10 +94,17 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
         }
     };
 
-    // Strip the unit suffix (e.g. " deg") from the raw input value before evaluating expressions.
+    // Strip the unit suffix (e.g. "deg" or " deg") from the raw input value before evaluating expressions.
     const stripUnit = (val: string): string => {
-        if (props.unit && val.endsWith(" " + props.unit)) {
-            return val.slice(0, -(props.unit.length + 1));
+        if (!props.unit) {
+            return val;
+        }
+
+        const regex = new RegExp("\\s*" + props.unit + "$");
+        const match = val.match(regex);
+
+        if (match) {
+            return val.slice(0, -match[0].length);
         }
         return val;
     };
