@@ -28,7 +28,6 @@ import type { GeospatialCamera } from "./geospatialCamera";
 export class GeospatialCameraMovement extends CameraMovement {
     /** Predicate function to determine which meshes to pick against (e.g., globe mesh) */
     public pickPredicate?: MeshPredicate;
-    public calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3;
 
     /** World-space picked point under cursor for zoom-to-cursor behavior (may be undefined) */
     public computedPerFrameZoomPickPoint?: Vector3;
@@ -63,6 +62,18 @@ export class GeospatialCameraMovement extends CameraMovement {
         this.zoomSpeed = 2; // Base zoom speed; actual speed is scaled based on altitude
     }
 
+    /**
+     * Function to calculate the up vector from a given point.
+     * Can be overridden to support non-spherical planets or custom up vector logic.
+     * Defaults to using the geocentric normal.
+     * @param point The point from which to calculate the up vector (e.g., camera position)
+     * @param result The vector to store the calculated up vector
+     * @returns The calculated up vector
+     */
+    public calculateUpVectorFromPoint(point: Vector3, result: Vector3): Vector3 {
+        return point.normalizeToRef(result);
+    }
+
     public startDrag(pointerX: number, pointerY: number) {
         const pickResult = this._scene.pick(pointerX, pointerY, this.pickPredicate);
         if (pickResult.pickedPoint && pickResult.ray) {
@@ -89,7 +100,7 @@ export class GeospatialCameraMovement extends CameraMovement {
      */
     private _recalculateDragPlaneHitPoint(hitPointRadius: number, ray: Ray, localToEcefResult: Matrix): void {
         // Use the camera's geocentric normal to find the dragPlaneOriginPoint which lives at hitPointRadius along the camera's geocentric normal
-        this._cameraPosition.normalizeToRef(this._dragPlaneNormal);
+        this.calculateUpVectorFromPoint(this._cameraPosition, this._dragPlaneNormal);
         this._dragPlaneNormal.scaleToRef(hitPointRadius, this._dragPlaneOriginPointEcef);
 
         // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
@@ -151,7 +162,14 @@ export class GeospatialCameraMovement extends CameraMovement {
             const centerRadius = cameraCenter.length(); // distance from planet origin to camera center
             const currentRadius = this._cameraPosition.length();
             // Dampen the pan speed based on latitude (slower near poles)
-            const sineOfSphericalLat = centerRadius === 0 ? 0 : cameraCenter.z / centerRadius;
+            // Use the surface normal at center to derive latitude rather than assuming spherical coordinates
+            const upAtCenter = TmpVectors.Vector3[7];
+            if (this.calculateUpVectorFromPoint) {
+                this.calculateUpVectorFromPoint(cameraCenter, upAtCenter);
+            } else {
+                cameraCenter.normalizeToRef(upAtCenter);
+            }
+            const sineOfSphericalLat = upAtCenter.z;
             const cosOfSphericalLat = Math.sqrt(1 - Math.min(1, sineOfSphericalLat * sineOfSphericalLat));
             const latitudeDampening = Math.sqrt(Math.abs(cosOfSphericalLat)); // sqrt here reduces effect near equator
 
@@ -206,11 +224,18 @@ export class GeospatialCameraMovement extends CameraMovement {
     }
 }
 /** @internal */
-export function ClampCenterFromPolesInPlace(center: Vector3) {
+export function ClampCenterFromPolesInPlace(center: Vector3, calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3) {
     const sineOfSphericalLatitudeLimit = 0.998749218; // ~90 degrees
     const centerMagnitude = center.length(); // distance from planet origin
     if (centerMagnitude > Epsilon) {
-        const sineSphericalLat = centerMagnitude === 0 ? 0 : center.z / centerMagnitude;
+        // Derive latitude from the surface normal's Z component rather than assuming spherical coordinates
+        const up = TmpVectors.Vector3[5];
+        if (calculateUpVectorFromPoint) {
+            calculateUpVectorFromPoint(center, up);
+        } else {
+            center.normalizeToRef(up);
+        }
+        const sineSphericalLat = up.z;
         if (Math.abs(sineSphericalLat) > sineOfSphericalLatitudeLimit) {
             // Clamp the spherical latitude (and derive longitude)
             const sineOfClampedSphericalLat = Clamp(sineSphericalLat, -sineOfSphericalLatitudeLimit, sineOfSphericalLatitudeLimit);

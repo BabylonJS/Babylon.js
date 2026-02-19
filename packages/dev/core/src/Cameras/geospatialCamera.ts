@@ -150,7 +150,7 @@ export class GeospatialCamera extends Camera {
         const effectivePitchMax = limits.getEffectivePitchMax(this._radius);
         this._pitch = Clamp(this._pitch, limits.pitchMin, effectivePitchMax);
         this._radius = Clamp(this._radius, limits.radiusMin, limits.radiusMax);
-        ClampCenterFromPolesInPlace(this._center);
+        ClampCenterFromPolesInPlace(this._center, this.movement.calculateUpVectorFromPoint);
     }
 
     private _tempVect = new Vector3();
