@@ -38,6 +38,8 @@ interface IDelayedTextureUpdate {
 }
 interface IUpdateOptions {
     flipY?: boolean;
+    /** @internal When set, skips reprocessing splats [0, previousVertexCount) and copies from cached arrays instead. */
+    previousVertexCount?: number;
 }
 
 // @internal
@@ -330,6 +332,13 @@ export class GaussianSplattingMesh extends Mesh {
 
     private _tmpCovariances = [0, 0, 0, 0, 0, 0];
     private _sortIsDirty = false;
+
+    // Cached intermediate arrays for incremental addPart updates
+    private _cachedCovA: Nullable<Uint16Array> = null;
+    private _cachedCovB: Nullable<Uint16Array> = null;
+    private _cachedColorArray: Nullable<Uint8Array> = null;
+    private _cachedBoundingMin: Nullable<Vector3> = null;
+    private _cachedBoundingMax: Nullable<Vector3> = null;
 
     private static _RowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // Vector3 position, Vector3 scale, 1 u8 quaternion, 1 color with alpha
     private static _SH_C0 = 0.28209479177387814;
@@ -1502,6 +1511,11 @@ export class GaussianSplattingMesh extends Mesh {
         this._shTextures = null;
         this._partIndicesTexture = null;
         this._partMatrices = [];
+        this._cachedCovA = null;
+        this._cachedCovB = null;
+        this._cachedColorArray = null;
+        this._cachedBoundingMin = null;
+        this._cachedBoundingMax = null;
 
         this._worker?.terminate();
         this._worker = null;
@@ -1670,7 +1684,7 @@ export class GaussianSplattingMesh extends Mesh {
         colorArray: Uint8Array,
         minimum: Vector3,
         maximum: Vector3,
-        options: IUpdateOptions
+        flipY: boolean
     ): void {
         const matrixRotation = TmpVectors.Matrix[0];
         const matrixScale = TmpVectors.Matrix[1];
@@ -1678,7 +1692,7 @@ export class GaussianSplattingMesh extends Mesh {
         const covBSItemSize = this._useRGBACovariants ? 4 : 2;
 
         const x = fBuffer[8 * index + 0];
-        const y = fBuffer[8 * index + 1] * (options.flipY ? -1 : 1);
+        const y = fBuffer[8 * index + 1] * (flipY ? -1 : 1);
         const z = fBuffer[8 * index + 2];
 
         this._splatPositions![4 * index + 0] = x;
@@ -1831,7 +1845,143 @@ export class GaussianSplattingMesh extends Mesh {
         }
     }
 
-    private *_updateData(data: ArrayBuffer, isAsync: boolean, sh?: Uint8Array[], partIndices?: Uint8Array, options: IUpdateOptions = { flipY: false }): Coroutine<void> {
+    /**
+     * Checks whether cached intermediate data can be reused to avoid reprocessing existing splats.
+     * @param previousVertexCount - The number of splats that were previously processed
+     * @param vertexCount - The current total number of splats
+     * @returns true if cached data is available and can be reused for an incremental update
+     */
+    private _canReuseCachedData(previousVertexCount: number, vertexCount: number): boolean {
+        return (
+            previousVertexCount > 0 &&
+            previousVertexCount <= vertexCount &&
+            this._splatPositions !== null &&
+            this._cachedCovA !== null &&
+            this._cachedCovB !== null &&
+            this._cachedColorArray !== null &&
+            this._cachedBoundingMin !== null &&
+            this._cachedBoundingMax !== null
+        );
+    }
+
+    /**
+     * Performs an incremental update by copying cached data for existing splats and only processing new ones.
+     * @param fBuffer - Float32 view of the splat data
+     * @param uBuffer - Uint8 view of the splat data
+     * @param vertexCount - Total number of splats
+     * @param previousVertexCount - Number of previously processed splats to copy from cache
+     * @param textureSize - Texture dimensions
+     * @param textureLength - Total texel count (textureSize.x * textureSize.y)
+     * @param lineCountUpdate - Number of texture lines per progressive update batch
+     * @param textureLengthPerUpdate - Number of texels per progressive update batch
+     * @param isAsync - Whether to yield for async coroutine scheduling
+     * @param minimum - Bounding box minimum (mutated in place)
+     * @param maximum - Bounding box maximum (mutated in place)
+     * @param sh - Optional SH data arrays
+     * @param partIndices - Optional part index array
+     * @param flipY - Whether to flip the Y axis
+
+     */
+    private *_updateFromCached(
+        fBuffer: Float32Array,
+        uBuffer: Uint8Array,
+        vertexCount: number,
+        previousVertexCount: number,
+        textureSize: Vector2,
+        textureLength: number,
+        lineCountUpdate: number,
+        textureLengthPerUpdate: number,
+        isAsync: boolean,
+        minimum: Vector3,
+        maximum: Vector3,
+        sh: Uint8Array[] | undefined,
+        partIndices: Uint8Array | undefined,
+        flipY: boolean
+    ): Coroutine<void> {
+        // Copy previously computed data for existing splats
+        const oldPositions = this._splatPositions!; // still has old reference until overwritten below
+        const oldCovA = this._cachedCovA!;
+        const oldCovB = this._cachedCovB!;
+        const oldColorArray = this._cachedColorArray!;
+
+        // Recreate the arrays at the new texture size
+        this._splatPositions = new Float32Array(4 * textureLength);
+        const newCovA = new Uint16Array(textureLength * 4);
+        const covBSItemSize = this._useRGBACovariants ? 4 : 2;
+        const newCovB = new Uint16Array(covBSItemSize * textureLength);
+        const newColorArray = new Uint8Array(textureLength * 4);
+
+        // Copy cached data for [0, previousVertexCount)
+        this._splatPositions.set(oldPositions.subarray(0, previousVertexCount * 4));
+        newCovA.set(oldCovA.subarray(0, previousVertexCount * 4));
+        newCovB.set(oldCovB.subarray(0, previousVertexCount * covBSItemSize));
+        newColorArray.set(oldColorArray.subarray(0, previousVertexCount * 4));
+
+        // Reuse cached bounding min/max
+        minimum.copyFrom(this._cachedBoundingMin!);
+        maximum.copyFrom(this._cachedBoundingMax!);
+
+        // Only process new splats [previousVertexCount, vertexCount)
+        if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
+            this._updateTextures(newCovA, newCovB, newColorArray, sh, this._partIndices ? this._partIndices : undefined);
+            this.setEnabled(true);
+
+            const partCount = Math.ceil(textureSize.y / lineCountUpdate);
+            for (let partIndex = 0; partIndex < partCount; partIndex++) {
+                const updateLine = partIndex * lineCountUpdate;
+                const splatIndexBase = updateLine * textureSize.x;
+                for (let i = 0; i < textureLengthPerUpdate; i++) {
+                    const splatIdx = splatIndexBase + i;
+                    if (splatIdx >= previousVertexCount) {
+                        this._makeSplat(splatIdx, fBuffer, uBuffer, newCovA, newCovB, newColorArray, minimum, maximum, flipY);
+                    }
+                }
+                this._updateSubTextures(this._splatPositions, newCovA, newCovB, newColorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
+                this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+                if (isAsync) {
+                    yield;
+                }
+            }
+
+            const positions = Float32Array.from(this._splatPositions);
+            const workerVertexCount = this._vertexCount;
+            if (this._worker) {
+                this._worker.postMessage({ positions, vertexCount: workerVertexCount }, [positions.buffer]);
+                this._worker.postMessage({ partIndices });
+            }
+            this._sortIsDirty = true;
+        } else {
+            const paddedVertexCount = (vertexCount + 15) & ~0xf;
+            for (let i = previousVertexCount; i < vertexCount; i++) {
+                this._makeSplat(i, fBuffer, uBuffer, newCovA, newCovB, newColorArray, minimum, maximum, flipY);
+                if (isAsync && i % GaussianSplattingMesh._SplatBatchSize === 0) {
+                    yield;
+                }
+            }
+            for (let i = vertexCount; i < paddedVertexCount; i++) {
+                this._makeEmptySplat(i, newCovA, newCovB, newColorArray);
+            }
+            this._updateTextures(newCovA, newCovB, newColorArray, sh, this._partIndices ? this._partIndices : undefined);
+            this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+            this.setEnabled(true);
+            this._sortIsDirty = true;
+        }
+
+        // Update cache with the new full arrays
+        this._cachedCovA = newCovA;
+        this._cachedCovB = newCovB;
+        this._cachedColorArray = newColorArray;
+        this._cachedBoundingMin = minimum.clone();
+        this._cachedBoundingMax = maximum.clone();
+    }
+
+    private *_updateData(
+        data: ArrayBuffer,
+        isAsync: boolean,
+        sh?: Uint8Array[],
+        partIndices?: Uint8Array,
+        { flipY = false, previousVertexCount = 0 }: IUpdateOptions = {}
+    ): Coroutine<void> {
         // if a covariance texture is present, then it's not a creation but an update
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
@@ -1859,11 +2009,6 @@ export class GaussianSplattingMesh extends Mesh {
         const lineCountUpdate = GaussianSplattingMesh.ProgressiveUpdateAmount ?? textureSize.y;
         const textureLengthPerUpdate = textureSize.x * lineCountUpdate;
 
-        this._splatPositions = new Float32Array(4 * textureLength);
-        const covA = new Uint16Array(textureLength * 4);
-        const covB = new Uint16Array((this._useRGBACovariants ? 4 : 2) * textureLength);
-        const colorArray = new Uint8Array(textureLength * 4);
-
         // Ensure that partMatrices.length is at least the maximum part index + 1
         if (partIndices) {
             // We always keep part indices in RAM because they are needed for sorting
@@ -1880,52 +2025,86 @@ export class GaussianSplattingMesh extends Mesh {
         const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-        if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
-            // create textures with not filled-yet array, then update directly portions of it
-            this._updateTextures(covA, covB, colorArray, sh, this._partIndices ? this._partIndices : undefined);
-            this.setEnabled(true);
+        if (this._canReuseCachedData(previousVertexCount, vertexCount)) {
+            yield* this._updateFromCached(
+                fBuffer,
+                uBuffer,
+                vertexCount,
+                previousVertexCount,
+                textureSize,
+                textureLength,
+                lineCountUpdate,
+                textureLengthPerUpdate,
+                isAsync,
+                minimum,
+                maximum,
+                sh,
+                partIndices,
+                flipY
+            );
+        } else {
+            // Full rebuild path (original behavior)
+            this._splatPositions = new Float32Array(4 * textureLength);
+            const covA = new Uint16Array(textureLength * 4);
+            const covB = new Uint16Array((this._useRGBACovariants ? 4 : 2) * textureLength);
+            const colorArray = new Uint8Array(textureLength * 4);
 
-            const partCount = Math.ceil(textureSize.y / lineCountUpdate);
-            for (let partIndex = 0; partIndex < partCount; partIndex++) {
-                const updateLine = partIndex * lineCountUpdate;
-                const splatIndexBase = updateLine * textureSize.x;
-                for (let i = 0; i < textureLengthPerUpdate; i++) {
-                    this._makeSplat(splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, options);
+            if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
+                // create textures with not filled-yet array, then update directly portions of it
+                this._updateTextures(covA, covB, colorArray, sh, this._partIndices ? this._partIndices : undefined);
+                this.setEnabled(true);
+
+                const partCount = Math.ceil(textureSize.y / lineCountUpdate);
+                for (let partIndex = 0; partIndex < partCount; partIndex++) {
+                    const updateLine = partIndex * lineCountUpdate;
+                    const splatIndexBase = updateLine * textureSize.x;
+                    for (let i = 0; i < textureLengthPerUpdate; i++) {
+                        this._makeSplat(splatIndexBase + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, flipY);
+                    }
+                    this._updateSubTextures(this._splatPositions, covA, covB, colorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
+                    // Update the binfo
+                    this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
+                    if (isAsync) {
+                        yield;
+                    }
                 }
-                this._updateSubTextures(this._splatPositions, covA, covB, colorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
+
+                // sort will be dirty here as just finished filled positions will not be sorted
+                const positions = Float32Array.from(this._splatPositions);
+                const workerVertexCount = this._vertexCount;
+                if (this._worker) {
+                    this._worker.postMessage({ positions, vertexCount: workerVertexCount }, [positions.buffer]);
+                    this._worker.postMessage({ partIndices });
+                }
+                this._sortIsDirty = true;
+            } else {
+                const paddedVertexCount = (vertexCount + 15) & ~0xf;
+                for (let i = 0; i < vertexCount; i++) {
+                    this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, flipY);
+                    if (isAsync && i % GaussianSplattingMesh._SplatBatchSize === 0) {
+                        yield;
+                    }
+                }
+                // pad the rest
+                for (let i = vertexCount; i < paddedVertexCount; i++) {
+                    this._makeEmptySplat(i, covA, covB, colorArray);
+                }
+                // textures
+                this._updateTextures(covA, covB, colorArray, sh, this._partIndices ? this._partIndices : undefined);
                 // Update the binfo
                 this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
-                if (isAsync) {
-                    yield;
-                }
+                this.setEnabled(true);
+                this._sortIsDirty = true;
             }
 
-            // sort will be dirty here as just finished filled positions will not be sorted
-            const positions = Float32Array.from(this._splatPositions);
-            const vertexCount = this._vertexCount;
-            if (this._worker) {
-                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
-                this._worker.postMessage({ partIndices });
+            // Cache arrays for future incremental updates
+            if (this._keepInRam) {
+                this._cachedCovA = covA;
+                this._cachedCovB = covB;
+                this._cachedColorArray = colorArray;
+                this._cachedBoundingMin = minimum.clone();
+                this._cachedBoundingMax = maximum.clone();
             }
-            this._sortIsDirty = true;
-        } else {
-            const paddedVertexCount = (vertexCount + 15) & ~0xf;
-            for (let i = 0; i < vertexCount; i++) {
-                this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, options);
-                if (isAsync && i % GaussianSplattingMesh._SplatBatchSize === 0) {
-                    yield;
-                }
-            }
-            // pad the rest
-            for (let i = vertexCount; i < paddedVertexCount; i++) {
-                this._makeEmptySplat(i, covA, covB, colorArray);
-            }
-            // textures
-            this._updateTextures(covA, covB, colorArray, sh, this._partIndices ? this._partIndices : undefined);
-            // Update the binfo
-            this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
-            this.setEnabled(true);
-            this._sortIsDirty = true;
         }
         this._postToWorker(true);
     }
@@ -2306,7 +2485,7 @@ export class GaussianSplattingMesh extends Mesh {
         mergedPartIndices.set(partIndicesA.slice(0, splatCountA), 0);
         mergedPartIndices.set(partIndicesB, splatCountA);
 
-        this.updateData(mergedSplatsData.buffer, mergedShData, { flipY: false }, mergedPartIndices);
+        this.updateData(mergedSplatsData.buffer, mergedShData, { flipY: false, previousVertexCount: splatCountA }, mergedPartIndices);
 
         // Merge part matrices (TODO)
         const partWorldMatrix = other.getWorldMatrix();
