@@ -26,7 +26,7 @@ export const MiniStatsServiceDefinition: ServiceDefinition<[], [ISceneContext, I
             key: "Mini Stats",
             verticalLocation: "bottom",
             horizontalLocation: "right",
-            order: DefaultToolbarItemOrder.FrateRate,
+            order: DefaultToolbarItemOrder.FrameRate,
             teachingMoment: false,
             component: () => {
                 const classes = useStyles();

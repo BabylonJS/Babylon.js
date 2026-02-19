@@ -1,5 +1,5 @@
 export const enum DefaultToolbarItemOrder {
-    FrateRate = 300,
+    FrameRate = 300,
     RefreshProperties = 200,
     Feedback = 100,
 }
