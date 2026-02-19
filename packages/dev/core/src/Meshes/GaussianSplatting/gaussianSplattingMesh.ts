@@ -1917,9 +1917,12 @@ export class GaussianSplattingMesh extends Mesh {
         newCovB.set(oldCovB.subarray(0, previousVertexCount * covBSItemSize));
         newColorArray.set(oldColorArray.subarray(0, previousVertexCount * 4));
 
+        if (!this._cachedBoundingMax || !this._cachedBoundingMin) {
+            throw new Error("Cached bounding box is missing, cannot perform incremental update.");
+        }
         // Reuse cached bounding min/max
-        minimum.copyFrom(this._cachedBoundingMin!);
-        maximum.copyFrom(this._cachedBoundingMax!);
+        minimum.copyFrom(this._cachedBoundingMin);
+        maximum.copyFrom(this._cachedBoundingMax);
 
         // Only process new splats [previousVertexCount, vertexCount)
         if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
@@ -1930,11 +1933,13 @@ export class GaussianSplattingMesh extends Mesh {
             for (let partIndex = 0; partIndex < partCount; partIndex++) {
                 const updateLine = partIndex * lineCountUpdate;
                 const splatIndexBase = updateLine * textureSize.x;
+                // Short-circuit: skip this batch if all splat indices are below previousVertexCount
+                if (splatIndexBase + textureLengthPerUpdate <= previousVertexCount) {
+                    continue;
+                }
                 for (let i = 0; i < textureLengthPerUpdate; i++) {
                     const splatIdx = splatIndexBase + i;
-                    if (splatIdx >= previousVertexCount) {
-                        this._makeSplat(splatIdx, fBuffer, uBuffer, newCovA, newCovB, newColorArray, minimum, maximum, flipY);
-                    }
+                    this._makeSplat(splatIdx, fBuffer, uBuffer, newCovA, newCovB, newColorArray, minimum, maximum, flipY);
                 }
                 this._updateSubTextures(this._splatPositions, newCovA, newCovB, newColorArray, updateLine, Math.min(lineCountUpdate, textureSize.y - updateLine));
                 this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
