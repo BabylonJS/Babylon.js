@@ -8,7 +8,6 @@ import { SoundWaveCircleRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { InterceptFunction } from "../../../instrumentation/functionInstrumentation";
-// import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
@@ -59,7 +58,6 @@ export const SoundExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplor
             getEntityDisplayInfo: (sound) => {
                 const onChangeObservable = new Observable<void>();
 
-                const displayNameHookToken = watcherService.watchProperty(sound, "name", () => onChangeObservable.notifyObservers());
                 const nameHookToken = watcherService.watchProperty(sound, "name", () => onChangeObservable.notifyObservers());
 
                 return {
@@ -69,7 +67,6 @@ export const SoundExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplor
                     onChange: onChangeObservable,
                     dispose: () => {
                         nameHookToken.dispose();
-                        displayNameHookToken.dispose();
                         onChangeObservable.clear();
                     },
                 };

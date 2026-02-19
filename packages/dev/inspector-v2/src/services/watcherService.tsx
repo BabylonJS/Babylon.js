@@ -169,6 +169,7 @@ export const WatcherSettingsServiceDefinition: ServiceDefinition<[], [ISettingsS
                                 min={30}
                                 max={1000}
                                 step={10}
+                                unit="ms"
                                 value={watcherSettings.mode === "polling" ? watcherSettings.interval : NaN}
                                 onChange={(value) =>
                                     setWatcherSettings((prev) => {

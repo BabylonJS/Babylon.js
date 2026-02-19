@@ -1,3 +1,4 @@
+import type { Atmosphere } from "addons/atmosphere/atmosphere";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
@@ -5,7 +6,6 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { WeatherSunnyLowFilled } from "@fluentui/react-icons";
 
-import type { Atmosphere } from "addons/atmosphere/atmosphere";
 import { Observable } from "core/Misc/observable";
 import { SceneContextIdentity } from "../../sceneContext";
 import { WatcherServiceIdentity } from "../../watcherService";
