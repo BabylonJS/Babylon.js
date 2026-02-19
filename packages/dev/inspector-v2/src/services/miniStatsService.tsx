@@ -7,6 +7,7 @@ import { useCallback } from "react";
 
 import { useObservableState } from "../hooks/observableHooks";
 import { usePollingObservable } from "../hooks/pollingHooks";
+import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
 import { SceneContextIdentity } from "./sceneContext";
 import { ShellServiceIdentity } from "./shellService";
 
@@ -25,6 +26,7 @@ export const MiniStatsServiceDefinition: ServiceDefinition<[], [ISceneContext, I
             key: "Mini Stats",
             verticalLocation: "bottom",
             horizontalLocation: "right",
+            order: DefaultToolbarItemOrder.FrateRate,
             suppressTeachingMoment: true,
             component: () => {
                 const classes = useStyles();

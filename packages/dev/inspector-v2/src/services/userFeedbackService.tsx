@@ -5,6 +5,7 @@ import { PersonFeedbackRegular } from "@fluentui/react-icons";
 
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Tooltip } from "shared-ui-components/fluent/primitives/tooltip";
+import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
 import { ShellServiceIdentity } from "./shellService";
 
 export const UserFeedbackServiceDefinition: ServiceDefinition<[], [IShellService]> = {
@@ -15,6 +16,7 @@ export const UserFeedbackServiceDefinition: ServiceDefinition<[], [IShellService
             key: "User Feedback",
             verticalLocation: "bottom",
             horizontalLocation: "right",
+            order: DefaultToolbarItemOrder.Feedback,
             suppressTeachingMoment: true,
             component: () => {
                 return (

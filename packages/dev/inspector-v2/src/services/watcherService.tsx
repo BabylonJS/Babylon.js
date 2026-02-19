@@ -14,6 +14,7 @@ import { Button } from "shared-ui-components/fluent/primitives/button";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useSetting } from "../hooks/settingsHooks";
 import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
+import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
 import { SettingsServiceIdentity } from "./panes/settingsService";
 import { SettingsStoreIdentity } from "./settingsStore";
 import { ShellServiceIdentity } from "./shellService";
@@ -204,6 +205,7 @@ export const WatcherRefreshToolbarServiceDefinition: ServiceDefinition<[], [IWat
                         key: "Watcher Refresh",
                         verticalLocation: "bottom",
                         horizontalLocation: "right",
+                        order: DefaultToolbarItemOrder.RefreshProperties,
                         suppressTeachingMoment: true,
                         component: () => {
                             return (
