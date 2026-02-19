@@ -178,11 +178,12 @@ export type SidePaneDefinition = {
     title: string;
 
     /**
-     * An optional flag to suppress the teaching moment for this side pane.
-     * Defaults to false.
+     * An optional teaching moment info. The default assumes the side pane was added by an extension and provides a generic title and description based on the display name or id, which is helpful for discoverability of new items.
+     * Set this to false to suppress the teaching moment, which may be desirable for built in items or items that are added in a non-dynamic way.
+     * Set it to an object with a title and description to provide a custom teaching moment, which may be desirable if the generic title and description are not sufficient.
      * Teaching moments are more helpful for dynamically added panes, possibly from extensions.
      */
-    suppressTeachingMoment?: boolean;
+    teachingMoment?: TeachingMomentInfo;
 
     /**
      * Keep the pane mounted even when it is not visible. This is useful if you don't want the
@@ -673,7 +674,7 @@ const Toolbar: FunctionComponent<{ location: VerticalLocation; components: Reado
 const SidePaneTab: FunctionComponent<
     { location: HorizontalLocation; id: string; isSelected: boolean; isFirst: boolean; isLast: boolean; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> } & Pick<
         Readonly<SidePaneDefinition>,
-        "title" | "icon" | "suppressTeachingMoment"
+        "title" | "icon" | "teachingMoment"
     >
 > = (props) => {
     const {
@@ -686,11 +687,10 @@ const SidePaneTab: FunctionComponent<
         // eslint-disable-next-line @typescript-eslint/naming-convention
         icon: Icon,
         title,
-        suppressTeachingMoment,
     } = props;
     const classes = useStyles();
     const useTeachingMoment = useMemo(() => MakePopoverTeachingMoment(`Pane/${location}/${title ?? id}`), [title, id]);
-    const teachingMoment = useTeachingMoment(suppressTeachingMoment);
+    const teachingMoment = useTeachingMoment(props.teachingMoment === false);
 
     const tabClass = mergeClasses(
         classes.tab,
@@ -703,9 +703,9 @@ const SidePaneTab: FunctionComponent<
         <>
             <TeachingMoment
                 {...teachingMoment}
-                shouldDisplay={teachingMoment.shouldDisplay && !suppressTeachingMoment}
-                title={title ?? "Extension"}
-                description={`The "${title ?? id}" extension can be accessed here.`}
+                shouldDisplay={teachingMoment.shouldDisplay}
+                title={typeof props.teachingMoment === "object" ? props.teachingMoment.title : (title ?? "Extension")}
+                description={typeof props.teachingMoment === "object" ? props.teachingMoment.description : `The "${title ?? id}" extension can be accessed here.`}
             />
             <div className={tabClass}>
                 <DockMenu openOnContext sidePaneId={id} dockOptions={dockOptions}>
@@ -921,7 +921,7 @@ function usePane(
                                                     id={entry.key}
                                                     title={entry.title}
                                                     icon={entry.icon}
-                                                    suppressTeachingMoment={entry.suppressTeachingMoment}
+                                                    teachingMoment={entry.teachingMoment}
                                                     isSelected={isSelected && !collapsed}
                                                     isFirst={index === 0}
                                                     isLast={index === paneComponents.length - 1}

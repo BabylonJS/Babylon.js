@@ -50,7 +50,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsService], [I
             horizontalLocation: "right",
             verticalLocation: "top",
             order: 500,
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);

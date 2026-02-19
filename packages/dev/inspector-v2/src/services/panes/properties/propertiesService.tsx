@@ -82,7 +82,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
             horizontalLocation: "right",
             verticalLocation: "top",
             order: 100,
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             keepMounted: true,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);

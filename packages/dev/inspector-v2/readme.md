@@ -201,7 +201,7 @@ export const MySidePaneServiceDefinition: ServiceDefinition<[], [IShellService]>
             horizontalLocation: "right",
             // Order is optional, and relative to other pane tabs.
             order: 100,
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             // This is a React component (class or function).
             content: () => {
                 return <>My Side Pane Content</>;
@@ -234,7 +234,7 @@ export const MyToolBarItemServiceDefinition: ServiceDefinition<[], [IShellServic
             key: "My Toolbar Item",
             horizontalLocation: "right",
             verticalLocation: "top",
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             // Order is optional, and relative to other toolbar items.
             order: 100,
             // This is a React component (class or function).
