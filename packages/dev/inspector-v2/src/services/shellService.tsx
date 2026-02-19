@@ -614,7 +614,7 @@ const ToolbarItem: FunctionComponent<{
                 {...teachingMoment}
                 shouldDisplay={teachingMoment.shouldDisplay && !suppressTeachingMoment}
                 title={displayName ?? "Extension"}
-                description={`The "${displayName ?? id}" extension can be accessed here.`}
+                description={`"${displayName ?? id}" can be accessed here.`}
             />
             <div className={classes.barItem} ref={teachingMoment.targetRef}>
                 <Component />

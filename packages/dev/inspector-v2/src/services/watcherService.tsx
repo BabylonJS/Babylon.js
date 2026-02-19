@@ -203,10 +203,10 @@ export const WatcherRefreshToolbarServiceDefinition: ServiceDefinition<[], [IWat
                 if (!toolbarItemRegistration) {
                     toolbarItemRegistration = shellService.addToolbarItem({
                         key: "Watcher Refresh",
+                        displayName: "Refresh Properties",
                         verticalLocation: "bottom",
                         horizontalLocation: "right",
                         order: DefaultToolbarItemOrder.RefreshProperties,
-                        suppressTeachingMoment: true,
                         component: () => {
                             return (
                                 <Button
