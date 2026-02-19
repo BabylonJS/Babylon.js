@@ -169,6 +169,9 @@ export class GeospatialCamera extends Camera {
         // Clamp to limits
         this._checkLimits();
 
+        // Refresh local basis at center (treat these as read-only for the whole call)
+        ComputeLocalBasisToRefs(this._center, this._tempEast, this._tempNorth, this._tempUp, this._scene.useRightHandedSystem, this.movement.calculateUpVectorFromPoint);
+
         // Compute lookAt from yaw/pitch
         ComputeLookAtFromYawPitchToRef(this._yaw, this._pitch, this._center, this._scene.useRightHandedSystem, this._lookAtVector, this.movement.calculateUpVectorFromPoint);
 
@@ -514,7 +517,14 @@ export class GeospatialCamera extends Camera {
                     if (newRadius > Epsilon) {
                         // Compute yaw/pitch that correspond to current lookAt at new center
                         const yawPitch = TmpVectors.Vector2[0];
-                        ComputeYawPitchFromLookAtToRef(this._lookAtVector, newCenter.pickedPoint, this._scene.useRightHandedSystem, this._yaw, yawPitch);
+                        ComputeYawPitchFromLookAtToRef(
+                            this._lookAtVector,
+                            newCenter.pickedPoint,
+                            this._scene.useRightHandedSystem,
+                            this._yaw,
+                            yawPitch,
+                            this.movement.calculateUpVectorFromPoint
+                        );
 
                         // Call _setOrientation with the computed yaw/pitch and new center
                         this._setOrientation(yawPitch.x, yawPitch.y, newRadius, newCenter.pickedPoint);
