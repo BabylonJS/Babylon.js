@@ -83,6 +83,8 @@ export const RightSidePaneHeightAdjustSettingDescriptor: SettingDescriptor<numbe
 export type HorizontalLocation = "left" | "right";
 export type VerticalLocation = "top" | "bottom";
 
+type TeachingMomentInfo = boolean | { readonly title: string; readonly description: string };
+
 type DockLocation = `${VerticalLocation}-${HorizontalLocation}` | `full-${HorizontalLocation}`;
 
 /**
@@ -125,11 +127,12 @@ export type ToolbarItemDefinition = {
     displayName?: string;
 
     /**
-     * An optional flag to suppress the teaching moment for this toolbar item.
-     * Defaults to false.
+     * An optional teaching moment info. The default assumes the toolbar item was added by an extension and provides a generic title and description based on the display name or id, which is helpful for discoverability of new items.
+     * Set this to false to suppress the teaching moment, which may be desirable for built in items or items that are added in a non-dynamic way.
+     * Set it to an object with a title and description to provide a custom teaching moment, which may be desirable if the generic title and description are not sufficient.
      * Teaching moments are more helpful for dynamically added items, possibly from extensions.
      */
-    suppressTeachingMoment?: boolean;
+    teachingMoment?: TeachingMomentInfo;
 };
 
 /**
@@ -600,22 +603,21 @@ const ToolbarItem: FunctionComponent<{
     id: string;
     component: ComponentType;
     displayName?: string;
-    suppressTeachingMoment?: boolean;
+    teachingMoment?: TeachingMomentInfo;
+}> = (props) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-}> = ({ verticalLocation, horizontalLocation, id, component: Component, displayName: displayName, suppressTeachingMoment }) => {
+    const { verticalLocation, horizontalLocation, id, component: Component, displayName } = props;
     const classes = useStyles();
 
     const useTeachingMoment = useMemo(() => MakePopoverTeachingMoment(`Bar/${verticalLocation}/${horizontalLocation}/${displayName ?? id}`), [displayName, id]);
-    const teachingMoment = useTeachingMoment(suppressTeachingMoment);
+    const teachingMoment = useTeachingMoment(props.teachingMoment === false);
+
+    const title = typeof props.teachingMoment === "object" ? props.teachingMoment.title : (displayName ?? id);
+    const description = typeof props.teachingMoment === "object" ? props.teachingMoment.description : `The "${displayName ?? id}" extension can be accessed here.`;
 
     return (
         <>
-            <TeachingMoment
-                {...teachingMoment}
-                shouldDisplay={teachingMoment.shouldDisplay && !suppressTeachingMoment}
-                title={displayName ?? "Extension"}
-                description={`"${displayName ?? id}" can be accessed here.`}
-            />
+            <TeachingMoment {...teachingMoment} shouldDisplay={teachingMoment.shouldDisplay} title={title} description={description} />
             <div className={classes.barItem} ref={teachingMoment.targetRef}>
                 <Component />
             </div>
@@ -644,7 +646,7 @@ const Toolbar: FunctionComponent<{ location: VerticalLocation; components: Reado
                                 id={entry.key}
                                 component={entry.component}
                                 displayName={entry.displayName}
-                                suppressTeachingMoment={entry.suppressTeachingMoment}
+                                teachingMoment={entry.teachingMoment}
                             />
                         ))}
                     </div>
@@ -657,7 +659,7 @@ const Toolbar: FunctionComponent<{ location: VerticalLocation; components: Reado
                                 id={entry.key}
                                 component={entry.component}
                                 displayName={entry.displayName}
-                                suppressTeachingMoment={entry.suppressTeachingMoment}
+                                teachingMoment={entry.teachingMoment}
                             />
                         ))}
                     </div>

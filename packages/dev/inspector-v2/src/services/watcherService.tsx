@@ -207,6 +207,11 @@ export const WatcherRefreshToolbarServiceDefinition: ServiceDefinition<[], [IWat
                         verticalLocation: "bottom",
                         horizontalLocation: "right",
                         order: DefaultToolbarItemOrder.RefreshProperties,
+                        teachingMoment: {
+                            title: "Refresh Properties",
+                            description:
+                                "Press this button to manually refresh all UI bound to scene state. This is only available when Property Watch Mode is set to Manual in the settings pane.",
+                        },
                         component: () => {
                             return (
                                 <Button

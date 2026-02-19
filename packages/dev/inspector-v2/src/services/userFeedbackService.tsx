@@ -17,7 +17,7 @@ export const UserFeedbackServiceDefinition: ServiceDefinition<[], [IShellService
             verticalLocation: "bottom",
             horizontalLocation: "right",
             order: DefaultToolbarItemOrder.Feedback,
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             component: () => {
                 return (
                     <Tooltip content="Give Feedback on Inspector v2">

@@ -351,7 +351,7 @@ export const ExtensionListServiceDefinition: ServiceDefinition<[], [IShellServic
             key: "ExtensionList",
             horizontalLocation: "right",
             verticalLocation: "top",
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             order: -200,
             component: () => {
                 const classes = useStyles();

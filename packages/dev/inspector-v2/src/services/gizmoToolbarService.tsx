@@ -16,7 +16,7 @@ export const GizmoToolbarServiceDefinition: ServiceDefinition<[], [IShellService
             key: "Gizmo Toolbar",
             verticalLocation: "top",
             horizontalLocation: "left",
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             component: () => <GizmoToolbar gizmoService={gizmoService} sceneContext={sceneContext} />,
         });
     },
