@@ -11,6 +11,7 @@ const DefaultWatcher: IWatcherService = {
             afterSet: (value) => onChanged(value),
         });
     },
+    refresh: () => {},
 };
 
 export const WatcherContext = createContext<IWatcherService>(DefaultWatcher);

@@ -70,7 +70,7 @@ import { ShellServiceIdentity } from "./services/shellService";
 import { ShellSettingsServiceDefinition } from "./services/shellSettingsService";
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
-import { WatcherSettingsServiceDefinition } from "./services/watcherService";
+import { WatcherRefreshToolbarServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
 
 type LayoutMode = "inline" | "overlay";
 
@@ -343,6 +343,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
             SettingsServiceDefinition,
             WatcherSettingsServiceDefinition,
             ShellSettingsServiceDefinition,
+
+            // Adds a button to refresh all properties manually (when watcher is in "manual" mode).
+            WatcherRefreshToolbarServiceDefinition,
 
             // Tracks entity selection state (e.g. which Mesh or Material or other entity is currently selected in scene explorer and bound to the properties pane, etc.).
             SelectionServiceDefinition,
