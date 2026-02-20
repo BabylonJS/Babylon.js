@@ -391,6 +391,11 @@ export class Gizmo implements IGizmo {
                     const direction = activeCamera.getDirection(camForward);
                     scale *= Vector3.Dot(offsetToCamera, direction);
                 }
+                if (this.additionalTransformNode) {
+                    this.additionalTransformNode.getWorldMatrix().decompose(TmpVectors.Vector3[1]);
+                    const maxScale = Math.max(Math.abs(TmpVectors.Vector3[1].x), Math.abs(TmpVectors.Vector3[1].y), Math.abs(TmpVectors.Vector3[1].z));
+                    scale *= 1 / maxScale;
+                }
                 this._rootMesh.scaling.setAll(scale);
 
                 // Account for handedness, similar to Matrix.decompose
