@@ -300,40 +300,6 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
         [validateValue, props.onChange]
     );
 
-    const handleIconPointerDown = useCallback(
-        (e: PointerEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsDragging(true);
-            scrubStartYRef.current = e.clientY;
-            scrubStartValueRef.current = value;
-            (e.target as Element).setPointerCapture(e.pointerId);
-        },
-        [value]
-    );
-
-    const handleIconPointerMove = useCallback(
-        (e: PointerEvent) => {
-            if (!isDragging) {
-                return;
-            }
-            // Dragging up (negative dy) should increment, dragging down should decrement
-            const dy = scrubStartYRef.current - e.clientY;
-            const delta = (dy * step) / 5;
-            const raw = scrubStartValueRef.current + delta;
-            const rounded = Math.round(raw / step) * step;
-            const clamped = clamp(rounded);
-            setValue(clamped);
-            tryCommitValue(clamped);
-        },
-        [isDragging, step, clamp, tryCommitValue]
-    );
-
-    const handleIconPointerUp = useCallback((e: PointerEvent) => {
-        setIsDragging(false);
-        (e.target as Element).releasePointerCapture(e.pointerId);
-    }, []);
-
     // Allow arbitrary expressions, primarily for math operations (e.g. 10*60 for 10 minutes in seconds).
     // Use Function constructor to safely evaluate the expression without allowing access to scope.
     // If the expression is invalid, fallback to NaN which will be caught by validateValue and prevent committing.
@@ -365,6 +331,51 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
         },
         [evaluateExpression, validateValue, clamp, tryCommitValue]
     );
+
+    const handleIconPointerDown = useCallback(
+        (e: PointerEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // If the input was being edited, commit the current text and blur the input
+            // so the focus state stays consistent after the drag ends.
+            let startValue = value;
+            if (isEditing) {
+                const committed = commitEditText(editText);
+                if (committed !== undefined) {
+                    startValue = committed;
+                }
+                setIsEditing(false);
+                (document.activeElement as HTMLElement)?.blur();
+            }
+            setIsDragging(true);
+            scrubStartYRef.current = e.clientY;
+            scrubStartValueRef.current = startValue;
+            (e.target as Element).setPointerCapture(e.pointerId);
+        },
+        [value, isEditing, editText, commitEditText]
+    );
+
+    const handleIconPointerMove = useCallback(
+        (e: PointerEvent) => {
+            if (!isDragging) {
+                return;
+            }
+            // Dragging up (negative dy) should increment, dragging down should decrement
+            const dy = scrubStartYRef.current - e.clientY;
+            const delta = (dy * step) / 5;
+            const raw = scrubStartValueRef.current + delta;
+            const rounded = Math.round(raw / step) * step;
+            const clamped = clamp(rounded);
+            setValue(clamped);
+            tryCommitValue(clamped);
+        },
+        [isDragging, step, clamp, tryCommitValue]
+    );
+
+    const handleIconPointerUp = useCallback((e: PointerEvent) => {
+        setIsDragging(false);
+        (e.target as Element).releasePointerCapture(e.pointerId);
+    }, []);
 
     const handleKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -431,11 +442,15 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
 
     const handleBlur = useCallback(
         (event: React.FocusEvent<HTMLInputElement>) => {
+            // Skip blur handling if a drag just started (icon pointerDown already committed).
+            if (isDragging) {
+                return;
+            }
             commitEditText(editText);
             setIsEditing(false);
             HandleOnBlur(event);
         },
-        [editText, commitEditText]
+        [editText, commitEditText, isDragging]
     );
 
     const contentBefore =
