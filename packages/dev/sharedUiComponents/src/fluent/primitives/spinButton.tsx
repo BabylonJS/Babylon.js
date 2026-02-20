@@ -354,16 +354,18 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
             if (!isDragging) {
                 return;
             }
-            // Dragging up (negative dy) should increment, dragging down should decrement
+            // Dragging up (negative dy) should increment, dragging down should decrement.
+            // Scale delta by step but round to display precision (not step) for smooth fine-grained control.
             const dy = scrubStartYRef.current - e.clientY;
             const delta = (dy * step) / 5;
             const raw = scrubStartValueRef.current + delta;
-            const rounded = Math.round(raw / step) * step;
+            const precisionFactor = Math.pow(10, displayPrecision);
+            const rounded = Math.round(raw * precisionFactor) / precisionFactor;
             const clamped = clamp(rounded);
             setValue(clamped);
             tryCommitValue(clamped);
         },
-        [isDragging, step, clamp, tryCommitValue]
+        [isDragging, step, displayPrecision, clamp, tryCommitValue]
     );
 
     const handleIconPointerUp = useCallback((e: PointerEvent) => {
