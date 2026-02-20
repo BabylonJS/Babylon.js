@@ -254,6 +254,18 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
     // Display precision: controls how many decimals are shown in the formatted displayValue. Cap at 4 to avoid wild numbers
     const displayPrecision = Math.min(4, Math.max(stepPrecision, valuePrecision));
 
+    // Format a number for display: toFixed then trim trailing zeros and trailing period.
+    const formatValue = useCallback(
+        (v: number, precision?: number) => {
+            const p = precision ?? displayPrecision;
+            return v
+                .toFixed(p)
+                .replace(/(\.\d*?)0+$/, "$1")
+                .replace(/\.$/, "");
+        },
+        [displayPrecision]
+    );
+
     useEffect(() => {
         if (!isDragging && props.value !== lastCommittedValue.current) {
             lastCommittedValue.current = props.value;
@@ -365,7 +377,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
                 const committed = commitEditText((event.target as HTMLInputElement).value);
                 if (committed !== undefined) {
                     const newPrecision = Math.min(4, Math.max(Math.max(0, CalculatePrecision(step)), Math.max(0, CalculatePrecision(committed))));
-                    setEditText(committed.toFixed(newPrecision));
+                    setEditText(formatValue(committed, newPrecision));
                 }
             }
 
@@ -377,12 +389,12 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
                 tryCommitValue(newValue);
                 // Update edit text to reflect the new value so the user sees the change
                 const newPrecision = Math.min(4, Math.max(Math.max(0, CalculatePrecision(step)), Math.max(0, CalculatePrecision(newValue))));
-                setEditText(newValue.toFixed(newPrecision));
+                setEditText(formatValue(newValue, newPrecision));
             }
 
             HandleKeyDown(event);
         },
-        [value, step, clamp, tryCommitValue, commitEditText]
+        [value, step, clamp, tryCommitValue, commitEditText, formatValue]
     );
 
     const handleKeyUp = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -408,7 +420,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
     const mergedClassName = mergeClasses(inputClasses.input, isInputInvalid ? inputClasses.invalid : "", props.className);
     const inputSlotClassName = mergeClasses(inputClasses.inputSlot, props.inputClassName);
 
-    const formattedValue = value.toFixed(displayPrecision);
+    const formattedValue = formatValue(value);
 
     const handleFocus = useCallback(() => {
         setIsEditing(true);
