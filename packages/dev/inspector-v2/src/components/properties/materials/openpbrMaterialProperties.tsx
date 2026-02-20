@@ -251,7 +251,7 @@ export const OpenPBRMaterialSubsurfaceProperties: FunctionComponent<{ material: 
                     }
                 }}
             />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Subsurface Radius" target={material} propertyKey="subsurfaceRadius" min={0} max={10} step={0.01} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Subsurface Radius" target={material} propertyKey="subsurfaceRadius" min={0} max={1} step={0.0001} />
             <BoundProperty component={Color3PropertyLine} label="Subsurface Radius Scale" target={material} propertyKey="subsurfaceRadiusScale" isLinearMode />
             <FileUploadLine
                 label="Subsurface Radius Scale"

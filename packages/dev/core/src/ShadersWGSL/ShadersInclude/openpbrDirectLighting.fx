@@ -184,7 +184,7 @@
                         // Use the diffuse lobe as the isotropic scattered light component
                         let iso_scattered_light: vec3f = slab_diffuse;
                         // Back Scattering
-                        let back_scattering: vec3f = mix(forward_scattered_light, forward_scattered_light + back_scattered_light * absorption_at_mfp, iso_scatter_density);
+                        let back_scattering: vec3f = mix(forward_scattered_light, forward_scattered_light + back_scattered_light * backscatter_color, iso_scatter_density);
                         // Iso Scattering
                         let iso_scattering: vec3f = mix(forward_scattered_light, (diffused_forward_scattered_light + iso_scattered_light) * volumeParams.multi_scatter_color, iso_scatter_density);
                         // Lerp between the three based on the anisotropy

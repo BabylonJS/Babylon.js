@@ -261,3 +261,12 @@ fn min3(v: vec3f) -> f32 {
 fn max3(v: vec3f) -> f32 {
     return max(v.x, max(v.y, v.z));
 }
+
+fn uint2float(i: u32) -> f32 {
+    return bitcast<f32>(0x3F800000u | (i >> 9u)) - 1.0;
+}
+
+fn plasticSequence(rstate: u32) -> vec2f {
+    return vec2f(uint2float(rstate * 3242174889u),
+                uint2float(rstate * 2447445414u));
+}

@@ -323,22 +323,28 @@
         #endif
 
         #ifdef SCATTERING
-            #ifdef GEOMETRY_THIN_WALLED
-                var scatterVector: vec3f = normalW;
+            #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+                // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
+                // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
+                let mfp: vec3f = vec3f(100.0) / volumeParams.extinction_coeff;
+                var scatteredEnvironmentLight: vec3f = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, uniforms.renderTargetSize, mfp, scene.projection, scene.inverseProjection, 16, noise.xy);
             #else
-                // Handle isotropic and backscattering components
-                // We'll approximate scattering as a diffuse lobe. If we have a dominant lighting direction,
-                // we can bias the lobe towards that direction as the scatter density gets thinner.
-                #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
-                    var scatterVector: vec3f = mix(uniforms.vReflectionDominantDirection, normalW, max3(iso_scatter_density));
-                #else
+                #ifdef GEOMETRY_THIN_WALLED
                     var scatterVector: vec3f = normalW;
-                #endif
+                #else
+                    // Handle isotropic and backscattering components
+                    // We'll approximate scattering as a diffuse lobe. If we have a dominant lighting direction,
+                    // we can bias the lobe towards that direction as the scatter density gets thinner.
+                    #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
+                        var scatterVector: vec3f = mix(uniforms.vReflectionDominantDirection, normalW, max3(iso_scatter_density));
+                    #else
+                        var scatterVector: vec3f = normalW;
+                    #endif
 
-                // We'll then bend the sample direction towards the view direction based on the anisotropy to approximate backscattering.
-                scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
-            #endif
-            var scatteredEnvironmentLight: vec3f = sampleIrradiance(
+                    // We'll then bend the sample direction towards the view direction based on the anisotropy to approximate backscattering.
+                    scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
+                #endif
+                var scatteredEnvironmentLight: vec3f = sampleIrradiance(
                 scatterVector
                 #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                     , vEnvironmentIrradiance //SH
@@ -369,7 +375,8 @@
                     , 1.0f
                     , volumeParams.multi_scatter_color
                 #endif
-            );
+                );
+            #endif
 
             #ifdef GEOMETRY_THIN_WALLED
                 // Direct Transmission (aka forward-scattered light from back side)
@@ -382,7 +389,7 @@
                 // Direct Transmission (aka forward-scattered light from back side)
                 let forward_scattered_light: vec3f = forwardScatteredEnvironmentLight * volume_absorption;
                 // Back Scattering
-                let back_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
+                let back_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * backscatter_color, iso_scatter_density);
                 // Iso Scattering
                 let iso_scattered_light: vec3f = mix(forward_scattered_light, scatteredEnvironmentLight * volumeParams.multi_scatter_color, iso_scatter_density);
 

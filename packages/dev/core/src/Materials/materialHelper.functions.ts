@@ -760,6 +760,7 @@ export function PrepareDefinesForIBL(
         defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
         defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
         defines.USEIRRADIANCEMAP = false;
+        defines.LODBASEDMICROSFURACE = scene.getEngine().getCaps().textureLOD;
 
         const engine = scene.getEngine();
         if (realTimeFiltering && realTimeFilteringQuality > 0) {

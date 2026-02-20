@@ -279,4 +279,13 @@ float max3(vec3 v) {
     return max(v.x, max(v.y, v.z));
 }
 
+float uint2float(uint i) {
+  return uintBitsToFloat(0x3F800000u | (i >> 9u)) - 1.0;
+}
+
+vec2 plasticSequence(const uint rstate) {
+  return vec2(uint2float(rstate * 3242174889u),
+              uint2float(rstate * 2447445414u));
+}
+
 #endif

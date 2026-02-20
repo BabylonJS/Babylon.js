@@ -320,7 +320,7 @@
         return environmentRadiance.rgb;
     }
 #endif
-
+    #ifdef ENVIRONMENTBRDF
     #define pbr_inline
     vec3 conductorIblFresnel(in ReflectanceParams reflectance, in float NdotV, in float roughness, in vec3 environmentBrdf)
     {
@@ -333,4 +333,5 @@
             return getReflectanceFromBRDFLookup(reflectance.coloredF0, reflectance.coloredF90, environmentBrdf);
         #endif
     }
+    #endif
 #endif
