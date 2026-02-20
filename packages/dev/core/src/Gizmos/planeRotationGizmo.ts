@@ -261,6 +261,10 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
 
         this.dragBehavior.onDragStartObservable.add((e) => {
             if (this.attachedNode) {
+                if (this._additionalTransformNode) {
+                    this._additionalTransformNode.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
+                    Vector3.TransformCoordinatesToRef(e.dragPlanePoint, TmpVectors.Matrix[0], e.dragPlanePoint);
+                }
                 lastDragPosition.copyFrom(e.dragPlanePoint);
                 this._rotationDisplayPlane.setEnabled(true);
 
@@ -316,6 +320,10 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 nodeQuaternion.normalize();
 
                 const nodeTranslationForOperation = this.updateGizmoPositionToMatchAttachedMesh ? nodeTranslation : this._rootMesh.absolutePosition;
+                if (this._additionalTransformNode) {
+                    this._additionalTransformNode.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
+                    Vector3.TransformCoordinatesToRef(event.dragPlanePoint, TmpVectors.Matrix[0], event.dragPlanePoint);
+                }
                 const newVector = event.dragPlanePoint.subtract(nodeTranslationForOperation).normalize();
                 const originalVector = lastDragPosition.subtract(nodeTranslationForOperation).normalize();
                 const cross = Vector3.Cross(newVector, originalVector);
@@ -402,6 +410,8 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 this._angles.y += gizmoLayer.utilityLayerScene.useRightHandedSystem ? -angle : angle;
                 this.angle += cameraFlipped ? -angle : angle;
                 this._rotationShaderMaterial.setVector3("angles", this._angles);
+                // there is an issue with the rotation plane with additionalTransformNode, so we hide it in that case to avoid confusion
+                this._rotationDisplayPlane.visibility = this._additionalTransformNode ? 0 : 0.999;
                 this._matrixChanged();
             }
         });
