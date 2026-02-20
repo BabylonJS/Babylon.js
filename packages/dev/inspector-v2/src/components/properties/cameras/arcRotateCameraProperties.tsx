@@ -4,7 +4,6 @@ import type { ArcRotateCamera } from "core/index";
 
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
@@ -25,7 +24,7 @@ export const ArcRotateCameraTransformProperties: FunctionComponent<{ camera: Arc
     return (
         <>
             <BoundProperty
-                component={SyncedSliderPropertyLine}
+                component={NumberInputPropertyLine}
                 label="Alpha"
                 description={`Horizontal angle in ${useDegrees ? "degrees" : "radians"}`}
                 target={camera}
@@ -33,11 +32,13 @@ export const ArcRotateCameraTransformProperties: FunctionComponent<{ camera: Arc
                 min={toDisplayAngle(lowerAlphaLimit)}
                 max={toDisplayAngle(upperAlphaLimit)}
                 step={toDisplayAngle(0.01)}
+                wrap
+                unit={useDegrees ? "°" : "rad"}
                 convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />
             <BoundProperty
-                component={SyncedSliderPropertyLine}
+                component={NumberInputPropertyLine}
                 label="Beta"
                 description={`Vertical angle in ${useDegrees ? "degrees" : "radians"}`}
                 target={camera}
@@ -45,31 +46,21 @@ export const ArcRotateCameraTransformProperties: FunctionComponent<{ camera: Arc
                 min={toDisplayAngle(lowerBetaLimit)}
                 max={toDisplayAngle(upperBetaLimit)}
                 step={toDisplayAngle(0.01)}
+                wrap
+                unit={useDegrees ? "°" : "rad"}
                 convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />
-            {lowerRadiusLimit != null && upperRadiusLimit != null ? (
-                <BoundProperty
-                    component={SyncedSliderPropertyLine}
-                    label="Radius"
-                    description="Distance from the target point."
-                    target={camera}
-                    propertyKey="radius"
-                    min={lowerRadiusLimit}
-                    max={upperRadiusLimit}
-                    step={0.01}
-                />
-            ) : (
-                <BoundProperty
-                    component={NumberInputPropertyLine}
-                    label="Radius"
-                    description="Distance from the target point."
-                    target={camera}
-                    propertyKey="radius"
-                    min={0}
-                    step={0.01}
-                />
-            )}
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Radius"
+                description="Distance from the target point."
+                target={camera}
+                propertyKey="radius"
+                min={lowerRadiusLimit ?? undefined}
+                max={upperRadiusLimit ?? undefined}
+                step={0.01}
+            />
         </>
     );
 };

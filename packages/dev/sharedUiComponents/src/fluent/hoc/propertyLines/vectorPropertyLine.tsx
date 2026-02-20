@@ -188,7 +188,7 @@ export const RotationVectorPropertyLine: FunctionComponent<RotationVectorPropert
     return (
         <Vector3PropertyLine
             {...props}
-            unit={props.useDegrees ? "deg" : "rad"}
+            unit={props.useDegrees ? "°" : "rad"}
             valueConverter={props.useDegrees ? ToDegreesConverter : undefined}
             min={min}
             max={max}
@@ -243,7 +243,7 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
             min={min}
             max={max}
             onChange={onEulerChange}
-            unit={props.useDegrees ? "deg" : "rad"}
+            unit={props.useDegrees ? "°" : "rad"}
         />
     ) : (
         <QuaternionPropertyLineInternal {...props} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} unit={props.useDegrees ? "deg" : "rad"} />

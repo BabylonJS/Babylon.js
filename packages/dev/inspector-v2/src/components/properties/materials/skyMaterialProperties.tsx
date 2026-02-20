@@ -2,6 +2,7 @@ import type { FunctionComponent } from "react";
 
 import type { SkyMaterial } from "materials/sky/skyMaterial";
 
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
@@ -15,7 +16,7 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial }>
     return (
         <>
             <BoundProperty
-                component={SyncedSliderPropertyLine}
+                component={NumberInputPropertyLine}
                 label="Azimuth"
                 description={`Azimuth angle in ${useDegrees ? "degrees" : "radians"}`}
                 target={material}
@@ -23,12 +24,14 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial }>
                 min={toDisplayAngle(0)}
                 max={toDisplayAngle(Math.PI * 2)}
                 step={toDisplayAngle(0.001)}
+                unit={useDegrees ? "°" : "rad"}
+                wrap
                 convertTo={toDisplayAngle}
                 convertFrom={fromDisplayAngle}
                 docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
             />
             <BoundProperty
-                component={SyncedSliderPropertyLine}
+                component={NumberInputPropertyLine}
                 label="Inclination"
                 description={`Inclination angle in ${useDegrees ? "degrees" : "radians"}`}
                 target={material}
@@ -36,6 +39,8 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial }>
                 min={toDisplayAngle(0)}
                 max={toDisplayAngle(Math.PI / 2)}
                 step={toDisplayAngle(0.001)}
+                unit={useDegrees ? "°" : "rad"}
+                wrap
                 convertTo={toDisplayAngle}
                 convertFrom={fromDisplayAngle}
                 docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
