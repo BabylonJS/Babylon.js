@@ -33,6 +33,8 @@ export type SpinButtonProps = PrimitiveProps<number> & {
     unit?: string;
     forceInt?: boolean;
     validator?: (value: number) => boolean;
+    /** Optional fixed precision (number of decimal digits). Overrides the automatically computed display precision. */
+    precision?: number;
     /** Optional className for the input element */
     inputClassName?: string;
 };
@@ -251,19 +253,21 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
     const [editText, setEditText] = useState("");
 
     const valuePrecision = Math.max(0, CalculatePrecision(value));
-    // Display precision: controls how many decimals are shown in the formatted displayValue. Cap at 4 to avoid wild numbers
-    const displayPrecision = Math.min(4, Math.max(stepPrecision, valuePrecision));
+    // Display precision: controls how many decimals are shown in the formatted displayValue. Cap at 4 to avoid wild numbers.
+    // If a fixed precision prop is provided, use it instead.
+    const displayPrecision = props.precision ?? Math.min(4, Math.max(stepPrecision, valuePrecision));
 
-    // Format a number for display: toFixed then trim trailing zeros and trailing period.
+    // Format a number for display: toFixed, then trim trailing zeros and period unless a fixed precision is specified.
     const formatValue = useCallback(
         (v: number, precision?: number) => {
             const p = precision ?? displayPrecision;
-            return v
-                .toFixed(p)
-                .replace(/(\.\d*?)0+$/, "$1")
-                .replace(/\.$/, "");
+            const fixed = v.toFixed(p);
+            if (props.precision !== undefined) {
+                return fixed;
+            }
+            return fixed.replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "");
         },
-        [displayPrecision]
+        [displayPrecision, props.precision]
     );
 
     useEffect(() => {
