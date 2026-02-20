@@ -68,6 +68,10 @@ precision highp float;
 #include<openpbrIblFunctions>
 #include<openpbrVolumeFunctions>
 
+#ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+    uniform vec2 renderTargetSize;
+#endif
+
 // Do a mix between layers with additional multipliers for each layer.
 vec3 layer(vec3 slab_bottom, vec3 slab_top, float lerp_factor, vec3 bottom_multiplier, vec3 top_multiplier) {
 
@@ -260,10 +264,16 @@ void main(void) {
                 #endif
             }
             volume_absorption = exp(-volumeParams.absorption_coeff * geometry_thickness);
-            // Calculated viewable distance based on reduced extinction and use that to
-            // determine absorption at mean free path.
-            vec3 transport_mfp = vec3(2.0) / maxEps(volumeParams.scatter_coeff);
-            vec3 absorption_at_mfp = exp(-volumeParams.absorption_coeff * transport_mfp);
+            
+            // Calculate approximate colour resulting from scattering. This will be used to colour diffuse lighting.
+            vec3 backscatter_color = vec3(1.0);
+            {
+                vec3 reduced_scatter = volumeParams.scatter_coeff * vec3(1.0 - volumeParams.anisotropy);
+                vec3 reduced_albedo = reduced_scatter / (volumeParams.absorption_coeff + reduced_scatter);
+                vec3 sqrt_term = max(sqrt(1.0 - reduced_albedo), 0.0001);
+                backscatter_color = (1.0 - sqrt_term) / (1.0 + sqrt_term);
+            }
+
         #elif defined(TRANSMISSION_SLAB)
             // If we only have a transmission slab and no subsurface, use the transmission_weight directly
             surface_translucency_weight = transmission_weight;

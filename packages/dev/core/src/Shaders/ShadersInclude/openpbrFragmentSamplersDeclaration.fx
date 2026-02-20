@@ -33,48 +33,7 @@
 #include<samplerFragmentDeclaration>(_DEFINENAME_,AMBIENT_OCCLUSION,_VARYINGNAME_,AmbientOcclusion,_SAMPLERNAME_,ambientOcclusion)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,DECAL,_VARYINGNAME_,Decal,_SAMPLERNAME_,decal)
 
-// Reflection
-#ifdef REFLECTION
-    #ifdef REFLECTIONMAP_3D
-        #define sampleReflection(s, c) textureCube(s, c)
-
-        uniform samplerCube reflectionSampler;
-
-        #ifdef LODBASEDMICROSFURACE
-            #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
-        #else
-            uniform samplerCube reflectionSamplerLow;
-            uniform samplerCube reflectionSamplerHigh;
-        #endif
-
-        #ifdef USEIRRADIANCEMAP
-            uniform samplerCube irradianceSampler;
-        #endif
-    #else
-        #define sampleReflection(s, c) texture2D(s, c)
-
-        uniform sampler2D reflectionSampler;
-
-        #ifdef LODBASEDMICROSFURACE
-            #define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
-        #else
-            uniform sampler2D reflectionSamplerLow;
-            uniform sampler2D reflectionSamplerHigh;
-        #endif
-
-        #ifdef USEIRRADIANCEMAP
-            uniform sampler2D irradianceSampler;
-        #endif
-    #endif
-
-    #ifdef REFLECTIONMAP_SKYBOX
-        varying vec3 vPositionUVW;
-    #else
-        #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
-            varying vec3 vDirectionW;
-        #endif
-    #endif
-#endif
+#include<pbrFragmentReflectionDeclaration>
 
 #ifdef ENVIRONMENTBRDF
     uniform sampler2D environmentBrdfSampler;
@@ -88,7 +47,12 @@
     uniform sampler2D backgroundRefractionSampler;
 #endif
 
-#if defined(ANISOTROPIC) || defined(FUZZ) || defined(REFRACTED_BACKGROUND)
+#ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+    uniform sampler2D sceneIrradianceSampler;
+    uniform sampler2D sceneDepthSampler;
+#endif
+
+#if defined(ANISOTROPIC) || defined(FUZZ) || defined(REFRACTED_BACKGROUND) || defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING)
     uniform sampler2D blueNoiseSampler;
 #endif
 

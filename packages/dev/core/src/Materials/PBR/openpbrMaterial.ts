@@ -56,6 +56,7 @@ import { MaterialFlags } from "../materialFlags";
 import type { SubMesh } from "../../Meshes/subMesh";
 import { Logger } from "core/Misc/logger";
 import { UVDefinesMixin } from "../uv.defines";
+import { EnvironmentLightingDefinesMixin } from "../environmentLighting.defines";
 import { Vector2, Vector4, TmpVectors } from "core/Maths/math.vector";
 import type { Vector3, Matrix } from "core/Maths/math.vector";
 import type { Mesh } from "../../Meshes/mesh";
@@ -66,6 +67,7 @@ import type { RenderTargetTexture } from "../Textures/renderTargetTexture";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 import { Tools } from "../../Misc/tools";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
+import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -197,11 +199,14 @@ class Sampler {
 }
 
 class OpenPBRMaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
+
+class OpenPBRMaterialDefinesWithEnvLighting extends EnvironmentLightingDefinesMixin(OpenPBRMaterialDefinesBase) {}
+
 /**
  * Manages the defines for the PBR Material.
  * @internal
  */
-export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRMaterialDefinesBase) {
+export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRMaterialDefinesWithEnvLighting) {
     public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
     public IBL_CDF_FILTERING = false;
@@ -296,6 +301,8 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
      */
     public SCATTERING = false;
 
+    public USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = false;
+
     /**
      * Enables transmission slab
      */
@@ -333,27 +340,6 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public REFRACTED_ENVIRONMENT_OPPOSITEZ = false;
     public REFRACTED_ENVIRONMENT_LOCAL_CUBE = false;
 
-    public REFLECTION = false;
-    public REFLECTIONMAP_3D = false;
-    public REFLECTIONMAP_SPHERICAL = false;
-    public REFLECTIONMAP_PLANAR = false;
-    public REFLECTIONMAP_CUBIC = false;
-    public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
-    public REFLECTIONMAP_PROJECTION = false;
-    public REFLECTIONMAP_SKYBOX = false;
-    public REFLECTIONMAP_EXPLICIT = false;
-    public REFLECTIONMAP_EQUIRECTANGULAR = false;
-    public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
-    public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
-    public INVERTCUBICMAP = false;
-    public USESPHERICALFROMREFLECTIONMAP = false;
-    public USEIRRADIANCEMAP = false;
-    public USE_IRRADIANCE_DOMINANT_DIRECTION = false;
-    public USESPHERICALINVERTEX = false;
-    public REFLECTIONMAP_OPPOSITEZ = false;
-    public LODINREFLECTIONALPHA = false;
-    public GAMMAREFLECTION = false;
-    public RGBDREFLECTION = false;
     public RADIANCEOCCLUSION = false;
     public HORIZONOCCLUSION = false;
 
@@ -2399,7 +2385,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
-        this.bindPropertiesForSubMesh(this._uniformBuffer, scene, scene.getEngine() as Engine, subMesh);
 
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {
@@ -2500,8 +2485,19 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     ubo.updateVector3("vBackgroundRefractionInfos", TmpVectors.Vector3[1]);
                 }
 
-                if (defines.ANISOTROPIC || defines.FUZZ || defines.REFRACTED_BACKGROUND) {
+                if (defines.ANISOTROPIC || defines.FUZZ || defines.REFRACTED_BACKGROUND || defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) {
                     ubo.setTexture("blueNoiseSampler", OpenPBRMaterial._noiseTextures[this.getScene().uniqueId]);
+                }
+
+                if (defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) {
+                    if (scene.geometryBufferRenderer) {
+                        const irradianceTextureIndex = scene.geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE);
+                        const sceneIrradianceTexture = scene.geometryBufferRenderer.getGBuffer().textures[irradianceTextureIndex];
+                        ubo.setTexture("sceneIrradianceSampler", sceneIrradianceTexture);
+                        const depthIndex = scene.geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
+                        ubo.setTexture("sceneDepthSampler", scene.geometryBufferRenderer.getGBuffer().textures[depthIndex]);
+                        ubo.updateFloat2("renderTargetSize", sceneIrradianceTexture.getSize().width, sceneIrradianceTexture.getSize().height);
+                    }
                 }
             }
 
@@ -2521,6 +2517,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             this._needToBindSceneUbo = true;
         }
 
+        this.bindPropertiesForSubMesh(this._uniformBuffer, scene, scene.getEngine() as Engine, subMesh);
+
         if (mustRebind || !this.isFrozen) {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
@@ -2528,9 +2526,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
 
             // View
-            // if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || radianceTexture || mesh.receiveShadows || defines.PREPASS) {
             this.bindView(effect);
-            // }
 
             // Fog
             BindFogParameters(scene, mesh, this._activeEffect, true);
@@ -2802,7 +2798,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "world",
             "view",
             "viewProjection",
+            "projection",
             "vEyePosition",
+            "inverseProjection",
+            "renderTargetSize",
             "vLightsType",
             "visibility",
             "vFogInfos",
@@ -2836,8 +2835,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             samplers.push("backgroundRefractionSampler");
         }
 
-        if (defines.ANISOTROPIC || defines.FUZZ || defines.REFRACTED_BACKGROUND) {
+        if (defines.ANISOTROPIC || defines.FUZZ || defines.REFRACTED_BACKGROUND || defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) {
             samplers.push("blueNoiseSampler");
+        }
+
+        if (defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) {
+            samplers.push("sceneIrradianceSampler");
+            samplers.push("sceneDepthSampler");
         }
 
         for (const key in this._samplersList) {
@@ -3124,6 +3128,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         defines.TRANSMISSION_SLAB = this.transmissionWeight > 0;
         defines.TRANSMISSION_SLAB_VOLUME = this.transmissionWeight > 0 && this.transmissionDepth > 0;
         defines.SUBSURFACE_SLAB = this.subsurfaceWeight > 0;
+        if (scene.geometryBufferRenderer && scene.geometryBufferRenderer.enableIrradiance && (defines.SUBSURFACE_SLAB || defines.TRANSMISSION_SLAB_VOLUME)) {
+            defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = true;
+        }
         defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;
         defines.GEOMETRY_THIN_WALLED = this.geometryThinWalled != 0;
 

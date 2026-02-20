@@ -319,7 +319,7 @@
         return environmentRadiance.rgb;
     }
 #endif
-
+    #ifdef ENVIRONMENTBRDF
     fn conductorIblFresnel(reflectance: ReflectanceParams, NdotV: f32, roughness: f32, environmentBrdf: vec3f) -> vec3f
     {
         #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
@@ -331,4 +331,5 @@
             return getReflectanceFromBRDFLookup(reflectance.coloredF0, reflectance.coloredF90, environmentBrdf);
         #endif
     }
+    #endif
 #endif

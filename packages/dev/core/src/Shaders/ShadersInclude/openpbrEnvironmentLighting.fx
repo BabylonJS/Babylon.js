@@ -317,51 +317,58 @@
         #endif
 
         #ifdef SCATTERING
-            #ifdef GEOMETRY_THIN_WALLED
-                vec3 scatterVector = normalW;
+            #ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+                // If we have a precomputed multi-scatter texture, we can use the scatter vector to sample it and get a more accurate scattered environment light.
+                // This allows us to capture higher order scattering effects that aren't possible with just a single scatter sample.
+                vec3 mfp = vec3(100.0) / volumeParams.extinction_coeff;
+                vec3 scatteredEnvironmentLight = sss_convolve(sceneIrradianceSampler, sceneDepthSampler, renderTargetSize, mfp, projection, inverseProjection, 16, noise.xy);
             #else
-                // Handle isotropic and backscattering components
-                // We'll approximate scattering as a diffuse lobe. If we have a dominant lighting direction,
-                // we can bias the lobe towards that direction as the scatter density gets thinner.
-                #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
-                    vec3 scatterVector = mix(vReflectionDominantDirection, normalW, max3(iso_scatter_density));
-                #else
+                #ifdef GEOMETRY_THIN_WALLED
                     vec3 scatterVector = normalW;
-                #endif
-
-                // We'll then bend the sample direction towards the view direction based on the anisotropy to approximate backscattering.
-                scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
-            #endif
-            vec3 scatteredEnvironmentLight = sampleIrradiance(
-                scatterVector
-                #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-                    , vEnvironmentIrradiance
-                #endif
-                #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
-                    , reflectionMatrix
-                #endif
-                #ifdef USEIRRADIANCEMAP
-                    , irradianceSampler
-                    #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
-                        , vReflectionDominantDirection
-                    #endif
-                #endif
-                #ifdef REALTIME_FILTERING
-                    , vReflectionFilteringInfo
-                    #ifdef IBL_CDF_FILTERING
-                        , icdfSampler
-                    #endif
-                #endif
-                , vReflectionInfos
-                , viewDirectionW
-                #if defined(GEOMETRY_THIN_WALLED)
-                    , base_diffuse_roughness
-                    , subsurface_color.rgb
                 #else
-                    , 1.0
-                    , volumeParams.multi_scatter_color
+                    // Handle isotropic and backscattering components
+                    // We'll approximate scattering as a diffuse lobe. If we have a dominant lighting direction,
+                    // we can bias the lobe towards that direction as the scatter density gets thinner.
+                    #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
+                        vec3 scatterVector = mix(vReflectionDominantDirection, normalW, max3(iso_scatter_density));
+                    #else
+                        vec3 scatterVector = normalW;
+                    #endif
+
+                    // We'll then bend the sample direction towards the view direction based on the anisotropy to approximate backscattering.
+                    scatterVector = mix(viewDirectionW, scatterVector, back_to_iso_scattering_blend);
                 #endif
-            );
+                vec3 scatteredEnvironmentLight = sampleIrradiance(
+                    scatterVector
+                    #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
+                        , vEnvironmentIrradiance
+                    #endif
+                    #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
+                        , reflectionMatrix
+                    #endif
+                    #ifdef USEIRRADIANCEMAP
+                        , irradianceSampler
+                        #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                            , vReflectionDominantDirection
+                        #endif
+                    #endif
+                    #ifdef REALTIME_FILTERING
+                        , vReflectionFilteringInfo
+                        #ifdef IBL_CDF_FILTERING
+                            , icdfSampler
+                        #endif
+                    #endif
+                    , vReflectionInfos
+                    , viewDirectionW
+                    #if defined(GEOMETRY_THIN_WALLED)
+                        , base_diffuse_roughness
+                        , subsurface_color.rgb
+                    #else
+                        , 1.0
+                        , volumeParams.multi_scatter_color
+                    #endif
+                );
+            #endif
 
             #ifdef GEOMETRY_THIN_WALLED
                 // Direct Transmission (aka forward-scattered light from back side)
@@ -374,7 +381,7 @@
                 // Direct Transmission (aka forward-scattered light from back side)
                 vec3 forward_scattered_light = forwardScatteredEnvironmentLight * volume_absorption;
                 // Back Scattering
-                vec3 back_scattered_light = mix(forward_scattered_light, scatteredEnvironmentLight * absorption_at_mfp, iso_scatter_density);
+                vec3 back_scattered_light = mix(forward_scattered_light, scatteredEnvironmentLight * backscatter_color, iso_scatter_density);
                 // Iso Scattering
                 vec3 iso_scattered_light = mix(forward_scattered_light, scatteredEnvironmentLight * volumeParams.multi_scatter_color, iso_scatter_density);
 
