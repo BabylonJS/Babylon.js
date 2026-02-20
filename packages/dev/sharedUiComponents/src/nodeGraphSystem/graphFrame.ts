@@ -1517,6 +1517,9 @@ export class GraphFrame {
     }
 
     public dispose() {
+        if (this._isFocused) {
+            this.switchFocusMode();
+        }
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.stateManager.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
