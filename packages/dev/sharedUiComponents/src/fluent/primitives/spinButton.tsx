@@ -2,7 +2,7 @@ import type { ChangeEvent, FocusEvent, KeyboardEvent, PointerEvent } from "react
 
 import type { PrimitiveProps } from "./primitive";
 
-import { Input, makeStyles, mergeClasses, tokens, useId } from "@fluentui/react-components";
+import { Input, makeStyles, mergeClasses, tokens, useId, useMergedRefs } from "@fluentui/react-components";
 import { ArrowBidirectionalUpDownFilled } from "@fluentui/react-icons";
 
 import { Clamp } from "core/Maths/math.scalar.functions";
@@ -78,6 +78,10 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     const { min, max } = props;
     const baseStep = props.step ?? 1;
 
+    // Local ref for the input element so we can blur it programmatically (e.g. when a drag starts while editing).
+    const inputRef = useRef<HTMLInputElement | null>(null);
+    const mergedRef = useMergedRefs(ref, inputRef);
+
     // Modifier keys for step coercion.
     // Unfocused: document-level listeners via useKeyState (won't fire when input has focus due to stopPropagation in HandleKeyDown).
     // Focused: local state set from the input's own key handlers.
@@ -137,8 +141,6 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
         [min, max, props.validator, props.forceInt]
     );
 
-    const clamp = useCallback((v: number) => Clamp(v, min ?? -Infinity, max ?? Infinity), [min, max]);
-
     // Constrain a value to the valid range: wrap around if wrap is enabled (and both min/max are set), otherwise clamp.
     const constrainValue = useCallback(
         (v: number) => {
@@ -147,11 +149,12 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
                 if (range <= 0) {
                     return min;
                 }
+                // True modulo wrap: JS % preserves sign (e.g. -1 % 5 === -1), so ((x % n) + n) % n ensures a non-negative result.
                 return min + ((((v - min) % range) + range) % range);
             }
-            return clamp(v);
+            return Clamp(v, min ?? -Infinity, max ?? Infinity);
         },
-        [clamp, props.wrap, min, max]
+        [props.wrap, min, max]
     );
 
     const tryCommitValue = useCallback(
@@ -185,7 +188,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     );
 
     const handleIconPointerDown = useCallback(
-        (e: PointerEvent) => {
+        (e: PointerEvent<Element>) => {
             e.preventDefault();
             e.stopPropagation();
             // If the input was being edited, commit the current text and blur the input
@@ -197,12 +200,12 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
                     startValue = committed;
                 }
                 setIsEditing(false);
-                (document.activeElement as HTMLElement)?.blur();
+                inputRef.current?.blur();
             }
             setIsDragging(true);
             scrubStartYRef.current = e.clientY;
             scrubStartValueRef.current = startValue;
-            (e.target as Element).setPointerCapture(e.pointerId);
+            e.currentTarget.setPointerCapture(e.pointerId);
         },
         [value, isEditing, editText, commitEditText]
     );
@@ -215,6 +218,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
             // Dragging up (negative dy) should increment, dragging down should decrement.
             // Scale delta by step but round to display precision (not step) for smooth fine-grained control.
             const dy = scrubStartYRef.current - e.clientY;
+            // 5 is just a number that "feels right" for the drag sensitivity — it determines how far the user needs to drag to change the value by 1 step.
             const delta = (dy * step) / 5;
             const raw = scrubStartValueRef.current + delta;
             const precisionFactor = Math.pow(10, displayPrecision);
@@ -226,9 +230,9 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
         [isDragging, step, displayPrecision, constrainValue, tryCommitValue]
     );
 
-    const handleIconPointerUp = useCallback((e: PointerEvent) => {
+    const handleIconPointerUp = useCallback((e: PointerEvent<Element>) => {
         setIsDragging(false);
-        (e.target as Element).releasePointerCapture(e.pointerId);
+        e.currentTarget.releasePointerCapture(e.pointerId);
     }, []);
 
     const handleKeyDown = useCallback(
@@ -242,11 +246,11 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
                 setIsFocusedShiftKeyPressed(true);
             }
 
-            // Commit on Enter, but stay in editing mode and update editText to the committed result.
+            // Commit on Enter and blur the input if the value is valid.
             if (event.key === "Enter") {
-                const committed = commitEditText((event.target as HTMLInputElement).value);
+                const committed = commitEditText(event.currentTarget.value);
                 if (committed !== undefined) {
-                    setEditText(formatValue(committed));
+                    inputRef.current?.blur();
                 }
             }
 
@@ -324,7 +328,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
             }}
         >
             <Input
-                ref={ref}
+                ref={mergedRef}
                 id={id}
                 appearance="outline"
                 size={size}
