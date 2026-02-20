@@ -51,6 +51,8 @@ export type SpinButtonProps = PrimitiveProps<number> & {
     inputClassName?: string;
     /** When true, hides the drag-to-scrub button */
     disableDragButton?: boolean;
+    /** When true, values that exceed min/max wrap around (requires both min and max to be set) */
+    wrap?: boolean;
 };
 
 export const SpinButton1 = forwardRef<HTMLInputElement, SpinButtonProps>((props, ref) => {
@@ -296,6 +298,21 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
 
     const clamp = useCallback((v: number) => Clamp(v, min ?? -Infinity, max ?? Infinity), [min, max]);
 
+    // Constrain a value to the valid range: wrap around if wrap is enabled (and both min/max are set), otherwise clamp.
+    const constrainValue = useCallback(
+        (v: number) => {
+            if (props.wrap && min !== undefined && max !== undefined) {
+                const range = max - min;
+                if (range <= 0) {
+                    return min;
+                }
+                return min + ((((v - min) % range) + range) % range);
+            }
+            return clamp(v);
+        },
+        [clamp, props.wrap, min, max]
+    );
+
     const tryCommitValue = useCallback(
         (currVal: number) => {
             if (validateValue(currVal) && currVal !== lastCommittedValue.current) {
@@ -316,14 +333,14 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
         (text: string): number | undefined => {
             const numericValue = EvaluateExpression(text);
             if (!isNaN(numericValue) && validateValue(numericValue)) {
-                const clamped = clamp(numericValue);
-                setValue(clamped);
-                tryCommitValue(clamped);
-                return clamped;
+                const constrained = constrainValue(numericValue);
+                setValue(constrained);
+                tryCommitValue(constrained);
+                return constrained;
             }
             return undefined;
         },
-        [validateValue, clamp, tryCommitValue]
+        [validateValue, constrainValue, tryCommitValue]
     );
 
     const handleIconPointerDown = useCallback(
@@ -361,11 +378,11 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
             const raw = scrubStartValueRef.current + delta;
             const precisionFactor = Math.pow(10, displayPrecision);
             const rounded = Math.round(raw * precisionFactor) / precisionFactor;
-            const clamped = clamp(rounded);
-            setValue(clamped);
-            tryCommitValue(clamped);
+            const constrained = constrainValue(rounded);
+            setValue(constrained);
+            tryCommitValue(constrained);
         },
-        [isDragging, step, displayPrecision, clamp, tryCommitValue]
+        [isDragging, step, displayPrecision, constrainValue, tryCommitValue]
     );
 
     const handleIconPointerUp = useCallback((e: PointerEvent) => {
@@ -397,7 +414,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
             if (event.key === "ArrowUp" || event.key === "ArrowDown") {
                 event.preventDefault();
                 const direction = event.key === "ArrowUp" ? 1 : -1;
-                const newValue = clamp(Math.round((value + direction * step) / step) * step);
+                const newValue = constrainValue(Math.round((value + direction * step) / step) * step);
                 setValue(newValue);
                 tryCommitValue(newValue);
                 // Update edit text to reflect the new value so the user sees the change
@@ -406,7 +423,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
 
             HandleKeyDown(event);
         },
-        [value, step, clamp, tryCommitValue, commitEditText, formatValue]
+        [value, step, constrainValue, tryCommitValue, commitEditText, formatValue]
     );
 
     const handleKeyUp = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
