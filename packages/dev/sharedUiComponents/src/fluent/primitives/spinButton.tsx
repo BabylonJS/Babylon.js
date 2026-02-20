@@ -454,7 +454,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
     );
 
     const contentBefore =
-        isHovered || isDragging ? (
+        (isHovered || isDragging) && !isInputInvalid ? (
             <ArrowsBidirectionalRegular
                 className={classes.icon}
                 style={{ cursor: isDragging ? "ns-resize" : "pointer" }}
