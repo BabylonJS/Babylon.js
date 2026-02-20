@@ -378,7 +378,8 @@ export class Gizmo implements IGizmo {
             if (this.updateScale) {
                 const activeCamera = this.gizmoLayer.utilityLayerScene.activeCamera!;
                 const cameraPosition = activeCamera.globalPosition;
-                this._rootMesh.position.subtractToRef(cameraPosition, TmpVectors.Vector3[0]);
+                const offsetToCamera = TmpVectors.Vector3[0];
+                this._rootMesh.absolutePosition.subtractToRef(cameraPosition, offsetToCamera);
                 let scale = this.scaleRatio;
                 if (activeCamera.mode == Camera.ORTHOGRAPHIC_CAMERA) {
                     if (activeCamera.orthoTop && activeCamera.orthoBottom) {
@@ -388,7 +389,7 @@ export class Gizmo implements IGizmo {
                 } else {
                     const camForward = activeCamera.getScene().useRightHandedSystem ? Vector3.RightHandedForwardReadOnly : Vector3.LeftHandedForwardReadOnly;
                     const direction = activeCamera.getDirection(camForward);
-                    scale *= Vector3.Dot(TmpVectors.Vector3[0], direction);
+                    scale *= Vector3.Dot(offsetToCamera, direction);
                 }
                 this._rootMesh.scaling.setAll(scale);
 
