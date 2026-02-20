@@ -49,6 +49,8 @@ export type SpinButtonProps = PrimitiveProps<number> & {
     precision?: number;
     /** Optional className for the input element */
     inputClassName?: string;
+    /** When true, hides the drag-to-scrub button */
+    disableDragButton?: boolean;
 };
 
 export const SpinButton1 = forwardRef<HTMLInputElement, SpinButtonProps>((props, ref) => {
@@ -446,7 +448,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
     );
 
     const contentBefore =
-        (isHovered || isDragging) && !isInputInvalid ? (
+        !props.disableDragButton && (isHovered || isDragging) && !isInputInvalid ? (
             <ArrowsBidirectionalRegular
                 className={classes.icon}
                 style={{ cursor: isDragging ? "ns-resize" : "pointer" }}
