@@ -228,8 +228,10 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
     const { min, max } = props;
     const baseStep = props.step ?? 1;
 
-    // Modifier keys for step coercion (unfocused = global, focused = while input has focus)
-    const isUnfocusedAltKeyPressed = useKeyState("Alt");
+    // Modifier keys for step coercion.
+    // Unfocused: document-level listeners via useKeyState (won't fire when input has focus due to stopPropagation in HandleKeyDown).
+    // Focused: local state set from the input's own key handlers.
+    const isUnfocusedAltKeyPressed = useKeyState("Alt", { preventDefault: true });
     const isUnfocusedCtrlKeyPressed = useKeyState("Control");
     const isUnfocusedShiftKeyPressed = useKeyState("Shift");
     const [isFocusedAltKeyPressed, setIsFocusedAltKeyPressed] = useState(false);
@@ -379,7 +381,10 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
 
     const handleKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
+            // Track modifier keys locally since HandleKeyDown calls stopPropagation,
+            // preventing the document-level useKeyState listeners from seeing these events.
             if (event.key === "Alt") {
+                event.preventDefault(); // Prevent browser from activating the menu bar
                 setIsFocusedAltKeyPressed(true);
             } else if (event.key === "Control") {
                 setIsFocusedCtrlKeyPressed(true);
@@ -412,6 +417,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
 
     const handleKeyUp = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "Alt") {
+            event.preventDefault(); // Prevent browser from activating the menu bar
             setIsFocusedAltKeyPressed(false);
         } else if (event.key === "Control") {
             setIsFocusedCtrlKeyPressed(false);
