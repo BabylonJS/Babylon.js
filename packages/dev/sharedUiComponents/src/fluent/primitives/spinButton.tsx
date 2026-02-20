@@ -1,7 +1,7 @@
 import { SpinButton as FluentSpinButton, Input, makeStyles, mergeClasses, tokens, useId } from "@fluentui/react-components";
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
 import { ArrowsBidirectionalRegular } from "@fluentui/react-icons";
-import type { ChangeEvent, KeyboardEvent, PointerEvent } from "react";
+import type { ChangeEvent, FocusEvent, KeyboardEvent, PointerEvent } from "react";
 import { forwardRef, useCallback, useEffect, useState, useRef, useContext } from "react";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
@@ -22,6 +22,18 @@ function CoerceStepValue(step: number, isFineKeyPressed: boolean, isCourseKeyPre
     }
 
     return step;
+}
+
+// Allow arbitrary expressions, primarily for math operations (e.g. 10*60 for 10 minutes in seconds).
+// Use Function constructor to safely evaluate the expression without allowing access to scope.
+// If the expression is invalid, fallback to NaN which will be caught by validateValue and prevent committing.
+function EvaluateExpression(rawValue: string): number {
+    const val = rawValue.trim();
+    try {
+        return Number(Function(`"use strict";return (${val})`)());
+    } catch {
+        return NaN;
+    }
 }
 
 export type SpinButtonProps = PrimitiveProps<number> & {
@@ -113,17 +125,8 @@ export const SpinButton1 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
         return val;
     };
 
-    // Allow arbitrary expressions, primarily for math operations (e.g. 10*60 for 10 minutes in seconds).
-    // Use Function constructor to safely evaluate the expression without allowing access to scope.
-    // If the expression is invalid, fallback to NaN which will be caught by validateValue and prevent committing.
-    const evaluateExpression = (rawValue: string): number => {
-        const val = stripUnit(rawValue).trim();
-        try {
-            return Number(Function(`"use strict";return (${val})`)());
-        } catch {
-            return NaN;
-        }
-    };
+    // Evaluate with unit stripping for SpinButton1 (which appends unit to displayValue).
+    const evaluateInput = (rawValue: string): number => EvaluateExpression(stripUnit(rawValue));
 
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "Alt") {
@@ -135,7 +138,7 @@ export const SpinButton1 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
         // Evaluate on Enter in keyDown (before Fluent's internal commit clears the raw text
         // and re-renders with the truncated displayValue).
         if (event.key === "Enter") {
-            const currVal = evaluateExpression((event.target as HTMLInputElement).value);
+            const currVal = evaluateInput((event.target as HTMLInputElement).value);
             if (!isNaN(currVal)) {
                 setValue(currVal);
                 tryCommitValue(currVal);
@@ -160,7 +163,7 @@ export const SpinButton1 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
             return;
         }
 
-        const currVal = evaluateExpression((event.target as any).value);
+        const currVal = evaluateInput((event.target as any).value);
 
         if (!isNaN(currVal)) {
             setValue(currVal);
@@ -261,9 +264,8 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
 
     // Format a number for display: toFixed, then trim trailing zeros and period unless a fixed precision is specified.
     const formatValue = useCallback(
-        (v: number, precision?: number) => {
-            const p = precision ?? displayPrecision;
-            const fixed = v.toFixed(p);
+        (v: number) => {
+            const fixed = v.toFixed(displayPrecision);
             if (props.precision !== undefined) {
                 return fixed;
             }
@@ -302,18 +304,6 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
         [validateValue, props.onChange]
     );
 
-    // Allow arbitrary expressions, primarily for math operations (e.g. 10*60 for 10 minutes in seconds).
-    // Use Function constructor to safely evaluate the expression without allowing access to scope.
-    // If the expression is invalid, fallback to NaN which will be caught by validateValue and prevent committing.
-    const evaluateExpression = useCallback((rawValue: string): number => {
-        const val = rawValue.trim();
-        try {
-            return Number(Function(`"use strict";return (${val})`)());
-        } catch {
-            return NaN;
-        }
-    }, []);
-
     const handleInputChange = useCallback((_: ChangeEvent, data: { value: string }) => {
         // Just update the raw text — no evaluation or commit until Enter/blur.
         setEditText(data.value);
@@ -322,7 +312,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
     // Evaluate the current edit text and commit the value. Returns the clamped value if valid, or undefined.
     const commitEditText = useCallback(
         (text: string): number | undefined => {
-            const numericValue = evaluateExpression(text);
+            const numericValue = EvaluateExpression(text);
             if (!isNaN(numericValue) && validateValue(numericValue)) {
                 const clamped = clamp(numericValue);
                 setValue(clamped);
@@ -331,7 +321,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
             }
             return undefined;
         },
-        [evaluateExpression, validateValue, clamp, tryCommitValue]
+        [validateValue, clamp, tryCommitValue]
     );
 
     const handleIconPointerDown = useCallback(
@@ -380,7 +370,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
     }, []);
 
     const handleKeyDown = useCallback(
-        (event: React.KeyboardEvent<HTMLInputElement>) => {
+        (event: KeyboardEvent<HTMLInputElement>) => {
             // Track modifier keys locally since HandleKeyDown calls stopPropagation,
             // preventing the document-level useKeyState listeners from seeing these events.
             if (event.key === "Alt") {
@@ -415,7 +405,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
         [value, step, clamp, tryCommitValue, commitEditText, formatValue]
     );
 
-    const handleKeyUp = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyUp = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "Alt") {
             event.preventDefault(); // Prevent browser from activating the menu bar
             setIsFocusedAltKeyPressed(false);
@@ -429,12 +419,8 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
     const id = useId("spin-button2");
 
     // Real-time validation: when editing, validate the expression; otherwise validate the committed value.
-    const isInputInvalid = isEditing
-        ? (() => {
-              const evaluated = evaluateExpression(editText);
-              return isNaN(evaluated) || !validateValue(evaluated);
-          })()
-        : !validateValue(value);
+    // (validateValue already handles NaN, so no separate isNaN check needed.)
+    const isInputInvalid = !validateValue(isEditing ? EvaluateExpression(editText) : value);
 
     const mergedClassName = mergeClasses(inputClasses.input, isInputInvalid ? inputClasses.invalid : "", props.className);
     const inputSlotClassName = mergeClasses(inputClasses.inputSlot, props.inputClassName);
@@ -447,16 +433,16 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
     }, [formattedValue]);
 
     const handleBlur = useCallback(
-        (event: React.FocusEvent<HTMLInputElement>) => {
+        (event: FocusEvent<HTMLInputElement>) => {
             // Skip blur handling if a drag just started (icon pointerDown already committed).
             if (isDragging) {
                 return;
             }
-            commitEditText(editText);
+            commitEditText(event.target.value);
             setIsEditing(false);
             HandleOnBlur(event);
         },
-        [editText, commitEditText, isDragging]
+        [commitEditText, isDragging]
     );
 
     const contentBefore =
