@@ -1,6 +1,6 @@
 import { SpinButton as FluentSpinButton, Input, makeStyles, mergeClasses, tokens, useId } from "@fluentui/react-components";
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
-import { ArrowsBidirectionalRegular } from "@fluentui/react-icons";
+import { ArrowBidirectionalUpDownFilled } from "@fluentui/react-icons";
 import type { ChangeEvent, FocusEvent, KeyboardEvent, PointerEvent } from "react";
 import { forwardRef, useCallback, useEffect, useState, useRef, useContext } from "react";
 import type { PrimitiveProps } from "./primitive";
@@ -215,7 +215,6 @@ export const SpinButton1 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
 
 const useStyles = makeStyles({
     icon: {
-        transform: "rotate(90deg)",
         "&:hover": {
             color: tokens.colorBrandForeground1,
         },
@@ -462,7 +461,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
 
     const contentBefore =
         !props.disableDragButton && (isHovered || isDragging) && !isInputInvalid ? (
-            <ArrowsBidirectionalRegular
+            <ArrowBidirectionalUpDownFilled
                 className={classes.icon}
                 style={{ cursor: isDragging ? "ns-resize" : "pointer" }}
                 onPointerDown={handleIconPointerDown}
