@@ -278,6 +278,8 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 lastDragPosition.copyFrom(e.dragPlanePoint);
                 this._rotationShaderMaterial.setVector3("angles", this._angles);
                 this.angle = 0;
+                // there is an issue with the rotation plane with additionalTransformNode, so we hide it in that case to avoid confusion
+                this._rotationDisplayPlane.visibility = this._additionalTransformNode ? 0 : 0.999;
             }
         });
 
@@ -410,8 +412,6 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 this._angles.y += gizmoLayer.utilityLayerScene.useRightHandedSystem ? -angle : angle;
                 this.angle += cameraFlipped ? -angle : angle;
                 this._rotationShaderMaterial.setVector3("angles", this._angles);
-                // there is an issue with the rotation plane with additionalTransformNode, so we hide it in that case to avoid confusion
-                this._rotationDisplayPlane.visibility = this._additionalTransformNode ? 0 : 0.999;
                 this._matrixChanged();
             }
         });
