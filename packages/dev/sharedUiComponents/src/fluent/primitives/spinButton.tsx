@@ -380,8 +380,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
             if (event.key === "Enter") {
                 const committed = commitEditText((event.target as HTMLInputElement).value);
                 if (committed !== undefined) {
-                    const newPrecision = Math.min(4, Math.max(Math.max(0, CalculatePrecision(step)), Math.max(0, CalculatePrecision(committed))));
-                    setEditText(formatValue(committed, newPrecision));
+                    setEditText(formatValue(committed));
                 }
             }
 
@@ -392,8 +391,7 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
                 setValue(newValue);
                 tryCommitValue(newValue);
                 // Update edit text to reflect the new value so the user sees the change
-                const newPrecision = Math.min(4, Math.max(Math.max(0, CalculatePrecision(step)), Math.max(0, CalculatePrecision(newValue))));
-                setEditText(formatValue(newValue, newPrecision));
+                setEditText(formatValue(newValue));
             }
 
             HandleKeyDown(event);
