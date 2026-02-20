@@ -251,14 +251,83 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             });
         }
 
+        const handlePLY = (resolve: (value: AbstractMesh[]) => void) => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+            SPLATFileLoader._ConvertPLYToSplat(data as ArrayBuffer).then(async (parsedPLY) => {
+                scene._blockEntityCollection = !!this._assetContainer;
+                switch (parsedPLY.mode) {
+                    case Mode.Splat:
+                        {
+                            const gaussianSplatting =
+                                this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+                            gaussianSplatting._parentContainer = this._assetContainer;
+                            babylonMeshesArray.push(gaussianSplatting);
+                            gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh, { flipY: false });
+                            gaussianSplatting.scaling.y *= -1.0;
+
+                            if (parsedPLY.chirality === "RightHanded") {
+                                gaussianSplatting.scaling.y *= -1.0;
+                            }
+
+                            switch (parsedPLY.upAxis) {
+                                case "X":
+                                    gaussianSplatting.rotation = new Vector3(0, 0, Math.PI / 2);
+                                    break;
+                                case "Y":
+                                    gaussianSplatting.rotation = new Vector3(0, 0, Math.PI);
+                                    break;
+                                case "Z":
+                                    gaussianSplatting.rotation = new Vector3(-Math.PI / 2, Math.PI, 0);
+                                    break;
+                            }
+                            gaussianSplatting.computeWorldMatrix(true);
+                        }
+                        break;
+                    case Mode.PointCloud:
+                        {
+                            const pointcloud = new PointsCloudSystem("PointCloud", 1, scene);
+                            if (SPLATFileLoader._BuildPointCloud(pointcloud, parsedPLY.data)) {
+                                // eslint-disable-next-line github/no-then
+                                await pointcloud.buildMeshAsync().then((mesh) => {
+                                    babylonMeshesArray.push(mesh);
+                                });
+                            } else {
+                                pointcloud.dispose();
+                            }
+                        }
+                        break;
+                    case Mode.Mesh:
+                        {
+                            if (parsedPLY.faces) {
+                                babylonMeshesArray.push(SPLATFileLoader._BuildMesh(scene, parsedPLY));
+                            } else {
+                                throw new Error("PLY mesh doesn't contain face informations.");
+                            }
+                        }
+                        break;
+                    default:
+                        throw new Error("Unsupported Splat mode");
+                }
+                scene._blockEntityCollection = false;
+                this.applyAutoCameraLimits(parsedPLY, scene);
+                resolve(babylonMeshesArray);
+            });
+        };
+
+        // Check for gzip magic bytes (SPZ format) before attempting decompression
+        if (u8[0] !== 0x1f || u8[1] !== 0x8b) {
+            return new Promise((resolve) => {
+                handlePLY(resolve);
+            });
+        }
+
+        // Use GZip DecompressionStream for SPZ files
         const readableStream = new ReadableStream({
             start(controller) {
-                controller.enqueue(new Uint8Array(data)); // Enqueue the ArrayBuffer as a Uint8Array
+                controller.enqueue(new Uint8Array(data));
                 controller.close();
             },
         });
-
-        // Use GZip DecompressionStream
         const decompressionStream = new DecompressionStream("gzip");
         const decompressedStream = readableStream.pipeThrough(decompressionStream);
 
@@ -291,67 +360,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 })
                 // eslint-disable-next-line github/no-then
                 .catch(() => {
-                    // Catch any decompression errors
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-                    SPLATFileLoader._ConvertPLYToSplat(data as ArrayBuffer).then(async (parsedPLY) => {
-                        scene._blockEntityCollection = !!this._assetContainer;
-                        switch (parsedPLY.mode) {
-                            case Mode.Splat:
-                                {
-                                    const gaussianSplatting =
-                                        this._loadingOptions.gaussianSplattingMesh ?? new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
-                                    gaussianSplatting._parentContainer = this._assetContainer;
-                                    babylonMeshesArray.push(gaussianSplatting);
-                                    gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh, { flipY: false });
-                                    gaussianSplatting.scaling.y *= -1.0;
-
-                                    if (parsedPLY.chirality === "RightHanded") {
-                                        gaussianSplatting.scaling.y *= -1.0;
-                                    }
-
-                                    switch (parsedPLY.upAxis) {
-                                        case "X":
-                                            gaussianSplatting.rotation = new Vector3(0, 0, Math.PI / 2);
-                                            break;
-                                        case "Y":
-                                            gaussianSplatting.rotation = new Vector3(0, 0, Math.PI);
-                                            break;
-                                        case "Z":
-                                            gaussianSplatting.rotation = new Vector3(-Math.PI / 2, Math.PI, 0);
-                                            break;
-                                    }
-                                    gaussianSplatting.computeWorldMatrix(true);
-                                }
-                                break;
-                            case Mode.PointCloud:
-                                {
-                                    const pointcloud = new PointsCloudSystem("PointCloud", 1, scene);
-                                    if (SPLATFileLoader._BuildPointCloud(pointcloud, parsedPLY.data)) {
-                                        // eslint-disable-next-line github/no-then
-                                        await pointcloud.buildMeshAsync().then((mesh) => {
-                                            babylonMeshesArray.push(mesh);
-                                        });
-                                    } else {
-                                        pointcloud.dispose();
-                                    }
-                                }
-                                break;
-                            case Mode.Mesh:
-                                {
-                                    if (parsedPLY.faces) {
-                                        babylonMeshesArray.push(SPLATFileLoader._BuildMesh(scene, parsedPLY));
-                                    } else {
-                                        throw new Error("PLY mesh doesn't contain face informations.");
-                                    }
-                                }
-                                break;
-                            default:
-                                throw new Error("Unsupported Splat mode");
-                        }
-                        scene._blockEntityCollection = false;
-                        this.applyAutoCameraLimits(parsedPLY, scene);
-                        resolve(babylonMeshesArray);
-                    });
+                    handlePLY(resolve);
                 });
         });
     }
