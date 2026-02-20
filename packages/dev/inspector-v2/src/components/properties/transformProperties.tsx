@@ -34,7 +34,7 @@ export const TransformProperties: FunctionComponent<{ transform: Transform }> = 
             ) : (
                 <BoundProperty component={RotationVectorPropertyLine} label="Rotation" target={transform} propertyKey="rotation" useDegrees={useDegrees} />
             )}
-            <BoundProperty component={Vector3PropertyLine} label="Scaling" target={transform} propertyKey="scaling" />
+            <BoundProperty component={Vector3PropertyLine} label="Scaling" target={transform} propertyKey="scaling" step={0.1} />
         </>
     );
 };
