@@ -1,14 +1,16 @@
-import { SpinButton as FluentSpinButton, Input, makeStyles, mergeClasses, tokens, useId } from "@fluentui/react-components";
-import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
-import { ArrowBidirectionalUpDownFilled } from "@fluentui/react-icons";
 import type { ChangeEvent, FocusEvent, KeyboardEvent, PointerEvent } from "react";
-import { forwardRef, useCallback, useEffect, useState, useRef, useContext } from "react";
+
 import type { PrimitiveProps } from "./primitive";
-import { InfoLabel } from "./infoLabel";
-import { CalculatePrecision, HandleKeyDown, HandleOnBlur, useInputStyles } from "./utils";
+
+import { Input, makeStyles, mergeClasses, tokens, useId } from "@fluentui/react-components";
+import { ArrowBidirectionalUpDownFilled } from "@fluentui/react-icons";
+
+import { Clamp } from "core/Maths/math.scalar.functions";
+import { forwardRef, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { useKeyState } from "../hooks/keyboardHooks";
-import { Clamp } from "core/Maths/math.scalar.functions";
+import { InfoLabel } from "./infoLabel";
+import { CalculatePrecision, HandleKeyDown, HandleOnBlur, useInputStyles } from "./utils";
 
 function CoerceStepValue(step: number, isFineKeyPressed: boolean, isCourseKeyPressed: boolean): number {
     // When the fine key is pressed, decrease step by a factor of 10.
