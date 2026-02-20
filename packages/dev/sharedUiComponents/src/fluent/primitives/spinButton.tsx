@@ -1,21 +1,23 @@
-import { SpinButton as FluentSpinButton, mergeClasses, useId } from "@fluentui/react-components";
+import { SpinButton as FluentSpinButton, Input, makeStyles, mergeClasses, tokens, useId } from "@fluentui/react-components";
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
-import type { KeyboardEvent } from "react";
-import { forwardRef, useEffect, useState, useRef, useContext } from "react";
+import { ArrowsBidirectionalRegular } from "@fluentui/react-icons";
+import type { ChangeEvent, KeyboardEvent, PointerEvent } from "react";
+import { forwardRef, useCallback, useEffect, useState, useRef, useContext } from "react";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
 import { CalculatePrecision, HandleKeyDown, HandleOnBlur, useInputStyles } from "./utils";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 import { useKeyState } from "../hooks/keyboardHooks";
+import { Clamp } from "core/Maths/math.scalar.functions";
 
-function CoerceStepValue(step: number, isAltKeyPressed: boolean, isShiftKeyPressed: boolean): number {
-    // When the alt key is pressed, decrease step by a factor of 10.
-    if (isAltKeyPressed) {
+function CoerceStepValue(step: number, isFineKeyPressed: boolean, isCourseKeyPressed: boolean): number {
+    // When the alt or control key is pressed, decrease step by a factor of 10.
+    if (isFineKeyPressed) {
         return step * 0.1;
     }
 
     // When the shift key is pressed, increase step by a factor of 10.
-    if (isShiftKeyPressed) {
+    if (isCourseKeyPressed) {
         return step * 10;
     }
 
@@ -35,8 +37,8 @@ export type SpinButtonProps = PrimitiveProps<number> & {
     inputClassName?: string;
 };
 
-export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, ref) => {
-    SpinButton.displayName = "SpinButton";
+export const SpinButton1 = forwardRef<HTMLInputElement, SpinButtonProps>((props, ref) => {
+    SpinButton1.displayName = "SpinButton";
     const classes = useInputStyles();
     const { size } = useContext(ToolContext);
 
@@ -201,3 +203,274 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
         spinButton
     );
 });
+
+const useStyles = makeStyles({
+    icon: {
+        transform: "rotate(90deg)",
+        "&:hover": {
+            color: tokens.colorBrandForeground1,
+        },
+    },
+});
+
+/**
+ * A numeric input with a vertical drag-to-scrub icon (ArrowsBidirectionalRegular rotated 90°).
+ * Click-and-drag up/down on the icon to increment/decrement the value.
+ */
+export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props, ref) => {
+    SpinButton2.displayName = "SpinButton2";
+    const inputClasses = useInputStyles();
+    const classes = useStyles();
+    const { size } = useContext(ToolContext);
+
+    const { min, max } = props;
+    const baseStep = props.step ?? 1;
+
+    // Modifier keys for step coercion (unfocused = global, focused = while input has focus)
+    const isUnfocusedAltKeyPressed = useKeyState("Alt");
+    const isUnfocusedCtrlKeyPressed = useKeyState("Control");
+    const isUnfocusedShiftKeyPressed = useKeyState("Shift");
+    const [isFocusedAltKeyPressed, setIsFocusedAltKeyPressed] = useState(false);
+    const [isFocusedCtrlKeyPressed, setIsFocusedCtrlKeyPressed] = useState(false);
+    const [isFocusedShiftKeyPressed, setIsFocusedShiftKeyPressed] = useState(false);
+
+    const isFineKey = isUnfocusedAltKeyPressed || isFocusedAltKeyPressed || isUnfocusedCtrlKeyPressed || isFocusedCtrlKeyPressed;
+    const isCourseKey = isUnfocusedShiftKeyPressed || isFocusedShiftKeyPressed;
+    const step = CoerceStepValue(baseStep, isFineKey, isCourseKey);
+    const stepPrecision = Math.max(0, CalculatePrecision(step));
+
+    const [value, setValue] = useState<number>(props.value ?? 0);
+    const lastCommittedValue = useRef(props.value);
+    const [isDragging, setIsDragging] = useState(false);
+    const scrubStartYRef = useRef(0);
+    const scrubStartValueRef = useRef(0);
+    const [isHovered, setIsHovered] = useState(false);
+
+    // Editing state: when the user is typing, we show their raw text rather than the formatted value.
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState("");
+
+    const valuePrecision = Math.max(0, CalculatePrecision(value));
+    // Display precision: controls how many decimals are shown in the formatted displayValue. Cap at 4 to avoid wild numbers
+    const displayPrecision = Math.min(4, Math.max(stepPrecision, valuePrecision));
+
+    useEffect(() => {
+        if (!isDragging && props.value !== lastCommittedValue.current) {
+            lastCommittedValue.current = props.value;
+            setValue(props.value ?? 0);
+        }
+    }, [props.value, isDragging]);
+
+    const validateValue = useCallback(
+        (numericValue: number): boolean => {
+            const outOfBounds = (min !== undefined && numericValue < min) || (max !== undefined && numericValue > max);
+            const failsValidator = props.validator && !props.validator(numericValue);
+            const failsIntCheck = props.forceInt ? !Number.isInteger(numericValue) : false;
+            const invalid = !!outOfBounds || !!failsValidator || isNaN(numericValue) || !!failsIntCheck;
+            return !invalid;
+        },
+        [min, max, props.validator, props.forceInt]
+    );
+
+    const clamp = useCallback((v: number) => Clamp(v, min ?? -Infinity, max ?? Infinity), [min, max]);
+
+    const tryCommitValue = useCallback(
+        (currVal: number) => {
+            if (validateValue(currVal) && currVal !== lastCommittedValue.current) {
+                lastCommittedValue.current = currVal;
+                props.onChange(currVal);
+            }
+        },
+        [validateValue, props.onChange]
+    );
+
+    const handleIconPointerDown = useCallback(
+        (e: PointerEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDragging(true);
+            scrubStartYRef.current = e.clientY;
+            scrubStartValueRef.current = value;
+            (e.target as Element).setPointerCapture(e.pointerId);
+        },
+        [value]
+    );
+
+    const handleIconPointerMove = useCallback(
+        (e: PointerEvent) => {
+            if (!isDragging) {
+                return;
+            }
+            // Dragging up (negative dy) should increment, dragging down should decrement
+            const dy = scrubStartYRef.current - e.clientY;
+            const delta = (dy * step) / 5;
+            const raw = scrubStartValueRef.current + delta;
+            const rounded = Math.round(raw / step) * step;
+            const clamped = clamp(rounded);
+            setValue(clamped);
+            tryCommitValue(clamped);
+        },
+        [isDragging, step, clamp, tryCommitValue]
+    );
+
+    const handleIconPointerUp = useCallback((e: PointerEvent) => {
+        setIsDragging(false);
+        (e.target as Element).releasePointerCapture(e.pointerId);
+    }, []);
+
+    // Allow arbitrary expressions, primarily for math operations (e.g. 10*60 for 10 minutes in seconds).
+    // Use Function constructor to safely evaluate the expression without allowing access to scope.
+    // If the expression is invalid, fallback to NaN which will be caught by validateValue and prevent committing.
+    const evaluateExpression = useCallback((rawValue: string): number => {
+        const val = rawValue.trim();
+        try {
+            return Number(Function(`"use strict";return (${val})`)());
+        } catch {
+            return NaN;
+        }
+    }, []);
+
+    const handleInputChange = useCallback((_: ChangeEvent, data: { value: string }) => {
+        // Just update the raw text — no evaluation or commit until Enter/blur.
+        setEditText(data.value);
+    }, []);
+
+    // Evaluate the current edit text and commit the value. Returns the clamped value if valid, or undefined.
+    const commitEditText = useCallback(
+        (text: string): number | undefined => {
+            const numericValue = evaluateExpression(text);
+            if (!isNaN(numericValue) && validateValue(numericValue)) {
+                const clamped = clamp(numericValue);
+                setValue(clamped);
+                tryCommitValue(clamped);
+                return clamped;
+            }
+            return undefined;
+        },
+        [evaluateExpression, validateValue, clamp, tryCommitValue]
+    );
+
+    const handleKeyDown = useCallback(
+        (event: React.KeyboardEvent<HTMLInputElement>) => {
+            if (event.key === "Alt") {
+                setIsFocusedAltKeyPressed(true);
+            } else if (event.key === "Control") {
+                setIsFocusedCtrlKeyPressed(true);
+            } else if (event.key === "Shift") {
+                setIsFocusedShiftKeyPressed(true);
+            }
+
+            // Commit on Enter, but stay in editing mode and update editText to the committed result.
+            if (event.key === "Enter") {
+                const committed = commitEditText((event.target as HTMLInputElement).value);
+                if (committed !== undefined) {
+                    const newPrecision = Math.min(4, Math.max(Math.max(0, CalculatePrecision(step)), Math.max(0, CalculatePrecision(committed))));
+                    setEditText(committed.toFixed(newPrecision));
+                }
+            }
+
+            if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                event.preventDefault();
+                const direction = event.key === "ArrowUp" ? 1 : -1;
+                const newValue = clamp(Math.round((value + direction * step) / step) * step);
+                setValue(newValue);
+                tryCommitValue(newValue);
+                // Update edit text to reflect the new value so the user sees the change
+                const newPrecision = Math.min(4, Math.max(Math.max(0, CalculatePrecision(step)), Math.max(0, CalculatePrecision(newValue))));
+                setEditText(newValue.toFixed(newPrecision));
+            }
+
+            HandleKeyDown(event);
+        },
+        [value, step, clamp, tryCommitValue, commitEditText]
+    );
+
+    const handleKeyUp = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Alt") {
+            setIsFocusedAltKeyPressed(false);
+        } else if (event.key === "Control") {
+            setIsFocusedCtrlKeyPressed(false);
+        } else if (event.key === "Shift") {
+            setIsFocusedShiftKeyPressed(false);
+        }
+    }, []);
+
+    const id = useId("spin-button2");
+
+    // Real-time validation: when editing, validate the expression; otherwise validate the committed value.
+    const isInputInvalid = isEditing
+        ? (() => {
+              const evaluated = evaluateExpression(editText);
+              return isNaN(evaluated) || !validateValue(evaluated);
+          })()
+        : !validateValue(value);
+
+    const mergedClassName = mergeClasses(inputClasses.input, isInputInvalid ? inputClasses.invalid : "", props.className);
+    const inputSlotClassName = mergeClasses(inputClasses.inputSlot, props.inputClassName);
+
+    const formattedValue = value.toFixed(displayPrecision);
+
+    const handleFocus = useCallback(() => {
+        setIsEditing(true);
+        setEditText(formattedValue);
+    }, [formattedValue]);
+
+    const handleBlur = useCallback(
+        (event: React.FocusEvent<HTMLInputElement>) => {
+            commitEditText(editText);
+            setIsEditing(false);
+            HandleOnBlur(event);
+        },
+        [editText, commitEditText]
+    );
+
+    const contentBefore =
+        isHovered || isDragging ? (
+            <ArrowsBidirectionalRegular
+                className={classes.icon}
+                style={{ cursor: isDragging ? "ns-resize" : "pointer" }}
+                onPointerDown={handleIconPointerDown}
+                onPointerMove={handleIconPointerMove}
+                onPointerUp={handleIconPointerUp}
+            />
+        ) : undefined;
+
+    const input = (
+        <div
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => {
+                if (!isDragging) {
+                    setIsHovered(false);
+                }
+            }}
+        >
+            <Input
+                ref={ref}
+                id={id}
+                appearance="outline"
+                size={size}
+                className={mergedClassName}
+                input={{ className: inputSlotClassName }}
+                value={isEditing ? editText : formattedValue}
+                onChange={handleInputChange}
+                onFocus={handleFocus}
+                onKeyDown={handleKeyDown}
+                onKeyUp={handleKeyUp}
+                onBlur={handleBlur}
+                contentBefore={contentBefore}
+                contentAfter={props.unit}
+            />
+        </div>
+    );
+
+    return props.infoLabel ? (
+        <div className={inputClasses.container}>
+            <InfoLabel {...props.infoLabel} htmlFor={id} />
+            {input}
+        </div>
+    ) : (
+        input
+    );
+});
+
+export const SpinButton = SpinButton2;
