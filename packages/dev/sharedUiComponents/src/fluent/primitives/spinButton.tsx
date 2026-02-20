@@ -11,12 +11,12 @@ import { useKeyState } from "../hooks/keyboardHooks";
 import { Clamp } from "core/Maths/math.scalar.functions";
 
 function CoerceStepValue(step: number, isFineKeyPressed: boolean, isCourseKeyPressed: boolean): number {
-    // When the alt or control key is pressed, decrease step by a factor of 10.
+    // When the fine key is pressed, decrease step by a factor of 10.
     if (isFineKeyPressed) {
         return step * 0.1;
     }
 
-    // When the shift key is pressed, increase step by a factor of 10.
+    // When the course key is pressed, increase step by a factor of 10.
     if (isCourseKeyPressed) {
         return step * 10;
     }
@@ -239,13 +239,11 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
     // Unfocused: document-level listeners via useKeyState (won't fire when input has focus due to stopPropagation in HandleKeyDown).
     // Focused: local state set from the input's own key handlers.
     const isUnfocusedAltKeyPressed = useKeyState("Alt", { preventDefault: true });
-    const isUnfocusedCtrlKeyPressed = useKeyState("Control");
     const isUnfocusedShiftKeyPressed = useKeyState("Shift");
     const [isFocusedAltKeyPressed, setIsFocusedAltKeyPressed] = useState(false);
-    const [isFocusedCtrlKeyPressed, setIsFocusedCtrlKeyPressed] = useState(false);
     const [isFocusedShiftKeyPressed, setIsFocusedShiftKeyPressed] = useState(false);
 
-    const isFineKey = isUnfocusedAltKeyPressed || isFocusedAltKeyPressed || isUnfocusedCtrlKeyPressed || isFocusedCtrlKeyPressed;
+    const isFineKey = isUnfocusedAltKeyPressed || isFocusedAltKeyPressed;
     const isCourseKey = isUnfocusedShiftKeyPressed || isFocusedShiftKeyPressed;
     const step = CoerceStepValue(baseStep, isFineKey, isCourseKey);
     const stepPrecision = Math.max(0, CalculatePrecision(step));
@@ -397,8 +395,6 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
             if (event.key === "Alt") {
                 event.preventDefault(); // Prevent browser from activating the menu bar
                 setIsFocusedAltKeyPressed(true);
-            } else if (event.key === "Control") {
-                setIsFocusedCtrlKeyPressed(true);
             } else if (event.key === "Shift") {
                 setIsFocusedShiftKeyPressed(true);
             }
@@ -430,8 +426,6 @@ export const SpinButton2 = forwardRef<HTMLInputElement, SpinButtonProps>((props,
         if (event.key === "Alt") {
             event.preventDefault(); // Prevent browser from activating the menu bar
             setIsFocusedAltKeyPressed(false);
-        } else if (event.key === "Control") {
-            setIsFocusedCtrlKeyPressed(false);
         } else if (event.key === "Shift") {
             setIsFocusedShiftKeyPressed(false);
         }
