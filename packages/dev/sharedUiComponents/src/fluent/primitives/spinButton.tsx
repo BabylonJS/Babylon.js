@@ -132,13 +132,14 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
 
     const validateValue = useCallback(
         (numericValue: number): boolean => {
-            const outOfBounds = (min !== undefined && numericValue < min) || (max !== undefined && numericValue > max);
+            // When wrap is enabled, out-of-bounds values are valid since they will be wrapped into range by constrainValue.
+            const outOfBounds = !props.wrap && ((min !== undefined && numericValue < min) || (max !== undefined && numericValue > max));
             const failsValidator = props.validator && !props.validator(numericValue);
             const failsIntCheck = props.forceInt ? !Number.isInteger(numericValue) : false;
             const invalid = !!outOfBounds || !!failsValidator || isNaN(numericValue) || !!failsIntCheck;
             return !invalid;
         },
-        [min, max, props.validator, props.forceInt]
+        [min, max, props.validator, props.forceInt, props.wrap]
     );
 
     // Constrain a value to the valid range: wrap around if wrap is enabled (and both min/max are set), otherwise clamp.
