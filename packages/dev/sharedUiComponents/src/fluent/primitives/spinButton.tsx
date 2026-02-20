@@ -53,8 +53,6 @@ export type SpinButtonProps = PrimitiveProps<number> & {
     inputClassName?: string;
     /** When true, hides the drag-to-scrub button */
     disableDragButton?: boolean;
-    /** When true, values that exceed min/max wrap around (requires both min and max to be set) */
-    wrap?: boolean;
 };
 
 const useStyles = makeStyles({
@@ -132,31 +130,17 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
 
     const validateValue = useCallback(
         (numericValue: number): boolean => {
-            // When wrap is enabled, out-of-bounds values are valid since they will be wrapped into range by constrainValue.
-            const outOfBounds = !props.wrap && ((min !== undefined && numericValue < min) || (max !== undefined && numericValue > max));
+            const outOfBounds = (min !== undefined && numericValue < min) || (max !== undefined && numericValue > max);
             const failsValidator = props.validator && !props.validator(numericValue);
             const failsIntCheck = props.forceInt ? !Number.isInteger(numericValue) : false;
             const invalid = !!outOfBounds || !!failsValidator || isNaN(numericValue) || !!failsIntCheck;
             return !invalid;
         },
-        [min, max, props.validator, props.forceInt, props.wrap]
+        [min, max, props.validator, props.forceInt]
     );
 
-    // Constrain a value to the valid range: wrap around if wrap is enabled (and both min/max are set), otherwise clamp.
-    const constrainValue = useCallback(
-        (v: number) => {
-            if (props.wrap && min !== undefined && max !== undefined) {
-                const range = max - min;
-                if (range <= 0) {
-                    return min;
-                }
-                // True modulo wrap: JS % preserves sign (e.g. -1 % 5 === -1), so ((x % n) + n) % n ensures a non-negative result.
-                return min + ((((v - min) % range) + range) % range);
-            }
-            return Clamp(v, min ?? -Infinity, max ?? Infinity);
-        },
-        [props.wrap, min, max]
-    );
+    // Constrain a value to the valid range by clamping to [min, max].
+    const constrainValue = useCallback((v: number) => Clamp(v, min ?? -Infinity, max ?? Infinity), [min, max]);
 
     const tryCommitValue = useCallback(
         (currVal: number) => {

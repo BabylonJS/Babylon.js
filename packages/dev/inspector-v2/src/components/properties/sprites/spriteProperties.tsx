@@ -72,11 +72,8 @@ export const SpriteTransformProperties: FunctionComponent<{ sprite: Sprite }> = 
                 key="Angle"
                 label="Angle"
                 description={`Rotation angle of the sprite in ${useDegrees ? "degrees" : "radians"}`}
-                min={0}
-                max={toDisplayAngle(Math.PI * 2)}
                 step={toDisplayAngle(0.01)}
                 unit={useDegrees ? "°" : "rad"}
-                wrap
                 target={sprite}
                 propertyKey="angle"
                 convertTo={toDisplayAngle}

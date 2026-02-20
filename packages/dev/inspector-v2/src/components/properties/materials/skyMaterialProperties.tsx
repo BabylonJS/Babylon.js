@@ -21,11 +21,8 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial }>
                 description={`Azimuth angle in ${useDegrees ? "degrees" : "radians"}`}
                 target={material}
                 propertyKey="azimuth"
-                min={toDisplayAngle(0)}
-                max={toDisplayAngle(Math.PI * 2)}
                 step={toDisplayAngle(0.001)}
                 unit={useDegrees ? "°" : "rad"}
-                wrap
                 convertTo={toDisplayAngle}
                 convertFrom={fromDisplayAngle}
                 docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
@@ -40,7 +37,6 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial }>
                 max={toDisplayAngle(Math.PI / 2)}
                 step={toDisplayAngle(0.001)}
                 unit={useDegrees ? "°" : "rad"}
-                wrap
                 convertTo={toDisplayAngle}
                 convertFrom={fromDisplayAngle}
                 docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"

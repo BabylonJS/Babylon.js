@@ -34,10 +34,6 @@ export type TensorPropertyLineProps<V extends Vector2 | Vector3 | Vector4 | Quat
         /** Optional fixed precision (number of decimal digits). Overrides the automatically computed display precision. */
         precision?: number;
         /**
-         * Allows the value to wrap when both a min and max are provided, and the value is incremented/decremented past the max/min.
-         */
-        wrap?: boolean;
-        /**
          * If passed, the UX will use the conversion functions to display/update values
          */
         valueConverter?: {
@@ -87,17 +83,7 @@ const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Ve
             {...props}
             expandedContent={
                 vector ? (
-                    <VectorSliders
-                        vector={vector}
-                        min={min}
-                        max={max}
-                        wrap={props.wrap}
-                        unit={props.unit}
-                        step={props.step}
-                        precision={props.precision}
-                        converted={converted}
-                        onChange={onChange}
-                    />
+                    <VectorSliders vector={vector} min={min} max={max} unit={props.unit} step={props.step} precision={props.precision} converted={converted} onChange={onChange} />
                 ) : undefined
             }
         >
@@ -113,42 +99,20 @@ type VectorSlidersProps<V extends Vector2 | Vector3 | Vector4 | Quaternion> = {
     unit?: string;
     step?: number;
     precision?: number;
-    wrap?: boolean;
     converted: (val: number) => number;
     onChange: (val: number, key: "x" | "y" | "z" | "w") => void;
 };
 
-const VectorSliders = <V extends Vector2 | Vector3 | Vector4 | Quaternion>({ vector, min, max, unit, step, precision, wrap, converted, onChange }: VectorSlidersProps<V>) => (
+const VectorSliders = <V extends Vector2 | Vector3 | Vector4 | Quaternion>({ vector, min, max, unit, step, precision, converted, onChange }: VectorSlidersProps<V>) => (
     <>
-        <NumberInputPropertyLine
-            label="X"
-            value={converted(vector.x)}
-            min={min}
-            max={max}
-            wrap={wrap}
-            onChange={(val) => onChange(val, "x")}
-            unit={unit}
-            step={step}
-            precision={precision}
-        />
-        <NumberInputPropertyLine
-            label="Y"
-            value={converted(vector.y)}
-            min={min}
-            max={max}
-            wrap={wrap}
-            onChange={(val) => onChange(val, "y")}
-            unit={unit}
-            step={step}
-            precision={precision}
-        />
+        <NumberInputPropertyLine label="X" value={converted(vector.x)} min={min} max={max} onChange={(val) => onChange(val, "x")} unit={unit} step={step} precision={precision} />
+        <NumberInputPropertyLine label="Y" value={converted(vector.y)} min={min} max={max} onChange={(val) => onChange(val, "y")} unit={unit} step={step} precision={precision} />
         {HasZ(vector) && (
             <NumberInputPropertyLine
                 label="Z"
                 value={converted(vector.z)}
                 min={min}
                 max={max}
-                wrap={wrap}
                 onChange={(val) => onChange(val, "z")}
                 unit={unit}
                 step={step}
@@ -161,7 +125,6 @@ const VectorSliders = <V extends Vector2 | Vector3 | Vector4 | Quaternion>({ vec
                 value={converted(vector.w)}
                 min={min}
                 max={max}
-                wrap={wrap}
                 onChange={(val) => onChange(val, "w")}
                 unit={unit}
                 step={step}
@@ -181,8 +144,6 @@ type RotationVectorPropertyLineProps = TensorPropertyLineProps<Vector3> & {
 const ToDegreesConverter = { from: Tools.ToDegrees, to: Tools.ToRadians };
 export const RotationVectorPropertyLine: FunctionComponent<RotationVectorPropertyLineProps> = (props) => {
     RotationVectorPropertyLine.displayName = "RotationVectorPropertyLine";
-    const min = props.useDegrees ? 0 : undefined;
-    const max = props.useDegrees ? 360 : undefined;
     const step = props.useDegrees ? 1 : 0.01;
     const precision = props.useDegrees ? 1 : 2;
     return (
@@ -190,11 +151,8 @@ export const RotationVectorPropertyLine: FunctionComponent<RotationVectorPropert
             {...props}
             unit={props.useDegrees ? "°" : "rad"}
             valueConverter={props.useDegrees ? ToDegreesConverter : undefined}
-            min={min}
-            max={max}
             step={step}
             precision={precision}
-            wrap
         />
     );
 };
