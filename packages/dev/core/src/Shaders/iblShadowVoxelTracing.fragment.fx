@@ -1,6 +1,6 @@
 precision highp sampler2D;
 precision highp sampler3D;
-#define PI 3.1415927
+#include<helperFunctions>
 varying vec2 vUV;
 
 #define DISABLE_UNIFORMITY_ANALYSIS
@@ -46,7 +46,6 @@ uniform mat4 invViewMtx;
 uniform mat4 wsNormalizationMtx;
 uniform mat4 invVPMtx;
 
-#define PI 3.1415927
 #define GOLD 0.618034
 
 struct AABB3f {
