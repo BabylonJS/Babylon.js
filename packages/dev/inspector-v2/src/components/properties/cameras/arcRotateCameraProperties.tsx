@@ -115,8 +115,8 @@ export const ArcRotateCameraLimitsProperties: FunctionComponent<{ camera: ArcRot
                 target={camera}
                 propertyKey="lowerAlphaLimit"
                 nullable
-                defaultValue={minAlphaLimit}
-                min={minAlphaLimit}
+                defaultValue={toDisplayAngle(minAlphaLimit)}
+                min={toDisplayAngle(minAlphaLimit)}
                 max={toDisplayAngle(upperAlphaLimit)}
                 unit={useDegrees ? "°" : "rad"}
                 convertTo={(value) => (value === null ? value : toDisplayAngle(value, true))}
@@ -141,7 +141,7 @@ export const ArcRotateCameraLimitsProperties: FunctionComponent<{ camera: ArcRot
                 target={camera}
                 propertyKey="lowerBetaLimit"
                 nullable
-                defaultValue={minBetaLimit}
+                defaultValue={toDisplayAngle(minBetaLimit)}
                 min={toDisplayAngle(minBetaLimit)}
                 max={toDisplayAngle(upperBetaLimit)}
                 unit={useDegrees ? "°" : "rad"}
@@ -154,7 +154,7 @@ export const ArcRotateCameraLimitsProperties: FunctionComponent<{ camera: ArcRot
                 target={camera}
                 propertyKey="upperBetaLimit"
                 nullable
-                defaultValue={maxBetaLimit}
+                defaultValue={toDisplayAngle(maxBetaLimit)}
                 min={toDisplayAngle(lowerBetaLimit)}
                 max={toDisplayAngle(maxBetaLimit)}
                 unit={useDegrees ? "°" : "rad"}
