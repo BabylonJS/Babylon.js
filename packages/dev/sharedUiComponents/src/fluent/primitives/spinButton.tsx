@@ -81,16 +81,10 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     const mergedRef = useMergedRefs(ref, inputRef);
 
     // Modifier keys for step coercion.
-    // Unfocused: document-level listeners via useKeyState (won't fire when input has focus due to stopPropagation in HandleKeyDown).
-    // Focused: local state set from the input's own key handlers.
-    const isUnfocusedAltKeyPressed = useKeyState("Alt", { preventDefault: true });
-    const isUnfocusedShiftKeyPressed = useKeyState("Shift");
-    const [isFocusedAltKeyPressed, setIsFocusedAltKeyPressed] = useState(false);
-    const [isFocusedShiftKeyPressed, setIsFocusedShiftKeyPressed] = useState(false);
+    const isAltKeyPressed = useKeyState("Alt", { preventDefault: true });
+    const isShiftKeyPressed = useKeyState("Shift");
 
-    const isFineKey = isUnfocusedAltKeyPressed || isFocusedAltKeyPressed;
-    const isCourseKey = isUnfocusedShiftKeyPressed || isFocusedShiftKeyPressed;
-    const step = CoerceStepValue(baseStep, isFineKey, isCourseKey);
+    const step = CoerceStepValue(baseStep, isAltKeyPressed, isShiftKeyPressed);
     const stepPrecision = Math.max(0, CalculatePrecision(step));
 
     const [value, setValue] = useState<number>(props.value ?? 0);
@@ -186,8 +180,9 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
                     startValue = committed;
                 }
                 setIsEditing(false);
-                inputRef.current?.blur();
             }
+            // Blur the active element to ensure we can observe document level modifier keys.
+            (inputRef.current?.ownerDocument.activeElement as Partial<HTMLElement>)?.blur?.();
             setIsDragging(true);
             scrubStartYRef.current = e.clientY;
             scrubStartValueRef.current = startValue;
@@ -233,15 +228,6 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
 
     const handleKeyDown = useCallback(
         (event: KeyboardEvent<HTMLInputElement>) => {
-            // Track modifier keys locally since HandleKeyDown calls stopPropagation,
-            // preventing the document-level useKeyState listeners from seeing these events.
-            if (event.key === "Alt") {
-                event.preventDefault(); // Prevent browser from activating the menu bar
-                setIsFocusedAltKeyPressed(true);
-            } else if (event.key === "Shift") {
-                setIsFocusedShiftKeyPressed(true);
-            }
-
             // Commit on Enter and blur the input if the value is valid.
             if (event.key === "Enter") {
                 const committed = commitEditText(event.currentTarget.value);
@@ -264,15 +250,6 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
         },
         [value, step, constrainValue, tryCommitValue, commitEditText, formatValue]
     );
-
-    const handleKeyUp = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === "Alt") {
-            event.preventDefault(); // Prevent browser from activating the menu bar
-            setIsFocusedAltKeyPressed(false);
-        } else if (event.key === "Shift") {
-            setIsFocusedShiftKeyPressed(false);
-        }
-    }, []);
 
     const id = useId("spin-button2");
 
@@ -334,7 +311,6 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
                 onChange={handleInputChange}
                 onFocus={handleFocus}
                 onKeyDown={handleKeyDown}
-                onKeyUp={handleKeyUp}
                 onBlur={handleBlur}
                 contentBefore={contentBefore}
                 contentAfter={props.unit}
