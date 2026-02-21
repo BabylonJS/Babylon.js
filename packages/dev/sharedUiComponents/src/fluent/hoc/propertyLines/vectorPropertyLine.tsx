@@ -12,6 +12,7 @@ import { Tools } from "core/Misc/tools";
 import { CalculatePrecision } from "../../primitives/utils";
 import { NumberInputPropertyLine } from "./inputPropertyLine";
 import { PropertyLine } from "./propertyLine";
+import { TextPropertyLine } from "./textPropertyLine";
 
 export type TensorPropertyLineProps<V extends Vector2 | Vector3 | Vector4 | Quaternion> = PropertyLineProps<V> &
     PrimitiveProps<V> & {
@@ -82,9 +83,21 @@ const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Ve
         <PropertyLine
             {...props}
             expandedContent={
-                vector ? (
-                    <VectorSliders vector={vector} min={min} max={max} unit={props.unit} step={props.step} precision={props.precision} converted={converted} onChange={onChange} />
-                ) : undefined
+                <>
+                    {props.expandedContent}
+                    {vector ? (
+                        <VectorSliders
+                            vector={vector}
+                            min={min}
+                            max={max}
+                            unit={props.unit}
+                            step={props.step}
+                            precision={props.precision}
+                            converted={converted}
+                            onChange={onChange}
+                        />
+                    ) : undefined}
+                </>
             }
         >
             <Body1>{`[${formatted(props.value.x)}, ${formatted(props.value.y)}${HasZ(props.value) ? `, ${formatted(props.value.z)}` : ""}${HasW(props.value) ? `, ${formatted(props.value.w)}` : ""}]`}</Body1>
@@ -202,6 +215,7 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
             unit={props.useDegrees ? "°" : "rad"}
             step={step}
             precision={precision}
+            expandedContent={<TextPropertyLine label="Quaternion" value={`[${quat.x.toFixed(4)}, ${quat.y.toFixed(4)}, ${quat.z.toFixed(4)}, ${quat.w.toFixed(4)}]`} />}
         />
     ) : (
         <QuaternionPropertyLineInternal {...props} nullable={false} value={quat} onChange={onQuatChange} unit={props.useDegrees ? "°" : "rad"} step={step} precision={precision} />
