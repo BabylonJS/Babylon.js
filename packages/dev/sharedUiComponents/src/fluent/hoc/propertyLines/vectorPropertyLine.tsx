@@ -170,8 +170,8 @@ type QuaternionPropertyLineProps = TensorPropertyLineProps<Quaternion> & {
 const QuaternionPropertyLineInternal = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Quaternion>>;
 export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLineProps> = (props) => {
     QuaternionPropertyLine.displayName = "QuaternionPropertyLine";
-    const min = props.useDegrees ? 0 : undefined;
-    const max = props.useDegrees ? 360 : undefined;
+    const step = props.useDegrees ? 1 : 0.01;
+    const precision = props.useDegrees ? 1 : 2;
     const [quat, setQuat] = useState(props.value);
 
     useEffect(() => {
@@ -198,13 +198,13 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
             ignoreNullable={false}
             value={quat.toEulerAngles()}
             valueConverter={ToDegreesConverter}
-            min={min}
-            max={max}
             onChange={onEulerChange}
             unit={props.useDegrees ? "°" : "rad"}
+            step={step}
+            precision={precision}
         />
     ) : (
-        <QuaternionPropertyLineInternal {...props} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} unit={props.useDegrees ? "deg" : "rad"} />
+        <QuaternionPropertyLineInternal {...props} nullable={false} value={quat} onChange={onQuatChange} unit={props.useDegrees ? "°" : "rad"} step={step} precision={precision} />
     );
 };
 export const Vector2PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector2>>;
