@@ -91,15 +91,95 @@ export const ArcRotateCameraCollisionProperties: FunctionComponent<{ camera: Arc
 
 export const ArcRotateCameraLimitsProperties: FunctionComponent<{ camera: ArcRotateCamera }> = (props) => {
     const { camera } = props;
+
+    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters();
+
+    const minAlphaLimit = 0;
+    const maxAlphaLimit = Math.PI * 2;
+    const minBetaLimit = -Math.PI;
+    const maxBetaLimit = Math.PI;
+
+    const lowerAlphaLimit = useProperty(camera, "lowerAlphaLimit") ?? minAlphaLimit;
+    const upperAlphaLimit = useProperty(camera, "upperAlphaLimit") ?? maxAlphaLimit;
+    const lowerBetaLimit = useProperty(camera, "lowerBetaLimit") ?? minBetaLimit;
+    const upperBetaLimit = useProperty(camera, "upperBetaLimit") ?? maxBetaLimit;
+    const lowerRadiusLimit = useProperty(camera, "lowerRadiusLimit");
+    const upperRadiusLimit = useProperty(camera, "upperRadiusLimit");
+
     // TODO-Iv2: Update defaultValues
     return (
         <>
-            <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerAlphaLimit" nullable defaultValue={0} />
-            <BoundProperty component={NumberInputPropertyLine} label="Upper Alpha Limit" target={camera} propertyKey="upperAlphaLimit" nullable defaultValue={Infinity} />
-            <BoundProperty component={NumberInputPropertyLine} label="Lower Beta Limit" target={camera} propertyKey="lowerBetaLimit" nullable defaultValue={-Math.PI} />
-            <BoundProperty component={NumberInputPropertyLine} label="Upper Beta Limit" target={camera} propertyKey="upperBetaLimit" nullable defaultValue={Math.PI} />
-            <BoundProperty component={NumberInputPropertyLine} label="Lower Radius Limit" target={camera} propertyKey="lowerRadiusLimit" nullable defaultValue={0} />
-            <BoundProperty component={NumberInputPropertyLine} label="Upper Radius Limit" target={camera} propertyKey="upperRadiusLimit" nullable defaultValue={100} />
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Lower Alpha Limit"
+                target={camera}
+                propertyKey="lowerAlphaLimit"
+                nullable
+                defaultValue={minAlphaLimit}
+                min={minAlphaLimit}
+                max={toDisplayAngle(upperAlphaLimit)}
+                unit={useDegrees ? "°" : "rad"}
+                convertTo={(value) => (value === null ? value : toDisplayAngle(value, true))}
+                convertFrom={(value) => (value === null ? value : fromDisplayAngle(value))}
+            />
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Upper Alpha Limit"
+                target={camera}
+                propertyKey="upperAlphaLimit"
+                nullable
+                defaultValue={toDisplayAngle(maxAlphaLimit)}
+                min={toDisplayAngle(lowerAlphaLimit)}
+                max={toDisplayAngle(maxAlphaLimit)}
+                unit={useDegrees ? "°" : "rad"}
+                convertTo={(value) => (value === null ? value : toDisplayAngle(value, true))}
+                convertFrom={(value) => (value === null ? value : fromDisplayAngle(value))}
+            />
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Lower Beta Limit"
+                target={camera}
+                propertyKey="lowerBetaLimit"
+                nullable
+                defaultValue={minBetaLimit}
+                min={toDisplayAngle(minBetaLimit)}
+                max={toDisplayAngle(upperBetaLimit)}
+                unit={useDegrees ? "°" : "rad"}
+                convertTo={(value) => (value === null ? value : toDisplayAngle(value, true))}
+                convertFrom={(value) => (value === null ? value : fromDisplayAngle(value))}
+            />
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Upper Beta Limit"
+                target={camera}
+                propertyKey="upperBetaLimit"
+                nullable
+                defaultValue={maxBetaLimit}
+                min={toDisplayAngle(lowerBetaLimit)}
+                max={toDisplayAngle(maxBetaLimit)}
+                unit={useDegrees ? "°" : "rad"}
+                convertTo={(value) => (value === null ? value : toDisplayAngle(value, true))}
+                convertFrom={(value) => (value === null ? value : fromDisplayAngle(value))}
+            />
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Lower Radius Limit"
+                target={camera}
+                propertyKey="lowerRadiusLimit"
+                nullable
+                defaultValue={0}
+                min={0}
+                max={upperRadiusLimit ?? undefined}
+            />
+            <BoundProperty
+                component={NumberInputPropertyLine}
+                label="Upper Radius Limit"
+                target={camera}
+                propertyKey="upperRadiusLimit"
+                nullable
+                defaultValue={100}
+                min={lowerRadiusLimit ?? undefined}
+            />
             <BoundProperty component={NumberInputPropertyLine} label="Lower Target Y Limit" target={camera} propertyKey="lowerTargetYLimit" />
         </>
     );
