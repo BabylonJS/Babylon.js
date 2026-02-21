@@ -81,7 +81,7 @@ uniform sampler2D diffuseSampler;
     #include<pbrFragmentReflectionDeclaration>
     #ifdef REFLECTION
         #ifdef USEIRRADIANCEMAP
-            #include<sceneUboDeclaration>
+            #include<__decl__sceneFragment>
             uniform mat4 reflectionMatrix;
             uniform vec2 vReflectionInfos;
             uniform vec3 vReflectionDominantDirection;
