@@ -1,7 +1,7 @@
 // _____________________________ Base Diffuse Layer IBL _______________________________________
 #ifdef REFLECTION
 
-    #ifdef FUZZ
+    #if defined(FUZZ) && defined(FUZZENVIRONMENTBRDF)
         vec3 environmentFuzzBrdf = getFuzzBRDFLookup(fuzzGeoInfo.NdotV, sqrt(fuzz_roughness));
     #endif
 
@@ -110,7 +110,7 @@
         #endif
     }
 
-    #ifdef FUZZ
+    #if defined(FUZZ) &&defined(FUZZENVIRONMENTBRDF)
         // _____________________________ Fuzz Layer IBL _______________________________________
         
         // From the LUT, the y component represents a slight skewing of the lobe. I'm using this to
@@ -237,7 +237,7 @@
         coatAbsorption = mix(vec3(1.0), colored_transmission * darkened_transmission, coat_weight);
     }
 
-    #ifdef FUZZ
+    #if defined(FUZZ) &&defined(FUZZENVIRONMENTBRDF)
         vec3 slab_fuzz_ibl = fuzzEnvironmentLight * vLightingIntensity.z;
     #endif
 
@@ -408,7 +408,7 @@
     vec3 material_dielectric_gloss_ibl = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3(1.0));
-    #ifdef FUZZ
+    #if defined(FUZZ) && defined(FUZZENVIRONMENTBRDF)
         slab_fuzz_ibl *= ambient_occlusion;
         material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3(1.0), fuzz_color);
     #else
