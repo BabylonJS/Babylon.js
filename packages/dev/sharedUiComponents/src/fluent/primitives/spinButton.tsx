@@ -98,6 +98,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     const [isDragging, setIsDragging] = useState(false);
     const scrubStartYRef = useRef(0);
     const scrubStartValueRef = useRef(0);
+    const lastPointerYRef = useRef(0);
     const [isHovered, setIsHovered] = useState(false);
 
     // Editing state: when the user is typing, we show their raw text rather than the formatted value.
@@ -195,11 +196,21 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
         [value, isEditing, editText, commitEditText]
     );
 
+    // When the step size changes during a drag (e.g. Shift/Alt pressed or released), reset the scrub reference point
+    // to the current value and pointer position so only future movement uses the new step.
+    useEffect(() => {
+        if (isDragging) {
+            scrubStartValueRef.current = value;
+            scrubStartYRef.current = lastPointerYRef.current;
+        }
+    }, [step]);
+
     const handleIconPointerMove = useCallback(
         (e: PointerEvent) => {
             if (!isDragging) {
                 return;
             }
+            lastPointerYRef.current = e.clientY;
             // Dragging up (negative dy) should increment, dragging down should decrement.
             // Scale delta by step but round to display precision (not step) for smooth fine-grained control.
             const dy = scrubStartYRef.current - e.clientY;
