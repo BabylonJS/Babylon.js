@@ -1292,10 +1292,8 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private async _enableSSAOPipeline(mode: SSAOOptions) {
-        const hasModels = this._loadedModels.length > 0;
-        const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
-        if (mode === "enabled" || (mode === "auto" && hasModels && !hasMaterials)) {
+    private async _enableSSAOPipeline() {
+        if (!this._ssaoPipeline) {
             const [{ SSAO2RenderingPipeline }] = await LazySSAODependenciesPromise.value;
 
             if (!this._ssaoPipeline) {
@@ -1341,9 +1339,17 @@ export class Viewer implements IDisposable {
     }
 
     protected _updateSSAOPipeline() {
-        if (!this._ssaoPipeline && (this._ssaoOption === "auto" || this._ssaoOption === "enabled")) {
-            observePromise(this._enableSSAOPipeline(this._ssaoOption));
-        } else if (this._ssaoOption === "disabled") {
+        let shouldEnable = this._ssaoOption === "enabled";
+
+        if (this._ssaoOption === "auto") {
+            const hasModels = this._loadedModels.length > 0;
+            const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
+            shouldEnable = hasModels && !hasMaterials;
+        }
+
+        if (shouldEnable) {
+            observePromise(this._enableSSAOPipeline());
+        } else {
             this._disableSSAOPipeline();
         }
     }
