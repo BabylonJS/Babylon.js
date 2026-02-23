@@ -42,6 +42,8 @@
     #include<reflectionFunction>
 #endif
 
+uniform renderTargetSize: vec2f;
+
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
 #include<openpbrDielectricReflectance>
@@ -51,10 +53,6 @@
 #include<openpbrGeometryInfo>
 #include<openpbrIblFunctions>
 #include<openpbrVolumeFunctions>
-
-#ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
-    uniform renderTargetSize: vec2f;
-#endif
 
 // Do a mix between layers with additional multipliers for each layer.
 fn layer(slab_bottom: vec3f, slab_top: vec3f, lerp_factor: f32, bottom_multiplier: vec3f, top_multiplier: vec3f) -> vec3f {

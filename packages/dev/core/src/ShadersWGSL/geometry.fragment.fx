@@ -95,12 +95,14 @@ var diffuseSampler: texture_2d<f32>;
             varying vEnvironmentIrradiance: vec3f;
         #endif
 
-        uniform vSubsurfaceWeight: f32;
-        #include<samplerFragmentDeclaration>(_DEFINENAME_,SUBSURFACE_WEIGHT,_VARYINGNAME_,SubsurfaceWeight,_SAMPLERNAME_,subsurfaceWeight)
-        uniform vSubsurfaceScatterAnisotropy: f32;
-        uniform vTransmissionWeight: f32;
-        #include<samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_WEIGHT,_VARYINGNAME_,TransmissionWeight,_SAMPLERNAME_,transmissionWeight)
-        uniform vTransmissionScatterAnisotropy: f32;
+        #ifdef IRRADIANCE_SCATTER_MASK
+            uniform vSubsurfaceWeight: f32;
+            #include<samplerFragmentDeclaration>(_DEFINENAME_,SUBSURFACE_WEIGHT,_VARYINGNAME_,SubsurfaceWeight,_SAMPLERNAME_,subsurfaceWeight)
+            uniform vSubsurfaceScatterAnisotropy: f32;
+            uniform vTransmissionWeight: f32;
+            #include<samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_WEIGHT,_VARYINGNAME_,TransmissionWeight,_SAMPLERNAME_,transmissionWeight)
+            uniform vTransmissionScatterAnisotropy: f32;
+        #endif
     #endif
 #endif
 
