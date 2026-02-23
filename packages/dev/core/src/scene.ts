@@ -1752,6 +1752,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** @internal */
     public _pendingData = [] as any[];
     private _isDisposed = false;
+    private _readyChecks: { isReady(): boolean }[] = [];
 
     /**
      * Gets or sets a boolean indicating that all submeshes of active meshes must be rendered
@@ -2511,6 +2512,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
+        // Readiness checks from externally specified objects.
+        for (const check of this._readyChecks) {
+            if (!check.isReady()) {
+                isReady = false;
+            }
+        }
+
         // Effects
         if (!engine.areAllEffectsReady()) {
             isReady = false;
@@ -2584,6 +2592,28 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }, timeout);
         } else {
             this._executeOnceBeforeRender(func);
+        }
+    }
+
+    /**
+     * Registers an object whose {@link isReady} method will be polled during {@link Scene.isReady}.
+     * Call {@link removeReadyCheck} to remove the object from the list of checks.
+     * @param readyCheck - An object with an `isReady()` method.
+     */
+    public addReadyCheck(readyCheck: { isReady(): boolean }): void {
+        if (this._readyChecks.indexOf(readyCheck) === -1) {
+            this._readyChecks.push(readyCheck);
+        }
+    }
+
+    /**
+     * Removes an object previously registered with {@link addReadyCheck}.
+     * @param readyCheck - The object to remove.
+     */
+    public removeReadyCheck(readyCheck: { isReady(): boolean }): void {
+        const index = this._readyChecks.indexOf(readyCheck);
+        if (index !== -1) {
+            this._readyChecks.splice(index, 1);
         }
     }
 
@@ -5654,6 +5684,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._pointerMoveStage.clear();
         this._pointerDownStage.clear();
         this._pointerUpStage.clear();
+        this._readyChecks.length = 0;
 
         this.importedMeshesFiles = [] as string[];
 

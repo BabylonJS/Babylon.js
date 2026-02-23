@@ -17,14 +17,12 @@ import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
 import type { IAtmosphereOptions } from "./atmosphereOptions";
 import type { IColor3Like, IVector3Like } from "core/Maths/math.like";
 import type { IDisposable, Scene } from "core/scene";
-import { Mesh } from "core/Meshes/mesh";
 import { Observable, type Observer } from "core/Misc/observable";
 import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager";
 import type { RenderingGroupInfo } from "core/Rendering/renderingManager";
 import { RenderTargetTexture, type RenderTargetTextureOptions } from "core/Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { SubMesh } from "core/Meshes/subMesh";
 import { TransmittanceLut } from "./transmittanceLut";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3 } from "core/Maths/math.vector";
@@ -34,23 +32,6 @@ const MaterialPlugin = "atmo-pbr";
 const AerialPerspectiveLutLayers = 32;
 
 let UniqueId = 0;
-
-// Creates a sentinel mesh that delegates isReady() to the Atmosphere.
-const CreateSentinelMesh = (atmosphere: Atmosphere, scene: Scene): Mesh => {
-    const mesh = new Mesh(`__atmosphere_sentinel_${atmosphere.uniqueId}__`, scene);
-    mesh.isVisible = false;
-    mesh.isPickable = false;
-    mesh.doNotSyncBoundingInfo = true;
-
-    // A submesh is required for scene.isReady() to check this mesh.
-    mesh.subMeshes = [];
-    SubMesh.AddToMesh(0, 0, 0, 0, 0, mesh, undefined, false);
-
-    // Delegate isReady to the atmosphere.
-    mesh.isReady = () => atmosphere.isReady();
-
-    return mesh;
-};
 
 /**
  * Renders a physically based atmosphere.
@@ -120,7 +101,6 @@ export class Atmosphere implements IDisposable {
     private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
     private _onBeforeDrawPhaseObserver: Nullable<Observer<Scene>> = null;
     private _onAfterRenderingGroupObserver: Nullable<Observer<RenderingGroupInfo>> = null;
-    private _readyCheckSentinelMesh: Nullable<Mesh> = null;
 
     /**
      * Checks if the {@link Atmosphere} is supported.
@@ -756,7 +736,6 @@ export class Atmosphere implements IDisposable {
 
         // Render global LUTs once per frame (not per camera).
         this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
-            this._disposeReadyCheckSentinelMesh(); // Dispose ready sentinel mesh as soon as rendering starts.
             this.renderGlobalLuts();
         });
 
@@ -834,19 +813,14 @@ export class Atmosphere implements IDisposable {
             return null;
         });
 
-        this._readyCheckSentinelMesh = CreateSentinelMesh(this, scene);
-    }
-
-    private _disposeReadyCheckSentinelMesh(): void {
-        this._readyCheckSentinelMesh?.dispose();
-        this._readyCheckSentinelMesh = null;
+        scene.addReadyCheck(this);
     }
 
     /**
      * @override
      */
     public dispose(): void {
-        this._disposeReadyCheckSentinelMesh();
+        this.scene.removeReadyCheck(this);
         this._onBeforeCameraRenderObserver?.remove();
         this._onBeforeCameraRenderObserver = null;
         this._onBeforeDrawPhaseObserver?.remove();
@@ -968,8 +942,6 @@ export class Atmosphere implements IDisposable {
         ) {
             return false;
         }
-
-        this._disposeReadyCheckSentinelMesh();
 
         return true;
     }
