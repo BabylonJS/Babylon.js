@@ -1126,6 +1126,12 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
+          # Enable 3-way merge for git am to handle CRLF line ending mismatches.
+          # The repo uses '* -crlf' in .gitattributes, so files retain CRLF from Windows commits.
+          # git format-patch preserves CRLF in diff content, but git am strips it during
+          # mailbox parsing, causing context mismatch with the CRLF working tree.
+          # 3-way merge bypasses text matching by using blob SHAs instead.
+          git config --global am.threeWay true
           # Re-authenticate git with GitHub token
           SERVER_URL_STRIPPED="${SERVER_URL#https://}"
           git remote set-url origin "https://x-access-token:${GIT_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git"
