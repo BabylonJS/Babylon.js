@@ -328,7 +328,9 @@ export class _IblShadowsVoxelTracingPass {
         this._renderWhenGBufferReady = this._render.bind(this);
         // Don't start rendering until the first vozelization is done.
         this._renderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
-            this._scene.geometryBufferRenderer!.getGBuffer().onAfterRenderObservable.add(this._renderWhenGBufferReady);
+            if (this._scene.geometryBufferRenderer) {
+                this._scene.geometryBufferRenderer.getGBuffer().onAfterRenderObservable.add(this._renderWhenGBufferReady);
+            }
         });
     }
 
