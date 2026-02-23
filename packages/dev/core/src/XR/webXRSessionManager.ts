@@ -172,6 +172,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         this.onXRFrameObservable.clear();
         this.onXRSessionEnded.clear();
         this.onXRReferenceSpaceChanged.clear();
+        this.onXRReferenceSpaceInitialized.clear();
         this.onXRSessionInit.clear();
         this.onWorldScaleFactorChangedObservable.clear();
         this._engine?.onDisposeObservable.remove(this._onEngineDisposedObserver);
@@ -376,9 +377,9 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             Logger.Log('Defaulting to universally-supported "viewer" reference space type.');
 
             try {
-                const referenceSpace = await this.session.requestReferenceSpace("viewer");
+                const viewerReferenceSpace = await this.session.requestReferenceSpace("viewer");
                 const heightCompensation = new XRRigidTransform({ x: 0, y: -this.defaultHeightCompensation, z: 0 });
-                return (referenceSpace as XRReferenceSpace).getOffsetReferenceSpace(heightCompensation);
+                referenceSpace = (viewerReferenceSpace as XRReferenceSpace).getOffsetReferenceSpace(heightCompensation);
             } catch (rejectionReason) {
                 Logger.Error(rejectionReason);
                 // eslint-disable-next-line no-throw-literal

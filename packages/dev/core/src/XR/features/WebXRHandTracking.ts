@@ -381,10 +381,10 @@ export class WebXRHand implements IDisposable {
             this._jointTransforms[jointIdx].rotationQuaternion = new Quaternion();
 
             // Set the rotation quaternion so we can use it later for tracking.
-            if (_jointMeshes[jointIdx].rotationQuaternion) {
+            if (!_jointMeshes[jointIdx].rotationQuaternion) {
                 _jointMeshes[jointIdx].rotationQuaternion = new Quaternion();
             } else {
-                _jointMeshes[jointIdx].rotationQuaternion?.set(0, 0, 0, 1);
+                _jointMeshes[jointIdx].rotationQuaternion!.set(0, 0, 0, 1);
             }
         }
 
