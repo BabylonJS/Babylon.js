@@ -58,6 +58,8 @@ precision highp float;
     #include<reflectionFunction>
 #endif
 
+uniform vec2 renderTargetSize;
+
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
 #include<openpbrDielectricReflectance>
@@ -67,10 +69,6 @@ precision highp float;
 #include<openpbrGeometryInfo>
 #include<openpbrIblFunctions>
 #include<openpbrVolumeFunctions>
-
-#ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
-    uniform vec2 renderTargetSize;
-#endif
 
 // Do a mix between layers with additional multipliers for each layer.
 vec3 layer(vec3 slab_bottom, vec3 slab_top, float lerp_factor, vec3 bottom_multiplier, vec3 top_multiplier) {

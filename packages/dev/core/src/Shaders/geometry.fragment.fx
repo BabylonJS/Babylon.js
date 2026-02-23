@@ -95,12 +95,14 @@ uniform sampler2D diffuseSampler;
             varying vec3 vEnvironmentIrradiance;
         #endif
 
-        uniform float vSubsurfaceWeight;
-        #include<samplerFragmentDeclaration>(_DEFINENAME_,SUBSURFACE_WEIGHT,_VARYINGNAME_,SubsurfaceWeight,_SAMPLERNAME_,subsurfaceWeight)
-        uniform float vSubsurfaceScatterAnisotropy;
-        uniform float vTransmissionWeight;
-        #include<samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_WEIGHT,_VARYINGNAME_,TransmissionWeight,_SAMPLERNAME_,transmissionWeight)
-        uniform float vTransmissionScatterAnisotropy;
+        #ifdef IRRADIANCE_SCATTER_MASK
+            uniform float vSubsurfaceWeight;
+            #include<samplerFragmentDeclaration>(_DEFINENAME_,SUBSURFACE_WEIGHT,_VARYINGNAME_,SubsurfaceWeight,_SAMPLERNAME_,subsurfaceWeight)
+            uniform float vSubsurfaceScatterAnisotropy;
+            uniform float vTransmissionWeight;
+            #include<samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_WEIGHT,_VARYINGNAME_,TransmissionWeight,_SAMPLERNAME_,transmissionWeight)
+            uniform float vTransmissionScatterAnisotropy;
+        #endif
     #endif
 #endif
 

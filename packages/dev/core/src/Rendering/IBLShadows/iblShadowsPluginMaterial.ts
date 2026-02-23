@@ -87,17 +87,36 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
         return "IBLShadowsPluginMaterial";
     }
 
-    public override getUniforms() {
-        return {
-            ubo: [
-                { name: "renderTargetSize", size: 2, type: "vec2" },
-                { name: "shadowOpacity", size: 1, type: "float" },
-            ],
-            fragment: `#ifdef RENDER_WITH_IBL_SHADOWS
+    public override getUniforms(_shaderLanguage: ShaderLanguage) {
+        const result: any = {};
+        result.ubo = [
+            { name: "renderTargetSize", size: 2, type: "vec2" },
+            { name: "shadowOpacity", size: 1, type: "float" },
+        ];
+        if (this._material instanceof OpenPBRMaterial) {
+            if (_shaderLanguage === ShaderLanguage.WGSL) {
+                result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
+                    var shadowOpacity: f32;
+                #endif`;
+            } else {
+                result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
+                    uniform float shadowOpacity;
+                #endif`;
+            }
+        } else {
+            if (_shaderLanguage === ShaderLanguage.WGSL) {
+                result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
+                    var renderTargetSize: vec2f;
+                    var shadowOpacity: f32;
+                #endif`;
+            } else {
+                result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
                     uniform vec2 renderTargetSize;
                     uniform float shadowOpacity;
-                #endif`,
-        };
+                #endif`;
+            }
+        }
+        return result;
     }
 
     public override getSamplers(samplers: string[]) {
