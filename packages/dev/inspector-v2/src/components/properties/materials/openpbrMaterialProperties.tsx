@@ -166,7 +166,16 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                     }
                 }}
             />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Transmission Depth" target={material} propertyKey="transmissionDepth" min={0} step={0.01} />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Transmission Depth (cm)"
+                target={material}
+                propertyKey="transmissionDepth"
+                min={0}
+                step={0.0001}
+                convertTo={(value) => value * 100}
+                convertFrom={(value) => value / 100}
+            />
             <FileUploadLine
                 label="Transmission Depth"
                 accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
@@ -251,7 +260,17 @@ export const OpenPBRMaterialSubsurfaceProperties: FunctionComponent<{ material: 
                     }
                 }}
             />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Subsurface Radius" target={material} propertyKey="subsurfaceRadius" min={0} max={1} step={0.0001} />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Subsurface Radius (cm)"
+                target={material}
+                propertyKey="subsurfaceRadius"
+                min={0}
+                max={1}
+                step={0.0001}
+                convertTo={(value) => value * 100}
+                convertFrom={(value) => value / 100}
+            />
             <BoundProperty component={Color3PropertyLine} label="Subsurface Radius Scale" target={material} propertyKey="subsurfaceRadiusScale" isLinearMode />
             <FileUploadLine
                 label="Subsurface Radius Scale"

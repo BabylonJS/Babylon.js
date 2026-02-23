@@ -95,6 +95,11 @@ uniform sampler2D diffuseSampler;
             varying vec3 vEnvironmentIrradiance;
         #endif
 
+        #ifdef IBL_SHADOW_TEXTURE
+            uniform sampler2D iblShadowSampler;
+            uniform vec2 shadowTextureSize;
+        #endif
+
         #ifdef IRRADIANCE_SCATTER_MASK
             uniform float vSubsurfaceWeight;
             #include<samplerFragmentDeclaration>(_DEFINENAME_,SUBSURFACE_WEIGHT,_VARYINGNAME_,SubsurfaceWeight,_SAMPLERNAME_,subsurfaceWeight)
@@ -252,6 +257,13 @@ void main() {
                 float vTransmissionDispersionAbbeNumber = 0.0;
                 #include<openpbrTransmissionLayerData>
             #endif
+            #ifdef IBL_SHADOW_TEXTURE
+                #ifdef COLORED_IBL_SHADOWS
+                    vec3 iblShadowValue = texture(iblShadowSampler, gl_FragCoord.xy / shadowTextureSize).rgb;
+                #else
+                    vec3 iblShadowValue = vec3(texture(iblShadowSampler, gl_FragCoord.xy / shadowTextureSize).r);
+                #endif
+            #endif
             #if defined(USEIRRADIANCEMAP)
                 #ifdef IRRADIANCE_SCATTER_MASK
                     // Bend the normal towards the view direction based on the anisotropy. This is mainly to mimick
@@ -263,6 +275,7 @@ void main() {
                 #else
                     vec3 bentNormal = normalOutput;
                 #endif
+                
                 irradiance = sampleIrradiance(
                     bentNormal
                     #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
@@ -291,6 +304,9 @@ void main() {
             #elif defined(USESPHERICALFROMREFLECTIONMAP)
                 // Use pre-computed spherical harmonics irradiance from vertex shader
                 irradiance = vEnvironmentIrradiance;
+            #endif
+            #ifdef IBL_SHADOW_TEXTURE
+                irradiance *= iblShadowValue;
             #endif
             vec2 uvOffset = vec2(0.0);
             #ifdef IRRADIANCE_SCATTER_MASK
