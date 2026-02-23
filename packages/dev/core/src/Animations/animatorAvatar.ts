@@ -935,7 +935,13 @@ export class AnimatorAvatar {
                 .getAbsolutePosition()
                 .subtractToRef(sourceGroundReferenceTransformNode.absolutePosition, TmpVectors.Vector3[0]);
 
-            let groundReferenceOffset = verticalAxis === 0 ? diffGroundReferences.x : verticalAxis === 1 ? diffGroundReferences.y : diffGroundReferences.z;
+            const getAxisValue = (vec: Vector3) => {
+                if (verticalAxis === 0) return vec.x;
+                if (verticalAxis === 1) return vec.y;
+                return vec.z;
+            };
+
+            let groundReferenceOffset = getAxisValue(diffGroundReferences);
 
             if (fixGroundReferenceDynamicRefNode) {
                 // Try to find a bone in this frame that has a greater offset than the ground reference, to use it instead of the ground reference.
@@ -943,8 +949,7 @@ export class AnimatorAvatar {
                     .getAbsolutePosition()
                     .subtractToRef(targetGroundReferenceTransformNodeOrBone.getAbsolutePosition(), TmpVectors.Vector3[0]);
 
-                const targetRootToGroundReferenceOffset =
-                    verticalAxis === 0 ? targetRootToGroundReferenceDiff.x : verticalAxis === 1 ? targetRootToGroundReferenceDiff.y : targetRootToGroundReferenceDiff.z;
+                const targetRootToGroundReferenceOffset = getAxisValue(targetRootToGroundReferenceDiff);
 
                 const iterator = sourceListTransformNodes.keys();
 
@@ -969,19 +974,23 @@ export class AnimatorAvatar {
 
                     const targetBoneWorldPosition = targetBone._linkedTransformNode?.getAbsolutePosition() ?? targetBone.getAbsolutePosition();
                     const targetRootToBoneDiff = targetRootTransformNodeOrBone.getAbsolutePosition().subtractToRef(targetBoneWorldPosition, TmpVectors.Vector3[0]);
-                    const rootToBoneOffset = verticalAxis === 0 ? targetRootToBoneDiff.x : verticalAxis === 1 ? targetRootToBoneDiff.y : targetRootToBoneDiff.z;
+                    const rootToBoneOffset = getAxisValue(targetRootToBoneDiff);
 
                     if (Math.abs(rootToBoneOffset) > Math.abs(targetRootToGroundReferenceOffset) && Math.sign(rootToBoneOffset) === Math.sign(targetRootToGroundReferenceOffset)) {
                         const diff = targetBoneWorldPosition.subtractToRef(sourceTransformNode.getAbsolutePosition(), TmpVectors.Vector3[0]);
-                        const offset = verticalAxis === 0 ? diff.x : verticalAxis === 1 ? diff.y : diff.z;
-
-                        groundReferenceOffset = offset;
+                        groundReferenceOffset = getAxisValue(diff);
                     }
                 }
             }
 
+            const createAxisVector = (offset: number) => {
+                if (verticalAxis === 0) return new Vector3(offset, 0, 0);
+                if (verticalAxis === 1) return new Vector3(0, offset, 0);
+                return new Vector3(0, 0, offset);
+            };
+
             const localOffset = Vector3.TransformNormalToRef(
-                new Vector3(verticalAxis === 0 ? groundReferenceOffset : 0, verticalAxis === 1 ? groundReferenceOffset : 0, verticalAxis === 2 ? groundReferenceOffset : 0),
+                createAxisVector(groundReferenceOffset),
                 targetNodeInverseParentWorldMatrix,
                 TmpVectors.Vector3[1]
             );

@@ -125,11 +125,27 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
 
     const validateValue = useCallback(
         (numericValue: number): boolean => {
-            const outOfBounds = (min !== undefined && numericValue < min) || (max !== undefined && numericValue > max);
-            const failsValidator = props.validator && !props.validator(numericValue);
-            const failsIntCheck = props.forceInt ? !Number.isInteger(numericValue) : false;
-            const invalid = !!outOfBounds || !!failsValidator || isNaN(numericValue) || !!failsIntCheck;
-            return !invalid;
+            if (isNaN(numericValue)) {
+                return false;
+            }
+
+            if (min !== undefined && numericValue < min) {
+                return false;
+            }
+
+            if (max !== undefined && numericValue > max) {
+                return false;
+            }
+
+            if (props.forceInt && !Number.isInteger(numericValue)) {
+                return false;
+            }
+
+            if (props.validator && !props.validator(numericValue)) {
+                return false;
+            }
+
+            return true;
         },
         [min, max, props.validator, props.forceInt]
     );

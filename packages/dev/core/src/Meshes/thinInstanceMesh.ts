@@ -351,20 +351,20 @@ Mesh.prototype.thinInstanceBufferUpdated = function (kind: string): void {
 };
 
 Mesh.prototype.thinInstancePartialBufferUpdate = function (kind: string, dataOrLength: Float32Array | number, offset: number): void {
+    const updateBuffer = (buffer: VertexBuffer, sourceData: Float32Array, stride: number) => {
+        if (typeof dataOrLength === "number") {
+            const byteOffset = sourceData.byteOffset + offset * stride * Float32Array.BYTES_PER_ELEMENT;
+            const length = dataOrLength * stride;
+            const viewData = new Float32Array(sourceData.buffer, byteOffset, length);
+            buffer.updateDirectly(viewData, offset * stride);
+        } else {
+            buffer.updateDirectly(dataOrLength, offset);
+        }
+    };
+
     if (kind === "matrix") {
         if (this._thinInstanceDataStorage.matrixBuffer) {
-            if (typeof dataOrLength === "number") {
-                this._thinInstanceDataStorage.matrixBuffer.updateDirectly(
-                    new Float32Array(
-                        this._thinInstanceDataStorage.matrixData!.buffer,
-                        this._thinInstanceDataStorage.matrixData!.byteOffset + offset * 16 * Float32Array.BYTES_PER_ELEMENT,
-                        dataOrLength * 16
-                    ),
-                    offset * 16
-                );
-            } else {
-                this._thinInstanceDataStorage.matrixBuffer.updateDirectly(dataOrLength, offset);
-            }
+            updateBuffer(this._thinInstanceDataStorage.matrixBuffer, this._thinInstanceDataStorage.matrixData!, 16);
         }
     } else {
         // preserve backward compatibility
@@ -374,16 +374,9 @@ Mesh.prototype.thinInstancePartialBufferUpdate = function (kind: string, dataOrL
 
         if (this._userThinInstanceBuffersStorage?.vertexBuffers[kind]) {
             const buffer = this._userThinInstanceBuffersStorage.vertexBuffers[kind]!;
-            if (typeof dataOrLength === "number") {
-                const data = new Float32Array(
-                    this._userThinInstanceBuffersStorage.data[kind].buffer,
-                    this._userThinInstanceBuffersStorage.data[kind].byteOffset + offset * this._userThinInstanceBuffersStorage.strides[kind] * Float32Array.BYTES_PER_ELEMENT,
-                    dataOrLength * this._userThinInstanceBuffersStorage.strides[kind]
-                );
-                this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.updateDirectly(data, offset * this._userThinInstanceBuffersStorage.strides[kind]);
-            } else {
-                buffer.updateDirectly(dataOrLength, offset);
-            }
+            const sourceData = this._userThinInstanceBuffersStorage.data[kind];
+            const stride = this._userThinInstanceBuffersStorage.strides[kind];
+            updateBuffer(buffer, sourceData, stride);
         }
     }
 };
