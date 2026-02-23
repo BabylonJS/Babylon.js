@@ -93,7 +93,9 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
             if (firstConnected) {
                 const firstTarget = firstConnected.output.isConnectedInVertexShader;
                 for (const endpoint of this.entryPoint.endpoints) {
-                    if (endpoint === firstConnected) continue;
+                    if (endpoint === firstConnected) {
+                        continue;
+                    }
                     if (endpoint.output.isConnected && endpoint.output.isConnectedInVertexShader !== firstTarget) {
                         state.sharedData.raiseBuildError(
                             `TeleportInBlock "${this.entryPoint.name}" cannot have outputs in different shader stages. All the outputs must be in the same shader stage (vertex or fragment but not both).`
