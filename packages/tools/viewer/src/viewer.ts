@@ -916,6 +916,10 @@ export class Viewer implements IDisposable {
         private readonly _engine: AbstractEngine,
         private readonly _options?: Readonly<ViewerOptions>
     ) {
+        if (this._options?.shadowConfig?.quality === "high" && this._options?.postProcessing?.ssao === "enabled") {
+            throw new Error("High quality shadows are not compatible with SSAO. Please choose either high quality shadows or SSAO.");
+        }
+
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         {
             const scene = new Scene(this._engine);
@@ -1111,6 +1115,10 @@ export class Viewer implements IDisposable {
      */
     public async updateShadows(value: Partial<Readonly<ShadowParams>>): Promise<void> {
         if (value.quality && this._shadowQuality !== value.quality) {
+            if (value.quality === "high" && this._ssaoOption === "enabled") {
+                throw new Error("Shadows quality cannot be set to high when SSAO is enabled.");
+            }
+
             this._shadowQuality = value.quality;
 
             await this._updateShadows();
@@ -1236,6 +1244,9 @@ export class Viewer implements IDisposable {
         }
 
         if (value.ssao && this._ssaoOption !== value.ssao) {
+            if (value.ssao === "enabled" && this._shadowQuality === "high") {
+                throw new Error("SSAO cannot be enabled when shadows quality is set to high.");
+            }
             this._ssaoOption = value.ssao;
             this._updateSSAOPipeline();
         }
@@ -1344,7 +1355,8 @@ export class Viewer implements IDisposable {
         if (this._ssaoOption === "auto") {
             const hasModels = this._loadedModels.length > 0;
             const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
-            shouldEnable = hasModels && !hasMaterials;
+            const ibleShadowsEnabled = this._shadowQuality === "high";
+            shouldEnable = hasModels && !hasMaterials && !ibleShadowsEnabled;
         }
 
         if (shouldEnable) {
