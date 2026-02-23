@@ -416,7 +416,7 @@
     let material_base_substrate_ibl: vec3f = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     let material_coated_base_ibl: vec3f = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3f(1.0f));
     #ifdef FUZZ
-        slab_fuzz_ibl *= ambient_occlusion;
+        slab_fuzz_ibl *= min(vec3(specular_ambient_occlusion), ambient_occlusion);
         material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3f(1.0f), fuzz_color);
     #else
         material_surface_ibl = material_coated_base_ibl;

@@ -32,6 +32,7 @@ import {
 import "../Engines/Extensions/engine.multiRender";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import type { OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial";
+import type { IblShadowsRenderPipeline } from "./IBLShadows/iblShadowsRenderPipeline";
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -39,7 +40,17 @@ interface ISavedTransformationMatrix {
     viewProjection: Matrix;
 }
 
-const Samplers = ["diffuseSampler", "bumpSampler", "reflectivitySampler", "albedoSampler", "morphTargets", "boneSampler", "transmissionWeightSampler", "subsurfaceWeightSampler"];
+const Samplers = [
+    "diffuseSampler",
+    "bumpSampler",
+    "reflectivitySampler",
+    "albedoSampler",
+    "morphTargets",
+    "boneSampler",
+    "transmissionWeightSampler",
+    "subsurfaceWeightSampler",
+    "iblShadowSampler",
+];
 
 /** list the uniforms used by the geometry renderer */
 const Uniforms = [
@@ -62,6 +73,7 @@ const Uniforms = [
     "vEyePosition",
     "vTransmissionScatterAnisotropy",
     "vSubsurfaceScatterAnisotropy",
+    "shadowTextureSize",
     "metallic",
     "glossiness",
     "vTangentSpaceParams",
@@ -900,6 +912,18 @@ export class GeometryBufferRenderer {
                     if (!iblDefines.USEIRRADIANCEMAP) {
                         defines.push("#define SPHERICAL_HARMONICS");
                     }
+
+                    const iblShadowsPipeline = scene.postProcessRenderPipelineManager.supportedPipelines.find((p) => p.getClassName() === "IBLShadowsRenderPipeline");
+                    if (iblShadowsPipeline) {
+                        const pipeline = iblShadowsPipeline as IblShadowsRenderPipeline;
+                        const shadowTexture = pipeline._getAccumulatedTexture();
+                        if (shadowTexture) {
+                            defines.push("#define IBL_SHADOW_TEXTURE");
+                            if (pipeline.coloredShadows) {
+                                defines.push("#define COLORED_IBL_SHADOWS");
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1387,6 +1411,16 @@ export class GeometryBufferRenderer {
                 // IBL binding for irradiance
                 if (this._enableIrradiance && scene.environmentTexture) {
                     const reflectionTexture = scene.environmentTexture;
+
+                    const iblShadowsPipeline = scene.postProcessRenderPipelineManager.supportedPipelines.find((p) => p.getClassName() === "IBLShadowsRenderPipeline");
+                    if (iblShadowsPipeline) {
+                        const pipeline = iblShadowsPipeline as IblShadowsRenderPipeline;
+                        const shadowTexture = pipeline._getAccumulatedTexture();
+                        if (shadowTexture) {
+                            effect.setTexture("iblShadowSampler", shadowTexture);
+                            effect.setFloat2("shadowTextureSize", shadowTexture.getSize().width, shadowTexture.getSize().height);
+                        }
+                    }
 
                     // Bind reflection matrix
                     effect.setMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());

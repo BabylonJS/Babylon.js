@@ -84,7 +84,6 @@ var diffuseSampler: texture_2d<f32>;
             uniform reflectionMatrix: mat4x4f;
             uniform vReflectionInfos: vec2f;
             uniform vReflectionDominantDirection: vec3f;
-            // uniform vEyePosition: vec3f;
             #include<pbrBRDFFunctions>
             #include<openpbrDielectricReflectance>
             #include<pbrIBLFunctions>
@@ -94,7 +93,11 @@ var diffuseSampler: texture_2d<f32>;
         #elif defined(USESPHERICALFROMREFLECTIONMAP)
             varying vEnvironmentIrradiance: vec3f;
         #endif
-
+        #ifdef IBL_SHADOW_TEXTURE
+            var iblShadowSampler: texture_2d<f32>;
+            var iblShadowSamplerSampler: sampler;
+            uniform shadowTextureSize: vec2f;
+        #endif
         #ifdef IRRADIANCE_SCATTER_MASK
             uniform vSubsurfaceWeight: f32;
             #include<samplerFragmentDeclaration>(_DEFINENAME_,SUBSURFACE_WEIGHT,_VARYINGNAME_,SubsurfaceWeight,_SAMPLERNAME_,subsurfaceWeight)
@@ -258,7 +261,13 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 var vTransmissionDispersionAbbeNumber: f32 = 0.0;
                 #include<openpbrTransmissionLayerData>(uniforms.vTransmissionDispersionScale, vTransmissionDispersionScale, uniforms.vTransmissionDispersionAbbeNumber, vTransmissionDispersionAbbeNumber, uniforms.vTransmissionColor, vTransmissionColor, uniforms.vTransmissionDepth, vTransmissionDepth, uniforms.vTransmissionScatter\\., vTransmissionScatter.)
             #endif
-            
+            #ifdef IBL_SHADOW_TEXTURE
+                #ifdef COLORED_IBL_SHADOWS
+                    let iblShadowValue: vec3f = textureSample(iblShadowSampler, iblShadowSamplerSampler, fragmentInputs.position.xy / uniforms.shadowTextureSize).rgb;
+                #else
+                    let iblShadowValue: vec3f = vec3f(textureSample(iblShadowSampler, iblShadowSamplerSampler, fragmentInputs.position.xy / uniforms.shadowTextureSize).r);
+                #endif
+            #endif
             #if defined(USEIRRADIANCEMAP)
             
                 #ifdef IRRADIANCE_SCATTER_MASK
@@ -301,6 +310,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #elif defined(USESPHERICALFROMREFLECTIONMAP)
                 // Use pre-computed spherical harmonics irradiance from vertex shader
                 irradiance = input.vEnvironmentIrradiance;
+            #endif
+            #ifdef IBL_SHADOW_TEXTURE
+                irradiance *= iblShadowValue;
             #endif
             let uvOffset: vec2f = vec2f(0.0);
             #ifdef IRRADIANCE_SCATTER_MASK
