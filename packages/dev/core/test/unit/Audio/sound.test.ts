@@ -552,4 +552,35 @@ describe("Sound", () => {
 
         expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(true);
     });
+
+    it("calling stop() on a streaming sound instance triggers onended exactly once and does not re-enter dispose()/stop()", async () => {
+        const sound = (await CreateSoundAsync(expect.getState().currentTestName, "https://example.com/any.mp3", null, null, {
+            skipCodecCheck: true,
+            streaming: true,
+        })) as any;
+
+        const onended = jest.fn().mockName("onended");
+        sound.onended = onended;
+
+        // Play creates the instance; wait for the async canplaythrough event to fire.
+        sound.play();
+        await ZeroTimeoutAsync();
+
+        const soundV2 = sound._soundV2 as StreamingSound;
+        const instance = (soundV2 as any)._getNewestInstance();
+        expect(instance).not.toBeNull();
+
+        // Spy on dispose to count calls.
+        const disposeSpy = jest.spyOn(instance, "dispose");
+
+        sound.stop();
+
+        // onended should be triggered exactly once.
+        expect(onended).toHaveBeenCalledTimes(1);
+
+        // dispose should be called exactly once (from _onInstanceEnded), not re-entered.
+        expect(disposeSpy).toHaveBeenCalledTimes(1);
+
+        disposeSpy.mockRestore();
+    });
 });

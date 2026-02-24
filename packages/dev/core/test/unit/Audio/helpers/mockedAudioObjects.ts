@@ -269,6 +269,7 @@ export class MockedAudioObjects {
             .mockName("Audio")
             .mockImplementation(() => {
                 let canPlayThroughListener: () => void = () => void 0;
+                let endedListener: (() => void) | null = null;
 
                 return {
                     addEventListener: jest
@@ -277,13 +278,23 @@ export class MockedAudioObjects {
                         .mockImplementation((type: string, listener: () => void) => {
                             if (type === "canplaythrough") {
                                 canPlayThroughListener = listener;
+                            } else if (type === "ended") {
+                                endedListener = listener;
                             }
                         }),
-                    removeEventListener: jest.fn().mockName("removeEventListener"),
+                    removeEventListener: jest
+                        .fn()
+                        .mockName("removeEventListener")
+                        .mockImplementation((type: string, listener: () => void) => {
+                            if (type === "ended" && endedListener === listener) {
+                                endedListener = null;
+                            }
+                        }),
                     canPlayType: jest.fn().mockName("canPlayType").mockReturnValue(""),
                     children: [],
                     controls: true,
                     crossOrigin: null,
+                    currentTime: 0,
                     loop: false,
                     load: jest
                         .fn()
