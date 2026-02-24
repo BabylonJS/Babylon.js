@@ -406,7 +406,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     };
 
     private _onEnded: () => void = () => {
-        this.onEndedObservable.notifyObservers(this);
+        this._setState(SoundState.Stopped);
         this.dispose();
     };
 
@@ -488,7 +488,6 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
     private _stop(): void {
         this._mediaElement.pause();
-        this._setState(SoundState.Stopped);
         this._onEnded();
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     }
