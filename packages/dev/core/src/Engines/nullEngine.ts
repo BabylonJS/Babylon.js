@@ -723,6 +723,9 @@ export class NullEngine extends Engine {
         if (format) {
             texture.format = format;
         }
+        if (buffer) {
+            texture._buffer = buffer;
+        }
 
         texture.isReady = true;
 
