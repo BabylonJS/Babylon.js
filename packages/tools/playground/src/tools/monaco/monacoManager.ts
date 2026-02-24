@@ -179,10 +179,10 @@ export class MonacoManager {
                         }
                         if (lastLocal.sessionData.activeFile && validFiles.has(lastLocal.sessionData.activeFile)) {
                             this.switchActiveFile(lastLocal.sessionData.activeFile);
+                            this.editorHost.editor?.setPosition(lastLocal.sessionData.cursorPosition);
+                            this.editorHost.editor?.focus();
+                            this.editorHost.editor?.revealPositionInCenter(lastLocal.sessionData.cursorPosition);
                         }
-                        this.editorHost.editor?.setPosition(lastLocal.sessionData.cursorPosition);
-                        this.editorHost.editor?.focus();
-                        this.editorHost.editor?.revealPositionInCenter(lastLocal.sessionData.cursorPosition);
                     }
                 } catch {}
             }
