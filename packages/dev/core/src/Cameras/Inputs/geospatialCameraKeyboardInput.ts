@@ -199,10 +199,10 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
                     } else {
                         // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen.
                         // getRenderWidth/Height return physical pixels, but scene.pick (via CreatePickingRayToRef) expects CSS pixels
-                        // (it multiplies by 1/hardwareScalingLevel internally). Divide by hardwareScalingLevel to get CSS-pixel center.
+                        // (it multiplies by 1/hardwareScalingLevel internally). Multiply by hardwareScalingLevel to get CSS-pixel center.
                         const hardwareScaling = this._engine.getHardwareScalingLevel();
-                        const centerX = this._engine.getRenderWidth() / 2 / hardwareScaling;
-                        const centerY = this._engine.getRenderHeight() / 2 / hardwareScaling;
+                        const centerX = (this._engine.getRenderWidth() / 2) * hardwareScaling;
+                        const centerY = (this._engine.getRenderHeight() / 2) * hardwareScaling;
                         camera.movement.startDrag(centerX, centerY);
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
                             camera.movement.handleDrag(centerX + this.panSensitivity, centerY);

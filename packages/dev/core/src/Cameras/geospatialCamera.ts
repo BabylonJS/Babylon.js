@@ -150,7 +150,7 @@ export class GeospatialCamera extends Camera {
         const effectivePitchMax = limits.getEffectivePitchMax(this._radius);
         this._pitch = Clamp(this._pitch, limits.pitchMin, effectivePitchMax);
         this._radius = Clamp(this._radius, limits.radiusMin, limits.radiusMax);
-        ClampCenterFromPolesInPlace(this._center, this.movement.calculateUpVectorFromPoint);
+        ClampCenterFromPolesInPlace(this._center);
     }
 
     private _tempVect = new Vector3();
@@ -234,12 +234,31 @@ export class GeospatialCamera extends Camera {
     }
 
     /**
+     * Compute a flight duration (in ms) that scales with the distance being traveled.
+     * Takes into account center displacement, radius change, and uses a logarithmic
+     * curve so short hops are quick and long flights feel proportional. Cap at 5 seconds.
+     * @param targetCenter - Target center (defaults to current center)
+     * @param targetRadius - Target radius (defaults to current radius)
+     * @returns Duration in milliseconds
+     */
+    private _computeFlightDurationMs(targetCenter?: Vector3, targetRadius?: number): number {
+        const effectiveCenter = targetCenter ?? this._center;
+        const effectiveRadius = targetRadius ?? this._radius;
+
+        const centerDistance = Vector3Distance(this._center, effectiveCenter);
+        const radiusChange = Math.abs(this._radius - effectiveRadius);
+        const totalDistance = centerDistance + radiusChange;
+        const logDistanceChange = Math.log2(Math.max(1, totalDistance)) + 0.05;
+        return Math.min(150.0 * logDistanceChange, 5000);
+    }
+
+    /**
      * Animate camera towards passed in property values. If undefined, will use current value
      * @param targetYaw
      * @param targetPitch
      * @param targetRadius
      * @param targetCenter
-     * @param flightDurationMs
+     * @param flightDurationMs Duration in ms. When omitted, an adaptive duration is computed based on travel distance.
      * @param easingFunction
      * @param centerHopScale If supplied, will define the parabolic hop height scale for center animation to create a "bounce" effect
      * @returns Promise that will return when the animation is complete (or interuppted by pointer input)
@@ -249,10 +268,13 @@ export class GeospatialCamera extends Camera {
         targetPitch?: number,
         targetRadius?: number,
         targetCenter?: Vector3,
-        flightDurationMs: number = 1000,
+        flightDurationMs?: number,
         easingFunction?: EasingFunction,
         centerHopScale?: number
     ): Promise<void> {
+        // Auto-compute duration when not explicitly provided
+        const duration = flightDurationMs ?? this._computeFlightDurationMs(targetCenter, targetRadius);
+
         this._flyToTargets.clear();
 
         // For yaw, use shortest path to target.
@@ -290,18 +312,18 @@ export class GeospatialCamera extends Camera {
             };
         }
 
-        return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction, overrideAnimationFunction);
+        return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, duration, easingFunction, overrideAnimationFunction);
     }
 
     /**
      * Helper function to move camera towards a given point by `distanceScale` of the current camera-to-destination distance (by default 50%).
      * @param destination point to move towards
      * @param distanceScale value between 0 and 1, % of distance to move
-     * @param durationMs duration of flight, default 1s
+     * @param durationMs duration of flight. When omitted, an adaptive duration is computed based on travel distance.
      * @param easingFn optional easing function for flight interpolation of properties
      * @param centerHopScale If supplied, will define the parabolic hop height scale for center animation to create a "bounce" effect
      */
-    public async flyToPointAsync(destination: Vector3, distanceScale: number = 0.5, durationMs: number = 1000, easingFn?: EasingFunction, centerHopScale?: number) {
+    public async flyToPointAsync(destination: Vector3, distanceScale: number = 0.5, durationMs?: number, easingFn?: EasingFunction, centerHopScale?: number) {
         // Move by a fraction of the camera-to-destination distance
         const zoomDistance = Vector3Distance(this.position, destination) * distanceScale;
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(destination, zoomDistance, this._tempCenter);

@@ -224,18 +224,11 @@ export class GeospatialCameraMovement extends CameraMovement {
     }
 }
 /** @internal */
-export function ClampCenterFromPolesInPlace(center: Vector3, calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3) {
+export function ClampCenterFromPolesInPlace(center: Vector3) {
     const sineOfSphericalLatitudeLimit = 0.998749218; // ~90 degrees
     const centerMagnitude = center.length(); // distance from planet origin
     if (centerMagnitude > Epsilon) {
-        // Derive latitude from the surface normal's Z component rather than assuming spherical coordinates
-        const up = TmpVectors.Vector3[5];
-        if (calculateUpVectorFromPoint) {
-            calculateUpVectorFromPoint(center, up);
-        } else {
-            center.normalizeToRef(up);
-        }
-        const sineSphericalLat = up.z;
+        const sineSphericalLat = centerMagnitude === 0 ? 0 : center.z / centerMagnitude;
         if (Math.abs(sineSphericalLat) > sineOfSphericalLatitudeLimit) {
             // Clamp the spherical latitude (and derive longitude)
             const sineOfClampedSphericalLat = Clamp(sineSphericalLat, -sineOfSphericalLatitudeLimit, sineOfSphericalLatitudeLimit);
