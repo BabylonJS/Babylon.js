@@ -66,6 +66,8 @@ export class ParticleNumberMathBlock extends NodeParticleBlock {
             NodeParticleBlockConnectionPointTypes.Vector2Gradient,
             NodeParticleBlockConnectionPointTypes.Vector3Gradient,
             NodeParticleBlockConnectionPointTypes.Color4Gradient,
+            NodeParticleBlockConnectionPointTypes.System,
+            NodeParticleBlockConnectionPointTypes.Undefined,
         ] as const;
 
         this.left.excludedConnectionPointTypes.push(...excludedConnectionPointTypes);
