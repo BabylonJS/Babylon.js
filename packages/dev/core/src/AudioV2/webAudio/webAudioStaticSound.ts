@@ -312,8 +312,6 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         this._pitch?.dispose();
         this._playbackRate?.dispose();
 
-        this._sourceNode = null;
-
         this.stop();
 
         this._deinitSourceNode();
