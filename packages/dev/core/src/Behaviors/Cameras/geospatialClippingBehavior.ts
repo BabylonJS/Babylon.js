@@ -3,7 +3,6 @@ import type { GeospatialCamera } from "../../Cameras/geospatialCamera";
 import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
 import type { Scene } from "../../scene";
-import { TmpVectors, Vector3 } from "../../Maths/math.vector";
 
 /**
  * The GeospatialClippingBehavior automatically adjusts the near and far clip planes of a GeospatialCamera
@@ -74,10 +73,8 @@ export class GeospatialClippingBehavior implements Behavior<GeospatialCamera> {
         }
 
         const planetRadius = camera.limits.planetRadius;
-        const up = TmpVectors.Vector3[0];
-        // Compute altitude using the local upVector at the camera position
-        camera.movement.calculateUpVectorFromPoint(camera.position, up);
-        const altitude = Math.max(1, Vector3.Dot(camera.position, up) - planetRadius);
+        // Camera position length gives distance to world origin (planet center)
+        const altitude = Math.max(1, camera.position.length() - planetRadius);
 
         // Near plane: scale with altitude to maintain depth buffer precision
         // Use a fraction of altitude - the closest visible point on a sphere is straight down at distance = altitude
