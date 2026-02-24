@@ -407,7 +407,6 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
     private _onEnded: () => void = () => {
         this._setState(SoundState.Stopped);
-        this.dispose();
     };
 
     private _onError: (reason: any) => void = (reason: any) => {
