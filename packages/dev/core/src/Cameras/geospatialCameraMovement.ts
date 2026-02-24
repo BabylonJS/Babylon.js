@@ -162,9 +162,9 @@ export class GeospatialCameraMovement extends CameraMovement {
             const centerRadius = cameraCenter.length(); // distance from planet origin to camera center
             const currentRadius = this._cameraPosition.length();
             // Dampen the pan speed based on latitude (slower near poles)
-            // Use the surface normal at center to derive latitude rather than assuming spherical coordinates
             const upAtCenter = TmpVectors.Vector3[7];
             this.calculateUpVectorFromPoint(cameraCenter, upAtCenter);
+            // Latitude is derived from the Z component of the up vector (ECEF convention: Z = polar axis)
             const sineOfSphericalLat = upAtCenter.z;
             const cosOfSphericalLat = Math.sqrt(1 - Math.min(1, sineOfSphericalLat * sineOfSphericalLat));
             const latitudeDampening = Math.sqrt(Math.abs(cosOfSphericalLat)); // sqrt here reduces effect near equator
@@ -263,6 +263,7 @@ function IntersectRayWithPlaneToRef(ray: Ray, plane: Plane, ref: Vector3): boole
  * @param refNorth - Receives the north direction
  * @param refUp - Receives the up (outward) direction
  * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system (default: false)
+ * @param calculateUpVectorFromPoint - Optional function to calculate the up vector from a point. If supplied, this function will be used instead of assuming a spherical geocentric normal, allowing support for non-spherical planets or custom up vector logic.
  * @internal
  */
 export function ComputeLocalBasisToRefs(
