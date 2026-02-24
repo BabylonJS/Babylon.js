@@ -164,11 +164,7 @@ export class GeospatialCameraMovement extends CameraMovement {
             // Dampen the pan speed based on latitude (slower near poles)
             // Use the surface normal at center to derive latitude rather than assuming spherical coordinates
             const upAtCenter = TmpVectors.Vector3[7];
-            if (this.calculateUpVectorFromPoint) {
-                this.calculateUpVectorFromPoint(cameraCenter, upAtCenter);
-            } else {
-                cameraCenter.normalizeToRef(upAtCenter);
-            }
+            this.calculateUpVectorFromPoint(cameraCenter, upAtCenter);
             const sineOfSphericalLat = upAtCenter.z;
             const cosOfSphericalLat = Math.sqrt(1 - Math.min(1, sineOfSphericalLat * sineOfSphericalLat));
             const latitudeDampening = Math.sqrt(Math.abs(cosOfSphericalLat)); // sqrt here reduces effect near equator
