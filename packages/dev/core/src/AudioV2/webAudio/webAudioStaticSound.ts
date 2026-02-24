@@ -425,7 +425,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
     /** @internal */
     public pause(): void {
-        if (this._state === SoundState.Paused) {
+        if (this._state !== SoundState.Started && this._state !== SoundState.Starting) {
             return;
         }
 
