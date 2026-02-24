@@ -1,5 +1,6 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { EditRegular } from "@fluentui/react-icons";
@@ -7,16 +8,16 @@ import { EditRegular } from "@fluentui/react-icons";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Observable } from "core/Misc/observable";
 import { MaterialIcon } from "shared-ui-components/fluent/icons";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { EditNodeMaterial } from "../../../misc/nodeMaterialEditor";
 import { SceneContextIdentity } from "../../sceneContext";
+import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Material Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -29,11 +30,7 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
             getEntityDisplayInfo: (material) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(material, "name", {
-                    afterSet: () => {
-                        onChangeObservable.notifyObservers();
-                    },
-                });
+                const nameHookToken = watcherService.watchProperty(material, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {

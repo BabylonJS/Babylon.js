@@ -1,21 +1,22 @@
 import type { TargetedAnimation } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { FilmstripRegular, PauseFilled, PlayFilled, StackRegular } from "@fluentui/react-icons";
 
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { Observable } from "core/Misc/observable";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Animation Group Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -31,11 +32,7 @@ export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISc
 
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(namedEntity, "name", {
-                    afterSet: () => {
-                        onChangeObservable.notifyObservers();
-                    },
-                });
+                const nameHookToken = watcherService.watchProperty(namedEntity, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {

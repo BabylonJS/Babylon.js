@@ -18,7 +18,6 @@ export * from "./Update/basicColorUpdateBlock";
 export * from "./Update/updateSpriteCellIndexBlock";
 export * from "./Update/updateFlowMapBlock";
 export * from "./Update/updateNoiseBlock";
-export * from "./Update/updateRemapBlock";
 export * from "./Update/updateAttractorBlock";
 export * from "./Update/alignAngleBlock";
 export * from "./Emitters/index";

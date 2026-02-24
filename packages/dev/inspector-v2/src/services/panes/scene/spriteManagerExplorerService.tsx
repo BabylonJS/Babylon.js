@@ -1,24 +1,25 @@
 import type { ISpriteManager } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { LayerDiagonalPersonRegular, PersonSquareRegular, PlayFilled, StopFilled } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { Sprite } from "core/Sprites/sprite";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Sprites/spriteSceneComponent";
 import { InterceptFunction } from "../../../instrumentation/functionInstrumentation";
 
-export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Sprite Manager Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -32,9 +33,7 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
             getEntityDisplayInfo: (spriteEntity) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(spriteEntity, "name", {
-                    afterSet: () => onChangeObservable.notifyObservers(),
-                });
+                const nameHookToken = watcherService.watchProperty(spriteEntity, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {

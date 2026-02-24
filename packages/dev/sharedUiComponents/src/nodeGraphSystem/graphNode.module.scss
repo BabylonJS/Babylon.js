@@ -32,12 +32,10 @@
     grid-column: 1;
     position: relative;
     border: 4px solid black;
-    border-top-right-radius: 7px;
-    border-top-left-radius: 7px;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
     background: black;
     color: white;
-    transform: scaleX(1.01) translateY(-0.5px);
-    transform-origin: center;
     display: grid;
     grid-template-columns: auto 1fr auto;
     grid-template-rows: 100%;

@@ -56,7 +56,7 @@ export const ToolsServiceDefinition: ServiceDefinition<[IToolsService], [IShellS
                     horizontalLocation: "right",
                     verticalLocation: "top",
                     order: 400,
-                    suppressTeachingMoment: true,
+                    teachingMoment: false,
                     content: () => {
                         const sections = useOrderedObservableCollection(sectionsCollection);
                         const sectionContent = useObservableCollection(sectionContentCollection);

@@ -4,8 +4,8 @@ import { useEffect, useMemo } from "react";
 
 import { Observable } from "core/Misc/observable";
 
+import { useWatcher } from "../contexts/watcherContext";
 import { InterceptFunction } from "../instrumentation/functionInstrumentation";
-import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 
 /**
  * Provides an observable that fires when a specified function/property is called/set.
@@ -17,6 +17,8 @@ import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 export function useInterceptObservable<T extends object>(type: "function" | "property", target: T | null | undefined, propertyKey: keyof T): IReadonlyObservable<void> {
     // Create a cached observable. It effectively has the lifetime of the component that uses this hook.
     const observable = useMemo(() => new Observable<void>(), []);
+
+    const watcher = useWatcher();
 
     // Whenever the type, target, or property key changes, we need to set up a new interceptor.
     useEffect(() => {
@@ -30,11 +32,7 @@ export function useInterceptObservable<T extends object>(type: "function" | "pro
                     },
                 });
             } else if (type === "property") {
-                interceptToken = InterceptProperty(target, propertyKey, {
-                    afterSet: () => {
-                        observable.notifyObservers();
-                    },
-                });
+                interceptToken = watcher.watchProperty(target, propertyKey, () => observable.notifyObservers());
             } else {
                 throw new Error(`Unknown interceptor type: ${type}`);
             }

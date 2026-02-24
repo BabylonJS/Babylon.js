@@ -54,7 +54,7 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
             horizontalLocation: "right",
             verticalLocation: "top",
             order: 300,
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);

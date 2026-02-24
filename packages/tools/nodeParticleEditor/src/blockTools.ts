@@ -31,7 +31,6 @@ import { BasicSpriteUpdateBlock } from "core/Particles/Node/Blocks/Update/basicS
 import { UpdateSpriteCellIndexBlock } from "core/Particles/Node/Blocks/Update/updateSpriteCellIndexBlock";
 import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlowMapBlock";
 import { UpdateNoiseBlock } from "core/Particles/Node/Blocks/Update/updateNoiseBlock";
-import { UpdateRemapBlock } from "core/Particles/Node/Blocks/Update/updateRemapBlock";
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "core/Particles/Node/Blocks/Conditions/particleConditionBlock";
 import { CreateParticleBlock } from "core/Particles/Node/Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "core/Particles/Node/Blocks/Emitters/boxShapeBlock";
@@ -170,8 +169,6 @@ export class BlockTools {
                 return new UpdateNoiseBlock("Update noise");
             case "UpdateAttractorBlock":
                 return new UpdateAttractorBlock("Update attractor");
-            case "UpdateRemapBlock":
-                return new UpdateRemapBlock("Update remap");
             case "SystemBlock":
                 return new SystemBlock("System");
             case "TextureBlock":

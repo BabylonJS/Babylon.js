@@ -1,21 +1,22 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { DropRegular, EditRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { ParticleSystem } from "core/Particles/particleSystem";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { EditParticleSystem } from "../../../misc/nodeParticleEditor";
 import { SceneContextIdentity } from "../../sceneContext";
+import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Particle System Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -28,11 +29,7 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
             getEntityDisplayInfo: (particleSystem) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(particleSystem, "name", {
-                    afterSet: () => {
-                        onChangeObservable.notifyObservers();
-                    },
-                });
+                const nameHookToken = watcherService.watchProperty(particleSystem, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {

@@ -1,20 +1,21 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { ImageEditRegular, ImageRegular } from "@fluentui/react-icons";
 
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Observable } from "core/Misc/observable";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Texture Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -27,17 +28,9 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
             getEntityDisplayInfo: (texture) => {
                 const onChangeObservable = new Observable<void>();
 
-                const displayNameHookToken = InterceptProperty(texture, "displayName", {
-                    afterSet: () => {
-                        onChangeObservable.notifyObservers();
-                    },
-                });
+                const displayNameHookToken = watcherService.watchProperty(texture, "displayName", () => onChangeObservable.notifyObservers());
 
-                const nameHookToken = InterceptProperty(texture, "name", {
-                    afterSet: () => {
-                        onChangeObservable.notifyObservers();
-                    },
-                });
+                const nameHookToken = watcherService.watchProperty(texture, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {

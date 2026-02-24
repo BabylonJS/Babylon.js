@@ -1,5 +1,5 @@
 import type { IInspectorContextMenuItem, IInspectorContextMenuType, IInspectorOptions as InspectorV1Options, Nullable, Scene } from "core/index";
-import type { InspectorOptions as InspectorV2Options, InspectorToken } from "../inspector";
+import type { InspectorToken, InspectorOptions as InspectorV2Options } from "../inspector";
 import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IGizmoService } from "../services/gizmoService";
@@ -7,6 +7,7 @@ import type { IPropertiesService } from "../services/panes/properties/properties
 import type { ISceneExplorerService } from "../services/panes/scene/sceneExplorerService";
 import type { ISelectionService } from "../services/selectionService";
 import type { IShellService } from "../services/shellService";
+import type { IWatcherService } from "../services/watcherService";
 
 import { BranchRegular } from "@fluentui/react-icons";
 
@@ -14,12 +15,12 @@ import { DebugLayerTab } from "core/Debug/debugLayer";
 import { EngineStore } from "core/Engines/engineStore";
 import { Observable } from "core/Misc/observable";
 import { ShowInspector } from "../inspector";
-import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 import { GizmoServiceIdentity } from "../services/gizmoService";
 import { PropertiesServiceIdentity } from "../services/panes/properties/propertiesService";
 import { SceneExplorerServiceIdentity } from "../services/panes/scene/sceneExplorerService";
 import { SelectionServiceIdentity } from "../services/selectionService";
 import { ShellServiceIdentity } from "../services/shellService";
+import { WatcherServiceIdentity } from "../services/watcherService";
 import { LegacyPropertiesSectionMapping } from "./propertiesSectionMapping";
 
 type PropertyChangedEvent = {
@@ -103,10 +104,10 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
 
     if (v1Options.additionalNodes && v1Options.additionalNodes.length > 0) {
         const { additionalNodes } = v1Options;
-        const additionalNodesServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
+        const additionalNodesServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, IWatcherService]> = {
             friendlyName: "Additional Nodes (Backward Compatibility)",
-            consumes: [SceneExplorerServiceIdentity],
-            factory: (sceneExplorerService) => {
+            consumes: [SceneExplorerServiceIdentity, WatcherServiceIdentity],
+            factory: (sceneExplorerService, watcherService) => {
                 const sceneExplorerSectionRegistrations = additionalNodes.map((node) =>
                     sceneExplorerService.addSection({
                         displayName: node.name,
@@ -115,11 +116,7 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
                         getEntityDisplayInfo: (entity) => {
                             const onChangeObservable = new Observable<void>();
 
-                            const nameHookToken = InterceptProperty(entity, "name", {
-                                afterSet: () => {
-                                    onChangeObservable.notifyObservers();
-                                },
-                            });
+                            const nameHookToken = watcherService.watchProperty(entity, "name", () => onChangeObservable.notifyObservers());
 
                             return {
                                 get name() {

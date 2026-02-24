@@ -25,7 +25,7 @@
 #
 # Source: github/gh-aw/.github/workflows/code-simplifier.md@f88ec26c65cc20ebb8ceabe809c9153385945bfe
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2290b939f9aa4cf86a402fee5a3fc401e25698c8a10b64ed1571ca67c681fece"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b40f3dfaf9a1582fd923b43d946d356920996c30b16f5b3cc084ec3f4b8e6214"}
 
 name: "Code Simplifier"
 "on":
@@ -45,7 +45,7 @@ run-name: "Code Simplifier"
 jobs:
   activation:
     needs: pre_activation
-    if: needs.pre_activation.outputs.activated == 'true'
+    if: (needs.pre_activation.outputs.activated == 'true') && (github.repository == 'BabylonJS/Babylon.js')
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -1030,6 +1030,7 @@ jobs:
           if-no-files-found: ignore
 
   pre_activation:
+    if: github.repository == 'BabylonJS/Babylon.js'
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ (steps.check_membership.outputs.is_team_member == 'true') && (steps.check_skip_if_match.outputs.skip_check_ok == 'true') }}
@@ -1126,6 +1127,12 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
+          # Preserve CRLF in patches during git am mailbox parsing.
+          # The repo uses '* -crlf' in .gitattributes, so files retain CRLF from Windows commits.
+          # git format-patch preserves CRLF in diff content, but git am's mailbox parser
+          # strips \r from all lines, causing context mismatch with the CRLF working tree.
+          # am.keepcr=true tells git-mailsplit to preserve \r, so CRLF diff matches CRLF files.
+          git config --global am.keepcr true
           # Re-authenticate git with GitHub token
           SERVER_URL_STRIPPED="${SERVER_URL#https://}"
           git remote set-url origin "https://x-access-token:${GIT_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git"

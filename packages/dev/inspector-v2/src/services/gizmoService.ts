@@ -2,12 +2,13 @@ import type { Camera, Gizmo, IDisposable, IReadonlyObservable, Light, Node, Null
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 import type { ISceneContext } from "./sceneContext";
 import type { ISelectionService } from "./selectionService";
+import type { IWatcherService } from "./watcherService";
 
 import { Bone } from "core/Bones/bone";
 import { Camera as CameraClass } from "core/Cameras/camera";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
-import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 import { CameraGizmo } from "core/Gizmos/cameraGizmo";
+import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 import { GizmoManager } from "core/Gizmos/gizmoManager";
 import { LightGizmo } from "core/Gizmos/lightGizmo";
 import { Light as LightClass } from "core/Lights/light";
@@ -15,9 +16,9 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Observable } from "core/Misc/observable";
 import { Node as NodeClass } from "core/node";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
-import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "./sceneContext";
 import { SelectionServiceIdentity } from "./selectionService";
+import { WatcherServiceIdentity } from "./watcherService";
 
 type Reference<T> = {
     value: T;
@@ -44,11 +45,11 @@ export interface IGizmoService extends IService<typeof GizmoServiceIdentity> {
     readonly onCameraGizmoChanged: IReadonlyObservable<void>;
 }
 
-export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], [ISceneContext, ISelectionService]> = {
+export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], [ISceneContext, ISelectionService, IWatcherService]> = {
     friendlyName: "Gizmo Service",
     produces: [GizmoServiceIdentity],
-    consumes: [SceneContextIdentity, SelectionServiceIdentity],
-    factory: (sceneContext, selectionService) => {
+    consumes: [SceneContextIdentity, SelectionServiceIdentity, WatcherServiceIdentity],
+    factory: (sceneContext, selectionService, watcherService) => {
         // Ref-counted utility layers, shared across consumers.
         const utilityLayers = new WeakMap<Scene, Map<string, { utilityLayer: UtilityLayerRenderer; refCount: number }>>();
         const getUtilityLayer = (scene: Scene, layer = "default") => {
@@ -170,13 +171,11 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], [ISceneC
 
             gm.coordinatesMode = coordinatesModeState;
 
-            coordinatesModeInterceptToken = InterceptProperty(gm, "coordinatesMode", {
-                afterSet: (value: GizmoCoordinatesMode) => {
-                    if (value !== coordinatesModeState) {
-                        coordinatesModeState = value;
-                        coordinatesModeObservable.notifyObservers();
-                    }
-                },
+            coordinatesModeInterceptToken = watcherService.watchProperty(gm, "coordinatesMode", (value: GizmoCoordinatesMode) => {
+                if (value !== coordinatesModeState) {
+                    coordinatesModeState = value;
+                    coordinatesModeObservable.notifyObservers();
+                }
             });
 
             currentGizmoManager = gm;

@@ -30,7 +30,11 @@ export function useKeyListener(callbacks: KeyCallbacks, options?: WindowOptions)
     }
 }
 
-export function useKeyState(key: string, options?: WindowOptions): boolean {
+type KeyStateOptions = WindowOptions & {
+    preventDefault?: boolean;
+};
+
+export function useKeyState(key: string, options?: KeyStateOptions): boolean {
     const [isPressed, setIsPressed] = useState(false);
 
     useKeyListener(
@@ -38,18 +42,24 @@ export function useKeyState(key: string, options?: WindowOptions): boolean {
             onKeyDown: useCallback(
                 (e: KeyboardEvent) => {
                     if (e.key === key) {
+                        if (options?.preventDefault) {
+                            e.preventDefault();
+                        }
                         setIsPressed(true);
                     }
                 },
-                [key]
+                [key, options?.preventDefault]
             ),
             onKeyUp: useCallback(
                 (e: KeyboardEvent) => {
                     if (e.key === key) {
+                        if (options?.preventDefault) {
+                            e.preventDefault();
+                        }
                         setIsPressed(false);
                     }
                 },
-                [key]
+                [key, options?.preventDefault]
             ),
         },
         options

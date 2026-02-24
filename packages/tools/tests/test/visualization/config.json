@@ -3697,19 +3697,19 @@
         },
         {
             "title": "Particles - Ramp Gradient",
-            "playgroundId": "#I2D9MM#10",
+            "playgroundId": "#I2D9MM#15",
             "renderCount": 120,
             "referenceImage": "particles-ramp-gradient.png"
         },
         {
             "title": "Particles - Ramp Gradient Remap",
-            "playgroundId": "#I2D9MM#11",
+            "playgroundId": "#E3VU3R",
             "renderCount": 120,
             "referenceImage": "particles-ramp-gradient-remap.png"
         },
         {
             "title": "Particles - Ramp Gradient Remap Alpha",
-            "playgroundId": "#I2D9MM#13",
+            "playgroundId": "#I2D9MM#16",
             "renderCount": 120,
             "referenceImage": "particles-ramp-gradient-remap-alpha.png"
         },
@@ -3733,7 +3733,7 @@
         },
         {
             "title": "Particles - Ramp Blend",
-            "playgroundId": "#XPVJMM#2",
+            "playgroundId": "#XPVJMM#4",
             "renderCount": 120,
             "referenceImage": "particles-ramp-blend.png"
         },
@@ -3757,7 +3757,7 @@
         },
         {
             "title": "Particles - Helper - Fire",
-            "playgroundId": "#I2D9MM#14",
+            "playgroundId": "#I2D9MM#18",
             "renderCount": 120,
             "referenceImage": "particles-helper-fire.png"
         },

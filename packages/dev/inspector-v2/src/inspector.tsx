@@ -14,6 +14,7 @@ import { LegacyInspectableObjectPropertiesServiceDefinition } from "./legacy/ins
 import { MakeModularTool } from "./modularTool";
 import { GizmoServiceDefinition } from "./services/gizmoService";
 import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
+import { HighlightServiceDefinition } from "./services/highlightService";
 import { MiniStatsServiceDefinition } from "./services/miniStatsService";
 import { DebugServiceDefinition } from "./services/panes/debugService";
 import { AnimationGroupPropertiesServiceDefinition } from "./services/panes/properties/animationGroupPropertiesService";
@@ -62,7 +63,6 @@ import { GLTFAnimationImportServiceDefinition } from "./services/panes/tools/imp
 import { GLTFLoaderOptionsServiceDefinition } from "./services/panes/tools/import/gltfLoaderOptionsService";
 import { GLTFValidationServiceDefinition } from "./services/panes/tools/import/gltfValidationService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
-import { HighlightServiceDefinition } from "./services/highlightService";
 import { PickingServiceDefinition } from "./services/pickingService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
@@ -70,6 +70,7 @@ import { ShellServiceIdentity } from "./services/shellService";
 import { ShellSettingsServiceDefinition } from "./services/shellSettingsService";
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
+import { WatcherRefreshToolbarServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
 
 type LayoutMode = "inline" | "overlay";
 
@@ -340,7 +341,11 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
 
             // Settings pane tab and related services.
             SettingsServiceDefinition,
+            WatcherSettingsServiceDefinition,
             ShellSettingsServiceDefinition,
+
+            // Adds a button to refresh all properties manually (when watcher is in "manual" mode).
+            WatcherRefreshToolbarServiceDefinition,
 
             // Tracks entity selection state (e.g. which Mesh or Material or other entity is currently selected in scene explorer and bound to the properties pane, etc.).
             SelectionServiceDefinition,

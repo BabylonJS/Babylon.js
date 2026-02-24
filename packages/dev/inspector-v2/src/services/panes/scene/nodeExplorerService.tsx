@@ -2,6 +2,7 @@ import type { IDisposable, Nullable } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IGizmoService } from "../../gizmoService";
 import type { ISceneContext } from "../../sceneContext";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import {
@@ -28,19 +29,19 @@ import { TransformNode } from "core/Meshes/transformNode";
 import { Observable } from "core/Misc/observable";
 import { Node } from "core/node";
 import { MeshIcon } from "shared-ui-components/fluent/icons";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { EditNodeGeometry, GetNodeGeometry } from "../../../misc/nodeGeometryEditor";
 import { GizmoServiceIdentity } from "../../gizmoService";
 import { SceneContextIdentity } from "../../sceneContext";
+import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Rendering/boundingBoxRenderer";
 
-export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService]> = {
+export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService, IWatcherService]> = {
     friendlyName: "Node Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, GizmoServiceIdentity],
-    factory: (sceneExplorerService, sceneContext, gizmoService) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, GizmoServiceIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, gizmoService, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -87,15 +88,9 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             getEntityDisplayInfo: (node) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(node, "name", {
-                    afterSet: () => onChangeObservable.notifyObservers(),
-                });
+                const nameHookToken = watcherService.watchProperty(node, "name", () => onChangeObservable.notifyObservers());
 
-                const parentHookToken = InterceptProperty(node, "parent", {
-                    afterSet: () => {
-                        nodeMovedObservable.notifyObservers(node);
-                    },
-                });
+                const parentHookToken = watcherService.watchProperty(node, "parent", () => nodeMovedObservable.notifyObservers(node));
 
                 return {
                     get name() {
@@ -170,9 +165,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             order: DefaultCommandsOrder.MeshBoundingBox,
             getCommand: (mesh) => {
                 const onChangeObservable = new Observable<void>();
-                const showBoundingBoxHook = InterceptProperty(mesh, "showBoundingBox", {
-                    afterSet: () => onChangeObservable.notifyObservers(),
-                });
+                const showBoundingBoxHook = watcherService.watchProperty(mesh, "showBoundingBox", () => onChangeObservable.notifyObservers());
 
                 return {
                     type: "toggle",
@@ -200,9 +193,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             order: DefaultCommandsOrder.MeshVisibility,
             getCommand: (mesh) => {
                 const onChangeObservable = new Observable<void>();
-                const isVisibleHook = InterceptProperty(mesh, "isVisible", {
-                    afterSet: () => onChangeObservable.notifyObservers(),
-                });
+                const isVisibleHook = watcherService.watchProperty(mesh, "isVisible", () => onChangeObservable.notifyObservers());
 
                 return {
                     type: "toggle",
