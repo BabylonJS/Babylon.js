@@ -57,7 +57,7 @@ export class WebGPUBufferManager {
         const labelId = "DataBufferUniqueId=" + dataBuffer.uniqueId;
         dataBuffer.buffer = this.createRawBuffer(viewOrSize, flags, undefined, label ? labelId + "-" + label : labelId);
         dataBuffer.references = 1;
-        dataBuffer.capacity = isView ? (viewOrSize as ArrayBufferView).byteLength : (viewOrSize as number);
+        dataBuffer.capacity = dataBuffer.buffer.size;
         dataBuffer.engineId = this._engine.uniqueId;
 
         if (isView) {
@@ -249,3 +249,4 @@ export class WebGPUBufferManager {
         this._deferredReleaseBuffers.length = 0;
     }
 }
+
