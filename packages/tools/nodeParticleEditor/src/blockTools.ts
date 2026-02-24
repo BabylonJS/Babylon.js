@@ -45,7 +45,6 @@ import { AlignAngleBlock } from "core/Particles/Node/Blocks/Update/alignAngleBlo
 import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicColorUpdateBlock";
 import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
-import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
 import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
 import { ParticleClampBlock } from "core/Particles/Node/Blocks/particleClampBlock";
 import { ParticleNLerpBlock } from "core/Particles/Node/Blocks/particleNLerpBlock";
@@ -66,8 +65,6 @@ export class BlockTools {
                 return new ParticleSmoothStepBlock("SmoothStep");
             case "ClampBlock":
                 return new ParticleClampBlock("Clamp");
-            case "FresnelBlock":
-                return new ParticleFresnelBlock("Fresnel");
             case "LocalVariableBlock":
                 return new ParticleLocalVariableBlock("Local variable");
             case "VectorLengthBlock":
