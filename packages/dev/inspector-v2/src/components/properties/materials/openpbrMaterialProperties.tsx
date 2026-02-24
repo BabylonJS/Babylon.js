@@ -112,6 +112,15 @@ export const OpenPBRMaterialBaseProperties: FunctionComponent<{ material: OpenPB
                     }
                 }}
             />
+            <FileUploadLine
+                label="Ambient Occlusion"
+                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
+                onClick={(files) => {
+                    if (files.length > 0) {
+                        UpdateTexture(files[0], material, (texture) => (material.ambientOcclusionTexture = texture));
+                    }
+                }}
+            />
         </>
     );
 };

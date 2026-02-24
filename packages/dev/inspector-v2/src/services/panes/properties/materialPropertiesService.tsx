@@ -188,39 +188,39 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             predicate: (entity: unknown) => entity instanceof OpenPBRMaterial,
             content: [
                 {
-                    section: "Base",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialBaseProperties material={context} />,
                 },
                 {
-                    section: "Specular",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialSpecularProperties material={context} />,
                 },
                 {
-                    section: "Transmission",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialTransmissionProperties material={context} />,
                 },
                 {
-                    section: "Subsurface",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialSubsurfaceProperties material={context} />,
                 },
                 {
-                    section: "Coat",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialCoatProperties material={context} />,
                 },
                 {
-                    section: "Fuzz",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialFuzzProperties material={context} />,
                 },
                 {
-                    section: "Emission",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialEmissionProperties material={context} />,
                 },
                 {
-                    section: "Thin Film",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialThinFilmProperties material={context} />,
                 },
                 {
-                    section: "Geometry",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialGeometryProperties material={context} />,
                 },
             ],
