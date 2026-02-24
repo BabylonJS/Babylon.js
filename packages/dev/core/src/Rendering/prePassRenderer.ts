@@ -16,6 +16,7 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 
 import "../Engines/Extensions/engine.multiRender";
+import "./geometryBufferRendererSceneComponent";
 
 /**
  * Renders a pre pass of the scene

@@ -21,6 +21,9 @@ import type { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRe
 
 import { Constants } from "../../../Engines/constants";
 import { RegisterClass } from "../../../Misc/typeStore";
+
+import "../../../Rendering/depthRendererSceneComponent";
+
 import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
 import { ScreenSpaceReflectionPostProcess } from "../../screenSpaceReflectionPostProcess";
 

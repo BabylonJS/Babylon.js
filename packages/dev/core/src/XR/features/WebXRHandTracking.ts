@@ -30,6 +30,8 @@ import { Tools } from "core/Misc/tools";
 import type { WebXRCamera } from "../webXRCamera";
 import type { Node } from "../../node";
 
+import "../../Physics/joinedPhysicsEngineComponent";
+
 declare const XRHand: XRHand;
 
 /**

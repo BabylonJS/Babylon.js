@@ -13,6 +13,8 @@ import { PhysicsAggregate } from "../../Physics/v2/physicsAggregate";
 import type { PhysicsBody } from "../../Physics/v2/physicsBody";
 import { PhysicsMotionType, PhysicsShapeType } from "../../Physics/v2/IPhysicsEnginePlugin";
 
+import "../../Physics/joinedPhysicsEngineComponent";
+
 /**
  * Options for the controller physics feature
  */

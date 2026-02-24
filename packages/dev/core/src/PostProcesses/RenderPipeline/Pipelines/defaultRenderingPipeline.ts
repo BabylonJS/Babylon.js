@@ -29,6 +29,7 @@ import { EngineStore } from "../../../Engines/engineStore";
 import { Tools } from "core/Misc/tools";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+import "../../../Rendering/depthRendererSceneComponent";
 
 import type { Animation } from "../../../Animations/animation";
 

@@ -22,6 +22,7 @@ import { ThinSSRBlurPostProcess } from "core/PostProcesses/thinSSRBlurPostProces
 import { ThinSSRBlurCombinerPostProcess } from "core/PostProcesses/thinSSRBlurCombinerPostProcess";
 
 import "../postProcessRenderPipelineManagerSceneComponent";
+import "../../../Rendering/geometryBufferRendererSceneComponent";
 
 /**
  * Render pipeline to produce Screen Space Reflections (SSR) effect
