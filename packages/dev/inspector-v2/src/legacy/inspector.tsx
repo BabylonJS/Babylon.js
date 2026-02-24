@@ -267,7 +267,6 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
 export class Inspector {
     private static _CurrentInstance: Nullable<{ scene: Scene; options: Partial<InspectorV2Options>; disposeToken: InspectorToken }> = null;
     private static _PopupToggler: Nullable<(side: "left" | "right") => void> = null;
-    private static _SectionHighlighter: Nullable<(sectionIds: readonly string[]) => void> = null;
     private static _SidePaneOpenCounter: Nullable<() => number> = null;
 
     // @ts-expect-error TS6133: This is private, but used by debugLayer (same as Inspector v1).
@@ -277,13 +276,14 @@ export class Inspector {
 
     public static readonly OnSelectionChangeObservable = new Observable<any>();
     public static readonly OnPropertyChangedObservable = new Observable<PropertyChangedEvent>();
+    private static readonly _OnMarkLineContainerObservable = new Observable<string[]>(undefined, true);
 
     public static MarkLineContainerTitleForHighlighting(title: string) {
         this.MarkMultipleLineContainerTitlesForHighlighting([title]);
     }
 
     public static MarkMultipleLineContainerTitlesForHighlighting(titles: string[]) {
-        this._SectionHighlighter?.(titles);
+        this._OnMarkLineContainerObservable.notifyObservers(titles);
     }
 
     public static PopupEmbed() {
@@ -314,6 +314,14 @@ export class Inspector {
         if (!scene || scene.isDisposed) {
             return;
         }
+
+        // Inspector setup is async, so we need to cache pending selection requests.
+        // Additionally, we manually track this (rather than relying on the observable's notifyIfTriggered property)
+        // for behavior backward compatibility.
+        let pendingSelection: any = null;
+        const pendingSelectionObserver = this.OnSelectionChangeObservable.add((entity) => {
+            pendingSelection = entity;
+        });
 
         let options = ConvertOptions(userOptions);
         const serviceDefinitions: WeaklyTypedServiceDefinition[] = [];
@@ -352,6 +360,15 @@ export class Inspector {
                     selectionService.selectedEntity = entity;
                 });
 
+                // If a selection was requested before async setup completed, apply it now.
+                if (pendingSelection) {
+                    selectionService.selectedEntity = pendingSelection;
+                    pendingSelection = null;
+                }
+
+                // Now the service is alive so we don't need to track pending selection requests.
+                pendingSelectionObserver.remove();
+
                 return {
                     dispose: () => {
                         selectionServiceObserver.remove();
@@ -388,13 +405,19 @@ export class Inspector {
             friendlyName: "Section Highlighter Service (Backward Compatibility)",
             consumes: [PropertiesServiceIdentity],
             factory: (propertiesService) => {
-                this._SectionHighlighter = (sectionIds: readonly string[]) => {
-                    propertiesService.highlightSections(sectionIds.map((id) => (LegacyPropertiesSectionMapping as Record<string, string>)[id] ?? id));
-                };
+                const markLineContainerObserver = this._OnMarkLineContainerObservable.add((sections) => {
+                    propertiesService.highlightSections(sections.map((id) => (LegacyPropertiesSectionMapping as Record<string, string>)[id] ?? id));
+                });
+
+                // Now the service is alive so we don't need to track pending highlight requests.
+                this._OnMarkLineContainerObservable.notifyIfTriggered = false;
+                this._OnMarkLineContainerObservable.cleanLastNotifiedState();
 
                 return {
                     dispose: () => {
-                        this._SectionHighlighter = null;
+                        // Service is being torn down, so start caching pending highlight requests again.
+                        markLineContainerObserver.remove();
+                        this._OnMarkLineContainerObservable.notifyIfTriggered = true;
                     },
                 };
             },
