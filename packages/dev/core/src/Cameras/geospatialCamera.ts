@@ -636,7 +636,7 @@ export function ComputeLookAtFromYawPitchToRef(
  * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
  * @param currentYaw - The current yaw value to use as fallback when pitch is near 0 (looking straight down/up)
  * @param result - The Vector2 to store the result in (x = yaw, y = pitch)
- * @param calculateUpVectorFromPoint
+ * @param calculateUpVectorFromPoint - Optional function to calculate the up vector from a point. If supplied, this function will be used instead of assuming a spherical geocentric normal, allowing support for non-spherical planets or custom up vector logic.
  * @returns The result Vector2
  */
 export function ComputeYawPitchFromLookAtToRef(
