@@ -283,7 +283,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             startOffset = this._options.startOffset;
             this._currentTimeChangedWhilePaused = false;
         } else if (this._state === SoundState.Paused) {
-            startOffset = this.currentTime + this._options.startOffset;
+            startOffset = this.currentTime;
         }
 
         if (startOffset && startOffset > 0) {
