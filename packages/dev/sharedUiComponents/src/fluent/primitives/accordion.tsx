@@ -109,6 +109,7 @@ const useStyles = makeStyles({
     },
     searchBox: {
         width: "100%",
+        maxWidth: "none",
     },
 });
 
@@ -135,11 +136,11 @@ const AccordionMenuBar: FunctionComponent = () => {
             <div className={classes.menuBarControls}>
                 {features.hiding && editMode && (
                     <>
-                        <Button title="Show all" icon={EyeFilled} appearance="subtle" onClick={() => dispatch({ type: "SHOW_ALL" })} />
+                        <Button title="Show all" icon={EyeFilled} appearance="transparent" onClick={() => dispatch({ type: "SHOW_ALL" })} />
                         <Button
                             title="Hide all"
                             icon={EyeOffRegular}
-                            appearance="subtle"
+                            appearance="transparent"
                             onClick={() => {
                                 // Hide all visible (non-hidden) items using the registered item IDs
                                 const { registeredItemIds, state: currentState } = accordionCtx;
@@ -153,7 +154,7 @@ const AccordionMenuBar: FunctionComponent = () => {
                     <Button
                         title="Edit mode"
                         icon={editMode ? CheckmarkFilled : EditRegular}
-                        appearance={editMode ? "primary" : "subtle"}
+                        appearance={editMode ? "primary" : "transparent"}
                         onClick={() => dispatch({ type: "SET_EDIT_MODE", enabled: !editMode })}
                     />
                 )}
@@ -377,7 +378,8 @@ const StringAccordion = FluentAccordion as ForwardRefExoticComponent<FluentAccor
 
 export const Accordion = forwardRef<HTMLDivElement, PropsWithChildren<AccordionProps>>((props, ref) => {
     Accordion.displayName = "Accordion";
-    const { children, highlightSections, ...rest } = props;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { children, highlightSections, uniqueId, enablePinnedItems, enableHiddenItems, enableSearchItems, ...rest } = props;
     const classes = useStyles();
     const { size } = useContext(ToolContext);
     const accordionCtx = useAccordionContext(props);
