@@ -74,12 +74,12 @@ export class GeospatialClippingBehavior implements Behavior<GeospatialCamera> {
         }
 
         const planetRadius = camera.limits.planetRadius;
-        // Compute altitude using the surface normal rather than assuming a perfect sphere.
-        // For a sphere, this reduces to position.length() - planetRadius.
         const up = TmpVectors.Vector3[0];
         if (camera.movement.calculateUpVectorFromPoint) {
+            // Compute altitude using the local upVector at the camera position
             camera.movement.calculateUpVectorFromPoint(camera.position, up);
         } else {
+            // Otherwise assume perfect sphere and use geocentric normal
             camera.position.normalizeToRef(up);
         }
         const altitude = Math.max(1, Vector3.Dot(camera.position, up) - planetRadius);
