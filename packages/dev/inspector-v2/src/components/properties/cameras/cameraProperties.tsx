@@ -46,6 +46,7 @@ export const CameraGeneralProperties: FunctionComponent<{ camera: Camera }> = (p
                     min={toDisplayAngle(0.1)}
                     max={toDisplayAngle(Math.PI)}
                     step={toDisplayAngle(0.01)}
+                    unit={useDegrees ? "°" : "rad"}
                     convertTo={toDisplayAngle}
                     convertFrom={fromDisplayAngle}
                 />

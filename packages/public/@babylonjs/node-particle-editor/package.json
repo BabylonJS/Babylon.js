@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-particle-editor",
-    "version": "8.52.0",
+    "version": "8.52.1",
     "main": "dist/babylon.nodeParticleEditor.js",
     "module": "dist/babylon.nodeParticleEditor.js",
     "esnext": "dist/babylon.nodeParticleEditor.js",

@@ -3,9 +3,8 @@
 // Frame graphs: http://localhost:1338/?inspectorv2#9YU4C5#23
 // Sprites: https://localhost:1338/?inspectorv2#YCY2IL#4
 // Animation groups: http://localhost:1338/?inspectorv2#FMAYKS
+// Inspector v1 extensibility API: https://localhost:1338/#10HGIN#7
 
-import HavokPhysics from "@babylonjs/havok";
-import "core/Physics/v2/physicsEngineComponent";
 import type { Nullable } from "core/types";
 
 import { Engine } from "core/Engines/engine";
@@ -18,7 +17,6 @@ import { HavokPlugin } from "core/Physics/v2/Plugins/havokPlugin";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { ImageProcessingPostProcess } from "core/PostProcesses/imageProcessingPostProcess";
-import "core/Helpers/sceneHelpers";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
@@ -39,8 +37,6 @@ import "node-editor/legacy/legacy";
 import "node-geometry-editor/legacy/legacy";
 import "node-particle-editor/legacy/legacy";
 import "node-render-graph-editor/legacy/legacy";
-
-import "node-particle-editor/legacy/legacy"; // Ensure node particle editor legacy code is imported
 
 // Register scene loader plugins.
 registerBuiltInLoaders();
@@ -85,6 +81,8 @@ function createPostProcess() {
 }
 
 async function createPhysics() {
+    const { default: HavokPhysics } = await import("@babylonjs/havok");
+    await import("core/Physics/v2/physicsEngineComponent");
     const havok = await HavokPhysics();
     const hkPlugin = new HavokPlugin(true, havok);
     scene.enablePhysics(new Vector3(0, -9.81, 0), hkPlugin);

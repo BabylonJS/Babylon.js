@@ -302,7 +302,7 @@ export const MySceneExplorerCommandServiceDefinition: ServiceDefinition<[], [ISc
     friendlyName: "My Scene Explorer Command",
     consumes: [SceneExplorerServiceIdentity],
     factory: (sceneExplorerService) => {
-        const visibilityCommandRegistration = sceneExplorerService.addCommand({
+        const visibilityCommandRegistration = sceneExplorerService.addEntityCommand({
             // Order is optional, and relative to other commands.
             order: 0,
             // The predicate determines whether the command applies to the given entity.

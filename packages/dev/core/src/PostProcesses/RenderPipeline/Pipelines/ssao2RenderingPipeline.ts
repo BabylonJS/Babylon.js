@@ -293,6 +293,14 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._thinSSAORenderingPipeline.useViewportInCombineStage = b;
     }
 
+    /**
+     * Checks if all the post processes in the pipeline are ready.
+     * @returns True if all the post processes in the pipeline are ready
+     */
+    public isReady() {
+        return this._thinSSAORenderingPipeline.isReady();
+    }
+
     private _scene: Scene;
     private _originalColorPostProcess: PassPostProcess;
     private _ssaoPostProcess: PostProcess;

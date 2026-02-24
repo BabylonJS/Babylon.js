@@ -69,7 +69,7 @@ const Gradient: FunctionComponent<PrimitiveProps<GradientProps<number | Color3 |
                 {gradient.value1 instanceof Color3 || gradient.value1 instanceof Color4 ? (
                     <ColorPickerPopup value={gradient.value1} onChange={(color) => gradientChange({ ...gradient, value1: color })} />
                 ) : (
-                    <SyncedSliderInput step={0.01} value={gradient.value1} onChange={(val) => gradientChange({ ...gradient, value1: val })} compact />
+                    <SyncedSliderInput step={0.01} precision={2} value={gradient.value1} onChange={(val) => gradientChange({ ...gradient, value1: val })} compact />
                 )}
             </div>
             {gradient.value2 !== undefined && (
@@ -77,7 +77,7 @@ const Gradient: FunctionComponent<PrimitiveProps<GradientProps<number | Color3 |
                     {gradient.value2 instanceof Color3 || gradient.value2 instanceof Color4 ? (
                         <ColorPickerPopup value={gradient.value2} onChange={(color) => gradientChange({ ...gradient, value2: color })} />
                     ) : (
-                        <SyncedSliderInput step={0.01} value={gradient.value2} onChange={(val) => gradientChange({ ...gradient, value2: val })} compact />
+                        <SyncedSliderInput step={0.01} precision={2} value={gradient.value2} onChange={(val) => gradientChange({ ...gradient, value2: val })} compact />
                     )}
                 </div>
             )}
@@ -88,6 +88,7 @@ const Gradient: FunctionComponent<PrimitiveProps<GradientProps<number | Color3 |
                     min={0}
                     max={1}
                     step={0.01}
+                    precision={2}
                     value={gradient.step}
                     onChange={(val) => gradientChange({ ...gradient, step: val })}
                     compact={hasNumericValues}

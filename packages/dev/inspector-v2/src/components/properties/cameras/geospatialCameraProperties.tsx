@@ -26,7 +26,7 @@ export const GeospatialCameraTransformProperties: FunctionComponent<{ camera: Ge
     return (
         <>
             <BoundProperty
-                component={SyncedSliderPropertyLine}
+                component={NumberInputPropertyLine}
                 label="Yaw"
                 description={`Horizontal rotation in ${useDegrees ? "degrees" : "radians"} (0 = north)`}
                 target={camera}
@@ -34,11 +34,12 @@ export const GeospatialCameraTransformProperties: FunctionComponent<{ camera: Ge
                 min={toDisplayAngle(yawMin)}
                 max={toDisplayAngle(yawMax)}
                 step={toDisplayAngle(0.01)}
+                unit={useDegrees ? "°" : "rad"}
                 convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />
             <BoundProperty
-                component={SyncedSliderPropertyLine}
+                component={NumberInputPropertyLine}
                 label="Pitch"
                 description={`Vertical angle in ${useDegrees ? "degrees" : "radians"} (0 = looking down, π/2 = horizon)`}
                 target={camera}
@@ -46,6 +47,7 @@ export const GeospatialCameraTransformProperties: FunctionComponent<{ camera: Ge
                 min={toDisplayAngle(pitchMin)}
                 max={toDisplayAngle(pitchMax)}
                 step={toDisplayAngle(0.01)}
+                unit={useDegrees ? "°" : "rad"}
                 convertTo={(value) => toDisplayAngle(value, true)}
                 convertFrom={fromDisplayAngle}
             />

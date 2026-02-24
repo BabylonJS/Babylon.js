@@ -534,6 +534,14 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
+     * Checks if all the post processes in the pipeline are ready.
+     * @returns True if all the post processes in the pipeline are ready
+     */
+    public isReady() {
+        return this._thinSSRRenderingPipeline.isReady();
+    }
+
+    /**
      * Gets the scene the effect belongs to.
      * @returns the scene the effect belongs to.
      */

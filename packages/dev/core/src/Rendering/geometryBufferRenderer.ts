@@ -1048,6 +1048,9 @@ export class GeometryBufferRenderer {
             engine.onResizeObservable.remove(this._resizeObserver);
             this._resizeObserver = null;
         }
+        if (this._multiRenderTarget?.renderTarget && this.scene.getEngine()._currentRenderTarget === this._multiRenderTarget.renderTarget) {
+            this.scene.getEngine().unBindFramebuffer(this._multiRenderTarget?.renderTarget);
+        }
         this.getGBuffer().dispose();
     }
 

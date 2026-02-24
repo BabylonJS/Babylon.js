@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-geometry-editor",
-    "version": "8.52.0",
+    "version": "8.52.1",
     "main": "dist/babylon.nodeGeometryEditor.js",
     "module": "dist/babylon.nodeGeometryEditor.js",
     "esnext": "dist/babylon.nodeGeometryEditor.js",
@@ -23,7 +23,7 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "8.52.0",
+        "@babylonjs/core": "8.52.1",
         "@tools/node-geometry-editor": "1.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
