@@ -25,7 +25,7 @@
 #
 # Source: github/gh-aw/.github/workflows/code-simplifier.md@f88ec26c65cc20ebb8ceabe809c9153385945bfe
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2290b939f9aa4cf86a402fee5a3fc401e25698c8a10b64ed1571ca67c681fece"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b40f3dfaf9a1582fd923b43d946d356920996c30b16f5b3cc084ec3f4b8e6214"}
 
 name: "Code Simplifier"
 "on":
@@ -45,7 +45,7 @@ run-name: "Code Simplifier"
 jobs:
   activation:
     needs: pre_activation
-    if: needs.pre_activation.outputs.activated == 'true'
+    if: (needs.pre_activation.outputs.activated == 'true') && (github.repository == 'BabylonJS/Babylon.js')
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -1030,6 +1030,7 @@ jobs:
           if-no-files-found: ignore
 
   pre_activation:
+    if: github.repository == 'BabylonJS/Babylon.js'
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ (steps.check_membership.outputs.is_team_member == 'true') && (steps.check_skip_if_match.outputs.skip_check_ok == 'true') }}
