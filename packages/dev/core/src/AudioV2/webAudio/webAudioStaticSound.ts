@@ -429,14 +429,16 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
             return;
         }
 
-        if (this._state === SoundState.Started) {
+        const wasStarted = this._state === SoundState.Started;
+
+        this._setState(SoundState.Paused);
+        this._enginePauseTime += this.engine.currentTime - this._enginePlayTime;
+
+        if (wasStarted) {
             this._sourceNode?.stop();
         } else {
             this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
         }
-
-        this._setState(SoundState.Paused);
-        this._enginePauseTime += this.engine.currentTime - this._enginePlayTime;
 
         this._deinitSourceNode();
     }
