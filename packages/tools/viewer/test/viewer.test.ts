@@ -68,7 +68,7 @@ test("viewerDetails available", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer>
+        <babylon-viewer render-when-idle>
         </babylon-viewer>
         `
     );
@@ -86,7 +86,7 @@ test("animation-auto-play", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             source="https://assets.babylonjs.com/meshes/ufo.glb"
             animation-auto-play
         >
@@ -106,7 +106,7 @@ test('selected-animation="n"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             source="https://assets.babylonjs.com/meshes/ufo.glb"
             selected-animation="1"
         >
@@ -129,7 +129,7 @@ test('camera-orbit="a b r"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             camera-orbit=" 1 2 0.1 "
         >
@@ -152,7 +152,7 @@ test('camera-target="x y z"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             camera-target=" 1 2 3 "
         >
@@ -175,7 +175,7 @@ test('tone-mapping="none"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             tone-mapping="none"
         >
@@ -198,7 +198,7 @@ test('material-variant="name"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             source="https://assets.babylonjs.com/meshes/shoe_variants.glb"
             material-variant="street"
         >
@@ -221,7 +221,7 @@ test('environment="auto"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             environment="auto"
         >
         </babylon-viewer>
@@ -247,7 +247,7 @@ test('environment="auto"', async ({ page }) => {
 //     const viewerElementHandle = await attachViewerElement(
 //         page,
 //         `
-//         <babylon-viewer
+//         <babylon-viewer render-when-idle
 //             source="https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb"
 //             shadow-quality="high"
 //         >
