@@ -7,6 +7,39 @@ const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : ""
 const viewerUrl =
     (process.env.VIEWER_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.VIEWER_PORT || ":1342")) + "/packages/tools/viewer/test/apps/web/test.html" + snapshot;
 
+let pageErrors: Error[];
+let consoleErrors: string[];
+
+test.beforeEach(({ page }) => {
+    pageErrors = [];
+    consoleErrors = [];
+
+    page.on("pageerror", (error) => {
+        pageErrors.push(error);
+    });
+
+    page.on("console", (message) => {
+        if (message.type() === "error" || message.type() === "warning") {
+            const text = message.text();
+            // Only capture messages from Babylon.js (prefixed with "BJS -").
+            if (text.includes("BJS -")) {
+                consoleErrors.push(text);
+            }
+        }
+    });
+});
+
+test.afterEach(async ({ page }) => {
+    // Wait until 100 frames have been rendered to allow async errors (e.g. WebGPU validation) to surface.
+    await page.waitForFunction(() => {
+        const viewer = document.querySelector("babylon-viewer") as ViewerElement;
+        const engine = viewer.viewerDetails?.scene.getEngine();
+        return engine && engine.frameId >= 100;
+    });
+    expect(pageErrors, "Unhandled page errors").toEqual([]);
+    expect(consoleErrors, "Console errors").toEqual([]);
+});
+
 async function attachViewerElement(page: Page, viewerHtml: string) {
     await page.goto(viewerUrl, {
         waitUntil: "load",
@@ -20,7 +53,15 @@ async function attachViewerElement(page: Page, viewerHtml: string) {
 
     const viewerElementLocator = page.locator("babylon-viewer");
     await viewerElementLocator.waitFor();
-    return await viewerElementLocator.elementHandle();
+    const viewerElementHandle = await viewerElementLocator.elementHandle();
+
+    // Wait for viewerDetails to be available and loading to finish.
+    await page.waitForFunction((viewerElement) => {
+        const details = (viewerElement as ViewerElement).viewerDetails;
+        return details && details.viewer.loadingProgress === false;
+    }, viewerElementHandle);
+
+    return viewerElementHandle;
 }
 
 test("viewerDetails available", async ({ page }) => {
@@ -38,7 +79,7 @@ test("viewerDetails available", async ({ page }) => {
     }, viewerElementHandle);
 
     expect(viewerDetails).toBeDefined();
-    expect(viewerDetails.getProperty("scene")).toBeDefined();
+    expect(await viewerDetails.getProperty("scene")).toBeDefined();
 });
 
 test("animation-auto-play", async ({ page }) => {
@@ -199,4 +240,23 @@ test('environment="auto"', async ({ page }) => {
     }, viewerElementHandle);
 
     expect(isEnvironmentLoaded).toBeTruthy();
+});
+
+test('shadow-quality="high"', async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb"
+            shadow-quality="high"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    // Wait for the viewerDetails property to become defined
+    await page.waitForFunction((viewerElement) => {
+        // For now, we'll just rely on the common per-test validation that there are now unhandled page errors or console errors.
+        return (viewerElement as ViewerElement).viewerDetails;
+    }, viewerElementHandle);
 });

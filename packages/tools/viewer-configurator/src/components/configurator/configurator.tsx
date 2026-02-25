@@ -932,7 +932,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             postProcessingProperties.push(`"exposure": ${exposureConfig.configuredState.toFixed(1)}`);
         }
         if (ssaoConfig.canReset) {
-            postProcessingProperties.push(`"ssao": ${ssaoConfig.configuredState}`);
+            postProcessingProperties.push(`"ssao": "${ssaoConfig.configuredState}"`);
         }
         if (postProcessingProperties.length > 0) {
             properties.push(`"postProcessing": {${postProcessingProperties.map((property) => `\n    ${property}`).join(",")}\n  }`);

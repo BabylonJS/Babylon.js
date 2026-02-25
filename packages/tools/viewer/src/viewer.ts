@@ -62,6 +62,7 @@ import { registerBuiltInLoaders } from "loaders/dynamic";
 
 const WebGPUSnapshotRenderingEnabled = true;
 const WebGPUSnapshotRenderingLoggingEnabled = false;
+// Logger.LogLevels = Logger.AllLogLevel;
 
 // eslint-disable-next-line @typescript-eslint/promise-function-async
 const LazySSAODependenciesPromise = new Lazy(() =>
@@ -901,6 +902,9 @@ export class Viewer implements IDisposable {
     private readonly _updateShadowsLock = new AsyncLock();
     private _shadowsAbortController: Nullable<AbortController> = null;
 
+    private readonly _updateSSAOLock = new AsyncLock();
+    private _ssaoAbortController: Nullable<AbortController> = null;
+
     private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
 
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
@@ -1303,9 +1307,10 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private async _enableSSAOPipeline() {
+    private async _enableSSAOPipeline(abortSignal: AbortSignal) {
         if (!this._ssaoPipeline) {
             const [{ SSAO2RenderingPipeline }] = await LazySSAODependenciesPromise.value;
+            this._throwIfDisposedOrAborted(abortSignal);
 
             if (!this._ssaoPipeline) {
                 this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.add((pipeline) => {
@@ -1336,6 +1341,24 @@ export class Viewer implements IDisposable {
                 this._ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
                 this._ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
             }
+
+            // Wait for the SSAO pipeline to be ready before attaching it to the camera.
+            while (!this._ssaoPipeline.isReady()) {
+                // eslint-disable-next-line no-await-in-loop
+                await new Promise<void>((resolve, reject) => {
+                    const observer = this._scene.onAfterRenderObservable.addOnce(() => {
+                        abortSignal.removeEventListener("abort", onAbort);
+                        resolve();
+                    });
+                    const onAbort = () => {
+                        observer.remove();
+                        reject(new AbortError("Aborted"));
+                    };
+                    abortSignal.addEventListener("abort", onAbort, { once: true });
+                });
+            }
+
+            this._throwIfDisposedOrAborted(abortSignal);
             this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
         }
     }
@@ -1350,20 +1373,30 @@ export class Viewer implements IDisposable {
     }
 
     protected _updateSSAOPipeline() {
-        let shouldEnable = this._ssaoOption === "enabled";
+        observePromise(
+            (async () => {
+                this._ssaoAbortController?.abort(new AbortError("SSAO is being change before previous SSAO finished initializing."));
+                this._ssaoAbortController = new AbortController();
+                const abortSignal = this._ssaoAbortController.signal;
 
-        if (this._ssaoOption === "auto") {
-            const hasModels = this._loadedModels.length > 0;
-            const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
-            const ibleShadowsEnabled = this._shadowQuality === "high";
-            shouldEnable = hasModels && !hasMaterials && !ibleShadowsEnabled;
-        }
+                await this._updateSSAOLock.lockAsync(async () => {
+                    let shouldEnable = this._ssaoOption === "enabled";
 
-        if (shouldEnable) {
-            observePromise(this._enableSSAOPipeline());
-        } else {
-            this._disableSSAOPipeline();
-        }
+                    if (this._ssaoOption === "auto") {
+                        const hasModels = this._loadedModels.length > 0;
+                        const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
+                        const ibleShadowsEnabled = this._shadowQuality === "high";
+                        shouldEnable = hasModels && !hasMaterials && !ibleShadowsEnabled;
+                    }
+
+                    if (shouldEnable) {
+                        await this._enableSSAOPipeline(abortSignal);
+                    } else {
+                        this._disableSSAOPipeline();
+                    }
+                });
+            })()
+        );
     }
 
     /**
@@ -2695,13 +2728,15 @@ export class Viewer implements IDisposable {
         // 3. The snapshot helper is not yet in a ready state.
         // 4. The classic shadows are not yet in a ready state.
         // 5. The environment shadows are not yet in a ready state.
-        // 6. At least one model should render (playing animations).
+        // 6. The SSAO pipeline is not yet in a ready state.
+        // 7. At least one model should render (playing animations).
         return (
             !this._autoSuspendRendering ||
             this._sceneMutated ||
-            !this._snapshotHelper?.isReady ||
+            this._snapshotHelper?.isReady === false ||
             this._shadowState.normal?.shouldRender ||
             this._shadowState.high?.shouldRender ||
+            this._ssaoPipeline?.isReady() === false ||
             this._loadedModelsBacking.some((model) => model._shouldRender())
         );
     }
