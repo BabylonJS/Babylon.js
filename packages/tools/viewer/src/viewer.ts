@@ -78,10 +78,16 @@ const WebGPUSnapshotRenderingLoggingEnabled = false;
 // TODO: Consider moving this to core after the 9.0 release.
 async function WhenNext<T>(observable: Observable<T>, abortSignal: AbortSignal): Promise<T> {
     return await new Promise<T>((resolve, reject) => {
+        if (abortSignal.aborted) {
+            reject(new AbortError("Aborted"));
+            return;
+        }
+
         const observer = observable.addOnce((payload) => {
             abortSignal.removeEventListener("abort", onAbort);
             resolve(payload);
         });
+
         const onAbort = () => {
             observer.remove();
             reject(new AbortError("Aborted"));
@@ -1327,44 +1333,51 @@ export class Viewer implements IDisposable {
             const [{ SSAO2RenderingPipeline }] = await LazySSAODependenciesPromise.value;
             this._throwIfDisposedOrAborted(abortSignal);
 
-            if (!this._ssaoPipeline) {
-                this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.add((pipeline) => {
-                    if (pipeline.name === "ssao") {
-                        this.onPostProcessingChanged.notifyObservers();
-                    }
-                });
-                this._scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.add((pipeline) => {
-                    if (pipeline.name === "ssao") {
-                        this.onPostProcessingChanged.notifyObservers();
-                    }
-                });
-            }
+            this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.addOnce((pipeline) => {
+                if (pipeline.name === "ssao") {
+                    this.onPostProcessingChanged.notifyObservers();
+                }
+            });
+
+            this._scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.addOnce((pipeline) => {
+                if (pipeline.name === "ssao") {
+                    this.onPostProcessingChanged.notifyObservers();
+                }
+            });
 
             const ssaoRatio = {
                 ssaoRatio: 1,
                 blurRatio: 1,
             };
-            this._ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
-            const worldBounds = this._getWorldBounds(this._loadedModels);
-            if (this._ssaoPipeline && worldBounds) {
-                const size = Vector3.FromArray(worldBounds.size).length();
-                this._ssaoPipeline.expensiveBlur = true;
-                this._ssaoPipeline.maxZ = size * 2;
-                // arbitrary max size to cap SSAO settings
-                const maxSceneSize = 50;
-                this._ssaoPipeline.radius = Clamp(Lerp(1, 5, Clamp((size - 1) / maxSceneSize, 0, 1)), 1, 5);
-                this._ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
-                this._ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
-            }
 
-            // Wait for the SSAO pipeline to be ready before attaching it to the camera.
-            while (!this._ssaoPipeline.isReady()) {
-                // eslint-disable-next-line no-await-in-loop
-                await WhenNext(this._scene.onAfterRenderObservable, abortSignal);
-            }
+            let ssaoPipeline: Nullable<SSAO2RenderingPipeline> = null;
+            try {
+                ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
+                const worldBounds = this._getWorldBounds(this._loadedModels);
+                if (worldBounds) {
+                    const size = Vector3.FromArray(worldBounds.size).length();
+                    ssaoPipeline.expensiveBlur = true;
+                    ssaoPipeline.maxZ = size * 2;
+                    // arbitrary max size to cap SSAO settings
+                    const maxSceneSize = 50;
+                    ssaoPipeline.radius = Clamp(Lerp(1, 5, Clamp((size - 1) / maxSceneSize, 0, 1)), 1, 5);
+                    ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
+                    ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
+                }
 
-            this._throwIfDisposedOrAborted(abortSignal);
-            this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
+                // Wait for the SSAO pipeline to be ready before attaching it to the camera.
+                while (!ssaoPipeline.isReady()) {
+                    // eslint-disable-next-line no-await-in-loop
+                    await WhenNext(this._scene.onAfterRenderObservable, abortSignal);
+                }
+
+                this._throwIfDisposedOrAborted(abortSignal);
+                this._ssaoPipeline = ssaoPipeline;
+                this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
+            } catch (error) {
+                ssaoPipeline?.dispose();
+                throw error;
+            }
         }
     }
 
@@ -2554,6 +2567,7 @@ export class Viewer implements IDisposable {
         this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._camerasAsHotSpotsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._shadowsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._ssaoAbortController?.abort(new AbortError("Thew viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
