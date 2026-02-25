@@ -1393,7 +1393,7 @@ export class Viewer implements IDisposable {
     protected _updateSSAOPipeline() {
         observePromise(
             (async () => {
-                this._ssaoAbortController?.abort(new AbortError("SSAO is being change before previous SSAO finished initializing."));
+                this._ssaoAbortController?.abort(new AbortError("SSAO is being changed before previous SSAO finished initializing."));
                 this._ssaoAbortController = new AbortController();
                 const abortSignal = this._ssaoAbortController.signal;
 
@@ -1798,7 +1798,7 @@ export class Viewer implements IDisposable {
     }
 
     protected async _updateShadows() {
-        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being change before previous shadows finished initializing."));
+        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being changed before previous shadows finished initializing."));
         const abortController = (this._shadowsAbortController = new AbortController());
 
         await this._updateShadowsLock.lockAsync(async () => {
