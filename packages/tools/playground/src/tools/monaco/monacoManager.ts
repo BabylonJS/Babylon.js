@@ -171,7 +171,7 @@ export class MonacoManager {
                 try {
                     const lastLocal = JSON.parse(lastLocalJson) as SnippetData;
                     if (lastLocal.sessionData) {
-                        const validFiles = new Set(Object.keys(this.globalState.files || {}));
+                        const validFiles = new Set(Object.keys(this.globalState.files ?? {}));
                         const filteredOpenFiles = lastLocal.sessionData.openFiles.filter((f) => validFiles.has(f));
                         if (filteredOpenFiles.length > 0) {
                             this.globalState.openEditors = filteredOpenFiles;
