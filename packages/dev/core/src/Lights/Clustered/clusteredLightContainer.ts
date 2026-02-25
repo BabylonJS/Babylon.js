@@ -69,21 +69,29 @@ export class ClusteredLightContainer extends Light {
     public static IsLightSupported(light: Light): boolean {
         if (ClusteredLightContainer._GetEngineBatchSize(light.getEngine()) === 0) {
             return false;
-        } else if (light.shadowEnabled && light._scene.shadowsEnabled && light.getShadowGenerators()) {
+        }
+
+        if (light.shadowEnabled && light._scene.shadowsEnabled && light.getShadowGenerators()) {
             // Shadows are not supported
             return false;
-        } else if (light.falloffType !== Light.FALLOFF_DEFAULT) {
+        }
+
+        if (light.falloffType !== Light.FALLOFF_DEFAULT) {
             // Only the default falloff is supported
             return false;
-        } else if (light.getTypeID() === LightConstants.LIGHTTYPEID_POINTLIGHT) {
+        }
+
+        if (light.getTypeID() === LightConstants.LIGHTTYPEID_POINTLIGHT) {
             return true;
-        } else if (light.getTypeID() === LightConstants.LIGHTTYPEID_SPOTLIGHT) {
+        }
+
+        if (light.getTypeID() === LightConstants.LIGHTTYPEID_SPOTLIGHT) {
             // Extra texture bindings per light are not supported
             return !(<SpotLight>light).projectionTexture && !(<SpotLight>light).iesProfileTexture;
-        } else {
-            // Currently only point and spot lights are supported
-            return false;
         }
+
+        // Currently only point and spot lights are supported
+        return false;
     }
 
     /** @internal */
