@@ -1,28 +1,11 @@
 import type { FunctionComponent } from "react";
 
 import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { BoundProperty } from "../boundProperty";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
-import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
-import { ReadFile } from "core/Misc/fileTools";
-import { Texture } from "core/Materials/Textures/texture";
-
-// TODO: ryamtrem / gehalper This function is temporal until there is a line control to handle texture links (similar to the old TextureLinkLineComponent)
-const UpdateTexture = (file: File, material: OpenPBRMaterial, textureSetter: (texture: BaseTexture) => void) => {
-    ReadFile(
-        file,
-        (data) => {
-            const blob = new Blob([data], { type: "octet/stream" });
-            const url = URL.createObjectURL(blob);
-            textureSetter(new Texture(url, material.getScene(), false, false));
-        },
-        undefined,
-        true
-    );
-};
+import { TextureSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 
 /**
  * Displays the base layer properties of an OpenPBR material.
@@ -45,14 +28,14 @@ export const OpenPBRMaterialBaseProperties: FunctionComponent<{ material: OpenPB
                 description="Controls how strong or visible the base aspect appears."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Base Weight"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.baseWeightTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="baseWeightTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -63,14 +46,14 @@ export const OpenPBRMaterialBaseProperties: FunctionComponent<{ material: OpenPB
                 description="Sets the primary surface color of the material."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Base Color"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.baseColorTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="baseColorTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -83,14 +66,14 @@ export const OpenPBRMaterialBaseProperties: FunctionComponent<{ material: OpenPB
                 description="Controls whether the material behaves as metal or non-metal. The parameter supersedes transmission_weight and subsurface_weight."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Base Metalness"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.baseMetalnessTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="baseMetalnessTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -103,23 +86,23 @@ export const OpenPBRMaterialBaseProperties: FunctionComponent<{ material: OpenPB
                 description="Softens the surface's base appearance. Higher values create matte or porous looks. Lower values are smoother."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Base Diffuse Roughness"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.baseDiffuseRoughnessTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="baseDiffuseRoughnessTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Ambient Occlusion"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.ambientOcclusionTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="ambientOcclusionTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
         </>
     );
@@ -146,14 +129,14 @@ export const OpenPBRMaterialSpecularProperties: FunctionComponent<{ material: Op
                 description="Controls how strong the reflections appear."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Specular Weight"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.specularWeightTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="specularWeightTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -164,14 +147,14 @@ export const OpenPBRMaterialSpecularProperties: FunctionComponent<{ material: Op
                 description="Tints the color of reflections."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Specular Color"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.specularColorTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="specularColorTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -184,14 +167,14 @@ export const OpenPBRMaterialSpecularProperties: FunctionComponent<{ material: Op
                 description="Controls how sharp or blurry reflections are."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Specular Roughness"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.specularRoughnessTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="specularRoughnessTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -204,14 +187,14 @@ export const OpenPBRMaterialSpecularProperties: FunctionComponent<{ material: Op
                 description="Stretches reflections in one direction for brushed or streaked looks. Requires specular_roughness > 0."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/microfacetmodel"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Specular Roughness Anisotropy"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.specularRoughnessAnisotropyTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="specularRoughnessAnisotropyTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -244,14 +227,14 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 description="Controls the presence of the transparency effect. The parameter is superseded by base_metalness."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/translucentbase"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Transmission Weight"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.transmissionWeightTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="transmissionWeightTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -262,14 +245,14 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 description="Tints light passing through the material. Works with transmission_depth for realistic thickness-based coloring."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/translucentbase"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Transmission Color"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.transmissionColorTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="transmissionColorTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -277,20 +260,21 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 target={material}
                 propertyKey="transmissionDepth"
                 min={0}
+                max={5}
                 step={0.0001}
                 convertTo={(value) => value * 100}
                 convertFrom={(value) => value / 100}
                 description="Controls how quickly light is absorbed with thickness. Distance is in scene units."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/translucentbase"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Transmission Depth"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.transmissionDepthTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="transmissionDepthTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -301,14 +285,14 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 description="Adds internal cloudiness to create materials like juice, honey, etc. Requires transmission_depth > 0."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/translucentbase"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Transmission Scatter"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.transmissionScatterTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="transmissionScatterTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -343,14 +327,14 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 description="Strength of rainbow color separation in refraction."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/translucentbase"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Transmission Dispersion Scale"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.transmissionDispersionScaleTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="transmissionDispersionScaleTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
         </>
     );
@@ -372,14 +356,14 @@ export const OpenPBRMaterialSubsurfaceProperties: FunctionComponent<{ material: 
                 description="Controls the presence of the subsurface effect. The parameter is superseded by base_metalness and transmission_weight."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/subsurface"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Subsurface Weight"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.subsurfaceWeightTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="subsurfaceWeightTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -390,14 +374,14 @@ export const OpenPBRMaterialSubsurfaceProperties: FunctionComponent<{ material: 
                 description="Colors the light that scatters under the surface."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/subsurface"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Subsurface Color"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.subsurfaceColorTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="subsurfaceColorTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -421,14 +405,14 @@ export const OpenPBRMaterialSubsurfaceProperties: FunctionComponent<{ material: 
                 description="Tints thin areas with light shining through, like warm glow on ears or leaves."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/basesubstrate/subsurface"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Subsurface Radius Scale"
-                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.subsurfaceRadiusScaleTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="subsurfaceRadiusScaleTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -466,14 +450,14 @@ export const OpenPBRMaterialCoatProperties: FunctionComponent<{ material: OpenPB
                 description="Controls the presence of the coat."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/coat"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Coat Weight"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.coatWeightTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="coatWeightTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -484,14 +468,14 @@ export const OpenPBRMaterialCoatProperties: FunctionComponent<{ material: OpenPB
                 description="Tints the coat, for tinted varnish or paint."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/coat"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Coat Color"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.coatColorTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="coatColorTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -504,14 +488,14 @@ export const OpenPBRMaterialCoatProperties: FunctionComponent<{ material: OpenPB
                 description="Controls how sharp or blurry the coat reflections appear."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/coat/roughening"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Coat Roughness"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.coatRoughnessTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="coatRoughnessTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -524,14 +508,14 @@ export const OpenPBRMaterialCoatProperties: FunctionComponent<{ material: OpenPB
                 description="Stretches coat reflections in one direction for brushed or streaked looks. Requires coat_roughness > 0."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/coat"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Coat Roughness Anisotropy"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.coatRoughnessAnisotropyTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="coatRoughnessAnisotropyTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -555,14 +539,14 @@ export const OpenPBRMaterialCoatProperties: FunctionComponent<{ material: OpenPB
                 description="Darkens the base under the coat, similar to how real varnish deepens color."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/coat/darkening"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Coat Darkening"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.coatDarkeningTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="coatDarkeningTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
         </>
     );
@@ -589,14 +573,14 @@ export const OpenPBRMaterialFuzzProperties: FunctionComponent<{ material: OpenPB
                 description="Controls the presence of the fuzz."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/fuzz"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Fuzz Weight"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.fuzzWeightTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="fuzzWeightTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={Color3PropertyLine}
@@ -607,23 +591,34 @@ export const OpenPBRMaterialFuzzProperties: FunctionComponent<{ material: OpenPB
                 description="Controls the color of the fuzz."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/fuzz"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Fuzz Color"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.fuzzColorTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="fuzzColorTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
-            <FileUploadLine
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
                 label="Fuzz Roughness"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.fuzzRoughnessTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="fuzzRoughness"
+                min={0}
+                max={1}
+                step={0.01}
+                description="Controls the roughness of the fuzz."
+                docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/fuzz"
+            />
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
+                label="Fuzz Roughness"
+                target={material}
+                propertyKey="fuzzRoughnessTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty component={SyncedSliderPropertyLine} label="Number of Samples" target={material} propertyKey="fuzzSampleNumber" min={4} max={64} step={1} />
         </>
@@ -649,14 +644,14 @@ export const OpenPBRMaterialEmissionProperties: FunctionComponent<{ material: Op
                 description="Controls the color of the glow."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/emission"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Emission Color"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.emissionColorTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="emissionColorTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -694,14 +689,14 @@ export const OpenPBRMaterialThinFilmProperties: FunctionComponent<{ material: Op
                 description="Controls the presence of the thin-film."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/thin-filmiridescence"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Thin Film Weight"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.thinFilmWeightTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="thinFilmWeightTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -714,14 +709,14 @@ export const OpenPBRMaterialThinFilmProperties: FunctionComponent<{ material: Op
                 description="Changes the color pattern of the iridescence."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/thin-filmiridescence"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Thin Film Thickness"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.thinFilmThicknessTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="thinFilmThicknessTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -759,14 +754,14 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 description="Controls material presence and transparency cutout."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/opacity/transparency"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Geometry Opacity"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.geometryOpacityTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="geometryOpacityTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={CheckboxPropertyLine}
@@ -776,14 +771,14 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 description="When enabled, treats material as a thin shell (like leaves, paper sheets or windows). Disables ray bending in refraction."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/thin-walledcase"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Geometry Normal"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.geometryNormalTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="geometryNormalTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -796,14 +791,14 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 description="Tangent vector controlling anisotropic reflection direction for the base (metal and non-metal). Works with specular_roughness_anisotropy."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/geometry/tangent"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Geometry Tangent"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.geometryTangentTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="geometryTangentTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -816,23 +811,23 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 description="Tangent vector controlling anisotropic reflection direction for the coat. Works with coat_roughness_anisotropy."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/geometry/coat-tangent"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Geometry Coat Normal"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.geometryCoatNormalTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="geometryCoatNormalTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Geometry Coat Tangent"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.geometryCoatTangentTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="geometryCoatTangentTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -844,14 +839,14 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 description="Controls the thickness of the geometry for volume approximations."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/thickness"
             />
-            <FileUploadLine
+            <BoundProperty
+                component={TextureSelectorPropertyLine}
                 label="Geometry Thickness"
-                accept=".jpg, .png, .webp, .tga, .dds, .env, .exr"
-                onClick={(files) => {
-                    if (files.length > 0) {
-                        UpdateTexture(files[0], material, (texture) => (material.geometryThicknessTexture = texture));
-                    }
-                }}
+                target={material}
+                propertyKey="geometryThicknessTexture"
+                scene={material.getScene()}
+                defaultValue={null}
+                onLink={(texture) => void texture}
             />
         </>
     );

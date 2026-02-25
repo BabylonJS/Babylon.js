@@ -308,7 +308,9 @@ void main() {
             #ifdef IBL_SHADOW_TEXTURE
                 irradiance *= iblShadowValue;
             #endif
-            vec2 uvOffset = vec2(0.0);
+            #ifndef BUMP
+                vec2 uvOffset = vec2(0.0);
+            #endif
             #ifdef IRRADIANCE_SCATTER_MASK
                 irradiance_alpha = min(subsurface_weight + transmission_weight, 1.0);
             #endif
