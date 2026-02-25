@@ -314,7 +314,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             #ifdef IBL_SHADOW_TEXTURE
                 irradiance *= iblShadowValue;
             #endif
-            let uvOffset: vec2f = vec2f(0.0);
+            #ifndef BUMP
+                let uvOffset: vec2f = vec2f(0.0);
+            #endif
             #ifdef IRRADIANCE_SCATTER_MASK
                 irradiance_alpha = min(subsurface_weight + transmission_weight, 1.0);
             #endif

@@ -5,6 +5,7 @@ import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Color3 } from "core/Maths/math.color";
+import { Vector3 } from "core/Maths/math.vector";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
 const NAME = "KHR_materials_volume";
@@ -121,13 +122,41 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
                 node.extensions = node.extensions || {};
                 node.extensions[NAME] = volumeInfo;
             } else if (babylonMaterial instanceof OpenPBRMaterial) {
-                if (babylonMaterial.transmissionWeight > 0) {
+                const transmissionVolume = babylonMaterial.transmissionWeight > 0 && !babylonMaterial.geometryThinWalled && babylonMaterial.transmissionDepth > 0;
+                const subsurfaceVolume = babylonMaterial.subsurfaceWeight > 0 && !babylonMaterial.geometryThinWalled;
+                if (transmissionVolume || subsurfaceVolume) {
                     this._wasUsed = true;
 
                     const thicknessFactor = babylonMaterial.geometryThickness;
                     const thicknessTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.geometryThicknessTexture) ?? undefined;
-                    const attenuationDistance = babylonMaterial.transmissionDepth;
-                    const attenuationColor = babylonMaterial.transmissionColor.equalsFloats(1.0, 1.0, 1.0) ? undefined : babylonMaterial.transmissionColor.asArray();
+                    let transmissionAttenuationDistance = 1;
+                    let transmissionAttenuationColor = Color3.White().asArray();
+                    if (transmissionVolume) {
+                        transmissionAttenuationDistance = babylonMaterial.transmissionDepth;
+                        transmissionAttenuationColor = babylonMaterial.transmissionColor.asArray();
+                    }
+                    let subsurfaceAttenuationDistance = 1;
+                    const subsurfaceAttenuationColor = Color3.White().asArray();
+                    if (subsurfaceVolume) {
+                        const r = babylonMaterial.subsurfaceRadius;
+                        const radiusScale = babylonMaterial.subsurfaceRadiusScale;
+                        const mfp = new Vector3(radiusScale.r, radiusScale.g, radiusScale.b).multiplyByFloats(r, r, r);
+                        const extinctionCoeff = new Vector3(1.0 / Math.max(mfp.x, 1e-6), 1.0 / Math.max(mfp.y, 1e-6), 1.0 / Math.max(mfp.z, 1e-6));
+                        const maxCoeff = Math.max(extinctionCoeff.x, extinctionCoeff.y, extinctionCoeff.z);
+                        subsurfaceAttenuationDistance = 1.0 / maxCoeff;
+                        subsurfaceAttenuationColor[0] = Math.exp(-extinctionCoeff.x * subsurfaceAttenuationDistance);
+                        subsurfaceAttenuationColor[1] = Math.exp(-extinctionCoeff.y * subsurfaceAttenuationDistance);
+                        subsurfaceAttenuationColor[2] = Math.exp(-extinctionCoeff.z * subsurfaceAttenuationDistance);
+                    }
+
+                    const subsurfaceFractionOfDielectric = (1.0 - babylonMaterial.transmissionWeight) * babylonMaterial.subsurfaceWeight;
+                    const subsurfaceAndTransmissionFractionOfDielectric = subsurfaceFractionOfDielectric + babylonMaterial.transmissionWeight;
+                    const reciprocalOfSubsurfaceAndTransmissionFractionOfDielectric = 1.0 / Math.max(subsurfaceAndTransmissionFractionOfDielectric, 1e-6);
+                    const transWeight = babylonMaterial.transmissionWeight * reciprocalOfSubsurfaceAndTransmissionFractionOfDielectric;
+                    const subsurfWeight = subsurfaceFractionOfDielectric * reciprocalOfSubsurfaceAndTransmissionFractionOfDielectric;
+
+                    const attenuationColor = transmissionAttenuationColor.map((c, i) => c * transWeight + subsurfaceAttenuationColor[i] * subsurfWeight);
+                    const attenuationDistance = transmissionAttenuationDistance * transWeight + subsurfaceAttenuationDistance * subsurfWeight;
 
                     const volumeInfo: IKHRMaterialsVolume = {
                         thicknessFactor: thicknessFactor,

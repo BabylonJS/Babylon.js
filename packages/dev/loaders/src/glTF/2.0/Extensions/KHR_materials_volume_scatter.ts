@@ -106,7 +106,8 @@ export class KHR_materials_volume_scatter implements IGLTFLoaderExtension {
             return Promise.resolve();
         }
 
-        const scatterColor = extension.multiscatterColor !== undefined && extension.multiscatterColor.length == 3 ? Color3.FromArray(extension.multiscatterColor) : Color3.Black();
+        const scatterColor =
+            extension.multiscatterColorFactor !== undefined && extension.multiscatterColorFactor.length == 3 ? Color3.FromArray(extension.multiscatterColorFactor) : Color3.Black();
         const scatterAnisotropy = extension.scatterAnisotropy !== undefined ? extension.scatterAnisotropy : 0;
 
         // If diffuse_transmission, apply props to subsurface
@@ -127,7 +128,7 @@ export class KHR_materials_volume_scatter implements IGLTFLoaderExtension {
         }
 
         const extinctionCoefficient = new Vector3(-Math.log(adapter.transmissionColor.r), -Math.log(adapter.transmissionColor.g), -Math.log(adapter.transmissionColor.b));
-        extinctionCoefficient.scaleInPlace(1 / Math.max(adapter.transmissionDepth, 0.001));
+        extinctionCoefficient.scaleInPlace(1 / Math.max(adapter.transmissionDepth, 0.000001));
 
         // In glTF, both the translucency volume and subsurface volume use the same input parameters.
         // We'll apply them to both, as appropriate.
