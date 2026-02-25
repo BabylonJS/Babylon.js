@@ -60,10 +60,6 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
-const WebGPUSnapshotRenderingEnabled = true;
-const WebGPUSnapshotRenderingLoggingEnabled = false;
-// Logger.LogLevels = Logger.AllLogLevel;
-
 // eslint-disable-next-line @typescript-eslint/promise-function-async
 const LazySSAODependenciesPromise = new Lazy(() =>
     Promise.all([
@@ -74,6 +70,25 @@ const LazySSAODependenciesPromise = new Lazy(() =>
         import("core/Engines/WebGPU/Extensions/engine.multiRender"),
     ])
 );
+
+const WebGPUSnapshotRenderingEnabled = true;
+const WebGPUSnapshotRenderingLoggingEnabled = false;
+// Logger.LogLevels = Logger.AllLogLevel;
+
+// TODO: Consider moving this to core after the 9.0 release.
+async function WhenNext<T>(observable: Observable<T>, abortSignal: AbortSignal): Promise<T> {
+    return await new Promise<T>((resolve, reject) => {
+        const observer = observable.addOnce((payload) => {
+            abortSignal.removeEventListener("abort", onAbort);
+            resolve(payload);
+        });
+        const onAbort = () => {
+            observer.remove();
+            reject(new AbortError("Aborted"));
+        };
+        abortSignal.addEventListener("abort", onAbort, { once: true });
+    });
+}
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
@@ -1345,17 +1360,7 @@ export class Viewer implements IDisposable {
             // Wait for the SSAO pipeline to be ready before attaching it to the camera.
             while (!this._ssaoPipeline.isReady()) {
                 // eslint-disable-next-line no-await-in-loop
-                await new Promise<void>((resolve, reject) => {
-                    const observer = this._scene.onAfterRenderObservable.addOnce(() => {
-                        abortSignal.removeEventListener("abort", onAbort);
-                        resolve();
-                    });
-                    const onAbort = () => {
-                        observer.remove();
-                        reject(new AbortError("Aborted"));
-                    };
-                    abortSignal.addEventListener("abort", onAbort, { once: true });
-                });
+                await WhenNext(this._scene.onAfterRenderObservable, abortSignal);
             }
 
             this._throwIfDisposedOrAborted(abortSignal);

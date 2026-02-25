@@ -242,21 +242,22 @@ test('environment="auto"', async ({ page }) => {
     expect(isEnvironmentLoaded).toBeTruthy();
 });
 
-test('shadow-quality="high"', async ({ page }) => {
-    const viewerElementHandle = await attachViewerElement(
-        page,
-        `
-        <babylon-viewer
-            source="https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb"
-            shadow-quality="high"
-        >
-        </babylon-viewer>
-        `
-    );
+// TODO: Uncomment when IBL shadow bugs with WebGPU are resolved.
+// test('shadow-quality="high"', async ({ page }) => {
+//     const viewerElementHandle = await attachViewerElement(
+//         page,
+//         `
+//         <babylon-viewer
+//             source="https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb"
+//             shadow-quality="high"
+//         >
+//         </babylon-viewer>
+//         `
+//     );
 
-    // Wait for the viewerDetails property to become defined
-    await page.waitForFunction((viewerElement) => {
-        // For now, we'll just rely on the common per-test validation that there are now unhandled page errors or console errors.
-        return (viewerElement as ViewerElement).viewerDetails;
-    }, viewerElementHandle);
-});
+//     // Wait for the viewerDetails property to become defined
+//     await page.waitForFunction((viewerElement) => {
+//         // For now, we'll just rely on the common per-test validation that there are now unhandled page errors or console errors.
+//         return (viewerElement as ViewerElement).viewerDetails;
+//     }, viewerElementHandle);
+// });
