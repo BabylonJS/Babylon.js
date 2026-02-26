@@ -318,6 +318,11 @@ export class WebXRExperienceHelper implements IDisposable {
                 } else if (this.state === WebXRState.EXITING_XR) {
                     this.sessionManager.onXRFrameObservable.remove(this._spectatorXRFrameObserver);
                     this._spectatorXRFrameObserver = null;
+
+                    this._scene.onAfterRenderCameraObservable.remove(this._spectatorAfterRenderObserver);
+                    this._spectatorAfterRenderObserver = null;
+                    this._spectatorCamera?.dispose();
+                    this._spectatorCamera = null;
                     this._scene.activeCameras = null;
                 }
             };
