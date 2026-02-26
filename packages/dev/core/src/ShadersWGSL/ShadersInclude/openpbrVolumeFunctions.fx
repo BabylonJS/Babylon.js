@@ -31,7 +31,7 @@ fn computeOpenPBRTransmissionVolume(
         if (transmission_depth > 0.0f) {
             // Compute only if we have a valid transmission
             let invDepth: vec3f = vec3f(1.f / maxEps(transmission_depth));
-            volumeParams.extinction_coeff = -log(maxEps(transmission_color.rgb)) * invDepth;
+            volumeParams.extinction_coeff = -log(maxEpsVec3(transmission_color.rgb)) * invDepth;
             volumeParams.scatter_coeff = transmission_scatter.rgb * invDepth;
             volumeParams.absorption_coeff = volumeParams.extinction_coeff - volumeParams.scatter_coeff.rgb;
             let minCoeff: f32 = min3(volumeParams.absorption_coeff);
