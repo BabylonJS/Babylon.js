@@ -77,7 +77,7 @@ const WebGPUSnapshotRenderingLoggingEnabled = false;
 
 // TODO: Consider moving this to core after the 9.0 release.
 async function WhenNext<T>(observable: Observable<T>, abortSignal: AbortSignal): Promise<T> {
-    return await new Promise<T>((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
         if (abortSignal.aborted) {
             reject(new AbortError("Aborted"));
             return;
@@ -1403,8 +1403,8 @@ export class Viewer implements IDisposable {
                     if (this._ssaoOption === "auto") {
                         const hasModels = this._loadedModels.length > 0;
                         const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
-                        const ibleShadowsEnabled = this._shadowQuality === "high";
-                        shouldEnable = hasModels && !hasMaterials && !ibleShadowsEnabled;
+                        const iblShadowsEnabled = this._shadowQuality === "high";
+                        shouldEnable = hasModels && !hasMaterials && !iblShadowsEnabled;
                     }
 
                     if (shouldEnable) {
