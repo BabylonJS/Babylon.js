@@ -18,7 +18,7 @@ export const FileUploadLine: FunctionComponent<FileUploadLineProps> = ({ onClick
     FileUploadLine.displayName = "FileUploadLine";
 
     return (
-        <LineContainer uniqueId={label}>
+        <LineContainer uniqueId={`${label}_upload`} label={label}>
             <UploadButton onUpload={onClick} accept={accept} label={label} {...buttonProps} />
         </LineContainer>
     );

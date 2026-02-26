@@ -64,12 +64,12 @@ export class GeospatialCamera extends Camera {
         super(name, new Vector3(), scene);
 
         this._limits = new GeospatialLimits(options.planetRadius);
-        this._resetToDefault(this._limits);
 
         this._flyingBehavior = new InterpolatingBehavior();
         this.addBehavior(this._flyingBehavior);
 
         this.movement = new GeospatialCameraMovement(scene, this._limits, this.position, this.center, this._lookAtVector, options.pickPredicate, this._flyingBehavior);
+        this._resetToDefault(this._limits);
 
         this.inputs = new GeospatialCameraInputsManager(this);
         this.inputs.addMouse().addMouseWheel().addKeyboard();
@@ -170,10 +170,10 @@ export class GeospatialCamera extends Camera {
         this._checkLimits();
 
         // Refresh local basis at center (treat these as read-only for the whole call)
-        ComputeLocalBasisToRefs(this._center, this._tempEast, this._tempNorth, this._tempUp, this._scene.useRightHandedSystem);
+        ComputeLocalBasisToRefs(this._center, this._tempEast, this._tempNorth, this._tempUp, this._scene.useRightHandedSystem, this.movement.calculateUpVectorFromPoint);
 
         // Compute lookAt from yaw/pitch
-        ComputeLookAtFromYawPitchToRef(this._yaw, this._pitch, this._center, this._scene.useRightHandedSystem, this._lookAtVector);
+        ComputeLookAtFromYawPitchToRef(this._yaw, this._pitch, this._center, this._scene.useRightHandedSystem, this._lookAtVector, this.movement.calculateUpVectorFromPoint);
 
         // Build an orthonormal up aligned with geocentric Up
         // When looking straight down (pitch ≈ 0), lookAt is parallel to Up, so use the horizontal direction as the camera's up.
@@ -517,7 +517,14 @@ export class GeospatialCamera extends Camera {
                     if (newRadius > Epsilon) {
                         // Compute yaw/pitch that correspond to current lookAt at new center
                         const yawPitch = TmpVectors.Vector2[0];
-                        ComputeYawPitchFromLookAtToRef(this._lookAtVector, newCenter.pickedPoint, this._scene.useRightHandedSystem, this._yaw, yawPitch);
+                        ComputeYawPitchFromLookAtToRef(
+                            this._lookAtVector,
+                            newCenter.pickedPoint,
+                            this._scene.useRightHandedSystem,
+                            this._yaw,
+                            yawPitch,
+                            this.movement.calculateUpVectorFromPoint
+                        );
 
                         // Call _setOrientation with the computed yaw/pitch and new center
                         this._setOrientation(yawPitch.x, yawPitch.y, newRadius, newCenter.pickedPoint);
@@ -588,14 +595,21 @@ RegisterClass("BABYLON.GeospatialCamera", GeospatialCamera);
  * @param center - The center point on the globe
  * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
  * @param result - The vector to store the result in
+ * @param calculateUpVectorFromPoint - Optional function to calculate the up vector from a point, allowing for non-spherical planets. If not supplied, a perfect sphere is assumed and the up vector is just the normalized center point.
  * @returns The normalized lookAt direction vector (same as result)
  */
-export function ComputeLookAtFromYawPitchToRef(yaw: number, pitch: number, center: Vector3, useRightHandedSystem: boolean, result: Vector3): Vector3 {
+export function ComputeLookAtFromYawPitchToRef(
+    yaw: number,
+    pitch: number,
+    center: Vector3,
+    useRightHandedSystem: boolean,
+    result: Vector3,
+    calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3
+): Vector3 {
     const east = TmpVectors.Vector3[0];
     const north = TmpVectors.Vector3[1];
     const up = TmpVectors.Vector3[2];
-    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem);
-
+    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem, calculateUpVectorFromPoint);
     const sinPitch = Math.sin(pitch);
     const cosPitch = Math.cos(pitch);
 
@@ -622,14 +636,22 @@ export function ComputeLookAtFromYawPitchToRef(yaw: number, pitch: number, cente
  * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
  * @param currentYaw - The current yaw value to use as fallback when pitch is near 0 (looking straight down/up)
  * @param result - The Vector2 to store the result in (x = yaw, y = pitch)
+ * @param calculateUpVectorFromPoint - Optional function to calculate the up vector from a point. If supplied, this function will be used instead of assuming a spherical geocentric normal, allowing support for non-spherical planets or custom up vector logic.
  * @returns The result Vector2
  */
-export function ComputeYawPitchFromLookAtToRef(lookAt: Vector3, center: Vector3, useRightHandedSystem: boolean, currentYaw: number, result: Vector2): Vector2 {
+export function ComputeYawPitchFromLookAtToRef(
+    lookAt: Vector3,
+    center: Vector3,
+    useRightHandedSystem: boolean,
+    currentYaw: number,
+    result: Vector2,
+    calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3
+): Vector2 {
     // Compute local basis at center
     const east = TmpVectors.Vector3[6];
     const north = TmpVectors.Vector3[7];
     const up = TmpVectors.Vector3[8];
-    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem);
+    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem, calculateUpVectorFromPoint);
 
     // lookAt = horiz*sinPitch - up*cosPitch
     // where horiz = north*cos(yaw) + east*sin(yaw)

@@ -62,6 +62,18 @@ export class GeospatialCameraMovement extends CameraMovement {
         this.zoomSpeed = 2; // Base zoom speed; actual speed is scaled based on altitude
     }
 
+    /**
+     * Function to calculate the up vector from a given point.
+     * Can be overridden to support non-spherical planets or custom up vector logic.
+     * Defaults to using the geocentric normal.
+     * @param point The point from which to calculate the up vector (e.g., camera position)
+     * @param result The vector to store the calculated up vector
+     * @returns The calculated up vector
+     */
+    public calculateUpVectorFromPoint(point: Vector3, result: Vector3): Vector3 {
+        return point.normalizeToRef(result);
+    }
+
     public startDrag(pointerX: number, pointerY: number) {
         const pickResult = this._scene.pick(pointerX, pointerY, this.pickPredicate);
         if (pickResult.pickedPoint && pickResult.ray) {
@@ -88,11 +100,18 @@ export class GeospatialCameraMovement extends CameraMovement {
      */
     private _recalculateDragPlaneHitPoint(hitPointRadius: number, ray: Ray, localToEcefResult: Matrix): void {
         // Use the camera's geocentric normal to find the dragPlaneOriginPoint which lives at hitPointRadius along the camera's geocentric normal
-        this._cameraPosition.normalizeToRef(this._dragPlaneNormal);
+        this.calculateUpVectorFromPoint(this._cameraPosition, this._dragPlaneNormal);
         this._dragPlaneNormal.scaleToRef(hitPointRadius, this._dragPlaneOriginPointEcef);
 
         // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
-        ComputeLocalBasisToRefs(this._dragPlaneOriginPointEcef, TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], this._scene.useRightHandedSystem);
+        ComputeLocalBasisToRefs(
+            this._dragPlaneOriginPointEcef,
+            TmpVectors.Vector3[0],
+            TmpVectors.Vector3[1],
+            TmpVectors.Vector3[2],
+            this._scene.useRightHandedSystem,
+            this.calculateUpVectorFromPoint
+        );
         const localToEcef = Matrix.FromXYZAxesToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2], localToEcefResult);
         localToEcef.setTranslationFromFloats(this._dragPlaneOriginPointEcef.x, this._dragPlaneOriginPointEcef.y, this._dragPlaneOriginPointEcef.z);
         const ecefToLocal = localToEcef.invertToRef(TmpVectors.Matrix[1]);
@@ -143,7 +162,10 @@ export class GeospatialCameraMovement extends CameraMovement {
             const centerRadius = cameraCenter.length(); // distance from planet origin to camera center
             const currentRadius = this._cameraPosition.length();
             // Dampen the pan speed based on latitude (slower near poles)
-            const sineOfSphericalLat = centerRadius === 0 ? 0 : cameraCenter.z / centerRadius;
+            const upAtCenter = TmpVectors.Vector3[7];
+            this.calculateUpVectorFromPoint(cameraCenter, upAtCenter);
+            // Latitude is derived from the Z component of the up vector (ECEF convention: Z = polar axis)
+            const sineOfSphericalLat = upAtCenter.z;
             const cosOfSphericalLat = Math.sqrt(1 - Math.min(1, sineOfSphericalLat * sineOfSphericalLat));
             const latitudeDampening = Math.sqrt(Math.abs(cosOfSphericalLat)); // sqrt here reduces effect near equator
 
@@ -241,11 +263,23 @@ function IntersectRayWithPlaneToRef(ray: Ray, plane: Plane, ref: Vector3): boole
  * @param refNorth - Receives the north direction
  * @param refUp - Receives the up (outward) direction
  * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system (default: false)
+ * @param calculateUpVectorFromPoint - Optional function to calculate the up vector from a point. If supplied, this function will be used instead of assuming a spherical geocentric normal, allowing support for non-spherical planets or custom up vector logic.
  * @internal
  */
-export function ComputeLocalBasisToRefs(worldPos: Vector3, refEast: Vector3, refNorth: Vector3, refUp: Vector3, useRightHandedSystem: boolean = false) {
-    // up = normalized position (geocentric normal)
-    refUp.copyFrom(worldPos).normalize();
+export function ComputeLocalBasisToRefs(
+    worldPos: Vector3,
+    refEast: Vector3,
+    refNorth: Vector3,
+    refUp: Vector3,
+    useRightHandedSystem: boolean = false,
+    calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3
+): void {
+    if (calculateUpVectorFromPoint) {
+        calculateUpVectorFromPoint(worldPos, refUp);
+    } else {
+        // up = normalized position (geocentric normal)
+        refUp.copyFrom(worldPos).normalize();
+    }
 
     // east – cross product order determines handedness
     const worldNorth = Vector3.LeftHandedForwardReadOnly; // (0,0,1)

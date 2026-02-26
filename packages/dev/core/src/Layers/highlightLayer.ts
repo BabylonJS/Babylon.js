@@ -112,7 +112,12 @@ class GlowBlurPostProcess extends PostProcess {
  * Highlight layer options. This helps customizing the behaviour
  * of the highlight layer.
  */
-export interface IHighlightLayerOptions extends IThinHighlightLayerOptions {}
+export interface IHighlightLayerOptions extends IThinHighlightLayerOptions {
+    /**
+     * Whether or not to generate a stencil buffer. Default: false
+     */
+    generateStencilBuffer?: boolean;
+}
 
 /**
  * The highlight layer Helps adding a glow effect around a mesh.
@@ -195,6 +200,26 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
+     * Number of stencil bits used by the highlight layer (default: 8).
+     * The layer uses the numStencilBits highest bits of the stencil buffer.
+     */
+    @serialize()
+    public get numStencilBits(): number {
+        return this._thinEffectLayer.numStencilBits;
+    }
+
+    public set numStencilBits(value: number) {
+        this._thinEffectLayer.numStencilBits = value;
+    }
+
+    /**
+     * Gets the stencil reference value used for the meshes rendered by the highlight layer.
+     */
+    public get stencilReference(): number {
+        return this._thinEffectLayer.stencilReference;
+    }
+
+    /**
      * An event triggered when the highlight layer is being blurred.
      */
     public onBeforeBlurObservable = new Observable<HighlightLayer>();
@@ -241,6 +266,7 @@ export class HighlightLayer extends EffectLayer {
             mainTextureFormat: Constants.TEXTUREFORMAT_RGBA,
             forceGLSL: false,
             isStroke: false,
+            generateStencilBuffer: false,
             ...options,
         };
 

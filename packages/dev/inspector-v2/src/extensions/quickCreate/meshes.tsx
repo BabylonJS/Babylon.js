@@ -11,6 +11,9 @@ import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLi
 import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { QuickCreateSection, QuickCreateRow, QuickCreateItem } from "./quickCreateLayout";
 import type { ISelectionService } from "../../services/selectionService";
+import { registerBuiltInLoaders } from "loaders/dynamic";
+
+registerBuiltInLoaders();
 
 const SetCamera = function (scene: Scene) {
     const camera = scene.activeCamera as ArcRotateCamera;

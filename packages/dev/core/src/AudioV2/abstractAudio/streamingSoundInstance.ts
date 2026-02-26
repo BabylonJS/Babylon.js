@@ -11,7 +11,7 @@ export interface IStreamingSoundInstanceOptions extends IAbstractSoundInstanceOp
 
 /** @internal */
 export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {
-    private _rejectPreloadedProimse: (reason?: any) => void;
+    private _rejectPreloadedPromise: (reason?: any) => void;
     private _resolvePreloadedPromise: () => void;
 
     protected abstract override readonly _options: IStreamingSoundInstanceOptions;
@@ -21,14 +21,14 @@ export abstract class _StreamingSoundInstance extends _AbstractSoundInstance {
 
     /** @internal */
     public readonly preloadedPromise = new Promise<void>((resolve, reject) => {
-        this._rejectPreloadedProimse = reject;
+        this._rejectPreloadedPromise = reject;
         this._resolvePreloadedPromise = resolve;
     });
 
     protected constructor(sound: StreamingSound) {
         super(sound);
 
-        this.onErrorObservable.add(this._rejectPreloadedProimse);
+        this.onErrorObservable.add(this._rejectPreloadedPromise);
         this.onReadyObservable.add(this._resolvePreloadedPromise);
     }
 
