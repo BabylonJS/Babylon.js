@@ -207,7 +207,13 @@ export const MeshesContent: FunctionComponent<{ scene: Scene; selectionService: 
         event.target.value = "";
     };
 
-    const supportedModelExtensions = GetRegisteredSceneLoaderPluginMetadata().flatMap((plugin) => plugin.extensions.map((extension) => extension.extension));
+    // Note: GetRegisteredSceneLoaderPluginMetadata includes extensions from all loaders,
+    // including `.json` from the SPLAT loader, which is used for SOG (Sparse Octree Gaussian)
+    // metadata files. To avoid suggesting that arbitrary JSON files can be imported as meshes,
+    // we explicitly filter out the generic `.json` extension here.
+    const supportedModelExtensions = GetRegisteredSceneLoaderPluginMetadata()
+        .flatMap((plugin) => plugin.extensions.map((extension) => extension.extension))
+        .filter((extension) => extension.toLowerCase() !== ".json");
 
     return (
         <QuickCreateSection>
