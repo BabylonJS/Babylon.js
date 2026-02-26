@@ -1802,19 +1802,26 @@ export class Viewer implements IDisposable {
         const abortController = (this._shadowsAbortController = new AbortController());
 
         await this._updateShadowsLock.lockAsync(async () => {
-            if (this._shadowQuality === "none") {
-                this._disposeShadows();
-            } else {
-                // make sure there is an env light before creating shadows
-                if (!this._reflectionTexture) {
-                    await this.loadEnvironment("auto", { lighting: true, skybox: false });
-                }
+            this._snapshotHelper?.disableSnapshotRendering();
 
-                if (this._shadowQuality === "normal") {
-                    await this._updateShadowMap(abortController.signal);
-                } else if (this._shadowQuality === "high") {
-                    await this._updateEnvShadow(abortController.signal);
+            try {
+                if (this._shadowQuality === "none") {
+                    this._disposeShadows();
+                } else {
+                    // make sure there is an env light before creating shadows
+                    if (!this._reflectionTexture) {
+                        await this.loadEnvironment("auto", { lighting: true, skybox: false });
+                    }
+
+                    if (this._shadowQuality === "normal") {
+                        await this._updateShadowMap(abortController.signal);
+                    } else if (this._shadowQuality === "high") {
+                        await this._updateEnvShadow(abortController.signal);
+                    }
                 }
+            } finally {
+                this._snapshotHelper?.enableSnapshotRendering();
+                this._markSceneMutated();
             }
         });
     }

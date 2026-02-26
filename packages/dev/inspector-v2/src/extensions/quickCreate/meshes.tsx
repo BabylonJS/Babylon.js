@@ -12,6 +12,7 @@ import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { QuickCreateSection, QuickCreateRow, QuickCreateItem } from "./quickCreateLayout";
 import type { ISelectionService } from "../../services/selectionService";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+import { GetRegisteredSceneLoaderPluginMetadata } from "core/Loading/sceneLoader";
 
 registerBuiltInLoaders();
 
@@ -205,6 +206,8 @@ export const MeshesContent: FunctionComponent<{ scene: Scene; selectionService: 
 
         event.target.value = "";
     };
+
+    const supportedModelExtensions = GetRegisteredSceneLoaderPluginMetadata().flatMap((plugin) => plugin.extensions.map((extension) => extension.extension));
 
     return (
         <QuickCreateSection>
@@ -422,14 +425,7 @@ export const MeshesContent: FunctionComponent<{ scene: Scene; selectionService: 
                         />
                     </div>
                 </SettingsPopover>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".babylon,.glb,.gltf,.obj,.stl,.ply,.mesh,.babylonmeshdata"
-                    multiple
-                    style={{ display: "none" }}
-                    onChange={handleLocalMeshImport}
-                />
+                <input ref={fileInputRef} type="file" accept={`${supportedModelExtensions.join(",")}`} multiple style={{ display: "none" }} onChange={handleLocalMeshImport} />
             </QuickCreateRow>
         </QuickCreateSection>
     );
