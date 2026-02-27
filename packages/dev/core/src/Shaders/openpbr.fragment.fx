@@ -58,8 +58,6 @@ precision highp float;
     #include<reflectionFunction>
 #endif
 
-uniform vec2 renderTargetSize;
-
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
 #include<openpbrDielectricReflectance>
