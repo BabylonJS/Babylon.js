@@ -256,7 +256,7 @@ test('shadow-quality="high"', async ({ page }) => {
 
     // Wait for the viewerDetails property to become defined
     await page.waitForFunction((viewerElement) => {
-        // For now, we'll just rely on the common per-test validation that there are now unhandled page errors or console errors.
+        // For now, we'll just rely on the common per-test validation that there are no unhandled page errors or console errors.
         return (viewerElement as ViewerElement).viewerDetails;
     }, viewerElementHandle);
 });
