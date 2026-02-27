@@ -64,10 +64,12 @@ import { ImageProcessingMixin } from "../imageProcessing";
 import { PushMaterial } from "../pushMaterial";
 import { SmartArray } from "../../Misc/smartArray";
 import type { RenderTargetTexture } from "../Textures/renderTargetTexture";
+import { ThinTexture } from "../Textures/thinTexture";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 import { Tools } from "../../Misc/tools";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer";
+import type { FrameGraphGeometryRendererTask } from "core/FrameGraph/Tasks/Rendering/geometryRendererTask";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -210,7 +212,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
     public IBL_CDF_FILTERING = false;
-
+    public LIGHTCOUNT = 0;
     public VERTEXCOLOR = false;
 
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
@@ -2490,13 +2492,38 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 }
 
                 if (defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING) {
+                    let sceneIrradianceTexture: Nullable<ThinTexture> = null;
+                    let sceneDepthTexture: Nullable<ThinTexture> = null;
+                    let renderTargetWidth = 0;
+                    let renderTargetHeight = 0;
+
                     if (scene.geometryBufferRenderer) {
                         const irradianceTextureIndex = scene.geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE);
-                        const sceneIrradianceTexture = scene.geometryBufferRenderer.getGBuffer().textures[irradianceTextureIndex];
-                        ubo.setTexture("sceneIrradianceSampler", sceneIrradianceTexture);
+                        sceneIrradianceTexture = scene.geometryBufferRenderer.getGBuffer().textures[irradianceTextureIndex];
+                        renderTargetWidth = sceneIrradianceTexture.getSize().width;
+                        renderTargetHeight = sceneIrradianceTexture.getSize().height;
                         const depthIndex = scene.geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.SCREENSPACE_DEPTH_TEXTURE_TYPE);
-                        ubo.setTexture("sceneDepthSampler", scene.geometryBufferRenderer.getGBuffer().textures[depthIndex]);
-                        ubo.updateFloat2("renderTargetSize", sceneIrradianceTexture.getSize().width, sceneIrradianceTexture.getSize().height);
+                        sceneDepthTexture = scene.geometryBufferRenderer.getGBuffer().textures[depthIndex];
+                    } else if (scene.frameGraph) {
+                        const geometryRendererTask = scene.frameGraph.getTasksByClassName<FrameGraphGeometryRendererTask>("FrameGraphGeometryRendererTask")[0];
+
+                        if (geometryRendererTask) {
+                            const frameGraphIrradianceTexture = scene.frameGraph.textureManager.getTextureFromHandle(geometryRendererTask.geometryIrradianceTexture);
+                            const frameGraphDepthTexture = scene.frameGraph.textureManager.getTextureFromHandle(geometryRendererTask.geometryScreenDepthTexture);
+
+                            if (frameGraphIrradianceTexture && frameGraphDepthTexture) {
+                                sceneIrradianceTexture = new ThinTexture(frameGraphIrradianceTexture);
+                                sceneDepthTexture = new ThinTexture(frameGraphDepthTexture);
+                                renderTargetWidth = frameGraphIrradianceTexture.width;
+                                renderTargetHeight = frameGraphIrradianceTexture.height;
+                            }
+                        }
+                    }
+
+                    if (sceneIrradianceTexture && sceneDepthTexture) {
+                        ubo.setTexture("sceneIrradianceSampler", sceneIrradianceTexture);
+                        ubo.setTexture("sceneDepthSampler", sceneDepthTexture);
+                        ubo.updateFloat2("renderTargetSize", renderTargetWidth, renderTargetHeight);
                     }
                 }
             }
@@ -3128,8 +3155,22 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         defines.TRANSMISSION_SLAB = this.transmissionWeight > 0;
         defines.TRANSMISSION_SLAB_VOLUME = this.transmissionWeight > 0 && this.transmissionDepth > 0;
         defines.SUBSURFACE_SLAB = this.subsurfaceWeight > 0;
-        if (scene.geometryBufferRenderer && scene.geometryBufferRenderer.enableIrradiance && (defines.SUBSURFACE_SLAB || defines.TRANSMISSION_SLAB_VOLUME)) {
-            defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = true;
+        // Determine whether we should use the prepass irradiance texture for scattering.
+        // If this IS a prepass, we don't want to use the irradiance texture as it won't be available yet.
+        if (!defines.PREPASS && (defines.SUBSURFACE_SLAB || defines.TRANSMISSION_SLAB_VOLUME)) {
+            if (scene.geometryBufferRenderer && scene.geometryBufferRenderer.enableIrradiance) {
+                defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = true;
+            } else if (scene.frameGraph) {
+                const geometryRendererTask = scene.frameGraph.getTasksByClassName<FrameGraphGeometryRendererTask>("FrameGraphGeometryRendererTask")[0];
+                if (geometryRendererTask) {
+                    const frameGraphIrradianceTexture = scene.frameGraph.textureManager.getTextureFromHandle(geometryRendererTask.geometryIrradianceTexture);
+                    const frameGraphDepthTexture = scene.frameGraph.textureManager.getTextureFromHandle(geometryRendererTask.geometryScreenDepthTexture);
+
+                    if (frameGraphIrradianceTexture && frameGraphDepthTexture) {
+                        defines.USE_IRRADIANCE_TEXTURE_FOR_SCATTERING = true;
+                    }
+                }
+            }
         }
         defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;
         defines.GEOMETRY_THIN_WALLED = this.geometryThinWalled != 0;
