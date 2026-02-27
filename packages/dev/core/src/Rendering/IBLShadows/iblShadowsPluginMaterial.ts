@@ -89,10 +89,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
 
     public override getUniforms(_shaderLanguage: ShaderLanguage) {
         const result: any = {};
-        result.ubo = [
-            { name: "renderTargetSize", size: 2, type: "vec2" },
-            { name: "shadowOpacity", size: 1, type: "float" },
-        ];
+        result.ubo = [];
         if (this._material instanceof OpenPBRMaterial) {
             if (_shaderLanguage === ShaderLanguage.WGSL) {
                 result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
@@ -104,6 +101,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                 #endif`;
             }
         } else {
+            result.ubo.push({ name: "renderTargetSize", size: 2, type: "vec2" });
             if (_shaderLanguage === ShaderLanguage.WGSL) {
                 result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
                     var renderTargetSize: vec2f;
@@ -116,6 +114,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                 #endif`;
             }
         }
+        result.ubo.push({ name: "shadowOpacity", size: 1, type: "float" });
         return result;
     }
 
