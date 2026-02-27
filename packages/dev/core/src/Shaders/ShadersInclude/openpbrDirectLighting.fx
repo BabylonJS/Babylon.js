@@ -288,8 +288,10 @@
         vec3 fuzz_color = vec3(0.0);
     #endif
 
-    slab_diffuse *= base_color.rgb;
-    vec3 material_dielectric_base = mix(slab_diffuse, slab_translucent, surface_translucency_weight);
+    #ifdef PREPASS_IRRADIANCE
+        total_direct_diffuse += slab_diffuse;
+    #endif
+    vec3 material_dielectric_base = mix(slab_diffuse * base_color.rgb, slab_translucent, surface_translucency_weight);
     vec3 material_dielectric_gloss = material_dielectric_base * (1.0 - specularFresnel) + slab_glossy * specularColoredFresnel;
     vec3 material_base_substrate = mix(material_dielectric_gloss, slab_metal, base_metalness);
     vec3 material_coated_base = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3(1.0));

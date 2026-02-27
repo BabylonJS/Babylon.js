@@ -79,6 +79,10 @@ vec3 layer(vec3 slab_bottom, vec3 slab_top, float lerp_factor, vec3 bottom_multi
 // _____________________________ MAIN FUNCTION ____________________________
 void main(void) {
 
+    #ifdef PREPASS_IRRADIANCE
+        vec3 total_direct_diffuse = vec3(0.0);
+    #endif
+
     #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
     #include<clipPlaneFragment>
@@ -386,7 +390,7 @@ void main(void) {
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef PREPASS
-    #include<pbrBlockPrePass>
+    #include<openpbrBlockPrePass>
 #endif
 
 #if !defined(PREPASS) || defined(WEBGL2)

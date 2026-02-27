@@ -402,8 +402,6 @@
         #endif
     #endif
     
-    slab_diffuse_ibl *= base_color.rgb;
-
     // _____________________________ IBL Material Layer Composition ______________________________________
     #define CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION
     slab_diffuse_ibl *= ambient_occlusion;
@@ -411,7 +409,7 @@
     slab_glossy_ibl *= specular_ambient_occlusion;
     slab_coat_ibl *= coat_specular_ambient_occlusion;
 
-    let material_dielectric_base_ibl: vec3f = mix(slab_diffuse_ibl, slab_translucent_base_ibl, surface_translucency_weight);
+    let material_dielectric_base_ibl: vec3f = mix(slab_diffuse_ibl * base_color.rgb, slab_translucent_base_ibl, surface_translucency_weight);
     let material_dielectric_gloss_ibl: vec3f = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     let material_base_substrate_ibl: vec3f = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     let material_coated_base_ibl: vec3f = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3f(1.0f));

@@ -389,8 +389,8 @@ export const OpenPBRMaterialSubsurfaceProperties: FunctionComponent<{ material: 
                 target={material}
                 propertyKey="subsurfaceRadius"
                 min={0}
-                max={1}
-                step={0.0001}
+                max={2}
+                step={0.00001}
                 convertTo={(value) => value * 100}
                 convertFrom={(value) => value / 100}
                 description="Controls how soft and spread-out the subsurface look appears."
