@@ -477,6 +477,13 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * Disposes of the plugin resources
      */
     public dispose() {
+        if (this._worker) {
+            // Clear handlers and terminate the worker to avoid leaks
+            this._worker.onmessage = null;
+            // Clear other handlers if they were used
+            (this._worker as any).onerror = null;
+            this._worker.terminate();
+        }
         this._worker = null;
     }
 
