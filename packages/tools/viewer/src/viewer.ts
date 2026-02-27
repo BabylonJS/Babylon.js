@@ -60,9 +60,6 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 
-const WebGPUSnapshotRenderingEnabled = true;
-const WebGPUSnapshotRenderingLoggingEnabled = false;
-
 // eslint-disable-next-line @typescript-eslint/promise-function-async
 const LazySSAODependenciesPromise = new Lazy(() =>
     Promise.all([
@@ -73,6 +70,31 @@ const LazySSAODependenciesPromise = new Lazy(() =>
         import("core/Engines/WebGPU/Extensions/engine.multiRender"),
     ])
 );
+
+const WebGPUSnapshotRenderingEnabled = true;
+const WebGPUSnapshotRenderingLoggingEnabled = false;
+// Logger.LogLevels = Logger.AllLogLevel;
+
+// TODO: Consider moving this to core after the 9.0 release.
+async function WhenNext<T>(observable: Observable<T>, abortSignal: AbortSignal): Promise<T> {
+    return await new Promise<T>((resolve, reject) => {
+        if (abortSignal.aborted) {
+            reject(new AbortError("Aborted"));
+            return;
+        }
+
+        const observer = observable.addOnce((payload) => {
+            abortSignal.removeEventListener("abort", onAbort);
+            resolve(payload);
+        });
+
+        const onAbort = () => {
+            observer.remove();
+            reject(new AbortError("Aborted"));
+        };
+        abortSignal.addEventListener("abort", onAbort, { once: true });
+    });
+}
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
@@ -901,6 +923,9 @@ export class Viewer implements IDisposable {
     private readonly _updateShadowsLock = new AsyncLock();
     private _shadowsAbortController: Nullable<AbortController> = null;
 
+    private readonly _updateSSAOLock = new AsyncLock();
+    private _ssaoAbortController: Nullable<AbortController> = null;
+
     private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
 
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
@@ -1303,40 +1328,56 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private async _enableSSAOPipeline() {
+    private async _enableSSAOPipeline(abortSignal: AbortSignal) {
         if (!this._ssaoPipeline) {
             const [{ SSAO2RenderingPipeline }] = await LazySSAODependenciesPromise.value;
+            this._throwIfDisposedOrAborted(abortSignal);
 
-            if (!this._ssaoPipeline) {
-                this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.add((pipeline) => {
-                    if (pipeline.name === "ssao") {
-                        this.onPostProcessingChanged.notifyObservers();
-                    }
-                });
-                this._scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.add((pipeline) => {
-                    if (pipeline.name === "ssao") {
-                        this.onPostProcessingChanged.notifyObservers();
-                    }
-                });
-            }
+            this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.addOnce((pipeline) => {
+                if (pipeline.name === "ssao") {
+                    this.onPostProcessingChanged.notifyObservers();
+                }
+            });
+
+            this._scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.addOnce((pipeline) => {
+                if (pipeline.name === "ssao") {
+                    this.onPostProcessingChanged.notifyObservers();
+                }
+            });
 
             const ssaoRatio = {
                 ssaoRatio: 1,
                 blurRatio: 1,
             };
-            this._ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
-            const worldBounds = this._getWorldBounds(this._loadedModels);
-            if (this._ssaoPipeline && worldBounds) {
-                const size = Vector3.FromArray(worldBounds.size).length();
-                this._ssaoPipeline.expensiveBlur = true;
-                this._ssaoPipeline.maxZ = size * 2;
-                // arbitrary max size to cap SSAO settings
-                const maxSceneSize = 50;
-                this._ssaoPipeline.radius = Clamp(Lerp(1, 5, Clamp((size - 1) / maxSceneSize, 0, 1)), 1, 5);
-                this._ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
-                this._ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
+
+            let ssaoPipeline: Nullable<SSAO2RenderingPipeline> = null;
+            try {
+                ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
+                const worldBounds = this._getWorldBounds(this._loadedModels);
+                if (worldBounds) {
+                    const size = Vector3.FromArray(worldBounds.size).length();
+                    ssaoPipeline.expensiveBlur = true;
+                    ssaoPipeline.maxZ = size * 2;
+                    // arbitrary max size to cap SSAO settings
+                    const maxSceneSize = 50;
+                    ssaoPipeline.radius = Clamp(Lerp(1, 5, Clamp((size - 1) / maxSceneSize, 0, 1)), 1, 5);
+                    ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
+                    ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
+                }
+
+                // Wait for the SSAO pipeline to be ready before attaching it to the camera.
+                while (!ssaoPipeline.isReady()) {
+                    // eslint-disable-next-line no-await-in-loop
+                    await WhenNext(this._scene.onAfterRenderObservable, abortSignal);
+                }
+
+                this._throwIfDisposedOrAborted(abortSignal);
+                this._ssaoPipeline = ssaoPipeline;
+                this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
+            } catch (error) {
+                ssaoPipeline?.dispose();
+                throw error;
             }
-            this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
         }
     }
 
@@ -1350,20 +1391,30 @@ export class Viewer implements IDisposable {
     }
 
     protected _updateSSAOPipeline() {
-        let shouldEnable = this._ssaoOption === "enabled";
+        observePromise(
+            (async () => {
+                this._ssaoAbortController?.abort(new AbortError("SSAO is being changed before previous SSAO finished initializing."));
+                this._ssaoAbortController = new AbortController();
+                const abortSignal = this._ssaoAbortController.signal;
 
-        if (this._ssaoOption === "auto") {
-            const hasModels = this._loadedModels.length > 0;
-            const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
-            const ibleShadowsEnabled = this._shadowQuality === "high";
-            shouldEnable = hasModels && !hasMaterials && !ibleShadowsEnabled;
-        }
+                await this._updateSSAOLock.lockAsync(async () => {
+                    let shouldEnable = this._ssaoOption === "enabled";
 
-        if (shouldEnable) {
-            observePromise(this._enableSSAOPipeline());
-        } else {
-            this._disableSSAOPipeline();
-        }
+                    if (this._ssaoOption === "auto") {
+                        const hasModels = this._loadedModels.length > 0;
+                        const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
+                        const ibleShadowsEnabled = this._shadowQuality === "high";
+                        shouldEnable = hasModels && !hasMaterials && !ibleShadowsEnabled;
+                    }
+
+                    if (shouldEnable) {
+                        await this._enableSSAOPipeline(abortSignal);
+                    } else {
+                        this._disableSSAOPipeline();
+                    }
+                });
+            })()
+        );
     }
 
     /**
@@ -1747,23 +1798,30 @@ export class Viewer implements IDisposable {
     }
 
     protected async _updateShadows() {
-        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being change before previous shadows finished initializing."));
+        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being changed before previous shadows finished initializing."));
         const abortController = (this._shadowsAbortController = new AbortController());
 
         await this._updateShadowsLock.lockAsync(async () => {
-            if (this._shadowQuality === "none") {
-                this._disposeShadows();
-            } else {
-                // make sure there is an env light before creating shadows
-                if (!this._reflectionTexture) {
-                    await this.loadEnvironment("auto", { lighting: true, skybox: false });
-                }
+            this._snapshotHelper?.disableSnapshotRendering();
 
-                if (this._shadowQuality === "normal") {
-                    await this._updateShadowMap(abortController.signal);
-                } else if (this._shadowQuality === "high") {
-                    await this._updateEnvShadow(abortController.signal);
+            try {
+                if (this._shadowQuality === "none") {
+                    this._disposeShadows();
+                } else {
+                    // make sure there is an env light before creating shadows
+                    if (!this._reflectionTexture) {
+                        await this.loadEnvironment("auto", { lighting: true, skybox: false });
+                    }
+
+                    if (this._shadowQuality === "normal") {
+                        await this._updateShadowMap(abortController.signal);
+                    } else if (this._shadowQuality === "high") {
+                        await this._updateEnvShadow(abortController.signal);
+                    }
                 }
+            } finally {
+                this._snapshotHelper?.enableSnapshotRendering();
+                this._markSceneMutated();
             }
         });
     }
@@ -2516,6 +2574,7 @@ export class Viewer implements IDisposable {
         this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._camerasAsHotSpotsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._shadowsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._ssaoAbortController?.abort(new AbortError("Thew viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
@@ -2695,13 +2754,15 @@ export class Viewer implements IDisposable {
         // 3. The snapshot helper is not yet in a ready state.
         // 4. The classic shadows are not yet in a ready state.
         // 5. The environment shadows are not yet in a ready state.
-        // 6. At least one model should render (playing animations).
+        // 6. The SSAO pipeline is not yet in a ready state.
+        // 7. At least one model should render (playing animations).
         return (
             !this._autoSuspendRendering ||
             this._sceneMutated ||
-            !this._snapshotHelper?.isReady ||
+            this._snapshotHelper?.isReady === false ||
             this._shadowState.normal?.shouldRender ||
             this._shadowState.high?.shouldRender ||
+            this._ssaoPipeline?.isReady() === false ||
             this._loadedModelsBacking.some((model) => model._shouldRender())
         );
     }

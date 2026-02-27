@@ -19,6 +19,7 @@ import { Constants } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+import "../../../Rendering/geometryBufferRendererSceneComponent";
 import { ThinSSAO2RenderingPipeline } from "./thinSSAO2RenderingPipeline";
 import { ThinSSAO2PostProcess } from "../../thinSSAO2PostProcess";
 import type { ISize } from "../../../Maths/math.size";

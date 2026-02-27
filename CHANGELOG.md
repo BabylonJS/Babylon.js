@@ -1,5 +1,23 @@
 # Changelog
 
+## 8.33.0
+
+### Core
+
+- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
+
+### Inspector
+
+- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
+
+### Loaders
+
+- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
+
+### Serializers
+
+- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
+
 ## 8.32.3
 
 ### Core
@@ -5394,6 +5412,36 @@
 
 - Mesh extrusion: Add an optional scaleVectorFunction parameter to ExtrudeShapeCustom - by [Popov72](https://github.com/Popov72) ([#17752](https://github.com/BabylonJS/Babylon.js/pull/17752))
 
+## 8.53.0
+
+### Core
+
+- FrameGraph: process the custom render targets defined at scene level - by [Popov72](https://github.com/Popov72) ([#17970](https://github.com/BabylonJS/Babylon.js/pull/17970))
+- Simplify IsLightSupported method by removing redundant else keywords - by [github-actions[bot]](https://github.com/apps/github-actions) ([#17969](https://github.com/BabylonJS/Babylon.js/pull/17969))
+- Fix clusteredLighting bug when setting depthSlices to a value below initial value - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17967](https://github.com/BabylonJS/Babylon.js/pull/17967))
+- Removing fresnel block - by [VicenteCartas](https://github.com/VicenteCartas) ([#17965](https://github.com/BabylonJS/Babylon.js/pull/17965))
+- Inspector v2: Fix race conditions in back compat for entity selection and property pane highlighting - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17963](https://github.com/BabylonJS/Babylon.js/pull/17963))
+- Fix files that rely on an extension that they do not import - by [AmoebaChant](https://github.com/AmoebaChant) ([#17962](https://github.com/BabylonJS/Babylon.js/pull/17962))
+- Rendering Pipelines: add a isReady method to SSR and SSAO2 pipelines - by [Popov72](https://github.com/Popov72) ([#17958](https://github.com/BabylonJS/Babylon.js/pull/17958))
+- Fix keyboard input DPR bug and expose overrideable up vector calc - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17956](https://github.com/BabylonJS/Babylon.js/pull/17956))
+- Highlight Layer: Ensure that the highlight layer works well with custom use of the stencil buffer - by [Popov72](https://github.com/Popov72) ([#17934](https://github.com/BabylonJS/Babylon.js/pull/17934))
+- NullEngine: createTexture: added buffer to internal texture - by [bkargerooom](https://github.com/bkargerooom) ([#17952](https://github.com/BabylonJS/Babylon.js/pull/17952))
+- Removing Ramp/Remap - by [VicenteCartas](https://github.com/VicenteCartas) ([#17943](https://github.com/BabylonJS/Babylon.js/pull/17943))
+- Fixing number math block - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17948](https://github.com/BabylonJS/Babylon.js/pull/17948))
+- WebGPU: Fix crash when enabling reflection fresnel and falloff in the background material - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17950](https://github.com/BabylonJS/Babylon.js/pull/17950))
+- WebGPU: Fix wrong buffer capacity - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17949](https://github.com/BabylonJS/Babylon.js/pull/17949))
+- Fix some issues in the audio V2 code - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#17951](https://github.com/BabylonJS/Babylon.js/pull/17951))
+- Viewer: Shadow bug fixes - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17946](https://github.com/BabylonJS/Babylon.js/pull/17946))
+
+### Playground
+
+- Phantom files in some scenarios - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17966](https://github.com/BabylonJS/Babylon.js/pull/17966))
+
+### Viewer
+
+- Viewer: Fix async timing bugs with SSAO - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17971](https://github.com/BabylonJS/Babylon.js/pull/17971))
+- Viewer: Shadow bug fixes - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17946](https://github.com/BabylonJS/Babylon.js/pull/17946))
+
 ## 8.52.1
 
 ### Core
@@ -6252,24 +6300,6 @@
 ### Playground
 
 - Playground: Fix tab handling regression from Monaco update - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17337](https://github.com/BabylonJS/Babylon.js/pull/17337))
-
-## 8.33.0
-
-### Core
-
-- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
-
-### Inspector
-
-- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
-
-### Loaders
-
-- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
-
-### Serializers
-
-- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
 
 ## 6.15.0
 

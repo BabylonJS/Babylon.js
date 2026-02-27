@@ -21,6 +21,7 @@ import { AxesViewer } from "core/Debug/axesViewer";
 import { TransformNode } from "core/Meshes/transformNode";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { StandardMaterial } from "core/Materials/standardMaterial";
+import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlock";
 
 export class PreviewManager {
     private _nodeParticleSystemSet: NodeParticleSystemSet;
@@ -178,6 +179,7 @@ export class PreviewManager {
                 }
                 this._particleSystemSet = particleSystemSet;
                 this._particleSystemSet.start();
+                this._updateCameraLimits();
                 this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node Particle System Set build successful", false));
             } catch (err) {
                 this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
@@ -198,6 +200,36 @@ export class PreviewManager {
 
                 void this._reconnectEmittersAsync(scene);
             }
+        }
+    }
+
+    private _updateCameraLimits() {
+        let smallestDiameter = Infinity;
+
+        for (const block of this._nodeParticleSystemSet.attachedBlocks) {
+            if (block instanceof MeshShapeBlock && block.mesh) {
+                const boundingInfo = block.mesh.getBoundingInfo();
+                if (boundingInfo) {
+                    // Use local-space radius since the mesh may live in a different scene
+                    // whose world matrix has not been computed
+                    const diameter = boundingInfo.boundingSphere.radius * 2;
+                    if (diameter > 0 && diameter < smallestDiameter) {
+                        smallestDiameter = diameter;
+                    }
+                }
+            }
+        }
+
+        if (smallestDiameter !== Infinity && smallestDiameter < 3) {
+            this._camera.lowerRadiusLimit = smallestDiameter;
+
+            // Increase wheel delta so zooming feels responsive at small scales
+            this._camera.wheelDeltaPercentage = 0.05;
+            this._camera.pinchDeltaPercentage = 0.05;
+        } else {
+            this._camera.lowerRadiusLimit = 3;
+            this._camera.wheelDeltaPercentage = 0.01;
+            this._camera.pinchDeltaPercentage = 0.01;
         }
     }
 

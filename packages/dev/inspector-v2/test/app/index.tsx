@@ -28,6 +28,7 @@ import { Texture } from "core/Materials/Textures/texture";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Button } from "gui/2D/controls/button";
 import { Sound } from "core/Audio/sound";
+import { AssetContainer } from "core/assetContainer";
 import { ShowInspector } from "../../src/inspector";
 // import "../../src/legacy/legacy";
 
@@ -54,9 +55,17 @@ const scene = new Scene(engine);
 
 let camera: Nullable<ArcRotateCamera> = null;
 
-const newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene);
-newSystem.name = "CPU particle system";
-newSystem.start();
+async function loadModelAsync() {
+    let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
+    assetContainer.addAllToScene();
+    return assetContainer;
+}
+
+function createParticleSystem() {
+    const newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene);
+    newSystem.name = "CPU particle system";
+    newSystem.start();
+}
 
 function createCamera() {
     camera?.dispose();
@@ -111,6 +120,8 @@ function createTestPBRSphere() {
     glass.albedoColor = new Color3(0.95, 0.95, 0.95);
 
     sphere.material = glass;
+
+    return sphere;
 }
 
 function createTestBoxes() {
@@ -198,9 +209,11 @@ async function createSound() {
 }
 
 (async () => {
-    let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
-    assetContainer.addAllToScene();
+    let assetContainer = await loadModelAsync();
     createCamera();
+
+    createParticleSystem();
+
     createPostProcess();
 
     await createPhysics();
@@ -208,7 +221,7 @@ async function createSound() {
     createGaussianSplatting();
 
     createTestBoxes();
-    createTestPBRSphere();
+    const sphere = createTestPBRSphere();
 
     createMaterials();
 
@@ -244,7 +257,9 @@ async function createSound() {
             }
         }
     });
+
+    // scene.debugLayer.show();
+    // scene.debugLayer.select(sphere);
 })();
 
 ShowInspector(scene);
-// scene.debugLayer.show();

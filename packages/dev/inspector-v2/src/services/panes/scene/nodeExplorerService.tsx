@@ -35,6 +35,7 @@ import { SceneContextIdentity } from "../../sceneContext";
 import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
+import { FindMainCamera, FindMainObjectRenderer } from "core/FrameGraph/frameGraphUtils";
 
 import "core/Rendering/boundingBoxRenderer";
 
@@ -220,6 +221,8 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
         });
 
+        const getActiveCamera = () => (scene.frameGraph ? FindMainCamera(scene.frameGraph) : scene.activeCamera);
+
         const activeCameraCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown) => entity instanceof Camera,
             order: DefaultCommandsOrder.CameraActive,
@@ -233,15 +236,27 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 return {
                     type: "toggle",
                     displayName: "Activate and Attach Controls",
-                    icon: () => (scene.activeCamera === camera ? <VideoFilled /> : <VideoRegular />),
+                    icon: () => {
+                        return getActiveCamera() === camera ? <VideoFilled /> : <VideoRegular />;
+                    },
                     get isEnabled() {
-                        return scene.activeCamera === camera;
+                        return getActiveCamera() === camera;
                     },
                     set isEnabled(enabled: boolean) {
-                        if (enabled && scene.activeCamera !== camera) {
-                            scene.activeCamera?.detachControl();
-                            scene.activeCamera = camera;
-                            camera.attachControl(true);
+                        const activeCamera = getActiveCamera();
+                        if (enabled && activeCamera !== camera) {
+                            activeCamera?.detachControl();
+                            if (scene.frameGraph) {
+                                const objectRenderer = FindMainObjectRenderer(scene.frameGraph);
+                                if (objectRenderer) {
+                                    objectRenderer.camera = camera;
+                                    onChangeObservable.notifyObservers(); // manual trigger, because scene.onActiveCameraChanged won't be triggered by the line above
+                                    camera.attachControl(true);
+                                }
+                            } else {
+                                scene.activeCamera = camera;
+                                camera.attachControl(true);
+                            }
                         }
                     },
                     onChange: onChangeObservable,

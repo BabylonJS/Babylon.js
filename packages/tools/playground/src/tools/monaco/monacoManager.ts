@@ -171,12 +171,18 @@ export class MonacoManager {
                 try {
                     const lastLocal = JSON.parse(lastLocalJson) as SnippetData;
                     if (lastLocal.sessionData) {
-                        this.globalState.openEditors = lastLocal.sessionData.openFiles;
-                        this.globalState.onOpenEditorsChangedObservable?.notifyObservers();
-                        this.switchActiveFile(lastLocal.sessionData.activeFile);
-                        this.editorHost.editor?.setPosition(lastLocal.sessionData.cursorPosition);
-                        this.editorHost.editor?.focus();
-                        this.editorHost.editor?.revealPositionInCenter(lastLocal.sessionData.cursorPosition);
+                        const validFiles = new Set(Object.keys(this.globalState.files ?? {}));
+                        const filteredOpenFiles = lastLocal.sessionData.openFiles.filter((f) => validFiles.has(f));
+                        if (filteredOpenFiles.length > 0) {
+                            this.globalState.openEditors = filteredOpenFiles;
+                            this.globalState.onOpenEditorsChangedObservable?.notifyObservers();
+                        }
+                        if (lastLocal.sessionData.activeFile && validFiles.has(lastLocal.sessionData.activeFile)) {
+                            this.switchActiveFile(lastLocal.sessionData.activeFile);
+                            this.editorHost.editor?.setPosition(lastLocal.sessionData.cursorPosition);
+                            this.editorHost.editor?.focus();
+                            this.editorHost.editor?.revealPositionInCenter(lastLocal.sessionData.cursorPosition);
+                        }
                     }
                 } catch {}
             }
