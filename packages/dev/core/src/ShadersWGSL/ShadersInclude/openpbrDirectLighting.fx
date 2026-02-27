@@ -290,8 +290,10 @@
         let fuzz_color = vec3f(0.0);
     #endif
 
-    slab_diffuse *= base_color.rgb;
-    let material_dielectric_base: vec3f = mix(slab_diffuse, slab_translucent, surface_translucency_weight);
+    #ifdef PREPASS_IRRADIANCE
+        total_direct_diffuse += slab_diffuse;
+    #endif
+    let material_dielectric_base: vec3f = mix(slab_diffuse * base_color.rgb, slab_translucent, surface_translucency_weight);
     let material_dielectric_gloss: vec3f = material_dielectric_base * (1.0f - specularFresnel) + slab_glossy * specularColoredFresnel;
     let material_base_substrate: vec3f = mix(material_dielectric_gloss, slab_metal, base_metalness);
     let material_coated_base: vec3f = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3f(1.0f));

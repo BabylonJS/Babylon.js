@@ -64,6 +64,10 @@ fn layer(slab_bottom: vec3f, slab_top: vec3f, lerp_factor: f32, bottom_multiplie
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
 
+    #ifdef PREPASS_IRRADIANCE
+        var total_direct_diffuse: vec3f = vec3f(0.0f);
+    #endif
+
     #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
     #include<clipPlaneFragment>
@@ -363,7 +367,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef PREPASS
-    #include<pbrBlockPrePass>
+    #include<openpbrBlockPrePass>
 #endif
 
 #if !defined(PREPASS) && !defined(ORDER_INDEPENDENT_TRANSPARENCY)
