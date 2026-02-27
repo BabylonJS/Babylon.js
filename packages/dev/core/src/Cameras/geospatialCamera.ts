@@ -613,7 +613,7 @@ RegisterClass("BABYLON.GeospatialCamera", GeospatialCamera);
  * @param center - The center point on the globe
  * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
  * @param result - The vector to store the result in
- * @param calculateUpVectorFromPoint - Optional function to calculate the up vector from a point, allowing for non-spherical planets. If not supplied, a perfect sphere is assumed and the up vector is just the normalized center point.
+ * @param calculateUpVectorFromPointToRef - Optional function to calculate the up vector from a point, allowing for non-spherical planets. If not supplied, a perfect sphere is assumed and the up vector is just the normalized center point.
  * @returns The normalized lookAt direction vector (same as result)
  */
 export function ComputeLookAtFromYawPitchToRef(
@@ -622,12 +622,12 @@ export function ComputeLookAtFromYawPitchToRef(
     center: Vector3,
     useRightHandedSystem: boolean,
     result: Vector3,
-    calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3
+    calculateUpVectorFromPointToRef?: (point: Vector3, result: Vector3) => Vector3
 ): Vector3 {
     const east = TmpVectors.Vector3[0];
     const north = TmpVectors.Vector3[1];
     const up = TmpVectors.Vector3[2];
-    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem, calculateUpVectorFromPoint);
+    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem, calculateUpVectorFromPointToRef);
     const sinPitch = Math.sin(pitch);
     const cosPitch = Math.cos(pitch);
 
@@ -654,7 +654,7 @@ export function ComputeLookAtFromYawPitchToRef(
  * @param useRightHandedSystem - Whether the scene uses a right-handed coordinate system
  * @param currentYaw - The current yaw value to use as fallback when pitch is near 0 (looking straight down/up)
  * @param result - The Vector2 to store the result in (x = yaw, y = pitch)
- * @param calculateUpVectorFromPoint - Optional function to calculate the up vector from a point. If supplied, this function will be used instead of assuming a spherical geocentric normal, allowing support for non-spherical planets or custom up vector logic.
+ * @param calculateUpVectorFromPointToRef - Optional function to calculate the up vector from a point. If supplied, this function will be used instead of assuming a spherical geocentric normal, allowing support for non-spherical planets or custom up vector logic.
  * @returns The result Vector2
  */
 export function ComputeYawPitchFromLookAtToRef(
@@ -663,13 +663,13 @@ export function ComputeYawPitchFromLookAtToRef(
     useRightHandedSystem: boolean,
     currentYaw: number,
     result: Vector2,
-    calculateUpVectorFromPoint?: (point: Vector3, result: Vector3) => Vector3
+    calculateUpVectorFromPointToRef?: (point: Vector3, result: Vector3) => Vector3
 ): Vector2 {
     // Compute local basis at center
     const east = TmpVectors.Vector3[6];
     const north = TmpVectors.Vector3[7];
     const up = TmpVectors.Vector3[8];
-    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem, calculateUpVectorFromPoint);
+    ComputeLocalBasisToRefs(center, east, north, up, useRightHandedSystem, calculateUpVectorFromPointToRef);
 
     // lookAt = horiz*sinPitch - up*cosPitch
     // where horiz = north*cos(yaw) + east*sin(yaw)

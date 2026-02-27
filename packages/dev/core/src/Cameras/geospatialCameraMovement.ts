@@ -70,9 +70,9 @@ export class GeospatialCameraMovement extends CameraMovement {
      * @param result The vector to store the calculated up vector
      * @returns The calculated up vector
      */
-    public calculateUpVectorFromPointToRef(point: Vector3, result: Vector3): Vector3 {
+    public calculateUpVectorFromPointToRef = (point: Vector3, result: Vector3): Vector3 => {
         return point.normalizeToRef(result);
-    }
+    };
 
     public startDrag(pointerX: number, pointerY: number) {
         const pickResult = this._scene.pick(pointerX, pointerY, this.pickPredicate);
