@@ -132,6 +132,9 @@ export class GeospatialCamera extends Camera {
 
     @serialize()
     private _radius: number = 0;
+    /**
+     * Gets the camera's distance from the current center point. This is distinct from planetRadius supplied at construction.
+     */
     public get radius(): number {
         return this._radius;
     }
@@ -170,10 +173,10 @@ export class GeospatialCamera extends Camera {
         this._checkLimits();
 
         // Refresh local basis at center (treat these as read-only for the whole call)
-        ComputeLocalBasisToRefs(this._center, this._tempEast, this._tempNorth, this._tempUp, this._scene.useRightHandedSystem, this.movement.calculateUpVectorFromPoint);
+        ComputeLocalBasisToRefs(this._center, this._tempEast, this._tempNorth, this._tempUp, this._scene.useRightHandedSystem, this.movement.calculateUpVectorFromPointToRef);
 
         // Compute lookAt from yaw/pitch
-        ComputeLookAtFromYawPitchToRef(this._yaw, this._pitch, this._center, this._scene.useRightHandedSystem, this._lookAtVector, this.movement.calculateUpVectorFromPoint);
+        ComputeLookAtFromYawPitchToRef(this._yaw, this._pitch, this._center, this._scene.useRightHandedSystem, this._lookAtVector, this.movement.calculateUpVectorFromPointToRef);
 
         // Build an orthonormal up aligned with geocentric Up
         // When looking straight down (pitch ≈ 0), lookAt is parallel to Up, so use the horizontal direction as the camera's up.
@@ -310,6 +313,9 @@ export class GeospatialCamera extends Camera {
     }
 
     private _limits: GeospatialLimits;
+    /**
+     * Gets the limits for this camera
+     */
     public get limits(): GeospatialLimits {
         return this._limits;
     }
@@ -448,12 +454,21 @@ export class GeospatialCamera extends Camera {
         return this.limits.clampZoomDistance(zoomDelta, this._radius, distanceToTarget);
     }
 
+    /**
+     * Zoom towards a specific point on the globe
+     * @param targetPoint The point to zoom towards
+     * @param distance The distance to move
+     */
     public zoomToPoint(targetPoint: DeepImmutable<IVector3Like>, distance: number) {
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(targetPoint, distance, this._tempCenter);
         // Apply the new orientation
         this._setOrientation(this._yaw, this._pitch, newRadius, this._tempCenter);
     }
 
+    /**
+     * Zoom along the camera's lookAt direction
+     * @param distance The distance to zoom
+     */
     public zoomAlongLookAt(distance: number) {
         // Clamp radius to limits
         const requestedRadius = this._radius - distance;
@@ -463,6 +478,7 @@ export class GeospatialCamera extends Camera {
         this._setOrientation(this._yaw, this._pitch, newRadius, this._center);
     }
 
+    /** @internal */
     override _checkInputs(): void {
         this.inputs.checkInputs();
         this.perFrameCollisionOffset.setAll(0);
@@ -523,7 +539,7 @@ export class GeospatialCamera extends Camera {
                             this._scene.useRightHandedSystem,
                             this._yaw,
                             yawPitch,
-                            this.movement.calculateUpVectorFromPoint
+                            this.movement.calculateUpVectorFromPointToRef
                         );
 
                         // Call _setOrientation with the computed yaw/pitch and new center
@@ -567,10 +583,12 @@ export class GeospatialCamera extends Camera {
         return collisionOffset;
     }
 
+    /** @internal */
     override attachControl(noPreventDefault?: boolean): void {
         this.inputs.attachElement(noPreventDefault);
     }
 
+    /** @internal */
     override detachControl(): void {
         this.inputs.detachElement();
     }
