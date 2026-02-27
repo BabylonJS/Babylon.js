@@ -31,15 +31,17 @@ test.beforeEach(({ page }) => {
 });
 
 test.afterEach(async ({ page }) => {
-    // Wait until 100 frames have been rendered to allow async errors (e.g. WebGPU validation) to surface.
-    await page.waitForFunction(() => {
+    // Wait until at least 50 frames have been rendered to allow async errors (e.g. WebGPU validation) to surface.
+    const minFrameCount = 50;
+    const frameIdHandle = await page.waitForFunction((minFrameCount) => {
         const viewer = document.querySelector("babylon-viewer") as ViewerElement;
         const engine = viewer.viewerDetails?.scene.getEngine();
-        if (engine) {
-            console.log(`Current frame: ${engine.frameId}`);
-        }
-        return engine && engine.frameId >= 100;
-    });
+        return engine && engine.frameId >= minFrameCount ? engine.frameId : null;
+    }, minFrameCount);
+
+    const actualFrameCount = await frameIdHandle.jsonValue();
+    console.log(`${actualFrameCount} of minimum ${minFrameCount} frames rendered.`);
+    expect(actualFrameCount).toBeGreaterThanOrEqual(minFrameCount);
     expect(pageErrors, "Unhandled page errors").toEqual([]);
     expect(consoleErrors, "Console errors").toEqual([]);
 });
