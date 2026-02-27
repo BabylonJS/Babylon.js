@@ -19,6 +19,7 @@ test.beforeEach(({ page }) => {
     });
 
     page.on("console", (message) => {
+        console.log(`[browser] ${message.text()}`);
         if (message.type() === "error" || message.type() === "warning") {
             const text = message.text();
             // Only capture messages from Babylon.js (prefixed with "BJS -").
@@ -34,6 +35,9 @@ test.afterEach(async ({ page }) => {
     await page.waitForFunction(() => {
         const viewer = document.querySelector("babylon-viewer") as ViewerElement;
         const engine = viewer.viewerDetails?.scene.getEngine();
+        if (engine) {
+            console.log(`Current frame: ${engine.frameId}`);
+        }
         return engine && engine.frameId >= 100;
     });
     expect(pageErrors, "Unhandled page errors").toEqual([]);
