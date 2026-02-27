@@ -7,9 +7,10 @@ import * as Loaders from "loaders/dynamic";
  */
 const GlobalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof GlobalObject !== "undefined") {
+    const BABYLON = ((<any>GlobalObject).BABYLON = (<any>GlobalObject).BABYLON || {});
     for (const key in Loaders) {
-        if (!(<any>GlobalObject).BABYLON[key]) {
-            (<any>GlobalObject).BABYLON[key] = (<any>Loaders)[key];
+        if (!BABYLON[key]) {
+            BABYLON[key] = (<any>Loaders)[key];
         }
     }
 }
