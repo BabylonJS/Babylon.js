@@ -14,6 +14,8 @@ import type { ISelectionService } from "../../services/selectionService";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { GetRegisteredSceneLoaderPluginMetadata } from "core/Loading/sceneLoader";
 
+registerBuiltInLoaders();
+
 const SetCamera = function (scene: Scene) {
     const camera = scene.activeCamera as ArcRotateCamera;
     if (camera && camera.radius !== undefined) {
@@ -413,7 +415,6 @@ export const MeshesContent: FunctionComponent<{ scene: Scene; selectionService: 
             <QuickCreateRow>
                 <Button
                     onClick={() => {
-                        registerBuiltInLoaders();
                         fileInputRef.current?.click();
                     }}
                     label="Import Mesh"
@@ -424,7 +425,6 @@ export const MeshesContent: FunctionComponent<{ scene: Scene; selectionService: 
                         <Button
                             appearance="primary"
                             onClick={() => {
-                                registerBuiltInLoaders();
                                 fileInputRef.current?.click();
                             }}
                             label="Import"
