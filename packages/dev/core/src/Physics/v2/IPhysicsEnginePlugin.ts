@@ -13,15 +13,15 @@ import type { GroundMesh } from "../../Meshes/groundMesh";
 
 /** How a specific axis can be constrained */
 export const enum PhysicsConstraintAxisLimitMode {
-    /*
+    /**
      * The axis is not restricted at all
      */
     FREE,
-    /*
+    /**
      * The axis has a minimum/maximum limit
      */
     LIMITED,
-    /*
+    /**
      * The axis allows no relative movement of the pivots
      */
     LOCKED,
@@ -29,37 +29,37 @@ export const enum PhysicsConstraintAxisLimitMode {
 
 /** The constraint specific axis to use when setting Friction, `ConstraintAxisLimitMode`, max force, ... */
 export const enum PhysicsConstraintAxis {
-    /*
+    /**
      * Translation along the primary axis of the constraint (i.e. the
      * direction specified by PhysicsConstraintParameters.axisA/axisB)
      */
     LINEAR_X,
-    /*
+    /**
      * Translation along the second axis of the constraint (i.e. the
      * direction specified by PhysicsConstraintParameters.perpAxisA/perpAxisB)
      */
     LINEAR_Y,
-    /*
+    /**
      * Translation along the third axis of the constraint. This axis is
      * computed from the cross product of axisA/axisB and perpAxisA/perpAxisB)
      */
     LINEAR_Z,
-    /*
+    /**
      * Rotation around the primary axis of the constraint (i.e. the
      * axis specified by PhysicsConstraintParameters.axisA/axisB)
      */
     ANGULAR_X,
-    /*
+    /**
      * Rotation around the second axis of the constraint (i.e. the
      * axis specified by PhysicsConstraintParameters.perpAxisA/perpAxisB)
      */
     ANGULAR_Y,
-    /*
+    /**
      * Rotation around the third axis of the constraint. This axis is
      * computed from the cross product of axisA/axisB and perpAxisA/perpAxisB)
      */
     ANGULAR_Z,
-    /*
+    /**
      * A 3D distance limit; similar to specifying the LINEAR_X/Y/Z axes
      * individually, but the distance calculation uses all three axes
      * simultaneously, instead of individually.
@@ -95,12 +95,12 @@ export const enum PhysicsConstraintType {
      * up between both bodies, allowing no relative movement.
      */
     LOCK = 5,
-    /*
+    /**
      * A prismatic will lock the rotations of the bodies, and allow translation
      * only along one axis
      */
     PRISMATIC = 6,
-    /*
+    /**
      * A generic constraint; this starts with no limits on how the bodies can
      * move relative to each other, but limits can be added via the PhysicsConstraint
      * interfaces. This can be used to specify a large variety of constraints
@@ -166,7 +166,7 @@ export interface IBasePhysicsCollisionEvent {
  */
 export interface IPhysicsCollisionEvent extends IBasePhysicsCollisionEvent {
     /**
-     * World position where the collision occured
+     * World position where the collision occurred
      */
     point: Nullable<Vector3>;
     /**
@@ -209,7 +209,7 @@ export interface PhysicsShapeParameters {
      */
     rotation?: Quaternion;
     /**
-     * Dimesion extention for the box
+     * Dimension extents for the box
      */
     extents?: Vector3;
     /**
@@ -283,7 +283,7 @@ export interface PhysicsConstraintParameters {
     perpAxisB?: Vector3;
 
     /**
-     * The maximum distance that can seperate the two pivots.
+     * The maximum distance that can separate the two pivots.
      * Only used for DISTANCE constraints
      */
     maxDistance?: number;
@@ -324,7 +324,7 @@ export interface PhysicsMassProperties {
      * The principal moments of inertia of this object
      * for a unit mass. This determines how easy it is
      * for the body to rotate. A value of zero on any
-     * axis will be used as infinite interia about that
+     * axis will be used as infinite inertia about that
      * axis.
      *
      * If not provided, the physics engine will compute
