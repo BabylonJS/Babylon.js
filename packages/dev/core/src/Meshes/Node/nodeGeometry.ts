@@ -21,7 +21,6 @@ import type { Color4 } from "../../Maths/math.color";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 // declare NODEGEOMETRYEDITOR namespace for compilation issue
-// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let NODEGEOMETRYEDITOR: any;
 declare let BABYLON: any;
 
@@ -56,7 +55,6 @@ export class NodeGeometry {
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     private BJSNODEGEOMETRYEDITOR = this._getGlobalNodeGeometryEditor();
 
     /** @returns the inspector from bundle or global */
@@ -240,7 +238,6 @@ export class NodeGeometry {
         this._buildWasSuccessful = false;
 
         if (!this.outputBlock) {
-            // eslint-disable-next-line no-throw-literal
             throw "You must define the outputBlock property before building the geometry";
         }
         const now = PrecisionDate.Now;

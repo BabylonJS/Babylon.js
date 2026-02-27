@@ -1,22 +1,26 @@
+import type { MenuButtonProps } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
 
-import type { AbstractMesh, IMeshDataCache, Scene } from "core/index";
+import type { AbstractMesh, IMeshDataCache, Nullable, Scene } from "core/index";
 import type { IGizmoService } from "../services/gizmoService";
 
+import { Menu, MenuItemCheckbox, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
 import { TargetRegular } from "@fluentui/react-icons";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
-import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
+import { useKeyListener } from "shared-ui-components/fluent/hooks/keyboardHooks";
 
 export const PickingToolbar: FunctionComponent<{
     scene: Scene;
-    selectEntity: (entity: unknown) => void;
+    selectEntity: (entity: Nullable<object>) => void;
     gizmoService: IGizmoService;
     ignoreBackfaces?: boolean;
+    highlightSelectedEntity?: boolean;
+    onHighlightSelectedEntityChange?: (value: boolean) => void;
 }> = (props) => {
-    const { scene, selectEntity, gizmoService, ignoreBackfaces } = props;
+    const { scene, selectEntity, gizmoService, ignoreBackfaces, highlightSelectedEntity, onHighlightSelectedEntityChange } = props;
 
     const meshDataCache = useMemo(() => new WeakMap<AbstractMesh, IMeshDataCache>(), [scene]);
     // Not sure why changing the cursor on the canvas itself doesn't work, so change it on the parent.
@@ -24,13 +28,22 @@ export const PickingToolbar: FunctionComponent<{
 
     const [pickingEnabled, setPickingEnabled] = useState(false);
 
+    // Exit picking mode if the escape key is pressed.
+    useKeyListener({
+        onKeyDown: (e) => {
+            if (e.key === "Escape") {
+                setPickingEnabled(false);
+            }
+        },
+    });
+
     useEffect(() => {
         if (pickingEnabled && sceneElement) {
             const originalCursor = getComputedStyle(sceneElement).cursor;
             sceneElement.style.cursor = "crosshair";
 
             const pointerObserver = scene.onPrePointerObservable.add(() => {
-                let pickedEntity: unknown = null;
+                let pickedEntity: Nullable<object> = null;
 
                 // Check camera gizmos.
                 if (!pickedEntity) {
@@ -95,18 +108,9 @@ export const PickingToolbar: FunctionComponent<{
                 }
             }, PointerEventTypes.POINTERTAP);
 
-            // Exit picking mode if the escape key is pressed.
-            const handleKeyDown = (e: KeyboardEvent) => {
-                if (e.key === "Escape") {
-                    setPickingEnabled(false);
-                }
-            };
-            document.addEventListener("keydown", handleKeyDown);
-
             return () => {
                 sceneElement.style.cursor = originalCursor;
                 pointerObserver.remove();
-                document.removeEventListener("keydown", handleKeyDown);
             };
         }
 
@@ -115,7 +119,40 @@ export const PickingToolbar: FunctionComponent<{
         };
     }, [pickingEnabled, sceneElement, ignoreBackfaces]);
 
+    const togglePicking = useCallback(() => {
+        setPickingEnabled((prev) => !prev);
+    }, []);
+
     return (
-        sceneElement && <ToggleButton title={`${pickingEnabled ? "Disable" : "Enable"} Picking`} checkedIcon={TargetRegular} value={pickingEnabled} onChange={setPickingEnabled} />
+        sceneElement && (
+            <Menu
+                positioning="below-end"
+                checkedValues={{ selectionHighlight: highlightSelectedEntity ? ["on"] : [] }}
+                onCheckedValueChange={(_e, data) => {
+                    onHighlightSelectedEntityChange?.(data.checkedItems.includes("on"));
+                }}
+            >
+                <MenuTrigger disableButtonEnhancement={true}>
+                    {(triggerProps: MenuButtonProps) => (
+                        <Tooltip content={`${pickingEnabled ? "Disable" : "Enable"} Picking`} relationship="label">
+                            <SplitButton
+                                menuButton={triggerProps}
+                                primaryActionButton={{ onClick: togglePicking }}
+                                size="small"
+                                appearance="transparent"
+                                icon={<TargetRegular color={pickingEnabled ? tokens.colorBrandForeground1 : undefined} />}
+                            />
+                        </Tooltip>
+                    )}
+                </MenuTrigger>
+                <MenuPopover>
+                    <MenuList>
+                        <MenuItemCheckbox name="selectionHighlight" value="on">
+                            Highlight Selected Entity
+                        </MenuItemCheckbox>
+                    </MenuList>
+                </MenuPopover>
+            </Menu>
+        )
     );
 };

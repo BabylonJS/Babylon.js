@@ -79,7 +79,8 @@ export class EngineInstrumentation implements IDisposable {
             });
 
             this._onAfterShaderCompilationObserver = this.engine.onAfterShaderCompilationObservable.add(() => {
-                this._shaderCompilationTime.endMonitoring();
+                this._shaderCompilationTime.endMonitoring(false);
+                this._shaderCompilationTime.endFrame();
             });
         } else {
             this.engine.onBeforeShaderCompilationObservable.remove(this._onBeforeShaderCompilationObserver);

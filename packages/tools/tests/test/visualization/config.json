@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Merge Meshes with submeshes",
+            "playgroundId": "#ZHPFRQ",
+            "referenceImage": "mergemeshes-sub.png"
+        },
+        {
             "title": "Gaussian Splatting modify",
             "playgroundId": "#RKKCHG#15",
             "renderCount": 15,
@@ -13,10 +18,22 @@
             "referenceImage": "gsplat-ply-sh-reload.png"
         },
         {
+            "title": "Gaussian Splatting Bake Transforms",
+            "playgroundId": "#GU7A98#0",
+            "renderCount": 15,
+            "referenceImage": "gsplat-splat-bake-transforms.png"
+        },
+        {
             "title": "Gaussian Splatting Depth",
             "playgroundId": "#V80DRL#12",
             "renderCount": 15,
             "referenceImage": "gsplat-depth.png"
+        },
+        {
+            "title": "Gaussian Splatting Depth Alpha Blended",
+            "playgroundId": "#V80DRL#19",
+            "renderCount": 15,
+            "referenceImage": "gsplat-depth-alpha-blended.png"
         },
         {
             "title": "Gaussian Splatting Compressed ply SH",
@@ -725,6 +742,16 @@
             "title": "Area Lights - Standard Material",
             "playgroundId": "#T7FXR8#67",
             "referenceImage": "areaLightsStandardMaterial.png"
+        },
+        {
+            "title": "Textured - Area Lights - Standard Material",
+            "playgroundId": "#T7FXR8#103",
+            "referenceImage": "textureAreaLightStandard.png"
+        },
+        {
+            "title": "Textured - Area Lights - PBR",
+            "playgroundId": "#T7FXR8#102",
+            "referenceImage": "texturedAreaLightsPBR.png"
         },
         {
             "title": "Area Lights - PBR",
@@ -2167,6 +2194,16 @@
             "referenceImage": "Load-babylon-files-with-same-geometry-uniqueId.png"
         },
         {
+            "title": "Roundtrip babylon file with node, skeletal, and morph animations; uniqueId",
+            "playgroundId": "#KSGDML#10",
+            "referenceImage": "babylonFileAnimationsUsingUniqueId.png"
+        },
+        {
+            "title": "Roundtrip babylon file with node, skeletal, and morph animations; id only",
+            "playgroundId": "#KSGDML#7",
+            "referenceImage": "babylonFileAnimationsUsingId.png"
+        },
+        {
             "title": "Asset Container Instantiate to Scene",
             "playgroundId": "#5NFRVE#142",
             "referenceImage": "Asset-Container-Instantiate-to-Scene"
@@ -2752,6 +2789,14 @@
             "playgroundId": "#ZNTBN2#10"
         },
         {
+            "title": "FrameGraph nrge selection outline layer",
+            "playgroundId": "#ADUC74#1"
+        },
+        {
+            "title": "FrameGraph nrge multi RTT MSAA",
+            "playgroundId": "#JAG54A"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#3",
             "errorRatio": 2
@@ -2829,6 +2874,10 @@
         {
             "title": "FrameGraph multi-render targets",
             "playgroundId": "#XSNYAU#165"
+        },
+        {
+            "title": "FrameGraph selection outline",
+            "playgroundId": "#E1F0GP#4"
         },
         {
             "title": "Render target texture with clustered lights",
@@ -2965,51 +3014,59 @@
         },
         {
             "title": "Atmosphere Day",
-            "playgroundId": "#VO1Z0C#14",
+            "playgroundId": "#VO1Z0C#34",
             "referenceImage": "atmosphere-day.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"],
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Day (Planet Origin)",
-            "playgroundId": "#VO1Z0C#30",
+            "playgroundId": "#VO1Z0C#35",
             "referenceImage": "atmosphere-day.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"],
+            "renderCount": 60
+        },
+        {
+            "title": "Atmosphere Day (Ray Marching)",
+            "playgroundId": "#VO1Z0C#38",
+            "referenceImage": "atmosphere-day-ray-marching.png",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Sunset",
-            "playgroundId": "#VO1Z0C#15",
+            "playgroundId": "#VO1Z0C#36",
             "referenceImage": "atmosphere-sunset.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"],
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Sunset (Planet Origin)",
             "playgroundId": "#VO1Z0C#31",
             "referenceImage": "atmosphere-sunset.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"],
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Night",
             "playgroundId": "#VO1Z0C#13",
             "referenceImage": "atmosphere-night.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"],
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Night (Planet Origin)",
             "playgroundId": "#VO1Z0C#32",
             "referenceImage": "atmosphere-night.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "renderCount": 2
+            "excludedEngines": ["webgl1"],
+            "renderCount": 60
         },
         {
             "title": "Atmosphere Space View",
             "playgroundId": "#VO1Z0C#6",
             "referenceImage": "atmosphere-space-view.png",
-            "excludedEngines": ["webgl1", "webgpu"]
+            "excludedEngines": ["webgl1"],
+            "renderCount": 60
         },
         {
             "title": "OpenPBR IBL Reflectance with IOR",
@@ -3267,6 +3324,101 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR Transmission Color glTF - IBL",
+            "playgroundId": "#GRQHVV#120",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Color glTF - Analytic Lights",
+            "playgroundId": "#GRQHVV#122",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Roughness glTF - IBL",
+            "playgroundId": "#GRQHVV#123",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Roughness glTF - Analytic Lights",
+            "playgroundId": "#GRQHVV#124",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Roughness vs IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#134",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy Roughness vs IOR - IBL",
+            "playgroundId": "#GRQHVV#131",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy Roughness vs IOR - Realtime IBL",
+            "playgroundId": "#GRQHVV#132",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy Roughness vs IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#135",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy vs Roughness - Analytic Lights",
+            "playgroundId": "#GRQHVV#136",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy vs Roughness - IBL",
+            "playgroundId": "#GRQHVV#138",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Dispersion glTF - IBL",
+            "playgroundId": "#GRQHVV#140",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Dispersion VS IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#142",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Dispersion VS IOR - IBL",
+            "playgroundId": "#GRQHVV#143",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Forward Scatter and Absorption - IBL",
+            "playgroundId": "#GRQHVV#149",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Anisotropy Reflect - IBL",
+            "playgroundId": "#GRQHVV#216",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Anisotropy Refract - IBL",
+            "playgroundId": "#GRQHVV#220",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Anisotropy Refract - Analytic Lights",
+            "playgroundId": "#GRQHVV#217",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Anisotropy Reflect - Analytic Lights",
+            "playgroundId": "#GRQHVV#219",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Roughness - Analytic Lights",
+            "playgroundId": "#GRQHVV#218",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458"
         },
@@ -3275,9 +3427,357 @@
             "playgroundId": "#MU9P6L#1"
         },
         {
+            "title": "Havok FloatingOrigin Multi-Region",
+            "playgroundId": "#BEDCVY",
+            "useLargeWorldRendering": true,
+            "renderCount": 180
+        },
+        {
             "title": "NME Particles with PositionW",
             "playgroundId": "#RA18GJ#17",
             "renderCount": 120
+        },
+        {
+            "title": "Particles - Basic Properties - Size",
+            "playgroundId": "#0K3AQ2#3780",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-size.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Scale",
+            "playgroundId": "#0K3AQ2#3782",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-scale.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Color",
+            "playgroundId": "#0K3AQ2#3786",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-color.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Speed",
+            "playgroundId": "#0K3AQ2#3791",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-speed.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Angular Speed",
+            "playgroundId": "#0K3AQ2#3796",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-angular-speed.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Angular Speed - Rotation",
+            "playgroundId": "#0K3AQ2#3806",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-angular-speed-rotation.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Translation Pivot",
+            "playgroundId": "#0K3AQ2#3808",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-translation-pivot.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Direction",
+            "playgroundId": "#0K3AQ2#3814",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-direction.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Direction - Gravity",
+            "playgroundId": "#0K3AQ2#3816",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-direction-gravity.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Emit Rate - Slow",
+            "playgroundId": "#0K3AQ2#3821",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-emit-rate-slow.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Emit Rate - Fast",
+            "playgroundId": "#0K3AQ2#3823",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-emit-rate-fast.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Emission Limits",
+            "playgroundId": "#0K3AQ2#3825",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-emission-limits.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Lifetime - Short",
+            "playgroundId": "#0K3AQ2#3829",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-lifetime-short.png"
+        },
+        {
+            "title": "Particles - Basic Properties - Lifetime - Long",
+            "playgroundId": "#0K3AQ2#3834",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-lifetime-long.png"
+        },
+        {
+            "title": "Particles - Change - Size",
+            "playgroundId": "#0K3AQ2#3841",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-size.png"
+        },
+        {
+            "title": "Particles - Change - Size 2",
+            "playgroundId": "#0K3AQ2#3844",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-size-2.png"
+        },
+        {
+            "title": "Particles - Change - Color",
+            "playgroundId": "#0K3AQ2#3847",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-color.png"
+        },
+        {
+            "title": "Particles - Change - Color 2",
+            "playgroundId": "#0K3AQ2#3851",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-color-2.png"
+        },
+        {
+            "title": "Particles - Change - Speed",
+            "playgroundId": "#0K3AQ2#3853",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-speed.png"
+        },
+        {
+            "title": "Particles - Change - Speed 2",
+            "playgroundId": "#0K3AQ2#3855",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-speed-2.png"
+        },
+        {
+            "title": "Particles - Change - Speed Limit",
+            "playgroundId": "#0K3AQ2#3859",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-speed-limit.png"
+        },
+        {
+            "title": "Particles - Change - Angular Speed",
+            "playgroundId": "#0K3AQ2#3862",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-angular-speed.png"
+        },
+        {
+            "title": "Particles - Change - Angular Speed 2",
+            "playgroundId": "#0K3AQ2#3865",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-angular-speed-2.png"
+        },
+        {
+            "title": "Particles - Change - Drag",
+            "playgroundId": "#0K3AQ2#3868",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-drag.png"
+        },
+        {
+            "title": "Particles - Change - Drag 2",
+            "playgroundId": "#0K3AQ2#3872",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-drag-2.png"
+        },
+        {
+            "title": "Particles - Change - Emit Rate",
+            "playgroundId": "#0K3AQ2#3875",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-emit-rate.png"
+        },
+        {
+            "title": "Particles - Change - Emit Rate 2",
+            "playgroundId": "#0K3AQ2#3879",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-emit-rate-2.png"
+        },
+        {
+            "title": "Particles - Change - Lifetime",
+            "playgroundId": "#0K3AQ2#3885",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-lifetime.png"
+        },
+        {
+            "title": "Particles - Change - Lifetime 2",
+            "playgroundId": "#0K3AQ2#3890",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-lifetime-2.png"
+        },
+        {
+            "title": "Particles - Change - Start Size",
+            "playgroundId": "#0K3AQ2#3897",
+            "renderCount": 120,
+            "referenceImage": "particles-basic-change-start-size.png"
+        },
+        {
+            "title": "Particles - Emitters - Point",
+            "playgroundId": "#WLX2I2#7",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-point.png"
+        },
+        {
+            "title": "Particles - Emitters - Box",
+            "playgroundId": "#WLX2I2#8",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-box.png"
+        },
+        {
+            "title": "Particles - Emitters - Sphere",
+            "playgroundId": "#WLX2I2#9",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-sphere.png"
+        },
+        {
+            "title": "Particles - Emitters - Directed Sphere",
+            "playgroundId": "#WLX2I2#10",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-directed-sphere.png"
+        },
+        {
+            "title": "Particles - Emitters - Hemisphere",
+            "playgroundId": "#WLX2I2#11",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-hemisphere.png"
+        },
+        {
+            "title": "Particles - Emitters - Cylinder",
+            "playgroundId": "#WLX2I2#12",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-cylinder.png"
+        },
+        {
+            "title": "Particles - Emitters - Directed Cylinder",
+            "playgroundId": "#WLX2I2#14",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-directed-cylinder.png"
+        },
+        {
+            "title": "Particles - Emitters - Cone",
+            "playgroundId": "#WLX2I2#16",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-cone.png"
+        },
+        {
+            "title": "Particles - Emitters - Directed Cone",
+            "playgroundId": "#WLX2I2#17",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-directed-cone.png"
+        },
+        {
+            "title": "Particles - Emitters - Mesh",
+            "playgroundId": "#WLX2I2#20",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-mesh.png"
+        },
+        {
+            "title": "Particles - Emitters - Custom",
+            "playgroundId": "#WLX2I2#22",
+            "renderCount": 120,
+            "referenceImage": "particles-emitters-custom.png"
+        },
+        {
+            "title": "Particles - Animations",
+            "playgroundId": "#2MI0A1#7",
+            "renderCount": 120,
+            "referenceImage": "particles-animations.png"
+        },
+        {
+            "title": "Particles - Animations 2",
+            "playgroundId": "#2MI0A1#8",
+            "renderCount": 120,
+            "referenceImage": "particles-animations-2.png"
+        },
+        {
+            "title": "Particles - Ramp Gradient",
+            "playgroundId": "#I2D9MM#15",
+            "renderCount": 120,
+            "referenceImage": "particles-ramp-gradient.png"
+        },
+        {
+            "title": "Particles - Ramp Gradient Remap",
+            "playgroundId": "#E3VU3R",
+            "renderCount": 120,
+            "referenceImage": "particles-ramp-gradient-remap.png"
+        },
+        {
+            "title": "Particles - Ramp Gradient Remap Alpha",
+            "playgroundId": "#I2D9MM#16",
+            "renderCount": 120,
+            "referenceImage": "particles-ramp-gradient-remap-alpha.png"
+        },
+        {
+            "title": "Particles - Billboard Y",
+            "playgroundId": "#T3ZCP7#5",
+            "renderCount": 180,
+            "referenceImage": "particles-billboard-y.png"
+        },
+        {
+            "title": "Particles - Billboard False",
+            "playgroundId": "#XWG0HV#4",
+            "renderCount": 120,
+            "referenceImage": "particles-billboard-false.png"
+        },
+        {
+            "title": "Particles - Multiply Blend",
+            "playgroundId": "#M1HYFH#6",
+            "renderCount": 120,
+            "referenceImage": "particles-multiply-blend.png"
+        },
+        {
+            "title": "Particles - Ramp Blend",
+            "playgroundId": "#XPVJMM#4",
+            "renderCount": 120,
+            "referenceImage": "particles-ramp-blend.png"
+        },
+        {
+            "title": "Particles - Effects",
+            "playgroundId": "#1ASENS#424",
+            "renderCount": 120,
+            "referenceImage": "particles-effects.png"
+        },
+        {
+            "title": "Particles - Helper - Sun",
+            "playgroundId": "#A97UQ6#5",
+            "renderCount": 120,
+            "referenceImage": "particles-helper-sun.png"
+        },
+        {
+            "title": "Particles - Helper - Smoke",
+            "playgroundId": "#XRRTC0#2",
+            "renderCount": 120,
+            "referenceImage": "particles-helper-smoke.png"
+        },
+        {
+            "title": "Particles - Helper - Fire",
+            "playgroundId": "#I2D9MM#18",
+            "renderCount": 120,
+            "referenceImage": "particles-helper-fire.png"
+        },
+        {
+            "title": "Particles - Attractors",
+            "playgroundId": "#DEZ79M#73",
+            "renderCount": 240,
+            "referenceImage": "particles-attractors.png"
+        },
+        {
+            "title": "Particles - Flowmaps",
+            "playgroundId": "#M58G3X#4",
+            "renderCount": 240,
+            "referenceImage": "particles-flowmaps.png"
+        },
+        {
+            "title": "Particles - Flowmaps 2",
+            "playgroundId": "#PPC2EI#5",
+            "renderCount": 120,
+            "referenceImage": "particles-flowmaps-2.png"
         }
     ]
 }

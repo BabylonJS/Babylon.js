@@ -169,7 +169,6 @@ fn evalFuzz(L: vec3f, NdotL: f32, NdotV: f32, T: vec3f, B: vec3f, ltcLut: vec3f)
         var BdotL: f32 = dot(B, info.L);
         var alphaG: f32 = convertRoughnessToAverageSlope(info.roughness);
         var alphaTB: vec2f = getAnisotropicRoughness(alphaG, anisotropy);
-        alphaTB = max(alphaTB, vec2f(geometricRoughnessFactor * geometricRoughnessFactor));
 
         var distribution: f32 = normalDistributionFunction_BurleyGGX_Anisotropic(NdotH, TdotH, BdotH, alphaTB);
         var smithVisibility: f32 = smithVisibility_GGXCorrelated_Anisotropic(info.NdotL, info.NdotV, TdotV, BdotV, TdotL, BdotL, alphaTB);

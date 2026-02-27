@@ -25,6 +25,8 @@ import { AxesViewer } from "./axesViewer";
 import { TransformNode } from "../Meshes/transformNode";
 import { Epsilon } from "../Maths/math.constants";
 
+import "../Physics/joinedPhysicsEngineComponent";
+
 /**
  * Used to show the physics impostor around the specific mesh
  */

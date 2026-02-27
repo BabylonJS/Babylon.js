@@ -396,9 +396,17 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
  * @param height the target height of the result, which does not have to match the source texture height
  * @param face if the texture has multiple faces, the face index to use for the source
  * @param lod if the texture has multiple LODs, the lod index to use for the source
+ * @param forceRTT if true, forces the use of the RTT path for reading pixels (useful for cube maps to ensure correct orientation and gamma)
  * @returns the 8-bit texture data
  */
-export async function GetTextureDataAsync(texture: BaseTexture, width?: number, height?: number, face: number = 0, lod: number = 0): Promise<Uint8Array> {
+export async function GetTextureDataAsync(
+    texture: BaseTexture,
+    width?: number,
+    height?: number,
+    face: number = 0,
+    lod: number = 0,
+    forceRTT: boolean = false
+): Promise<Uint8Array> {
     await WhenTextureReadyAsync(texture);
 
     const { width: textureWidth, height: textureHeight } = texture.getSize();
@@ -406,8 +414,9 @@ export async function GetTextureDataAsync(texture: BaseTexture, width?: number, 
     const targetHeight = height ?? textureHeight;
 
     // If the internal texture format is compressed, we cannot read the pixels directly.
-    // Or, if we're resizing the texture, we need to use a render target texture.
-    if (IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
+    // If we're resizing the texture, we need to use a render target texture.
+    // forceRTT can be used to ensure correct orientation and gamma for cube maps.
+    if (forceRTT || IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
         return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod);
     }
 

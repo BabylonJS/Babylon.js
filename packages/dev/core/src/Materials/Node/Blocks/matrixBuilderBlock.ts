@@ -69,6 +69,7 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /** Auto configure the block based on the material */
     public override autoConfigure() {
         if (!this.row0.isConnected) {
             const row0Input = new InputBlock("row0");

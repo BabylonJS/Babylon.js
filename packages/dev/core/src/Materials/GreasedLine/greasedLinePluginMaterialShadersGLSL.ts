@@ -91,7 +91,6 @@ export function GetCustomCode(shaderType: string, cameraFacing: boolean): Nullab
         if (cameraFacing) {
             obj["!gl_Position\\=viewProjection\\*worldPos;"] = "//"; // not needed for camera facing GRL
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return obj;
     }
 

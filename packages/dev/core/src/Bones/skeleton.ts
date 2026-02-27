@@ -16,6 +16,7 @@ import { DeepCopier } from "../Misc/deepCopier";
 import type { IInspectable } from "../Misc/iInspectable";
 import type { IAnimatable } from "../Animations/animatable.interface";
 import type { IAssetContainer } from "core/IAssetContainer";
+import type { TransformNode } from "core/Meshes/transformNode";
 
 /**
  * Class used to handle skinning animations
@@ -259,6 +260,34 @@ export class Skeleton implements IAnimatable {
             }
         }
         return -1;
+    }
+
+    /**
+     * Finds a bone in a skeleton that is linked to the given transform node.
+     * @param transformNode The transform node to find the bone for
+     * @returns The bone linked to the transform node, or null if not found
+     */
+    public findBoneFromLinkedTransformNode(transformNode: TransformNode) {
+        for (const bone of this.bones) {
+            if (bone._linkedTransformNode === transformNode) {
+                return bone;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds a bone in a skeleton by the name of its linked transform node.
+     * @param name The name of the linked transform node
+     * @returns The bone linked to the transform node with the given name, or null if not found
+     */
+    public findBoneFromLinkedTransformNodeName(name: string) {
+        for (const bone of this.bones) {
+            if (bone._linkedTransformNode && bone._linkedTransformNode.name === name) {
+                return bone;
+            }
+        }
+        return null;
     }
 
     /**
@@ -743,6 +772,7 @@ export class Skeleton implements IAnimatable {
 
         serializationObject.name = this.name;
         serializationObject.id = this.id;
+        serializationObject.uniqueId = this.uniqueId;
 
         if (this.dimensionsAtRest) {
             serializationObject.dimensionsAtRest = this.dimensionsAtRest.asArray();
@@ -765,9 +795,11 @@ export class Skeleton implements IAnimatable {
                 index: bone.getIndex(),
                 name: bone.name,
                 id: bone.id,
+                uniqueId: bone.uniqueId,
                 matrix: bone.getBindMatrix().asArray(),
                 rest: bone.getRestMatrix().asArray(),
                 linkedTransformNodeId: bone.getTransformNode()?.id,
+                linkedTransformNodeUniqueId: bone.getTransformNode()?.uniqueId,
             };
 
             serializationObject.bones.push(serializedBone);
@@ -851,6 +883,11 @@ export class Skeleton implements IAnimatable {
             if (parsedBone.linkedTransformNodeId !== undefined && parsedBone.linkedTransformNodeId !== null) {
                 skeleton._hasWaitingData = true;
                 bone._waitingTransformNodeId = parsedBone.linkedTransformNodeId;
+            }
+
+            if (parsedBone.linkedTransformNodeUniqueId !== undefined && parsedBone.linkedTransformNodeUniqueId !== null) {
+                skeleton._hasWaitingData = true;
+                bone._waitingTransformNodeUniqueId = parsedBone.linkedTransformNodeUniqueId;
             }
         }
 

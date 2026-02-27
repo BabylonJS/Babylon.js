@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import type { Nullable, IndicesArray } from "../../types";
+import type { Nullable, IndicesArray, FloatArray } from "../../types";
 import { Logger } from "../../Misc/logger";
 import { BuildArray } from "../../Misc/arrayTools";
 import type { Matrix } from "../../Maths/math.vector";
@@ -138,7 +138,7 @@ export interface IPhysicsEnabledObject {
      * @param kind The type of vertex data
      * @returns A nullable array of numbers, or a float32 array
      */
-    getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
+    getVerticesData(kind: string): Nullable<FloatArray>;
     /**
      * Gets the indices from the mesh
      * @returns A nullable array of index arrays

@@ -46,7 +46,11 @@ const CopySource = function <T>(creationFunction: () => T, source: T, instanciat
                 case 6: // Mesh reference
                 case 9: // Image processing configuration reference
                 case 11: // Camera reference
-                    (<any>destination)[property] = sourceProperty;
+                    if (typeof sourceProperty.slice === "function") {
+                        (<any>destination)[property] = sourceProperty.slice();
+                    } else {
+                        (<any>destination)[property] = sourceProperty;
+                    }
                     break;
                 case 1: // Texture
                     if (options.cloneTexturesOnlyOnce && textureMap[sourceProperty.uniqueId]) {

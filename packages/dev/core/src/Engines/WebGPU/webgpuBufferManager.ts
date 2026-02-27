@@ -57,7 +57,9 @@ export class WebGPUBufferManager {
         const labelId = "DataBufferUniqueId=" + dataBuffer.uniqueId;
         dataBuffer.buffer = this.createRawBuffer(viewOrSize, flags, undefined, label ? labelId + "-" + label : labelId);
         dataBuffer.references = 1;
-        dataBuffer.capacity = isView ? (viewOrSize as ArrayBufferView).byteLength : (viewOrSize as number);
+        // Next line should work, because the "size" property of GPUBuffer is required by the spec, but it seems that it fails in the CI / in playwright tests. So, we will recalculate the aligned size ourselves.
+        //dataBuffer.capacity = dataBuffer.buffer.size;
+        dataBuffer.capacity = (viewOrSize as ArrayBufferView).byteLength !== undefined ? ((viewOrSize as ArrayBufferView).byteLength + 3) & ~3 : ((viewOrSize as number) + 3) & ~3; // 4 bytes alignments (because of the upload which requires this)
         dataBuffer.engineId = this._engine.uniqueId;
 
         if (isView) {

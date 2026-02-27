@@ -3,9 +3,10 @@ import type { Scene } from "core/index";
 import { makeStyles, tokens } from "@fluentui/react-components";
 
 import { AbstractEngine } from "core/Engines/abstractEngine";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";
+import { usePollingObservable } from "../../hooks/pollingHooks";
 import { ExtensibleAccordion } from "../extensibleAccordion";
 import { SidePaneContainer } from "../pane";
 
@@ -21,7 +22,8 @@ export const StatsPane: typeof ExtensibleAccordion<Scene> = (props) => {
 
     const scene = props.context;
     const engine = scene.getEngine();
-    const fps = useObservableState(() => Math.round(engine.getFps()), engine.onBeginFrameObservable);
+    const pollingObservable = usePollingObservable(250);
+    const fps = useObservableState(() => Math.round(engine.getFps()), pollingObservable);
 
     return (
         <>

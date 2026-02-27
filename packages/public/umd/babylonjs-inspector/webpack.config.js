@@ -5,7 +5,7 @@ module.exports = (env) => {
     const commonConfig = commonConfigGenerator({
         mode: env.production ? "production" : "development",
         devPackageAliasPath: `../../../dev/inspector/dist`, // not really needed?
-        devPackageName: "inspector",
+        devPackageName: "inspector-legacy",
         namespace: "INSPECTOR",
         outputPath: path.resolve(__dirname),
         maxMode: true,

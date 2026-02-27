@@ -366,6 +366,10 @@ export class SkeletonViewer {
     set debugMesh(value: Nullable<AbstractMesh> | Nullable<LinesMesh>) {
         this._debugMesh = value as any;
     }
+    /** Gets the local axes mesh */
+    get debugLocalAxesMesh(): Nullable<LinesMesh> {
+        return this._localAxes;
+    }
     /** Gets the displayMode */
     get displayMode(): number {
         return this.options.displayMode || SkeletonViewer.DISPLAY_LINES;
@@ -395,8 +399,8 @@ export class SkeletonViewer {
         scene: Scene,
         /** [true] defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
         public autoUpdateBonesMatrices: boolean = true,
-        /** [3] defines the rendering group id to use with the viewer */
-        public renderingGroupId: number = 3,
+        /** [2] defines the rendering group id to use with the viewer */
+        public renderingGroupId: number = 2,
         /** [Object] is the options for the viewer */
         public options: Partial<ISkeletonViewerOptions> = {}
     ) {
@@ -494,6 +498,8 @@ export class SkeletonViewer {
         if (this.debugMesh) {
             this.debugMesh.setEnabled(value);
         }
+
+        this._localAxes?.setEnabled(value);
 
         if (value && !this._obs) {
             this._bindObs();
@@ -607,22 +613,6 @@ export class SkeletonViewer {
             this.scene.animationsEnabled = animationState;
             this.utilityLayer!.utilityLayerScene.animationsEnabled = animationState;
         }
-    }
-
-    /**
-     * function to get the absolute bind pose of a bone by accumulating transformations up the bone hierarchy.
-     * @param bone
-     * @param matrix
-     */
-    private _getAbsoluteBindPoseToRef(bone: Nullable<Bone>, matrix: Matrix) {
-        if (bone === null || bone._index === -1) {
-            matrix.copyFrom(Matrix.Identity());
-            return;
-        }
-
-        this._getAbsoluteBindPoseToRef(bone.getParent(), matrix);
-        bone.getBindMatrix().multiplyToRef(matrix, matrix);
-        return;
     }
 
     private _createSpur(anchorPoint: Vector3, bone: Bone, childPoint: Vector3, childBone: Nullable<Bone>, displayOptions: ISkeletonViewerDisplayOptions, utilityLayerScene: Scene) {
@@ -767,7 +757,7 @@ export class SkeletonViewer {
                 }
 
                 const boneAbsoluteBindPoseTransform = new Matrix();
-                this._getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
+                bone.getAbsoluteInverseBindMatrix().invertToRef(boneAbsoluteBindPoseTransform);
 
                 const anchorPoint = new Vector3();
 
@@ -783,11 +773,9 @@ export class SkeletonViewer {
                         if (distanceFromParent > longestBoneLength) {
                             longestBoneLength = distanceFromParent;
                         }
-                        if (spheresOnly) {
-                            return;
+                        if (!spheresOnly) {
+                            spurs.push(this._createSpur(anchorPoint, bone, childPoint, bc, displayOptions, utilityLayerScene));
                         }
-
-                        spurs.push(this._createSpur(anchorPoint, bone, childPoint, bc, displayOptions, utilityLayerScene));
                     }
                 } else {
                     const boundingSphere = this._getBoundingSphereForBone(bone.getIndex());
@@ -799,7 +787,7 @@ export class SkeletonViewer {
                             let childPoint;
                             const parentBone = bone.getParent();
                             if (parentBone) {
-                                this._getAbsoluteBindPoseToRef(parentBone, boneAbsoluteBindPoseTransform);
+                                parentBone.getAbsoluteInverseBindMatrix().invertToRef(boneAbsoluteBindPoseTransform);
                                 boneAbsoluteBindPoseTransform.decompose(undefined, undefined, TmpVectors.Vector3[0]);
                                 childPoint = anchorPoint.subtract(TmpVectors.Vector3[0]).normalize().scale(boundingSphere.radius).add(anchorPoint);
                             } else {
@@ -914,7 +902,7 @@ export class SkeletonViewer {
             const boneAbsoluteBindPoseTransform = new Matrix();
             const boneOrigin = new Vector3();
 
-            this._getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
+            bone.getAbsoluteInverseBindMatrix().invertToRef(boneAbsoluteBindPoseTransform);
             boneAbsoluteBindPoseTransform.decompose(undefined, TmpVectors.Quaternion[0], boneOrigin);
 
             const m = new Matrix();
@@ -1032,6 +1020,7 @@ export class SkeletonViewer {
         }
         this.update();
         this._bindObs();
+        this._isEnabled = undefined as any; // force the isEnabled setter to reapply (next line)
         this.isEnabled = wasEnabled;
     }
 

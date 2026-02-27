@@ -56,9 +56,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Logger } from "core/Misc/logger";
 
 import { Link } from "shared-ui-components/fluent/primitives/link";
-import { TeachingMoment } from "../components/teachingMoment";
 import { useExtensionManager } from "../contexts/extensionManagerContext";
-import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { ShellServiceIdentity } from "./shellService";
 
 const useStyles = makeStyles({
@@ -181,8 +179,6 @@ function usePeopleMetadata(people?: readonly (string | PersonMetadata | undefine
 
     return peopleMetadataEx.filter(Boolean);
 }
-
-const useTeachingMoment = MakePopoverTeachingMoment("Extensions");
 
 const WebResource: FunctionComponent<{ url: string; urlDisplay?: string; icon: JSX.Element; label: string }> = (props) => {
     const { url, urlDisplay, icon, label } = props;
@@ -351,7 +347,10 @@ export const ExtensionListServiceDefinition: ServiceDefinition<[], [IShellServic
             key: "ExtensionList",
             horizontalLocation: "right",
             verticalLocation: "top",
-            suppressTeachingMoment: true,
+            teachingMoment: {
+                title: "Extensions",
+                description: "Extensions provide new optional features that can be useful to your specific task or workflow. Click this button to manage extensions.",
+            },
             order: -200,
             component: () => {
                 const classes = useStyles();
@@ -375,55 +374,46 @@ export const ExtensionListServiceDefinition: ServiceDefinition<[], [IShellServic
                     }
                 }, [extensionManager, selectedTab]);
 
-                const teachingMoment = useTeachingMoment();
-
                 return (
-                    <>
-                        <TeachingMoment
-                            {...teachingMoment}
-                            title="Extensions"
-                            description="Extensions provide new optional features that can be useful to your specific task or workflow. Click this button to manage extensions."
-                        />
-                        <Dialog>
-                            <DialogTrigger disableButtonEnhancement>
-                                <Tooltip content="Manage Extensions" relationship="label">
-                                    <Button ref={teachingMoment.targetRef} className={classes.extensionButton} appearance="subtle" icon={<AppsAddInRegular />} />
-                                </Tooltip>
-                            </DialogTrigger>
-                            <DialogSurface className={classes.extensionsDialogSurface}>
-                                <DialogBody className={classes.extensionDialogBody}>
-                                    <DialogTitle
-                                        action={
-                                            <DialogTrigger action="close">
-                                                <Button appearance="subtle" aria-label="close" icon={<DismissRegular />} />
-                                            </DialogTrigger>
-                                        }
-                                    >
-                                        <>
-                                            Extensions
-                                            <TabList
-                                                className={classes.extensionDialogContent}
-                                                selectedValue={selectedTab}
-                                                onTabSelect={(event: SelectTabEvent, data: SelectTabData) => {
-                                                    setSelectedTab(data.value as TabValue);
-                                                }}
-                                            >
-                                                <Tab value={"available" satisfies TabValue}>Available</Tab>
-                                                <Tab value={"installed" satisfies TabValue}>Installed</Tab>
-                                            </TabList>
-                                        </>
-                                    </DialogTitle>
-                                    <DialogContent className={classes.extensionDialogContent}>
-                                        <Accordion collapsible>
-                                            {extensions.map((extension) => (
-                                                <ExtensionDetails key={extension.metadata.name} extension={extension} />
-                                            ))}
-                                        </Accordion>
-                                    </DialogContent>
-                                </DialogBody>
-                            </DialogSurface>
-                        </Dialog>
-                    </>
+                    <Dialog>
+                        <DialogTrigger disableButtonEnhancement>
+                            <Tooltip content="Manage Extensions" relationship="label">
+                                <Button className={classes.extensionButton} appearance="subtle" icon={<AppsAddInRegular />} />
+                            </Tooltip>
+                        </DialogTrigger>
+                        <DialogSurface className={classes.extensionsDialogSurface}>
+                            <DialogBody className={classes.extensionDialogBody}>
+                                <DialogTitle
+                                    action={
+                                        <DialogTrigger action="close">
+                                            <Button appearance="subtle" aria-label="close" icon={<DismissRegular />} />
+                                        </DialogTrigger>
+                                    }
+                                >
+                                    <>
+                                        Extensions
+                                        <TabList
+                                            className={classes.extensionDialogContent}
+                                            selectedValue={selectedTab}
+                                            onTabSelect={(event: SelectTabEvent, data: SelectTabData) => {
+                                                setSelectedTab(data.value as TabValue);
+                                            }}
+                                        >
+                                            <Tab value={"available" satisfies TabValue}>Available</Tab>
+                                            <Tab value={"installed" satisfies TabValue}>Installed</Tab>
+                                        </TabList>
+                                    </>
+                                </DialogTitle>
+                                <DialogContent className={classes.extensionDialogContent}>
+                                    <Accordion collapsible>
+                                        {extensions.map((extension) => (
+                                            <ExtensionDetails key={extension.metadata.name} extension={extension} />
+                                        ))}
+                                    </Accordion>
+                                </DialogContent>
+                            </DialogBody>
+                        </DialogSurface>
+                    </Dialog>
                 );
             },
         });

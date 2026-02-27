@@ -29,4 +29,5 @@ export interface INodeData {
     canBeActivated?: boolean;
 
     onInputCountChanged?: () => void;
+    onInputRemoved?: (index: number) => void;
 }

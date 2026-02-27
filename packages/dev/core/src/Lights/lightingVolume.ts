@@ -219,7 +219,7 @@ export class LightingVolume {
             this._uBuffer!.updateMatrix("invViewProjMatrix", this._shadowGenerator.getTransformMatrix().invertToRef(TmpVectors.Matrix[0]));
 
             if (this._engine._enableGPUDebugMarkers) {
-                this._engine.restoreDefaultFramebuffer();
+                this._engine.restoreDefaultFramebuffer(true);
                 this._engine._debugPushGroup?.(`Update lighting volume (${this._name})`);
             }
 

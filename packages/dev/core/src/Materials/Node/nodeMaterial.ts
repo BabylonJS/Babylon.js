@@ -150,6 +150,7 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
     public MORPHTARGETS_UV = false;
     /** Morph target uv2 */
     public MORPHTARGETS_UV2 = false;
+    /** Morph target color support */
     public MORPHTARGETS_COLOR = false;
     /** Morph target support positions */
     public MORPHTARGETTEXTURE_HASPOSITIONS = false;
@@ -161,6 +162,7 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
     public MORPHTARGETTEXTURE_HASUVS = false;
     /** Morph target support uv2s */
     public MORPHTARGETTEXTURE_HASUV2S = false;
+    /** Morph target texture has colors */
     public MORPHTARGETTEXTURE_HASCOLORS = false;
     /** Number of morph influencers */
     public NUM_MORPH_INFLUENCERS = 0;
@@ -174,10 +176,13 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
     /** Camera is perspective */
     public CAMERA_PERSPECTIVE = false;
 
+    /** Area light support */
     public AREALIGHTSUPPORTED = true;
 
+    /** Area light no roughness */
     public AREALIGHTNOROUGHTNESS = true;
 
+    /** Position W as varying */
     public POSITIONW_AS_VARYING = false;
 
     /**
@@ -301,6 +306,10 @@ export class NodeMaterial extends NodeMaterialBase {
     /** @internal */
     public _useAdditionalColor = false;
 
+    /**
+     * Sets whether glow mode is enabled
+     * @param value - the value to set
+     */
     public override set _glowModeEnabled(value: boolean) {
         this._useAdditionalColor = value;
     }
@@ -563,8 +572,7 @@ export class NodeMaterial extends NodeMaterialBase {
      */
     public addOutputNode(node: NodeMaterialBlock) {
         if (node.target === null) {
-            // eslint-disable-next-line no-throw-literal
-            throw "This node is not meant to be an output node. You may want to explicitly set its target value.";
+            throw new Error("This node is not meant to be an output node. You may want to explicitly set its target value.");
         }
 
         if ((node.target & NodeMaterialBlockTargets.Vertex) !== 0) {
@@ -649,6 +657,10 @@ export class NodeMaterial extends NodeMaterialBase {
     @serialize()
     public forceAlphaBlending = false;
 
+    /**
+     * Gets whether the glow layer is supported
+     * @returns true if the glow layer is supported
+     */
     public override get _supportGlowLayer() {
         if (this._fragmentOutputNodes.length === 0) {
             return false;

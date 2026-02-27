@@ -42,6 +42,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
         return this._inputs[0];
     }
 
+    /** @internal */
     public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
         let codeString = super._dumpCode(uniqueNames, alreadyDumped);
 

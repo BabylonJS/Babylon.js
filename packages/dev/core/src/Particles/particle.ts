@@ -9,6 +9,102 @@ import type { ThinParticleSystem } from "./thinParticleSystem";
 import { Clamp } from "../Maths/math.scalar.functions";
 
 /**
+ * @internal
+ * Holds all internal properties of a Particle, grouped into a single sub-object
+ * to keep the Particle's own property count low (V8 in-object property limit).
+ */
+class ParticleInternalProperties {
+    /** @internal */
+    public randomCellOffset?: number;
+
+    /** @internal */
+    public initialDirection: Nullable<Vector3>;
+
+    /** @internal */
+    public attachedSubEmitters: Nullable<Array<SubEmitter>> = null;
+
+    /** @internal */
+    public initialStartSpriteCellId: number;
+    /** @internal */
+    public initialEndSpriteCellId: number;
+    /** @internal */
+    public initialSpriteCellLoop: boolean;
+
+    /** @internal */
+    public currentColorGradient: Nullable<ColorGradient>;
+    /** @internal */
+    public currentColor1 = new Color4(0, 0, 0, 0);
+    /** @internal */
+    public currentColor2 = new Color4(0, 0, 0, 0);
+
+    /** @internal */
+    public currentSizeGradient: Nullable<FactorGradient>;
+    /** @internal */
+    public currentSize1 = 0;
+    /** @internal */
+    public currentSize2 = 0;
+
+    /** @internal */
+    public currentAngularSpeedGradient: Nullable<FactorGradient>;
+    /** @internal */
+    public currentAngularSpeed1 = 0;
+    /** @internal */
+    public currentAngularSpeed2 = 0;
+
+    /** @internal */
+    public currentVelocityGradient: Nullable<FactorGradient>;
+    /** @internal */
+    public currentVelocity1 = 0;
+    /** @internal */
+    public currentVelocity2 = 0;
+
+    /** @internal */
+    public directionScale: number;
+    /** @internal */
+    public scaledDirection = Vector3.Zero();
+
+    /** @internal */
+    public currentLimitVelocityGradient: Nullable<FactorGradient>;
+    /** @internal */
+    public currentLimitVelocity1 = 0;
+    /** @internal */
+    public currentLimitVelocity2 = 0;
+
+    /** @internal */
+    public currentDragGradient: Nullable<FactorGradient>;
+    /** @internal */
+    public currentDrag1 = 0;
+    /** @internal */
+    public currentDrag2 = 0;
+
+    /** @internal */
+    public randomNoiseCoordinates1: Nullable<Vector3>;
+    /** @internal */
+    public randomNoiseCoordinates2: Nullable<Vector3>;
+
+    /** @internal */
+    public localPosition?: Vector3;
+
+    /**
+     * Callback triggered when the particle is reset
+     */
+    public onReset: Nullable<() => void>;
+
+    /** @internal */
+    public reset(): void {
+        this.currentColorGradient = null;
+        this.currentSizeGradient = null;
+        this.currentAngularSpeedGradient = null;
+        this.currentVelocityGradient = null;
+        this.currentLimitVelocityGradient = null;
+        this.currentDragGradient = null;
+        this.randomCellOffset = undefined;
+        this.randomNoiseCoordinates1 = null;
+        this.randomNoiseCoordinates2 = null;
+    }
+}
+
+/**
  * A particle represents one of the element emitted by a particle system.
  * This is mainly define by its coordinates, direction, velocity and age.
  */
@@ -89,81 +185,7 @@ export class Particle {
     public remapData: Vector4;
 
     /** @internal */
-    public _randomCellOffset?: number;
-
-    /** @internal */
-    public _initialDirection: Nullable<Vector3>;
-
-    /** @internal */
-    public _attachedSubEmitters: Nullable<Array<SubEmitter>> = null;
-
-    /** @internal */
-    public _initialStartSpriteCellId: number;
-    /** @internal */
-    public _initialEndSpriteCellId: number;
-    /** @internal */
-    public _initialSpriteCellLoop: boolean;
-
-    /** @internal */
-    public _currentColorGradient: Nullable<ColorGradient>;
-    /** @internal */
-    public _currentColor1 = new Color4(0, 0, 0, 0);
-    /** @internal */
-    public _currentColor2 = new Color4(0, 0, 0, 0);
-
-    /** @internal */
-    public _currentSizeGradient: Nullable<FactorGradient>;
-    /** @internal */
-    public _currentSize1 = 0;
-    /** @internal */
-    public _currentSize2 = 0;
-
-    /** @internal */
-    public _currentAngularSpeedGradient: Nullable<FactorGradient>;
-    /** @internal */
-    public _currentAngularSpeed1 = 0;
-    /** @internal */
-    public _currentAngularSpeed2 = 0;
-
-    /** @internal */
-    public _currentVelocityGradient: Nullable<FactorGradient>;
-    /** @internal */
-    public _currentVelocity1 = 0;
-    /** @internal */
-    public _currentVelocity2 = 0;
-
-    /** @internal */
-    public _directionScale: number;
-
-    /** @internal */
-    public _scaledDirection = Vector3.Zero();
-
-    /** @internal */
-    public _currentLimitVelocityGradient: Nullable<FactorGradient>;
-    /** @internal */
-    public _currentLimitVelocity1 = 0;
-    /** @internal */
-    public _currentLimitVelocity2 = 0;
-
-    /** @internal */
-    public _currentDragGradient: Nullable<FactorGradient>;
-    /** @internal */
-    public _currentDrag1 = 0;
-    /** @internal */
-    public _currentDrag2 = 0;
-
-    /** @internal */
-    public _randomNoiseCoordinates1: Nullable<Vector3>;
-    /** @internal */
-    public _randomNoiseCoordinates2: Nullable<Vector3>;
-
-    /** @internal */
-    public _localPosition?: Vector3;
-
-    /**
-     * Callback triggered when the particle is reset
-     */
-    public onReset: Nullable<() => void>;
+    public _properties = new ParticleInternalProperties();
 
     /**
      * Creates a new instance Particle
@@ -195,27 +217,27 @@ export class Particle {
         let changeSpeed = this.particleSystem.spriteCellChangeSpeed;
 
         if (this.particleSystem.spriteRandomStartCell) {
-            if (this._randomCellOffset === undefined) {
-                this._randomCellOffset = Math.random() * this.lifeTime;
+            if (this._properties.randomCellOffset === undefined) {
+                this._properties.randomCellOffset = Math.random() * this.lifeTime;
             }
 
             if (changeSpeed === 0) {
                 // Special case when speed = 0 meaning we want to stay on initial cell
                 changeSpeed = 1;
-                offsetAge = this._randomCellOffset;
+                offsetAge = this._properties.randomCellOffset;
             } else {
-                offsetAge += this._randomCellOffset;
+                offsetAge += this._properties.randomCellOffset;
             }
         }
 
-        const dist = this._initialEndSpriteCellId - this._initialStartSpriteCellId + 1;
+        const dist = this._properties.initialEndSpriteCellId - this._properties.initialStartSpriteCellId + 1;
         let ratio: number;
-        if (this._initialSpriteCellLoop) {
+        if (this._properties.initialSpriteCellLoop) {
             ratio = Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
         } else {
             ratio = Clamp((offsetAge * changeSpeed) / this.lifeTime);
         }
-        this.cellIndex = (this._initialStartSpriteCellId + ratio * dist) | 0;
+        this.cellIndex = (this._properties.initialStartSpriteCellId + ratio * dist) | 0;
     }
 
     /**
@@ -241,8 +263,8 @@ export class Particle {
 
     /** @internal */
     public _inheritParticleInfoToSubEmitters() {
-        if (this._attachedSubEmitters && this._attachedSubEmitters.length > 0) {
-            for (const subEmitter of this._attachedSubEmitters) {
+        if (this._properties.attachedSubEmitters && this._properties.attachedSubEmitters.length > 0) {
+            for (const subEmitter of this._properties.attachedSubEmitters) {
                 this._inheritParticleInfoToSubEmitter(subEmitter);
             }
         }
@@ -250,21 +272,13 @@ export class Particle {
 
     /** @internal */
     public _reset() {
-        if (this.onReset) {
-            this.onReset();
+        if (this._properties.onReset) {
+            this._properties.onReset();
         }
         this.age = 0;
         this.id = Particle._Count++;
-        this._currentColorGradient = null;
-        this._currentSizeGradient = null;
-        this._currentAngularSpeedGradient = null;
-        this._currentVelocityGradient = null;
-        this._currentLimitVelocityGradient = null;
-        this._currentDragGradient = null;
+        this._properties.reset();
         this.cellIndex = this.particleSystem.startSpriteCellID;
-        this._randomCellOffset = undefined;
-        this._randomNoiseCoordinates1 = null;
-        this._randomNoiseCoordinates2 = null;
     }
 
     /**
@@ -273,21 +287,21 @@ export class Particle {
      */
     public copyTo(other: Particle) {
         other.position.copyFrom(this.position);
-        if (this._initialDirection) {
-            if (other._initialDirection) {
-                other._initialDirection.copyFrom(this._initialDirection);
+        if (this._properties.initialDirection) {
+            if (other._properties.initialDirection) {
+                other._properties.initialDirection.copyFrom(this._properties.initialDirection);
             } else {
-                other._initialDirection = this._initialDirection.clone();
+                other._properties.initialDirection = this._properties.initialDirection.clone();
             }
         } else {
-            other._initialDirection = null;
+            other._properties.initialDirection = null;
         }
         other.direction.copyFrom(this.direction);
-        if (this._localPosition) {
-            if (other._localPosition) {
-                other._localPosition.copyFrom(this._localPosition);
+        if (this._properties.localPosition) {
+            if (other._properties.localPosition) {
+                other._properties.localPosition.copyFrom(this._properties.localPosition);
             } else {
-                other._localPosition = this._localPosition.clone();
+                other._properties.localPosition = this._properties.localPosition.clone();
             }
         }
         other.color.copyFrom(this.color);
@@ -296,7 +310,7 @@ export class Particle {
         other.colorDead.copyFrom(this.colorDead);
         other.lifeTime = this.lifeTime;
         other.age = this.age;
-        other._randomCellOffset = this._randomCellOffset;
+        other._properties.randomCellOffset = this._properties.randomCellOffset;
         other.size = this.size;
         other.scale.copyFrom(this.scale);
         other.angle = this.angle;
@@ -304,41 +318,41 @@ export class Particle {
         other.particleSystem = this.particleSystem;
         other.cellIndex = this.cellIndex;
         other.id = this.id;
-        other._attachedSubEmitters = this._attachedSubEmitters;
-        if (this._currentColorGradient) {
-            other._currentColorGradient = this._currentColorGradient;
-            other._currentColor1.copyFrom(this._currentColor1);
-            other._currentColor2.copyFrom(this._currentColor2);
+        other._properties.attachedSubEmitters = this._properties.attachedSubEmitters;
+        if (this._properties.currentColorGradient) {
+            other._properties.currentColorGradient = this._properties.currentColorGradient;
+            other._properties.currentColor1.copyFrom(this._properties.currentColor1);
+            other._properties.currentColor2.copyFrom(this._properties.currentColor2);
         }
-        if (this._currentSizeGradient) {
-            other._currentSizeGradient = this._currentSizeGradient;
-            other._currentSize1 = this._currentSize1;
-            other._currentSize2 = this._currentSize2;
+        if (this._properties.currentSizeGradient) {
+            other._properties.currentSizeGradient = this._properties.currentSizeGradient;
+            other._properties.currentSize1 = this._properties.currentSize1;
+            other._properties.currentSize2 = this._properties.currentSize2;
         }
-        if (this._currentAngularSpeedGradient) {
-            other._currentAngularSpeedGradient = this._currentAngularSpeedGradient;
-            other._currentAngularSpeed1 = this._currentAngularSpeed1;
-            other._currentAngularSpeed2 = this._currentAngularSpeed2;
+        if (this._properties.currentAngularSpeedGradient) {
+            other._properties.currentAngularSpeedGradient = this._properties.currentAngularSpeedGradient;
+            other._properties.currentAngularSpeed1 = this._properties.currentAngularSpeed1;
+            other._properties.currentAngularSpeed2 = this._properties.currentAngularSpeed2;
         }
-        if (this._currentVelocityGradient) {
-            other._currentVelocityGradient = this._currentVelocityGradient;
-            other._currentVelocity1 = this._currentVelocity1;
-            other._currentVelocity2 = this._currentVelocity2;
+        if (this._properties.currentVelocityGradient) {
+            other._properties.currentVelocityGradient = this._properties.currentVelocityGradient;
+            other._properties.currentVelocity1 = this._properties.currentVelocity1;
+            other._properties.currentVelocity2 = this._properties.currentVelocity2;
         }
-        if (this._currentLimitVelocityGradient) {
-            other._currentLimitVelocityGradient = this._currentLimitVelocityGradient;
-            other._currentLimitVelocity1 = this._currentLimitVelocity1;
-            other._currentLimitVelocity2 = this._currentLimitVelocity2;
+        if (this._properties.currentLimitVelocityGradient) {
+            other._properties.currentLimitVelocityGradient = this._properties.currentLimitVelocityGradient;
+            other._properties.currentLimitVelocity1 = this._properties.currentLimitVelocity1;
+            other._properties.currentLimitVelocity2 = this._properties.currentLimitVelocity2;
         }
-        if (this._currentDragGradient) {
-            other._currentDragGradient = this._currentDragGradient;
-            other._currentDrag1 = this._currentDrag1;
-            other._currentDrag2 = this._currentDrag2;
+        if (this._properties.currentDragGradient) {
+            other._properties.currentDragGradient = this._properties.currentDragGradient;
+            other._properties.currentDrag1 = this._properties.currentDrag1;
+            other._properties.currentDrag2 = this._properties.currentDrag2;
         }
         if (this.particleSystem.isAnimationSheetEnabled) {
-            other._initialStartSpriteCellId = this._initialStartSpriteCellId;
-            other._initialEndSpriteCellId = this._initialEndSpriteCellId;
-            other._initialSpriteCellLoop = this._initialSpriteCellLoop;
+            other._properties.initialStartSpriteCellId = this._properties.initialStartSpriteCellId;
+            other._properties.initialEndSpriteCellId = this._properties.initialEndSpriteCellId;
+            other._properties.initialSpriteCellLoop = this._properties.initialSpriteCellLoop;
         }
         if (this.particleSystem.useRampGradients) {
             if (other.remapData && this.remapData) {
@@ -347,13 +361,13 @@ export class Particle {
                 other.remapData = new Vector4(0, 0, 0, 0);
             }
         }
-        if (this._randomNoiseCoordinates1 && this._randomNoiseCoordinates2) {
-            if (other._randomNoiseCoordinates1 && other._randomNoiseCoordinates2) {
-                other._randomNoiseCoordinates1.copyFrom(this._randomNoiseCoordinates1);
-                other._randomNoiseCoordinates2.copyFrom(this._randomNoiseCoordinates2);
+        if (this._properties.randomNoiseCoordinates1 && this._properties.randomNoiseCoordinates2) {
+            if (other._properties.randomNoiseCoordinates1 && other._properties.randomNoiseCoordinates2) {
+                other._properties.randomNoiseCoordinates1.copyFrom(this._properties.randomNoiseCoordinates1);
+                other._properties.randomNoiseCoordinates2.copyFrom(this._properties.randomNoiseCoordinates2);
             } else {
-                other._randomNoiseCoordinates1 = this._randomNoiseCoordinates1.clone();
-                other._randomNoiseCoordinates2 = this._randomNoiseCoordinates2.clone();
+                other._properties.randomNoiseCoordinates1 = this._properties.randomNoiseCoordinates1.clone();
+                other._properties.randomNoiseCoordinates2 = this._properties.randomNoiseCoordinates2.clone();
             }
         }
     }

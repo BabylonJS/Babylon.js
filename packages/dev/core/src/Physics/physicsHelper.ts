@@ -43,10 +43,11 @@ class HelperTools {
      * @returns
      */
     static HasAppliedForces(body: PhysicsBody, instanceIndex?: number) {
+        const mesh = body.transformNode as Mesh;
         return (
             body.getMotionType(instanceIndex) === PhysicsMotionType.STATIC ||
             (body.getMassProperties(instanceIndex)?.mass ?? 0) === 0 ||
-            (body.transformNode as Mesh)?.getTotalVertices() === 0
+            (mesh && mesh.getTotalVertices && mesh.getTotalVertices() === 0)
         );
     }
 

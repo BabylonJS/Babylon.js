@@ -119,46 +119,13 @@ const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody }> = (
 
     return (
         <>
-            <NumberDropdownPropertyLine
-                key="MotionType"
-                label="Motion Type"
-                options={MotionOptions}
-                value={motionType}
-                onChange={(value) => {
-                    return physicsBody.setMotionType(value);
-                }}
-            />
-            <NumberDropdownPropertyLine
-                label="Prestep Type"
-                options={PrestepOptions}
-                value={prestepType}
-                onChange={(value) => {
-                    return physicsBody.setPrestepType(value);
-                }}
-            />
+            <NumberDropdownPropertyLine key="MotionType" label="Motion Type" options={MotionOptions} value={motionType} onChange={(value) => physicsBody.setMotionType(value)} />
+            <NumberDropdownPropertyLine label="Prestep Type" options={PrestepOptions} value={prestepType} onChange={(value) => physicsBody.setPrestepType(value)} />
             {shape && <TextPropertyLine label="Shape Type" value={GetShapeTypeString(type)} />}
             {/* Linear Damping */}
-            <NumberInputPropertyLine
-                label="Linear Damping"
-                min={0}
-                max={1}
-                step={0.01}
-                value={linearDamping}
-                onChange={(e) => {
-                    physicsBody.setLinearDamping(e);
-                }}
-            />
+            <NumberInputPropertyLine label="Linear Damping" min={0} max={1} step={0.01} value={linearDamping} onChange={(value) => physicsBody.setLinearDamping(value)} />
             {/* Angular Damping */}
-            <NumberInputPropertyLine
-                label="Angular Damping"
-                min={0}
-                max={1}
-                step={0.01}
-                value={angularDamping}
-                onChange={(e) => {
-                    physicsBody.setAngularDamping(e);
-                }}
-            />
+            <NumberInputPropertyLine label="Angular Damping" min={0} max={1} step={0.01} value={angularDamping} onChange={(value) => physicsBody.setAngularDamping(value)} />
             {/* Material Properties */}
             {shape && (
                 <>

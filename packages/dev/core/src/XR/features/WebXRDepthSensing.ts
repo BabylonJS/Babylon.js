@@ -500,6 +500,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Dispose this feature and all of the resources attached
      */
     public override dispose(): void {
+        super.dispose();
         UnregisterMaterialPlugin("WebXRDepthSensingMaterialPlugin");
         this._cachedDepthImageTexture?.dispose();
         this.onGetDepthInMetersAvailable.clear();

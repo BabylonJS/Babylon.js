@@ -30,6 +30,8 @@ import { expandToProperty, serialize } from "core/Misc/decorators";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { RegisterClass } from "core/Misc/typeStore";
 
+import "../geometryBufferRendererSceneComponent";
+
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**

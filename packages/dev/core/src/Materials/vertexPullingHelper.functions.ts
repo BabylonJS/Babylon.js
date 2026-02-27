@@ -20,6 +20,11 @@ export interface IVertexPullingMetadata {
      * Type of the vertex buffer (e.g., float, int)
      */
     type: number; // VertexBuffer type constant
+
+    /**
+     * Whether integer data should be normalized when read
+     */
+    normalized: boolean;
 }
 
 // Store vertex pulling metadata per geometry
@@ -62,11 +67,13 @@ export function PrepareVertexPullingUniforms(geometry: Geometry): Nullable<Map<s
             const offset = vertexBuffer.byteOffset;
             const stride = vertexBuffer.byteStride;
             const type = vertexBuffer.type;
+            const normalized = vertexBuffer.normalized;
 
             metadata.set(vb, {
                 offset: offset,
                 stride: stride,
                 type: type,
+                normalized: normalized,
             });
         }
     }
@@ -82,7 +89,7 @@ export function PrepareVertexPullingUniforms(geometry: Geometry): Nullable<Map<s
 export function BindVertexPullingUniforms(effect: Effect, metadata: Map<string, IVertexPullingMetadata>): void {
     metadata.forEach((data, attribute) => {
         const uniformName = `vp_${attribute}_info`;
-        // Pack into vec3: (offset, stride, type)
-        effect.setFloat3(uniformName, data.offset, data.stride, data.type);
+        // Pack into vec4: (offset, stride, type, normalized)
+        effect.setFloat4(uniformName, data.offset, data.stride, data.type, data.normalized ? 1 : 0);
     });
 }

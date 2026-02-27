@@ -373,7 +373,9 @@
             vec3 inputBitangent,     // Surface bitangent vector  
             vec3 inputNormal,        // Surface normal vector
             vec2 filteringInfo,
-            vec2 noiseInput          // [-1,1] noise value per pixel for sample jittering
+            vec2 noiseInput,          // [-1,1] noise value per pixel for sample jittering
+            bool isRefraction,
+            float ior // Index of refraction for refraction calculations
         )
         {
             vec3 V = inputView;
@@ -381,18 +383,6 @@
             vec3 T = inputTangent;
             vec3 B = inputBitangent;
 
-            // Calculate reflection vector
-            // inputView is from surface to eye, so incident direction is -V
-            vec3 R = reflect(-V, N);
-            
-            // Early exit for perfectly smooth surfaces
-            if (alphaTangent == 0. && alphaBitangent == 0.) {
-                vec3 c = textureCube(inputTexture, R).rgb;
-                #if GAMMA_INPUT
-                    c = toLinearSpace(c);
-                #endif
-                return c;
-            }
             // Anisotropic implementation using proper half-vector importance sampling
             // We sample half-vectors from the anisotropic GGX distribution and compute
             // the corresponding light directions for environment map lookup
@@ -400,9 +390,12 @@
             
             float maxLevel = filteringInfo.y;
             float dim0 = filteringInfo.x;
+
+            float clampedAlphaT = max(alphaTangent, MINIMUMVARIANCE);
+            float clampedAlphaB = max(alphaBitangent, MINIMUMVARIANCE);
             
             // Compute effective dimension scaled by anisotropy for proper solid angle
-            float effectiveDim = dim0 * sqrt(alphaTangent * alphaBitangent);
+            float effectiveDim = dim0 * sqrt(clampedAlphaT * clampedAlphaB);
             float omegaP = (4. * PI) / (6. * effectiveDim * effectiveDim);
             const float noiseScale = clamp(log2(float(NUM_SAMPLES)) / 12.0f, 0.0f, 1.0f);
             float weight = 0.;
@@ -419,14 +412,19 @@
                 Xi = fract(Xi + noiseInput * mix(0.5f, 0.015f, noiseScale)); // Wrap around to stay in [0,1] range
 
                 // Generate anisotropic half vector using importance sampling
-                vec3 H_tangent = hemisphereImportanceSampleDggxAnisotropic(Xi, alphaTangent, alphaBitangent);
+                vec3 H_tangent = hemisphereImportanceSampleDggxAnisotropic(Xi, clampedAlphaT, clampedAlphaB);
 
                 // Transform half vector from tangent space to world space
                 vec3 H = normalize(H_tangent.x * T + H_tangent.y * B + H_tangent.z * N);
                 
                 // Calculate light direction by reflecting view vector around half vector
-                // V is surface-to-eye, L will be surface-to-light (perfect for environment sampling)
-                vec3 L = normalize(2.0 * dot(V, H) * H - V);
+                // V is surface-to-eye, L will be surface-to-light
+                vec3 L;
+                if (isRefraction) {
+                    L = refract(-V, H, 1.0 / ior);
+                } else {
+                    L = reflect(-V, H);
+                }
                 
                 // Calculate dot products
                 float NoH = max(dot(N, H), 0.001);
@@ -436,7 +434,7 @@
                 if (NoL > 0.) {
                     // Calculate PDF following isotropic pattern: 4/D(H)
                     float pdf_inversed = 4. / normalDistributionFunction_BurleyGGX_Anisotropic(
-                        H_tangent.z, H_tangent.x, H_tangent.y, vec2(alphaTangent, alphaBitangent)
+                        H_tangent.z, H_tangent.x, H_tangent.y, vec2(clampedAlphaT, clampedAlphaB)
                     );
                     
                     float omegaS = NUM_SAMPLES_FLOAT_INVERSED * pdf_inversed;

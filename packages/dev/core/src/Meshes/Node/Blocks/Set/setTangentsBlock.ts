@@ -158,6 +158,7 @@ export class SetTangentsBlock extends NodeGeometryBlock implements INodeGeometry
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

@@ -56,8 +56,9 @@ export class GraphNode {
     private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
     private _enclosingFrameId = -1;
-    private _visualPropertiesRefresh: Array<() => void> = [];
     private _lastClick = 0.0;
+
+    public _visualPropertiesRefresh: Array<() => void> = [];
 
     public addClassToVisual(className: string) {
         this._visual.classList.add(className);
@@ -213,7 +214,11 @@ export class GraphNode {
                 if (this._displayManager && this._displayManager.onSelectionChanged) {
                     this._displayManager.onSelectionChanged(this.content, node.content, this._stateManager);
                 }
+                this._stateManager.activeNode = this;
             } else {
+                if (this._stateManager.activeNode === this) {
+                    this._stateManager.activeNode = null;
+                }
                 if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
                     if (this.content.canBeActivated && this.content.isActive) {
                         this.content.setIsActive?.(false);
@@ -264,6 +269,10 @@ export class GraphNode {
 
         content.onInputCountChanged = () => {
             this._buildInputPorts(true);
+        };
+
+        content.onInputRemoved = (index: number) => {
+            this._removeInputPort(index);
         };
     }
 
@@ -651,7 +660,7 @@ export class GraphNode {
         for (const refresh of this._visualPropertiesRefresh) {
             refresh();
         }
-        ForceRebuild(source, this._stateManager, propertyName, notifiers);
+        ForceRebuild(source, this._stateManager, propertyName, notifiers, false);
     }
 
     private _isCollapsed = false;
@@ -710,6 +719,12 @@ export class GraphNode {
             }
             this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._stateManager));
         }
+    }
+
+    private _removeInputPort(index: number) {
+        const port = this._inputPorts[index];
+        port.remove();
+        this._inputPorts.splice(index, 1);
     }
 
     public appendVisual(root: HTMLDivElement, owner: GraphCanvasComponent) {
@@ -938,6 +953,9 @@ export class GraphNode {
     }
 
     public dispose() {
+        if (this._stateManager.activeNode === this) {
+            this._stateManager.activeNode = null;
+        }
         if (this._displayManager && this._displayManager.onDispose) {
             this._displayManager.onDispose(this.content, this._stateManager);
         }

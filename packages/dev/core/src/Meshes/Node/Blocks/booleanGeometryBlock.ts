@@ -62,7 +62,6 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
             return null;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         if (!this._csg2LoadingPromise) {
             this._csg2LoadingPromise = InitializeCSG2Async();
         }
@@ -206,6 +205,7 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

@@ -23,6 +23,8 @@ export class GlobalState {
     hostDocument: Document;
     hostWindow: Window;
     stateManager: StateManager;
+    /** If true, the node particle system set will be disposed when the editor is closed (default: true) */
+    disposeOnClose: boolean = true;
     onBuildRequiredObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<boolean>();
     onClearUndoStack = new Observable<void>();

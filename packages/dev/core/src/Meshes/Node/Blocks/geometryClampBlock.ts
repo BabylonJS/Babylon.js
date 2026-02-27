@@ -118,6 +118,7 @@ export class GeometryClampBlock extends NodeGeometryBlock {
         return this;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

@@ -1,38 +1,57 @@
-import type { ISettingsContext } from "../services/settingsContext";
-import type { HorizontalLocation, VerticalLocation } from "../services/shellService";
+import type { Dispatch, SetStateAction } from "react";
 
-import { useCallback } from "react";
-import { useLocalStorage } from "usehooks-ts";
+import type { SettingDescriptor } from "../services/settingsStore";
 
+import { useCallback, useEffect, useMemo } from "react";
+
+import { Observable } from "core/Misc/observable";
+import { useSettingsStore } from "../contexts/settingsContext";
+import { UseDegreesSettingDescriptor } from "../services/globalSettings";
 import { useObservableState } from "./observableHooks";
 
-const CompactModeStorageKey = "Babylon/Settings/IsCompactMode";
-const SidePaneDockOverridesStorageKey = "Babylon/Settings/SidePaneDockOverrides";
+export function useSetting<T>(descriptor: SettingDescriptor<T>): [T, Dispatch<SetStateAction<T>>, () => void] {
+    const settingsStore = useSettingsStore();
 
-function useSetting<T>(storageKey: string, defaultValue: T) {
-    const [value, setValue, resetValue] = useLocalStorage<T>(storageKey, defaultValue);
+    // Only watch for this specific setting to change. Otherwise, any time any setting changes we would
+    // call readSetting again, which if it is an object, it will be a new instance, which can cause
+    // unnecessary re-renders in consumers of this hook.
+    const settingObservable = useMemo(() => new Observable<void>(), []);
+    useEffect(() => {
+        if (settingsStore) {
+            const observer = settingsStore.onChanged.add((key) => {
+                if (key === descriptor.key) {
+                    settingObservable.notifyObservers();
+                }
+            });
 
-    if (!localStorage.getItem(storageKey)) {
-        localStorage.setItem(storageKey, JSON.stringify(value));
+            return () => {
+                observer.remove();
+            };
+        }
+
+        return undefined;
+    }, [settingsStore, descriptor.key]);
+
+    const value = useObservableState(
+        useCallback(() => settingsStore?.readSetting<T>(descriptor) ?? descriptor.defaultValue, [settingsStore, descriptor.key, descriptor.defaultValue]),
+        settingObservable
+    );
+
+    const setValue = useCallback(
+        (newValue: SetStateAction<T>): void => {
+            const value = typeof newValue === "function" ? (newValue as (prev: T) => T)(settingsStore?.readSetting<T>(descriptor) ?? descriptor.defaultValue) : newValue;
+            settingsStore?.writeSetting<T>(descriptor, value);
+        },
+        [settingsStore, descriptor.key, descriptor.defaultValue]
+    );
+
+    const resetValue = useCallback((): void => settingsStore?.writeSetting<T>(descriptor, descriptor.defaultValue), [settingsStore, descriptor.key, descriptor.defaultValue]);
+
+    if (!settingsStore) {
+        throw new Error("Settings store is not available in context.");
     }
 
     return [value, setValue, resetValue] as const;
-}
-
-/**
- * Gets the compact mode setting.
- * @returns A tuple containing the current compact mode value, a function to update it, and a function to reset it.
- */
-export function useCompactMode() {
-    return useSetting<boolean>(CompactModeStorageKey, !matchMedia("(pointer: coarse)").matches);
-}
-
-/**
- * Gets the side pane dock overrides configuration.
- * @returns A record mapping side pane IDs to their dock locations.
- */
-export function useSidePaneDockOverrides() {
-    return useSetting<Record<string, Readonly<{ horizontalLocation: HorizontalLocation; verticalLocation: VerticalLocation }> | undefined>>(SidePaneDockOverridesStorageKey, {});
 }
 
 const RadiansToDegrees = 180 / Math.PI;
@@ -47,11 +66,10 @@ function WrapAngle(angle: number) {
 
 /**
  * Gets functions used to convert to/from display values for angles based on the current settings.
- * @param settings The settings context to use for determining if angles should be displayed in degrees or radians.
  * @returns A tuple containing the functions to convert to and from display values.
  */
-export function useAngleConverters(settings: ISettingsContext) {
-    const useDegrees = useObservableState(() => settings.useDegrees, settings.settingsChangedObservable);
+export function useAngleConverters() {
+    const [useDegrees] = useSetting(UseDegreesSettingDescriptor);
 
     const toDisplayValue = useCallback(
         (angle: number, wrap = false) => {

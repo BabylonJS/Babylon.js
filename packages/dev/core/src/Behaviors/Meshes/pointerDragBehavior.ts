@@ -1,6 +1,7 @@
 import type { Behavior } from "../../Behaviors/behavior";
 import { Mesh } from "../../Meshes/mesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { TransformNode } from "../../Meshes/transformNode";
 import { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
@@ -137,6 +138,12 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      * the drag will continue even if another button is pressed on the same pointer.
      */
     public allowOtherButtonsDuringDrag = false;
+
+    /**
+     * If set, the drag axis will be transformed by the inverse of this node's world matrix.
+     * Useful when the drag behavior is used with a gizmo that has an additionalTransformNode.
+     */
+    public additionalTransformNode?: TransformNode;
 
     private _options: { dragAxis?: Vector3; dragPlaneNormal?: Vector3 };
 
@@ -456,6 +463,10 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 // Project delta drag from the drag plane onto the drag axis
                 pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);
 
+                if (this.additionalTransformNode) {
+                    this.additionalTransformNode.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
+                    Vector3.TransformNormalToRef(this._worldDragAxis, TmpVectors.Matrix[0], this._worldDragAxis);
+                }
                 this._worldDragAxis.normalize();
                 dragLength = Vector3.Dot(this._tmpVector, this._worldDragAxis);
                 this._worldDragAxis.scaleToRef(dragLength, this._dragDelta);

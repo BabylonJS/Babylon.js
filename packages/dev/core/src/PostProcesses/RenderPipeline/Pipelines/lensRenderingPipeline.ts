@@ -11,6 +11,7 @@ import { RawTexture } from "../../../Materials/Textures/rawTexture";
 import { Constants } from "../../../Engines/constants";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+import "../../../Rendering/depthRendererSceneComponent";
 
 import "../../../Shaders/chromaticAberration.fragment";
 import "../../../Shaders/lensHighlights.fragment";

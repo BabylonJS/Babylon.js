@@ -14,8 +14,8 @@ export async function _CreateAudioAnalyzerSubNodeAsync(engine: _WebAudioEngine):
 /** @internal */
 export class _WebAudioAnalyzerSubNode extends _AudioAnalyzerSubNode implements IWebAudioInNode {
     private readonly _analyzerNode: AnalyserNode;
-    private _byteFrequencyData: Nullable<Uint8Array> = null;
-    private _floatFrequencyData: Nullable<Float32Array> = null;
+    private _byteFrequencyData: Nullable<Uint8Array<ArrayBuffer>> = null;
+    private _floatFrequencyData: Nullable<Float32Array<ArrayBuffer>> = null;
 
     /** @internal */
     public constructor(engine: _WebAudioEngine) {

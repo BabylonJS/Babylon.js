@@ -8,6 +8,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsVolume } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import { Vector3 } from "core/Maths/math.vector";
 
 const NAME = "KHR_materials_volume";
 
@@ -89,9 +90,16 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
             return Promise.resolve();
         }
 
-        adapter.transmissionDepth = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
-        adapter.transmissionColor =
-            extension.attenuationColor !== undefined && extension.attenuationColor.length == 3 ? Color3.FromArray(extension.attenuationColor) : Color3.White();
+        const attenuationDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
+        const attenuationColor = extension.attenuationColor !== undefined && extension.attenuationColor.length == 3 ? Color3.FromArray(extension.attenuationColor) : Color3.White();
+        // Calculate the attenuation coefficient (i.e. extinction coefficient)
+        const extinctionCoefficient = new Vector3(-Math.log(attenuationColor.r), -Math.log(attenuationColor.g), -Math.log(attenuationColor.b));
+        extinctionCoefficient.scaleInPlace(1 / Math.max(attenuationDistance, 0.001));
+        adapter.extinctionCoefficient = extinctionCoefficient;
+
+        adapter.transmissionDepth = attenuationDistance;
+        adapter.transmissionColor = attenuationColor;
+
         adapter.volumeThickness = extension.thicknessFactor ?? 0;
 
         const promises = new Array<Promise<any>>();

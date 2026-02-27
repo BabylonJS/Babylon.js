@@ -214,6 +214,7 @@ export class LatticeBlock extends NodeGeometryBlock implements INodeGeometryExec
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

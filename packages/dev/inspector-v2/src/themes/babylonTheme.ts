@@ -25,10 +25,16 @@ const BabylonRamp: BrandVariants = {
 };
 /* eslint-enable @typescript-eslint/naming-convention */
 
+const BaseLightTheme = createLightTheme(BabylonRamp);
 export const LightTheme: Theme = {
-    ...createLightTheme(BabylonRamp),
+    ...BaseLightTheme,
+    // Reduce the max contrast between foreground and background by just replacing the most intense foreground color with the second most intense one.
+    colorNeutralForeground1: BaseLightTheme.colorNeutralForeground2,
 };
 
+const BaseDarkTheme = createDarkTheme(BabylonRamp);
 export const DarkTheme: Theme = {
-    ...createDarkTheme(BabylonRamp),
+    ...BaseDarkTheme,
+    // Reduce the max contrast between foreground and background by just replacing the most intense foreground color with the second most intense one.
+    colorNeutralForeground1: BaseDarkTheme.colorNeutralForeground2,
 };

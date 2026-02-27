@@ -96,6 +96,10 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     */
     public override bind(effect: Effect) {
         if (!this._randomTexture) {
             this._createRandomTexture(effect.getEngine());
@@ -289,6 +293,9 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
         return this;
     }
 
+    /**
+     * Releases the resources held by the block
+     */
     public override dispose(): void {
         if (this._randomTexture) {
             this._randomTexture.dispose();

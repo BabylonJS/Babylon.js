@@ -38,6 +38,7 @@ export const SpotLightSetupProperties: FunctionComponent<{ context: SpotLight }>
                 max={90}
                 step={0.1}
             />
+            <BoundProperty label="Intensity" component={NumberInputPropertyLine} target={spotLight} propertyKey="intensity" />
             <BoundProperty label="Exponent" component={NumberInputPropertyLine} target={spotLight} propertyKey="exponent" />
         </>
     );

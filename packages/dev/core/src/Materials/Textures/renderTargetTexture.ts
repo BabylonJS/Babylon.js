@@ -678,9 +678,12 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             });
 
         this._onBeforeRenderingManagerRenderObserver = this._objectRenderer.onBeforeRenderingManagerRenderObservable.add(() => {
+            // One of the actions below can dispose this RTT, so capture the scene first.
+            const scene = this._scene!;
+
             // Before clear
             if (!this._disableEngineStages) {
-                for (const step of this._scene!._beforeRenderTargetClearStage) {
+                for (const step of scene._beforeRenderTargetClearStage) {
                     step.action(this, this._currentFaceIndex, this._currentLayer);
                 }
             }
@@ -689,16 +692,16 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             if (this.onClearObservable.hasObservers()) {
                 this.onClearObservable.notifyObservers(engine);
             } else if (!this.skipInitialClear) {
-                engine.clear(this.clearColor || this._scene!.clearColor, true, true, true);
+                engine.clear(this.clearColor ?? scene.clearColor, true, true, true);
             }
 
             if (!this._doNotChangeAspectRatio) {
-                this._scene!.updateTransformMatrix(true);
+                scene.updateTransformMatrix(true);
             }
 
             // Before Camera Draw
             if (!this._disableEngineStages) {
-                for (const step of this._scene!._beforeRenderTargetDrawStage) {
+                for (const step of scene._beforeRenderTargetDrawStage) {
                     step.action(this, this._currentFaceIndex, this._currentLayer);
                 }
             }

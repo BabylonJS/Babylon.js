@@ -32,9 +32,9 @@ export class Analyser {
      */
     public DEBUGCANVASSIZE = { width: 320, height: 200 };
 
-    private _byteFreqs: Uint8Array;
-    private _byteTime: Uint8Array;
-    private _floatFreqs: Float32Array;
+    private _byteFreqs: Uint8Array<ArrayBuffer>;
+    private _byteTime: Uint8Array<ArrayBuffer>;
+    private _floatFreqs: Float32Array<ArrayBuffer>;
     private _webAudioAnalyser: AnalyserNode;
     private _debugCanvas: Nullable<HTMLCanvasElement>;
     private _debugCanvasContext: Nullable<CanvasRenderingContext2D>;

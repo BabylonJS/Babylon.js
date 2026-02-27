@@ -6,7 +6,7 @@ import type { ISelectionService } from "../../../services/selectionService";
 import { NodeSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { useObservableState } from "../../../hooks/observableHooks";
-import { BoundProperty } from "../boundProperty";
+import { BoundProperty, Property } from "../boundProperty";
 
 export const NodeGeneralProperties: FunctionComponent<{ node: Node; selectionService: ISelectionService }> = (props) => {
     const { node, selectionService } = props;
@@ -24,7 +24,14 @@ export const NodeGeneralProperties: FunctionComponent<{ node: Node; selectionSer
                 defaultValue={null}
                 onLink={(parentNode) => (selectionService.selectedEntity = parentNode)}
             />
-            <SwitchPropertyLine label="Is Enabled" description="Whether the node is enabled or not." value={isEnabled} onChange={(checked) => node.setEnabled(checked)} />
+            <Property
+                component={SwitchPropertyLine}
+                label="Is Enabled"
+                description="Whether the node is enabled or not."
+                value={isEnabled}
+                onChange={(checked) => node.setEnabled(checked)}
+                functionPath="setEnabled"
+            />
             <BoundProperty
                 component={SwitchPropertyLine}
                 label="Inherit Visibility"

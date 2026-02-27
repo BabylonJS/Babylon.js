@@ -210,7 +210,7 @@ function GenerateTables() {
  * @param offset current offset in the buffer
  * @returns a string
  */
-export function ParseNullTerminatedString(buffer: ArrayBuffer, offset: DataCursor) {
+export function ParseNullTerminatedString(buffer: ArrayBufferLike, offset: DataCursor) {
     const uintBuffer = new Uint8Array(buffer);
     let endOffset = 0;
 
@@ -372,7 +372,7 @@ export function DecodeFloat32(dataView: DataView, offset: DataCursor) {
     return ToHalfFloat(ParseFloat32(dataView, offset));
 }
 
-function ParseFixedLengthString(buffer: ArrayBuffer, offset: DataCursor, size: number) {
+function ParseFixedLengthString(buffer: ArrayBufferLike, offset: DataCursor, size: number) {
     const stringValue = new TextDecoder().decode(new Uint8Array(buffer).slice(offset.value, offset.value + size));
 
     offset.value = offset.value + size;

@@ -90,7 +90,7 @@ export abstract class AreaLight extends Light {
         }
     }
 
-    public override transferTexturesToEffect(effect: Effect): Light {
+    public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
         if (this._scene._ltcTextures) {
             effect.setTexture("areaLightsLTC1Sampler", this._scene._ltcTextures.LTC1);
             effect.setTexture("areaLightsLTC2Sampler", this._scene._ltcTextures.LTC2);

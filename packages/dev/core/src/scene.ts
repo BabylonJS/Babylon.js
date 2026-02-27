@@ -106,6 +106,16 @@ import type { BoundingBoxRenderer } from "./Rendering/boundingBoxRenderer";
 import type { BoundingBox } from "./Culling/boundingBox";
 
 /**
+ * Options for creating a scene uniform buffer
+ */
+export interface ICreateSceneUboOptions {
+    /** Define if the UBOs should be tracked in the frame (default: undefined - will use the value from Engine._features.trackUbosInFrame) */
+    trackUBOsInFrame?: boolean;
+    /** When true, always creates a mono (non-multiview) UBO, bypassing any multiview override */
+    forceMono?: boolean;
+}
+
+/**
  * Define an interface for all classes that will hold resources
  */
 export interface IDisposable {
@@ -141,7 +151,6 @@ export interface SceneOptions {
     useClonedMeshMap?: boolean;
 
     /**
-     * @experimental
      * When enabled, the scene can handle large world coordinate rendering without jittering caused by floating point imprecision on the GPU.
      * This mode offsets matrices and position-related attribute values before passing to shaders, centering camera at origin and offsetting other scene objects by camera active position.
      *
@@ -2028,6 +2037,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (engine.getCreationOptions().useLargeWorldRendering || options?.useFloatingOrigin) {
             OverrideMatrixFunctions();
             this._floatingOriginScene = this;
+            FloatingOriginCurrentScene.getScene = this._getFloatingOriginScene;
         }
 
         this._uid = null;
@@ -2751,11 +2761,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param projectionR defines the right Projection matrix to use (if provided)
      */
     public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
-        // clear the multiviewSceneUbo if no viewR and projectionR are defined
-        if (!viewR && !projectionR && this._multiviewSceneUbo) {
-            this._multiviewSceneUbo.dispose();
-            this._multiviewSceneUbo = null;
-        }
+        // Toggle the multiview flag based on whether stereo matrices are provided.
+        // The multiview UBO itself is kept alive for the XR session lifetime to avoid per-frame GPU alloc/dealloc.
+        this._multiviewSceneUboIsActive = !!(viewR && projectionR && this._multiviewSceneUbo);
         if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
@@ -2774,7 +2782,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             Frustum.GetPlanesToRef(this._transformMatrix, this._frustumPlanes);
         }
 
-        if (this._multiviewSceneUbo && this._multiviewSceneUbo.useUbo) {
+        if (this._multiviewSceneUboIsActive && this._multiviewSceneUbo!.useUbo) {
             this._updateMultiviewUbo(viewR, projectionR);
         } else if (this._sceneUbo.useUbo) {
             this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
@@ -2788,7 +2796,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns a UniformBuffer
      */
     public getSceneUniformBuffer(): UniformBuffer {
-        return this._multiviewSceneUbo ? this._multiviewSceneUbo : this._sceneUbo;
+        return this._multiviewSceneUboIsActive && this._multiviewSceneUbo ? this._multiviewSceneUbo : this._sceneUbo;
     }
 
     /**
@@ -2797,7 +2805,16 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param trackUBOsInFrame define if the UBOs should be tracked in the frame (default: undefined - will use the value from Engine._features.trackUbosInFrame)
      * @returns a new ubo
      */
-    public createSceneUniformBuffer(name?: string, trackUBOsInFrame?: boolean): UniformBuffer {
+    public createSceneUniformBuffer(name?: string, trackUBOsInFrame?: boolean): UniformBuffer;
+    /**
+     * Creates a scene UBO
+     * @param name name of the uniform buffer (optional, for debugging purpose only)
+     * @param options options for creating the scene uniform buffer
+     * @returns a new ubo
+     */
+    public createSceneUniformBuffer(name?: string, options?: ICreateSceneUboOptions): UniformBuffer;
+    public createSceneUniformBuffer(name?: string, trackUBOsInFrameOrOptions?: boolean | ICreateSceneUboOptions): UniformBuffer {
+        const trackUBOsInFrame = typeof trackUBOsInFrameOrOptions === "boolean" ? trackUBOsInFrameOrOptions : trackUBOsInFrameOrOptions?.trackUBOsInFrame;
         const sceneUbo = new UniformBuffer(this._engine, undefined, false, name ?? "scene", undefined, trackUBOsInFrame);
         sceneUbo.addUniform("viewProjection", 16);
         sceneUbo.addUniform("view", 16);
@@ -2819,7 +2836,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _floatingOriginScene: Scene | undefined = undefined;
     /**
-     * @experimental
      * True if floatingOriginMode was passed to engine or this scene creation otions.
      * This mode avoids floating point imprecision in huge coordinate system by offsetting uniform values before passing to shader, centering camera at origin and displacing rest of scene by camera position
      */
@@ -2828,7 +2844,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
-     * @experimental
      * When floatingOriginMode is enabled, offset is equal to the eye position. Default to ZeroReadonly when mode is disabled.
      */
     public get floatingOriginOffset(): Vector3 {
@@ -4025,7 +4040,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
-     * Gets a the last added node (Mesh, Camera, Light) using a given Id
+     * Gets a the last added node (Mesh, Camera, Light, Bone) using a given Id
      * @param id defines the Id to search for
      * @returns the found node or null if not found at all
      */
@@ -4055,11 +4070,20 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
+        for (index = this.skeletons.length - 1; index >= 0; index--) {
+            const skeleton = this.skeletons[index];
+            for (let boneIndex = skeleton.bones.length - 1; boneIndex >= 0; boneIndex--) {
+                if (skeleton.bones[boneIndex].id === id) {
+                    return skeleton.bones[boneIndex];
+                }
+            }
+        }
+
         return null;
     }
 
     /**
-     * Gets a node (Mesh, Camera, Light) using a given Id
+     * Gets a node (Mesh, Camera, Light, Bone) using a given Id
      * @param id defines the Id to search for
      * @returns the found node or null if not found at all
      */
@@ -4972,13 +4996,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this.renderTargetsEnabled) {
             this._intermediateRendering = true;
 
+            let currentBoundingBoxMeshList: Array<BoundingBox> | undefined;
+
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
 
                 // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
                 const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
-
-                let currentBoundingBoxMeshList: Array<BoundingBox> | undefined;
 
                 for (let renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     const renderTarget = this._renderTargets.data[renderIndex];
@@ -5005,8 +5029,25 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 this._renderId++;
             }
 
-            for (const step of this._cameraDrawRenderTargetStage) {
-                needRebind = step.action(this.activeCamera) || needRebind;
+            if (this._cameraDrawRenderTargetStage.length > 0) {
+                // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
+                const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
+
+                if (boundingBoxRenderer && !currentBoundingBoxMeshList) {
+                    // Saves the current bounding box mesh list (potentially built by the call to _evaluateActiveMeshes above), which can be reset/updated during the loop below
+                    currentBoundingBoxMeshList = boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
+                    currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
+                }
+
+                for (const step of this._cameraDrawRenderTargetStage) {
+                    // effect layer call object renderer in this step so bounding box render list must be restored
+                    needRebind = step.action(this.activeCamera) || needRebind;
+                }
+
+                if (boundingBoxRenderer && currentBoundingBoxMeshList) {
+                    boundingBoxRenderer.renderList.data = currentBoundingBoxMeshList;
+                    boundingBoxRenderer.renderList.length = currentBoundingBoxMeshList.length;
+                }
             }
 
             this._intermediateRendering = false;
@@ -5268,8 +5309,33 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.onBeforeRenderObservable.notifyObservers(this);
 
+        // Customs render targets
+        this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
+
+        this._renderTargets.reset();
+
+        const currentActiveCamera = this._frameGraph?.findMainCamera() ?? null;
+        if (this.renderTargetsEnabled) {
+            if (this.environmentTexture && this.environmentTexture.isRenderTarget) {
+                this._renderTargets.pushNoDuplicate(this.environmentTexture as RenderTargetTexture);
+            }
+
+            this._renderTargets.concatWithNoDuplicate(this.customRenderTargets);
+
+            Tools.StartPerformanceCounter("Custom render targets", this._renderTargets.length > 0);
+            for (let customIndex = 0; customIndex < this._renderTargets.length; customIndex++) {
+                const renderTarget = this._renderTargets.data[customIndex];
+                const activeCamera = renderTarget.activeCamera || currentActiveCamera;
+
+                this._renderRenderTarget(renderTarget, activeCamera, true, this.dumpNextRenderTargets);
+            }
+            Tools.EndPerformanceCounter("Custom render targets", this._renderTargets.length > 0);
+            this._renderId++;
+        }
+
+        this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
+
         // We must keep these steps because the procedural texture component relies on them.
-        // TODO: move the procedural texture component to the frame graph.
         for (const step of this._beforeClearStage) {
             step.action();
         }

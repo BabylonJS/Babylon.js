@@ -428,11 +428,11 @@ export class ParticleSystem extends ThinParticleSystem {
         // Attach emitters
         if (this._subEmitters && this._subEmitters.length > 0) {
             const subEmitters = this._subEmitters[Math.floor(Math.random() * this._subEmitters.length)];
-            particle._attachedSubEmitters = [];
+            particle._properties.attachedSubEmitters = [];
             for (const subEmitter of subEmitters) {
                 if (subEmitter.type === SubEmitterType.ATTACHED) {
                     const newEmitter = subEmitter.clone();
-                    particle._attachedSubEmitters.push(newEmitter);
+                    particle._properties.attachedSubEmitters.push(newEmitter);
                     newEmitter.particleSystem.start();
                 }
             }
@@ -450,9 +450,9 @@ export class ParticleSystem extends ThinParticleSystem {
         if (disposeAttachedSubEmitters) {
             if (this.particles) {
                 for (const particle of this.particles) {
-                    if (particle._attachedSubEmitters) {
-                        for (let i = particle._attachedSubEmitters.length - 1; i >= 0; i -= 1) {
-                            particle._attachedSubEmitters[i].dispose();
+                    if (particle._properties.attachedSubEmitters) {
+                        for (let i = particle._properties.attachedSubEmitters.length - 1; i >= 0; i -= 1) {
+                            particle._properties.attachedSubEmitters[i].dispose();
                         }
                     }
                 }

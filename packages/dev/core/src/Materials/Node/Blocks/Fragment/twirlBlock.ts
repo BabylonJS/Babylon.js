@@ -84,6 +84,9 @@ export class TwirlBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
+    /**
+     * Auto configure the block based on the material
+     */
     public override autoConfigure() {
         if (!this.center.isConnected) {
             const centerInput = new InputBlock("center");

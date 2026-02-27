@@ -381,7 +381,7 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 
 	// Composition
 #ifdef EMISSIVEASILLUMINATION
-	var color: vec4f =  vec4f(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor.rgb + emissiveColor + refractionColor.rgb, 0.0, 1.0), alpha);
+	var color: vec4f =  vec4f(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor.rgb + emissiveColor + refractionColor.rgb, vec3f(0.0), vec3f(1.0)), alpha);
 #else
 	var color: vec4f =  vec4f(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor.rgb + refractionColor.rgb, alpha);
 #endif

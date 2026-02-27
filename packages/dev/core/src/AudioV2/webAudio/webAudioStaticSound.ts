@@ -312,8 +312,6 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         this._pitch?.dispose();
         this._playbackRate?.dispose();
 
-        this._sourceNode = null;
-
         this.stop();
 
         this._deinitSourceNode();
@@ -427,14 +425,16 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
 
     /** @internal */
     public pause(): void {
-        if (this._state === SoundState.Paused) {
+        if (this._state !== SoundState.Started && this._state !== SoundState.Starting) {
             return;
         }
+
+        const wasStarted = this._state === SoundState.Started;
 
         this._setState(SoundState.Paused);
         this._enginePauseTime += this.engine.currentTime - this._enginePlayTime;
 
-        if (this._state === SoundState.Started) {
+        if (wasStarted) {
             this._sourceNode?.stop();
         } else {
             this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);

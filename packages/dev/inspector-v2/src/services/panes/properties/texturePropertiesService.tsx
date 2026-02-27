@@ -1,6 +1,5 @@
 import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISettingsContext } from "../../settingsContext";
 import type { ITextureEditorService } from "../../textureEditor/textureEditorService";
 import type { IPropertiesService } from "./propertiesService";
 
@@ -22,7 +21,6 @@ import { MultiRenderTargetGeneralProperties } from "../../../components/properti
 import { RenderTargetTextureGeneralProperties } from "../../../components/properties/textures/renderTargetTextureProperties";
 import { TextureGeneralProperties, TexturePreviewProperties, TextureTransformProperties } from "../../../components/properties/textures/textureProperties";
 import { ThinTextureGeneralProperties, ThinTextureSamplingProperties } from "../../../components/properties/textures/thinTextureProperties";
-import { SettingsContextIdentity } from "../../settingsContext";
 import { TextureEditorServiceIdentity } from "../../textureEditor/textureEditorService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
@@ -31,10 +29,10 @@ function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTex
     return (entity as AdvancedDynamicTexture)?.getClassName?.() === "AdvancedDynamicTexture";
 }
 
-export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext, ITextureEditorService]> = {
+export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ITextureEditorService]> = {
     friendlyName: "Texture Properties",
-    consumes: [PropertiesServiceIdentity, SettingsContextIdentity, TextureEditorServiceIdentity],
-    factory: (propertiesService, settingsContext, textureEditorService) => {
+    consumes: [PropertiesServiceIdentity, TextureEditorServiceIdentity],
+    factory: (propertiesService, textureEditorService) => {
         const baseTextureContentRegistration = propertiesService.addSectionContent({
             key: "Base Texture Properties",
             predicate: (entity: unknown) => entity instanceof BaseTexture,
@@ -100,7 +98,7 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
             content: [
                 {
                     section: "Transform",
-                    component: ({ context }) => <TextureTransformProperties texture={context} settings={settingsContext} />,
+                    component: ({ context }) => <TextureTransformProperties texture={context} />,
                 },
             ],
         });
@@ -111,7 +109,7 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
             content: [
                 {
                     section: "Transform",
-                    component: ({ context }) => <CubeTextureTransformProperties texture={context} settings={settingsContext} />,
+                    component: ({ context }) => <CubeTextureTransformProperties texture={context} />,
                 },
             ],
         });

@@ -1,0 +1,85 @@
+{
+    "name": "Babylon.js Sandbox",
+    "short_name": "BabylonSandbox",
+    "start_url": "./",
+    "display": "standalone",
+    "display_override": ["window-controls-overlay"],
+    "background_color": "#2a2342",
+    "theme_color": "#2a2342",
+    "icons": [
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/icon-256.png",
+            "sizes": "256x256",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/icon-96.png",
+            "sizes": "96x96",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/icon-48.png",
+            "sizes": "48x48",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/icon-32.png",
+            "sizes": "32x32",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/icon-24.png",
+            "sizes": "24x24",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/icon-16.png",
+            "sizes": "16x16",
+            "purpose": "any"
+        }
+    ],
+    "launch_handler": {
+        "client_mode": "navigate-existing"
+    },
+    "file_handlers": [
+        {
+            "action": "./",
+            "accept": {
+                "model/gltf-binary": [".glb"],
+                "model/gltf+json": [".gltf"],
+                "model/obj": [".obj"],
+                "model/stl": [".stl"],
+                "application/x-ply": [".ply"],
+                "application/octet-stream": [".splat", ".spz", ".babylon", ".bvh", ".sog"]
+            },
+            "icons": [
+                {
+                    "src": "icons/icon-256.png",
+                    "sizes": "256x256"
+                },
+                {
+                    "src": "icons/icon-48.png",
+                    "sizes": "48x48"
+                },
+                {
+                    "src": "icons/icon-32.png",
+                    "sizes": "32x32"
+                },
+                {
+                    "src": "icons/icon-16.png",
+                    "sizes": "16x16"
+                }
+            ]
+        }
+    ]
+}

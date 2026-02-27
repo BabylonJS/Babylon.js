@@ -64,6 +64,7 @@ import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
 import { GLTFFileLoader } from "../glTFFileLoader";
 import { Constants } from "core/Engines/constants";
 import type { AssetContainer } from "core/assetContainer";
+import { GetBlobBufferSource } from "core/Buffers/bufferUtils";
 
 /**
  * Tokenizer. Used for shaders compatibility
@@ -1534,8 +1535,7 @@ export class GLTFLoaderBase {
             sampler.minFilter === ETextureFilterType.LINEAR_MIPMAP_LINEAR;
 
         const samplingMode = Texture.BILINEAR_SAMPLINGMODE;
-
-        const blob = buffer == null ? new Blob() : new Blob([buffer]);
+        const blob = buffer == null ? new Blob() : new Blob([GetBlobBufferSource(buffer)]);
         const blobURL = URL.createObjectURL(blob);
         const revokeBlobURL = () => URL.revokeObjectURL(blobURL);
         const newTexture = new Texture(blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);

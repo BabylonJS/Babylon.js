@@ -139,7 +139,7 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
                 }
             }
 
-            particle._initialDirection = particle.direction.clone();
+            particle._properties.initialDirection = particle.direction.clone();
         };
 
         system._positionCreation.process = (particle: Particle) => {

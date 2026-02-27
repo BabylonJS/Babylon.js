@@ -3,6 +3,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import type { MeshUVSpaceRenderer } from "./meshUVSpaceRenderer";
 
 declare module "./abstractMesh" {
+    /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface AbstractMesh {
         /** @internal */

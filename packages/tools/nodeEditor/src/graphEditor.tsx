@@ -319,6 +319,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     loadGraph() {
+        this.props.globalState.forcedDebugBlock = null;
+
         const material = this.props.globalState.nodeMaterial;
         for (const n of material._vertexOutputNodes) {
             this.appendBlock(n, true);

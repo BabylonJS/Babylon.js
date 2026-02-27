@@ -1,5 +1,6 @@
 import type { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
+import type { Observer } from "../Misc/observable";
 import type { IDisposable, Scene } from "../scene";
 import type { Camera } from "../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
@@ -40,6 +41,9 @@ export class WebXRExperienceHelper implements IDisposable {
     private _supported = false;
     private _spectatorMode = false;
     private _lastTimestamp = 0;
+    private _spectatorStateChangedObserver: Nullable<Observer<WebXRState>> = null;
+    private _spectatorXRFrameObserver: Nullable<Observer<XRFrame>> = null;
+    private _spectatorAfterRenderObserver: Nullable<Observer<Camera>> = null;
 
     /**
      * Camera used to render xr content
@@ -108,6 +112,7 @@ export class WebXRExperienceHelper implements IDisposable {
     public dispose() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.exitXRAsync();
+        this._clearSpectatorObservers();
         this.camera.dispose();
         this.onStateChangedObservable.clear();
         this.onInitialXRPoseSetObservable.clear();
@@ -267,7 +272,18 @@ export class WebXRExperienceHelper implements IDisposable {
         }
     }
 
+    private _clearSpectatorObservers() {
+        this.sessionManager.onXRFrameObservable.remove(this._spectatorXRFrameObserver);
+        this._spectatorXRFrameObserver = null;
+        this._scene.onAfterRenderCameraObservable.remove(this._spectatorAfterRenderObserver);
+        this._spectatorAfterRenderObserver = null;
+        this.onStateChangedObservable.remove(this._spectatorStateChangedObserver);
+        this._spectatorStateChangedObserver = null;
+    }
+
     private _switchSpectatorMode(options?: WebXRSpectatorModeOption): void {
+        this._clearSpectatorObservers();
+
         const fps = options?.fps ? options.fps : 1000.0;
         const refreshRate = (1.0 / fps) * 1000.0;
         const cameraIndex = options?.preferredCameraIndex ? options?.preferredCameraIndex : 0;
@@ -288,25 +304,33 @@ export class WebXRExperienceHelper implements IDisposable {
             }
             const onStateChanged = () => {
                 if (this.state === WebXRState.IN_XR) {
+                    this._spectatorCamera?.dispose();
                     this._spectatorCamera = new UniversalCamera("webxr-spectator", Vector3.Zero(), this._scene);
                     this._spectatorCamera.rotationQuaternion = new Quaternion();
                     this._scene.activeCameras = [this.camera, this._spectatorCamera];
-                    this.sessionManager.onXRFrameObservable.add(updateSpectatorCamera);
-                    this._scene.onAfterRenderCameraObservable.add((camera) => {
+                    this._spectatorXRFrameObserver = this.sessionManager.onXRFrameObservable.add(updateSpectatorCamera);
+                    this._spectatorAfterRenderObserver = this._scene.onAfterRenderCameraObservable.add((camera) => {
                         if (camera === this.camera) {
                             // reset the dimensions object for correct resizing
                             (this._scene.getEngine() as ThinEngine).framebufferDimensionsObject = null;
                         }
                     });
                 } else if (this.state === WebXRState.EXITING_XR) {
-                    this.sessionManager.onXRFrameObservable.removeCallback(updateSpectatorCamera);
+                    this.sessionManager.onXRFrameObservable.remove(this._spectatorXRFrameObserver);
+                    this._spectatorXRFrameObserver = null;
+
+                    this._scene.onAfterRenderCameraObservable.remove(this._spectatorAfterRenderObserver);
+                    this._spectatorAfterRenderObserver = null;
+                    this._spectatorCamera?.dispose();
+                    this._spectatorCamera = null;
                     this._scene.activeCameras = null;
                 }
             };
-            this.onStateChangedObservable.add(onStateChanged);
+            this._spectatorStateChangedObserver = this.onStateChangedObservable.add(onStateChanged);
             onStateChanged();
         } else {
-            this.sessionManager.onXRFrameObservable.removeCallback(updateSpectatorCamera);
+            this._spectatorCamera?.dispose();
+            this._spectatorCamera = null;
             this._scene.activeCameras = [this.camera];
         }
     }

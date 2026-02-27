@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-// eslint-disable-next-line import/no-internal-modules
-import type { Camera, FrameGraph, Nullable } from "core/index";
-import { FrameGraphObjectRendererTask } from "core/FrameGraph/Tasks/Rendering/objectRendererTask";
-import { FrameGraphUtilityLayerRendererTask } from "core/FrameGraph/Tasks/Rendering/utilityLayerRendererTask";
+import type { Camera, FrameGraph, Nullable, FrameGraphObjectRendererTask } from "core/index";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 
 /**
@@ -13,22 +10,7 @@ import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
  * @returns The main camera used by the frame graph, or null if not found
  */
 export function FindMainCamera(frameGraph: FrameGraph): Nullable<Camera> {
-    const mainObjectRenderer = FrameGraphUtils.FindMainObjectRenderer(frameGraph);
-    if (mainObjectRenderer) {
-        return mainObjectRenderer.camera;
-    }
-
-    // Try to find a camera in the utility layer renderer tasks
-    const tasks = frameGraph.tasks;
-
-    for (let i = tasks.length - 1; i >= 0; i--) {
-        const task = tasks[i];
-        if (task instanceof FrameGraphUtilityLayerRendererTask) {
-            return task.camera;
-        }
-    }
-
-    return null;
+    return frameGraph.findMainCamera();
 }
 
 /**
@@ -39,19 +21,7 @@ export function FindMainCamera(frameGraph: FrameGraph): Nullable<Camera> {
  * @returns The main object renderer of the frame graph, or null if not found
  */
 export function FindMainObjectRenderer(frameGraph: FrameGraph): Nullable<FrameGraphObjectRendererTask> {
-    const objectRenderers = frameGraph.getTasksByType<FrameGraphObjectRendererTask>(FrameGraphObjectRendererTask);
-
-    let fallbackRenderer: Nullable<FrameGraphObjectRendererTask> = null;
-    for (let i = objectRenderers.length - 1; i >= 0; --i) {
-        const meshes = objectRenderers[i].objectList.meshes;
-        if (objectRenderers[i].isMainObjectRenderer) {
-            return objectRenderers[i];
-        }
-        if ((!meshes || meshes.length > 0) && !fallbackRenderer) {
-            fallbackRenderer = objectRenderers[i];
-        }
-    }
-    return fallbackRenderer;
+    return frameGraph.findMainObjectRenderer();
 }
 
 /**

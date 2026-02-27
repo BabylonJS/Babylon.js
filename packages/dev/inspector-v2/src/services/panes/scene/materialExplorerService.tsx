@@ -1,18 +1,23 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { EditRegular } from "@fluentui/react-icons";
+
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { Observable } from "core/Misc/observable";
 import { MaterialIcon } from "shared-ui-components/fluent/icons";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
+import { EditNodeMaterial } from "../../../misc/nodeMaterialEditor";
 import { SceneContextIdentity } from "../../sceneContext";
-import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
+import { WatcherServiceIdentity } from "../../watcherService";
+import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Material Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -25,11 +30,7 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
             getEntityDisplayInfo: (material) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(material, "name", {
-                    afterSet: () => {
-                        onChangeObservable.notifyObservers();
-                    },
-                });
+                const nameHookToken = watcherService.watchProperty(material, "name", () => onChangeObservable.notifyObservers());
 
                 return {
                     get name() {
@@ -47,9 +48,24 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
             getEntityRemovedObservables: () => [scene.onMaterialRemovedObservable],
         });
 
+        const editNodeMaterialCommandRegistration = sceneExplorerService.addEntityCommand({
+            predicate: (entity) => entity instanceof NodeMaterial,
+            order: DefaultCommandsOrder.EditNodeMaterial,
+            getCommand: (nodeMaterial) => {
+                return {
+                    type: "action",
+                    displayName: "Edit in Node Material Editor",
+                    icon: () => <EditRegular />,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    execute: async () => await EditNodeMaterial(nodeMaterial),
+                };
+            },
+        });
+
         return {
             dispose: () => {
                 sectionRegistration.dispose();
+                editNodeMaterialCommandRegistration.dispose();
             },
         };
     },

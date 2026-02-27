@@ -10,10 +10,10 @@ import type {
     InstancedMesh,
     BoundingBox,
     BoundingBoxRenderer,
-    UniformBuffer,
     AbstractEngine,
     ClusteredLightContainer,
 } from "core/index";
+import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Observable } from "../Misc/observable";
 import { RenderingManager } from "../Rendering/renderingManager";
 import { Constants } from "../Engines/constants";
@@ -284,6 +284,7 @@ export class ObjectRenderer {
     protected _activeBoundingBoxes = new SmartArray<BoundingBox>(32);
     protected _useUBO: boolean;
     protected _sceneUBOs: UniformBuffer[]; // It's an array because we may need multiple ubos per frame if the object renderer is used several times in a frame (e.g. for rigged cameras)
+    protected _sceneUBOIsMultiview: boolean[]; // Parallel array caching the multiview state per UBO slot — avoids getUniformNames().indexOf() in the hot path
     protected _currentSceneUBO: UniformBuffer;
     protected _currentFrameId = -1;
     protected _currentSceneUBOIndex = 0;
@@ -436,10 +437,6 @@ export class ObjectRenderer {
         this._scene = scene;
         this._engine = this._scene.getEngine();
         this._useUBO = this._engine.supportsUniformBuffers;
-        if (this._useUBO) {
-            this._sceneUBOs = [];
-            this._createSceneUBO();
-        }
 
         this.renderList = [] as AbstractMesh[];
         this._renderPassIds = [];
@@ -487,10 +484,17 @@ export class ObjectRenderer {
         }
     }
 
-    private _createSceneUBO(): void {
-        const index = this._sceneUBOs.length;
-
-        this._sceneUBOs.push(this._scene.createSceneUniformBuffer(`Scene ubo #${index} for ${this.name}`, false));
+    private _createSceneUBO(name: string, isMultiview: boolean): UniformBuffer {
+        const engine = this._scene.getEngine();
+        const ubo = new UniformBuffer(engine, undefined, isMultiview, name, undefined, false);
+        ubo.addUniform("viewProjection", 16);
+        if (isMultiview) {
+            ubo.addUniform("viewProjectionR", 16);
+        }
+        ubo.addUniform("view", 16);
+        ubo.addUniform("projection", 16);
+        ubo.addUniform("vEyePosition", 4);
+        return ubo;
     }
 
     private _getSceneUBO(): UniformBuffer {
@@ -499,8 +503,24 @@ export class ObjectRenderer {
             this._currentFrameId = this._engine.frameId;
         }
 
+        if (!this._sceneUBOs) {
+            this._sceneUBOs = [];
+            this._sceneUBOIsMultiview = [];
+        }
+
+        const activeRenderTarget = this._engine._currentRenderTarget;
+        const isMultiview = !!(activeRenderTarget && activeRenderTarget.texture?.isMultiview) || !!(this._scene as any)._multiviewSceneUboIsActive;
+
+        // Check if we have enough UBOs or if the current one is compatible
         if (this._currentSceneUBOIndex >= this._sceneUBOs.length) {
-            this._createSceneUBO();
+            const index = this._sceneUBOs.length;
+            this._sceneUBOs.push(this._createSceneUBO(`Scene ubo #${index} for ${this.name}`, isMultiview));
+            this._sceneUBOIsMultiview.push(isMultiview);
+        } else if (this._sceneUBOIsMultiview[this._currentSceneUBOIndex] !== isMultiview) {
+            // Layout mismatch, recreate
+            this._sceneUBOs[this._currentSceneUBOIndex].dispose();
+            this._sceneUBOs[this._currentSceneUBOIndex] = this._createSceneUBO(`Scene ubo #${this._currentSceneUBOIndex} for ${this.name}`, isMultiview);
+            this._sceneUBOIsMultiview[this._currentSceneUBOIndex] = isMultiview;
         }
 
         const ubo = this._sceneUBOs[this._currentSceneUBOIndex++];

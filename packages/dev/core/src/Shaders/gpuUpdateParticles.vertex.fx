@@ -266,7 +266,7 @@ void main() {
     newPosition = (radius - (radius * radiusRange * randoms2.z)) * vec3(randX, randY, randZ);
 
     #ifdef DIRECTEDSPHEREEMITTER
-      newDirection = normalize(direction1 + (direction2 - direction1) * randoms3);
+      newDirection = direction1 + (direction2 - direction1) * randoms3;
     #else
       // Direction
       newDirection = normalize(newPosition + directionRandomizer * randoms3);

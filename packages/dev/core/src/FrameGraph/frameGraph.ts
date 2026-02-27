@@ -1,4 +1,4 @@
-import type { Scene, AbstractEngine, FrameGraphTask, Nullable, NodeRenderGraph, IDisposable } from "core/index";
+import type { Scene, AbstractEngine, FrameGraphTask, Nullable, NodeRenderGraph, IDisposable, Camera, FrameGraphObjectRendererTask } from "core/index";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphObjectListPass } from "./Passes/objectListPass";
@@ -125,6 +125,15 @@ export class FrameGraph implements IDisposable {
      */
     public getTaskByName<T extends FrameGraphTask>(name: string): T | undefined {
         return this._tasks.find((t) => t.name === name) as T;
+    }
+
+    /**
+     * Gets all tasks of a specific class name(s)
+     * @param name Class name(s) of the task to get
+     * @returns The list of tasks or an empty array if none found
+     */
+    public getTasksByClassNames<T extends FrameGraphTask>(name: string | string[]): T[] {
+        return this._tasks.filter((t) => (Array.isArray(name) ? name.includes(t.getClassName()) : t.getClassName() === name)) as T[];
     }
 
     /**
@@ -378,6 +387,53 @@ export class FrameGraph implements IDisposable {
         this._tasks.length = 0;
         this.textureManager._releaseTextures();
         this._currentProcessedTask = null;
+    }
+
+    /**
+     * Looks for the main camera used by the frame graph.
+     * By default, this is the camera used by the main object renderer task.
+     * If no such task, we try to find a camera in a utility layer renderer tasks.
+     * @returns The main camera used by the frame graph, or null if not found
+     */
+    public findMainCamera(): Nullable<Camera> {
+        const mainObjectRenderer = this.findMainObjectRenderer();
+        if (mainObjectRenderer) {
+            return mainObjectRenderer.camera;
+        }
+
+        // Try to find a camera in the utility layer renderer tasks
+        const tasks = this.tasks;
+
+        for (let i = tasks.length - 1; i >= 0; i--) {
+            const task = tasks[i];
+            if (task.getClassName() === "FrameGraphUtilityLayerRendererTask") {
+                return (task as unknown as { camera: Camera }).camera;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Looks for the main object renderer task in the frame graph.
+     * By default, this is the object/geometry renderer task with isMainObjectRenderer set to true.
+     * If no such task, we return the last object/geometry renderer task that has an object list with meshes (or null if none found).
+     * @returns The main object renderer of the frame graph, or null if not found
+     */
+    public findMainObjectRenderer(): Nullable<FrameGraphObjectRendererTask> {
+        const objectRenderers = this.getTasksByClassNames<FrameGraphObjectRendererTask>(["FrameGraphObjectRendererTask", "FrameGraphGeometryRendererTask"]);
+
+        let fallbackRenderer: Nullable<FrameGraphObjectRendererTask> = null;
+        for (let i = objectRenderers.length - 1; i >= 0; --i) {
+            const meshes = objectRenderers[i].objectList.meshes;
+            if (objectRenderers[i].isMainObjectRenderer) {
+                return objectRenderers[i];
+            }
+            if ((!meshes || meshes.length > 0) && !fallbackRenderer) {
+                fallbackRenderer = objectRenderers[i];
+            }
+        }
+        return fallbackRenderer;
     }
 
     /**

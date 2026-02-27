@@ -1,29 +1,43 @@
-import type { TernaryDarkMode } from "usehooks-ts";
+import type { ThemeMode } from "../services/themeService";
 
-import { useTernaryDarkMode } from "usehooks-ts";
+import { useCallback } from "react";
 
-const ThemeModeStorageKey = `Babylon/Settings/ThemeMode`;
+import { useSettingsStore } from "../contexts/settingsContext";
+import { ThemeModeSettingDescriptor, ThemeResolver } from "../services/themeService";
+import { DarkTheme, LightTheme } from "../themes/babylonTheme";
+import { useObservableState } from "./observableHooks";
+import { useResource } from "./resourceHooks";
 
-/**
- * Custom hook to manage the theme mode (system/dark/light).
- * @returns An object containing the theme mode state and helper functions.
- */
 export function useThemeMode() {
-    const { isDarkMode, ternaryDarkMode, setTernaryDarkMode } = useTernaryDarkMode({
-        localStorageKey: ThemeModeStorageKey,
-    });
-    // Make sure there is a stored value initially, even before changing the theme.
-    // This way, other usages of this hook will get the correct initial value.
-    if (!localStorage.getItem(ThemeModeStorageKey)) {
-        SetThemeMode(ternaryDarkMode);
+    const settingsStore = useSettingsStore();
+    const themeResolver = useResource(useCallback(() => (settingsStore ? new ThemeResolver(settingsStore) : undefined), [settingsStore]));
+
+    const state = useObservableState(
+        useCallback(
+            () =>
+                ({
+                    isDarkMode: themeResolver?.isDark ?? false,
+                    themeMode: themeResolver?.mode ?? ThemeModeSettingDescriptor.defaultValue,
+                    setThemeMode: (mode: ThemeMode) => {
+                        if (themeResolver) {
+                            themeResolver.mode = mode;
+                        }
+                    },
+                    toggleThemeMode: () => themeResolver?.toggle(),
+                }) as const,
+            [themeResolver]
+        ),
+        themeResolver?.onChanged
+    );
+
+    if (!themeResolver) {
+        throw new Error("Settings store is not available in context.");
     }
-    return { isDarkMode, themeMode: ternaryDarkMode, setThemeMode: setTernaryDarkMode };
+
+    return state;
 }
 
-/**
- * Sets the theme mode.
- * @param mode The desired theme mode (system/dark/light).
- */
-export function SetThemeMode(mode: TernaryDarkMode) {
-    localStorage.setItem(ThemeModeStorageKey, JSON.stringify(mode));
+export function useTheme(invert = false) {
+    const { isDarkMode } = useThemeMode();
+    return isDarkMode !== invert ? DarkTheme : LightTheme;
 }

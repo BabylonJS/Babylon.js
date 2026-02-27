@@ -1,6 +1,5 @@
 ﻿#ifdef BAKED_VERTEX_ANIMATION_TEXTURE
     uniform bakedVertexAnimationTime: f32;
-    uniform bakedVertexAnimationTextureSizeInverted: vec2<f32>;
     uniform bakedVertexAnimationSettings: vec4<f32>;
     var bakedVertexAnimationTexture : texture_2d<f32>;
 

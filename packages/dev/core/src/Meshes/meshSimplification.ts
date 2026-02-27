@@ -203,13 +203,20 @@ export const enum SimplificationType {
 }
 
 class DecimationTriangle {
+    /** @internal */
     public normal: Vector3;
+    /** @internal */
     public error: Array<number>;
+    /** @internal */
     public deleted: boolean;
+    /** @internal */
     public isDirty: boolean;
+    /** @internal */
     public borderFactor: number;
+    /** @internal */
     public deletePending: boolean;
 
+    /** @internal */
     public originalOffset: number;
 
     constructor(public _vertices: Array<DecimationVertex>) {
@@ -222,12 +229,17 @@ class DecimationTriangle {
 }
 
 class DecimationVertex {
+    /** @internal */
     public q: QuadraticMatrix;
+    /** @internal */
     public isBorder: boolean;
 
+    /** @internal */
     public triangleStart: number;
+    /** @internal */
     public triangleCount: number;
 
+    /** @internal */
     public originalOffsets: Array<number>;
 
     constructor(
@@ -241,12 +253,14 @@ class DecimationVertex {
         this.originalOffsets = [];
     }
 
+    /** @internal */
     public updatePosition(newPosition: Vector3) {
         this.position.copyFrom(newPosition);
     }
 }
 
 class QuadraticMatrix {
+    /** @internal */
     public data: Array<number>;
 
     constructor(data?: Array<number>) {
@@ -260,6 +274,7 @@ class QuadraticMatrix {
         }
     }
 
+    /** @internal */
     public det(a11: number, a12: number, a13: number, a21: number, a22: number, a23: number, a31: number, a32: number, a33: number): number {
         const det =
             this.data[a11] * this.data[a22] * this.data[a33] +
@@ -271,18 +286,21 @@ class QuadraticMatrix {
         return det;
     }
 
+    /** @internal */
     public addInPlace(matrix: QuadraticMatrix) {
         for (let i = 0; i < 10; ++i) {
             this.data[i] += matrix.data[i];
         }
     }
 
+    /** @internal */
     public addArrayInPlace(data: Array<number>) {
         for (let i = 0; i < 10; ++i) {
             this.data[i] += data[i];
         }
     }
 
+    /** @internal */
     public add(matrix: QuadraticMatrix): QuadraticMatrix {
         const m = new QuadraticMatrix();
         for (let i = 0; i < 10; ++i) {
@@ -291,6 +309,7 @@ class QuadraticMatrix {
         return m;
     }
 
+    /** @internal */
     public static FromData(a: number, b: number, c: number, d: number): QuadraticMatrix {
         return new QuadraticMatrix(QuadraticMatrix.DataFromNumbers(a, b, c, d));
     }
@@ -312,7 +331,6 @@ class Reference {
  * An implementation of the Quadratic Error simplification algorithm.
  * Original paper : http://www1.cs.columbia.edu/~cs4162/html05s/garland97.pdf
  * Ported mostly from QSlim and http://voxels.blogspot.de/2014/05/quadric-mesh-simplification-with-source.html to babylon JS
- * @author RaananW
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/simplifyingMeshes
  */
 export class QuadraticErrorSimplification implements ISimplifier {

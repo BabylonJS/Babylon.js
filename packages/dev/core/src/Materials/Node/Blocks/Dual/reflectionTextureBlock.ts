@@ -157,6 +157,11 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
         return this._outputs[5];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - optional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         super.autoConfigure(material);
 

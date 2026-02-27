@@ -75,7 +75,7 @@ type GradientStop = {
  */
 export class SpritePacker {
     private readonly _engine: ThinEngine;
-    private _scaleFactor: number;
+    private _atlasScale: number;
     private readonly _variables: Map<string, string>;
     private readonly _configuration: AnimationConfiguration;
     private _rawFonts: Map<string, RawFont> | undefined;
@@ -113,13 +113,13 @@ export class SpritePacker {
      * Creates a new instance of SpritePacker.
      * @param engine Engine that will render the sprites.
      * @param isHtmlCanvas Whether we should render the atlas in an HTMLCanvasElement or an OffscreenCanvas.
-     * @param scaleFactor The scale factor to apply to the sprites.
+     * @param atlasScale The atlas scale factor to apply to the sprites (always \>= 1 to keep sprites crisp).
      * @param variables Map of variables to replace in the animation file.
      * @param configuration Configuration options for the sprite packer.
      */
-    public constructor(engine: ThinEngine, isHtmlCanvas: boolean, scaleFactor: number, variables: Map<string, string>, configuration: AnimationConfiguration) {
+    public constructor(engine: ThinEngine, isHtmlCanvas: boolean, atlasScale: number, variables: Map<string, string>, configuration: AnimationConfiguration) {
         this._engine = engine;
-        this._scaleFactor = scaleFactor;
+        this._atlasScale = atlasScale;
         this._variables = variables;
         this._configuration = configuration;
         this._isDirty = false;
@@ -165,8 +165,8 @@ export class SpritePacker {
     public addLottieShape(rawElements: RawElement[], scalingFactor: IVector2Like): SpriteAtlasInfo {
         const boundingBox = GetShapesBoundingBox(rawElements);
 
-        scalingFactor.x = scalingFactor.x * this._scaleFactor * this._configuration.devicePixelRatio;
-        scalingFactor.y = scalingFactor.y * this._scaleFactor * this._configuration.devicePixelRatio;
+        scalingFactor.x = scalingFactor.x * this._atlasScale * this._configuration.devicePixelRatio;
+        scalingFactor.y = scalingFactor.y * this._atlasScale * this._configuration.devicePixelRatio;
 
         // Calculate the size of the sprite in the atlas in pixels
         // This takes into account the scaling factor so in the call to _drawVectorShape the canvas will be scaled when rendering
@@ -219,8 +219,8 @@ export class SpritePacker {
             return undefined;
         }
 
-        scalingFactor.x = scalingFactor.x * this._scaleFactor * this._configuration.devicePixelRatio;
-        scalingFactor.y = scalingFactor.y * this._scaleFactor * this._configuration.devicePixelRatio;
+        scalingFactor.x = scalingFactor.x * this._atlasScale * this._configuration.devicePixelRatio;
+        scalingFactor.y = scalingFactor.y * this._atlasScale * this._configuration.devicePixelRatio;
 
         // Calculate the size of the sprite in the atlas in pixels
         // This takes into account the scaling factor so in the call to _drawText the canvas will be scaled when rendering

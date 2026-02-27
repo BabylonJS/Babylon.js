@@ -3,6 +3,7 @@ import type { ComponentType, FunctionComponent } from "react";
 
 import type { IDisposable, Nullable } from "core/index";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
+import type { SettingDescriptor } from "./settingsStore";
 
 import {
     Button,
@@ -21,7 +22,6 @@ import {
     Subtitle2Stronger,
     tokens,
     ToolbarRadioButton,
-    Tooltip,
 } from "@fluentui/react-components";
 import {
     LayoutColumnTwoFocusLeftFilled,
@@ -43,16 +43,47 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Observable } from "core/Misc/observable";
 import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { Tooltip } from "shared-ui-components/fluent/primitives/tooltip";
+import { ErrorBoundary } from "../components/errorBoundary";
 import { TeachingMoment } from "../components/teachingMoment";
 import { Theme } from "../components/theme";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
-import { useSidePaneDockOverrides } from "../hooks/settingsHooks";
+import { useSetting } from "../hooks/settingsHooks";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { useResizeHandle } from "../hooks/useResizeHandle";
 import { ObservableCollection } from "../misc/observableCollection";
 
+export const SidePaneDockOverridesSettingDescriptor: SettingDescriptor<
+    Record<string, Readonly<{ horizontalLocation: HorizontalLocation; verticalLocation: VerticalLocation }> | undefined>
+> = {
+    key: "SidePaneDockOverrides",
+    defaultValue: {},
+};
+
+export const LeftSidePaneWidthAdjustSettingDescriptor: SettingDescriptor<number> = {
+    key: "Shell/LeftPane/WidthAdjust",
+    defaultValue: 0,
+};
+
+export const LeftSidePaneHeightAdjustSettingDescriptor: SettingDescriptor<number> = {
+    key: "Shell/LeftPane/HeightAdjust",
+    defaultValue: 0,
+};
+
+export const RightSidePaneWidthAdjustSettingDescriptor: SettingDescriptor<number> = {
+    key: "Shell/RightPane/WidthAdjust",
+    defaultValue: 0,
+};
+
+export const RightSidePaneHeightAdjustSettingDescriptor: SettingDescriptor<number> = {
+    key: "Shell/RightPane/HeightAdjust",
+    defaultValue: 0,
+};
+
 export type HorizontalLocation = "left" | "right";
 export type VerticalLocation = "top" | "bottom";
+
+type TeachingMomentInfo = boolean | { readonly title: string; readonly description: string };
 
 type DockLocation = `${VerticalLocation}-${HorizontalLocation}` | `full-${HorizontalLocation}`;
 
@@ -96,11 +127,12 @@ export type ToolbarItemDefinition = {
     displayName?: string;
 
     /**
-     * An optional flag to suppress the teaching moment for this toolbar item.
-     * Defaults to false.
+     * An optional teaching moment info. The default assumes the toolbar item was added by an extension and provides a generic title and description based on the display name or id, which is helpful for discoverability of new items.
+     * Set this to false to suppress the teaching moment, which may be desirable for built in items or items that are added in a non-dynamic way.
+     * Set it to an object with a title and description to provide a custom teaching moment, which may be desirable if the generic title and description are not sufficient.
      * Teaching moments are more helpful for dynamically added items, possibly from extensions.
      */
-    suppressTeachingMoment?: boolean;
+    teachingMoment?: TeachingMomentInfo;
 };
 
 /**
@@ -146,11 +178,18 @@ export type SidePaneDefinition = {
     title: string;
 
     /**
-     * An optional flag to suppress the teaching moment for this side pane.
-     * Defaults to false.
+     * An optional teaching moment info. The default assumes the side pane was added by an extension and provides a generic title and description based on the display name or id, which is helpful for discoverability of new items.
+     * Set this to false to suppress the teaching moment, which may be desirable for built in items or items that are added in a non-dynamic way.
+     * Set it to an object with a title and description to provide a custom teaching moment, which may be desirable if the generic title and description are not sufficient.
      * Teaching moments are more helpful for dynamically added panes, possibly from extensions.
      */
-    suppressTeachingMoment?: boolean;
+    teachingMoment?: TeachingMomentInfo;
+
+    /**
+     * Keep the pane mounted even when it is not visible. This is useful if you don't want the
+     * user to lose the complex visual state when switching between tabs.
+     */
+    keepMounted?: boolean;
 };
 
 type RegisteredSidePane = {
@@ -162,6 +201,9 @@ type SidePaneContainer = {
     readonly isDocked: boolean;
     dock(): void;
     undock(): void;
+    readonly isCollapsed: boolean;
+    collapse(): void;
+    expand(): void;
 };
 
 /**
@@ -223,11 +265,6 @@ export interface IShellService extends IService<typeof ShellServiceIdentity> {
     addCentralContent(content: Readonly<CentralContentDefinition>): IDisposable;
 
     /**
-     * Resets the side pane layout to the default configuration.
-     */
-    resetSidePaneLayout(): void;
-
-    /**
      * The left side pane container.
      */
     readonly leftSidePaneContainer: Nullable<SidePaneContainer>;
@@ -278,6 +315,16 @@ export type ShellServiceOptions = {
     toolbarMode?: ToolbarMode;
 
     /**
+     * Whether the left side pane should start collapsed. Default is false.
+     */
+    leftPaneDefaultCollapsed?: boolean;
+
+    /**
+     * Whether the right side pane should start collapsed. Default is false.
+     */
+    rightPaneDefaultCollapsed?: boolean;
+
+    /**
      * A function that can remap the default location of side panes.
      * @param sidePane The side pane to remap.
      * @returns The new location for the side pane.
@@ -310,15 +357,16 @@ const useStyles = makeStyles({
     bar: {
         display: "flex",
         flex: "1",
-        height: "32px",
         overflow: "hidden",
         padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalXXS}`,
-        border: `1px solid ${tokens.colorNeutralStroke2}`,
-        borderBottomWidth: 0,
-        backgroundColor: tokens.colorNeutralBackground1,
+        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+        backgroundColor: tokens.colorNeutralBackground2,
     },
     barTop: {
         borderTopWidth: 0,
+    },
+    barBottom: {
+        borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     },
     barLeft: {
         marginRight: "auto",
@@ -338,7 +386,7 @@ const useStyles = makeStyles({
         display: "flex",
     },
     paneTabListDiv: {
-        backgroundColor: tokens.colorNeutralBackground2,
+        backgroundColor: tokens.colorNeutralBackground1,
         flex: "0 0 auto",
         display: "flex",
     },
@@ -349,7 +397,11 @@ const useStyles = makeStyles({
         flexDirection: "row",
     },
     paneCollapseButton: {
-        margin: `0 0 0 ${tokens.spacingHorizontalXS}`,
+        padding: `0 0 0 ${tokens.spacingHorizontalXS}`,
+        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    },
+    paneCollapseButtonWithBorder: {
+        borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
     },
     collapseMenuPopover: {
         minWidth: 0,
@@ -389,6 +441,8 @@ const useStyles = makeStyles({
         flexDirection: "row",
         alignItems: "center",
         height: "36px",
+        backgroundColor: tokens.colorNeutralBackground1,
+        color: tokens.colorNeutralForeground1,
     },
     paneHeaderText: {
         flex: 1,
@@ -407,23 +461,33 @@ const useStyles = makeStyles({
     },
     tabToolbar: {
         padding: 0,
+        borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
+        borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
     },
     tab: {
         display: "flex",
         height: "100%",
-        width: "36px",
+        boxSizing: "border-box",
         justifyContent: "center",
-        borderTopLeftRadius: tokens.borderRadiusMedium,
-        borderTopRightRadius: tokens.borderRadiusMedium,
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
+        borderTop: "none",
+    },
+    firstTab: {
+        borderLeftColor: "transparent",
+    },
+    lastTab: {
+        borderRightColor: "transparent",
+    },
+    selectedTab: {
+        borderBottom: "none",
     },
     unselectedTab: {
-        backgroundColor: "transparent",
+        borderLeftColor: "transparent",
+        borderRightColor: "transparent",
     },
     tabRadioButton: {
         backgroundColor: "transparent",
-    },
-    selectedTabIcon: {
-        color: tokens.colorNeutralForeground1,
+        borderRadius: 0,
     },
     resizer: {
         width: "8px",
@@ -524,14 +588,12 @@ const PaneHeader: FunctionComponent<{ id: string; title: string; dockOptions: Ma
     const classes = useStyles();
 
     return (
-        <Theme invert>
-            <div className={classes.paneHeaderDiv}>
-                <Subtitle2Stronger className={classes.paneHeaderText}>{title}</Subtitle2Stronger>
-                <DockMenu sidePaneId={id} dockOptions={dockOptions}>
-                    <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
-                </DockMenu>
-            </div>
-        </Theme>
+        <div className={classes.paneHeaderDiv}>
+            <Subtitle2Stronger className={classes.paneHeaderText}>{title}</Subtitle2Stronger>
+            <DockMenu sidePaneId={id} dockOptions={dockOptions}>
+                <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
+            </DockMenu>
+        </div>
     );
 };
 
@@ -542,22 +604,21 @@ const ToolbarItem: FunctionComponent<{
     id: string;
     component: ComponentType;
     displayName?: string;
-    suppressTeachingMoment?: boolean;
+    teachingMoment?: TeachingMomentInfo;
+}> = (props) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-}> = ({ verticalLocation, horizontalLocation, id, component: Component, displayName: displayName, suppressTeachingMoment }) => {
+    const { verticalLocation, horizontalLocation, id, component: Component, displayName } = props;
     const classes = useStyles();
 
     const useTeachingMoment = useMemo(() => MakePopoverTeachingMoment(`Bar/${verticalLocation}/${horizontalLocation}/${displayName ?? id}`), [displayName, id]);
-    const teachingMoment = useTeachingMoment(suppressTeachingMoment);
+    const teachingMoment = useTeachingMoment(props.teachingMoment === false);
+
+    const title = typeof props.teachingMoment === "object" ? props.teachingMoment.title : (displayName ?? id);
+    const description = typeof props.teachingMoment === "object" ? props.teachingMoment.description : `The "${displayName ?? id}" extension can be accessed here.`;
 
     return (
         <>
-            <TeachingMoment
-                {...teachingMoment}
-                shouldDisplay={teachingMoment.shouldDisplay && !suppressTeachingMoment}
-                title={displayName ?? "Extension"}
-                description={`The "${displayName ?? id}" extension can be accessed here.`}
-            />
+            <TeachingMoment {...teachingMoment} shouldDisplay={teachingMoment.shouldDisplay} title={title} description={description} />
             <div className={classes.barItem} ref={teachingMoment.targetRef}>
                 <Component />
             </div>
@@ -576,7 +637,7 @@ const Toolbar: FunctionComponent<{ location: VerticalLocation; components: Reado
     return (
         <>
             {components.length > 0 && (
-                <div className={`${classes.bar} ${location === "top" ? classes.barTop : null}`}>
+                <div className={`${classes.bar} ${location === "top" ? classes.barTop : classes.barBottom}`}>
                     <div className={classes.barLeft}>
                         {leftComponents.map((entry) => (
                             <ToolbarItem
@@ -586,7 +647,7 @@ const Toolbar: FunctionComponent<{ location: VerticalLocation; components: Reado
                                 id={entry.key}
                                 component={entry.component}
                                 displayName={entry.displayName}
-                                suppressTeachingMoment={entry.suppressTeachingMoment}
+                                teachingMoment={entry.teachingMoment}
                             />
                         ))}
                     </div>
@@ -599,7 +660,7 @@ const Toolbar: FunctionComponent<{ location: VerticalLocation; components: Reado
                                 id={entry.key}
                                 component={entry.component}
                                 displayName={entry.displayName}
-                                suppressTeachingMoment={entry.suppressTeachingMoment}
+                                teachingMoment={entry.teachingMoment}
                             />
                         ))}
                     </div>
@@ -611,51 +672,57 @@ const Toolbar: FunctionComponent<{ location: VerticalLocation; components: Reado
 
 // This is a wrapper for a tab in a side pane that simply adds a teaching moment, which is useful for dynamically added items, possibly from extensions.
 const SidePaneTab: FunctionComponent<
-    { location: HorizontalLocation; id: string; isSelected: boolean; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> } & Pick<
+    { location: HorizontalLocation; id: string; isSelected: boolean; isFirst: boolean; isLast: boolean; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> } & Pick<
         Readonly<SidePaneDefinition>,
-        "title" | "icon" | "suppressTeachingMoment"
+        "title" | "icon" | "teachingMoment"
     >
 > = (props) => {
     const {
         location,
         id,
         isSelected,
+        isFirst,
+        isLast,
         dockOptions,
         // eslint-disable-next-line @typescript-eslint/naming-convention
         icon: Icon,
         title,
-        suppressTeachingMoment,
     } = props;
     const classes = useStyles();
     const useTeachingMoment = useMemo(() => MakePopoverTeachingMoment(`Pane/${location}/${title ?? id}`), [title, id]);
-    const teachingMoment = useTeachingMoment(suppressTeachingMoment);
+    const teachingMoment = useTeachingMoment(props.teachingMoment === false);
 
-    const tabClass = mergeClasses(classes.tab, isSelected ? undefined : classes.unselectedTab);
+    const tabClass = mergeClasses(
+        classes.tab,
+        isSelected ? classes.selectedTab : classes.unselectedTab,
+        isFirst ? classes.firstTab : undefined,
+        isLast ? classes.lastTab : undefined
+    );
 
     return (
         <>
             <TeachingMoment
                 {...teachingMoment}
-                shouldDisplay={teachingMoment.shouldDisplay && !suppressTeachingMoment}
-                title={title ?? "Extension"}
-                description={`The "${title ?? id}" extension can be accessed here.`}
+                shouldDisplay={teachingMoment.shouldDisplay}
+                title={typeof props.teachingMoment === "object" ? props.teachingMoment.title : (title ?? "Extension")}
+                description={typeof props.teachingMoment === "object" ? props.teachingMoment.description : `The "${title ?? id}" extension can be accessed here.`}
             />
-            <Theme className={tabClass} invert={isSelected}>
+            <div className={tabClass}>
                 <DockMenu openOnContext sidePaneId={id} dockOptions={dockOptions}>
-                    <ToolbarRadioButton
-                        ref={teachingMoment.targetRef}
-                        title={title ?? id}
-                        appearance="transparent"
-                        className={classes.tabRadioButton}
-                        name="selectedTab"
-                        value={id}
-                        icon={{
-                            className: isSelected ? classes.selectedTabIcon : undefined,
-                            children: <Icon />,
-                        }}
-                    />
+                    <Tooltip content={title ?? id}>
+                        <ToolbarRadioButton
+                            ref={teachingMoment.targetRef}
+                            appearance="transparent"
+                            className={classes.tabRadioButton}
+                            name="selectedTab"
+                            value={id}
+                            icon={{
+                                children: <Icon />,
+                            }}
+                        />
+                    </Tooltip>
                 </DockMenu>
-            </Theme>
+            </div>
         </>
     );
 };
@@ -672,13 +739,14 @@ function usePane(
     dockOperations: Map<DockLocation, (sidePaneKey: string) => void>,
     toolbarMode: ToolbarMode,
     topBarItems: Readonly<ToolbarItemDefinition[]>,
-    bottomBarItems: Readonly<ToolbarItemDefinition[]>
+    bottomBarItems: Readonly<ToolbarItemDefinition[]>,
+    initialCollapsed: boolean
 ) {
     const classes = useStyles();
 
     const [topSelectedTab, setTopSelectedTab] = useState<SidePaneDefinition>();
     const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePaneDefinition>();
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(initialCollapsed);
     const childWindow = useRef<ChildWindow>(null);
     const [isChildWindowOpen, setIsChildWindowOpen] = useState(false);
     const paneContainerRef = useRef<HTMLDivElement>(null);
@@ -687,8 +755,8 @@ function usePane(
         setCollapsed((collapsed) => !collapsed);
     }, []);
 
-    const widthStorageKey = `Babylon/Settings/${location}Pane/WidthAdjust`;
-    const heightStorageKey = `Babylon/Settings/${location}Pane/HeightAdjust`;
+    const [paneWidthSetting, setPaneWidthSetting] = useSetting(location === "left" ? LeftSidePaneWidthAdjustSettingDescriptor : RightSidePaneWidthAdjustSettingDescriptor);
+    const [paneHeightSetting, setPaneHeightSetting] = useSetting(location === "left" ? LeftSidePaneHeightAdjustSettingDescriptor : RightSidePaneHeightAdjustSettingDescriptor);
 
     const currentSidePanes = useMemo(() => sidePanes.filter((entry) => entry.horizontalLocation === location), [sidePanes, location]);
     const topPanes = useMemo(() => currentSidePanes.filter((entry) => entry.verticalLocation === "top"), [currentSidePanes]);
@@ -794,9 +862,12 @@ function usePane(
             <Menu positioning="below-end">
                 <MenuTrigger disableButtonEnhancement={true}>
                     {(triggerProps) => (
-                        <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
+                        <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"}>
                             <SplitButton
-                                className={classes.paneCollapseButton}
+                                className={mergeClasses(
+                                    classes.paneCollapseButton,
+                                    location === "right" && toolbarMode === "compact" ? classes.paneCollapseButtonWithBorder : undefined
+                                )}
                                 menuButton={triggerProps}
                                 primaryActionButton={{ onClick: onExpandCollapseClick }}
                                 size="small"
@@ -841,7 +912,7 @@ function usePane(
                                             setCollapsed(false);
                                         }}
                                     >
-                                        {paneComponents.map((entry) => {
+                                        {paneComponents.map((entry, index) => {
                                             const isSelected = selectedTab?.key === entry.key;
                                             return (
                                                 <SidePaneTab
@@ -850,8 +921,10 @@ function usePane(
                                                     id={entry.key}
                                                     title={entry.title}
                                                     icon={entry.icon}
-                                                    suppressTeachingMoment={entry.suppressTeachingMoment}
+                                                    teachingMoment={entry.teachingMoment}
                                                     isSelected={isSelected && !collapsed}
+                                                    isFirst={index === 0}
+                                                    isLast={index === paneComponents.length - 1}
                                                     dockOptions={dockOptions}
                                                 />
                                             );
@@ -862,16 +935,9 @@ function usePane(
 
                             {/* When the toolbar mode is "full", we add an extra button that allows the side panes to be collapsed. */}
                             {toolbarMode === "full" && (
-                                <>
-                                    {paneComponents.length > 1 && (
-                                        <>
-                                            <Divider vertical inset style={{ minHeight: 0 }} />{" "}
-                                        </>
-                                    )}
-                                    <Collapse visible={!isChildWindowOpen} orientation="horizontal">
-                                        {expandCollapseButton}
-                                    </Collapse>
-                                </>
+                                <Collapse visible={!isChildWindowOpen} orientation="horizontal">
+                                    {expandCollapseButton}
+                                </Collapse>
                             )}
                         </div>
                     )}
@@ -903,7 +969,7 @@ function usePane(
         minValue: minWidth - defaultWidth,
         onChange: (value) => {
             // Whenever the width is adjusted, store the value.
-            localStorage.setItem(widthStorageKey, value.toString());
+            setPaneWidthSetting(value);
         },
     });
 
@@ -918,22 +984,15 @@ function usePane(
         variableName: paneHeightAdjustCSSVar,
         onChange: (value) => {
             // Whenever the height is adjusted, store the value.
-            localStorage.setItem(heightStorageKey, value.toString());
+            setPaneHeightSetting(value);
         },
     });
 
     // This ensures that when the component is first rendered, the CSS variable is set from storage.
     useLayoutEffect(() => {
-        const storedPaneWidthAdjust = localStorage.getItem(widthStorageKey);
-        if (storedPaneWidthAdjust) {
-            setPaneWidthAdjust(Number.parseInt(storedPaneWidthAdjust));
-        }
-
-        const storedPaneHeightAdjust = localStorage.getItem(heightStorageKey);
-        if (storedPaneHeightAdjust) {
-            setPaneHeightAdjust(Number.parseInt(storedPaneHeightAdjust));
-        }
-    }, []);
+        setPaneWidthAdjust(paneWidthSetting);
+        setPaneHeightAdjust(paneHeightSetting);
+    }, [paneWidthSetting, paneHeightSetting]);
 
     // This effect closes the window if all panes have been removed.
     useEffect(() => {
@@ -966,11 +1025,15 @@ function usePane(
                             <>
                                 <PaneHeader id={topSelectedTab.key} title={topSelectedTab.title} dockOptions={validTopDockOptions} />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
-                                {topPanes.map((pane) => (
-                                    <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== topSelectedTab.key ? classes.unselectedPane : undefined)}>
-                                        <pane.content />
-                                    </div>
-                                ))}
+                                {topPanes
+                                    .filter((pane) => pane.key === topSelectedTab.key || pane.keepMounted)
+                                    .map((pane) => (
+                                        <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== topSelectedTab.key ? classes.unselectedPane : undefined)}>
+                                            <ErrorBoundary name={pane.title}>
+                                                <pane.content />
+                                            </ErrorBoundary>
+                                        </div>
+                                    ))}
                             </>
                         )}
                     </div>
@@ -997,11 +1060,15 @@ function usePane(
                             <>
                                 <PaneHeader id={bottomSelectedTab.key} title={bottomSelectedTab.title} dockOptions={validBottomDockOptions} />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
-                                {bottomPanes.map((pane) => (
-                                    <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== bottomSelectedTab.key ? classes.unselectedPane : undefined)}>
-                                        <pane.content />
-                                    </div>
-                                ))}
+                                {bottomPanes
+                                    .filter((pane) => pane.key === bottomSelectedTab.key || pane.keepMounted)
+                                    .map((pane) => (
+                                        <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== bottomSelectedTab.key ? classes.unselectedPane : undefined)}>
+                                            <ErrorBoundary name={pane.title}>
+                                                <pane.content />
+                                            </ErrorBoundary>
+                                        </div>
+                                    ))}
                             </>
                         )}
                     </div>
@@ -1066,7 +1133,9 @@ function usePane(
         );
     }, [collapsed, corePane]);
 
-    return [topPaneTabList, pane, collapsed, setCollapsed, isChildWindowOpen, setUndocked] as const;
+    const hasPanes = topPanes.length > 0 || bottomPanes.length > 0;
+
+    return [topPaneTabList, pane, collapsed, setCollapsed, isChildWindowOpen, setUndocked, hasPanes] as const;
 }
 
 export function MakeShellServiceDefinition({
@@ -1074,11 +1143,13 @@ export function MakeShellServiceDefinition({
     leftPaneMinWidth = 350,
     rightPaneDefaultWidth = 350,
     rightPaneMinWidth = 350,
+    leftPaneDefaultCollapsed = false,
+    rightPaneDefaultCollapsed = false,
     toolbarMode = "full",
     sidePaneRemapper = undefined,
 }: ShellServiceOptions = {}): ServiceDefinition<[IShellService, IRootComponentService], []> {
     return {
-        friendlyName: "MainView",
+        friendlyName: "Shell Service",
         produces: [ShellServiceIdentity, RootComponentServiceIdentity],
         factory: () => {
             const toolbarItemCollection = new ObservableCollection<Readonly<ToolbarItemDefinition>>();
@@ -1088,23 +1159,30 @@ export function MakeShellServiceDefinition({
             const onSelectSidePane = new Observable<string>(undefined, true);
 
             const onDockChanged = new Observable<{ location: HorizontalLocation; dock: boolean }>(undefined, true);
+            const onCollapseChanged = new Observable<{ location: HorizontalLocation; collapsed: boolean }>();
             const leftSidePaneContainerState = {
                 isPresent: false,
                 isDocked: true,
                 dock: () => onDockChanged.notifyObservers({ location: "left", dock: true }),
                 undock: () => onDockChanged.notifyObservers({ location: "left", dock: false }),
+                isCollapsed: leftPaneDefaultCollapsed,
+                collapse: () => onCollapseChanged.notifyObservers({ location: "left", collapsed: true }),
+                expand: () => onCollapseChanged.notifyObservers({ location: "left", collapsed: false }),
             };
             const rightSidePaneContainerState = {
                 isPresent: false,
                 isDocked: true,
                 dock: () => onDockChanged.notifyObservers({ location: "right", dock: true }),
                 undock: () => onDockChanged.notifyObservers({ location: "right", dock: false }),
+                isCollapsed: rightPaneDefaultCollapsed,
+                collapse: () => onCollapseChanged.notifyObservers({ location: "right", collapsed: true }),
+                expand: () => onCollapseChanged.notifyObservers({ location: "right", collapsed: false }),
             };
 
             const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
 
-                const [sidePaneDockOverrides, setSidePaneDockOverrides] = useSidePaneDockOverrides();
+                const [sidePaneDockOverrides, setSidePaneDockOverrides] = useSetting(SidePaneDockOverridesSettingDescriptor);
 
                 // This function returns a promise that resolves after the dock change takes effect so that
                 // we can then select the re-docked pane.
@@ -1269,7 +1347,7 @@ export function MakeShellServiceDefinition({
 
                 const centralContents = useOrderedObservableCollection(centralContentCollection);
 
-                const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed, leftPaneUndocked, setLeftPaneUndocked] = usePane(
+                const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed, leftPaneUndocked, setLeftPaneUndocked, leftPaneHasPanes] = usePane(
                     "left",
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
@@ -1278,7 +1356,8 @@ export function MakeShellServiceDefinition({
                     sidePaneDockOperations,
                     toolbarMode,
                     topBarLeftItems,
-                    bottomBarLeftItems
+                    bottomBarLeftItems,
+                    leftPaneDefaultCollapsed
                 );
 
                 useEffect(() => {
@@ -1286,7 +1365,12 @@ export function MakeShellServiceDefinition({
                     leftSidePaneContainerState.isDocked = !leftPaneUndocked;
                 }, [leftPaneUndocked]);
 
-                const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed, rightPaneUndocked, setRightPaneUndocked] = usePane(
+                useEffect(() => {
+                    // Propagate shorter lived React component state out to longer lived service state.
+                    leftSidePaneContainerState.isCollapsed = leftPaneCollapsed;
+                }, [leftPaneCollapsed]);
+
+                const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed, rightPaneUndocked, setRightPaneUndocked, rightPaneHasPanes] = usePane(
                     "right",
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
@@ -1295,13 +1379,19 @@ export function MakeShellServiceDefinition({
                     sidePaneDockOperations,
                     toolbarMode,
                     topBarRightItems,
-                    bottomBarRightItems
+                    bottomBarRightItems,
+                    rightPaneDefaultCollapsed
                 );
 
                 useEffect(() => {
                     // Propagate shorter lived React component state out to longer lived service state.
                     rightSidePaneContainerState.isDocked = !rightPaneUndocked;
                 }, [rightPaneUndocked]);
+
+                useEffect(() => {
+                    // Propagate shorter lived React component state out to longer lived service state.
+                    rightSidePaneContainerState.isCollapsed = rightPaneCollapsed;
+                }, [rightPaneCollapsed]);
 
                 useEffect(() => {
                     // If at the service level dock state change is requested, propagate to the React component state.
@@ -1319,6 +1409,23 @@ export function MakeShellServiceDefinition({
                         rightSidePaneContainerState.isDocked = true;
                     };
                 }, [setLeftPaneUndocked, setRightPaneUndocked]);
+
+                useEffect(() => {
+                    // If at the service level collapse state change is requested, propagate to the React component state.
+                    const observer = onCollapseChanged.add(({ location, collapsed }) => {
+                        if (location === "left") {
+                            setLeftPaneCollapsed(collapsed);
+                        } else {
+                            setRightPaneCollapsed(collapsed);
+                        }
+                    });
+
+                    return () => {
+                        observer.remove();
+                        leftSidePaneContainerState.isCollapsed = false;
+                        rightSidePaneContainerState.isCollapsed = false;
+                    };
+                }, [setLeftPaneCollapsed, setRightPaneCollapsed]);
 
                 return (
                     <div className={classes.mainView}>
@@ -1341,20 +1448,22 @@ export function MakeShellServiceDefinition({
                             {/* Render the main/central content. */}
                             <div className={classes.centralContent}>
                                 {centralContents.map((entry) => (
-                                    <entry.component key={entry.key} />
+                                    <ErrorBoundary key={entry.key} name={entry.key}>
+                                        <entry.component />
+                                    </ErrorBoundary>
                                 ))}
                                 {toolbarMode === "compact" && (
                                     <>
-                                        <FluentFade visible={leftPaneCollapsed} delay={50} duration={100} unmountOnExit>
+                                        <FluentFade visible={leftPaneCollapsed && leftPaneHasPanes} delay={50} duration={100} unmountOnExit>
                                             <div className={mergeClasses(classes.expandButtonContainer, classes.expandButtonContainerLeft)}>
-                                                <Tooltip content="Show Side Pane" relationship="label">
+                                                <Tooltip content="Show Side Pane">
                                                     <Button className={classes.expandButton} icon={<PanelLeftExpandRegular />} onClick={() => setLeftPaneCollapsed(false)} />
                                                 </Tooltip>
                                             </div>
                                         </FluentFade>
-                                        <FluentFade visible={rightPaneCollapsed} delay={50} duration={100} unmountOnExit>
+                                        <FluentFade visible={rightPaneCollapsed && rightPaneHasPanes} delay={50} duration={100} unmountOnExit>
                                             <div className={mergeClasses(classes.expandButtonContainer, classes.expandButtonContainerRight)}>
-                                                <Tooltip content="Show Side Pane" relationship="label">
+                                                <Tooltip content="Show Side Pane">
                                                     <Button className={classes.expandButton} icon={<PanelRightExpandRegular />} onClick={() => setRightPaneCollapsed(false)} />
                                                 </Tooltip>
                                             </div>
@@ -1396,7 +1505,6 @@ export function MakeShellServiceDefinition({
                     return sidePaneCollection.add(entry);
                 },
                 addCentralContent: (entry) => centralContentCollection.add(entry),
-                resetSidePaneLayout: () => localStorage.removeItem("Babylon/Settings/SidePaneDockOverrides"),
                 get leftSidePaneContainer() {
                     return leftSidePaneContainerState.isPresent ? leftSidePaneContainerState : null;
                 },

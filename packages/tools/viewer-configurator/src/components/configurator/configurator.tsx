@@ -932,7 +932,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             postProcessingProperties.push(`"exposure": ${exposureConfig.configuredState.toFixed(1)}`);
         }
         if (ssaoConfig.canReset) {
-            postProcessingProperties.push(`"ssao": ${ssaoConfig.configuredState}`);
+            postProcessingProperties.push(`"ssao": "${ssaoConfig.configuredState}"`);
         }
         if (postProcessingProperties.length > 0) {
             properties.push(`"postProcessing": {${postProcessingProperties.map((property) => `\n    ${property}`).join(",")}\n  }`);
@@ -1299,6 +1299,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         window.open("https://doc.babylonjs.com/toolsAndResources/viewerConfigurator");
     }, []);
 
+    // SSAO is not supported when shadow quality is set to high (IBL).
+    const validSSAOOptions = shadowQualityConfig.configuredState !== "high" ? SSAOOptions : SSAOOptions.filter((option) => option.value !== "enabled");
+    const validShadowQualityOptions = ssaoConfig.configuredState !== "enabled" ? ShadowQualityOptions : ShadowQualityOptions.filter((option) => option.value !== "high");
+
     return (
         <div className="configurator">
             <div className="stickyContainer">
@@ -1469,7 +1473,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                         <OptionsLine
                             label="Quality"
                             valuesAreStrings={true}
-                            options={ShadowQualityOptions}
+                            options={validShadowQualityOptions}
                             target={shadowQualityWrapper}
                             propertyName={"shadowQuality"}
                             noDirectUpdate={true}
@@ -1527,7 +1531,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                         <OptionsLine
                             label="SSAO (Ambient Occlusion)"
                             valuesAreStrings={true}
-                            options={SSAOOptions}
+                            options={validSSAOOptions}
                             target={ssaoOptionsWrapper}
                             propertyName={"ssaoOptions"}
                             noDirectUpdate={true}

@@ -12,14 +12,14 @@
                 "transform": "@dev/build-tools/dist/pathTransform.js",
                 "after": true,
                 "buildType": "es6",
-                "basePackage": "@babylonjs/inspector-v2",
+                "basePackage": "@babylonjs/inspector",
                 "appendJS": true
             },
             {
                 "transform": "@dev/build-tools/dist/pathTransform.js",
                 "afterDeclarations": true,
                 "buildType": "es6",
-                "basePackage": "@babylonjs/inspector-v2",
+                "basePackage": "@babylonjs/inspector",
                 "appendJS": true
             }
         ]

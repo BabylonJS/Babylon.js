@@ -1,5 +1,4 @@
 import type { Nullable } from "core/types";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
@@ -92,6 +91,7 @@ class TransmissionHelper {
     private _opaqueMeshesCache: AbstractMesh[] = [];
     private _transparentMeshesCache: AbstractMesh[] = [];
     private _materialObservers: { [id: string]: Nullable<Observer<AbstractMesh>> } = {};
+    private _loader: GLTFLoader;
 
     /**
      * This observable will be notified with any error during the creation of the environment,
@@ -103,14 +103,16 @@ class TransmissionHelper {
      * constructor
      * @param options Defines the options we want to customize the helper
      * @param scene The scene to add the material to
+     * @param loader The glTF loader loading the asset
      */
-    constructor(options: Partial<ITransmissionHelperOptions>, scene: Scene) {
+    constructor(options: Partial<ITransmissionHelperOptions>, scene: Scene, loader: GLTFLoader) {
         this._options = {
             ...TransmissionHelper._GetDefaultOptions(),
             ...options,
         };
         this._scene = scene as any;
         this._scene._transmissionHelper = this;
+        this._loader = loader;
 
         this.onErrorObservable = new Observable();
         this._scene.onDisposeObservable.addOnce(() => {
@@ -162,24 +164,26 @@ class TransmissionHelper {
         return this._opaqueRenderTarget;
     }
 
-    private _shouldRenderAsTransmission(material: Nullable<Material>): boolean {
-        return (material as any)?.subSurface?.isRefractionEnabled ? true : false;
-    }
-
     private _addMesh(mesh: AbstractMesh): void {
         this._materialObservers[mesh.uniqueId] = mesh.onMaterialChangedObservable.add(this._onMeshMaterialChanged.bind(this));
 
         // we need to defer the processing because _addMesh may be called as part as an instance mesh creation, in which case some
         // internal properties are not setup yet, like _sourceMesh (needed when doing mesh.material below)
         Tools.SetImmediate(() => {
-            if (this._shouldRenderAsTransmission(mesh.material)) {
-                (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
-                if (this._transparentMeshesCache.indexOf(mesh) === -1) {
-                    this._transparentMeshesCache.push(mesh);
+            if (mesh.material) {
+                if (!this._loader.isMatchingMaterialType(mesh.material)) {
+                    return;
                 }
-            } else {
-                if (this._opaqueMeshesCache.indexOf(mesh) === -1) {
-                    this._opaqueMeshesCache.push(mesh);
+                const adapter = this._loader._getOrCreateMaterialAdapter(mesh.material);
+                if (adapter.transmissionWeight > 0) {
+                    adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
+                    if (this._transparentMeshesCache.indexOf(mesh) === -1) {
+                        this._transparentMeshesCache.push(mesh);
+                    }
+                } else {
+                    if (this._opaqueMeshesCache.indexOf(mesh) === -1) {
+                        this._opaqueMeshesCache.push(mesh);
+                    }
                 }
             }
         });
@@ -211,14 +215,16 @@ class TransmissionHelper {
         const transparentIdx = this._transparentMeshesCache.indexOf(mesh);
         const opaqueIdx = this._opaqueMeshesCache.indexOf(mesh);
 
+        if (!this._loader.isMatchingMaterialType(mesh.material)) {
+            return;
+        }
         // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
-        const useTransmission = this._shouldRenderAsTransmission(mesh.material);
+        const adapter = mesh.material ? this._loader._getOrCreateMaterialAdapter(mesh.material) : null;
+        const useTransmission = adapter ? adapter.transmissionWeight > 0 : false;
+
         if (useTransmission) {
-            if (mesh.material) {
-                const subSurface = (mesh.material as PBRMaterial).subSurface;
-                if (subSurface) {
-                    subSurface.refractionTexture = this._opaqueRenderTarget;
-                }
+            if (adapter) {
+                adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
             }
             if (opaqueIdx !== -1) {
                 this._opaqueMeshesCache.splice(opaqueIdx, 1);
@@ -288,8 +294,14 @@ class TransmissionHelper {
         });
 
         for (const mesh of this._transparentMeshesCache) {
-            if (this._shouldRenderAsTransmission(mesh.material)) {
-                (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
+            if (mesh.material) {
+                if (!this._loader.isMatchingMaterialType(mesh.material)) {
+                    return;
+                }
+                const adapter = this._loader._getOrCreateMaterialAdapter(mesh.material);
+                if (adapter.transmissionWeight > 0) {
+                    adapter.refractionBackgroundTexture = this._opaqueRenderTarget;
+                }
             }
         }
     }
@@ -378,7 +390,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         const transmissionWeight = extension.transmissionFactor !== undefined ? extension.transmissionFactor : 0.0;
 
-        if (transmissionWeight === 0) {
+        if (transmissionWeight === 0 || !adapter) {
             return Promise.resolve();
         }
 
@@ -390,7 +402,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         if (transmissionWeight > 0 && !this._loader.parent.dontUseTransmissionHelper) {
             const scene = babylonMaterial.getScene() as unknown as ITransmissionHelperHolder;
             if (!scene._transmissionHelper) {
-                new TransmissionHelper({}, babylonMaterial.getScene());
+                new TransmissionHelper({}, babylonMaterial.getScene(), this._loader);
             } else if (!scene._transmissionHelper?._isRenderTargetValid()) {
                 // If the render target is not valid, recreate it.
                 scene._transmissionHelper?._setupRenderTargets();

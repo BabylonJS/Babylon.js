@@ -5,13 +5,13 @@ import type { INative, INativeDataStream } from "./nativeInterfaces";
 declare const _native: INative;
 
 /** @internal */
-export type NativeData = Uint32Array;
+export type NativeData = Uint32Array<ArrayBuffer>;
 
 /** @internal */
 export class NativeDataStream {
-    private readonly _uint32s: Uint32Array;
-    private readonly _int32s: Int32Array;
-    private readonly _float32s: Float32Array;
+    private readonly _uint32s: Uint32Array<ArrayBuffer>;
+    private readonly _int32s: Int32Array<ArrayBuffer>;
+    private readonly _float32s: Float32Array<ArrayBuffer>;
     private readonly _length: number;
     private _position: number;
     private readonly _nativeDataStream: INativeDataStream;

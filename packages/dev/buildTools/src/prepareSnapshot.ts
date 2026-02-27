@@ -11,7 +11,7 @@ export const prepareSnapshot = () => {
     const snapshotDirectory = path.join(baseDirectory, ".snapshot");
     Object.keys(umdPackageMapping).forEach((packageName) => {
         const metadata = umdPackageMapping[packageName as UMDPackageName];
-        const corePath = path.join(baseDirectory, "packages", "public", "umd", packageName);
+        const corePath = path.join(baseDirectory, "packages", "public", "umd", metadata.sourceDir ?? packageName);
         const coreUmd = globSync(`${corePath}/*+(.js|.d.ts|.map)`).filter((file) => path.basename(file) !== "webpack.config.js");
         for (const file of coreUmd) {
             copyFile(file, path.join(snapshotDirectory, metadata.baseDir, path.basename(file)), true);

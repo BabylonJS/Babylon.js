@@ -195,6 +195,10 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return this._scene.environmentTexture;
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines to update
+     */
     public override prepareDefines(defines: NodeMaterialDefines) {
         super.prepareDefines(defines);
 
@@ -228,6 +232,13 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         }
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind data to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind data for
+     * @param subMesh - the submesh to bind data for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
         super.bind(effect, nodeMaterial, mesh);
 
@@ -500,6 +511,10 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -510,6 +525,12 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block
+     * @param serializationObject - the object to deserialize from
+     * @param scene - the scene to deserialize in
+     * @param rootUrl - the root URL for assets
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

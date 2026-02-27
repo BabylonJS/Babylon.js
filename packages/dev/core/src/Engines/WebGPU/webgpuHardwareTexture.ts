@@ -41,7 +41,7 @@ export class WebGPUHardwareTexture implements IHardwareTextureWrapper {
         return this._webgpuTexture;
     }
 
-    // index is the index of the texture in the list of the render target textures (in case of multi render targets).
+    // index is the index of the layer for a 2DArrayTexture / 3DTexture, the face index for a cube texture or the layer * 6 + face index for a cube array texture.
     // In single render target case, index is 0.
     public getMSAATexture(sampleCount: number, index = 0): GPUTexture {
         const texture = this._webgpuMSAATexture[index];

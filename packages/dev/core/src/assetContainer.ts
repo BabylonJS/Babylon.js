@@ -31,6 +31,7 @@ import type { EffectLayer } from "./Layers/effectLayer";
 import type { ReflectionProbe } from "./Probes/reflectionProbe";
 import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
+import type { SpriteManager } from "./Sprites/spriteManager";
 import { Tags } from "./Misc/tags";
 
 /**
@@ -178,6 +179,11 @@ export class AbstractAssetContainer implements IAssetContainer {
     public proceduralTextures: ProceduralTexture[];
 
     /**
+     * The list of sprite managers added to the scene
+     */
+    public spriteManagers: SpriteManager[] = [];
+
+    /**
      * @returns all meshes, lights, cameras, transformNodes and bones
      */
     public getNodes(): Array<Node> {
@@ -287,6 +293,10 @@ export class AssetContainer extends AbstractAssetContainer {
 
             for (const texture of this.textures) {
                 texture._rebuild();
+            }
+
+            for (const spriteManager of this.spriteManagers) {
+                spriteManager.rebuild();
             }
         });
     }
@@ -816,6 +826,16 @@ export class AssetContainer extends AbstractAssetContainer {
             this.scene.addReflectionProbe(o);
         }
 
+        for (const o of this.spriteManagers) {
+            if (predicate && !predicate(o)) {
+                continue;
+            }
+            if (!this.scene.spriteManagers) {
+                this.scene.spriteManagers = [];
+            }
+            this.scene.spriteManagers.push(o);
+        }
+
         // No more nodes added to scene after this line, so it's safe to make a "snapshot" of nodes
         if (addedNodes.length) {
             // build the nodeSet only if needed
@@ -960,6 +980,17 @@ export class AssetContainer extends AbstractAssetContainer {
             }
             this.scene.removeReflectionProbe(o);
         }
+        for (const o of this.spriteManagers) {
+            if (predicate && !predicate(o)) {
+                continue;
+            }
+            if (this.scene.spriteManagers) {
+                const index = this.scene.spriteManagers.indexOf(o);
+                if (index !== -1) {
+                    this.scene.spriteManagers.splice(index, 1);
+                }
+            }
+        }
     }
 
     /**
@@ -1043,6 +1074,12 @@ export class AssetContainer extends AbstractAssetContainer {
             morphTargetManager.dispose();
         }
         this.morphTargetManagers.length = 0;
+
+        const spriteManagers = this.spriteManagers.slice(0);
+        for (const spriteManager of spriteManagers) {
+            spriteManager.dispose();
+        }
+        this.spriteManagers.length = 0;
 
         if (this.environmentTexture) {
             this.environmentTexture.dispose();

@@ -21,6 +21,17 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
     public sourceSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
     /**
+     * The alpha mode to use when applying the SSR effect.
+     */
+    public get alphaMode() {
+        return this._ssrBlurCombiner.alphaMode;
+    }
+
+    public set alphaMode(mode: number) {
+        this._ssrBlurCombiner.alphaMode = mode;
+    }
+
+    /**
      * The normal texture used by the SSR effect.
      */
     public normalTexture: FrameGraphTextureHandle;
@@ -240,7 +251,9 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
 
         passDisabled.setRenderTarget(this.outputTexture);
         passDisabled.setExecuteFunc((context) => {
-            context.copyTexture(this.sourceTexture);
+            if (this.alphaMode === Constants.ALPHA_DISABLE) {
+                context.copyTexture(this.sourceTexture);
+            }
         });
     }
 

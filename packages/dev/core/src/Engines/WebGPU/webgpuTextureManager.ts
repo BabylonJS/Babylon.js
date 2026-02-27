@@ -234,7 +234,7 @@ const resolveDepthFragmentSource = `
         for (var i = 0u; i < numSamples; i = i + 1u) {
             depth = min(depth, textureLoad(msaaDepthTexture, vec2u(input.position.xy), i));
         }
-        
+
         fragmentOutputs.color = vec4f(depth);
     #else
         fragmentOutputs.color = vec4f(textureLoad(msaaDepthTexture, vec2u(input.position.xy), 0)); // do like WebGL, take the first sample
@@ -789,7 +789,8 @@ export class WebGPUTextureManager {
         commandEncoder?: GPUCommandEncoder,
         usage = -1,
         additionalUsages = 0,
-        label?: string
+        label?: string,
+        mipLevelCount?: number
     ): GPUTexture {
         sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
 
@@ -802,7 +803,8 @@ export class WebGPUTextureManager {
 
         const renderAttachmentFlag = renderableTextureFormatToIndex[format] ? WebGPUConstants.TextureUsage.RenderAttachment : 0;
         const isCompressedFormat = WebGPUTextureHelper.IsCompressedFormat(format);
-        const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
+        const maxNumMipLevels = WebGPUTextureHelper.ComputeNumMipmapLevels(imageBitmap.width, imageBitmap.height);
+        const effectiveMipLevelCount = hasMipmaps ? Math.min(mipLevelCount ?? maxNumMipLevels, maxNumMipLevels) : 1;
         const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.TextureBinding;
 
         additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | renderAttachmentFlag : 0;
@@ -821,14 +823,14 @@ export class WebGPUTextureManager {
             format,
             usage: usages | additionalUsages,
             sampleCount,
-            mipLevelCount,
+            mipLevelCount: effectiveMipLevelCount,
         });
 
         if (WebGPUTextureHelper.IsImageBitmap(imageBitmap)) {
             this.updateTexture(imageBitmap, gpuTexture, imageBitmap.width, imageBitmap.height, layerCount, format, 0, 0, invertY, premultiplyAlpha, 0, 0);
 
             if (hasMipmaps && generateMipmaps) {
-                this.generateMipmaps(gpuTexture, mipLevelCount, 0, commandEncoder);
+                this.generateMipmaps(gpuTexture, effectiveMipLevelCount, 0, commandEncoder);
             }
         }
 
@@ -1065,7 +1067,6 @@ export class WebGPUTextureManager {
         } else {
             mipmapCount = hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height) : 1;
         }
-
         if (texture.isCube) {
             const gpuTexture = this.createCubeTexture(
                 { width, height, layers: layerCount },
@@ -1105,7 +1106,7 @@ export class WebGPUTextureManager {
         } else {
             const gpuTexture = this.createTexture(
                 { width, height, layers: layerCount },
-                texture.generateMipMaps,
+                hasMipMaps,
                 texture.generateMipMaps,
                 texture.invertY,
                 false,
@@ -1362,6 +1363,17 @@ export class WebGPUTextureManager {
         } else {
             imageBitmap = imageBitmap as ImageBitmap | ImageData | HTMLImageElement | HTMLVideoElement | VideoFrame | HTMLCanvasElement | OffscreenCanvas;
             this._device.queue.copyExternalImageToTexture({ source: imageBitmap, flipY: invertY }, textureCopyView, textureExtent);
+        }
+    }
+
+    public updateMipLevelCountForInternalTexture(texture: InternalTexture, mipLevelCount?: number) {
+        const maxNumMipLevels = WebGPUTextureHelper.ComputeNumMipmapLevels(texture.width, texture.height);
+        if (mipLevelCount !== undefined) {
+            texture.mipLevelCount = Math.min(Math.max(1, mipLevelCount), maxNumMipLevels);
+        } else if (texture.generateMipMaps) {
+            texture.mipLevelCount = maxNumMipLevels;
+        } else {
+            texture.mipLevelCount = 1;
         }
     }
 

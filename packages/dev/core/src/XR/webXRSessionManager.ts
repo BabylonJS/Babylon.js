@@ -172,6 +172,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         this.onXRFrameObservable.clear();
         this.onXRSessionEnded.clear();
         this.onXRReferenceSpaceChanged.clear();
+        this.onXRReferenceSpaceInitialized.clear();
         this.onXRSessionInit.clear();
         this.onWorldScaleFactorChangedObservable.clear();
         this._engine?.onDisposeObservable.remove(this._onEngineDisposedObserver);
@@ -368,6 +369,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      */
     public async setReferenceSpaceTypeAsync(referenceSpaceType: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
         let referenceSpace: XRReferenceSpace;
+        let viewerReferenceSpace: Nullable<XRReferenceSpace> = null;
         try {
             referenceSpace = await this.session.requestReferenceSpace(referenceSpaceType);
         } catch (rejectionReason) {
@@ -376,9 +378,9 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             Logger.Log('Defaulting to universally-supported "viewer" reference space type.');
 
             try {
-                const referenceSpace = await this.session.requestReferenceSpace("viewer");
+                viewerReferenceSpace = (await this.session.requestReferenceSpace("viewer")) as XRReferenceSpace;
                 const heightCompensation = new XRRigidTransform({ x: 0, y: -this.defaultHeightCompensation, z: 0 });
-                return (referenceSpace as XRReferenceSpace).getOffsetReferenceSpace(heightCompensation);
+                referenceSpace = viewerReferenceSpace.getOffsetReferenceSpace(heightCompensation);
             } catch (rejectionReason) {
                 Logger.Error(rejectionReason);
                 // eslint-disable-next-line no-throw-literal
@@ -386,8 +388,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             }
         }
         // create viewer reference space before setting the first reference space
-        const viewerReferenceSpace = await this.session.requestReferenceSpace("viewer");
-        this.viewerReferenceSpace = viewerReferenceSpace as XRReferenceSpace;
+        this.viewerReferenceSpace = viewerReferenceSpace ?? ((await this.session.requestReferenceSpace("viewer")) as XRReferenceSpace);
         // initialize the base and offset (currently the same)
         this.referenceSpace = this.baseReferenceSpace = referenceSpace;
         this.onXRReferenceSpaceInitialized.notifyObservers(referenceSpace);

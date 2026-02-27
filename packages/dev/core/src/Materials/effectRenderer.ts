@@ -14,6 +14,7 @@ import { ShaderLanguage } from "./shaderLanguage";
 
 // Prevents ES6 issue if not imported.
 import "../Shaders/postprocess.vertex";
+import "../ShadersWGSL/postprocess.vertex";
 
 /**
  * Effect Render Options
@@ -500,18 +501,7 @@ export class EffectWrapper {
         this._postConstructor(this.options.blockCompilation, defines, this.options.extraInitializations);
     }
 
-    protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
-        if (!this.options.useAsPostProcess) {
-            return;
-        }
-
-        // this._webGPUReady is used to detect when an effect wrapper is intended to be used with WebGPU
-        if (useWebGPU && this._webGPUReady) {
-            list.push(Promise.all([import("../ShadersWGSL/postprocess.vertex")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/postprocess.vertex")]));
-        }
-    }
+    protected _gatherImports(_useWebGPU = false, _list: Promise<any>[]) {}
 
     private _importPromises: Array<Promise<any>> = [];
 

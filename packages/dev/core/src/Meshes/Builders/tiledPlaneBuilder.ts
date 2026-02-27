@@ -19,18 +19,6 @@ import { VertexData } from "../mesh.vertexData";
  * * alignHorizontal places whole tiles aligned to the center, left or right of a row
  * * alignVertical places whole tiles aligned to the center, left or right of a column
  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
- * @param options.pattern
- * @param options.tileSize
- * @param options.tileWidth
- * @param options.tileHeight
- * @param options.size
- * @param options.width
- * @param options.height
- * @param options.alignHorizontal
- * @param options.alignVertical
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
  * @returns the VertexData of the tiled plane
  */
@@ -450,19 +438,6 @@ export function CreateTiledPlaneVertexData(options: {
  * * alignVertical places whole tiles aligned to the center, left or right of a column
  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
- * @param options.pattern
- * @param options.tileSize
- * @param options.tileWidth
- * @param options.tileHeight
- * @param options.size
- * @param options.width
- * @param options.height
- * @param options.alignHorizontal
- * @param options.alignVertical
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
- * @param options.updatable
  * @param scene defines the hosting scene
  * @returns the box mesh
  */

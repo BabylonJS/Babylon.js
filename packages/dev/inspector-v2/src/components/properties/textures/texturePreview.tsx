@@ -9,6 +9,8 @@ import { WhenTextureReadyAsync } from "core/Misc/textureTools";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { ApplyChannelsToTextureDataAsync } from "../../../misc/textureTools";
+import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { AccordionContext } from "shared-ui-components/fluent/primitives/accordion.contexts";
 
 const useStyles = makeStyles({
     root: {
@@ -28,9 +30,11 @@ const useStyles = makeStyles({
         textOverflow: "ellipsis",
     },
     preview: {
-        border: `1px solid ${tokens.colorNeutralStroke1}`,
+        outline: `1px solid ${tokens.colorNeutralStroke1}`,
         display: "block",
         objectFit: "contain",
+        // Checkerboard background to show transparency
+        background: "repeating-conic-gradient(#B2B2B2 0% 25%, white 25% 50%) 50% / 32px 32px",
     },
     previewContainer: {
         display: "flex",
@@ -38,8 +42,6 @@ const useStyles = makeStyles({
         marginTop: tokens.spacingVerticalXS,
         marginBottom: tokens.spacingVerticalS,
         width: "100%",
-        // Checkerboard background to show transparency
-        background: "repeating-conic-gradient(#B2B2B2 0% 25%, white 25% 50%) 50% / 32px 32px",
     },
 });
 
@@ -79,6 +81,10 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
 
     const { size } = useContext(ToolContext);
 
+    // Watch for pinned state changes - when portaled, the canvas needs to be redrawn
+    const accordionCtx = useContext(AccordionContext);
+    const isPinned = accordionCtx?.state.pinnedIds.some((id) => id.endsWith("\0TexturePreview")) ?? false;
+
     const updatePreviewAsync = useCallback(async () => {
         const canvas = canvasRef.current;
         if (!canvas) {
@@ -88,18 +94,23 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
             await WhenTextureReadyAsync(texture); // Ensure texture is loaded before grabbing size
             const { width: textureWidth, height: textureHeight } = texture.getSize();
 
-            // Set canvas dimensions to the sub-region size
-            canvas.width = width ?? textureWidth;
-            canvas.height = height ?? textureHeight;
+            // Calculate canvas dimensions
+            const canvasWidth = width ?? textureWidth;
+            const canvasHeight = height ?? textureHeight;
 
             // Calculate the width that corresponds to maxHeight while maintaining aspect ratio
-            const aspectRatio = canvas.width / canvas.height;
+            const aspectRatio = canvasWidth / canvasHeight;
             // Use CSS min() to pick the smaller of maxWidth or the width that corresponds to maxHeight
             const imageWidth = `min(${maxWidth}, calc(${maxHeight} * ${aspectRatio}))`;
             setCanvasStyle({ width: imageWidth });
 
-            // Get full texture data, then draw only the sub-region
+            // Fetch texture data BEFORE clearing the canvas to avoid flicker
             const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, face, channels);
+
+            // Now set canvas dimensions (this clears the canvas) and draw immediately
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
             const context = canvas.getContext("2d");
             if (context) {
                 const fullImageData = context.createImageData(textureWidth, textureHeight);
@@ -118,43 +129,50 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
         void updatePreviewAsync();
     }, [updatePreviewAsync]);
 
+    // Redraw canvas after portaling (pinned state change moves DOM element, which can clear canvas)
+    useEffect(() => {
+        void updatePreviewAsync();
+    }, [isPinned]);
+
     return (
-        <div className={classes.root}>
-            {disableToolbar ? null : texture.isCube ? (
-                <Toolbar className={classes.controls} size={size} aria-label="Cube Faces">
-                    {["+X", "-X", "+Y", "-Y", "+Z", "-Z"].map((label, idx) => (
-                        <ToolbarButton className={classes.controlButton} key={label} appearance={face === idx ? "primary" : "subtle"} onClick={() => setFace(idx)}>
-                            {label}
-                        </ToolbarButton>
-                    ))}
-                </Toolbar>
-            ) : (
-                <Toolbar className={classes.controls} size={size} aria-label="Channels">
-                    {(["R", "G", "B", "A", "ALL"] as const).map((ch) => (
-                        <ToolbarButton
-                            className={classes.controlButton}
-                            key={ch}
-                            appearance={channels === TextureChannelStates[ch] ? "primary" : "subtle"}
-                            onClick={() => setChannels(TextureChannelStates[ch])}
-                        >
-                            {ch}
-                        </ToolbarButton>
-                    ))}
-                </Toolbar>
-            )}
-            <div className={classes.previewContainer}>
-                <canvas ref={canvasRef} className={classes.preview} style={canvasStyle} />
+        <LineContainer uniqueId="TexturePreview">
+            <div className={classes.root}>
+                {disableToolbar ? null : texture.isCube ? (
+                    <Toolbar className={classes.controls} size={size} aria-label="Cube Faces">
+                        {["+X", "-X", "+Y", "-Y", "+Z", "-Z"].map((label, idx) => (
+                            <ToolbarButton className={classes.controlButton} key={label} appearance={face === idx ? "primary" : "subtle"} onClick={() => setFace(idx)}>
+                                {label}
+                            </ToolbarButton>
+                        ))}
+                    </Toolbar>
+                ) : (
+                    <Toolbar className={classes.controls} size={size} aria-label="Channels">
+                        {(["R", "G", "B", "A", "ALL"] as const).map((ch) => (
+                            <ToolbarButton
+                                className={classes.controlButton}
+                                key={ch}
+                                appearance={channels === TextureChannelStates[ch] ? "primary" : "subtle"}
+                                onClick={() => setChannels(TextureChannelStates[ch])}
+                            >
+                                {ch}
+                            </ToolbarButton>
+                        ))}
+                    </Toolbar>
+                )}
+                <div className={classes.previewContainer}>
+                    <canvas ref={canvasRef} className={classes.preview} style={canvasStyle} />
+                </div>
+                {texture.isRenderTarget && (
+                    <Button
+                        appearance="outline"
+                        onClick={() => {
+                            void updatePreviewAsync();
+                        }}
+                    >
+                        Refresh
+                    </Button>
+                )}
             </div>
-            {texture.isRenderTarget && (
-                <Button
-                    appearance="outline"
-                    onClick={() => {
-                        void updatePreviewAsync();
-                    }}
-                >
-                    Refresh
-                </Button>
-            )}
-        </div>
+        </LineContainer>
     );
 };

@@ -711,7 +711,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
             defines["SHADOWMEDIUMQUALITY" + index] = false;
         }
     }
-
+    defines["LIGHTCOUNT"] = lightIndex;
     defines["MAXLIGHTCOUNT"] = maxSimultaneousLights;
 
     const caps = scene.getEngine().getCaps();
@@ -1340,6 +1340,7 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param updateOnlyBuffersList True to only update the uniformBuffersList array
  * @param iesLightTexture defines if IES texture must be used
  * @param clusteredLightTextures defines if the clustered light textures must be used
+ * @param rectAreaLightTexture defines if rect area light is using a emission texture.
  */
 export function PrepareUniformsAndSamplersForLight(
     lightIndex: number,
@@ -1349,7 +1350,8 @@ export function PrepareUniformsAndSamplersForLight(
     uniformBuffersList: Nullable<string[]> = null,
     updateOnlyBuffersList = false,
     iesLightTexture = false,
-    clusteredLightTextures = false
+    clusteredLightTextures = false,
+    rectAreaLightTexture = false
 ) {
     if (uniformBuffersList) {
         uniformBuffersList.push("Light" + lightIndex);
@@ -1393,6 +1395,9 @@ export function PrepareUniformsAndSamplersForLight(
     }
     if (iesLightTexture) {
         samplersList.push("iesLightTexture" + lightIndex);
+    }
+    if (rectAreaLightTexture) {
+        samplersList.push("rectAreaLightEmissionTexture" + lightIndex);
     }
     if (clusteredLightTextures) {
         samplersList.push("lightDataTexture" + lightIndex);
@@ -1482,7 +1487,8 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
             uniformBuffersList,
             false,
             defines["IESLIGHTTEXTURE" + lightIndex],
-            defines["CLUSTLIGHT" + lightIndex]
+            defines["CLUSTLIGHT" + lightIndex],
+            defines["RECTAREALIGHTEMISSIONTEXTURE" + lightIndex]
         );
     }
 

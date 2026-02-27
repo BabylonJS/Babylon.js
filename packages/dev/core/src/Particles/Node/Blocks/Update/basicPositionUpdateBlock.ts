@@ -54,8 +54,8 @@ export class BasicPositionUpdateBlock extends NodeParticleBlock {
         const processPosition = (particle: Particle) => {
             state.particleContext = particle;
             state.systemContext = system;
-            particle.direction.scaleToRef(particle._directionScale, particle._scaledDirection);
-            particle.position.addInPlace(particle._scaledDirection);
+            particle.direction.scaleToRef(particle._properties.directionScale, particle._properties.scaledDirection);
+            particle.position.addInPlace(particle._properties.scaledDirection);
         };
 
         const positionProcessing = {

@@ -94,7 +94,6 @@ fn hemisphereImportanceSampleDggxAnisotropic(Xi: vec2f, alphaTangent: f32, alpha
     let alphaT: f32 = max(alphaTangent, 0.0001);
     let alphaB: f32 = max(alphaBitangent, 0.0001);
     
-    
     // Map [0,1]^2 → spherical coordinates
     var phi: f32 = atan(alphaB / alphaT * tan(2.0f * PI * Xi.x));
     if (Xi.x > 0.5) {
@@ -104,7 +103,7 @@ fn hemisphereImportanceSampleDggxAnisotropic(Xi: vec2f, alphaTangent: f32, alpha
     let cosPhi: f32 = cos(phi);
     let sinPhi: f32 = sin(phi);
 
-    let alpha2: f32 = (cosPhi*cosPhi) / (alphaTangent*alphaTangent) +
+    let alpha2: f32 = (cosPhi*cosPhi) / (alphaT*alphaT) +
                    (sinPhi*sinPhi) / (alphaB*alphaB);
     let tanTheta2: f32 = Xi.y / (1.0f - Xi.y) / alpha2;
 

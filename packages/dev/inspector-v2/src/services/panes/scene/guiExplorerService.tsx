@@ -1,13 +1,14 @@
 import type { AdvancedDynamicTexture, Container, Control } from "gui/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { AppGenericRegular, BorderNoneRegular, BorderOutsideRegular, EyeOffRegular, EyeRegular, RectangleLandscapeRegular } from "@fluentui/react-icons";
+import { AppGenericRegular, BorderNoneRegular, BorderOutsideRegular, EditRegular, EyeOffRegular, EyeRegular, RectangleLandscapeRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
@@ -26,10 +27,10 @@ function IsControl(entity: unknown): entity is Control {
     return (entity as Control)?._currentMeasure !== undefined && (entity as Control)?.onPointerDownObservable !== undefined;
 }
 
-export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "GUI Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -61,10 +62,8 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
                 const onChangeObservable = new Observable<void>();
                 disposeActions.push(() => onChangeObservable.clear());
 
-                const nameHookToken = InterceptProperty(entity, "name", {
-                    afterSet: () => {
-                        onChangeObservable.notifyObservers();
-                    },
+                const nameHookToken = watcherService.watchProperty(entity, "name", () => {
+                    onChangeObservable.notifyObservers();
                 });
                 disposeActions.push(() => nameHookToken.dispose());
 
@@ -103,14 +102,29 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
             getEntityRemovedObservables: () => [guiEntityRemovedObservable],
         });
 
+        const editGuiCommandRegistration = sceneExplorerService.addEntityCommand({
+            predicate: (entity: unknown): entity is AdvancedDynamicTexture => IsAdvancedDynamicTexture(entity),
+            order: DefaultCommandsOrder.EditNodeMaterial,
+            getCommand: (texture) => {
+                return {
+                    type: "action",
+                    displayName: "Edit in GUI Editor",
+                    icon: () => <EditRegular />,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    execute: async () => {
+                        const { GUIEditor } = await import("gui-editor/guiEditor");
+                        await GUIEditor.Show({ liveGuiTexture: texture });
+                    },
+                };
+            },
+        });
+
         const highlightControlCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown): entity is Control => IsControl(entity),
             order: DefaultCommandsOrder.GuiHighlight,
             getCommand: (control) => {
                 const onChangeObservable = new Observable<void>();
-                const showBoundingBoxHook = InterceptProperty(control, "isHighlighted", {
-                    afterSet: () => onChangeObservable.notifyObservers(),
-                });
+                const showBoundingBoxHook = watcherService.watchProperty(control, "isHighlighted", () => onChangeObservable.notifyObservers());
 
                 return {
                     type: "toggle",
@@ -159,6 +173,7 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
                 textureAddedObserver.remove();
                 textureRemovedObserver.remove();
                 sectionRegistration.dispose();
+                editGuiCommandRegistration.dispose();
                 highlightControlCommandRegistration.dispose();
                 controlVisibilityCommandRegistration.dispose();
             },

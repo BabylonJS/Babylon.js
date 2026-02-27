@@ -138,7 +138,6 @@ export interface AbstractEngineOptions {
     useHighPrecisionMatrix?: boolean;
 
     /**
-     * @experimental
      * LargeWorldRendering helps avoid floating point imprecision of rendering large worlds by
      * 1. Forcing highPrecisionMatrices (matrix computations in 64 bits instead of 32)
      * 2. Enabling floatingOriginMode in all scenes -- offsetting position-related uniform and attribute values before passing to shader so that active camera is centered at origin and world is offset by active camera position
@@ -1277,8 +1276,9 @@ export abstract class AbstractEngine {
 
     /**
      * Unbind the current render target and bind the default framebuffer
+     * @param unbindOnly defines a boolean indicating that the function should only unbind the current render target without binding the default framebuffer
      */
-    public abstract restoreDefaultFramebuffer(): void;
+    public abstract restoreDefaultFramebuffer(unbindOnly?: boolean): void;
 
     /**
      * Draw a list of indexed primitives
@@ -1922,14 +1922,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.45.5";
+        return "babylonjs@8.53.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.45.5";
+        return "8.53.0";
     }
 
     /**
@@ -2281,6 +2281,7 @@ export abstract class AbstractEngine {
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+     * @param mipLevelCount defines the number of mip levels to allocate for the texture
      * @returns the raw texture inside an InternalTexture
      */
     public createRawTexture(
@@ -2294,7 +2295,8 @@ export abstract class AbstractEngine {
         compression?: Nullable<string>,
         type?: number,
         creationFlags?: number,
-        useSRGBBuffer?: boolean
+        useSRGBBuffer?: boolean,
+        mipLevelCount?: number
     ): InternalTexture {
         throw _WarnImport("engine.rawTexture");
     }
@@ -2370,6 +2372,7 @@ export abstract class AbstractEngine {
      * @param compression defines the compressed used (can be null)
      * @param textureType defines the compressed used (can be null)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param mipLevelCount defines the number of mip levels to allocate for the texture
      * @returns a new raw 2D array texture (stored in an InternalTexture)
      */
     public createRawTexture2DArray(
@@ -2383,7 +2386,8 @@ export abstract class AbstractEngine {
         samplingMode: number,
         compression?: Nullable<string>,
         textureType?: number,
-        creationFlags?: number
+        creationFlags?: number,
+        mipLevelCount?: number
     ): InternalTexture {
         throw _WarnImport("engine.rawTexture");
     }

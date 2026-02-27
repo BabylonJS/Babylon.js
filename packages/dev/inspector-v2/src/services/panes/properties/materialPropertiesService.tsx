@@ -1,5 +1,4 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISettingsContext } from "../../../services/settingsContext";
 import type { ISelectionService } from "../../selectionService";
 import type { IPropertiesService } from "./propertiesService";
 
@@ -12,16 +11,17 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import { SkyMaterial } from "materials/sky/skyMaterial";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 import { MultiMaterialChildrenProperties } from "../../../components/properties/materials/multiMaterialProperties";
-import { NodeMaterialGeneralProperties } from "../../../components/properties/materials/nodeMaterialProperties";
+import { NodeMaterialGeneralProperties, NodeMaterialInputProperties } from "../../../components/properties/materials/nodeMaterialProperties";
 import { NormalMapProperties } from "../../../components/properties/materials/normalMapProperties";
 import {
     OpenPBRMaterialBaseProperties,
-    OpenPBRMaterialCoatProperties,
-    OpenPBRMaterialEmissionProperties,
-    OpenPBRMaterialFuzzProperties,
-    OpenPBRMaterialGeometryProperties,
     OpenPBRMaterialSpecularProperties,
+    OpenPBRMaterialTransmissionProperties,
+    OpenPBRMaterialCoatProperties,
+    OpenPBRMaterialFuzzProperties,
+    OpenPBRMaterialEmissionProperties,
     OpenPBRMaterialThinFilmProperties,
+    OpenPBRMaterialGeometryProperties,
 } from "../../../components/properties/materials/openpbrMaterialProperties";
 import {
     PBRBaseMaterialAdvancedProperties,
@@ -48,13 +48,12 @@ import {
     StandardMaterialTransparencyProperties,
 } from "../../../components/properties/materials/standardMaterialProperties";
 import { SelectionServiceIdentity } from "../../selectionService";
-import { SettingsContextIdentity } from "../../settingsContext";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
-export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService, ISettingsContext]> = {
+export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Material Properties",
-    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity, SettingsContextIdentity],
-    factory: (propertiesService, selectionService, settingsContext) => {
+    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
+    factory: (propertiesService, selectionService) => {
         const materialContentRegistration = propertiesService.addSectionContent({
             key: "Material Properties",
             predicate: (entity: unknown) => entity instanceof Material,
@@ -188,31 +187,35 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             predicate: (entity: unknown) => entity instanceof OpenPBRMaterial,
             content: [
                 {
-                    section: "Base",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialBaseProperties material={context} />,
                 },
                 {
-                    section: "Specular",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialSpecularProperties material={context} />,
                 },
                 {
-                    section: "Coat",
+                    section: "OpenPBR",
+                    component: ({ context }) => <OpenPBRMaterialTransmissionProperties material={context} />,
+                },
+                {
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialCoatProperties material={context} />,
                 },
                 {
-                    section: "Fuzz",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialFuzzProperties material={context} />,
                 },
                 {
-                    section: "Emission",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialEmissionProperties material={context} />,
                 },
                 {
-                    section: "Thin Film",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialThinFilmProperties material={context} />,
                 },
                 {
-                    section: "Geometry",
+                    section: "OpenPBR",
                     component: ({ context }) => <OpenPBRMaterialGeometryProperties material={context} />,
                 },
             ],
@@ -224,7 +227,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             content: [
                 {
                     section: "Sky",
-                    component: ({ context }) => <SkyMaterialProperties material={context} settings={settingsContext} />,
+                    component: ({ context }) => <SkyMaterialProperties material={context} />,
                 },
             ],
         });
@@ -247,6 +250,10 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 {
                     section: "General",
                     component: ({ context }) => <NodeMaterialGeneralProperties material={context} />,
+                },
+                {
+                    section: "Inputs",
+                    component: ({ context }) => <NodeMaterialInputProperties material={context} />,
                 },
             ],
         });

@@ -3,9 +3,12 @@ import { Constants } from "core/Engines/constants";
 import type { Engine } from "core/Engines/engine";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import type { Material } from "core/Materials/material";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import type { IShaderMaterialOptions } from "core/Materials/shaderMaterial";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { GaussianSplattingGpuPickingMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin";
 import { Color4 } from "core/Maths/math.color";
 import type { IVector2Like } from "core/Maths/math.like";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -66,7 +69,7 @@ export class GPUPicker {
     private readonly _pickingMaterialCache: Nullable<ShaderMaterial>[] = new Array(9).fill(null);
 
     private _pickableMeshes: Array<AbstractMesh> = [];
-    private readonly _meshMaterialMap: Map<AbstractMesh, ShaderMaterial> = new Map();
+    private readonly _meshMaterialMap: Map<AbstractMesh, Material> = new Map();
     private _readbuffer: Nullable<Uint8Array> = null;
 
     private _meshRenderingCount: number = 0;
@@ -77,6 +80,9 @@ export class GPUPicker {
     private _pickingTextureAfterRenderObserver: Nullable<Observer<number>> = null;
 
     private _nextFreeId = 1;
+
+    private readonly _gsPickingMaterials: Material[] = [];
+    private readonly _gsCompoundRenderMeshes: AbstractMesh[] = [];
 
     /** Shader language used by the generator */
     protected _shaderLanguage = ShaderLanguage.GLSL;
@@ -198,6 +204,9 @@ export class GPUPicker {
         }
 
         const effect = material.getEffect();
+        if (!effect) {
+            return;
+        }
 
         if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances && this._meshUniqueIdToPickerId[mesh.uniqueId] !== undefined) {
             effect.setFloat("meshID", this._meshUniqueIdToPickerId[mesh.uniqueId]);
@@ -236,21 +245,47 @@ export class GPUPicker {
             // Cleanup
             for (let index = 0; index < this._pickableMeshes.length; index++) {
                 const mesh = this._pickableMeshes[index];
-                if (mesh.hasInstances) {
-                    (mesh as Mesh).removeVerticesData(GPUPicker._AttributeName);
+                const className = mesh.getClassName();
+
+                // Skip GS part proxies - they don't have instance buffers or render list entries
+                if (className === "GaussianSplattingPartProxyMesh") {
+                    continue;
                 }
-                if (mesh.hasThinInstances) {
-                    (mesh as Mesh).thinInstanceSetBuffer(GPUPicker._AttributeName, null);
+
+                // Skip thin instance cleanup for GaussianSplattingMesh (their thin instances are for batching, not picking)
+                if (className !== "GaussianSplattingMesh") {
+                    if (mesh.hasInstances) {
+                        (mesh as Mesh).removeVerticesData(GPUPicker._AttributeName);
+                    }
+                    if (mesh.hasThinInstances) {
+                        (mesh as Mesh).thinInstanceSetBuffer(GPUPicker._AttributeName, null);
+                    }
                 }
+
                 if (this._pickingTexture) {
                     this._pickingTexture.setMaterialForRendering(mesh, undefined);
                 }
 
-                const material = this._meshMaterialMap.get(mesh)!;
-                if (!this._pickingMaterialCache.includes(material)) {
+                const material = this._meshMaterialMap.get(mesh);
+                if (material && !this._pickingMaterialCache.includes(material as ShaderMaterial)) {
                     material.onBindObservable.removeCallback(this._materialBindCallback);
                 }
             }
+
+            // Clean up GS compound meshes from render list
+            for (const mesh of this._gsCompoundRenderMeshes) {
+                if (this._pickingTexture) {
+                    this._pickingTexture.setMaterialForRendering(mesh, undefined);
+                }
+            }
+            this._gsCompoundRenderMeshes.length = 0;
+
+            // Dispose GS picking materials
+            for (const material of this._gsPickingMaterials) {
+                material.dispose();
+            }
+            this._gsPickingMaterials.length = 0;
+
             this._pickableMeshes.length = 0;
             this._meshMaterialMap.clear();
             this._idMap.length = 0;
@@ -314,9 +349,15 @@ export class GPUPicker {
                 this._meshMaterialMap.set(item.mesh, item.material);
                 newPickableMeshes[i] = item.mesh;
             } else {
-                const material = this._getPickingMaterial(scene, item.material?.fillMode ?? Constants.MATERIAL_TriangleFillMode);
-                this._meshMaterialMap.set(item, material);
-                newPickableMeshes[i] = item;
+                const className = item.getClassName();
+                if (className === "GaussianSplattingMesh" || className === "GaussianSplattingPartProxyMesh") {
+                    // GS meshes get special picking materials - handled in the ID assignment loop below
+                    newPickableMeshes[i] = item;
+                } else {
+                    const material = this._getPickingMaterial(scene, item.material?.fillMode ?? Constants.MATERIAL_TriangleFillMode);
+                    this._meshMaterialMap.set(item, material);
+                    newPickableMeshes[i] = item;
+                }
             }
         }
 
@@ -327,16 +368,62 @@ export class GPUPicker {
         }
 
         // We will affect colors and create vertex color buffers
-        let nextFreeid = this._nextFreeId;
+        let nextFreeId = this._nextFreeId;
+
+        // Collect GaussianSplatting part proxy groups for compound picking
+        const gsCompoundGroups: { compound: AbstractMesh; partEntries: { proxy: AbstractMesh; globalIndex: number }[] }[] = [];
+
         for (let index = 0; index < newPickableMeshes.length; index++) {
             const mesh = newPickableMeshes[index];
+            const className = mesh.getClassName();
+
+            // Handle GaussianSplatting part proxy meshes - collect by compound for processing after the loop
+            if (className === "GaussianSplattingPartProxyMesh") {
+                const proxy = mesh as any; // GaussianSplattingPartProxyMesh
+                const compound = proxy.compoundSplatMesh;
+                const globalIndex = index + pickableMeshOffset;
+
+                let group = gsCompoundGroups[compound.uniqueId];
+                if (!group) {
+                    group = { compound, partEntries: [] };
+                    gsCompoundGroups[compound.uniqueId] = group;
+                }
+                group.partEntries.push({ proxy, globalIndex });
+                continue; // Don't add to render list - the compound mesh will render for all parts
+            }
+
+            // Handle non-compound GaussianSplatting meshes
+            if (className === "GaussianSplattingMesh") {
+                const globalIndex = index + pickableMeshOffset;
+                const pickId = nextFreeId;
+                this._idMap[pickId] = globalIndex;
+                this._meshUniqueIdToPickerId[mesh.uniqueId] = pickId;
+                nextFreeId++;
+
+                // Create a GaussianSplattingMaterial with picking plugin for GPU picking
+                const gsPickingMaterial = this._createGaussianSplattingPickingMaterial(scene, mesh);
+                const plugin = gsPickingMaterial.pluginManager!.getPlugin<GaussianSplattingGpuPickingMaterialPlugin>("GaussianSplatGpuPicking")!;
+                plugin.meshId = pickId;
+
+                gsPickingMaterial.onBindObservable.add(() => {
+                    this._meshRenderingCount++;
+                });
+
+                this._gsPickingMaterials.push(gsPickingMaterial);
+                this._meshMaterialMap.set(mesh, gsPickingMaterial);
+                this._pickingTexture!.setMaterialForRendering(mesh, gsPickingMaterial);
+                this._pickingTexture!.renderList!.push(mesh);
+                continue;
+            }
+
+            // Standard mesh processing
             const material = this._meshMaterialMap.get(mesh)!;
 
-            if (!this._pickingMaterialCache.includes(material)) {
+            if (!this._pickingMaterialCache.includes(material as ShaderMaterial)) {
                 material.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
             }
             this._pickingTexture!.setMaterialForRendering(mesh, material);
-            this._pickingTexture!.renderList.push(mesh);
+            this._pickingTexture!.renderList!.push(mesh);
 
             if (mesh.isAnInstance) {
                 continue; // This will be handled by the source mesh
@@ -348,15 +435,15 @@ export class GPUPicker {
                 const thinInstanceCount = (mesh as Mesh).thinInstanceCount;
                 const instanceIdData = new Float32Array(thinInstanceCount);
                 for (let i = 0; i < thinInstanceCount; i++) {
-                    instanceIdData[i] = nextFreeid;
-                    this._thinIdMap[nextFreeid] = { meshId: globalIndex, thinId: i };
-                    nextFreeid++;
+                    instanceIdData[i] = nextFreeId;
+                    this._thinIdMap[nextFreeId] = { meshId: globalIndex, thinId: i };
+                    nextFreeId++;
                 }
                 (mesh as Mesh).thinInstanceSetBuffer(GPUPicker._AttributeName, instanceIdData, 1);
             } else {
-                const currentMeshId = nextFreeid;
+                const currentMeshId = nextFreeId;
                 this._idMap[currentMeshId] = globalIndex;
-                nextFreeid++;
+                nextFreeId++;
 
                 if (mesh.hasInstances) {
                     // find index of instances of that mesh
@@ -371,10 +458,10 @@ export class GPUPicker {
 
                     instanceIdData[0] = currentMeshId;
                     for (let i = 0; i < instancesForPick.length; i++) {
-                        instanceIdData[i + 1] = nextFreeid;
+                        instanceIdData[i + 1] = nextFreeId;
                         const globalInstanceIndex = instancesForPick[i] + pickableMeshOffset;
-                        this._idMap[nextFreeid] = globalInstanceIndex;
-                        nextFreeid++;
+                        this._idMap[nextFreeId] = globalInstanceIndex;
+                        nextFreeId++;
                     }
 
                     const engine = mesh.getEngine();
@@ -386,14 +473,50 @@ export class GPUPicker {
             }
         }
 
-        if (GPUPicker._MaxPickingId < nextFreeid - 1) {
+        // Process GaussianSplatting compound groups (part proxy meshes)
+        for (const group of gsCompoundGroups) {
+            if (!group) {
+                continue;
+            }
+            const compound = group.compound;
+
+            // Assign picking IDs for each part
+            const partMeshIds: number[] = new Array((compound as any).partCount || 1).fill(0);
+            for (const entry of group.partEntries) {
+                const pickId = nextFreeId;
+                this._idMap[pickId] = entry.globalIndex;
+                const partIndex = (entry.proxy as any).partIndex;
+                if (partIndex < partMeshIds.length) {
+                    partMeshIds[partIndex] = pickId;
+                }
+                nextFreeId++;
+            }
+
+            // Create compound GS picking material with plugin
+            const gsPickingMaterial = this._createGaussianSplattingPickingMaterial(scene, compound);
+            const plugin = gsPickingMaterial.pluginManager!.getPlugin<GaussianSplattingGpuPickingMaterialPlugin>("GaussianSplatGpuPicking")!;
+            plugin.isCompound = true;
+            plugin.partMeshIds = partMeshIds;
+
+            gsPickingMaterial.onBindObservable.add(() => {
+                this._meshRenderingCount++;
+            });
+
+            this._gsPickingMaterials.push(gsPickingMaterial);
+            this._meshMaterialMap.set(compound, gsPickingMaterial);
+            this._pickingTexture!.setMaterialForRendering(compound, gsPickingMaterial);
+            this._pickingTexture!.renderList!.push(compound);
+            this._gsCompoundRenderMeshes.push(compound);
+        }
+
+        if (GPUPicker._MaxPickingId < nextFreeId - 1) {
             if (!this._idWarningIssued) {
                 this._idWarningIssued = true;
                 Logger.Warn(`GPUPicker maximum number of pickable meshes and instances is ${GPUPicker._MaxPickingId}. Some meshes or instances won't be pickable.`);
             }
         }
 
-        this._nextFreeId = nextFreeid;
+        this._nextFreeId = nextFreeId;
     }
 
     /**
@@ -607,6 +730,7 @@ export class GPUPicker {
                     // Do the actual picking
                     if (await this._readTexturePixelsAsync(x, y)) {
                         const colorId = this._getColorIdFromReadBuffer(0);
+
                         // Thin?
                         if (this._thinIdMap[colorId]) {
                             pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
@@ -782,9 +906,39 @@ export class GPUPicker {
     private _updateRenderList(): void {
         this._pickingTexture!.renderList = [];
         for (const mesh of this._pickableMeshes) {
+            const className = mesh.getClassName();
+            // Part proxies don't render directly - their compound renders for them
+            if (className === "GaussianSplattingPartProxyMesh") {
+                continue;
+            }
             this._pickingTexture!.setMaterialForRendering(mesh, this._meshMaterialMap.get(mesh));
             this._pickingTexture!.renderList.push(mesh);
         }
+        // Also add compound GS meshes that render on behalf of part proxies
+        for (const mesh of this._gsCompoundRenderMeshes) {
+            this._pickingTexture!.setMaterialForRendering(mesh, this._meshMaterialMap.get(mesh));
+            this._pickingTexture!.renderList.push(mesh);
+        }
+    }
+
+    /**
+     * Creates a GaussianSplattingMaterial configured for GPU picking by attaching
+     * a GaussianSplattingGpuPickingMaterialPlugin. The plugin injects picking ID
+     * encoding into the existing Gaussian Splatting shaders via material plugin hooks.
+     * @param scene The scene
+     * @param gsMesh The Gaussian Splatting mesh (used to set the source mesh on the material)
+     * @returns A GaussianSplattingMaterial with the picking plugin attached
+     */
+    private _createGaussianSplattingPickingMaterial(scene: Scene, gsMesh: AbstractMesh): GaussianSplattingMaterial {
+        const gsPickingMaterial = new GaussianSplattingMaterial("gaussianSplattingGpuPicking", scene);
+        gsPickingMaterial.setSourceMesh(gsMesh as any);
+        gsPickingMaterial.needAlphaBlending = () => false;
+        gsPickingMaterial.backFaceCulling = false;
+
+        // Attach the GPU picking plugin
+        new GaussianSplattingGpuPickingMaterialPlugin(gsPickingMaterial);
+
+        return gsPickingMaterial;
     }
 
     private async _readTexturePixelsAsync(x: number, y: number, w = 1, h = 1): Promise<boolean> {

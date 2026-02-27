@@ -43,7 +43,7 @@ export class BufferManager {
      * @param bufferViews The list of bufferViews to be populated while writing the binary
      * @returns The binary buffer
      */
-    public generateBinary(bufferViews: IBufferView[]): Uint8Array {
+    public generateBinary(bufferViews: IBufferView[]): Uint8Array<ArrayBuffer> {
         // Construct a DataWriter with the total byte length to prevent resizing
         let totalByteLength = 0;
         this._bufferViewToData.forEach((data) => {

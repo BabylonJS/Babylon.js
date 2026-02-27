@@ -190,6 +190,14 @@ export class ThinDepthPeelingRenderer {
         return { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() };
     }
 
+    // TODO : support multiview for WebXR stereo rendering.
+    // Currently, the MRTs created here are mono (2D textures), so depth peeling only produces correct
+    // order-independent transparency for one view. In XR with OVR_multiview2, transparent objects that
+    // partially overlap other transparent objects may render incorrectly in one or both eyes — fragments
+    // behind a transparent surface can disappear or flicker depending on camera angle.
+    // To fix this, the MultiRenderTargets should use 2-layer texture arrays when the active XR session
+    // uses multiview, and the peeling shaders (oitBackBlend, oitFinal) should be updated to read/write
+    // via gl_ViewID_OVR so both eyes are peeled in a single pass.
     protected _createTextures() {
         const size = this._getTextureSize();
 

@@ -3,7 +3,7 @@ import { RegisterNativeTypeAsync } from "../../Engines/thinNativeEngine";
 /** @internal */
 interface INativeXRFrame extends XRFrame {
     // Native-only helper functions
-    getPoseData: (space: XRSpace, baseSpace: XRReferenceSpace, vectorBuffer: ArrayBuffer, matrixBuffer: ArrayBuffer) => XRPose;
+    getPoseData: (space: XRSpace, baseSpace: XRReferenceSpace, vectorBuffer: ArrayBufferLike, matrixBuffer: ArrayBufferLike) => XRPose;
     _imageTrackingResults?: XRImageTrackingResult[];
 }
 

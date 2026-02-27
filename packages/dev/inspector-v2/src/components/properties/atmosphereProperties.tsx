@@ -17,6 +17,7 @@ export const GeneralAtmosphereProperties: FunctionComponent<{ entity: Atmosphere
                 component={SyncedSliderPropertyLine}
                 target={atmosphere.physicalProperties}
                 propertyKey="planetRadius"
+                propertyPath="physicalProperties.planetRadius"
                 min={1000.0}
                 max={10000.0}
                 step={1}
@@ -26,6 +27,7 @@ export const GeneralAtmosphereProperties: FunctionComponent<{ entity: Atmosphere
                 component={SyncedSliderPropertyLine}
                 target={atmosphere.physicalProperties}
                 propertyKey="atmosphereThickness"
+                propertyPath="physicalProperties.atmosphereThickness"
                 min={1.0}
                 max={200.0}
                 step={1}
@@ -48,6 +50,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             component={SyncedSliderPropertyLine}
                             target={atmosphere.physicalProperties}
                             propertyKey="rayleighScatteringScale"
+                            propertyPath="physicalProperties.rayleighScatteringScale"
                             min={0.0}
                             max={5.0}
                             step={0.01}
@@ -57,6 +60,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             component={Vector3PropertyLine}
                             target={atmosphere.physicalProperties}
                             propertyKey="peakRayleighScattering"
+                            propertyPath="physicalProperties.peakRayleighScattering"
                             convertTo={(value) => value.scale(1000)}
                             convertFrom={(value) => value.scale(0.001)}
                             min={0}
@@ -77,6 +81,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             component={SyncedSliderPropertyLine}
                             target={atmosphere.physicalProperties}
                             propertyKey="mieScatteringScale"
+                            propertyPath="physicalProperties.mieScatteringScale"
                             min={0.0}
                             max={5.0}
                             step={0.01}
@@ -86,6 +91,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             component={Vector3PropertyLine}
                             target={atmosphere.physicalProperties}
                             propertyKey="peakMieScattering"
+                            propertyPath="physicalProperties.peakMieScattering"
                             convertTo={(value) => value.scale(1000)}
                             convertFrom={(value) => value.scale(0.001)}
                             min={0}
@@ -106,6 +112,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             component={SyncedSliderPropertyLine}
                             target={atmosphere.physicalProperties}
                             propertyKey="mieAbsorptionScale"
+                            propertyPath="physicalProperties.mieAbsorptionScale"
                             min={0.0}
                             max={5.0}
                             step={0.01}
@@ -115,6 +122,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             component={Vector3PropertyLine}
                             target={atmosphere.physicalProperties}
                             propertyKey="peakMieAbsorption"
+                            propertyPath="physicalProperties.peakMieAbsorption"
                             convertTo={(value) => value.scale(1000)}
                             convertFrom={(value) => value.scale(0.001)}
                             min={0}
@@ -135,6 +143,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             component={SyncedSliderPropertyLine}
                             target={atmosphere.physicalProperties}
                             propertyKey="ozoneAbsorptionScale"
+                            propertyPath="physicalProperties.ozoneAbsorptionScale"
                             min={0.0}
                             max={5.0}
                             step={0.01}
@@ -144,6 +153,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             component={Vector3PropertyLine}
                             target={atmosphere.physicalProperties}
                             propertyKey="peakOzoneAbsorption"
+                            propertyPath="physicalProperties.peakOzoneAbsorption"
                             convertTo={(value) => value.scale(1000)}
                             convertFrom={(value) => value.scale(0.001)}
                             min={0}

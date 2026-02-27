@@ -18,6 +18,9 @@ struct Splat {
 #if SH_DEGREE > 2
     sh2: vec4<u32>,
 #endif
+#if IS_COMPOUND
+    partIndex: u32,
+#endif
 };
 
 fn getSplatIndex(localIndex: i32, splatIndex0: vec4f, splatIndex1: vec4f, splatIndex2: vec4f, splatIndex3: vec4f) -> f32 {
@@ -127,6 +130,9 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
 #endif
 #if SH_DEGREE > 2
     splat.sh2 = textureLoad(shTexture2, splatUVi32, 0);
+#endif
+#if IS_COMPOUND
+    splat.partIndex = u32(textureLoad(partIndicesTexture, splatUVi32, 0).r * 255.0 + 0.5);
 #endif
     return splat;
 }
@@ -344,3 +350,9 @@ fn gaussianSplatting(
         pos2d.w
     );
 }
+
+#if IS_COMPOUND
+fn getPartWorld(partIndex: u32) -> mat4x4<f32> {
+    return uniforms.partWorld[partIndex];
+}
+#endif

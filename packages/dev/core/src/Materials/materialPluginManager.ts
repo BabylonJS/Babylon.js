@@ -387,13 +387,13 @@ export class MaterialPluginManager {
             for (let pointName in points) {
                 let injectedCode = "";
                 for (const plugin of this._activePlugins) {
-                    let customCode = plugin.getCustomCode(shaderType, this._material.shaderLanguage)?.[pointName];
+                    const shaderLanguage = this._material.shaderLanguage;
+                    let customCode = plugin.getCustomCode(shaderType, shaderLanguage)?.[pointName];
                     if (!customCode) {
                         continue;
                     }
                     if (plugin.resolveIncludes) {
                         if (processorOptions === null) {
-                            const shaderLanguage = ShaderLanguage.GLSL;
                             processorOptions = {
                                 defines: [], // not used by _ProcessIncludes
                                 indexParameters: eventData.indexParameters,

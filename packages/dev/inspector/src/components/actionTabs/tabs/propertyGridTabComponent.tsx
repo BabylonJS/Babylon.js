@@ -111,7 +111,7 @@ import type { EffectLayer } from "core/Layers/effectLayer";
 import { FrameGraphPropertyGridComponent } from "./propertyGrids/frameGraphs/frameGraphPropertyGridComponent";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
 import { EmptyPropertyGridComponent } from "./propertyGrids/emptyPropertyGridComponent";
-import { MetadataGridComponent } from "inspector/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent";
+import { MetadataGridComponent } from "../../../components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent";
 import type { SkyMaterial } from "materials/sky/skyMaterial";
 import { SkyMaterialPropertyGridComponent } from "./propertyGrids/materials/skyMaterialPropertyGridComponent";
 import { Tags } from "core/Misc/tags";

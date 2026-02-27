@@ -98,20 +98,20 @@ struct Settings {
 #ifdef MORPHTARGETS
 fn readVector3FromRawSampler(targetIndex : i32, vertexIndex : u32) -> vec3f
 {			
-    let vertexID = f32(vertexIndex) * settings.morphTargetTextureInfo.x;
-    let y = floor(vertexID / settings.morphTargetTextureInfo.y);
-    let x = vertexID - y * settings.morphTargetTextureInfo.y;
-    let textureUV = vec2<i32>(i32(x), i32(y));
-    return textureLoad(morphTargets, textureUV, i32(morphTargetTextureIndices[targetIndex]), 0).xyz;
+    let vertexID: u32 = vertexIndex * u32(settings.morphTargetTextureInfo.x);
+    let textureWidth: u32 = u32(settings.morphTargetTextureInfo.y);
+    let y: u32 = vertexID / textureWidth;
+    let x: u32 = vertexID % textureWidth;
+    return textureLoad(morphTargets, vec2u(x, y), u32(morphTargetTextureIndices[targetIndex]), 0).xyz;
 }
 
 fn readVector4FromRawSampler(targetIndex : i32, vertexIndex : u32) -> vec4f
 {			
-    let vertexID = f32(vertexIndex) * settings.morphTargetTextureInfo.x;
-    let y = floor(vertexID / settings.morphTargetTextureInfo.y);
-    let x = vertexID - y * settings.morphTargetTextureInfo.y;
-    let textureUV = vec2<i32>(i32(x), i32(y));
-    return textureLoad(morphTargets, textureUV, i32(morphTargetTextureIndices[targetIndex]), 0);
+    let vertexID: u32 = vertexIndex * u32(settings.morphTargetTextureInfo.x);
+    let textureWidth: u32 = u32(settings.morphTargetTextureInfo.y);
+    let y: u32 = vertexID / textureWidth;
+    let x: u32 = vertexID % textureWidth;
+    return textureLoad(morphTargets, vec2u(x, y), u32(morphTargetTextureIndices[targetIndex]), 0);
 }
 #endif
 

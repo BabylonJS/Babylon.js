@@ -47,12 +47,18 @@ export const DebugServiceDefinition: ServiceDefinition<[IDebugService], [IShellS
             horizontalLocation: "right",
             verticalLocation: "top",
             order: 200,
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
-                return <>{scene && <DebugPane sections={sections} sectionContent={sectionContent} context={scene} />}</>;
+                return (
+                    <>
+                        {scene && (
+                            <DebugPane uniqueId="Debug" sections={sections} sectionContent={sectionContent} context={scene} enablePinnedItems enableHiddenItems enableSearchItems />
+                        )}
+                    </>
+                );
             },
         });
 

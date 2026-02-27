@@ -165,7 +165,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         for (const { propertyName, displayName, type, groupName, options, className } of propStore) {
             let components = componentList[groupName];
 
-            if (options.embedded || classes.indexOf(className) === -1) {
+            if (classes.indexOf(className) === -1) {
                 continue;
             }
 

@@ -143,6 +143,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
             mainTextureRatio: 0.5,
             mainTextureFixedSize: 0,
             mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            mainTextureFormat: Constants.TEXTUREFORMAT_RGBA,
             blurKernelSize: 32,
             camera: null,
             renderingGroupId: -1,

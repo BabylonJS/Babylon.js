@@ -2,6 +2,7 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable @typescript-eslint/promise-function-async */
 import type * as GLTF2 from "babylonjs-gltf2interface";
+import type { Nullable } from "core/types";
 import { Tools } from "core/Misc/tools";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -100,6 +101,12 @@ export class GLTFValidation {
     private static _LoadScriptPromise: Promise<void>;
 
     /**
+     * The most recent validation results.
+     * @internal - Used for back-compat in Sandbox with Inspector V2.
+     */
+    public static _LastResults: Nullable<GLTF2.IGLTFValidationResults> = null;
+
+    /**
      * Validate a glTF asset using the glTF-Validator.
      * @param data The JSON of a glTF or the array buffer of a binary glTF
      * @param rootUrl The root url for the glTF
@@ -143,6 +150,7 @@ export class GLTFValidation {
                         case "validate.resolve": {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
+                            GLTFValidation._LastResults = data.value;
                             resolve(data.value);
                             worker.terminate();
                             break;

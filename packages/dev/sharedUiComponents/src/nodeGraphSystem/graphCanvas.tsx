@@ -414,6 +414,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         if (this.selectedLink) {
             needRebuild = true;
             this.selectedLink.dispose();
+
+            if (this.selectedLink.nodeB) {
+                RefreshNode(this.selectedLink.nodeB);
+            }
         }
 
         if (this.selectedFrames.length) {

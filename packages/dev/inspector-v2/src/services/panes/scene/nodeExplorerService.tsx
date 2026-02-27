@@ -1,13 +1,15 @@
-import type { IDisposable, Node, Nullable } from "core/index";
+import type { IDisposable, Nullable } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IGizmoService } from "../../gizmoService";
 import type { ISceneContext } from "../../sceneContext";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import {
     BorderNoneRegular,
     BorderOutsideRegular,
     CameraRegular,
+    EditRegular,
     EyeOffRegular,
     EyeRegular,
     FlashlightOffRegular,
@@ -22,21 +24,25 @@ import { Camera } from "core/Cameras/camera";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Observable } from "core/Misc/observable";
+import { Node } from "core/node";
 import { MeshIcon } from "shared-ui-components/fluent/icons";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
+import { EditNodeGeometry, GetNodeGeometry } from "../../../misc/nodeGeometryEditor";
 import { GizmoServiceIdentity } from "../../gizmoService";
 import { SceneContextIdentity } from "../../sceneContext";
+import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
+import { FindMainCamera, FindMainObjectRenderer } from "core/FrameGraph/frameGraphUtils";
 
 import "core/Rendering/boundingBoxRenderer";
 
-export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService]> = {
+export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService, IWatcherService]> = {
     friendlyName: "Node Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, GizmoServiceIdentity],
-    factory: (sceneExplorerService, sceneContext, gizmoService) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, GizmoServiceIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, gizmoService, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -83,15 +89,9 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             getEntityDisplayInfo: (node) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(node, "name", {
-                    afterSet: () => onChangeObservable.notifyObservers(),
-                });
+                const nameHookToken = watcherService.watchProperty(node, "name", () => onChangeObservable.notifyObservers());
 
-                const parentHookToken = InterceptProperty(node, "parent", {
-                    afterSet: () => {
-                        nodeMovedObservable.notifyObservers(node);
-                    },
-                });
+                const parentHookToken = watcherService.watchProperty(node, "parent", () => nodeMovedObservable.notifyObservers(node));
 
                 return {
                     get name() {
@@ -130,6 +130,35 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 scene.onLightRemovedObservable,
             ],
             getEntityMovedObservables: () => [nodeMovedObservable],
+            dragDropConfig: {
+                canDrag: (node) => node instanceof Node,
+                canDrop: (draggedNode, targetNode) => {
+                    // Can't drop on self
+                    if (targetNode === draggedNode) {
+                        return false;
+                    }
+                    // Can't drop on a descendant
+                    if (targetNode !== null && targetNode.isDescendantOf(draggedNode)) {
+                        return false;
+                    }
+                    // Can drop onto section root (null) only if node has a parent
+                    if (targetNode === null) {
+                        return draggedNode.parent !== null;
+                    }
+                    return true;
+                },
+                onDrop: (draggedNode, targetNode) => {
+                    if (draggedNode.parent === targetNode) {
+                        return;
+                    }
+                    // Use setParent for TransformNodes to preserve world transform
+                    if (draggedNode instanceof TransformNode) {
+                        draggedNode.setParent(targetNode);
+                    } else {
+                        draggedNode.parent = targetNode;
+                    }
+                },
+            },
         });
 
         const abstractMeshBoundingBoxCommandRegistration = sceneExplorerService.addEntityCommand({
@@ -137,9 +166,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             order: DefaultCommandsOrder.MeshBoundingBox,
             getCommand: (mesh) => {
                 const onChangeObservable = new Observable<void>();
-                const showBoundingBoxHook = InterceptProperty(mesh, "showBoundingBox", {
-                    afterSet: () => onChangeObservable.notifyObservers(),
-                });
+                const showBoundingBoxHook = watcherService.watchProperty(mesh, "showBoundingBox", () => onChangeObservable.notifyObservers());
 
                 return {
                     type: "toggle",
@@ -167,9 +194,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             order: DefaultCommandsOrder.MeshVisibility,
             getCommand: (mesh) => {
                 const onChangeObservable = new Observable<void>();
-                const isVisibleHook = InterceptProperty(mesh, "isVisible", {
-                    afterSet: () => onChangeObservable.notifyObservers(),
-                });
+                const isVisibleHook = watcherService.watchProperty(mesh, "isVisible", () => onChangeObservable.notifyObservers());
 
                 return {
                     type: "toggle",
@@ -177,6 +202,10 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                         return `${mesh.isVisible ? "Hide" : "Show"} Mesh`;
                     },
                     icon: () => (mesh.isVisible ? <EyeRegular /> : <EyeOffRegular />),
+                    hotKey: {
+                        keyCode: "Space",
+                        control: true,
+                    },
                     get isEnabled() {
                         return !mesh.isVisible;
                     },
@@ -192,6 +221,8 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
         });
 
+        const getActiveCamera = () => (scene.frameGraph ? FindMainCamera(scene.frameGraph) : scene.activeCamera);
+
         const activeCameraCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown) => entity instanceof Camera,
             order: DefaultCommandsOrder.CameraActive,
@@ -205,15 +236,27 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 return {
                     type: "toggle",
                     displayName: "Activate and Attach Controls",
-                    icon: () => (scene.activeCamera === camera ? <VideoFilled /> : <VideoRegular />),
+                    icon: () => {
+                        return getActiveCamera() === camera ? <VideoFilled /> : <VideoRegular />;
+                    },
                     get isEnabled() {
-                        return scene.activeCamera === camera;
+                        return getActiveCamera() === camera;
                     },
                     set isEnabled(enabled: boolean) {
-                        if (enabled && scene.activeCamera !== camera) {
-                            scene.activeCamera?.detachControl();
-                            scene.activeCamera = camera;
-                            camera.attachControl(true);
+                        const activeCamera = getActiveCamera();
+                        if (enabled && activeCamera !== camera) {
+                            activeCamera?.detachControl();
+                            if (scene.frameGraph) {
+                                const objectRenderer = FindMainObjectRenderer(scene.frameGraph);
+                                if (objectRenderer) {
+                                    objectRenderer.camera = camera;
+                                    onChangeObservable.notifyObservers(); // manual trigger, because scene.onActiveCameraChanged won't be triggered by the line above
+                                    camera.attachControl(true);
+                                }
+                            } else {
+                                scene.activeCamera = camera;
+                                camera.attachControl(true);
+                            }
                         }
                     },
                     onChange: onChangeObservable,
@@ -291,6 +334,25 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
         const lightGizmoCommandRegistration = addGizmoCommand(Light, gizmoService.getLightGizmo.bind(gizmoService));
 
+        const editNodeGeometryCommandRegistration = sceneExplorerService.addEntityCommand({
+            predicate: (entity: unknown): entity is Mesh => entity instanceof Mesh && !!GetNodeGeometry(entity),
+            order: DefaultCommandsOrder.EditNodeGeometry,
+            getCommand: (mesh) => {
+                return {
+                    type: "action",
+                    displayName: "Edit in Node Geometry Editor",
+                    icon: () => <EditRegular />,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    execute: async () => {
+                        const nodeGeometry = GetNodeGeometry(mesh);
+                        if (nodeGeometry) {
+                            await EditNodeGeometry(nodeGeometry, mesh.getScene());
+                        }
+                    },
+                };
+            },
+        });
+
         return {
             dispose: () => {
                 sectionRegistration.dispose();
@@ -300,6 +362,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 cameraGizmoCommandRegistration.dispose();
                 lightEnabledCommandRegistration.dispose();
                 lightGizmoCommandRegistration.dispose();
+                editNodeGeometryCommandRegistration.dispose();
             },
         };
     },

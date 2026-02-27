@@ -214,7 +214,7 @@ export class ReflectiveShadowMap {
         const useUBO = this._scene.getEngine().supportsUniformBuffers;
 
         if (useUBO) {
-            sceneUBO = this._scene.createSceneUniformBuffer(`Scene for RSM (light "${name}")`);
+            sceneUBO = this._scene.createSceneUniformBuffer(`Scene for RSM (light "${name}")`, { forceMono: true });
         }
 
         let shadowEnabled: boolean;

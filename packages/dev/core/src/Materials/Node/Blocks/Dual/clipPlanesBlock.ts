@@ -84,12 +84,20 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
         return this._inputs[0];
     }
 
+    /** {@inheritDoc} */
     public override get target() {
         return NodeMaterialBlockTargets.VertexAndFragment;
     }
 
+    /** {@inheritDoc} */
     public override set target(value: NodeMaterialBlockTargets) {}
 
+    /**
+     * Prepares the shader defines related to clip planes for the given mesh
+     * @param defines - the material defines
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to prepare for
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
         if (!mesh) {
             return;
@@ -112,6 +120,12 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
         defines.setValue("CLIPPLANE6", useClipPlane6, true);
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh to bind for
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;

@@ -344,6 +344,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

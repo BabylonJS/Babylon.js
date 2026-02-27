@@ -29,6 +29,7 @@ declare module "../../abstractEngine" {
          * @param compression defines the compression used (null by default)
          * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
          * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+         * @param mipLevel defines which mipLevel of the texture is going to be updated
          */
         updateRawTexture(
             texture: Nullable<InternalTexture>,
@@ -37,7 +38,8 @@ declare module "../../abstractEngine" {
             invertY: boolean,
             compression: Nullable<string>,
             type: number,
-            useSRGBBuffer: boolean
+            useSRGBBuffer: boolean,
+            mipLevel?: number
         ): void;
 
         /**
@@ -200,6 +202,26 @@ declare module "../../abstractEngine" {
             compression: Nullable<string>,
             textureType: number
         ): void;
+
+        /**
+         * Update a raw 2D array texture
+         * @param texture defines the texture to update
+         * @param data defines the data to store
+         * @param format defines the data format
+         * @param invertY defines if data must be stored with Y axis inverted
+         * @param compression defines the used compression (can be null)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_BYTE, Engine.TEXTURETYPE_FLOAT...)
+         * @param mipLevel defines which mipLevel of the texture is going to be updated
+         */
+        updateRawTexture2DArray(
+            texture: InternalTexture,
+            data: Nullable<ArrayBufferView>,
+            format: number,
+            invertY: boolean,
+            compression: Nullable<string>,
+            textureType: number,
+            mipLevel?: number
+        ): void;
     }
 }
 
@@ -214,7 +236,8 @@ ThinWebGPUEngine.prototype.createRawTexture = function (
     compression: Nullable<string> = null,
     type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
     creationFlags: number = 0,
-    useSRGBBuffer: boolean = false
+    useSRGBBuffer: boolean = false,
+    mipLevelCount?: number
 ): InternalTexture {
     const texture = new InternalTexture(this, InternalTextureSource.Raw);
     texture.baseWidth = width;
@@ -234,6 +257,7 @@ ThinWebGPUEngine.prototype.createRawTexture = function (
         texture._bufferView = data;
     }
 
+    this._textureHelper.updateMipLevelCountForInternalTexture(texture, mipLevelCount);
     this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, undefined, creationFlags);
 
     this.updateRawTexture(texture, data, format, invertY, compression, type, useSRGBBuffer);
@@ -250,7 +274,8 @@ ThinWebGPUEngine.prototype.updateRawTexture = function (
     invertY: boolean,
     compression: Nullable<string> = null,
     type: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
-    useSRGBBuffer: boolean = false
+    useSRGBBuffer: boolean = false,
+    mipLevel?: number
 ): void {
     if (!texture) {
         return;
@@ -261,6 +286,12 @@ ThinWebGPUEngine.prototype.updateRawTexture = function (
         texture.invertY = invertY;
         texture._compression = compression;
         texture._useSRGBBuffer = useSRGBBuffer;
+        if (mipLevel !== undefined && bufferView) {
+            if (!texture._bufferViewArray) {
+                texture._bufferViewArray = new Array(texture.mipLevelCount);
+            }
+            texture._bufferViewArray[mipLevel] = bufferView;
+        }
     }
 
     if (bufferView) {
@@ -273,8 +304,10 @@ ThinWebGPUEngine.prototype.updateRawTexture = function (
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
-        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0);
-        if (texture.generateMipMaps) {
+        const mipWidth = Math.max(1, texture.width >> (mipLevel ?? 0));
+        const mipHeight = Math.max(1, texture.height >> (mipLevel ?? 0));
+        this._textureHelper.updateTexture(data, texture, mipWidth, mipHeight, texture.depth, gpuTextureWrapper.format, 0, mipLevel ?? 0, invertY, false, 0, 0);
+        if (texture.generateMipMaps && !mipLevel) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }
     }
@@ -546,7 +579,8 @@ ThinWebGPUEngine.prototype.createRawTexture2DArray = function (
     samplingMode: number,
     compression: Nullable<string> = null,
     textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
-    creationFlags: number = 0
+    creationFlags: number = 0,
+    mipLevelCount?: number
 ): InternalTexture {
     const source = InternalTextureSource.Raw2DArray;
     const texture = new InternalTexture(this, source);
@@ -568,6 +602,7 @@ ThinWebGPUEngine.prototype.createRawTexture2DArray = function (
         texture._bufferView = data;
     }
 
+    this._textureHelper.updateMipLevelCountForInternalTexture(texture, mipLevelCount);
     this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, depth, creationFlags);
 
     this.updateRawTexture2DArray(texture, data, format, invertY, compression, textureType);
@@ -583,13 +618,20 @@ ThinWebGPUEngine.prototype.updateRawTexture2DArray = function (
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE
+    textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
+    mipLevel?: number
 ): void {
     if (!this._doNotHandleContextLost) {
         texture._bufferView = bufferView;
         texture.format = format;
         texture.invertY = invertY;
         texture._compression = compression;
+        if (mipLevel !== undefined && bufferView) {
+            if (!texture._bufferViewArray) {
+                texture._bufferViewArray = new Array(texture.mipLevelCount);
+            }
+            texture._bufferViewArray[mipLevel] = bufferView;
+        }
     }
 
     if (bufferView) {
@@ -602,8 +644,10 @@ ThinWebGPUEngine.prototype.updateRawTexture2DArray = function (
 
         const data = new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
 
-        this._textureHelper.updateTexture(data, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0);
-        if (texture.generateMipMaps) {
+        const mipWidth = Math.max(1, texture.width >> (mipLevel ?? 0));
+        const mipHeight = Math.max(1, texture.height >> (mipLevel ?? 0));
+        this._textureHelper.updateTexture(data, texture, mipWidth, mipHeight, texture.depth, gpuTextureWrapper.format, 0, mipLevel ?? 0, invertY, false, 0, 0);
+        if (texture.generateMipMaps && !mipLevel) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }
     }

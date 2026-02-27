@@ -2,7 +2,8 @@
     "extends": "../../../tsconfig.json",
 
     "compilerOptions": {
-        "target": "es2017",
+        "target": "es2021",
+        "lib": ["es2021"],
         "module": "esnext",
         "resolveJsonModule": true,
         "allowSyntheticDefaultImports": true

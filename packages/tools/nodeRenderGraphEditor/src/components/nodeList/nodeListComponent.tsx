@@ -73,6 +73,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ComputeShaderBlock: "Executes a compute shader",
         VolumetricLightingBlock: "Applies a volumetric lighting post process",
         LightingVolumeBlock: "Generate lighting volume",
+        SelectionOutlineLayerBlock: "Adds a selection outline effect to a texture",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -168,7 +169,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "CameraBlock",
                 "ShadowLightBlock",
             ],
-            Layers: ["GlowLayerBlock", "HighlightLayerBlock"],
+            Layers: ["GlowLayerBlock", "HighlightLayerBlock", "SelectionOutlineLayerBlock"],
             Misc: [
                 "ComputeShaderBlock",
                 "ElbowBlock",

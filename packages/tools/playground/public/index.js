@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 // Version
 var Versions = {
     Latest: [
@@ -6,8 +5,6 @@ var Versions = {
         { url: "https://preview.babylonjs.com/babylon.js", instantResolve: false },
         { url: "https://preview.babylonjs.com/gui/babylon.gui.min.js", instantResolve: false },
         { url: "https://preview.babylonjs.com/addons/babylonjs.addons.min.js", instantResolve: false, minVersion: "7.32.4" },
-        { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true },
-        { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.40.1" },
         { url: "https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/nodeGeometryEditor/babylon.nodeGeometryEditor.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js", instantResolve: true },
@@ -18,6 +15,13 @@ var Versions = {
         { url: "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/accessibility/babylon.accessibility.js", instantResolve: true },
+        // Allow an "inspectorv1" query param to force loading Inspector v1.
+        ...(window.location.search.toLocaleLowerCase().includes("inspectorv1")
+            ? [{ url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true }]
+            : [
+                  { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true, maxVersion: "8.40.0" },
+                  { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.40.1" },
+              ]),
         { url: "https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js", instantResolve: true },
         { url: "https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js", instantResolve: true },
     ],
@@ -25,8 +29,6 @@ var Versions = {
         { url: `//${window.location.hostname}:1337/babylon.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/gui/babylon.gui.min.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/addons/babylonjs.addons.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`, instantResolve: false },
-        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/nodeEditor/babylon.nodeEditor.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/nodeGeometryEditor/babylon.nodeGeometryEditor.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js`, instantResolve: false },
@@ -37,6 +39,8 @@ var Versions = {
         { url: `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/serializers/babylonjs.serializers.min.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/accessibility/babylon.accessibility.js`, instantResolve: false },
+        // { url: `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
         { url: "https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js", instantResolve: false },
         { url: "https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js", instantResolve: false },
     ],
@@ -202,7 +206,7 @@ let checkBabylonVersionAsync = async function () {
         }));
     } else if (version) {
         frameworkScripts = frameworkScripts
-            .filter((v) => !v.minVersion || isVersionGreaterOrEqual(version, v.minVersion))
+            .filter((v) => (!v.minVersion || isVersionGreaterOrEqual(version, v.minVersion)) && (!v.maxVersion || isVersionGreaterOrEqual(v.maxVersion, version)))
             .map((v) => ({ ...v, url: v.url.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version) }));
     } else if (window.location.href.includes("debug.html")) {
         frameworkScripts = frameworkScripts.map((v) => {

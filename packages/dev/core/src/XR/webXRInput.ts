@@ -57,6 +57,7 @@ export class WebXRInput implements IDisposable {
     private _frameObserver: Nullable<Observer<any>>;
     private _sessionEndedObserver: Nullable<Observer<any>>;
     private _sessionInitObserver: Nullable<Observer<any>>;
+    private _currentXRSession: Nullable<XRSession> = null;
     /**
      * Event when a controller has been connected/added
      */
@@ -85,6 +86,8 @@ export class WebXRInput implements IDisposable {
     ) {
         // Remove controllers when exiting XR
         this._sessionEndedObserver = this.xrSessionManager.onXRSessionEnded.add(() => {
+            this._currentXRSession?.removeEventListener("inputsourceschange", this._onInputSourcesChange);
+            this._currentXRSession = null;
             this._addAndRemoveControllers(
                 [],
                 this.controllers.map((c) => {
@@ -94,6 +97,7 @@ export class WebXRInput implements IDisposable {
         });
 
         this._sessionInitObserver = this.xrSessionManager.onXRSessionInit.add((session) => {
+            this._currentXRSession = session;
             session.addEventListener("inputsourceschange", this._onInputSourcesChange);
         });
 
@@ -165,6 +169,8 @@ export class WebXRInput implements IDisposable {
      * Disposes of the object
      */
     public dispose() {
+        this._currentXRSession?.removeEventListener("inputsourceschange", this._onInputSourcesChange);
+        this._currentXRSession = null;
         for (const c of this.controllers) {
             c.dispose();
         }

@@ -1,0 +1,5 @@
+# Mark all cached import files as generated
+* linguist-generated=true
+
+# Use 'ours' merge strategy to keep local cached versions
+* merge=ours

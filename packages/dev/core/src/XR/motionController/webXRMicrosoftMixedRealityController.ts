@@ -83,7 +83,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
     public profileId = "microsoft-mixed-reality";
 
     constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness) {
-        super(scene, MixedRealityProfile["left-right"], gamepadObject, handedness);
+        super(scene, MixedRealityProfile[handedness], gamepadObject, handedness);
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string } {

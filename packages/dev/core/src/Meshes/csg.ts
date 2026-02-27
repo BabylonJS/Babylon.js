@@ -469,7 +469,6 @@ export class CSG {
         const vertColors = data.colors;
 
         if (!indices || !positions) {
-            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: VertexData must at least contain positions and indices";
         }
 
@@ -544,7 +543,6 @@ export class CSG {
                 invertWinding = mesh.material.sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
             }
         } else {
-            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh";
         }
 
@@ -555,21 +553,17 @@ export class CSG {
             vertColors = mesh.getVerticesData(VertexBuffer.ColorKind);
 
         if (indices === null) {
-            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: Mesh has no indices";
         }
         if (positions === null) {
-            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: Mesh has no positions";
         }
         if (normals === null) {
-            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: Mesh has no normals";
         }
 
         const subMeshes = mesh.subMeshes;
         if (!subMeshes) {
-            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: Mesh has no submeshes";
         }
 

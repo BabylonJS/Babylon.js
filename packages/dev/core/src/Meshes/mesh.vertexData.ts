@@ -1601,22 +1601,18 @@ export class VertexData implements IVertexDataLike {
     /**
      * Creates the VertexData for a tiled box
      * @param options an object used to set the following optional parameters for the box, required but can be empty
-     * * faceTiles sets the pattern, tile size and number of tiles for a face
-     * * faceUV an array of 6 Vector4 elements used to set different images to each box side
-     * * faceColors an array of 6 Color3 elements used to set different colors to each box side
-     * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * @param options.pattern
-     * @param options.width
-     * @param options.height
-     * @param options.depth
-     * @param options.tileSize
-     * @param options.tileWidth
-     * @param options.tileHeight
-     * @param options.alignHorizontal
-     * @param options.alignVertical
-     * @param options.faceUV
-     * @param options.faceColors
-     * @param options.sideOrientation
+     * - `pattern` sets the pattern
+     * - `width` sets the width
+     * - `height` sets the height
+     * - `depth` sets the depth
+     * - `tileSize` sets the tile size
+     * - `tileWidth` sets the tile width
+     * - `tileHeight` sets the tile height
+     * - `alignHorizontal` sets the horizontal alignment
+     * - `alignVertical` sets the vertical alignment
+     * - `faceUV` an array of 6 Vector4 elements used to set different images to each box side
+     * - `faceColors` an array of 6 Color3 elements used to set different colors to each box side
+     * - `sideOrientation` optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * @returns the VertexData of the box
      * @deprecated Please use CreateTiledBoxVertexData instead
      */
@@ -1706,7 +1702,7 @@ export class VertexData implements IVertexDataLike {
      * * diameterBottom sets the diameter of the bottom of the cone, overwrites diameter,  optional, default diameter
      * * diameter sets the diameter of the top and bottom of the cone, optional default 1
      * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
-     * * subdivisions` the number of rings along the cylinder height, optional, default 1
+     * * `subdivisions` the number of rings along the cylinder height, optional, default 1
      * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
      * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
      * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
@@ -1806,8 +1802,8 @@ export class VertexData implements IVertexDataLike {
      * * zmin the ground minimum Z coordinate, optional, default -1
      * * xmax the ground maximum X coordinate, optional, default 1
      * * zmax the ground maximum Z coordinate, optional, default 1
-     * * subdivisions a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default {w: 6, h: 6}
-     * * precision a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the tile width and height, default {w: 2, h: 2}
+     * * subdivisions a javascript object `\{w: positive integer, h: positive integer\}`, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default `\{w: 6, h: 6\}`
+     * * precision a javascript object `\{w: positive integer, h: positive integer\}`, `w` and `h` are the numbers of subdivisions on the tile width and height, default `\{w: 2, h: 2\}`
      * @returns the VertexData of the TiledGround
      * @deprecated use CreateTiledGroundVertexData instead
      */

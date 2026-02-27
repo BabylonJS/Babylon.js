@@ -11,6 +11,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import { ScreenSpaceReflectionsConfiguration } from "../Rendering/screenSpaceReflectionsConfiguration";
 
 import "../Shaders/screenSpaceReflection.fragment";
+import "../Rendering/geometryBufferRendererSceneComponent";
 import { RegisterClass } from "../Misc/typeStore";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";

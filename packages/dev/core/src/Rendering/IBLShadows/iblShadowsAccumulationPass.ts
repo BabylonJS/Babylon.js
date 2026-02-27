@@ -212,7 +212,9 @@ export class _IblShadowsAccumulationPass {
         this._renderWhenGBufferReady = this._render.bind(this);
         // Don't start rendering until the first vozelization is done.
         this._renderPipeline.onVoxelizationCompleteObservable.addOnce(() => {
-            this._scene.geometryBufferRenderer!.getGBuffer().onAfterRenderObservable.add(this._renderWhenGBufferReady);
+            if (this._scene.geometryBufferRenderer) {
+                this._scene.geometryBufferRenderer.getGBuffer().onAfterRenderObservable.add(this._renderWhenGBufferReady);
+            }
         });
 
         // Create the accumulation texture for the previous frame.
@@ -303,8 +305,10 @@ export class _IblShadowsAccumulationPass {
 
     private _updatePositionCopy() {
         const geometryBufferRenderer = this._scene.geometryBufferRenderer;
-        const index = geometryBufferRenderer!.getTextureIndex(GeometryBufferRenderer.POSITION_TEXTURE_TYPE);
-        this._oldPositionCopy.setTexture("textureSampler", geometryBufferRenderer!.getGBuffer().textures[index]);
+        if (geometryBufferRenderer) {
+            const index = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.POSITION_TEXTURE_TYPE);
+            this._oldPositionCopy.setTexture("textureSampler", geometryBufferRenderer.getGBuffer().textures[index]);
+        }
     }
 
     private _setAccumulationCopyBindings() {

@@ -1,6 +1,6 @@
 import type { IDisposable } from "core/index";
 
-import type { EntityBase, SceneExplorerCommandProvider, SceneExplorerSection } from "../../../components/scene/sceneExplorer";
+import type { SceneExplorerCommandProvider, SceneExplorerSection } from "../../../components/scene/sceneExplorer";
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISelectionService } from "../../selectionService";
@@ -25,13 +25,13 @@ export interface ISceneExplorerService extends IService<typeof SceneExplorerServ
      * Adds a new section (e.g. "Nodes", "Materials", etc.) (this includes all descendants within the scene graph).
      * @param section A description of the section to add.
      */
-    addSection<T extends EntityBase>(section: SceneExplorerSection<T>): IDisposable;
+    addSection<T extends object>(section: SceneExplorerSection<T>): IDisposable;
 
     /**
      * Adds a new command (e.g. "Delete", "Rename", etc.) that can be executed on entities in the scene explorer.
      * @param command A description of the command to add.
      */
-    addEntityCommand<T extends EntityBase>(command: SceneExplorerCommandProvider<T>): IDisposable;
+    addEntityCommand<T extends object>(command: SceneExplorerCommandProvider<T>): IDisposable;
 
     /**
      * Adds a new command that can be executed on sections in the scene explorer.
@@ -48,8 +48,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
     produces: [SceneExplorerServiceIdentity],
     consumes: [SceneContextIdentity, ShellServiceIdentity, SelectionServiceIdentity],
     factory: (sceneContext, shellService, selectionService) => {
-        const sectionsCollection = new ObservableCollection<SceneExplorerSection<EntityBase>>();
-        const entityCommandsCollection = new ObservableCollection<SceneExplorerCommandProvider<EntityBase>>();
+        const sectionsCollection = new ObservableCollection<SceneExplorerSection<object>>();
+        const entityCommandsCollection = new ObservableCollection<SceneExplorerCommandProvider<object>>();
         const sectionCommandsCollection = new ObservableCollection<SceneExplorerCommandProvider<string, "contextMenu">>();
 
         const registration = shellService.addSidePane({
@@ -58,7 +58,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
             icon: CubeTreeRegular,
             horizontalLocation: "left",
             verticalLocation: "top",
-            suppressTeachingMoment: true,
+            teachingMoment: false,
+            keepMounted: true,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const entityCommands = useOrderedObservableCollection(entityCommandsCollection);
@@ -84,8 +85,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
         });
 
         return {
-            addSection: (section) => sectionsCollection.add(section as SceneExplorerSection<EntityBase>),
-            addEntityCommand: (command) => entityCommandsCollection.add(command as SceneExplorerCommandProvider<EntityBase>),
+            addSection: (section) => sectionsCollection.add(section as unknown as SceneExplorerSection<object>),
+            addEntityCommand: (command) => entityCommandsCollection.add(command as unknown as SceneExplorerCommandProvider<object>),
             addSectionCommand: (command) => sectionCommandsCollection.add(command as unknown as SceneExplorerCommandProvider<string, "contextMenu">),
             dispose: () => registration.dispose(),
         };

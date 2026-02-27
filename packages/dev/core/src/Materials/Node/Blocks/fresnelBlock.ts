@@ -72,6 +72,10 @@ export class FresnelBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     */
     public override autoConfigure(material: NodeMaterial) {
         if (!this.viewDirection.isConnected) {
             const viewDirectionInput = new ViewDirectionBlock("View direction");

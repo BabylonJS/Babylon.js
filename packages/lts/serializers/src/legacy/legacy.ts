@@ -6,3 +6,4 @@ export * from "./legacy-glTF2Serializer";
 export * from "./legacy-objSerializer";
 export * from "./legacy-stlSerializer";
 export * from "./legacy-usdzSerializer";
+export * from "./legacy-3mfSerializer";

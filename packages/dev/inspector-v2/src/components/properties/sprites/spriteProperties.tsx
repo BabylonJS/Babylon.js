@@ -2,7 +2,6 @@ import type { FunctionComponent } from "react";
 
 import type { Sprite } from "core/index";
 import type { ISelectionService } from "../../../services/selectionService";
-import type { ISettingsContext } from "../../../services/settingsContext";
 
 import { PlayFilled, StopFilled } from "@fluentui/react-icons";
 import { useCallback } from "react";
@@ -60,22 +59,21 @@ export const SpriteGeneralProperties: FunctionComponent<{ sprite: Sprite; select
     );
 };
 
-export const SpriteTransformProperties: FunctionComponent<{ sprite: Sprite; settings: ISettingsContext }> = (props) => {
-    const { sprite, settings } = props;
+export const SpriteTransformProperties: FunctionComponent<{ sprite: Sprite }> = (props) => {
+    const { sprite } = props;
 
-    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters(settings);
+    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters();
 
     return (
         <>
             <BoundProperty component={Vector3PropertyLine} label="Position" target={sprite} propertyKey="position" />
             <BoundProperty
-                component={SyncedSliderPropertyLine}
+                component={NumberInputPropertyLine}
                 key="Angle"
                 label="Angle"
                 description={`Rotation angle of the sprite in ${useDegrees ? "degrees" : "radians"}`}
-                min={0}
-                max={toDisplayAngle(Math.PI * 2)}
                 step={toDisplayAngle(0.01)}
+                unit={useDegrees ? "°" : "rad"}
                 target={sprite}
                 propertyKey="angle"
                 convertTo={toDisplayAngle}
@@ -146,6 +144,7 @@ export const SpriteAnimationProperties: FunctionComponent<{ sprite: Sprite }> = 
                 propertyKey="delay"
             />
             <ButtonLine
+                uniqueId="Start/Stop"
                 label={animationStarted ? "Stop Animation" : "Start Animation"}
                 icon={animationStarted ? StopFilled : PlayFilled}
                 onClick={() => {

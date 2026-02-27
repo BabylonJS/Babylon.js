@@ -82,6 +82,12 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
         return this.input.isConnected && this.input.connectedPoint!.ownerBlock.isInput && (this.input.connectedPoint!.ownerBlock as InputBlock).isUniform;
     }
 
+    /**
+     * Dumps the code for the block
+     * @param uniqueNames - the unique names
+     * @param alreadyDumped - the already dumped blocks
+     * @returns the code string
+     */
     public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
         let codeString = super._dumpCode(uniqueNames, alreadyDumped);
 

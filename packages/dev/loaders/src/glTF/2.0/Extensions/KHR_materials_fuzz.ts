@@ -21,7 +21,8 @@ declare module "../../glTFFileLoader" {
 }
 
 /**
- * [Specification]
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/9734e44accd0dfb986ec5f376117aa00192745fe/extensions/2.0/Khronos/KHR_materials_fuzz/README.md)
+ * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_fuzz implements IGLTFLoaderExtension {

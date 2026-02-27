@@ -231,12 +231,11 @@ export abstract class AbstractSound extends AbstractSoundSource {
 
     protected _stopExcessInstances(): void {
         if (this.maxInstances < Infinity) {
-            const numberOfInstancesToStop = Array.from(this._instances).filter((instance) => instance.state === SoundState.Started).length - this.maxInstances;
-            const it = this._instances.values();
+            const startedInstances = Array.from(this._instances).filter((instance) => instance.state === SoundState.Started);
+            const numberOfInstancesToStop = startedInstances.length - this.maxInstances;
 
             for (let i = 0; i < numberOfInstancesToStop; i++) {
-                const instance = it.next().value;
-                instance.stop();
+                startedInstances[i].stop();
             }
         }
     }

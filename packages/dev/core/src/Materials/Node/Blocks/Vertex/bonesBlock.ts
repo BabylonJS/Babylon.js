@@ -111,6 +111,11 @@ export class BonesBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.matricesIndices.isConnected) {
             let matricesIndicesInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "matricesIndices" && additionalFilteringInfo(b));
@@ -141,16 +146,33 @@ export class BonesBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Provides the fallbacks
+     * @param fallbacks - the effect fallbacks
+     * @param mesh - the mesh
+     */
     public override provideFallbacks(fallbacks: EffectFallbacks, mesh?: AbstractMesh) {
         if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             fallbacks.addCPUSkinningFallback(0, mesh);
         }
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         BindBonesParameters(mesh, effect);
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
         if (!defines._areAttributesDirty || !mesh) {
             return;

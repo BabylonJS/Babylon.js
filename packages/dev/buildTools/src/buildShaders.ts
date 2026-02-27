@@ -169,7 +169,7 @@ export function BuildShader(filePath: string, basePackageName: string | undefine
             const actualEntry = (entry as string).replace(/^core\//, "");
             includeText =
                 includeText +
-                `import "${basePackageNameForImport}/Shaders/ShadersInclude/${actualEntry}";
+                `import "${basePackageNameForImport}/Shaders${appendDirName}/ShadersInclude/${actualEntry}";
 `;
             // The shader code itself also needs to be updated by replacing `#include<core/helperFunctions>` with `#include<helperFunctions>`
             if (isCoreInclude) {

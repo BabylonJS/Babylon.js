@@ -40,6 +40,7 @@ export class DebugDisplayManager implements IDisplayManager {
         }
 
         if (selectedData === data && !this._onPreviewSceneAfterRenderObserver) {
+            block._forcedActive = true;
             globalState.onPreviewUpdatedObservable.addOnce(() => {
                 this._onPreviewSceneAfterRenderObserver = globalState.onPreviewSceneAfterRenderObservable.add(async () => {
                     if (globalState.previewTexture && block.debug.isConnected) {
@@ -71,6 +72,7 @@ export class DebugDisplayManager implements IDisplayManager {
                 });
             });
         } else {
+            block._forcedActive = false;
             globalState.onPreviewSceneAfterRenderObservable.remove(this._onPreviewSceneAfterRenderObserver);
             this._onPreviewSceneAfterRenderObserver = null;
         }

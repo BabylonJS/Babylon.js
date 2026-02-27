@@ -15,6 +15,7 @@ import { RawTexture } from "../../../Materials/Textures/rawTexture";
 import { RandomRange } from "../../../Maths/math.scalar.functions";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+import "../../../Rendering/depthRendererSceneComponent";
 
 import "../../../Shaders/ssao.fragment";
 import "../../../Shaders/ssaoCombine.fragment";

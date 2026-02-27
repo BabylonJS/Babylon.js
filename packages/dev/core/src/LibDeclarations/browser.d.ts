@@ -6,6 +6,18 @@ interface Window {
     DracoDecoderModule: any;
 }
 
+interface Int8ArrayConstructor {
+    new (data: number | ArrayLike<number> | ArrayBufferLike): Int8Array<ArrayBuffer>;
+}
+
+interface Uint8ArrayConstructor {
+    new (data: number | ArrayLike<number> | ArrayBufferLike): Uint8Array<ArrayBuffer>;
+}
+
+interface Float32ArrayConstructor {
+    new (data: number | ArrayLike<number> | ArrayBufferLike): Float32Array<ArrayBuffer>;
+}
+
 interface WorkerGlobalScope {
     importScripts: (...args: string[]) => void;
 }

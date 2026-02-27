@@ -77,6 +77,7 @@ export class CapsuleBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
+    /** @internal */
     public override autoConfigure() {
         if (!this.height.isConnected) {
             const heightInput = new GeometryInputBlock("Height");
@@ -143,6 +144,7 @@ export class CapsuleBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

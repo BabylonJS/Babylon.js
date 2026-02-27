@@ -145,7 +145,6 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     public async extractFromTextureAsync(texture: Texture) {
         return await new Promise<void>((resolve, reject) => {
             if (!texture.isReady()) {
-                // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 texture.onLoadObservable.addOnce(async () => {
                     try {
                         await this.extractFromTextureAsync(texture);
@@ -208,6 +207,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

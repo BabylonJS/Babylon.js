@@ -73,6 +73,9 @@ varying vec3 vReflectionMapTexCoord;
 // Fog
 #include<fogFragmentDeclaration>
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+varying float vViewDepth;
+#endif
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 

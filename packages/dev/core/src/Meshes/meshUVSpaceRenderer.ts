@@ -15,6 +15,7 @@ import { PostProcess } from "core/PostProcesses/postProcess";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 declare module "../scene" {
+    /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface Scene {
         /** @internal */

@@ -17,7 +17,6 @@
             "node-editor/*": ["tools/nodeEditor/src/*"],
             "node-geometry-editor/*": ["tools/nodeGeometryEditor/src/*"],
             "gui-editor/*": ["tools/guiEditor/dist/*"],
-            "viewer-legacy/*": ["tools/viewer-legacy/dist/*"],
             "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"]
         }
     },

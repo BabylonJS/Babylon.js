@@ -741,7 +741,7 @@ export function CreatePickingRayToRef(
 ): Scene {
     const engine = scene.getEngine();
 
-    if (!camera && !(camera = scene.activeCamera!)) {
+    if (!camera && !(camera = scene.activeCamera!) && !(camera = scene.cameraToUseForPointers)) {
         return scene;
     }
 
@@ -799,7 +799,7 @@ export function CreatePickingRayInCameraSpaceToRef(scene: Scene, x: number, y: n
 
     const engine = scene.getEngine();
 
-    if (!camera && !(camera = scene.activeCamera!)) {
+    if (!camera && !(camera = scene.activeCamera!) && !(camera = scene.cameraToUseForPointers!)) {
         throw new Error("Active camera not set");
     }
 

@@ -324,6 +324,10 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         return this._outputs[6];
     }
 
+    /**
+     * Prepares the defines for the block
+     * @param defines - the defines to prepare
+     */
     public override prepareDefines(defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
@@ -337,6 +341,10 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         defines.setValue(this._gammaDefineName, toLinear, true);
     }
 
+    /**
+     * Checks if the block is ready
+     * @returns true if the block is ready
+     */
     public override isReady() {
         if (this.texture && !this.texture.isReadyOrNotBlocking()) {
             return false;
@@ -345,6 +353,10 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         return true;
     }
 
+    /**
+     * Bind the block
+     * @param effect - the effect to bind
+     */
     public override bind(effect: Effect) {
         if (!this.texture) {
             return;
@@ -565,6 +577,10 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         return codeString;
     }
 
+    /**
+     * Serializes the block
+     * @returns the serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -579,6 +595,12 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block from a serialization object
+     * @param serializationObject - the object to deserialize from
+     * @param scene - the current scene
+     * @param rootUrl - the root URL for loading
+     */
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 

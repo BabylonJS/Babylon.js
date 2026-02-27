@@ -9,7 +9,6 @@ import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
-import { useProperty } from "../../hooks/compoundPropertyHooks";
 import { GetPropertyDescriptor, IsPropertyReadonly } from "../../instrumentation/propertyInstrumentation";
 import { BoundProperty } from "./boundProperty";
 
@@ -36,7 +35,6 @@ export function IsCommonEntity(entity: unknown): entity is CommonEntity {
 export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEntity }> = (props) => {
     const { commonEntity } = props;
 
-    const name = useProperty(commonEntity, "name");
     const namePropertyDescriptor = useMemo(() => GetPropertyDescriptor(commonEntity, "name")?.[1], [commonEntity]);
     const isNameReadonly = !namePropertyDescriptor || IsPropertyReadonly(namePropertyDescriptor);
 
@@ -44,17 +42,22 @@ export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEn
 
     return (
         <>
-            {IsEntityWithProperty(commonEntity, "id") && <StringifiedPropertyLine key="EntityId" label="ID" description="The id of the node." value={commonEntity.id} />}
-            {IsEntityWithProperty(commonEntity, "name") &&
-                (isNameReadonly ? (
-                    <TextPropertyLine key="EntityName" label="Name" description="The name of the node." value={name ?? ""} />
-                ) : (
-                    <BoundProperty key="EntityName" component={TextInputPropertyLine} label="Name" description="The name of the node." target={commonEntity} propertyKey="name" />
-                ))}
-            {IsEntityWithProperty(commonEntity, "uniqueId") && (
-                <StringifiedPropertyLine key="EntityUniqueId" label="Unique ID" description="The unique id of the node." value={commonEntity.uniqueId} />
+            {IsEntityWithProperty(commonEntity, "id") && (
+                <BoundProperty component={StringifiedPropertyLine} label="ID" description="The id of the node." target={commonEntity} propertyKey="id" />
             )}
-            {className !== undefined && <TextPropertyLine key="EntityClassName" label="Class" description="The class of the node." value={className} />}
+            {IsEntityWithProperty(commonEntity, "name") && (
+                <BoundProperty
+                    component={isNameReadonly ? TextPropertyLine : TextInputPropertyLine}
+                    label="Name"
+                    description="The name of the node."
+                    target={commonEntity}
+                    propertyKey="name"
+                />
+            )}
+            {IsEntityWithProperty(commonEntity, "uniqueId") && (
+                <BoundProperty component={StringifiedPropertyLine} label="Unique ID" description="The unique id of the node." target={commonEntity} propertyKey="uniqueId" />
+            )}
+            {className !== undefined && <TextPropertyLine label="Class" description="The class of the node." value={className} />}
         </>
     );
 };

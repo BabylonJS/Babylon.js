@@ -71,6 +71,31 @@ const LazySSAODependenciesPromise = new Lazy(() =>
     ])
 );
 
+const WebGPUSnapshotRenderingEnabled = true;
+const WebGPUSnapshotRenderingLoggingEnabled = false;
+// Logger.LogLevels = Logger.AllLogLevel;
+
+// TODO: Consider moving this to core after the 9.0 release.
+async function WhenNext<T>(observable: Observable<T>, abortSignal: AbortSignal): Promise<T> {
+    return await new Promise<T>((resolve, reject) => {
+        if (abortSignal.aborted) {
+            reject(new AbortError("Aborted"));
+            return;
+        }
+
+        const observer = observable.addOnce((payload) => {
+            abortSignal.removeEventListener("abort", onAbort);
+            resolve(payload);
+        });
+
+        const onAbort = () => {
+            observer.remove();
+            reject(new AbortError("Aborted"));
+        };
+        abortSignal.addEventListener("abort", onAbort, { once: true });
+    });
+}
+
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
 const shadowQualityOptions = ["none", "normal", "high"] as const;
@@ -851,7 +876,7 @@ export class Viewer implements IDisposable {
 
     protected readonly _scene: Scene;
     protected readonly _camera: ArcRotateCamera;
-    protected readonly _snapshotHelper: SnapshotRenderingHelper;
+    protected readonly _snapshotHelper: Nullable<SnapshotRenderingHelper> = null;
 
     private readonly _defaultHardwareScalingLevel: number;
     private _lastHardwareScalingLevel: number;
@@ -862,7 +887,7 @@ export class Viewer implements IDisposable {
     private readonly _meshDataCache = new Map<AbstractMesh, IMeshDataCache>();
     private readonly _autoRotationBehavior: AutoRotationBehavior;
     private readonly _imageProcessingConfigurationObserver: Observer<ImageProcessingConfiguration>;
-    private readonly _beforeRenderObserver: Observer<Scene>;
+    private readonly _beforeRenderObserver: Nullable<Observer<Scene>> = null;
     private _renderLoopController: Nullable<IDisposable> = null;
     private _loadedModelsBacking: ModelInternal[] = [];
     private _activeModelBacking: Nullable<ModelInternal> = null;
@@ -898,6 +923,9 @@ export class Viewer implements IDisposable {
     private readonly _updateShadowsLock = new AsyncLock();
     private _shadowsAbortController: Nullable<AbortController> = null;
 
+    private readonly _updateSSAOLock = new AsyncLock();
+    private _ssaoAbortController: Nullable<AbortController> = null;
+
     private readonly _loadOperations = new Set<Readonly<{ progress: Nullable<number> }>>();
 
     private _activeAnimationObservers: Observer<AnimationGroup>[] = [];
@@ -913,6 +941,10 @@ export class Viewer implements IDisposable {
         private readonly _engine: AbstractEngine,
         private readonly _options?: Readonly<ViewerOptions>
     ) {
+        if (this._options?.shadowConfig?.quality === "high" && this._options?.postProcessing?.ssao === "enabled") {
+            throw new Error("High quality shadows are not compatible with SSAO. Please choose either high quality shadows or SSAO.");
+        }
+
         this._defaultHardwareScalingLevel = this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
         {
             const scene = new Scene(this._engine);
@@ -1004,11 +1036,13 @@ export class Viewer implements IDisposable {
         this._scene.skipPointerDownPicking = true;
         this._scene.skipPointerUpPicking = true;
         this._scene.skipPointerMovePicking = true;
-        this._snapshotHelper = new SnapshotRenderingHelper(this._scene, { morphTargetsNumMaxInfluences: 30 });
-        // this._snapshotHelper.showDebugLogs = true;
-        this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
-            this._snapshotHelper.updateMesh(this._scene.meshes);
-        });
+        if (WebGPUSnapshotRenderingEnabled) {
+            this._snapshotHelper = new SnapshotRenderingHelper(this._scene, { morphTargetsNumMaxInfluences: 30 });
+            this._snapshotHelper.showDebugLogs = WebGPUSnapshotRenderingLoggingEnabled;
+            this._beforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
+                this._snapshotHelper?.updateMesh(this._scene.meshes);
+            });
+        }
         this._camera.attachControl();
         this._autoRotationBehavior = this._camera.getBehaviorByName("AutoRotation") as AutoRotationBehavior;
         this._reset(false, "camera");
@@ -1106,6 +1140,10 @@ export class Viewer implements IDisposable {
      */
     public async updateShadows(value: Partial<Readonly<ShadowParams>>): Promise<void> {
         if (value.quality && this._shadowQuality !== value.quality) {
+            if (value.quality === "high" && this._ssaoOption === "enabled") {
+                throw new Error("Shadows quality cannot be set to high when SSAO is enabled.");
+            }
+
             this._shadowQuality = value.quality;
 
             await this._updateShadows();
@@ -1119,9 +1157,9 @@ export class Viewer implements IDisposable {
             if (this._skybox) {
                 const material = this._skybox.material;
                 if (material instanceof BackgroundMaterial) {
-                    this._snapshotHelper.disableSnapshotRendering();
+                    this._snapshotHelper?.disableSnapshotRendering();
                     material.reflectionBlur = this._skyboxBlur;
-                    this._snapshotHelper.enableSnapshotRendering();
+                    this._snapshotHelper?.enableSnapshotRendering();
                     this._markSceneMutated();
                 }
             }
@@ -1136,14 +1174,14 @@ export class Viewer implements IDisposable {
         if (value !== this._reflectionsRotation) {
             this._reflectionsRotation = value;
 
-            this._snapshotHelper.disableSnapshotRendering();
+            this._snapshotHelper?.disableSnapshotRendering();
             if (this._skyboxTexture) {
                 this._skyboxTexture.rotationY = this._reflectionsRotation;
             }
             if (this._reflectionTexture) {
                 this._reflectionTexture.rotationY = this._reflectionsRotation;
             }
-            this._snapshotHelper.enableSnapshotRendering();
+            this._snapshotHelper?.enableSnapshotRendering();
             this._markSceneMutated();
         }
     }
@@ -1152,14 +1190,14 @@ export class Viewer implements IDisposable {
         if (value !== this._reflectionsIntensity) {
             this._reflectionsIntensity = value;
 
-            this._snapshotHelper.disableSnapshotRendering();
+            this._snapshotHelper?.disableSnapshotRendering();
             if (this._skyboxTexture) {
                 this._skyboxTexture.level = this._reflectionsIntensity;
             }
             if (this._reflectionTexture) {
                 this._reflectionTexture.level = this._reflectionsIntensity;
             }
-            this._snapshotHelper.enableSnapshotRendering();
+            this._snapshotHelper?.enableSnapshotRendering();
             this._markSceneMutated();
         }
     }
@@ -1201,7 +1239,7 @@ export class Viewer implements IDisposable {
     }
 
     public set postProcessing(value: Partial<Readonly<PostProcessing>>) {
-        this._snapshotHelper.disableSnapshotRendering();
+        this._snapshotHelper?.disableSnapshotRendering();
 
         if (value.toneMapping !== undefined) {
             if (value.toneMapping === "none") {
@@ -1231,13 +1269,16 @@ export class Viewer implements IDisposable {
         }
 
         if (value.ssao && this._ssaoOption !== value.ssao) {
+            if (value.ssao === "enabled" && this._shadowQuality === "high") {
+                throw new Error("SSAO cannot be enabled when shadows quality is set to high.");
+            }
             this._ssaoOption = value.ssao;
             this._updateSSAOPipeline();
         }
 
         this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1 || this._ssaoPipeline !== null;
 
-        this._snapshotHelper.enableSnapshotRendering();
+        this._snapshotHelper?.enableSnapshotRendering();
         this._markSceneMutated();
     }
 
@@ -1287,42 +1328,56 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private async _enableSSAOPipeline(mode: SSAOOptions) {
-        const hasModels = this._loadedModels.length > 0;
-        const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
-        if (mode === "enabled" || (mode === "auto" && hasModels && !hasMaterials)) {
+    private async _enableSSAOPipeline(abortSignal: AbortSignal) {
+        if (!this._ssaoPipeline) {
             const [{ SSAO2RenderingPipeline }] = await LazySSAODependenciesPromise.value;
+            this._throwIfDisposedOrAborted(abortSignal);
 
-            if (!this._ssaoPipeline) {
-                this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.add((pipeline) => {
-                    if (pipeline.name === "ssao") {
-                        this.onPostProcessingChanged.notifyObservers();
-                    }
-                });
-                this._scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.add((pipeline) => {
-                    if (pipeline.name === "ssao") {
-                        this.onPostProcessingChanged.notifyObservers();
-                    }
-                });
-            }
+            this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.addOnce((pipeline) => {
+                if (pipeline.name === "ssao") {
+                    this.onPostProcessingChanged.notifyObservers();
+                }
+            });
+
+            this._scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.addOnce((pipeline) => {
+                if (pipeline.name === "ssao") {
+                    this.onPostProcessingChanged.notifyObservers();
+                }
+            });
 
             const ssaoRatio = {
                 ssaoRatio: 1,
                 blurRatio: 1,
             };
-            this._ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
-            const worldBounds = this._getWorldBounds(this._loadedModels);
-            if (this._ssaoPipeline && worldBounds) {
-                const size = Vector3.FromArray(worldBounds.size).length();
-                this._ssaoPipeline.expensiveBlur = true;
-                this._ssaoPipeline.maxZ = size * 2;
-                // arbitrary max size to cap SSAO settings
-                const maxSceneSize = 50;
-                this._ssaoPipeline.radius = Clamp(Lerp(1, 5, Clamp((size - 1) / maxSceneSize, 0, 1)), 1, 5);
-                this._ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
-                this._ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
+
+            let ssaoPipeline: Nullable<SSAO2RenderingPipeline> = null;
+            try {
+                ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
+                const worldBounds = this._getWorldBounds(this._loadedModels);
+                if (worldBounds) {
+                    const size = Vector3.FromArray(worldBounds.size).length();
+                    ssaoPipeline.expensiveBlur = true;
+                    ssaoPipeline.maxZ = size * 2;
+                    // arbitrary max size to cap SSAO settings
+                    const maxSceneSize = 50;
+                    ssaoPipeline.radius = Clamp(Lerp(1, 5, Clamp((size - 1) / maxSceneSize, 0, 1)), 1, 5);
+                    ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
+                    ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
+                }
+
+                // Wait for the SSAO pipeline to be ready before attaching it to the camera.
+                while (!ssaoPipeline.isReady()) {
+                    // eslint-disable-next-line no-await-in-loop
+                    await WhenNext(this._scene.onAfterRenderObservable, abortSignal);
+                }
+
+                this._throwIfDisposedOrAborted(abortSignal);
+                this._ssaoPipeline = ssaoPipeline;
+                this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
+            } catch (error) {
+                ssaoPipeline?.dispose();
+                throw error;
             }
-            this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
         }
     }
 
@@ -1336,11 +1391,30 @@ export class Viewer implements IDisposable {
     }
 
     protected _updateSSAOPipeline() {
-        if (!this._ssaoPipeline && (this._ssaoOption === "auto" || this._ssaoOption === "enabled")) {
-            observePromise(this._enableSSAOPipeline(this._ssaoOption));
-        } else if (this._ssaoOption === "disabled") {
-            this._disableSSAOPipeline();
-        }
+        observePromise(
+            (async () => {
+                this._ssaoAbortController?.abort(new AbortError("SSAO is being changed before previous SSAO finished initializing."));
+                this._ssaoAbortController = new AbortController();
+                const abortSignal = this._ssaoAbortController.signal;
+
+                await this._updateSSAOLock.lockAsync(async () => {
+                    let shouldEnable = this._ssaoOption === "enabled";
+
+                    if (this._ssaoOption === "auto") {
+                        const hasModels = this._loadedModels.length > 0;
+                        const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
+                        const ibleShadowsEnabled = this._shadowQuality === "high";
+                        shouldEnable = hasModels && !hasMaterials && !ibleShadowsEnabled;
+                    }
+
+                    if (shouldEnable) {
+                        await this._enableSSAOPipeline(abortSignal);
+                    } else {
+                        this._disableSSAOPipeline();
+                    }
+                });
+            })()
+        );
     }
 
     /**
@@ -1566,7 +1640,7 @@ export class Viewer implements IDisposable {
 
         options = deepMerge(defaultOptions, options ?? {});
 
-        this._snapshotHelper.disableSnapshotRendering();
+        this._snapshotHelper?.disableSnapshotRendering();
 
         try {
             const assetContainer = await LoadAssetContainerAsync(source, this._scene, options);
@@ -1576,7 +1650,7 @@ export class Viewer implements IDisposable {
                 group.pause();
             });
             assetContainer.addAllToScene();
-            this._snapshotHelper.fixMeshes(assetContainer.meshes);
+            this._snapshotHelper?.fixMeshes(assetContainer.meshes);
 
             let selectedAnimation = -1;
             const cachedWorldBounds: ViewerBoundingInfo[] = [];
@@ -1601,7 +1675,7 @@ export class Viewer implements IDisposable {
                     return this._getHotSpotToRef(assetContainer, query, result);
                 },
                 dispose: () => {
-                    this._snapshotHelper.disableSnapshotRendering();
+                    this._snapshotHelper?.disableSnapshotRendering();
                     assetContainer.meshes.forEach((mesh) => this._meshDataCache.delete(mesh));
                     assetContainer.dispose();
 
@@ -1613,7 +1687,7 @@ export class Viewer implements IDisposable {
                         }
                     }
 
-                    this._snapshotHelper.enableSnapshotRendering();
+                    this._snapshotHelper?.enableSnapshotRendering();
                     this._markSceneMutated();
                 },
                 getWorldBounds: (animationIndex: number = selectedAnimation): Nullable<ViewerBoundingInfo> => {
@@ -1664,9 +1738,9 @@ export class Viewer implements IDisposable {
                         }
 
                         if (value !== materialVariantsController.selectedVariant && materialVariantsController.variants.includes(value)) {
-                            viewer._snapshotHelper.disableSnapshotRendering();
+                            viewer._snapshotHelper?.disableSnapshotRendering();
                             materialVariantsController.selectedVariant = value;
-                            viewer._snapshotHelper.enableSnapshotRendering();
+                            viewer._snapshotHelper?.enableSnapshotRendering();
                             viewer._markSceneMutated();
                             viewer.onSelectedMaterialVariantChanged.notifyObservers();
                         }
@@ -1688,7 +1762,7 @@ export class Viewer implements IDisposable {
             throw e;
         } finally {
             loadOperation.dispose();
-            this._snapshotHelper.enableSnapshotRendering();
+            this._snapshotHelper?.enableSnapshotRendering();
             this._markSceneMutated();
         }
     }
@@ -1724,23 +1798,30 @@ export class Viewer implements IDisposable {
     }
 
     protected async _updateShadows() {
-        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being change before previous shadows finished initializing."));
+        this._shadowsAbortController?.abort(new AbortError("Shadows quality is being changed before previous shadows finished initializing."));
         const abortController = (this._shadowsAbortController = new AbortController());
 
         await this._updateShadowsLock.lockAsync(async () => {
-            if (this._shadowQuality === "none") {
-                this._disposeShadows();
-            } else {
-                // make sure there is an env light before creating shadows
-                if (!this._reflectionTexture) {
-                    await this.loadEnvironment("auto", { lighting: true, skybox: false });
-                }
+            this._snapshotHelper?.disableSnapshotRendering();
 
-                if (this._shadowQuality === "normal") {
-                    await this._updateShadowMap(abortController.signal);
-                } else if (this._shadowQuality === "high") {
-                    await this._updateEnvShadow(abortController.signal);
+            try {
+                if (this._shadowQuality === "none") {
+                    this._disposeShadows();
+                } else {
+                    // make sure there is an env light before creating shadows
+                    if (!this._reflectionTexture) {
+                        await this.loadEnvironment("auto", { lighting: true, skybox: false });
+                    }
+
+                    if (this._shadowQuality === "normal") {
+                        await this._updateShadowMap(abortController.signal);
+                    } else if (this._shadowQuality === "high") {
+                        await this._updateEnvShadow(abortController.signal);
+                    }
                 }
+            } finally {
+                this._snapshotHelper?.enableSnapshotRendering();
+                this._markSceneMutated();
             }
         });
     }
@@ -1770,7 +1851,7 @@ export class Viewer implements IDisposable {
                 clearTimeout(this._shadowState.high.renderTimer);
             } else {
                 // Only disable if a timeout is not pending, otherwise it has already been called without a paired enable call.
-                this._snapshotHelper.disableSnapshotRendering();
+                this._snapshotHelper?.disableSnapshotRendering();
             }
 
             this._shadowState.high.shouldRender = true;
@@ -1779,7 +1860,7 @@ export class Viewer implements IDisposable {
                     this._shadowState.high.shouldRender = false;
                     this._shadowState.high.renderTimer = null;
                 }
-                this._snapshotHelper.enableSnapshotRendering();
+                this._snapshotHelper?.enableSnapshotRendering();
             };
             this._shadowState.high.renderTimer = setTimeout(
                 onRenderTimeout,
@@ -1819,19 +1900,19 @@ export class Viewer implements IDisposable {
 
         const updateMaterial = () => {
             if (this._shadowState.high) {
-                this._snapshotHelper.disableSnapshotRendering();
+                this._snapshotHelper?.disableSnapshotRendering();
                 const { pipeline, groundMaterial, ground } = this._shadowState.high;
                 groundMaterial?.setVector2("renderTargetSize", new Vector2(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight()));
                 groundMaterial?.setFloat("shadowOpacity", pipeline.shadowOpacity);
                 groundMaterial?.setTexture("shadowTexture", pipeline._getAccumulatedTexture());
                 const groundSize = groundFactor * pipeline?.voxelGridSize;
                 ground?.scaling.set(groundSize, groundSize, groundSize);
-                this._snapshotHelper.enableSnapshotRendering();
+                this._snapshotHelper?.enableSnapshotRendering();
                 this._markSceneMutated();
             }
         };
 
-        this._snapshotHelper.disableSnapshotRendering();
+        this._snapshotHelper?.disableSnapshotRendering();
         if (!high) {
             const pipeline = new IblShadowsRenderPipeline(
                 "ibl shadows",
@@ -1920,11 +2001,11 @@ export class Viewer implements IDisposable {
         }
 
         high.pipeline.onVoxelizationCompleteObservable.addOnce(() => {
-            this._snapshotHelper.disableSnapshotRendering();
+            this._snapshotHelper?.disableSnapshotRendering();
             updateMaterial();
             high.pipeline.toggleShadow(true);
             high.ground.setEnabled(true);
-            this._snapshotHelper.enableSnapshotRendering();
+            this._snapshotHelper?.enableSnapshotRendering();
             this._markSceneMutated();
         });
 
@@ -1940,7 +2021,7 @@ export class Viewer implements IDisposable {
 
         this._shadowState.high = high;
 
-        this._snapshotHelper.enableSnapshotRendering();
+        this._snapshotHelper?.enableSnapshotRendering();
         this._markSceneMutated();
     }
 
@@ -1991,7 +2072,7 @@ export class Viewer implements IDisposable {
         const iblDirection = await this._findIblDominantDirection(iblCdfGenerator);
         this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
 
-        this._snapshotHelper.disableSnapshotRendering();
+        this._snapshotHelper?.disableSnapshotRendering();
 
         const size = 4096;
         const groundFactor = 20;
@@ -2091,12 +2172,12 @@ export class Viewer implements IDisposable {
 
         this._shadowState.normal = normal;
 
-        this._snapshotHelper.enableSnapshotRendering();
+        this._snapshotHelper?.enableSnapshotRendering();
         this._markSceneMutated();
     }
 
     private _disposeShadows() {
-        this._snapshotHelper.disableSnapshotRendering();
+        this._snapshotHelper?.disableSnapshotRendering();
 
         if (!this._shadowState) {
             return;
@@ -2144,7 +2225,7 @@ export class Viewer implements IDisposable {
         delete this._shadowState.high;
         this.onShadowsConfigurationChanged.clear();
 
-        this._snapshotHelper.enableSnapshotRendering();
+        this._snapshotHelper?.enableSnapshotRendering();
         this._markSceneMutated();
     }
 
@@ -2191,7 +2272,7 @@ export class Viewer implements IDisposable {
         this._skyboxTexture.rotationY = this.environmentConfig.rotation;
         this._skybox = createSkybox(this._scene, this._camera, this._skyboxTexture, this.environmentConfig.blur);
         this._skybox.setEnabled(true);
-        this._snapshotHelper.fixMeshes([this._skybox]);
+        this._snapshotHelper?.fixMeshes([this._skybox]);
         this._updateAutoClear();
     }
 
@@ -2240,7 +2321,7 @@ export class Viewer implements IDisposable {
             let lightingUrl: Nullable<string | undefined> = this._reflectionTexture?.url;
             let skyboxUrl: Nullable<string | undefined> = this._skyboxTexture?.url;
 
-            this._snapshotHelper.disableSnapshotRendering();
+            this._snapshotHelper?.disableSnapshotRendering();
 
             try {
                 // If both modes are auto, use the default environment.
@@ -2322,7 +2403,7 @@ export class Viewer implements IDisposable {
                 this.onEnvironmentError.notifyObservers(e);
                 throw e;
             } finally {
-                this._snapshotHelper.enableSnapshotRendering();
+                this._snapshotHelper?.enableSnapshotRendering();
                 this._markSceneMutated();
             }
         });
@@ -2493,6 +2574,7 @@ export class Viewer implements IDisposable {
         this._loadModelAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._camerasAsHotSpotsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
         this._shadowsAbortController?.abort(new AbortError("Thew viewer is being disposed."));
+        this._ssaoAbortController?.abort(new AbortError("Thew viewer is being disposed."));
 
         this._renderLoopController?.dispose();
         this._activeModel?.dispose();
@@ -2517,7 +2599,8 @@ export class Viewer implements IDisposable {
         this.onLoadingProgressChanged.clear();
 
         this._imageProcessingConfigurationObserver.remove();
-        this._beforeRenderObserver.remove();
+        this._beforeRenderObserver?.remove();
+        this._snapshotHelper?.dispose();
 
         this._isDisposed = true;
     }
@@ -2671,13 +2754,15 @@ export class Viewer implements IDisposable {
         // 3. The snapshot helper is not yet in a ready state.
         // 4. The classic shadows are not yet in a ready state.
         // 5. The environment shadows are not yet in a ready state.
-        // 6. At least one model should render (playing animations).
+        // 6. The SSAO pipeline is not yet in a ready state.
+        // 7. At least one model should render (playing animations).
         return (
             !this._autoSuspendRendering ||
             this._sceneMutated ||
-            !this._snapshotHelper.isReady ||
+            this._snapshotHelper?.isReady === false ||
             this._shadowState.normal?.shouldRender ||
             this._shadowState.high?.shouldRender ||
+            this._ssaoPipeline?.isReady() === false ||
             this._loadedModelsBacking.some((model) => model._shouldRender())
         );
     }
@@ -2712,7 +2797,7 @@ export class Viewer implements IDisposable {
                 // Resume rendering with the hardware scaling level from prior to suspending.
                 this._engine.setHardwareScalingLevel(this._lastHardwareScalingLevel);
                 this._engine.performanceMonitor.enable();
-                this._snapshotHelper.enableSnapshotRendering();
+                this._snapshotHelper?.enableSnapshotRendering();
                 this._startSceneOptimizer();
             };
 
@@ -2723,7 +2808,7 @@ export class Viewer implements IDisposable {
                 // Take note of the current hardware scaling level for when rendering is resumed.
                 this._lastHardwareScalingLevel = this._engine.getHardwareScalingLevel();
                 this._stopSceneOptimizer();
-                this._snapshotHelper.disableSnapshotRendering();
+                this._snapshotHelper?.disableSnapshotRendering();
                 // We want a high quality render right before suspending, so set the hardware scaling level back to the default,
                 // disable the performance monitor (so the SceneOptimizer doesn't take into account this potentially slower frame),
                 // and then render the scene once.

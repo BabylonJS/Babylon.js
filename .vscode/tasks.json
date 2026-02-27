@@ -701,7 +701,7 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "watch:dev", "-w", "@dev/inspector-v2"],
+            "args": ["run", "watch:dev", "-w", "@dev/inspector"],
             "isBackground": true,
             "problemMatcher": ["$tsc-watch"]
         },
@@ -716,7 +716,7 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@dev/inspector-v2"],
+            "args": ["run", "serve", "-w", "@dev/inspector"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"

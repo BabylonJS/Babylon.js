@@ -69,21 +69,29 @@ export class ClusteredLightContainer extends Light {
     public static IsLightSupported(light: Light): boolean {
         if (ClusteredLightContainer._GetEngineBatchSize(light.getEngine()) === 0) {
             return false;
-        } else if (light.shadowEnabled && light._scene.shadowsEnabled && light.getShadowGenerators()) {
+        }
+
+        if (light.shadowEnabled && light._scene.shadowsEnabled && light.getShadowGenerators()) {
             // Shadows are not supported
             return false;
-        } else if (light.falloffType !== Light.FALLOFF_DEFAULT) {
+        }
+
+        if (light.falloffType !== Light.FALLOFF_DEFAULT) {
             // Only the default falloff is supported
             return false;
-        } else if (light.getTypeID() === LightConstants.LIGHTTYPEID_POINTLIGHT) {
+        }
+
+        if (light.getTypeID() === LightConstants.LIGHTTYPEID_POINTLIGHT) {
             return true;
-        } else if (light.getTypeID() === LightConstants.LIGHTTYPEID_SPOTLIGHT) {
+        }
+
+        if (light.getTypeID() === LightConstants.LIGHTTYPEID_SPOTLIGHT) {
             // Extra texture bindings per light are not supported
             return !(<SpotLight>light).projectionTexture && !(<SpotLight>light).iesProfileTexture;
-        } else {
-            // Currently only point and spot lights are supported
-            return false;
         }
+
+        // Currently only point and spot lights are supported
+        return false;
     }
 
     /** @internal */
@@ -162,7 +170,7 @@ export class ClusteredLightContainer extends Light {
     private _sliceScale = 0;
     private _sliceBias = 0;
     // List of vec2's that keep track of the min and max index per slice
-    private _sliceRanges: Float32Array;
+    private _sliceRanges: Float32Array<ArrayBuffer>;
 
     private _depthSlices = DefaultDepthSlices;
     /**
@@ -183,6 +191,11 @@ export class ClusteredLightContainer extends Light {
         this._uniformBuffer.dispose();
         this._uniformBuffer = new UniformBuffer(this.getEngine(), undefined, undefined, this.name);
         this._buildUniformLayout();
+
+        // CLUSTLIGHT_SLICES is a shader define that sizes the vSliceRanges array in the UBO.
+        // Materials must recompile when depthSlices changes so the shader layout matches the rebuilt UBO.
+        // Otherwise, if depthSlices is reduced, the rebuilt UBO can be smaller than what the previously compiled shader expects, causing rendering to fail.
+        this._markMeshesAsLightDirty();
     }
 
     private readonly _proxyMaterial: ShaderMaterial;
@@ -245,7 +258,7 @@ export class ClusteredLightContainer extends Light {
         this._proxyMaterial.alphaMode = Constants.ALPHA_ADD;
         this._proxyMaterial.sideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
 
-        this._proxyMesh = CreatePlane("ProxyMesh", { size: 2 });
+        this._proxyMesh = CreatePlane("ProxyMesh", { size: 2 }, this._scene);
         // Make sure it doesn't render for the default scene
         this._scene.removeMesh(this._proxyMesh);
         this._proxyMesh.material = this._proxyMaterial;

@@ -68,6 +68,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         }
     }
 
+    /** @internal */
     public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
         let codeString: string = "";
         if (this.entryPoint) {
@@ -79,6 +80,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         return codeString + super._dumpCode(uniqueNames, alreadyDumped);
     }
 
+    /** @internal */
     public override _dumpCodeForOutputConnections(alreadyDumped: NodeGeometryBlock[]) {
         let codeString = super._dumpCodeForOutputConnections(alreadyDumped);
 
@@ -123,6 +125,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

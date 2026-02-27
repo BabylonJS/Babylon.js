@@ -5,6 +5,7 @@ import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Color3 } from "core/Maths/math.color";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
 const NAME = "KHR_materials_volume";
 
@@ -53,6 +54,12 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
                     additionalTextures.push(babylonMaterial.subSurface.thicknessTexture);
                 }
                 return additionalTextures;
+            }
+        } else if (babylonMaterial instanceof OpenPBRMaterial) {
+            if (babylonMaterial.transmissionWeight > 0) {
+                if (babylonMaterial.geometryThicknessTexture) {
+                    additionalTextures.push(babylonMaterial.geometryThicknessTexture);
+                }
             }
         }
 
@@ -113,6 +120,24 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
 
                 node.extensions = node.extensions || {};
                 node.extensions[NAME] = volumeInfo;
+            } else if (babylonMaterial instanceof OpenPBRMaterial) {
+                if (babylonMaterial.transmissionWeight > 0) {
+                    this._wasUsed = true;
+
+                    const thicknessFactor = babylonMaterial.geometryThickness;
+                    const thicknessTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.geometryThicknessTexture) ?? undefined;
+                    const attenuationDistance = babylonMaterial.transmissionDepth;
+                    const attenuationColor = babylonMaterial.transmissionColor.equalsFloats(1.0, 1.0, 1.0) ? undefined : babylonMaterial.transmissionColor.asArray();
+
+                    const volumeInfo: IKHRMaterialsVolume = {
+                        thicknessFactor: thicknessFactor,
+                        thicknessTexture: thicknessTexture,
+                        attenuationDistance: attenuationDistance,
+                        attenuationColor: attenuationColor,
+                    };
+                    node.extensions = node.extensions || {};
+                    node.extensions[NAME] = volumeInfo;
+                }
             }
             resolve(node);
         });

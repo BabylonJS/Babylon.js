@@ -12,6 +12,7 @@ export const enum DefaultSectionsOrder {
     GUIs = 1100,
     FrameGraphs = 1200,
     Atmosphere = 1300,
+    Sounds = 1400,
 }
 
 export const enum DefaultCommandsOrder {
@@ -25,4 +26,9 @@ export const enum DefaultCommandsOrder {
     GuiHighlight = 1000,
     MeshVisibility = 1100,
     GuiVisibility = 1100,
+    EditNodeMaterial = 1100,
+    EditParticleSystem = 1100,
+    EditNodeGeometry = 1100,
+    EditNodeRenderGraph = 1100,
+    Dispose = 10000,
 }

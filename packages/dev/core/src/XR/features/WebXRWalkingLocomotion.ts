@@ -427,7 +427,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
      * @returns true if attach succeeded, false otherwise
      */
     public override attach(): boolean {
-        if (!this.isCompatible || !super.attach()) {
+        if (!this.isCompatible() || !super.attach()) {
             return false;
         }
 

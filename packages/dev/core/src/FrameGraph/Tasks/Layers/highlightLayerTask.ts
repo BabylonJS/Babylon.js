@@ -3,6 +3,7 @@ import { ThinHighlightLayer } from "core/Layers/thinHighlightLayer";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphBaseLayerTask } from "./baseLayerTask";
 import { HasStencilAspect } from "core/Materials/Textures/textureHelper.functions";
+import { FrameGraphBaseLayerBlurType } from "./baseLayerTask";
 
 /**
  * Task which applies a highlight effect to a texture.
@@ -23,7 +24,16 @@ export class FrameGraphHighlightLayerTask extends FrameGraphBaseLayerTask {
     constructor(name: string, frameGraph: FrameGraph, scene: Scene, options?: IThinHighlightLayerOptions) {
         const alphaBlendingMode = options?.alphaBlendingMode ?? Constants.ALPHA_COMBINE;
 
-        super(name, frameGraph, scene, new ThinHighlightLayer(name, scene, options, true), 1, alphaBlendingMode === Constants.ALPHA_COMBINE, true, true);
+        super(
+            name,
+            frameGraph,
+            scene,
+            new ThinHighlightLayer(name, scene, options, true),
+            1,
+            alphaBlendingMode === Constants.ALPHA_COMBINE ? FrameGraphBaseLayerBlurType.Glow : FrameGraphBaseLayerBlurType.Standard,
+            true,
+            true
+        );
     }
 
     public override getClassName(): string {

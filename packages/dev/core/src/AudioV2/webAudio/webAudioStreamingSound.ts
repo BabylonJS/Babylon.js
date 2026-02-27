@@ -283,7 +283,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             startOffset = this._options.startOffset;
             this._currentTimeChangedWhilePaused = false;
         } else if (this._state === SoundState.Paused) {
-            startOffset = this.currentTime + this._options.startOffset;
+            startOffset = this.currentTime;
         }
 
         if (startOffset && startOffset > 0) {
@@ -406,8 +406,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     };
 
     private _onEnded: () => void = () => {
-        this.onEndedObservable.notifyObservers(this);
-        this.dispose();
+        this._setState(SoundState.Stopped);
     };
 
     private _onError: (reason: any) => void = (reason: any) => {
@@ -488,7 +487,6 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
     private _stop(): void {
         this._mediaElement.pause();
-        this._setState(SoundState.Stopped);
         this._onEnded();
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
     }

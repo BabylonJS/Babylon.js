@@ -123,8 +123,12 @@ export class MorphTargetManager implements IDisposable {
     /**
      * Creates a new MorphTargetManager
      * @param scene defines the current scene
+     * @param meshName name of the mesh this morph target manager is associated with
      */
-    public constructor(scene: Nullable<Scene> = null) {
+    public constructor(
+        scene: Nullable<Scene> = null,
+        public meshName?: string
+    ) {
         if (!scene) {
             scene = EngineStore.LastCreatedScene;
         }
@@ -459,6 +463,7 @@ export class MorphTargetManager implements IDisposable {
         const serializationObject: any = {};
 
         serializationObject.id = this.uniqueId;
+        serializationObject.meshName = this.meshName;
 
         serializationObject.targets = [];
         for (const target of this._targets) {
@@ -723,7 +728,7 @@ export class MorphTargetManager implements IDisposable {
         const result = new MorphTargetManager(scene);
 
         for (const targetData of serializationObject.targets) {
-            result.addTarget(MorphTarget.Parse(targetData, scene));
+            result.addTarget(MorphTarget.Parse(targetData, scene, result));
         }
 
         if (serializationObject.metadata) {

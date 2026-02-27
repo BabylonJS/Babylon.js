@@ -56,16 +56,27 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
  * @internal
  **/
 export class _CreationDataStorage {
+    /** @internal */
     public closePath?: boolean;
+    /** @internal */
     public closeArray?: boolean;
+    /** @internal */
     public idx: number[];
+    /** @internal */
     public dashSize: number;
+    /** @internal */
     public gapSize: number;
+    /** @internal */
     public path3D: Path3D;
+    /** @internal */
     public pathArray: Vector3[][];
+    /** @internal */
     public arc: number;
+    /** @internal */
     public radius: number;
+    /** @internal */
     public cap: number;
+    /** @internal */
     public tessellation: number;
 }
 
@@ -83,15 +94,25 @@ interface IInstanceDataStorageRenderPassVisibleInstances {
  * @internal
  **/
 class _InstanceDataStorageRenderPass {
+    /** @internal */
     public visibleInstances: Nullable<IInstanceDataStorageRenderPassVisibleInstances>;
+    /** @internal */
     public batchCache = new _InstancesBatch(this);
+    /** @internal */
     public batchCacheReplacementModeInFrozenMode = new _InstancesBatch(this);
+    /** @internal */
     public instancesBufferSize = 32 * 16 * 4; // let's start with a maximum of 32 instances
+    /** @internal */
     public instancesBuffer: Nullable<Buffer>;
+    /** @internal */
     public instancesPreviousBuffer: Nullable<Buffer>;
+    /** @internal */
     public instancesData: Float32Array;
+    /** @internal */
     public instancesPreviousData: Float32Array;
+    /** @internal */
     public previousBatch: Nullable<_InstancesBatch>;
+    /** @internal */
     public previousRenderId: number;
 }
 
@@ -99,14 +120,27 @@ class _InstanceDataStorageRenderPass {
  * @internal
  **/
 class _InstanceDataStorage {
+    /** @internal */
     public renderPasses: { [id: number]: _InstanceDataStorageRenderPass } = {};
+    /** @internal */
+    public dataStorageRenderPass: _InstanceDataStorageRenderPass; // used over renderPasses when useMonoDataStorageRenderPass is true
+    /** @internal */
+    public useMonoDataStorageRenderPass: boolean;
+    /** @internal */
     public overridenInstanceCount: number;
+    /** @internal */
     public isFrozen: boolean;
+    /** @internal */
     public forceMatrixUpdates: boolean;
+    /** @internal */
     public hardwareInstancedRendering: boolean;
+    /** @internal */
     public manualUpdate: boolean;
+    /** @internal */
     public previousManualUpdate: boolean;
+    /** @internal */
     public masterMeshPreviousWorldMatrix: Nullable<Matrix>;
+    /** @internal */
     public engine: AbstractEngine;
 }
 
@@ -114,14 +148,19 @@ class _InstanceDataStorage {
  * @internal
  **/
 export class _InstancesBatch {
+    /** @internal */
     public mustReturn = false;
 
+    /** @internal */
     public visibleInstances = new Array<Nullable<Array<InstancedMesh>>>();
 
+    /** @internal */
     public renderSelf: boolean[] = [];
 
+    /** @internal */
     public hardwareInstancedRendering: boolean[] = [];
 
+    /** @internal */
     constructor(public parent: _InstanceDataStorageRenderPass) {}
 }
 
@@ -129,14 +168,23 @@ export class _InstancesBatch {
  * @internal
  **/
 class _ThinInstanceDataStorage {
+    /** @internal */
     public instancesCount: number = 0;
+    /** @internal */
     public matrixBuffer: Nullable<Buffer> = null;
+    /** @internal */
     public previousMatrixBuffer: Nullable<Buffer> = null;
+    /** @internal */
     public matrixBufferSize = 32 * 16; // let's start with a maximum of 32 thin instances
+    /** @internal */
     public matrixData: Nullable<Float32Array> = null;
+    /** @internal */
     public previousMatrixData: Nullable<Float32Array>;
+    /** @internal */
     public boundingVectors: Array<Vector3> = [];
+    /** @internal */
     public worldMatrices: Nullable<Matrix[]> = null;
+    /** @internal */
     public masterMeshPreviousWorldMatrix: Nullable<Matrix>;
 }
 
@@ -339,9 +387,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public onMeshReadyObservable: Observable<Mesh>;
 
+    /** {@inheritDoc} */
     public override get computeBonesUsingShaders(): boolean {
         return this._internalAbstractMeshDataInfo._computeBonesUsingShaders;
     }
+    /** {@inheritDoc} */
     public override set computeBonesUsingShaders(value: boolean) {
         if (this._internalAbstractMeshDataInfo._computeBonesUsingShaders === value) {
             return;
@@ -429,10 +479,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._onBeforeDrawObserver = this.onBeforeDrawObservable.add(callback);
     }
 
+    /** {@inheritDoc} */
     public override get hasInstances(): boolean {
         return this.instances.length > 0;
     }
 
+    /** {@inheritDoc} */
     public override get hasThinInstances(): boolean {
         return (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0) > 0;
     }
@@ -552,10 +604,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._internalMeshDataInfo._overrideRenderingFillMode = fillMode;
     }
 
+    /** {@inheritDoc} */
     public override get material(): Nullable<Material> {
         return this._internalAbstractMeshDataInfo._material;
     }
 
+    /** {@inheritDoc} */
     public override set material(value: Nullable<Material>) {
         if (value && ((this.material && this.material.sideOrientation === null) || this._internalAbstractMeshDataInfo._sideOrientationHint)) {
             value.sideOrientation = null;
@@ -604,13 +658,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
     public get worldMatrixInstancedBuffer(): Float32Array {
-        const instanceDataStorage = this._instanceDataStorage.renderPasses[this._instanceDataStorage.engine.isWebGPU ? this._instanceDataStorage.engine.currentRenderPassId : 0];
+        const instanceDataStorage = this._instanceDataStorage.useMonoDataStorageRenderPass
+            ? this._instanceDataStorage.dataStorageRenderPass
+            : this._instanceDataStorage.renderPasses[this._instanceDataStorage.engine.currentRenderPassId];
         return instanceDataStorage ? instanceDataStorage.instancesData : (undefined as any);
     }
 
     /** Gets the array buffer used to store the instanced buffer used for instances' previous world matrices */
     public get previousWorldMatrixInstancedBuffer(): Float32Array {
-        const instanceDataStorage = this._instanceDataStorage.renderPasses[this._instanceDataStorage.engine.isWebGPU ? this._instanceDataStorage.engine.currentRenderPassId : 0];
+        const instanceDataStorage = this._instanceDataStorage.useMonoDataStorageRenderPass
+            ? this._instanceDataStorage.dataStorageRenderPass
+            : this._instanceDataStorage.renderPasses[this._instanceDataStorage.engine.currentRenderPassId];
         return instanceDataStorage ? instanceDataStorage.instancesPreviousData : (undefined as any);
     }
 
@@ -874,6 +932,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         this._instanceDataStorage = new _InstanceDataStorage();
         this._instanceDataStorage.engine = scene.getEngine();
+        this._instanceDataStorage.useMonoDataStorageRenderPass = !this._instanceDataStorage.engine.isWebGPU;
+        if (this._instanceDataStorage.useMonoDataStorageRenderPass) {
+            this._instanceDataStorage.dataStorageRenderPass = new _InstanceDataStorageRenderPass();
+        }
 
         if (this._scene.useRightHandedSystem) {
             this.sideOrientation = Constants.MATERIAL_ClockWiseSideOrientation;
@@ -943,6 +1005,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
+    /**
+     * Instantiate (when possible) or clone that node with its hierarchy
+     * @param newParent defines the new parent to use for the instance (or clone)
+     * @param options defines options to configure how copy is done
+     * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
+     * @returns an instance (or a clone) of the current node with its hierarchy
+     */
     public override instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
         options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean) },
@@ -1254,12 +1323,36 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return data;
     }
 
+    /**
+     * Copies the requested vertex data kind into the given vertex data map. Float data is constructed if the map doesn't have the data.
+     * @param kind defines the vertex data kind to use
+     * @param vertexData defines the map that stores the resulting data
+     */
     public override copyVerticesData(kind: string, vertexData: { [kind: string]: Float32Array }): void {
         if (this._geometry) {
             this._geometry.copyVerticesData(kind, vertexData);
         }
     }
 
+    /**
+     * Returns the mesh VertexBuffer object from the requested `kind`
+     * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
+     * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
+     * - VertexBuffer.UVKind
+     * - VertexBuffer.UV2Kind
+     * - VertexBuffer.UV3Kind
+     * - VertexBuffer.UV4Kind
+     * - VertexBuffer.UV5Kind
+     * - VertexBuffer.UV6Kind
+     * - VertexBuffer.ColorKind
+     * - VertexBuffer.MatricesIndicesKind
+     * - VertexBuffer.MatricesIndicesExtraKind
+     * - VertexBuffer.MatricesWeightsKind
+     * - VertexBuffer.MatricesWeightsExtraKind
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
+     * @returns a FloatArray or null if the mesh has no vertex buffer for this kind.
+     */
     public override getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer> {
         if (!this._geometry) {
             return null;
@@ -1381,6 +1474,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this._geometry.getIndices(copyWhenShared, forceCopy);
     }
 
+    /** {@inheritDoc} */
     public override get isBlocked(): boolean {
         return this._masterMesh !== null && this._masterMesh !== undefined;
     }
@@ -1511,7 +1605,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @internal */
     public _getInstanceDataStorage(): _InstanceDataStorageRenderPass {
-        const renderPassId = this._instanceDataStorage.engine.isWebGPU ? this._instanceDataStorage.engine.currentRenderPassId : 0;
+        if (this._instanceDataStorage.useMonoDataStorageRenderPass) {
+            return this._instanceDataStorage.dataStorageRenderPass;
+        }
+
+        const renderPassId = this._instanceDataStorage.engine.currentRenderPassId;
 
         let instanceDataStorage = this._instanceDataStorage.renderPasses[renderPassId];
         if (!instanceDataStorage) {
@@ -1532,7 +1630,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         internalDataInfo._preActivateId = sceneRenderId;
-        this._getInstanceDataStorage().visibleInstances = null;
+        if (this._instanceDataStorage.useMonoDataStorageRenderPass) {
+            this._instanceDataStorage.dataStorageRenderPass.visibleInstances = null;
+        } else {
+            this._getInstanceDataStorage().visibleInstances = null;
+        }
         return this;
     }
 
@@ -1540,7 +1642,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public override _preActivateForIntermediateRendering(renderId: number): Mesh {
-        const instanceDataStorage = this._getInstanceDataStorage();
+        const instanceDataStorage = this._instanceDataStorage.useMonoDataStorageRenderPass ? this._instanceDataStorage.dataStorageRenderPass : this._getInstanceDataStorage();
         if (instanceDataStorage.visibleInstances) {
             instanceDataStorage.visibleInstances.intermediateDefaultRenderId = renderId;
         }
@@ -1551,7 +1653,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh {
-        const instanceDataStorage = this._getInstanceDataStorage();
+        const instanceDataStorage = this._instanceDataStorage.useMonoDataStorageRenderPass ? this._instanceDataStorage.dataStorageRenderPass : this._getInstanceDataStorage();
         if (!instanceDataStorage.visibleInstances) {
             instanceDataStorage.visibleInstances = {
                 defaultRenderId: renderId,
@@ -2003,7 +2105,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._geometry._bind(effect, indexToBind);
         } else {
             if (
-                this._instanceDataStorage.engine.isWebGPU &&
+                !this._instanceDataStorage.useMonoDataStorageRenderPass &&
                 this._userInstancedBuffersStorage.renderPasses &&
                 this._userInstancedBuffersStorage.renderPasses[this._instanceDataStorage.engine.currentRenderPassId]
             ) {
@@ -2094,7 +2196,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public _getInstancesRenderList(subMeshId: number, isReplacementMode: boolean = false): _InstancesBatch {
-        const instanceDataStorage = this._getInstanceDataStorage();
+        const instanceDataStorage = this._instanceDataStorage.useMonoDataStorageRenderPass ? this._instanceDataStorage.dataStorageRenderPass : this._getInstanceDataStorage();
         if (this._instanceDataStorage.isFrozen) {
             if (isReplacementMode) {
                 instanceDataStorage.batchCacheReplacementModeInFrozenMode.hardwareInstancedRendering[subMeshId] = false;
@@ -2243,7 +2345,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             let vertexAndArrayObjectBuffers;
-            if (this._instanceDataStorage.engine.isWebGPU) {
+            if (!this._instanceDataStorage.useMonoDataStorageRenderPass) {
                 if (!this._userInstancedBuffersStorage.renderPasses) {
                     this._userInstancedBuffersStorage.renderPasses = {};
                 }
@@ -2442,20 +2544,25 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this;
     }
 
+    private _disposeInstanceDataStorageRenderPass(dataStorage?: _InstanceDataStorageRenderPass, dispose = false) {
+        if (dataStorage?.instancesBuffer) {
+            // Dispose instance buffer to be recreated in _renderWithInstances when rendered
+            if (dispose) {
+                dataStorage.instancesBuffer.dispose();
+            }
+            dataStorage.instancesBuffer = null;
+        }
+    }
+
     /**
      * @internal
      */
     public override _rebuild(dispose = false): void {
         for (const renderPassId in this._instanceDataStorage.renderPasses) {
             const instanceDataStorage = this._instanceDataStorage.renderPasses[renderPassId];
-            if (instanceDataStorage.instancesBuffer) {
-                // Dispose instance buffer to be recreated in _renderWithInstances when rendered
-                if (dispose) {
-                    instanceDataStorage.instancesBuffer.dispose();
-                }
-                instanceDataStorage.instancesBuffer = null;
-            }
+            this._disposeInstanceDataStorageRenderPass(instanceDataStorage, dispose);
         }
+        this._disposeInstanceDataStorageRenderPass(this._instanceDataStorage.dataStorageRenderPass, dispose);
         if (this._userInstancedBuffersStorage) {
             for (const kind in this._userInstancedBuffersStorage.vertexBuffers) {
                 const buffer = this._userInstancedBuffersStorage.vertexBuffers[kind];
@@ -2496,6 +2603,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (const renderPassId in this._instanceDataStorage.renderPasses) {
             const instanceDataStorage = this._instanceDataStorage.renderPasses[renderPassId];
             instanceDataStorage.previousBatch = null;
+        }
+        if (this._instanceDataStorage.dataStorageRenderPass) {
+            this._instanceDataStorage.dataStorageRenderPass.previousBatch = null;
         }
     }
 
@@ -4048,6 +4158,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Skeleton
         if (this.skeleton) {
             serializationObject.skeletonId = this.skeleton.id;
+            serializationObject.skeletonUniqueId = this.skeleton.uniqueId;
             serializationObject.numBoneInfluencers = this.numBoneInfluencers;
         }
 
@@ -4522,10 +4633,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Skeleton
         if (parsedMesh.skeletonId !== undefined && parsedMesh.skeletonId !== null) {
-            mesh.skeleton = scene.getLastSkeletonById(parsedMesh.skeletonId);
+            mesh.skeleton = scene.getLastSkeletonById(parsedMesh.skeletonId); // Back-compat for if this function is called directly
+            mesh._waitingSkeletonId = parsedMesh.skeletonId;
             if (parsedMesh.numBoneInfluencers) {
                 mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
             }
+        }
+
+        if (parsedMesh.skeletonUniqueId !== undefined && parsedMesh.skeletonUniqueId !== null) {
+            mesh._waitingSkeletonUniqueId = parsedMesh.skeletonUniqueId;
         }
 
         // Animations
@@ -4925,7 +5041,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Merge the array of meshes into a single mesh for performance reasons.
      * @param meshes array of meshes with the vertices to merge. Entries cannot be empty meshes.
      * @param disposeSource when true (default), dispose of the vertices from the source meshes.
-     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true.
+     * @param allow32BitsIndices when the sum of the vertices \> 64k, this must be set to true.
      * @param meshSubclass (optional) can be set to a Mesh where the merged vertices will be inserted.
      * @param subdivideWithSubMeshes when true (false default), subdivide mesh into subMeshes.
      * @param multiMultiMaterials when true (false default), subdivide mesh into subMeshes with multiple materials, ignores subdivideWithSubMeshes.
@@ -4946,7 +5062,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Merge the array of meshes into a single mesh for performance reasons.
      * @param meshes array of meshes with the vertices to merge. Entries cannot be empty meshes.
      * @param disposeSource when true (default), dispose of the vertices from the source meshes.
-     * @param allow32BitsIndices when the sum of the vertices > 64k, this must be set to true.
+     * @param allow32BitsIndices when the sum of the vertices \> 64k, this must be set to true.
      * @param meshSubclass (optional) can be set to a Mesh where the merged vertices will be inserted.
      * @param subdivideWithSubMeshes when true (false default), subdivide mesh into subMeshes.
      * @param multiMultiMaterials when true (false default), subdivide mesh into subMeshes with multiple materials, ignores subdivideWithSubMeshes.
@@ -5017,41 +5133,41 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 return null;
             }
 
-            if (subdivideWithSubMeshes) {
-                indiceArray.push({ start: 0, count: mesh.getTotalIndices() });
-            }
-
-            if (multiMultiMaterials) {
+            if (subdivideWithSubMeshes || multiMultiMaterials) {
                 const indexOffset = indiceArray.reduce((accumulator, currentValue) => {
                     return Math.max(accumulator, currentValue.start + currentValue.count);
                 }, 0);
 
-                if (mesh.material) {
-                    const material = mesh.material;
-                    if (material instanceof MultiMaterial) {
-                        for (let matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
-                            if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
-                                materialArray.push(<Material>material.subMaterials[matIndex]);
+                if (multiMultiMaterials) {
+                    if (mesh.material) {
+                        const material = mesh.material;
+                        if (material instanceof MultiMaterial) {
+                            for (let matIndex = 0; matIndex < material.subMaterials.length; matIndex++) {
+                                if (materialArray.indexOf(<Material>material.subMaterials[matIndex]) < 0) {
+                                    materialArray.push(<Material>material.subMaterials[matIndex]);
+                                }
+                            }
+                            for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                                materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
+                                indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
+                            }
+                        } else {
+                            if (materialArray.indexOf(material) < 0) {
+                                materialArray.push(material);
+                            }
+                            for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                                materialIndexArray.push(materialArray.indexOf(material));
+                                indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
                             }
                         }
-                        for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
-                            indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
-                        }
                     } else {
-                        if (materialArray.indexOf(material) < 0) {
-                            materialArray.push(material);
-                        }
                         for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            materialIndexArray.push(materialArray.indexOf(material));
+                            materialIndexArray.push(0);
                             indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
                         }
                     }
                 } else {
-                    for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                        materialIndexArray.push(0);
-                        indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
-                    }
+                    indiceArray.push({ start: indexOffset, count: mesh.getTotalIndices() });
                 }
             }
         }
@@ -5205,113 +5321,113 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Creates a ribbon mesh.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
-     * @param name defines the name of the mesh to create
-     * @param pathArray is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.
-     * @param closeArray creates a seam between the first and the last paths of the path array (default is false)
-     * @param closePath creates a seam between the first and the last points of each path of the path array
-     * @param offset is taken in account only if the `pathArray` is containing a single path
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
-     * @param instance defines an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#ribbon)
+     * @param _name defines the name of the mesh to create
+     * @param _pathArray is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.
+     * @param _closeArray creates a seam between the first and the last paths of the path array (default is false)
+     * @param _closePath creates a seam between the first and the last points of each path of the path array
+     * @param _offset is taken in account only if the `pathArray` is containing a single path
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _instance defines an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#ribbon)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
     public static CreateRibbon(
-        name: string,
-        pathArray: Vector3[][],
-        closeArray: boolean,
-        closePath: boolean,
-        offset: number,
-        scene?: Scene,
-        updatable?: boolean,
-        sideOrientation?: number,
-        instance?: Mesh
+        _name: string,
+        _pathArray: Vector3[][],
+        _closeArray: boolean,
+        _closePath: boolean,
+        _offset: number,
+        _scene?: Scene,
+        _updatable?: boolean,
+        _sideOrientation?: number,
+        _instance?: Mesh
     ): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Creates a plane polygonal mesh.  By default, this is a disc.
-     * @param name defines the name of the mesh to create
-     * @param radius sets the radius size (float) of the polygon (default 0.5)
-     * @param tessellation sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _name defines the name of the mesh to create
+     * @param _radius sets the radius size (float) of the polygon (default 0.5)
+     * @param _tessellation sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
-    public static CreateDisc(name: string, radius: number, tessellation: number, scene: Nullable<Scene>, updatable?: boolean, sideOrientation?: number): Mesh {
+    public static CreateDisc(_name: string, _radius: number, _tessellation: number, _scene: Nullable<Scene>, _updatable?: boolean, _sideOrientation?: number): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Creates a box mesh.
-     * @param name defines the name of the mesh to create
-     * @param size sets the size (float) of each box side (default 1)
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _name defines the name of the mesh to create
+     * @param _size sets the size (float) of each box side (default 1)
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
-    public static CreateBox(name: string, size: number, scene: Nullable<Scene>, updatable?: boolean, sideOrientation?: number): Mesh {
+    public static CreateBox(_name: string, _size: number, _scene: Nullable<Scene>, _updatable?: boolean, _sideOrientation?: number): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Creates a sphere mesh.
-     * @param name defines the name of the mesh to create
-     * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
-     * @param diameter sets the diameter size (float) of the sphere (default 1)
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _name defines the name of the mesh to create
+     * @param _segments sets the sphere number of horizontal stripes (positive integer, default 32)
+     * @param _diameter sets the diameter size (float) of the sphere (default 1)
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
-    public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+    public static CreateSphere(_name: string, _segments: number, _diameter: number, _scene?: Scene, _updatable?: boolean, _sideOrientation?: number): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Creates a hemisphere mesh.
-     * @param name defines the name of the mesh to create
-     * @param segments sets the sphere number of horizontal stripes (positive integer, default 32)
-     * @param diameter sets the diameter size (float) of the sphere (default 1)
-     * @param scene defines the hosting scene
+     * @param _name defines the name of the mesh to create
+     * @param _segments sets the sphere number of horizontal stripes (positive integer, default 32)
+     * @param _diameter sets the diameter size (float) of the sphere (default 1)
+     * @param _scene defines the hosting scene
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
-    public static CreateHemisphere(name: string, segments: number, diameter: number, scene?: Scene): Mesh {
+    public static CreateHemisphere(_name: string, _segments: number, _diameter: number, _scene?: Scene): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Creates a cylinder or a cone mesh.
-     * @param name defines the name of the mesh to create
-     * @param height sets the height size (float) of the cylinder/cone (float, default 2)
-     * @param diameterTop set the top cap diameter (floats, default 1)
-     * @param diameterBottom set the bottom cap diameter (floats, default 1). This value can't be zero
-     * @param tessellation sets the number of cylinder sides (positive integer, default 24). Set it to 3 to get a prism for instance
-     * @param subdivisions sets the number of rings along the cylinder height (positive integer, default 1)
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _name defines the name of the mesh to create
+     * @param _height sets the height size (float) of the cylinder/cone (float, default 2)
+     * @param _diameterTop set the top cap diameter (floats, default 1)
+     * @param _diameterBottom set the bottom cap diameter (floats, default 1). This value can't be zero
+     * @param _tessellation sets the number of cylinder sides (positive integer, default 24). Set it to 3 to get a prism for instance
+     * @param _subdivisions sets the number of rings along the cylinder height (positive integer, default 1)
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
     public static CreateCylinder(
-        name: string,
-        height: number,
-        diameterTop: number,
-        diameterBottom: number,
-        tessellation: number,
-        subdivisions: any,
-        scene?: Scene,
-        updatable?: any,
-        sideOrientation?: number
+        _name: string,
+        _height: number,
+        _diameterTop: number,
+        _diameterBottom: number,
+        _tessellation: number,
+        _subdivisions: any,
+        _scene?: Scene,
+        _updatable?: any,
+        _sideOrientation?: number
     ): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
@@ -5319,86 +5435,86 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     // Torus  (Code from SharpDX.org)
     /**
      * Creates a torus mesh.
-     * @param name defines the name of the mesh to create
-     * @param diameter sets the diameter size (float) of the torus (default 1)
-     * @param thickness sets the diameter size of the tube of the torus (float, default 0.5)
-     * @param tessellation sets the number of torus sides (positive integer, default 16)
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _name defines the name of the mesh to create
+     * @param _diameter sets the diameter size (float) of the torus (default 1)
+     * @param _thickness sets the diameter size of the tube of the torus (float, default 0.5)
+     * @param _tessellation sets the number of torus sides (positive integer, default 16)
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
-    public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+    public static CreateTorus(_name: string, _diameter: number, _thickness: number, _tessellation: number, _scene?: Scene, _updatable?: boolean, _sideOrientation?: number): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Creates a torus knot mesh.
-     * @param name defines the name of the mesh to create
-     * @param radius sets the global radius size (float) of the torus knot (default 2)
-     * @param tube sets the diameter size of the tube of the torus (float, default 0.5)
-     * @param radialSegments sets the number of sides on each tube segments (positive integer, default 32)
-     * @param tubularSegments sets the number of tubes to decompose the knot into (positive integer, default 32)
-     * @param p the number of windings on X axis (positive integers, default 2)
-     * @param q the number of windings on Y axis (positive integers, default 3)
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _name defines the name of the mesh to create
+     * @param _radius sets the global radius size (float) of the torus knot (default 2)
+     * @param _tube sets the diameter size of the tube of the torus (float, default 0.5)
+     * @param _radialSegments sets the number of sides on each tube segments (positive integer, default 32)
+     * @param _tubularSegments sets the number of tubes to decompose the knot into (positive integer, default 32)
+     * @param _p the number of windings on X axis (positive integers, default 2)
+     * @param _q the number of windings on Y axis (positive integers, default 3)
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
     public static CreateTorusKnot(
-        name: string,
-        radius: number,
-        tube: number,
-        radialSegments: number,
-        tubularSegments: number,
-        p: number,
-        q: number,
-        scene?: Scene,
-        updatable?: boolean,
-        sideOrientation?: number
+        _name: string,
+        _radius: number,
+        _tube: number,
+        _radialSegments: number,
+        _tubularSegments: number,
+        _p: number,
+        _q: number,
+        _scene?: Scene,
+        _updatable?: boolean,
+        _sideOrientation?: number
     ): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Creates a line mesh..
-     * @param name defines the name of the mesh to create
-     * @param points is an array successive Vector3
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines).
+     * @param _name defines the name of the mesh to create
+     * @param _points is an array successive Vector3
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines).
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
-    public static CreateLines(name: string, points: Vector3[], scene: Nullable<Scene>, updatable: boolean, instance?: Nullable<LinesMesh>): LinesMesh {
+    public static CreateLines(_name: string, _points: Vector3[], _scene: Nullable<Scene>, _updatable: boolean, _instance?: Nullable<LinesMesh>): LinesMesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Creates a dashed line mesh.
-     * @param name defines the name of the mesh to create
-     * @param points is an array successive Vector3
-     * @param dashSize is the size of the dashes relatively the dash number (positive float, default 3)
-     * @param gapSize is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
-     * @param dashNb is the intended total number of dashes (positive integer, default 200)
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines)
+     * @param _name defines the name of the mesh to create
+     * @param _points is an array successive Vector3
+     * @param _dashSize is the size of the dashes relatively the dash number (positive float, default 3)
+     * @param _gapSize is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
+     * @param _dashNb is the intended total number of dashes (positive integer, default 200)
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
     public static CreateDashedLines(
-        name: string,
-        points: Vector3[],
-        dashSize: number,
-        gapSize: number,
-        dashNb: number,
-        scene: Nullable<Scene>,
-        updatable?: boolean,
-        instance?: LinesMesh
+        _name: string,
+        _points: Vector3[],
+        _dashSize: number,
+        _gapSize: number,
+        _dashNb: number,
+        _scene: Nullable<Scene>,
+        _updatable?: boolean,
+        _instance?: LinesMesh
     ): LinesMesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
@@ -5411,43 +5527,51 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
      * Remember you can only change the shape positions, not their number when updating a polygon.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#non-regular-polygon
-     * @param name defines the name of the mesh to create
-     * @param shape is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors
-     * @param scene defines the hosting scene
-     * @param holes is a required array of arrays of successive Vector3 used to defines holes in the polygon
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
-     * @param earcutInjection can be used to inject your own earcut reference
+     * @param _name defines the name of the mesh to create
+     * @param _shape is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors
+     * @param _scene defines the hosting scene
+     * @param _holes is a required array of arrays of successive Vector3 used to defines holes in the polygon
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _earcutInjection can be used to inject your own earcut reference
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
-    public static CreatePolygon(name: string, shape: Vector3[], scene: Scene, holes?: Vector3[][], updatable?: boolean, sideOrientation?: number, earcutInjection?: any): Mesh {
+    public static CreatePolygon(
+        _name: string,
+        _shape: Vector3[],
+        _scene: Scene,
+        _holes?: Vector3[][],
+        _updatable?: boolean,
+        _sideOrientation?: number,
+        _earcutInjection?: any
+    ): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Creates an extruded polygon mesh, with depth in the Y direction..
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#extruded-non-regular-polygon
-     * @param name defines the name of the mesh to create
-     * @param shape is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors
-     * @param depth defines the height of extrusion
-     * @param scene defines the hosting scene
-     * @param holes is a required array of arrays of successive Vector3 used to defines holes in the polygon
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
-     * @param earcutInjection can be used to inject your own earcut reference
+     * @param _name defines the name of the mesh to create
+     * @param _shape is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors
+     * @param _depth defines the height of extrusion
+     * @param _scene defines the hosting scene
+     * @param _holes is a required array of arrays of successive Vector3 used to defines holes in the polygon
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _earcutInjection can be used to inject your own earcut reference
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
     public static ExtrudePolygon(
-        name: string,
-        shape: Vector3[],
-        depth: number,
-        scene: Scene,
-        holes?: Vector3[][],
-        updatable?: boolean,
-        sideOrientation?: number,
-        earcutInjection?: any
+        _name: string,
+        _shape: Vector3[],
+        _depth: number,
+        _scene: Scene,
+        _holes?: Vector3[][],
+        _updatable?: boolean,
+        _sideOrientation?: number,
+        _earcutInjection?: any
     ): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
@@ -5457,30 +5581,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * The extrusion is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#extruded-shapes
-     * @param name defines the name of the mesh to create
-     * @param shape is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis
-     * @param path is a required array of successive Vector3. This is the axis curve the shape is extruded along
-     * @param scale is the value to scale the shape
-     * @param rotation is the angle value to rotate the shape each step (each path point), from the former step (so rotation added each step) along the curve
-     * @param cap sets the way the extruded shape is capped. Possible values : Mesh.NO_CAP (default), Mesh.CAP_START, Mesh.CAP_END, Mesh.CAP_ALL
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
-     * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#extruded-shape)
+     * @param _name defines the name of the mesh to create
+     * @param _shape is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis
+     * @param _path is a required array of successive Vector3. This is the axis curve the shape is extruded along
+     * @param _scale is the value to scale the shape
+     * @param _rotation is the angle value to rotate the shape each step (each path point), from the former step (so rotation added each step) along the curve
+     * @param _cap sets the way the extruded shape is capped. Possible values : Mesh.NO_CAP (default), Mesh.CAP_START, Mesh.CAP_END, Mesh.CAP_ALL
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#extruded-shape)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
     public static ExtrudeShape(
-        name: string,
-        shape: Vector3[],
-        path: Vector3[],
-        scale: number,
-        rotation: number,
-        cap: number,
-        scene: Nullable<Scene>,
-        updatable?: boolean,
-        sideOrientation?: number,
-        instance?: Mesh
+        _name: string,
+        _shape: Vector3[],
+        _path: Vector3[],
+        _scale: number,
+        _rotation: number,
+        _cap: number,
+        _scene: Nullable<Scene>,
+        _updatable?: boolean,
+        _sideOrientation?: number,
+        _instance?: Mesh
     ): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
@@ -5491,34 +5615,34 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * It has no predefined shape. Its final shape will depend on the input parameters.
      *
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#extruded-shapes
-     * @param name defines the name of the mesh to create
-     * @param shape is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis
-     * @param path is a required array of successive Vector3. This is the axis curve the shape is extruded along
-     * @param scaleFunction is a custom Javascript function called on each path point
-     * @param rotationFunction is a custom Javascript function called on each path point
-     * @param ribbonCloseArray forces the extrusion underlying ribbon to close all the paths in its `pathArray`
-     * @param ribbonClosePath forces the extrusion underlying ribbon to close its `pathArray`
-     * @param cap sets the way the extruded shape is capped. Possible values : Mesh.NO_CAP (default), Mesh.CAP_START, Mesh.CAP_END, Mesh.CAP_ALL
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
-     * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph#extruded-shape)
+     * @param _name defines the name of the mesh to create
+     * @param _shape is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis
+     * @param _path is a required array of successive Vector3. This is the axis curve the shape is extruded along
+     * @param _scaleFunction is a custom Javascript function called on each path point
+     * @param _rotationFunction is a custom Javascript function called on each path point
+     * @param _ribbonCloseArray forces the extrusion underlying ribbon to close all the paths in its `pathArray`
+     * @param _ribbonClosePath forces the extrusion underlying ribbon to close its `pathArray`
+     * @param _cap sets the way the extruded shape is capped. Possible values : Mesh.NO_CAP (default), Mesh.CAP_START, Mesh.CAP_END, Mesh.CAP_ALL
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph#extruded-shape)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
     public static ExtrudeShapeCustom(
-        name: string,
-        shape: Vector3[],
-        path: Vector3[],
-        scaleFunction: Nullable<{ (i: number, distance: number): number }>,
-        rotationFunction: Nullable<{ (i: number, distance: number): number }>,
-        ribbonCloseArray: boolean,
-        ribbonClosePath: boolean,
-        cap: number,
-        scene: Scene,
-        updatable?: boolean,
-        sideOrientation?: number,
-        instance?: Mesh
+        _name: string,
+        _shape: Vector3[],
+        _path: Vector3[],
+        _scaleFunction: Nullable<{ (i: number, distance: number): number }>,
+        _rotationFunction: Nullable<{ (i: number, distance: number): number }>,
+        _ribbonCloseArray: boolean,
+        _ribbonClosePath: boolean,
+        _cap: number,
+        _scene: Scene,
+        _updatable?: boolean,
+        _sideOrientation?: number,
+        _instance?: Mesh
     ): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
@@ -5526,73 +5650,73 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Creates lathe mesh.
      * The lathe is a shape with a symmetry axis : a 2D model shape is rotated around this axis to design the lathe.
-     * @param name defines the name of the mesh to create
-     * @param shape is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero
-     * @param radius is the radius value of the lathe
-     * @param tessellation is the side number of the lathe.
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _name defines the name of the mesh to create
+     * @param _shape is a required array of successive Vector3. This array depicts the shape to be rotated in its local space : the shape must be designed in the xOy plane and will be rotated around the Y axis. It's usually a 2D shape, so the Vector3 z coordinates are often set to zero
+     * @param _radius is the radius value of the lathe
+     * @param _tessellation is the side number of the lathe.
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
-    public static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+    public static CreateLathe(_name: string, _shape: Vector3[], _radius: number, _tessellation: number, _scene: Scene, _updatable?: boolean, _sideOrientation?: number): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Creates a plane mesh.
-     * @param name defines the name of the mesh to create
-     * @param size sets the size (float) of both sides of the plane at once (default 1)
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _name defines the name of the mesh to create
+     * @param _size sets the size (float) of both sides of the plane at once (default 1)
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
-    public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
+    public static CreatePlane(_name: string, _size: number, _scene: Scene, _updatable?: boolean, _sideOrientation?: number): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Creates a ground mesh.
-     * @param name defines the name of the mesh to create
-     * @param width set the width of the ground
-     * @param height set the height of the ground
-     * @param subdivisions sets the number of subdivisions per side
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
+     * @param _name defines the name of the mesh to create
+     * @param _width set the width of the ground
+     * @param _height set the height of the ground
+     * @param _subdivisions sets the number of subdivisions per side
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
-    public static CreateGround(name: string, width: number, height: number, subdivisions: number, scene?: Scene, updatable?: boolean): Mesh {
+    public static CreateGround(_name: string, _width: number, _height: number, _subdivisions: number, _scene?: Scene, _updatable?: boolean): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Creates a tiled ground mesh.
-     * @param name defines the name of the mesh to create
-     * @param xmin set the ground minimum X coordinate
-     * @param zmin set the ground minimum Y coordinate
-     * @param xmax set the ground maximum X coordinate
-     * @param zmax set the ground maximum Z coordinate
-     * @param subdivisions is an object `{w: positive integer, h: positive integer}` (default `{w: 6, h: 6}`). `w` and `h` are the numbers of subdivisions on the ground width and height. Each subdivision is called a tile
-     * @param precision is an object `{w: positive integer, h: positive integer}` (default `{w: 2, h: 2}`). `w` and `h` are the numbers of subdivisions on the ground width and height of each tile
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
+     * @param _name defines the name of the mesh to create
+     * @param _xmin set the ground minimum X coordinate
+     * @param _zmin set the ground minimum Y coordinate
+     * @param _xmax set the ground maximum X coordinate
+     * @param _zmax set the ground maximum Z coordinate
+     * @param _subdivisions is an object `{w: positive integer, h: positive integer}` (default `{w: 6, h: 6}`). `w` and `h` are the numbers of subdivisions on the ground width and height. Each subdivision is called a tile
+     * @param _precision is an object `{w: positive integer, h: positive integer}` (default `{w: 2, h: 2}`). `w` and `h` are the numbers of subdivisions on the ground width and height of each tile
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
     public static CreateTiledGround(
-        name: string,
-        xmin: number,
-        zmin: number,
-        xmax: number,
-        zmax: number,
-        subdivisions: { w: number; h: number },
-        precision: { w: number; h: number },
-        scene: Scene,
-        updatable?: boolean
+        _name: string,
+        _xmin: number,
+        _zmin: number,
+        _xmax: number,
+        _zmax: number,
+        _subdivisions: { w: number; h: number },
+        _precision: { w: number; h: number },
+        _scene: Scene,
+        _updatable?: boolean
     ): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
@@ -5600,32 +5724,32 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Creates a ground mesh from a height map.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/height_map
-     * @param name defines the name of the mesh to create
-     * @param url sets the URL of the height map image resource
-     * @param width set the ground width size
-     * @param height set the ground height size
-     * @param subdivisions sets the number of subdivision per side
-     * @param minHeight is the minimum altitude on the ground
-     * @param maxHeight is the maximum altitude on the ground
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param onReady  is a callback function that will be called  once the mesh is built (the height map download can last some time)
-     * @param alphaFilter will filter any data where the alpha channel is below this value, defaults 0 (all data visible)
+     * @param _name defines the name of the mesh to create
+     * @param _url sets the URL of the height map image resource
+     * @param _width set the ground width size
+     * @param _height set the ground height size
+     * @param _subdivisions sets the number of subdivision per side
+     * @param _minHeight is the minimum altitude on the ground
+     * @param _maxHeight is the maximum altitude on the ground
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _onReady  is a callback function that will be called  once the mesh is built (the height map download can last some time)
+     * @param _alphaFilter will filter any data where the alpha channel is below this value, defaults 0 (all data visible)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
     public static CreateGroundFromHeightMap(
-        name: string,
-        url: string,
-        width: number,
-        height: number,
-        subdivisions: number,
-        minHeight: number,
-        maxHeight: number,
-        scene: Scene,
-        updatable?: boolean,
-        onReady?: (mesh: GroundMesh) => void,
-        alphaFilter?: number
+        _name: string,
+        _url: string,
+        _width: number,
+        _height: number,
+        _subdivisions: number,
+        _minHeight: number,
+        _maxHeight: number,
+        _scene: Scene,
+        _updatable?: boolean,
+        _onReady?: (mesh: GroundMesh) => void,
+        _alphaFilter?: number
     ): GroundMesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
@@ -5636,30 +5760,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * It has no predefined shape. Its final shape will depend on the input parameters.
      *
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
-     * @param name defines the name of the mesh to create
-     * @param path is a required array of successive Vector3. It is the curve used as the axis of the tube
-     * @param radius sets the tube radius size
-     * @param tessellation is the number of sides on the tubular surface
-     * @param radiusFunction is a custom function. If it is not null, it overrides the parameter `radius`. This function is called on each point of the tube path and is passed the index `i` of the i-th point and the distance of this point from the first point of the path
-     * @param cap sets the way the extruded shape is capped. Possible values : Mesh.NO_CAP (default), Mesh.CAP_START, Mesh.CAP_END, Mesh.CAP_ALL
-     * @param scene defines the hosting scene
-     * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
-     * @param instance is an instance of an existing Tube object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#tube)
+     * @param _name defines the name of the mesh to create
+     * @param _path is a required array of successive Vector3. It is the curve used as the axis of the tube
+     * @param _radius sets the tube radius size
+     * @param _tessellation is the number of sides on the tubular surface
+     * @param _radiusFunction is a custom function. If it is not null, it overrides the parameter `radius`. This function is called on each point of the tube path and is passed the index `i` of the i-th point and the distance of this point from the first point of the path
+     * @param _cap sets the way the extruded shape is capped. Possible values : Mesh.NO_CAP (default), Mesh.CAP_START, Mesh.CAP_END, Mesh.CAP_ALL
+     * @param _scene defines the hosting scene
+     * @param _updatable defines if the mesh must be flagged as updatable
+     * @param _sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation)
+     * @param _instance is an instance of an existing Tube object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#tube)
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
     public static CreateTube(
-        name: string,
-        path: Vector3[],
-        radius: number,
-        tessellation: number,
-        radiusFunction: { (i: number, distance: number): number },
-        cap: number,
-        scene: Scene,
-        updatable?: boolean,
-        sideOrientation?: number,
-        instance?: Mesh
+        _name: string,
+        _path: Vector3[],
+        _radius: number,
+        _tessellation: number,
+        _radiusFunction: { (i: number, distance: number): number },
+        _cap: number,
+        _scene: Scene,
+        _updatable?: boolean,
+        _sideOrientation?: number,
+        _instance?: Mesh
     ): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
@@ -5678,15 +5802,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation
      * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-     * @param name defines the name of the mesh to create
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
+     * @param _name defines the name of the mesh to create
+     * @param _options defines the options used to create the mesh
+     * @param _scene defines the hosting scene
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
     public static CreatePolyhedron(
-        name: string,
-        options: {
+        _name: string,
+        _options: {
             type?: number;
             size?: number;
             sizeX?: number;
@@ -5698,7 +5822,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             updatable?: boolean;
             sideOrientation?: number;
         },
-        scene: Scene
+        _scene: Scene
     ): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
@@ -5713,16 +5837,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation
      * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/polyhedra#icosphere
-     * @param name defines the name of the mesh
-     * @param options defines the options used to create the mesh
-     * @param scene defines the hosting scene
+     * @param _name defines the name of the mesh
+     * @param _options defines the options used to create the mesh
+     * @param _scene defines the hosting scene
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
     public static CreateIcoSphere(
-        name: string,
-        options: { radius?: number; flat?: boolean; subdivisions?: number; sideOrientation?: number; updatable?: boolean },
-        scene: Scene
+        _name: string,
+        _options: { radius?: number; flat?: boolean; subdivisions?: number; sideOrientation?: number; updatable?: boolean },
+        _scene: Scene
     ): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
@@ -5731,39 +5855,39 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Creates a decal mesh.
      *.
      * A decal is a mesh usually applied as a model onto the surface of another mesh
-     * @param name  defines the name of the mesh
-     * @param sourceMesh defines the mesh receiving the decal
-     * @param position sets the position of the decal in world coordinates
-     * @param normal sets the normal of the mesh where the decal is applied onto in world coordinates
-     * @param size sets the decal scaling
-     * @param angle sets the angle to rotate the decal
+     * @param _name  defines the name of the mesh
+     * @param _sourceMesh defines the mesh receiving the decal
+     * @param _position sets the position of the decal in world coordinates
+     * @param _normal sets the normal of the mesh where the decal is applied onto in world coordinates
+     * @param _size sets the decal scaling
+     * @param _angle sets the angle to rotate the decal
      * @returns a new Mesh
      * @deprecated Please use MeshBuilder instead
      */
-    public static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh {
+    public static CreateDecal(_name: string, _sourceMesh: AbstractMesh, _position: Vector3, _normal: Vector3, _size: Vector3, _angle: number): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /** Creates a Capsule Mesh
-     * @param name defines the name of the mesh.
-     * @param options the constructors options used to shape the mesh.
-     * @param scene defines the scene the mesh is scoped to.
+     * @param _name defines the name of the mesh.
+     * @param _options the constructors options used to shape the mesh.
+     * @param _scene defines the scene the mesh is scoped to.
      * @returns the capsule mesh
      * @see https://doc.babylonjs.com/how_to/capsule_shape
      * @deprecated Please use MeshBuilder instead
      */
-    public static CreateCapsule(name: string, options: ICreateCapsuleOptions, scene: Scene): Mesh {
+    public static CreateCapsule(_name: string, _options: ICreateCapsuleOptions, _scene: Scene): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 
     /**
      * Extends a mesh to a Goldberg mesh
      * Warning  the mesh to convert MUST be an import of a perviously exported Goldberg mesh
-     * @param mesh the mesh to convert
+     * @param _mesh the mesh to convert
      * @returns the extended mesh
      * @deprecated Please use ExtendMeshToGoldberg instead
      */
-    public static ExtendToGoldberg(mesh: Mesh): Mesh {
+    public static ExtendToGoldberg(_mesh: Mesh): Mesh {
         throw new Error("Import MeshBuilder to populate this function");
     }
 }

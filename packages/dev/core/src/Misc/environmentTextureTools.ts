@@ -18,6 +18,7 @@ import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { Engine, WebGPUEngine } from "core/Engines";
 
 import "../Materials/Textures/baseTexture.polynomial";
+import { GetBlobBufferSource } from "../Buffers/bufferUtils";
 
 const DefaultEnvironmentTextureImageType = "image/png";
 const CurrentVersion = 2;
@@ -860,13 +861,14 @@ async function _UploadLevelsAsync(
         for (let face = 0; face < 6; face++) {
             // Constructs an image element from image data
             const bytes = imageData[i][face];
-            const blob = new Blob([bytes], { type: imageType });
+            const buffer = GetBlobBufferSource(bytes);
+            const blob = new Blob([buffer], { type: imageType });
             const url = URL.createObjectURL(blob);
             let promise: Promise<void>;
 
             if (engine._features.forceBitmapOverHTMLImageElement) {
                 // eslint-disable-next-line github/no-then
-                promise = engine.createImageBitmap(blob, { premultiplyAlpha: "none" }).then(async (img) => {
+                promise = engine.createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none" }).then(async (img) => {
                     return await _OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
                 });
             } else {

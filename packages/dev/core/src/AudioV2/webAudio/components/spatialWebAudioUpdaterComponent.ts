@@ -5,7 +5,10 @@ export class _SpatialWebAudioUpdaterComponent {
     private _autoUpdate = true;
     private _lastUpdateTime: number = 0;
 
-    /** @internal */
+    /**
+     * The minimum time in seconds between spatial audio updates. Defaults to `0`.
+     * @internal
+     */
     public minUpdateTime = 0;
 
     /** @internal */
@@ -25,7 +28,7 @@ export class _SpatialWebAudioUpdaterComponent {
 
             if (0 < this.minUpdateTime) {
                 const now = PrecisionDate.Now;
-                if (this._lastUpdateTime && now - this._lastUpdateTime < this.minUpdateTime) {
+                if (this._lastUpdateTime && now - this._lastUpdateTime < this.minUpdateTime * 1000) {
                     skipUpdate = true;
                 }
                 this._lastUpdateTime = now;

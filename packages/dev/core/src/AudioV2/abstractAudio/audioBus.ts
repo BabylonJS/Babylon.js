@@ -100,6 +100,9 @@ export abstract class AudioBus extends AbstractAudioBus {
         this._spatial?.dispose();
         this._spatial = null;
 
+        if (this._outBus) {
+            this._outBus.onDisposeObservable.removeCallback(this._onOutBusDisposed);
+        }
         this._outBus = null;
     }
 

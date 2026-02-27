@@ -16,6 +16,7 @@ var specular_roughness_anisotropy: f32 = 0.0;
 var specular_ior: f32 = 1.5;
 var alpha: f32 = 1.0;
 var geometry_tangent: vec2f = vec2f(1.0, 0.0);
+var geometry_thickness: f32 = 0.0;
 
 // Sample Base Layer properties from textures
 #ifdef BASE_WEIGHT
@@ -46,6 +47,10 @@ var geometry_tangent: vec2f = vec2f(1.0, 0.0);
     let opacityFromTexture: vec4f = textureSample(geometryOpacitySampler, geometryOpacitySamplerSampler, fragmentInputs.vGeometryOpacityUV + uvOffset);
 #endif
 
+#ifdef GEOMETRY_THICKNESS
+    let thicknessFromTexture: vec4f = textureSample(geometryThicknessSampler, geometryThicknessSamplerSampler, fragmentInputs.vGeometryThicknessUV + uvOffset);
+#endif
+
 #ifdef DECAL
     let decalFromTexture: vec4f = textureSample(decalSampler, decalSamplerSampler, fragmentInputs.vDecalUV + uvOffset);
 #endif
@@ -66,11 +71,11 @@ var geometry_tangent: vec2f = vec2f(1.0, 0.0);
     #endif
 #endif
 
-#if defined(ANISOTROPIC) || defined(FUZZ)
-    let noise = textureSample(blueNoiseSampler, blueNoiseSamplerSampler, fragmentInputs.position.xy / 256.0).xyz;
+#if defined(ANISOTROPIC) || defined(FUZZ) || defined(REFRACTED_BACKGROUND)
+    let noise = vec3f(2.0) * textureSample(blueNoiseSampler, blueNoiseSamplerSampler, fragmentInputs.position.xy / 256.0).xyz - vec3f(1.0);
 #endif
 
-#if defined(ROUGHNESSSTOREINMETALMAPGREEN) && defined(BASE_METALNESS)
+#if defined(SPECULAR_ROUGHNESS_FROM_METALNESS_TEXTURE_GREEN) && defined(BASE_METALNESS)
     let roughnessFromTexture: f32 = metallicFromTexture.g;
 #elif defined(SPECULAR_ROUGHNESS)
     let roughnessFromTexture: f32 = textureSample(specularRoughnessSampler, specularRoughnessSamplerSampler, fragmentInputs.vSpecularRoughnessUV + uvOffset).r;
@@ -94,6 +99,7 @@ specular_weight = uniforms.vReflectanceInfo.a;
 specular_ior = uniforms.vReflectanceInfo.z;
 specular_roughness_anisotropy = uniforms.vSpecularAnisotropy.b;
 geometry_tangent = uniforms.vSpecularAnisotropy.rg;
+geometry_thickness = uniforms.vGeometryThickness;
 
 // Apply texture values to base layer properties
 #ifdef BASE_COLOR
@@ -118,6 +124,15 @@ geometry_tangent = uniforms.vSpecularAnisotropy.rg;
     alpha *= uniforms.vGeometryOpacityInfos.y;
 #endif
 
+#ifdef GEOMETRY_THICKNESS
+    #ifdef GEOMETRY_THICKNESS_FROM_GREEN_CHANNEL
+        geometry_thickness *= thicknessFromTexture.g;
+    #else
+        geometry_thickness *= thicknessFromTexture.r;
+    #endif
+    geometry_thickness *= uniforms.vGeometryThicknessInfos.y;
+#endif
+
 #ifdef ALPHATEST
     #if DEBUGMODE != 88
         if (alpha < ALPHATESTVALUE)
@@ -131,7 +146,7 @@ geometry_tangent = uniforms.vSpecularAnisotropy.rg;
 #endif
 
 #ifdef BASE_METALNESS
-    #ifdef METALLNESSSTOREINMETALMAPBLUE
+    #ifdef BASE_METALNESS_FROM_METALNESS_TEXTURE_BLUE
         base_metalness *= metallicFromTexture.b;
     #else
         base_metalness *= metallicFromTexture.r;
@@ -156,7 +171,7 @@ geometry_tangent = uniforms.vSpecularAnisotropy.rg;
     specular_weight *= specularWeightFromTexture;
 #endif
 
-#if defined(SPECULAR_ROUGHNESS) || (defined(ROUGHNESSSTOREINMETALMAPGREEN) && defined(BASE_METALNESS))
+#if defined(SPECULAR_ROUGHNESS) || (defined(SPECULAR_ROUGHNESS_FROM_METALNESS_TEXTURE_GREEN) && defined(BASE_METALNESS))
     specular_roughness *= roughnessFromTexture;
 #endif
 

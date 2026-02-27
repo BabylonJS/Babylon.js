@@ -21,7 +21,7 @@ import type { DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
-import { BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 import type { Vector2 } from "../Maths/math.vector";
@@ -106,6 +106,11 @@ export interface IThinEffectLayerOptions {
     mainTextureType?: number;
 
     /**
+     * The format of the main texture. Default: TEXTUREFORMAT_RGBA
+     */
+    mainTextureFormat?: number;
+
+    /**
      * Alpha blending mode used to apply the blur. Default depends of the implementation. Default: ALPHA_COMBINE
      */
     alphaBlendingMode?: number;
@@ -128,7 +133,7 @@ export class ThinEffectLayer {
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
     private _mergeDrawWrapper: DrawWrapper[];
-    private _dontCheckIfReady = false;
+    protected _dontCheckIfReady = false;
 
     protected _scene: Scene;
     protected _engine: AbstractEngine;
@@ -384,6 +389,7 @@ export class ThinEffectLayer {
             mainTextureRatio: 0.5,
             mainTextureFixedSize: 0,
             mainTextureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            mainTextureFormat: Constants.TEXTUREFORMAT_RGBA,
             alphaBlendingMode: Constants.ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
@@ -667,6 +673,15 @@ export class ThinEffectLayer {
             }
         }
 
+        // Baked vertex animations
+        const bvaManager = mesh.bakedVertexAnimationManager;
+        if (bvaManager && bvaManager.isEnabled) {
+            defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
+            if (useInstances) {
+                attribs.push("bakedVertexAnimationSettingsInstanced");
+            }
+        }
+
         // ClipPlanes
         PrepareStringDefinesForClipPlanes(material, this._scene, defines);
 
@@ -691,6 +706,10 @@ export class ThinEffectLayer {
                 "opacityIntensity",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",
+                "bakedVertexAnimationSettings",
+                "bakedVertexAnimationTextureSizeInverted",
+                "bakedVertexAnimationTime",
+                "bakedVertexAnimationTexture",
                 "glowIntensity",
             ];
 
@@ -701,7 +720,7 @@ export class ThinEffectLayer {
                     "glowMapGeneration",
                     attribs,
                     uniforms,
-                    ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"],
+                    ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"],
                     join,
                     fallbacks,
                     undefined,
@@ -887,7 +906,6 @@ export class ThinEffectLayer {
         }
 
         const reverse = sideOrientation === Material.ClockWiseSideOrientation;
-        engine.setState(material.backFaceCulling, material.zOffset, undefined, reverse, material.cullBackFaces, undefined, material.zOffsetUnits);
 
         // Managing instances
         const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
@@ -925,6 +943,25 @@ export class ThinEffectLayer {
             const effect = drawWrapper.effect!;
 
             engine.enableEffect(drawWrapper);
+            engine.setState(material.backFaceCulling, material.zOffset, undefined, reverse, material.cullBackFaces, material.stencil, material.zOffsetUnits);
+
+            const currentDepthWrite = engine.getDepthWrite();
+            const currentColorWrite = engine.getColorWrite();
+            const currentDepthFunction = engine.getDepthFunction() || 0;
+
+            if (material.disableDepthWrite) {
+                engine.setDepthWrite(false);
+            } else if (material.forceDepthWrite) {
+                engine.setDepthWrite(true);
+            }
+            if (material.disableColorWrite) {
+                engine.setColorWrite(false);
+            }
+
+            if (material.depthFunction !== 0) {
+                engine.setDepthFunction(material.depthFunction);
+            }
+
             if (!hardwareInstancedRendering) {
                 renderingMesh._bind(subMesh, effect, material.fillMode);
             }
@@ -976,26 +1013,18 @@ export class ThinEffectLayer {
                 }
 
                 // Bones
-                if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-                    const skeleton = renderingMesh.skeleton;
-
-                    if (skeleton.isUsingTextureForMatrices) {
-                        const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
-                        if (!boneTexture) {
-                            return;
-                        }
-
-                        effect.setTexture("boneSampler", boneTexture);
-                        effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
-                    } else {
-                        effect.setMatrices("mBones", skeleton.getTransformMatrices(renderingMesh));
-                    }
-                }
+                BindBonesParameters(renderingMesh, effect);
 
                 // Morph targets
                 BindMorphTargetParameters(renderingMesh, effect);
                 if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
                     renderingMesh.morphTargetManager._bind(effect);
+                }
+
+                // Baked vertex animations
+                const bvaManager = subMesh.getMesh().bakedVertexAnimationManager;
+                if (bvaManager && bvaManager.isEnabled) {
+                    bvaManager.bind(effect, hardwareInstancedRendering);
                 }
 
                 // Alpha mode
@@ -1014,6 +1043,16 @@ export class ThinEffectLayer {
             renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
                 effect.setMatrix("world", world)
             );
+
+            if (material.disableDepthWrite || material.forceDepthWrite) {
+                engine.setDepthWrite(currentDepthWrite);
+            }
+            if (material.disableColorWrite) {
+                engine.setColorWrite(currentColorWrite);
+            }
+            if (material.depthFunction !== 0) {
+                engine.setDepthFunction(currentDepthFunction);
+            }
         } else {
             // Need to reset refresh rate of the main map
             this._objectRenderer.resetRefreshCounter();

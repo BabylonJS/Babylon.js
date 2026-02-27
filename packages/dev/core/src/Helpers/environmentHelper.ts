@@ -397,6 +397,10 @@ export class EnvironmentHelper {
         }
 
         if (this._groundMirror && !newOptions.enableGroundMirror) {
+            const index = this._scene.customRenderTargets.indexOf(this._groundMirror);
+            if (index !== -1) {
+                this._scene.customRenderTargets.splice(index, 1);
+            }
             this._groundMirror.dispose();
             this._groundMirror = null;
         }
@@ -620,6 +624,10 @@ export class EnvironmentHelper {
                         this._groundMirror.renderList.push(mesh);
                     }
                 }
+            }
+
+            if (this._scene.frameGraph) {
+                this._scene.customRenderTargets.push(this._groundMirror);
             }
         }
 

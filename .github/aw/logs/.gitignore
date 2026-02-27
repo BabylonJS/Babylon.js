@@ -1,0 +1,5 @@
+# Ignore all downloaded workflow logs
+*
+
+# But keep the .gitignore file itself
+!.gitignore

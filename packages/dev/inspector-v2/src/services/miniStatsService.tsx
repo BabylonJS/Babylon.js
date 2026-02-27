@@ -6,6 +6,8 @@ import { Badge, makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback } from "react";
 
 import { useObservableState } from "../hooks/observableHooks";
+import { usePollingObservable } from "../hooks/pollingHooks";
+import { DefaultToolbarItemOrder } from "./defaultToolbarMetadata";
 import { SceneContextIdentity } from "./sceneContext";
 import { ShellServiceIdentity } from "./shellService";
 
@@ -24,7 +26,8 @@ export const MiniStatsServiceDefinition: ServiceDefinition<[], [ISceneContext, I
             key: "Mini Stats",
             verticalLocation: "bottom",
             horizontalLocation: "right",
-            suppressTeachingMoment: true,
+            order: DefaultToolbarItemOrder.FrameRate,
+            teachingMoment: false,
             component: () => {
                 const classes = useStyles();
 
@@ -33,9 +36,10 @@ export const MiniStatsServiceDefinition: ServiceDefinition<[], [ISceneContext, I
                     sceneContext.currentSceneObservable
                 );
                 const engine = scene?.getEngine();
+                const pollingObservable = usePollingObservable(250);
                 const fps = useObservableState(
                     useCallback(() => (engine ? Math.round(engine.getFps()) : null), [engine]),
-                    engine?.onBeginFrameObservable
+                    pollingObservable
                 );
 
                 return fps != null ? <Badge appearance="outline" className={classes.badge}>{`${fps} fps`}</Badge> : null;

@@ -136,6 +136,10 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         return this._outputs[5];
     }
 
+    /**
+     * Initialize the block
+     * @param state - the build state
+     */
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("morphTargetInfluences");
 
@@ -166,6 +170,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
+    /**
+     * Auto configure the block based on the material
+     * @param material - the node material
+     * @param additionalFilteringInfo - additional filtering info
+     */
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.position.isConnected) {
             let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position" && additionalFilteringInfo(b));
@@ -223,6 +232,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Prepare the list of defines
+     * @param defines - the list of defines
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh
+     */
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial, mesh?: AbstractMesh) {
         if (!mesh) {
             return;
@@ -243,6 +258,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         PrepareDefinesForMorphTargets(mesh, defines);
     }
 
+    /**
+     * Bind data to effect
+     * @param effect - the effect to bind to
+     * @param nodeMaterial - the node material
+     * @param mesh - the mesh
+     */
     public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (mesh && mesh.morphTargetManager && mesh.morphTargetManager.numInfluencers > 0) {
             BindMorphTargetParameters(mesh, effect);
@@ -253,6 +274,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         }
     }
 
+    /**
+     * Replace repeatable content
+     * @param vertexShaderState - the vertex shader build state
+     * @param defines - the list of defines
+     * @param mesh - the mesh
+     */
     public override replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, defines: NodeMaterialDefines, mesh?: AbstractMesh) {
         if (!mesh) {
             return;

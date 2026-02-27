@@ -30,6 +30,7 @@ export class RawTexture2DArray extends Texture {
      * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
      * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_BYTE, Engine.TEXTURETYPE_FLOAT...)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param mipLevelCount defines the number of mip levels to allocate for the texture
      */
     constructor(
         data: Nullable<ArrayBufferView>,
@@ -43,11 +44,14 @@ export class RawTexture2DArray extends Texture {
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE,
-        creationFlags?: number
+        creationFlags?: number,
+        mipLevelCount?: number
     ) {
         super(null, scene, !generateMipMaps, invertY);
 
-        this._texture = scene.getEngine().createRawTexture2DArray(data, width, height, depth, format, generateMipMaps, invertY, samplingMode, null, textureType, creationFlags);
+        this._texture = scene
+            .getEngine()
+            .createRawTexture2DArray(data, width, height, depth, format, generateMipMaps, invertY, samplingMode, null, textureType, creationFlags ?? 0, mipLevelCount);
 
         this._depth = depth;
         this.is2DArray = true;
@@ -58,10 +62,19 @@ export class RawTexture2DArray extends Texture {
      * @param data defines the data to store in the texture
      */
     public update(data: ArrayBufferView): void {
+        this.updateMipLevel(data, 0);
+    }
+
+    /**
+     * Updates a specific mip level of the texture.
+     * @param data The new data for the mip level
+     * @param mipLevel The mip level to update (0 is the base level)
+     */
+    public updateMipLevel(data: ArrayBufferView, mipLevel: number): void {
         if (!this._texture) {
             return;
         }
-        this._getEngine()!.updateRawTexture2DArray(this._texture, data, this._texture.format, this._texture.invertY, null, this._texture.type);
+        this._getEngine()!.updateRawTexture2DArray(this._texture, data, this._texture.format, this._texture.invertY, null, this._texture.type, mipLevel);
     }
 
     /**

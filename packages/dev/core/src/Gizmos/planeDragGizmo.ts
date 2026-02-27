@@ -149,15 +149,22 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
                 // if the node has parent, the local transform properties (position, rotation, scale)
                 // will be recomputed in _matrixChanged function
 
+                // Transform delta by additionalTransformNode inverse world matrix if present
+                let delta = event.delta;
+                if (this._additionalTransformNode) {
+                    this._additionalTransformNode.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
+                    Vector3.TransformNormalToRef(event.delta, TmpVectors.Matrix[0], TmpVectors.Vector3[1]);
+                    delta = TmpVectors.Vector3[1];
+                }
                 // Snapping logic
                 if (this.snapDistance == 0) {
                     this.attachedNode.getWorldMatrix().getTranslationToRef(TmpVectors.Vector3[0]);
-                    TmpVectors.Vector3[0].addToRef(event.delta, TmpVectors.Vector3[0]);
+                    TmpVectors.Vector3[0].addToRef(delta, TmpVectors.Vector3[0]);
                     if (this.dragBehavior.validateDrag(TmpVectors.Vector3[0])) {
-                        this.attachedNode.getWorldMatrix().addTranslationFromFloats(event.delta.x, event.delta.y, event.delta.z);
+                        this.attachedNode.getWorldMatrix().addTranslationFromFloats(delta.x, delta.y, delta.z);
                     }
                 } else {
-                    currentSnapDragDistance.addInPlace(event.delta);
+                    currentSnapDragDistance.addInPlace(delta);
                     tmpVector2.set(0, 0, 0);
                     const currentSnapDragDistanceArray = currentSnapDragDistance.asArray();
                     for (let axis = 0; axis < 3; axis++) {

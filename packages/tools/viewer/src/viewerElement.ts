@@ -1265,6 +1265,14 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         updateViewer: (viewerDetails: NonNullable<this["viewerDetails"]>) => void,
         updateElement: (viewerDetails: NonNullable<this["viewerDetails"]>) => void
     ) {
+        const tryUpdateViewer = (viewerDetails: NonNullable<this["viewerDetails"]>) => {
+            try {
+                updateViewer(viewerDetails);
+            } catch (error) {
+                Logger.Error(error);
+            }
+        };
+
         return {
             property,
             // Called each time a Viewer instance is created.
@@ -1272,12 +1280,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                 getObservable(viewerDetails).add(() => {
                     updateElement(viewerDetails);
                 });
-                updateViewer(viewerDetails);
+                tryUpdateViewer(viewerDetails);
             },
             // Called when the HTML3DElement property should be propagated to the Viewer.
             updateViewer: () => {
                 if (this._viewerDetails) {
-                    updateViewer(this._viewerDetails);
+                    tryUpdateViewer(this._viewerDetails);
                 }
             },
         };

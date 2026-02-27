@@ -731,6 +731,10 @@ export class Sound {
                 TmpPlayOptions.duration = length || 0;
                 TmpPlayOptions.startOffset = offset !== undefined ? offset || this._optionsV2.startOffset! : this._optionsV2.startOffset!;
                 TmpPlayOptions.waitTime = time || 0;
+                TmpPlayOptions.loop = undefined;
+                TmpPlayOptions.loopStart = undefined;
+                TmpPlayOptions.loopEnd = undefined;
+                TmpPlayOptions.volume = undefined;
 
                 if (audioEngine?.unlocked) {
                     this._soundV2.play(TmpPlayOptions);

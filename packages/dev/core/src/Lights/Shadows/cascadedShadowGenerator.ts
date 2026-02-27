@@ -734,7 +734,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._disposeSceneUBOs();
         if (this._sceneUBOs) {
             for (let i = 0; i < this._numCascades; ++i) {
-                this._sceneUBOs.push(this._scene.createSceneUniformBuffer(`Scene for CSM Shadow Generator (light "${this._light.name}" cascade #${i})`));
+                this._sceneUBOs.push(this._scene.createSceneUniformBuffer(`Scene for CSM Shadow Generator (light "${this._light.name}" cascade #${i})`, { forceMono: true }));
             }
         }
     }
@@ -901,7 +901,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._shadowMap.onBeforeBindObservable.add(() => {
             this._currentSceneUBO = this._scene.getSceneUniformBuffer();
             if (engine._enableGPUDebugMarkers) {
-                engine.restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer(true);
                 engine._debugPushGroup?.(`Cascaded shadow map generation for pass id ${engine.currentRenderPassId}`);
             }
             if (this._breaksAreDirty) {

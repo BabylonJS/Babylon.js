@@ -483,6 +483,7 @@ export class Animation {
                     outTangent: key.outTangent,
                     interpolation: key.interpolation,
                     lockedTangent: key.lockedTangent,
+                    easingFunction: key.easingFunction,
                 };
                 if (clippedKeys) {
                     if (startFrame === Number.MAX_VALUE) {
@@ -1189,16 +1190,18 @@ export class Animation {
 
     /**
      * Makes a copy of the animation
+     * @param cloneKeys Whether to clone the keys or not (default is false, so the keys are not cloned). Note that the key array itself is always cloned (that is, a new array is created),
+     *  but the individual keys inside the array are only cloned if this parameter is true.
      * @returns Cloned animation
      */
-    public clone(): Animation {
+    public clone(cloneKeys = false): Animation {
         const clone = new Animation(this.name, this.targetPropertyPath.join("."), this.framePerSecond, this.dataType, this.loopMode);
 
         clone.enableBlending = this.enableBlending;
         clone.blendingSpeed = this.blendingSpeed;
 
         if (this._keys) {
-            clone.setKeys(this._keys);
+            clone.setKeys(this._keys, false, cloneKeys);
         }
 
         if (this._ranges) {
@@ -1219,9 +1222,29 @@ export class Animation {
      * Sets the key frames of the animation
      * @param values The animation key frames to set
      * @param dontClone Whether to clone the keys or not (default is false, so the array of keys is cloned)
+     * @param cloneKeys Whether to clone the individual keys inside the array or not (default is false). If true, each key object inside the array will be cloned, and the fields
+     *   that have a clone() method will be cloned by calling that method.
      */
-    public setKeys(values: Array<IAnimationKey>, dontClone = false): void {
-        this._keys = !dontClone ? values.slice(0) : values;
+    public setKeys(values: Array<IAnimationKey>, dontClone = false, cloneKeys = false): void {
+        if (!dontClone) {
+            this._keys = values.slice(0);
+            if (cloneKeys) {
+                for (let i = 0; i < this._keys.length; i++) {
+                    const key = this._keys[i];
+                    this._keys[i] = {
+                        frame: key.frame,
+                        value: key.value.clone ? key.value.clone() : key.value,
+                        inTangent: key.inTangent && key.inTangent.clone ? key.inTangent.clone() : key.inTangent,
+                        outTangent: key.outTangent && key.outTangent.clone ? key.outTangent.clone() : key.outTangent,
+                        interpolation: key.interpolation,
+                        lockedTangent: key.lockedTangent,
+                        easingFunction: key.easingFunction,
+                    };
+                }
+            }
+        } else {
+            this._keys = values;
+        }
     }
 
     /**

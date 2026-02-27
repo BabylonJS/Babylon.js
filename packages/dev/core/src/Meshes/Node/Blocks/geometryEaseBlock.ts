@@ -319,6 +319,7 @@ export class GeometryEaseBlock extends NodeGeometryBlock {
         return this;
     }
 
+    /** @internal */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -327,6 +328,7 @@ export class GeometryEaseBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
+    /** @internal */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
