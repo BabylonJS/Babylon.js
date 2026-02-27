@@ -239,7 +239,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         // Relay drag events and set update scale
         const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo];
         for (const gizmo of gizmos) {
-            //must set updateScale on each gizmo, as setting it on root RotationGizmo doesnt prevent individual gizmos from updating
+            //must set updateScale on each gizmo, as setting it on root RotationGizmo doesn't prevent individual gizmos from updating
             //set it on startup since options are only applied once at construction time
             if (options && options.updateScale != undefined) {
                 gizmo.updateScale = options.updateScale;

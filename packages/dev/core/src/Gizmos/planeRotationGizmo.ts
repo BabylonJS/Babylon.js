@@ -34,7 +34,7 @@ export interface IPlaneRotationGizmo extends IGizmo {
     sensitivity: number;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the change in distance
+     * * snapDistance is the change in angle
      */
     onSnapObservable: Observable<{ snapDistance: number }>;
     /** Accumulated relative angle value for rotation on the axis. */
