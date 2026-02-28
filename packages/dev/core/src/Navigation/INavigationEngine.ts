@@ -154,7 +154,7 @@ export interface INavigationEnginePlugin {
 
     /**
      * If delta time in navigation tick update is greater than the time step
-     * a number of sub iterations are done. If more iterations are need to reach deltatime
+     * a number of sub iterations are done. If more iterations are needed to reach deltatime
      * they will be discarded.
      * A value of 0 will set to no maximum and update will use as many substeps as needed
      * @param newStepCount the maximum number of iterations
@@ -482,7 +482,7 @@ export interface INavMeshParameters {
     detailSampleMaxError: number;
 
     /**
-     * If using obstacles, the navmesh must be subdivided internaly by tiles.
+     * If using obstacles, the navmesh must be subdivided internally by tiles.
      * This member defines the tile cube side length in world units.
      * If no obstacles are needed, leave it undefined or 0.
      */

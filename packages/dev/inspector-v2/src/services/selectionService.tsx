@@ -1,6 +1,7 @@
 import type { IDisposable, IReadonlyObservable, Nullable } from "core/index";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 import type { ISettingsService } from "./panes/settingsService";
+import type { ISceneContext } from "./sceneContext";
 import type { ISettingsStore, SettingDescriptor } from "./settingsStore";
 import type { IShellService } from "./shellService";
 
@@ -9,6 +10,7 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { useSetting } from "../hooks/settingsHooks";
 import { InterceptFunction } from "../instrumentation/functionInstrumentation";
 import { SettingsServiceIdentity } from "./panes/settingsService";
+import { SceneContextIdentity } from "./sceneContext";
 import { SettingsStoreIdentity } from "./settingsStore";
 import { ShellServiceIdentity } from "./shellService";
 
@@ -34,11 +36,11 @@ const ShowPropertiesOnSelectionSettingDescriptor: SettingDescriptor<boolean> = {
     defaultValue: true,
 };
 
-export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], [IShellService, ISettingsStore, ISettingsService]> = {
+export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], [IShellService, ISettingsStore, ISettingsService, ISceneContext]> = {
     friendlyName: "Selection Service",
     produces: [SelectionServiceIdentity],
-    consumes: [ShellServiceIdentity, SettingsStoreIdentity, SettingsServiceIdentity],
-    factory: (shellService, settingsStore, settingsService) => {
+    consumes: [ShellServiceIdentity, SettingsStoreIdentity, SettingsServiceIdentity, SceneContextIdentity],
+    factory: (shellService, settingsStore, settingsService, sceneContext) => {
         settingsService.addSectionContent({
             key: "Selection Service Settings",
             section: "UI",
@@ -86,6 +88,9 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
                 }
             }
         };
+
+        // Set the scene as the default selected entity.
+        setSelectedItem(sceneContext.currentScene);
 
         return {
             get selectedEntity() {

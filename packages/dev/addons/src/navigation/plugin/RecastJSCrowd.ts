@@ -89,11 +89,11 @@ export class RecastJSCrowd implements ICrowd {
      */
     public onReachTargetObservable = new Observable<{
         /**
-         *
+         * The index of the agent that reached its target
          */
         agentIndex: number;
         /**
-         *
+         * The destination that the agent reached
          */
         destination: Vector3;
     }>();

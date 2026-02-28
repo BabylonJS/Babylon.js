@@ -19,6 +19,7 @@ import { Constants } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
+import "../../../Rendering/geometryBufferRendererSceneComponent";
 import { ThinSSAO2RenderingPipeline } from "./thinSSAO2RenderingPipeline";
 import { ThinSSAO2PostProcess } from "../../thinSSAO2PostProcess";
 import type { ISize } from "../../../Maths/math.size";
@@ -291,6 +292,14 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
 
     public set useViewportInCombineStage(b: boolean) {
         this._thinSSAORenderingPipeline.useViewportInCombineStage = b;
+    }
+
+    /**
+     * Checks if all the post processes in the pipeline are ready.
+     * @returns True if all the post processes in the pipeline are ready
+     */
+    public isReady() {
+        return this._thinSSAORenderingPipeline.isReady();
     }
 
     private _scene: Scene;

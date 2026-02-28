@@ -55,6 +55,24 @@ export class ParticleNumberMathBlock extends NodeParticleBlock {
         this.right.acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Int);
         this.right.acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Float);
 
+        const excludedConnectionPointTypes = [
+            NodeParticleBlockConnectionPointTypes.Vector2,
+            NodeParticleBlockConnectionPointTypes.Vector3,
+            NodeParticleBlockConnectionPointTypes.Matrix,
+            NodeParticleBlockConnectionPointTypes.Particle,
+            NodeParticleBlockConnectionPointTypes.Texture,
+            NodeParticleBlockConnectionPointTypes.Color4,
+            NodeParticleBlockConnectionPointTypes.FloatGradient,
+            NodeParticleBlockConnectionPointTypes.Vector2Gradient,
+            NodeParticleBlockConnectionPointTypes.Vector3Gradient,
+            NodeParticleBlockConnectionPointTypes.Color4Gradient,
+            NodeParticleBlockConnectionPointTypes.System,
+            NodeParticleBlockConnectionPointTypes.Undefined,
+        ] as const;
+
+        this.left.excludedConnectionPointTypes.push(...excludedConnectionPointTypes);
+        this.right.excludedConnectionPointTypes.push(...excludedConnectionPointTypes);
+
         this._linkConnectionTypes(0, 1);
 
         this._connectionObservers = [

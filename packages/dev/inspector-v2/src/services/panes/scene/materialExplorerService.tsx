@@ -3,6 +3,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { EditRegular } from "@fluentui/react-icons";
 
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
@@ -43,7 +44,7 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
                     },
                 };
             },
-            entityIcon: () => <MaterialIcon />,
+            entityIcon: () => <MaterialIcon color={tokens.colorPaletteMarigoldForeground2} />,
             getEntityAddedObservables: () => [scene.onNewMaterialAddedObservable],
             getEntityRemovedObservables: () => [scene.onMaterialRemovedObservable],
         });

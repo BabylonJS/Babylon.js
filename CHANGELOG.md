@@ -1,5 +1,54 @@
 # Changelog
 
+## 8.33.0
+
+### Core
+
+- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
+
+### Inspector
+
+- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
+
+### Loaders
+
+- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
+
+### Serializers
+
+- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
+
+## 8.32.3
+
+### Core
+
+- Store FloatingOrigin in local var vs copying to temp vect - by [georginahalpern](https://github.com/georginahalpern) ([#17332](https://github.com/BabylonJS/Babylon.js/pull/17332))
+- Gaussian Splatting Shadows - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17316](https://github.com/BabylonJS/Babylon.js/pull/17316))
+- Reduce frequency of accessing floatingOriginOffset to maximize perf - by [georginahalpern](https://github.com/georginahalpern) ([#17331](https://github.com/BabylonJS/Babylon.js/pull/17331))
+- FrameGraph: Fix TAA - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17330](https://github.com/BabylonJS/Babylon.js/pull/17330))
+- Add support for instances in FloatingOriginMode - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#17328](https://github.com/BabylonJS/Babylon.js/pull/17328))
+- FrameGraph: Implement TAA as a post process - by [Popov72](https://github.com/Popov72) ([#17326](https://github.com/BabylonJS/Babylon.js/pull/17326))
+- Minor typo - by [VicenteCartas](https://github.com/VicenteCartas) ([#17327](https://github.com/BabylonJS/Babylon.js/pull/17327))
+- Morph target manager: Optimize calls to _syncActiveTargets - by [Popov72](https://github.com/Popov72) ([#17325](https://github.com/BabylonJS/Babylon.js/pull/17325))
+- Add a new ParseFile to stay consistent - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#17321](https://github.com/BabylonJS/Babylon.js/pull/17321))
+
+### GUI
+
+- Update baseSlider.ts to send target/currentTarget to onValueChangedObservable - [_New Feature_] by [HiGregSmith](https://github.com/HiGregSmith) ([#17323](https://github.com/BabylonJS/Babylon.js/pull/17323))
+- Update colorpicker.ts onValueChanged enabled second parameter, event/state - [_New Feature_] by [HiGregSmith](https://github.com/HiGregSmith) ([#17322](https://github.com/BabylonJS/Babylon.js/pull/17322))
+
+### Materials
+
+- FrameGraph: Implement TAA as a post process - by [Popov72](https://github.com/Popov72) ([#17326](https://github.com/BabylonJS/Babylon.js/pull/17326))
+
+### Playground
+
+- Playground Editor V2: Multi-file, ES modules, NPM Support + Build output hashing - by [knervous](https://github.com/knervous) ([#17216](https://github.com/BabylonJS/Babylon.js/pull/17216))
+
+### Viewer
+
+- Viewer: Make keyboard zoom sensitivity consistent across model sizes/scales - by [ryantrem](https://github.com/ryantrem) ([#17319](https://github.com/BabylonJS/Babylon.js/pull/17319))
+
 ## 8.32.2
 
 ### Core
@@ -5363,6 +5412,52 @@
 
 - Mesh extrusion: Add an optional scaleVectorFunction parameter to ExtrudeShapeCustom - by [Popov72](https://github.com/Popov72) ([#17752](https://github.com/BabylonJS/Babylon.js/pull/17752))
 
+## 8.53.0
+
+### Core
+
+- FrameGraph: process the custom render targets defined at scene level - by [Popov72](https://github.com/Popov72) ([#17970](https://github.com/BabylonJS/Babylon.js/pull/17970))
+- Simplify IsLightSupported method by removing redundant else keywords - by [github-actions[bot]](https://github.com/apps/github-actions) ([#17969](https://github.com/BabylonJS/Babylon.js/pull/17969))
+- Fix clusteredLighting bug when setting depthSlices to a value below initial value - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17967](https://github.com/BabylonJS/Babylon.js/pull/17967))
+- Removing fresnel block - by [VicenteCartas](https://github.com/VicenteCartas) ([#17965](https://github.com/BabylonJS/Babylon.js/pull/17965))
+- Inspector v2: Fix race conditions in back compat for entity selection and property pane highlighting - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17963](https://github.com/BabylonJS/Babylon.js/pull/17963))
+- Fix files that rely on an extension that they do not import - by [AmoebaChant](https://github.com/AmoebaChant) ([#17962](https://github.com/BabylonJS/Babylon.js/pull/17962))
+- Rendering Pipelines: add a isReady method to SSR and SSAO2 pipelines - by [Popov72](https://github.com/Popov72) ([#17958](https://github.com/BabylonJS/Babylon.js/pull/17958))
+- Fix keyboard input DPR bug and expose overrideable up vector calc - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17956](https://github.com/BabylonJS/Babylon.js/pull/17956))
+- Highlight Layer: Ensure that the highlight layer works well with custom use of the stencil buffer - by [Popov72](https://github.com/Popov72) ([#17934](https://github.com/BabylonJS/Babylon.js/pull/17934))
+- NullEngine: createTexture: added buffer to internal texture - by [bkargerooom](https://github.com/bkargerooom) ([#17952](https://github.com/BabylonJS/Babylon.js/pull/17952))
+- Removing Ramp/Remap - by [VicenteCartas](https://github.com/VicenteCartas) ([#17943](https://github.com/BabylonJS/Babylon.js/pull/17943))
+- Fixing number math block - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17948](https://github.com/BabylonJS/Babylon.js/pull/17948))
+- WebGPU: Fix crash when enabling reflection fresnel and falloff in the background material - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17950](https://github.com/BabylonJS/Babylon.js/pull/17950))
+- WebGPU: Fix wrong buffer capacity - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17949](https://github.com/BabylonJS/Babylon.js/pull/17949))
+- Fix some issues in the audio V2 code - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#17951](https://github.com/BabylonJS/Babylon.js/pull/17951))
+- Viewer: Shadow bug fixes - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17946](https://github.com/BabylonJS/Babylon.js/pull/17946))
+
+### Playground
+
+- Phantom files in some scenarios - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17966](https://github.com/BabylonJS/Babylon.js/pull/17966))
+
+### Viewer
+
+- Viewer: Fix async timing bugs with SSAO - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17971](https://github.com/BabylonJS/Babylon.js/pull/17971))
+- Viewer: Shadow bug fixes - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17946](https://github.com/BabylonJS/Babylon.js/pull/17946))
+
+## 8.52.1
+
+### Core
+
+- Fixing bug deserializing vectors for particles - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17942](https://github.com/BabylonJS/Babylon.js/pull/17942))
+- WebGPU: Fix crash when using SSAO with materials using needDepthPrePass - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17939](https://github.com/BabylonJS/Babylon.js/pull/17939))
+- Fix discrepancy between gpu and cpu particles - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#17937](https://github.com/BabylonJS/Babylon.js/pull/17937))
+- Animation Retargeting: add a new fixGroundReferenceDynamicRefNode option - by [Popov72](https://github.com/Popov72) ([#17936](https://github.com/BabylonJS/Babylon.js/pull/17936))
+- Thin instances: Simplify use of thinInstancePartialBufferUpdate - by [Popov72](https://github.com/Popov72) ([#17935](https://github.com/BabylonJS/Babylon.js/pull/17935))
+- Standard Material: Fix crash when enabling emissive as illumination in WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17938](https://github.com/BabylonJS/Babylon.js/pull/17938))
+- Animation retargeting: support retargeting bones not linked to transform nodes - by [Popov72](https://github.com/Popov72) ([#17926](https://github.com/BabylonJS/Babylon.js/pull/17926))
+- Shader compilation: Fix wrong shader processor state when an effect is compiled - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17930](https://github.com/BabylonJS/Babylon.js/pull/17930))
+
+### Loaders
+
+
 ## 8.52.0
 
 ### Core
@@ -6205,55 +6300,6 @@
 ### Playground
 
 - Playground: Fix tab handling regression from Monaco update - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17337](https://github.com/BabylonJS/Babylon.js/pull/17337))
-
-## 8.33.0
-
-### Core
-
-- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
-
-### Inspector
-
-- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
-
-### Loaders
-
-- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
-
-### Serializers
-
-- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
-
-## 8.32.3
-
-### Core
-
-- Store FloatingOrigin in local var vs copying to temp vect - by [georginahalpern](https://github.com/georginahalpern) ([#17332](https://github.com/BabylonJS/Babylon.js/pull/17332))
-- Gaussian Splatting Shadows - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17316](https://github.com/BabylonJS/Babylon.js/pull/17316))
-- Reduce frequency of accessing floatingOriginOffset to maximize perf - by [georginahalpern](https://github.com/georginahalpern) ([#17331](https://github.com/BabylonJS/Babylon.js/pull/17331))
-- FrameGraph: Fix TAA - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17330](https://github.com/BabylonJS/Babylon.js/pull/17330))
-- Add support for instances in FloatingOriginMode - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#17328](https://github.com/BabylonJS/Babylon.js/pull/17328))
-- FrameGraph: Implement TAA as a post process - by [Popov72](https://github.com/Popov72) ([#17326](https://github.com/BabylonJS/Babylon.js/pull/17326))
-- Minor typo - by [VicenteCartas](https://github.com/VicenteCartas) ([#17327](https://github.com/BabylonJS/Babylon.js/pull/17327))
-- Morph target manager: Optimize calls to _syncActiveTargets - by [Popov72](https://github.com/Popov72) ([#17325](https://github.com/BabylonJS/Babylon.js/pull/17325))
-- Add a new ParseFile to stay consistent - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#17321](https://github.com/BabylonJS/Babylon.js/pull/17321))
-
-### GUI
-
-- Update baseSlider.ts to send target/currentTarget to onValueChangedObservable - [_New Feature_] by [HiGregSmith](https://github.com/HiGregSmith) ([#17323](https://github.com/BabylonJS/Babylon.js/pull/17323))
-- Update colorpicker.ts onValueChanged enabled second parameter, event/state - [_New Feature_] by [HiGregSmith](https://github.com/HiGregSmith) ([#17322](https://github.com/BabylonJS/Babylon.js/pull/17322))
-
-### Materials
-
-- FrameGraph: Implement TAA as a post process - by [Popov72](https://github.com/Popov72) ([#17326](https://github.com/BabylonJS/Babylon.js/pull/17326))
-
-### Playground
-
-- Playground Editor V2: Multi-file, ES modules, NPM Support + Build output hashing - by [knervous](https://github.com/knervous) ([#17216](https://github.com/BabylonJS/Babylon.js/pull/17216))
-
-### Viewer
-
-- Viewer: Make keyboard zoom sensitivity consistent across model sizes/scales - by [ryantrem](https://github.com/ryantrem) ([#17319](https://github.com/BabylonJS/Babylon.js/pull/17319))
 
 ## 6.15.0
 

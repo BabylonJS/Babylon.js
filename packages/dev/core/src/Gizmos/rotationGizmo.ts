@@ -239,8 +239,8 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         // Relay drag events and set update scale
         const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo];
         for (const gizmo of gizmos) {
-            //must set updateScale on each gizmo, as setting it on root RotationGizmo doesnt prevent individual gizmos from updating
-            //currently updateScale is a property with no getter/setter, so no good way to override behavior at runtime, so we will at least set it on startup
+            //must set updateScale on each gizmo, as setting it on root RotationGizmo doesn't prevent individual gizmos from updating
+            //set it on startup since options are only applied once at construction time
             if (options && options.updateScale != undefined) {
                 gizmo.updateScale = options.updateScale;
             }
@@ -354,7 +354,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     }
 
     /**
-     * posture that the gizmo will be display
+     * Orientation that the gizmo will be displayed with.
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
     public override get customRotationQuaternion(): Nullable<Quaternion> {

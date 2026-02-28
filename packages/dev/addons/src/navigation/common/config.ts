@@ -54,18 +54,18 @@ export function CreateTileCacheNavMeshConfig(parameters: INavMeshParametersV2): 
 }
 
 /**
- * Convert IAgentParameters to Recast CrowdAgentParams
- * @param config Agent parameters
- * @returns Recast crowd agent paramaters
+ * Convert INavMeshParametersV2 to SoloNavMeshGeneratorConfig by filtering out undefined values.
+ * @param config NavMesh parameters
+ * @returns Recast solo nav mesh generator config
  */
 export function ToSoloNavMeshGeneratorConfig(config: INavMeshParametersV2): Partial<SoloNavMeshGeneratorConfig> {
     return Object.fromEntries(Object.entries(config).filter(([_, v]) => v !== undefined));
 }
 
 /**
- * Convert IAgentParameters to Recast CrowdAgentParams
+ * Convert IAgentParametersV2 to Recast CrowdAgentParams by filtering out undefined values.
  * @param agentParams Agent parameters
- * @returns Recast crowd agent paramaters
+ * @returns Recast crowd agent parameters
  */
 export function ToCrowdAgentParams(agentParams: IAgentParametersV2): Partial<CrowdAgentParams> {
     return Object.fromEntries(Object.entries(agentParams).filter(([_, v]) => v !== undefined));

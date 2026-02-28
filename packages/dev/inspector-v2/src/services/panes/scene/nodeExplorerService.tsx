@@ -5,6 +5,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import {
     BorderNoneRegular,
     BorderOutsideRegular,
@@ -21,6 +22,7 @@ import {
 } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
+import { FindMainCamera, FindMainObjectRenderer } from "core/FrameGraph/frameGraphUtils";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -106,13 +108,13 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
             entityIcon: ({ entity: node }) =>
                 node instanceof AbstractMesh ? (
-                    <MeshIcon />
+                    <MeshIcon color={tokens.colorPaletteBlueForeground2} />
                 ) : node instanceof TransformNode ? (
-                    <MyLocationRegular />
+                    <MyLocationRegular color={tokens.colorPaletteBlueForeground2} />
                 ) : node instanceof Camera ? (
-                    <CameraRegular />
+                    <CameraRegular color={tokens.colorPaletteGreenForeground2} />
                 ) : node instanceof Light ? (
-                    <LightbulbRegular />
+                    <LightbulbRegular color={tokens.colorPaletteYellowForeground2} />
                 ) : (
                     <></>
                 ),
@@ -220,6 +222,8 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
         });
 
+        const getActiveCamera = () => (scene.frameGraph ? FindMainCamera(scene.frameGraph) : scene.activeCamera);
+
         const activeCameraCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown) => entity instanceof Camera,
             order: DefaultCommandsOrder.CameraActive,
@@ -233,15 +237,27 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 return {
                     type: "toggle",
                     displayName: "Activate and Attach Controls",
-                    icon: () => (scene.activeCamera === camera ? <VideoFilled /> : <VideoRegular />),
+                    icon: () => {
+                        return getActiveCamera() === camera ? <VideoFilled /> : <VideoRegular />;
+                    },
                     get isEnabled() {
-                        return scene.activeCamera === camera;
+                        return getActiveCamera() === camera;
                     },
                     set isEnabled(enabled: boolean) {
-                        if (enabled && scene.activeCamera !== camera) {
-                            scene.activeCamera?.detachControl();
-                            scene.activeCamera = camera;
-                            camera.attachControl(true);
+                        const activeCamera = getActiveCamera();
+                        if (enabled && activeCamera !== camera) {
+                            activeCamera?.detachControl();
+                            if (scene.frameGraph) {
+                                const objectRenderer = FindMainObjectRenderer(scene.frameGraph);
+                                if (objectRenderer) {
+                                    objectRenderer.camera = camera;
+                                    onChangeObservable.notifyObservers(); // manual trigger, because scene.onActiveCameraChanged won't be triggered by the line above
+                                    camera.attachControl(true);
+                                }
+                            } else {
+                                scene.activeCamera = camera;
+                                camera.attachControl(true);
+                            }
                         }
                     },
                     onChange: onChangeObservable,

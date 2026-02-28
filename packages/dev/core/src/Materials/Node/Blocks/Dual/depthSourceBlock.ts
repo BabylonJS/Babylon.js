@@ -1,6 +1,8 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Effect } from "../../../effect";
 
+import "../../../../Rendering/depthRendererSceneComponent";
+
 import { ImageSourceBlock } from "./imageSourceBlock";
 import type { Nullable } from "../../../../types";
 import type { Texture } from "../../../Textures/texture";
