@@ -60,8 +60,7 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
             },
         });
 
-        // Set the scene as the default selected entity.
-        let selectedEntityState: Nullable<object> = sceneContext.currentScene;
+        let selectedEntityState: Nullable<object> = null;
         const selectedEntityObservable = new Observable<void>();
         let disposedHook: Nullable<IDisposable> = null;
 
@@ -89,6 +88,9 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
                 }
             }
         };
+
+        // Set the scene as the default selected entity.
+        setSelectedItem(sceneContext.currentScene);
 
         return {
             get selectedEntity() {

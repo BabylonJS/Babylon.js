@@ -12,7 +12,7 @@ const useStyles = makeStyles({
 });
 
 export const Theme: FunctionComponent<FluentProviderProps & { invert?: boolean }> = (props) => {
-    // NOTE: We do not want to applyStylesToPortals by default. If makes classes flow into portals
+    // NOTE: We do not want to applyStylesToPortals by default. It makes classes flow into portals
     // (like popovers), and if those styles do things like disable overflow, they can completely
     // break any UI within the portal. Therefore, default to false.
     const { invert = false, applyStylesToPortals = false, className, ...rest } = props;
