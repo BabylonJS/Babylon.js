@@ -3,6 +3,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { BlurRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
@@ -40,7 +41,7 @@ export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [IScene
                     },
                 };
             },
-            entityIcon: () => <BlurRegular />,
+            entityIcon: () => <BlurRegular color={tokens.colorPaletteRedForeground2} />,
             getEntityAddedObservables: () => [scene.onNewPostProcessAddedObservable],
             getEntityRemovedObservables: () => [scene.onPostProcessRemovedObservable],
         });

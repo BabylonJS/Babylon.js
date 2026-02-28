@@ -3,6 +3,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { DropRegular, EditRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
@@ -42,7 +43,7 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
                     },
                 };
             },
-            entityIcon: () => <DropRegular />,
+            entityIcon: () => <DropRegular color={tokens.colorPaletteCranberryForeground2} />,
             getEntityAddedObservables: () => [scene.onNewParticleSystemAddedObservable],
             getEntityRemovedObservables: () => [scene.onParticleSystemRemovedObservable],
         });

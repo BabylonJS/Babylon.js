@@ -4,6 +4,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { AppGenericRegular, BorderNoneRegular, BorderOutsideRegular, EditRegular, EyeOffRegular, EyeRegular, RectangleLandscapeRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
@@ -97,7 +98,12 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
                     },
                 };
             },
-            entityIcon: ({ entity }) => (IsAdvancedDynamicTexture(entity) ? <AppGenericRegular /> : <RectangleLandscapeRegular />),
+            entityIcon: ({ entity }) =>
+                IsAdvancedDynamicTexture(entity) ? (
+                    <AppGenericRegular color={tokens.colorPaletteLilacForeground2} />
+                ) : (
+                    <RectangleLandscapeRegular color={tokens.colorPaletteSeafoamForeground2} />
+                ),
             getEntityAddedObservables: () => [guiEntityAddedObservable],
             getEntityRemovedObservables: () => [guiEntityRemovedObservable],
         });

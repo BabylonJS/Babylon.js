@@ -4,17 +4,18 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { LayerDiagonalPersonRegular, PersonSquareRegular, PlayFilled, StopFilled } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
 import { Sprite } from "core/Sprites/sprite";
+import { InterceptFunction } from "../../../instrumentation/functionInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Sprites/spriteSceneComponent";
-import { InterceptFunction } from "../../../instrumentation/functionInstrumentation";
 
 export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Sprite Manager Explorer",
@@ -46,7 +47,12 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
                     },
                 };
             },
-            entityIcon: ({ entity: spriteEntity }) => (spriteEntity instanceof Sprite ? <PersonSquareRegular /> : <LayerDiagonalPersonRegular />),
+            entityIcon: ({ entity: spriteEntity }) =>
+                spriteEntity instanceof Sprite ? (
+                    <PersonSquareRegular color={tokens.colorPalettePeachForeground2} />
+                ) : (
+                    <LayerDiagonalPersonRegular color={tokens.colorPalettePeachForeground2} />
+                ),
             getEntityAddedObservables: () => [scene.onNewSpriteManagerAddedObservable],
             getEntityRemovedObservables: () => [scene.onSpriteManagerRemovedObservable],
         });

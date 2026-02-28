@@ -2,6 +2,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { PipelineRegular } from "@fluentui/react-icons";
 
 import { SceneContextIdentity } from "../../sceneContext";
@@ -31,7 +32,7 @@ export const RenderingPipelineExplorerServiceDefinition: ServiceDefinition<[], [
                     },
                 };
             },
-            entityIcon: () => <PipelineRegular />,
+            entityIcon: () => <PipelineRegular color={tokens.colorPaletteRedForeground2} />,
             getEntityAddedObservables: () => [scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable],
             getEntityRemovedObservables: () => [scene.postProcessRenderPipelineManager.onPipelineRemovedObservable],
         });

@@ -3,6 +3,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { LayerRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
@@ -40,7 +41,7 @@ export const EffectLayerExplorerServiceDefinition: ServiceDefinition<[], [IScene
                     },
                 };
             },
-            entityIcon: () => <LayerRegular />,
+            entityIcon: () => <LayerRegular color={tokens.colorPaletteRedForeground2} />,
             getEntityAddedObservables: () => [scene.onNewEffectLayerAddedObservable],
             getEntityRemovedObservables: () => [scene.onEffectLayerRemovedObservable],
         });
