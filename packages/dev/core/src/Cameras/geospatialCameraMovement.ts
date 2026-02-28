@@ -179,15 +179,15 @@ export class GeospatialCameraMovement extends CameraMovement {
         }
 
         // If a pan drag or rotate is occurring, stop zooming.
-        let zoomTargetDistance: number | undefined;
         if (this.isDragging || this.rotationAccumulatedPixels.lengthSquared() > Epsilon) {
             this._zoomSpeedMultiplier = 0;
             this._zoomVelocity = 0;
         } else {
-            zoomTargetDistance = this.computedPerFrameZoomPickPoint ? Vector3Distance(this._cameraPosition, this.computedPerFrameZoomPickPoint) : undefined;
-
             // Scales zoom movement speed based on camera distance to zoom target.
-            this._zoomSpeedMultiplier = (zoomTargetDistance ?? Vector3Distance(this._cameraPosition, cameraCenter)) * 0.01;
+            const zoomTargetDistance = this.computedPerFrameZoomPickPoint 
+                ? Vector3Distance(this._cameraPosition, this.computedPerFrameZoomPickPoint) 
+                : Vector3Distance(this._cameraPosition, cameraCenter);
+            this._zoomSpeedMultiplier = zoomTargetDistance * 0.01;
         }
 
         super.computeCurrentFrameDeltas();

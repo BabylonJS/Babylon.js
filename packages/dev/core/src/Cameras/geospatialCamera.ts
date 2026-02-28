@@ -215,6 +215,24 @@ export class GeospatialCamera extends Camera {
     }
 
     /**
+     * Sets up the fly-to targets in the targets map
+     * @param targetYaw Optional target yaw angle
+     * @param targetPitch Optional target pitch angle
+     * @param targetRadius Optional target radius
+     * @param targetCenter Optional target center point
+     */
+    private _setFlyToTargets(targetYaw?: number, targetPitch?: number, targetRadius?: number, targetCenter?: Vector3): void {
+        this._flyToTargets.clear();
+
+        // For yaw, use shortest path to target.
+        const deltaYaw = targetYaw !== undefined ? NormalizeRadians(NormalizeRadians(targetYaw) - this._yaw) : 0;
+        this._flyToTargets.set("yaw", deltaYaw === 0 ? undefined : this._yaw + deltaYaw);
+        this._flyToTargets.set("pitch", targetPitch !== undefined ? NormalizeRadians(targetPitch) : undefined);
+        this._flyToTargets.set("radius", targetRadius);
+        this._flyToTargets.set("center", targetCenter?.clone());
+    }
+
+    /**
      * If camera is actively in flight, will update the target properties and use up the remaining duration from original flyTo call
      *
      * To start a new flyTo curve entirely, call into flyToAsync again (it will stop the inflight animation)
@@ -224,15 +242,7 @@ export class GeospatialCamera extends Camera {
      * @param targetCenter
      */
     public updateFlyToDestination(targetYaw?: number, targetPitch?: number, targetRadius?: number, targetCenter?: Vector3): void {
-        this._flyToTargets.clear();
-
-        // For yaw, use shortest path to target.
-        const deltaYaw = targetYaw !== undefined ? NormalizeRadians(NormalizeRadians(targetYaw) - this._yaw) : 0;
-        this._flyToTargets.set("yaw", deltaYaw === 0 ? undefined : this._yaw + deltaYaw);
-        this._flyToTargets.set("pitch", targetPitch != undefined ? NormalizeRadians(targetPitch) : undefined);
-        this._flyToTargets.set("radius", targetRadius);
-        this._flyToTargets.set("center", targetCenter?.clone());
-
+        this._setFlyToTargets(targetYaw, targetPitch, targetRadius, targetCenter);
         this._flyingBehavior.updateProperties(this._flyToTargets);
     }
 
@@ -256,14 +266,7 @@ export class GeospatialCamera extends Camera {
         easingFunction?: EasingFunction,
         centerHopScale?: number
     ): Promise<void> {
-        this._flyToTargets.clear();
-
-        // For yaw, use shortest path to target.
-        const deltaYaw = targetYaw !== undefined ? NormalizeRadians(NormalizeRadians(targetYaw) - this._yaw) : 0;
-        this._flyToTargets.set("yaw", deltaYaw === 0 ? undefined : this._yaw + deltaYaw);
-        this._flyToTargets.set("pitch", targetPitch !== undefined ? NormalizeRadians(targetPitch) : undefined);
-        this._flyToTargets.set("radius", targetRadius);
-        this._flyToTargets.set("center", targetCenter?.clone());
+        this._setFlyToTargets(targetYaw, targetPitch, targetRadius, targetCenter);
 
         let overrideAnimationFunction;
         if (targetCenter !== undefined && !targetCenter.equals(this.center)) {
