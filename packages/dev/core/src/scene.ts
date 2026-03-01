@@ -2596,9 +2596,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
-     * Registers an object whose {@link isReady} method will be polled during {@link Scene.isReady}.
-     * Call {@link removeReadyCheck} to remove the object from the list of checks.
-     * @param readyCheck - An object with an `isReady()` method.
+     * Registers an object whose {@link isReady} method will be called during {@link Scene.isReady}.
+     * Call {@link removeReadyCheck} to remove the object from the checks.
+     * @param readyCheck defines the object with an `isReady()` method.
      */
     public addReadyCheck(readyCheck: { isReady(): boolean }): void {
         if (this._readyChecks.indexOf(readyCheck) === -1) {
@@ -2608,7 +2608,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     /**
      * Removes an object previously registered with {@link addReadyCheck}.
-     * @param readyCheck - The object to remove.
+     * @param readyCheck defines the object to remove.
      */
     public removeReadyCheck(readyCheck: { isReady(): boolean }): void {
         const index = this._readyChecks.indexOf(readyCheck);
