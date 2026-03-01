@@ -46,6 +46,105 @@ export class WebRequest implements IWebRequest {
         return Object.keys(WebRequest.CustomRequestHeaders).length > 0 || WebRequest.CustomRequestModifiers.length > 0;
     }
 
+    private static _CleanUrl(url: string): string {
+        url = url.replace("file:http:", "http:");
+        url = url.replace("file:https:", "https:");
+        return url;
+    }
+
+    private static _ShouldSkipRequestModifications(url: string): boolean {
+        return WebRequest.SkipRequestModificationForBabylonCDN && (url.includes("preview.babylonjs.com") || url.includes("cdn.babylonjs.com"));
+    }
+
+    /**
+     * Merges `CustomRequestHeaders` and `CustomRequestModifiers` into a plain headers record and returns the
+     * (possibly rewritten) URL. Used by the `fetch` path of `FetchAsync` to collect all modifications into a
+     * plain object before calling the Fetch API.
+     */
+    private static _CollectCustomizations(url: string, baseHeaders: Record<string, string>): { url: string; headers: Record<string, string> } {
+        const headers: Record<string, string> = { ...baseHeaders };
+
+        if (WebRequest._ShouldSkipRequestModifications(url)) {
+            return { url, headers };
+        }
+
+        for (const key in WebRequest.CustomRequestHeaders) {
+            const val = WebRequest.CustomRequestHeaders[key];
+            if (val) {
+                headers[key] = val;
+            }
+        }
+
+        // Provide a minimal proxy so modifiers can call setRequestHeader as they would on a real XHR.
+        const xhrProxy = {
+            setRequestHeader: (name: string, value: string) => {
+                headers[name] = value;
+            },
+        } as unknown as XMLHttpRequest;
+
+        for (const modifier of WebRequest.CustomRequestModifiers) {
+            if (WebRequest._ShouldSkipRequestModifications(url)) {
+                break;
+            }
+            const newUrl = modifier(xhrProxy, url);
+            if (typeof newUrl === "string") {
+                url = newUrl;
+            }
+        }
+
+        return { url, headers };
+    }
+
+    /**
+     * Performs a network request using the Fetch API when available on the platform, falling back to XMLHttpRequest.
+     * `WebRequest.CustomRequestHeaders` and `WebRequest.CustomRequestModifiers` are applied in both cases.
+     *
+     * For `CustomRequestModifiers`, a minimal proxy XHR is provided to each modifier so that calls to
+     * `setRequestHeader` on it are captured and forwarded to the underlying request. The URL returned by a
+     * modifier (if any) replaces the current URL before the next modifier runs.
+     *
+     * @param url - The URL to request.
+     * @param options - Optional request options (method, headers, body).
+     * @returns A Promise that resolves to a `Response`.
+     */
+    public static FetchAsync(url: string, options: { method?: string; headers?: Record<string, string>; body?: BodyInit | null } = {}): Promise<Response> {
+        const method = options.method ?? "GET";
+
+        if (typeof fetch !== "undefined") {
+            // Use the Fetch API. Collect all customizations into a plain headers object first, since the
+            // Fetch API does not share the XHR instance that WebRequest.open/send work with.
+            const { url: resolvedUrl, headers } = WebRequest._CollectCustomizations(WebRequest._CleanUrl(url), options.headers ?? {});
+            return fetch(resolvedUrl, { method, headers, body: options.body ?? undefined });
+        }
+
+        // Fallback: use a WebRequest instance, which handles _CleanUrl, CustomRequestModifiers (via open()),
+        // and CustomRequestHeaders (via send()) internally — wrapping the response in a Promise<Response>.
+        return new Promise<Response>((resolve, reject) => {
+            const request = new WebRequest();
+            request.responseType = "arraybuffer";
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState === 4) {
+                    if (request.status >= 200 && request.status < 300) {
+                        const responseHeaders = new Headers();
+                        const contentType = request.getResponseHeader("Content-Type");
+                        if (contentType) {
+                            responseHeaders.set("Content-Type", contentType);
+                        }
+                        resolve(new Response(request.response as ArrayBuffer, { status: request.status, statusText: request.statusText, headers: responseHeaders }));
+                    } else {
+                        reject(new Error(`HTTP ${request.status} loading '${request.requestURL}': ${request.statusText}`));
+                    }
+                }
+            });
+            request.open(method, url);
+            // Apply any caller-supplied headers on top of those injected by send().
+            for (const key in options.headers ?? {}) {
+                request.setRequestHeader(key, options.headers![key]);
+            }
+            request.send((options.body as Document | XMLHttpRequestBodyInit | null | undefined) ?? null);
+        });
+    }
+
     private _requestURL: string = "";
 
     /**
@@ -56,7 +155,7 @@ export class WebRequest implements IWebRequest {
     }
 
     private _injectCustomRequestHeaders(): void {
-        if (this._shouldSkipRequestModifications(this._requestURL)) {
+        if (WebRequest._ShouldSkipRequestModifications(this._requestURL)) {
             return;
         }
         for (const key in WebRequest.CustomRequestHeaders) {
@@ -65,10 +164,6 @@ export class WebRequest implements IWebRequest {
                 this._xhr.setRequestHeader(key, val);
             }
         }
-    }
-
-    private _shouldSkipRequestModifications(url: string): boolean {
-        return WebRequest.SkipRequestModificationForBabylonCDN && (url.includes("preview.babylonjs.com") || url.includes("cdn.babylonjs.com"));
     }
 
     /**
@@ -192,15 +287,13 @@ export class WebRequest implements IWebRequest {
      */
     public open(method: string, url: string): void {
         for (const update of WebRequest.CustomRequestModifiers) {
-            if (this._shouldSkipRequestModifications(url)) {
+            if (WebRequest._ShouldSkipRequestModifications(url)) {
                 return;
             }
             url = update(this._xhr, url) || url;
         }
 
-        // Clean url
-        url = url.replace("file:http:", "http:");
-        url = url.replace("file:https:", "https:");
+        url = WebRequest._CleanUrl(url);
 
         this._requestURL = url;
 

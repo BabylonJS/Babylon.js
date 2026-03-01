@@ -8,7 +8,8 @@ import { StreamingSound } from "../abstractAudio/streamingSound";
 import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
 import { _HasSpatialAudioOptions, type AbstractSpatialAudio } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
-import { _CleanUrl } from "../audioUtils";
+import { _CleanUrl, _LoadArrayBufferFromUrlAsync } from "../audioUtils";
+import { WebRequest } from "../../Misc/webRequest";
 import { SoundState } from "../soundState";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
 import { _SpatialWebAudio } from "./subProperties/spatialWebAudio";
@@ -170,6 +171,7 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
 
 /** @internal */
 class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements IWebAudioOutNode {
+    private _blobUrl: Nullable<string> = null;
     private _currentTimeChangedWhilePaused = false;
     private _enginePlayTime: number = Infinity;
     private _enginePauseTime: number = 0;
@@ -260,6 +262,11 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
         for (const source of Array.from(this._mediaElement.children)) {
             this._mediaElement.removeChild(source);
+        }
+
+        if (this._blobUrl) {
+            URL.revokeObjectURL(this._blobUrl);
+            this._blobUrl = null;
         }
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
@@ -383,11 +390,53 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     }
 
     private _initFromUrl(url: string): void {
+        if (WebRequest.IsCustomRequestAvailable) {
+            // When custom headers or request modifiers are registered, pre-fetch via WebRequest so they are applied,
+            // then present the result to the <audio> element as a same-origin blob URL.
+            const audio = new Audio();
+            this._initFromMediaElement(audio);
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            _LoadArrayBufferFromUrlAsync(_CleanUrl(url))
+                .then(({ data, contentType }) => {
+                    const blob = new Blob([data], { type: contentType || "audio/mpeg" });
+                    this._blobUrl = URL.createObjectURL(blob);
+                    audio.src = this._blobUrl;
+                    audio.load();
+                })
+                .catch(this._onError);
+            return;
+        }
         const audio = new Audio(_CleanUrl(url));
         this._initFromMediaElement(audio);
     }
 
     private _initFromUrls(urls: string[]): void {
+        if (WebRequest.IsCustomRequestAvailable) {
+            // When custom headers or request modifiers are registered, pre-fetch via WebRequest so they are applied.
+            // Try each URL in order, stopping at the first successful download.
+            const audio = new Audio();
+            this._initFromMediaElement(audio);
+            const tryNextUrl = async (index: number): Promise<void> => {
+                if (index >= urls.length) {
+                    this._onError(new Error("No compatible audio format found."));
+                    return;
+                }
+                try {
+                    const { data, contentType } = await _LoadArrayBufferFromUrlAsync(_CleanUrl(urls[index]));
+                    const blob = new Blob([data], { type: contentType || "audio/mpeg" });
+                    this._blobUrl = URL.createObjectURL(blob);
+                    audio.src = this._blobUrl;
+                    audio.load();
+                } catch {
+                    // eslint-disable-next-line no-await-in-loop
+                    await tryNextUrl(index + 1);
+                }
+            };
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            tryNextUrl(0);
+            return;
+        }
+
         const audio = new Audio();
 
         for (const url of urls) {

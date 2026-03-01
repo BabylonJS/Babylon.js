@@ -1,4 +1,5 @@
 import type { Nullable } from "../types";
+import { WebRequest } from "../Misc/webRequest";
 import { AudioParameterRampShape } from "./audioParameter";
 
 export const _FileExtensionRegex = new RegExp("\\.(\\w{3,4})($|\\?)");
@@ -87,4 +88,23 @@ export function _GetAudioParamCurveValues(shape: AudioParameterRampShape, from: 
 /** @internal */
 export function _CleanUrl(url: string) {
     return url.replace(/#/gm, "%23");
+}
+
+/**
+ * Loads an `ArrayBuffer` from the given URL using `WebRequest.FetchAsync`, so that
+ * `WebRequest.CustomRequestHeaders` and `WebRequest.CustomRequestModifiers` are respected for audio network
+ * requests just like for any other Babylon.js network call.
+ * Uses the Fetch API when available, falling back to XMLHttpRequest otherwise.
+ * @param url - The URL to load from (should already be cleaned via `_CleanUrl` if needed).
+ * @returns A promise that resolves with the loaded `ArrayBuffer` and the HTTP `Content-Type` response header value.
+ * @internal
+ */
+export async function _LoadArrayBufferFromUrlAsync(url: string): Promise<{ data: ArrayBuffer; contentType: string }> {
+    const response = await WebRequest.FetchAsync(url);
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status} loading '${url}': ${response.statusText}`);
+    }
+    const data = await response.arrayBuffer();
+    const contentType = response.headers.get("Content-Type") ?? "";
+    return { data, contentType };
 }
