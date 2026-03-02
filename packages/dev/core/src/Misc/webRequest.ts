@@ -58,13 +58,14 @@ export class WebRequest implements IWebRequest {
 
     /**
      * Merges `CustomRequestHeaders` and `CustomRequestModifiers` into a plain headers record and returns the
-     * (possibly rewritten) URL. Used by the `fetch` path of `FetchAsync` to collect all modifications into a
-     * plain object before calling the Fetch API.
+     * (possibly rewritten) URL. Can be used to apply URL and header customizations without making a network
+     * request (e.g. for streaming media where the download is handled by the browser natively).
      * @param url - The initial URL to modify.
      * @param baseHeaders - An optional set of headers to start with (e.g. from the caller's options) that modifiers can further modify.
      * @returns An object containing the final URL and the merged headers after applying all modifiers and header customizations.
+     * @internal
      */
-    private static _CollectCustomizations(url: string, baseHeaders: Record<string, string>): { url: string; headers: Record<string, string> } {
+    public static _CollectCustomizations(url: string, baseHeaders: Record<string, string>): { url: string; headers: Record<string, string> } {
         const headers: Record<string, string> = { ...baseHeaders };
 
         if (WebRequest._ShouldSkipRequestModifications(url)) {
