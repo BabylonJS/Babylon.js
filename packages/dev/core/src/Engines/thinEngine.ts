@@ -841,7 +841,6 @@ export class ThinEngine extends AbstractEngine {
             supportSpriteInstancing: true,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
-            _collectUbosUpdatedInFrame: false,
         };
     }
 

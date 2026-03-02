@@ -19,9 +19,6 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
  * https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object
  */
 export class UniformBuffer {
-    /** @internal */
-    public static _UpdatedUbosInFrame: { [name: string]: number } = {};
-
     private _engine: AbstractEngine;
     private _buffer: Nullable<DataBuffer>;
     private _buffers: Array<[DataBuffer, Float32Array | undefined]>;
@@ -696,13 +693,6 @@ export class UniformBuffer {
         this._bufferUpdatedLastFrame = true;
 
         this._engine.updateUniformBuffer(this._buffer, this._bufferData);
-
-        if (this._engine._features._collectUbosUpdatedInFrame) {
-            if (!UniformBuffer._UpdatedUbosInFrame[this._name]) {
-                UniformBuffer._UpdatedUbosInFrame[this._name] = 0;
-            }
-            UniformBuffer._UpdatedUbosInFrame[this._name]++;
-        }
 
         this._needSync = false;
         this._createBufferOnWrite = this._trackUBOsInFrame;

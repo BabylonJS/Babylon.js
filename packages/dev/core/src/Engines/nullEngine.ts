@@ -207,7 +207,6 @@ export class NullEngine extends Engine {
             supportSpriteInstancing: false,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
-            _collectUbosUpdatedInFrame: false,
         };
 
         if (options.renderingCanvas) {
