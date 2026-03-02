@@ -59,9 +59,6 @@ export abstract class FrameGraphTask {
      */
     public dependencies?: Set<FrameGraphTextureHandle>;
 
-    /** @internal */
-    public _disableDebugMarkers = false;
-
     /**
      * Records the task in the frame graph. Use this function to add content (render passes, ...) to the task.
      * @param skipCreationOfDisabledPasses If true, the disabled passe(s) won't be created.
@@ -229,26 +226,20 @@ export abstract class FrameGraphTask {
 
         this.onBeforeTaskExecute.notifyObservers(this);
 
-        if (!this._disableDebugMarkers) {
-            this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
-        }
+        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
 
         for (const pass of passes) {
             pass._execute();
         }
 
-        if (!this._disableDebugMarkers) {
-            this._frameGraph.engine._debugPopGroup?.();
-        }
+        this._frameGraph.engine._debugPopGroup?.();
 
         this.onAfterTaskExecute.notifyObservers(this);
     }
 
     /** @internal */
     public _initializePasses() {
-        if (!this._disableDebugMarkers) {
-            this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
-        }
+        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`);
 
         for (const pass of this._passes) {
             pass._initialize();
@@ -258,9 +249,7 @@ export abstract class FrameGraphTask {
             pass._initialize();
         }
 
-        if (!this._disableDebugMarkers) {
-            this._frameGraph.engine._debugPopGroup?.();
-        }
+        this._frameGraph.engine._debugPopGroup?.();
     }
 
     private _checkSameRenderTarget(src: Nullable<Nullable<InternalTexture>[]>, dst: Nullable<Nullable<InternalTexture>[]>) {

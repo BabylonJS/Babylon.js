@@ -57,6 +57,15 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     /** @internal */
     public _timestampIndex = 0;
 
+    /** @internal */
+    public _showGPUDebugMarkersLog = false;
+    /** @internal */
+    public _debugStackRenderEncoder: string[] = [];
+    /** @internal */
+    public _debugStackRenderPass: string[] = [];
+    /** @internal */
+    public _debugNumPopPending = 0;
+
     /**
      * Gets the GPU time spent in the main render pass for the last frame rendered (in nanoseconds).
      * You have to enable the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
@@ -96,6 +105,14 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
             return 0;
         }
 
+        if (this._debugStackRenderPass.length !== 0) {
+            // We have pushed debug groups without popping them, we need to pop them before ending the render pass to avoid WebGPU validation errors
+            // We will re-push them after starting the new render pass (if any)
+            for (let i = 0; i < this._debugStackRenderPass.length; ++i) {
+                this._currentRenderPass.popDebugGroup();
+            }
+        }
+
         const currentPassIndex = this._currentPassIsMainPass() ? 2 : 1;
 
         if (!this._snapshotRendering.endRenderPass(this._currentRenderPass) && !this.compatibilityMode) {
@@ -112,22 +129,19 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
         );
         this._timestampIndex += 2;
 
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
+        // Pop all pending debug groups that couldn't be popped while the render pass was active
+        while (this._debugNumPopPending-- > 0) {
+            if (this._showGPUDebugMarkersLog) {
                 Logger.Log(
-                    "frame #" +
-                        (this as any)._count +
-                        " - " +
-                        (currentPassIndex === 2 ? "main" : "render target") +
-                        " end pass" +
-                        (currentPassIndex === 1 ? " - internalTexture.uniqueId=" + this._currentRenderTarget?.texture?.uniqueId : "")
+                    `[${this.frameId}] Re-popping pending debug group on render encoder '${this._renderEncoder.label}' after ending current render pass '${this._currentRenderPass.label}'`
                 );
             }
-        }
+            this._renderEncoder.popDebugGroup();
+            this._debugStackRenderEncoder.pop();
+            }
+
         this._currentRenderPass = null;
+        this._debugNumPopPending = 0;
 
         return currentPassIndex;
     }
@@ -177,6 +191,20 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
             this._textureHelper.generateMipmaps(gpuHardwareTexture, texture.mipLevelCount, 0, commandEncoder);
         } else {
             this._textureHelper.generateMipmaps(gpuHardwareTexture, mipmapCount, 0, commandEncoder);
+        }
+    }
+
+    protected _debugPushPendingGroups(forRenderPass: boolean) {
+        const debugStack = forRenderPass ? this._debugStackRenderPass : this._debugStackRenderEncoder;
+        const currentEncoder = forRenderPass ? this._currentRenderPass : this._renderEncoder;
+
+        for (const groupName of debugStack) {
+            if (this._showGPUDebugMarkersLog) {
+                Logger.Log(
+                    `[${this.frameId}] Re-pushing debug group '${groupName}' on ${forRenderPass ? "current render pass '" + this._currentRenderPass?.label + "'" : "render encoder '" + this._renderEncoder.label + "'"} after starting a new ${forRenderPass ? "render pass" : "render encoder"}`
+                );
+            }
+            currentEncoder!.pushDebugGroup(groupName);
         }
     }
 }

@@ -358,6 +358,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     private _dummyIndexBuffer: WebGPUDataBuffer;
     private _colorWriteLocal = true;
     private _forceEnableEffect = false;
+    private _internalFrameCounter = 0;
 
     /**
      * Gets or sets the snapshot rendering mode
@@ -778,12 +779,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         "UBDontInvertY"
                     );
 
-                    if (this.dbgVerboseLogsForFirstFrames) {
-                        if ((this as any)._count === undefined) {
-                            (this as any)._count = 0;
-                            Logger.Log(["%c frame #" + (this as any)._count + " - begin", "background: #ffff00"]);
-                        }
-                    }
+                    const frameCounter = this._internalFrameCounter++;
+
+                    this._uploadEncoderDescriptor.label = `[${this.frameId}|${frameCounter}] - UploadEncoder`;
+                    this._renderEncoderDescriptor.label = `[${this.frameId}|${frameCounter}] - RenderEncoder`;
 
                     this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
                     this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
@@ -1066,8 +1065,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             stencilStoreOp: !this.isStencilEnable ? undefined : WebGPUConstants.StoreOp.Store,
         };
 
+        const frameCounter = this._internalFrameCounter++;
+
         this._mainRenderPassWrapper.renderPassDescriptor = {
-            label: "MainRenderPass",
+            label: `[${this.frameId}|${frameCounter}] - MainRenderPass`,
             colorAttachments: mainColorAttachments,
             depthStencilAttachment: mainDepthAttachment,
         };
@@ -3031,6 +3032,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this._timestampQuery.endFrame(this._renderEncoder);
         this._timestampIndex = 0;
+        this._internalFrameCounter = 0;
 
         this.flushFramebuffer();
 
@@ -3095,13 +3097,28 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         // we need to end the current render pass (main or rtt) if any as we are not allowed to submit the command buffers when being in a pass
         this._endCurrentRenderPass();
 
+        if (this._debugStackRenderEncoder.length !== 0) {
+            // We have pushed debug groups without popping them, we need to pop them before ending the render encoder to avoid WebGPU validation errors
+            // We will re-push them after creating the new render encoder
+            for (let i = 0; i < this._debugStackRenderEncoder.length; ++i) {
+                this._renderEncoder.popDebugGroup();
+            }
+        }
+
         this._commandBuffers[0] = this._uploadEncoder.finish();
         this._commandBuffers[1] = this._renderEncoder.finish();
 
         this._device.queue.submit(this._commandBuffers);
 
+        const frameCounter = this._internalFrameCounter++;
+
+        this._uploadEncoderDescriptor.label = `[${this.frameId}|${frameCounter}] - UploadEncoder`;
+        this._renderEncoderDescriptor.label = `[${this.frameId}|${frameCounter}] - RenderEncoder`;
+
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
+
+        this._debugPushPendingGroups(false);
 
         this._timestampQuery.startFrame(this._uploadEncoder);
 
@@ -3256,8 +3273,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
         }
 
+        const frameCounter = this._internalFrameCounter++;
+
         this._rttRenderPassWrapper.renderPassDescriptor = {
-            label: (renderTargetWrapper.label ?? "RTT") + " - RenderPass",
+            label: `[${this.frameId}|${frameCounter}] - ` + (renderTargetWrapper.label ?? "RTT") + " - RenderPass",
             colorAttachments,
             depthStencilAttachment:
                 depthStencilTexture && gpuDepthStencilTexture
@@ -3283,30 +3302,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._timestampQuery.startPass(this._rttRenderPassWrapper.renderPassDescriptor, this._timestampIndex);
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._rttRenderPassWrapper.renderPassDescriptor);
 
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                const internalTexture = rtWrapper.texture!;
-                Logger.Log([
-                    "frame #" +
-                        (this as any)._count +
-                        " - render target begin pass - rtt name=" +
-                        renderTargetWrapper.label +
-                        ", internalTexture.uniqueId=" +
-                        internalTexture.uniqueId +
-                        ", width=" +
-                        internalTexture.width +
-                        ", height=" +
-                        internalTexture.height +
-                        ", setClearStates=" +
-                        setClearStates,
-                    "renderPassDescriptor=",
-                    this._rttRenderPassWrapper.renderPassDescriptor,
-                ]);
-            }
-        }
+        this._debugPushPendingGroups(true);
 
         this._resetRenderPassStates();
 
@@ -3326,6 +3322,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         const mustClearDepth = setClearStates && clearDepth;
         const mustClearStencil = setClearStates && clearStencil;
 
+        const frameCounter = this._internalFrameCounter++;
+
+        this._mainRenderPassWrapper.renderPassDescriptor!.label = `[${this.frameId}|${frameCounter}] - MainRenderPass`;
         this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.clearValue = mustClearColor ? clearColor : undefined;
         this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.loadOp = mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load;
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthClearValue = mustClearDepth
@@ -3370,6 +3369,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this._timestampQuery.startPass(this._mainRenderPassWrapper.renderPassDescriptor!, this._timestampIndex);
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._mainRenderPassWrapper.renderPassDescriptor!);
+
+        this._debugPushPendingGroups(true);
 
         this._setDepthTextureFormat(this._mainRenderPassWrapper);
         this._setColorFormat(this._mainRenderPassWrapper);
