@@ -1752,7 +1752,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** @internal */
     public _pendingData = [] as any[];
     private _isDisposed = false;
-    private _readyChecks: { isReady(): boolean }[] = [];
+    private _isReadyChecks: { isReady(): boolean }[] = [];
 
     /**
      * Gets or sets a boolean indicating that all submeshes of active meshes must be rendered
@@ -2513,7 +2513,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         // isReady() checks for externally specified objects.
-        for (const check of this._readyChecks) {
+        for (const check of this._isReadyChecks) {
             if (!check.isReady()) {
                 isReady = false;
             }
@@ -2596,28 +2596,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
-     * Registers an object whose {@link isReady} method will be called during {@link Scene.isReady}.
-     * Call {@link removeReadyCheck} to remove the object.
-     * @param readyCheck defines the object to add.
-     */
-    public addReadyCheck(readyCheck: { isReady(): boolean }): void {
-        if (this._readyChecks.indexOf(readyCheck) === -1) {
-            this._readyChecks.push(readyCheck);
-        }
-    }
-
-    /**
-     * Removes an object previously registered with {@link addReadyCheck}.
-     * @param readyCheck defines the object to remove.
-     */
-    public removeReadyCheck(readyCheck: { isReady(): boolean }): void {
-        const index = this._readyChecks.indexOf(readyCheck);
-        if (index !== -1) {
-            this._readyChecks.splice(index, 1);
-        }
-    }
-
-    /**
      * This function can help adding any object to the list of data awaited to be ready in order to check for a complete scene loading.
      * @param data defines the object to wait for
      */
@@ -2657,6 +2635,27 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return this._pendingData.length > 0;
     }
 
+    /**
+     * Registers an object whose {@link isReady} method will be called during {@link Scene.isReady}.
+     * Call {@link removeIsReadyCheck} to remove the object.
+     * @param isReadyCheck defines the object to add.
+     */
+    public addIsReadyCheck(isReadyCheck: { isReady(): boolean }): void {
+        if (this._isReadyChecks.indexOf(isReadyCheck) === -1) {
+            this._isReadyChecks.push(isReadyCheck);
+        }
+    }
+
+    /**
+     * Removes an object previously registered with {@link addIsReadyCheck}.
+     * @param isReadyCheck defines the object to remove.
+     */
+    public removeIsReadyCheck(isReadyCheck: { isReady(): boolean }): void {
+        const index = this._isReadyChecks.indexOf(isReadyCheck);
+        if (index !== -1) {
+            this._isReadyChecks.splice(index, 1);
+        }
+    }
     /**
      * Registers a function to be executed when the scene is ready
      * @param func - the function to be executed
@@ -5709,7 +5708,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._pointerMoveStage.clear();
         this._pointerDownStage.clear();
         this._pointerUpStage.clear();
-        this._readyChecks.length = 0;
+        this._isReadyChecks.length = 0;
 
         this.importedMeshesFiles = [] as string[];
 

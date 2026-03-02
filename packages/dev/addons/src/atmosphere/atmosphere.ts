@@ -813,14 +813,14 @@ export class Atmosphere implements IDisposable {
             return null;
         });
 
-        scene.addReadyCheck(this);
+        scene.addIsReadyCheck(this);
     }
 
     /**
      * @override
      */
     public dispose(): void {
-        this.scene.removeReadyCheck(this);
+        this.scene.removeIsReadyCheck(this);
         this._onBeforeCameraRenderObserver?.remove();
         this._onBeforeCameraRenderObserver = null;
         this._onBeforeDrawPhaseObserver?.remove();
