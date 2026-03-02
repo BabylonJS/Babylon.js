@@ -890,31 +890,31 @@ export class Atmosphere implements IDisposable {
             return true;
         }
 
-        this._skyCompositorEffectWrapper ??= CreateSkyCompositorEffectWrapper(
-            this._engine,
-            this.uniformBuffer,
-            this._isSkyViewLutEnabled,
-            this._isLinearSpaceComposition,
-            this._applyApproximateTransmittance
-        );
+        const engine = this._engine;
+        const uniformBuffer = this.uniformBuffer;
+        const isSkyViewLutEnabled = this._isSkyViewLutEnabled;
+        const isLinearSpaceComposition = this._isLinearSpaceComposition;
+        const applyApproximateTransmittance = this._applyApproximateTransmittance;
+        const depthTexture = this.depthTexture;
+        this._skyCompositorEffectWrapper ??= CreateSkyCompositorEffectWrapper(engine, uniformBuffer, isSkyViewLutEnabled, isLinearSpaceComposition, applyApproximateTransmittance);
         this._globeAtmosphereCompositorEffectWrapper ??= CreateGlobeAtmosphereCompositorEffectWrapper(
-            this._engine,
-            this.uniformBuffer,
-            this._isSkyViewLutEnabled,
-            this._isLinearSpaceComposition,
-            this._applyApproximateTransmittance,
+            engine,
+            uniformBuffer,
+            isSkyViewLutEnabled,
+            isLinearSpaceComposition,
+            applyApproximateTransmittance,
             this._aerialPerspectiveIntensity,
             this._aerialPerspectiveRadianceBias,
-            this.depthTexture !== null
+            depthTexture !== null
         );
-        if (this.depthTexture !== null) {
+        if (depthTexture !== null) {
             this._aerialPerspectiveCompositorEffectWrapper ??= CreateAerialPerspectiveCompositorEffectWrapper(
-                this._engine,
-                this.uniformBuffer,
+                engine,
+                uniformBuffer,
                 this._isAerialPerspectiveLutEnabled,
-                this._isSkyViewLutEnabled,
-                this._isLinearSpaceComposition,
-                this._applyApproximateTransmittance,
+                isSkyViewLutEnabled,
+                isLinearSpaceComposition,
+                applyApproximateTransmittance,
                 this._aerialPerspectiveIntensity,
                 this._aerialPerspectiveRadianceBias
             );

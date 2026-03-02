@@ -237,6 +237,8 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                     this._isAerialPerspectiveEnabled && this._atmosphere.isAerialPerspectiveLutEnabled
                         ? `uniform sampler2D transmittanceLut;\r\nprecision highp sampler2DArray;\r\nuniform sampler2DArray aerialPerspectiveLut;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`
                         : `uniform sampler2D transmittanceLut;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`,
+
+                // Provides the direct light contribution, accounting for transmittance.
                 CUSTOM_LIGHT0_COLOR: `
             {
                 vec3 positionGlobal = 0.001 * vPositionW + ${OriginOffsetUniformName};
@@ -247,6 +249,10 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 diffuse0 = lightIntensity * sampleTransmittanceLut(transmittanceLut, positionRadius, cosAngleLightToZenith);
             }
 `,
+
+                // Approximates the environment contribution from the atmosphere.
+                // Note there are some tuned constants used below to modify the environment intensity.
+                // A more physically accurate approach could be considered, and/or uniforms added to customize.
                 CUSTOM_REFLECTION: `
             {
                 vec3 positionGlobal =  0.001 * vPositionW + ${OriginOffsetUniformName};
@@ -303,6 +309,8 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                     this._isAerialPerspectiveEnabled && this._atmosphere.isAerialPerspectiveLutEnabled
                         ? `var transmittanceLutSampler: sampler;\r\nvar transmittanceLut: texture_2d<f32>;\r\nvar aerialPerspectiveLutSampler: sampler;\r\nvar aerialPerspectiveLut: texture_2d_array<f32>;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`
                         : `var transmittanceLutSampler: sampler;\r\nvar transmittanceLut: texture_2d<f32>;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`,
+
+                // Provides the direct light contribution, accounting for transmittance.
                 CUSTOM_LIGHT0_COLOR: `
             {
                 var positionGlobal = 0.001 * fragmentInputs.vPositionW + uniforms.${OriginOffsetUniformName};
@@ -313,6 +321,10 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 diffuse0 = atmosphere.lightIntensity * sampleTransmittanceLut(transmittanceLut, positionRadius, cosAngleLightToZenith);
             }
 `,
+
+                // Approximates the environment contribution from the atmosphere.
+                // Note there are some tuned constants used below to modify the environment intensity.
+                // A more physically accurate approach could be considered, and/or uniforms added to customize.
                 CUSTOM_REFLECTION: `
             {
                 var positionGlobal =  0.001 * fragmentInputs.vPositionW + uniforms.${OriginOffsetUniformName};
