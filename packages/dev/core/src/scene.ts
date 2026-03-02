@@ -2512,7 +2512,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
-        // Readiness checks from externally specified objects.
+        // isReady() checks for externally specified objects.
         for (const check of this._readyChecks) {
             if (!check.isReady()) {
                 isReady = false;
@@ -2597,8 +2597,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     /**
      * Registers an object whose {@link isReady} method will be called during {@link Scene.isReady}.
-     * Call {@link removeReadyCheck} to remove the object from the checks.
-     * @param readyCheck defines the object with an `isReady()` method.
+     * Call {@link removeReadyCheck} to remove the object.
+     * @param readyCheck defines the object to add.
      */
     public addReadyCheck(readyCheck: { isReady(): boolean }): void {
         if (this._readyChecks.indexOf(readyCheck) === -1) {
