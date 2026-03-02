@@ -226,7 +226,7 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
             <BoundProperty component={SwitchPropertyLine} label="OIT" description="Order Independent Transparency" target={scene} propertyKey="useOrderIndependentTransparency" />
 
             <Collapse visible={useOIT}>
-                {scene.depthPeelingRenderer && (
+                {useOIT && scene.depthPeelingRenderer && (
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
                         label="passCount"
@@ -366,3 +366,4 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
         </>
     );
 };
+
