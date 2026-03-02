@@ -1,6 +1,6 @@
 /** Latitude and longitude. */
 export interface ILatLonLike {
-    /** Latitude in radians. Range: [-π/2, π/2]. */
+    /** Latitude in radians. */
     lat: number;
     /** Longitude in radians. */
     lon: number;
