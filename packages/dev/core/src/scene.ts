@@ -2636,7 +2636,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
-     * Registers an object whose {@link isReady} method will be called during {@link Scene.isReady}.
+     * Registers an object whose {@link isReady} method will be checked during {@link Scene.isReady}.
      * Call {@link removeIsReadyCheck} to remove the object.
      * @param isReadyCheck defines the object to add.
      */
