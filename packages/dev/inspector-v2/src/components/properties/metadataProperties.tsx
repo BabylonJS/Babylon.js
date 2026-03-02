@@ -84,9 +84,12 @@ function StringifyMetadata(metadata: unknown, format: boolean) {
     }
 
     if (metadata) {
-        if (ObjectCanSafelyStringify(metadata)) {
+        // Try JSON.stringify even for objects with functions — it safely omits
+        // function-valued and undefined properties. Only fall back to String()
+        // for cases that actually throw (e.g. circular references).
+        try {
             return JSON.stringify(metadata, undefined, format ? PrettyJSONIndent : undefined);
-        } else {
+        } catch {
             return String(metadata);
         }
     }
