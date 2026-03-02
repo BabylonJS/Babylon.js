@@ -613,7 +613,8 @@ export class InputTextArea extends InputText {
             this._autoStretchHeight = true;
         }
 
-        this._availableHeight = this._height.getValueInPixel(this._host, parentMeasure.height) - marginWidth;
+        const marginHeight = this._margin.getValueInPixel(this._host, parentMeasure.height) * 2;
+        this._availableHeight = this._height.getValueInPixel(this._host, parentMeasure.height) - marginHeight;
 
         if (this._isFocused) {
             this._cursorInfo.currentLineIndex = 0;

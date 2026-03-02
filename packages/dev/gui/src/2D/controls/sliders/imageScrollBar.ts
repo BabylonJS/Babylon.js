@@ -144,7 +144,7 @@ export class ImageScrollBar extends BaseSlider {
     }
 
     public set thumbHeight(value: number) {
-        if (this._thumbLength === value) {
+        if (this._thumbHeight === value) {
             return;
         }
 

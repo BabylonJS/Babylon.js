@@ -342,7 +342,7 @@ export class TouchHolographicButton extends TouchButton3D {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         SceneLoader.ImportMeshAsync(undefined, baseUrl, TouchHolographicButton.MODEL_FILENAME, scene).then((result) => {
             const alphaMesh = CreateBox(
-                "${this.name}_alphaMesh",
+                `${this.name}_alphaMesh`,
                 {
                     width: 1.0,
                     height: 1.0,
@@ -351,7 +351,7 @@ export class TouchHolographicButton extends TouchButton3D {
                 scene
             );
             alphaMesh.isPickable = false;
-            alphaMesh.material = new StandardMaterial("${this.name}_alphaMesh_material", scene);
+            alphaMesh.material = new StandardMaterial(`${this.name}_alphaMesh_material`, scene);
             alphaMesh.material.alpha = 0.15;
 
             const importedFrontPlate = result.meshes[1];
@@ -387,7 +387,7 @@ export class TouchHolographicButton extends TouchButton3D {
         this._backPlate.addChild(collisionMesh);
         this._backPlate.addChild(this._textPlate);
 
-        const tn = new TransformNode(`{this.name}_root`, scene);
+        const tn = new TransformNode(`${this.name}_root`, scene);
         this._backPlate.setParent(tn);
 
         this.collisionMesh = collisionMesh;
