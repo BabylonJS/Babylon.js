@@ -390,32 +390,34 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     }
 
     private _initFromUrl(url: string): void {
+        // if there are custom request modifiers or headers, we need to pre-fetch the audio via WebRequest so that they are applied, then present the result to the <audio> element as a same-origin blob URL
         if (WebRequest.IsCustomRequestAvailable) {
             // When custom headers or request modifiers are registered, pre-fetch via WebRequest so they are applied,
             // then present the result to the <audio> element as a same-origin blob URL.
             const audio = new Audio();
             this._initFromMediaElement(audio);
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             _LoadArrayBufferFromUrlAsync(_CleanUrl(url))
+                // eslint-disable-next-line github/no-then
                 .then(({ data, contentType }) => {
-                    const blob = new Blob([data], { type: contentType || "audio/mpeg" });
-                    this._blobUrl = URL.createObjectURL(blob);
-                    audio.src = this._blobUrl;
-                    audio.load();
+                    this._setAudioSourceFromArrayBuffer(audio, data, contentType);
                 })
+                // eslint-disable-next-line github/no-then
                 .catch(this._onError);
             return;
         }
+        // otherwise - load directly from the URL
         const audio = new Audio(_CleanUrl(url));
         this._initFromMediaElement(audio);
     }
 
     private _initFromUrls(urls: string[]): void {
+        // if there are modifiers we need to try loading each url until we find one that works, since we don't know which one will be compatible with the browser
         if (WebRequest.IsCustomRequestAvailable) {
             // When custom headers or request modifiers are registered, pre-fetch via WebRequest so they are applied.
             // Try each URL in order, stopping at the first successful download.
             const audio = new Audio();
             this._initFromMediaElement(audio);
+            // eslint-disable-next-line no-restricted-syntax
             const tryNextUrl = async (index: number): Promise<void> => {
                 if (index >= urls.length) {
                     this._onError(new Error("No compatible audio format found."));
@@ -423,12 +425,8 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
                 }
                 try {
                     const { data, contentType } = await _LoadArrayBufferFromUrlAsync(_CleanUrl(urls[index]));
-                    const blob = new Blob([data], { type: contentType || "audio/mpeg" });
-                    this._blobUrl = URL.createObjectURL(blob);
-                    audio.src = this._blobUrl;
-                    audio.load();
+                    this._setAudioSourceFromArrayBuffer(audio, data, contentType);
                 } catch {
-                    // eslint-disable-next-line no-await-in-loop
                     await tryNextUrl(index + 1);
                 }
             };
@@ -446,6 +444,16 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
         }
 
         this._initFromMediaElement(audio);
+    }
+
+    private _setAudioSourceFromArrayBuffer(audio: HTMLMediaElement, data: ArrayBuffer, contentType: Nullable<string>): void {
+        if (this._blobUrl) {
+            URL.revokeObjectURL(this._blobUrl);
+        }
+        const blob = new Blob([data], { type: contentType || "audio/mpeg" });
+        this._blobUrl = URL.createObjectURL(blob);
+        audio.src = this._blobUrl;
+        audio.load();
     }
 
     private _onCanPlayThrough: () => void = () => {
