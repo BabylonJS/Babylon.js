@@ -584,10 +584,10 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     private static _GenerateTrackedJointMeshes(options: IWebXRHandTrackingOptions, originalMesh: AbstractMesh): { left: AbstractMesh[]; right: AbstractMesh[] } {
         const meshes: { left: AbstractMesh[]; right: AbstractMesh[] } = { left: [], right: [] };
 
+        originalMesh.isVisible = !!options.jointMeshes?.keepOriginalVisible;
         for (const handedness of ["left", "right"] as const) {
             const h = handedness as "left" | "right";
             const trackedMeshes: AbstractMesh[] = [];
-            originalMesh.isVisible = !!options.jointMeshes?.keepOriginalVisible;
             for (let i = 0; i < HandJointReferenceArray.length; i++) {
                 let newInstance: AbstractMesh;
                 if (originalMesh instanceof Mesh) {
