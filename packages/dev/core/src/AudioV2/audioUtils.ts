@@ -101,7 +101,7 @@ export function _CleanUrl(url: string) {
  * @internal
  */
 export function _GetUrlForStreaming(url: string): string {
-    const { url: modifiedUrl, headers } = WebRequest._CollectCustomizations(url, {});
+    const { url: modifiedUrl, headers } = WebRequest._CollectCustomizations(url);
     if (Object.keys(headers).length > 0) {
         Logger.Warn(
             "WebAudioStreamingSound: Custom request headers cannot be applied to a streaming <audio> element and will be ignored. " +

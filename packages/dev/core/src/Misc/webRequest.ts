@@ -65,7 +65,7 @@ export class WebRequest implements IWebRequest {
      * @returns An object containing the final URL and the merged headers after applying all modifiers and header customizations.
      * @internal
      */
-    public static _CollectCustomizations(url: string, baseHeaders: Record<string, string>): { url: string; headers: Record<string, string> } {
+    public static _CollectCustomizations(url: string, baseHeaders: Record<string, string> = {}): { url: string; headers: Record<string, string> } {
         const headers: Record<string, string> = { ...baseHeaders };
 
         if (WebRequest._ShouldSkipRequestModifications(url)) {
@@ -156,18 +156,6 @@ export class WebRequest implements IWebRequest {
      */
     public get requestURL(): string {
         return this._requestURL;
-    }
-
-    private _injectCustomRequestHeaders(): void {
-        if (WebRequest._ShouldSkipRequestModifications(this._requestURL)) {
-            return;
-        }
-        for (const key in WebRequest.CustomRequestHeaders) {
-            const val = WebRequest.CustomRequestHeaders[key];
-            if (val) {
-                this._xhr.setRequestHeader(key, val);
-            }
-        }
     }
 
     /**
@@ -277,10 +265,6 @@ export class WebRequest implements IWebRequest {
      * @param body defines an optional request body
      */
     public send(body?: Document | XMLHttpRequestBodyInit | null): void {
-        if (WebRequest.CustomRequestHeaders) {
-            this._injectCustomRequestHeaders();
-        }
-
         this._xhr.send(body);
     }
 
@@ -290,18 +274,17 @@ export class WebRequest implements IWebRequest {
      * @param url defines the url to connect with
      */
     public open(method: string, url: string): void {
-        for (const update of WebRequest.CustomRequestModifiers) {
-            if (WebRequest._ShouldSkipRequestModifications(url)) {
-                return;
-            }
-            url = update(this._xhr, url) || url;
+        const { url: modifiedUrl, headers } = WebRequest._CollectCustomizations(url);
+
+        this._requestURL = WebRequest._CleanUrl(modifiedUrl);
+
+        this._xhr.open(method, this._requestURL, true);
+
+        // Apply the collected headers (CustomRequestHeaders + modifier-set headers) to the XHR.
+        // Must happen after open() and before send().
+        for (const key in headers) {
+            this._xhr.setRequestHeader(key, headers[key]);
         }
-
-        url = WebRequest._CleanUrl(url);
-
-        this._requestURL = url;
-
-        this._xhr.open(method, url, true);
     }
 
     /**
