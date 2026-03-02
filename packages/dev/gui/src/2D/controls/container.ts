@@ -85,6 +85,7 @@ export class Container extends Control {
             this.height = "100%";
         }
 
+        this._rebuildLayout = true;
         this._markAsDirty();
     }
 
@@ -105,6 +106,7 @@ export class Container extends Control {
             this.width = "100%";
         }
 
+        this._rebuildLayout = true;
         this._markAsDirty();
     }
 
