@@ -366,4 +366,3 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
         </>
     );
 };
-
