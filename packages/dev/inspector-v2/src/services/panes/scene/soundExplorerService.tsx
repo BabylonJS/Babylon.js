@@ -4,6 +4,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 import type { IWatcherService } from "../../watcherService";
 
+import { tokens } from "@fluentui/react-components";
 import { SoundWaveCircleRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc/observable";
@@ -71,7 +72,7 @@ export const SoundExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplor
                     },
                 };
             },
-            entityIcon: () => <SoundWaveCircleRegular />,
+            entityIcon: () => <SoundWaveCircleRegular color={tokens.colorPaletteForestForeground2} />,
             getEntityAddedObservables: () => [soundAddedObservable],
             getEntityRemovedObservables: () => [soundRemovedObservable],
         });

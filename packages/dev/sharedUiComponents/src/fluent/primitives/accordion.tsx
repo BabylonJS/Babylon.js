@@ -76,6 +76,7 @@ const useStyles = makeStyles({
     },
     menuBar: {
         display: "flex",
+        padding: `0 ${tokens.spacingHorizontalM}`,
     },
     menuBarControls: {
         display: "flex",

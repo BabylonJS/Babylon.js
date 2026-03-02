@@ -295,7 +295,10 @@ export class _IblShadowsVoxelRenderer {
         }
 
         const isWebGPU = this._engine.isWebGPU;
-        this._maxDrawBuffers = this._engine.getCaps().maxDrawBuffers || 0;
+        // Round down to a power of 2 so it evenly divides the power-of-2 voxel resolution,
+        // preventing out-of-bounds layer indices in the last MRT slab.
+        const rawMaxDrawBuffers = this._engine.getCaps().maxDrawBuffers || 0;
+        this._maxDrawBuffers = rawMaxDrawBuffers >= 1 ? 1 << Math.floor(Math.log2(rawMaxDrawBuffers)) : 0;
 
         this._copyMipEffectRenderer = new EffectRenderer(this._engine);
         this._copyMipEffectWrapper = new EffectWrapper({

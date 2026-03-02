@@ -5,6 +5,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import {
     BorderNoneRegular,
     BorderOutsideRegular,
@@ -21,6 +22,7 @@ import {
 } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
+import { FindMainCamera, FindMainObjectRenderer } from "core/FrameGraph/frameGraphUtils";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -35,7 +37,6 @@ import { SceneContextIdentity } from "../../sceneContext";
 import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
-import { FindMainCamera, FindMainObjectRenderer } from "core/FrameGraph/frameGraphUtils";
 
 import "core/Rendering/boundingBoxRenderer";
 
@@ -107,13 +108,13 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
             entityIcon: ({ entity: node }) =>
                 node instanceof AbstractMesh ? (
-                    <MeshIcon />
+                    <MeshIcon color={tokens.colorPaletteBlueForeground2} />
                 ) : node instanceof TransformNode ? (
-                    <MyLocationRegular />
+                    <MyLocationRegular color={tokens.colorPaletteBlueForeground2} />
                 ) : node instanceof Camera ? (
-                    <CameraRegular />
+                    <CameraRegular color={tokens.colorPaletteGreenForeground2} />
                 ) : node instanceof Light ? (
-                    <LightbulbRegular />
+                    <LightbulbRegular color={tokens.colorPaletteYellowForeground2} />
                 ) : (
                     <></>
                 ),

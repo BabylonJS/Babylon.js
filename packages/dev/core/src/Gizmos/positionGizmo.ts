@@ -256,7 +256,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     }
 
     /**
-     * posture that the gizmo will be display
+     * Orientation that the gizmo will be displayed with.
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
     public override get customRotationQuaternion(): Nullable<Quaternion> {
@@ -412,7 +412,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      */
     public override setCustomMesh() {
         Logger.Error(
-            "Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo,gizmo.xPlaneGizmo, gizmo.yPlaneGizmo, gizmo.zPlaneGizmo)"
+            "Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo, gizmo.xPlaneGizmo, gizmo.yPlaneGizmo, gizmo.zPlaneGizmo)"
         );
     }
 }

@@ -1,20 +1,8 @@
-import type {
-    AbstractMesh,
-    MorphTargetManager,
-    Immutable,
-    Bone,
-    Nullable,
-    MorphTarget,
-    AnimationGroup,
-    Animation,
-    Node,
-    Skeleton,
-    TargetedAnimation,
-    DeepImmutableObject,
-} from "core/index";
+import type { MorphTargetManager, Immutable, Bone, Nullable, MorphTarget, AnimationGroup, Animation, Node, Skeleton, TargetedAnimation, DeepImmutableObject } from "core/index";
 import { Vector3, Quaternion, TmpVectors, Matrix } from "core/Maths/math.vector";
 import { Logger } from "../Misc/logger";
 import { TransformNode } from "../Meshes/transformNode";
+import { AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * Options for retargeting an animation group to an avatar.
@@ -146,11 +134,13 @@ export class AnimatorAvatar {
      * @param name - The name to assign to this avatar and its root node
      * @param rootNode - The root node of the avatar hierarchy. This node and its descendants will be scanned for meshes, skeletons and morph target managers. If not provided, you are expected to manually manage meshes, skeletons and morph target managers.
      * @param _disposeResources - Indicates whether to dispose of resources (meshes, skeletons, morph target managers, root node and descendants + materials and textures) when the avatar is disposed (true by default)
+     * @param setAvatarName - Indicates whether to set the name of the root node to the avatar name. Default is true. Set this to false if you don't want the root node to be renamed, or if you want to set it to a different name after creating the avatar.
      */
     constructor(
         public readonly name: string,
         public readonly rootNode?: TransformNode,
-        private _disposeResources = true
+        private _disposeResources = true,
+        setAvatarName = true
     ) {
         this.meshes = [];
         this.skeletons = new Set<Skeleton>();
@@ -160,29 +150,39 @@ export class AnimatorAvatar {
             return;
         }
 
-        rootNode.name = name;
+        if (setAvatarName) {
+            rootNode.name = name;
+        }
+
+        if (rootNode instanceof AbstractMesh && rootNode.getTotalVertices() > 0) {
+            this._collectMesh(rootNode);
+        }
 
         rootNode
             .getChildMeshes(false, (node) => {
                 const mesh = node as AbstractMesh;
-                return mesh.getTotalVertices && mesh.getTotalVertices() > 0;
+                return mesh.getTotalVertices() > 0;
             })
             .forEach((mesh) => {
-                this.meshes.push(mesh);
-
-                if (mesh.skeleton) {
-                    this.skeletons.add(mesh.skeleton);
-                }
-
-                if (mesh.morphTargetManager) {
-                    mesh.morphTargetManager.meshName = mesh.name;
-                    mesh.morphTargetManager.numMaxInfluencers = mesh.morphTargetManager.numTargets;
-
-                    this.morphTargetManagers.add(mesh.morphTargetManager);
-                }
+                this._collectMesh(mesh);
             });
 
         this._computeBoneWorldMatrices();
+    }
+
+    private _collectMesh(mesh: AbstractMesh) {
+        this.meshes.push(mesh);
+
+        if (mesh.skeleton) {
+            this.skeletons.add(mesh.skeleton);
+        }
+
+        if (mesh.morphTargetManager) {
+            mesh.morphTargetManager.meshName = mesh.name;
+            mesh.morphTargetManager.numMaxInfluencers = mesh.morphTargetManager.numTargets;
+
+            this.morphTargetManagers.add(mesh.morphTargetManager);
+        }
     }
 
     /**

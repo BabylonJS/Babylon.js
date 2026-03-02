@@ -421,7 +421,7 @@ export class LockConstraint extends PhysicsConstraint {
  * @param axisA - The first axis of the constraint in local space.
  * @param axisB - The second axis of the constraint in local space.
  * @param scene - The scene the constraint belongs to.
- * @returns The created LockConstraint.
+ * @returns The created PrismaticConstraint.
  */
 export class PrismaticConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
