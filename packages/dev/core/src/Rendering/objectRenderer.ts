@@ -836,7 +836,7 @@ export class ObjectRenderer {
         let checkLayerMask = false;
 
         const defaultRenderList = this.renderList ? this.renderList : scene.frameGraph ? scene.meshes : scene.getActiveMeshes().data;
-        const defaultRenderListLength = this.renderList ? this.renderList.length : scene.frameGraph ? scene.meshes.length : scene.getActiveMeshes().length;
+        const defaultRenderListLength = this.renderList || scene.frameGraph ? defaultRenderList.length : scene.getActiveMeshes().length;
 
         if (this.getCustomRenderList) {
             currentRenderList = this.getCustomRenderList(passIndex, defaultRenderList, defaultRenderListLength);
@@ -1104,3 +1104,4 @@ export class ObjectRenderer {
         }
     }
 }
+
