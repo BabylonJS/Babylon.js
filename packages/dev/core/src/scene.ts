@@ -4960,6 +4960,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
 
+        // Set the render pass id before evaluating active meshes so that instance registration in WebGPU (which is per render pass id) uses the correct pass id
+        this._engine.currentRenderPassId = camera.outputRenderTarget?.renderPassId ?? camera.renderPassId ?? Constants.RENDERPASS_MAIN;
+
         // Meshes
         this._evaluateActiveMeshes();
 
@@ -5052,8 +5055,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             this._intermediateRendering = false;
         }
-
-        this._engine.currentRenderPassId = camera.outputRenderTarget?.renderPassId ?? camera.renderPassId ?? Constants.RENDERPASS_MAIN;
 
         // Restore framebuffer after rendering to targets
         if (needRebind && !this.prePass) {
