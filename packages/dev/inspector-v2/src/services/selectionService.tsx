@@ -17,7 +17,7 @@ import { ShellServiceIdentity } from "./shellService";
 /**
  * The unique identity symbol for the selection service.
  */
-export const SelectionServiceIdentity = Symbol("PropertiesService");
+export const SelectionServiceIdentity = Symbol("SelectionService");
 
 /**
  * Tracks the currently selected entity.
