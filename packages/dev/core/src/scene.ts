@@ -2656,6 +2656,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             this._isReadyChecks.splice(index, 1);
         }
     }
+
     /**
      * Registers a function to be executed when the scene is ready
      * @param func - the function to be executed
