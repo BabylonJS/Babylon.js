@@ -25,13 +25,9 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     /** @internal */
     public dbgSanityChecks = true;
     /** @internal */
-    public dbgVerboseLogsNumFrames = 10;
-    /** @internal */
     public dbgLogIfNotDrawWrapper = true;
     /** @internal */
     public dbgShowEmptyEnableEffectCalls = true;
-    /** @internal */
-    public dbgVerboseLogsForFirstFrames = false;
 
     /** @internal */
     public _textureHelper: WebGPUTextureManager;
@@ -138,7 +134,7 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
             }
             this._renderEncoder.popDebugGroup();
             this._debugStackRenderEncoder.pop();
-            }
+        }
 
         this._currentRenderPass = null;
         this._debugNumPopPending = 0;
@@ -164,26 +160,6 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
         }
 
         const mipmapCount = WebGPUTextureHelper.ComputeNumMipmapLevels(texture.width, texture.height);
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log(
-                    "frame #" +
-                        (this as any)._count +
-                        " - generate mipmaps - width=" +
-                        texture.width +
-                        ", height=" +
-                        texture.height +
-                        ", isCube=" +
-                        texture.isCube +
-                        ", command encoder=" +
-                        (commandEncoder === this._renderEncoder ? "render" : "copy")
-                );
-            }
-        }
 
         if (texture.isCube) {
             this._textureHelper.generateCubeMipmaps(gpuHardwareTexture, mipmapCount, commandEncoder);

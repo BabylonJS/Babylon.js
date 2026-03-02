@@ -30,7 +30,7 @@ import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { IHardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
 import type { IColor4Like } from "../Maths/math.like";
-import { UniformBuffer } from "../Materials/uniformBuffer";
+import type { UniformBuffer } from "../Materials/uniformBuffer";
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilStateComposer } from "./WebGPU/webgpuStencilStateComposer";
@@ -949,7 +949,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             supportSpriteInstancing: true,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: true,
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: true,
-            _collectUbosUpdatedInFrame: false,
         };
 
         this._alphaState = new AlphaState(this._caps.blendParametersPerTarget);
@@ -1232,15 +1231,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             return false;
         }
 
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log(["frame #" + (this as any)._count + " - setSize -", width, height]);
-            }
-        }
-
         this._initializeMainAttachments();
 
         if (this.snapshotRendering) {
@@ -1390,22 +1380,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         } else {
             this._getCurrentRenderPass().setViewport(x, y, w, h, 0, 1);
         }
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log([
-                    "frame #" + (this as any)._count + " - viewport applied - (",
-                    this._viewportCached.x,
-                    this._viewportCached.y,
-                    this._viewportCached.z,
-                    this._viewportCached.w,
-                    ") current pass is main pass=" + this._currentPassIsMainPass(),
-                ]);
-            }
-        }
     }
 
     /**
@@ -1446,22 +1420,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             bundleList.addItem(new WebGPURenderItemScissor(this._scissorCached.x, y, this._scissorCached.z, this._scissorCached.w));
         } else {
             this._getCurrentRenderPass().setScissorRect(this._scissorCached.x, y, this._scissorCached.z, this._scissorCached.w);
-        }
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log([
-                    "frame #" + (this as any)._count + " - scissor applied - (",
-                    this._scissorCached.x,
-                    this._scissorCached.y,
-                    this._scissorCached.z,
-                    this._scissorCached.w,
-                    ") current pass is main pass=" + this._currentPassIsMainPass(),
-                ]);
-            }
         }
     }
 
@@ -1554,15 +1512,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         const hasScissor = this._scissorIsActive();
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log(["frame #" + (this as any)._count + " - clear - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil, " scissor is active=", hasScissor]);
-            }
-        }
 
         // We need to recreate the render pass so that the new parameters for clear color / depth / stencil are taken into account
         if (this._currentRenderTarget) {
@@ -2802,15 +2751,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
 
             this._setInternalTexture(name, internalTexture, baseName);
-        } else {
-            if (this.dbgVerboseLogsForFirstFrames) {
-                if ((this as any)._count === undefined) {
-                    (this as any)._count = 0;
-                }
-                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                    Logger.Log(["frame #" + (this as any)._count + " - _setTexture called with a null _currentEffect! texture=", texture]);
-                }
-            }
         }
 
         return true;
@@ -3039,22 +2979,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._textureHelper.destroyDeferredTextures();
         this._bufferManager.destroyDeferredBuffers();
 
-        if (this._features._collectUbosUpdatedInFrame) {
-            if (this.dbgVerboseLogsForFirstFrames) {
-                if ((this as any)._count === undefined) {
-                    (this as any)._count = 0;
-                }
-                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                    const list: Array<string> = [];
-                    for (const name in UniformBuffer._UpdatedUbosInFrame) {
-                        list.push(name + ":" + UniformBuffer._UpdatedUbosInFrame[name]);
-                    }
-                    Logger.Log(["frame #" + (this as any)._count + " - updated ubos -", list.join(", ")]);
-                }
-            }
-            UniformBuffer._UpdatedUbosInFrame = {};
-        }
-
         this.countersLastFrame.numEnableEffects = this._counters.numEnableEffects;
         this.countersLastFrame.numEnableDrawWrapper = this._counters.numEnableDrawWrapper;
         this.countersLastFrame.numBundleCreationNonCompatMode = this._counters.numBundleCreationNonCompatMode;
@@ -3066,21 +2990,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this._cacheRenderPipeline.endFrame();
         this._cacheBindGroups.endFrame();
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if ((this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log(["%c frame #" + (this as any)._count + " - end", "background: #ffff00"]);
-            }
-            if ((this as any)._count < this.dbgVerboseLogsNumFrames) {
-                (this as any)._count++;
-                if ((this as any)._count !== this.dbgVerboseLogsNumFrames) {
-                    Logger.Log(["%c frame #" + (this as any)._count + " - begin", "background: #ffff00"]);
-                }
-            }
-        }
 
         super.endFrame();
     }
@@ -3353,20 +3262,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.view = swapChainTexture.createView(ViewDescriptorSwapChain);
         }
 
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log([
-                    "frame #" + (this as any)._count + " - main begin pass - texture width=" + (this._mainTextureExtends as any).width,
-                    " height=" + (this._mainTextureExtends as any).height + ", setClearStates=" + setClearStates,
-                    "renderPassDescriptor=",
-                    this._mainRenderPassWrapper.renderPassDescriptor,
-                ]);
-            }
-        }
-
         this._timestampQuery.startPass(this._mainRenderPassWrapper.renderPassDescriptor!, this._timestampIndex);
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._mainRenderPassWrapper.renderPassDescriptor!);
 
@@ -3440,32 +3335,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             aspect: WebGPUConstants.TextureAspect.All,
         };
 
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log([
-                    "frame #" +
-                        (this as any)._count +
-                        " - bindFramebuffer - rtt name=" +
-                        texture.label +
-                        ", internalTexture.uniqueId=" +
-                        texture.texture?.uniqueId +
-                        ", face=" +
-                        faceIndex +
-                        ", lodLevel=" +
-                        lodLevel +
-                        ", layer=" +
-                        layer,
-                    "colorAttachmentViewDescriptor=",
-                    this._rttRenderPassWrapper.colorAttachmentViewDescriptor,
-                    "depthAttachmentViewDescriptor=",
-                    this._rttRenderPassWrapper.depthAttachmentViewDescriptor,
-                ]);
-            }
-        }
-
         // We don't create the render pass just now, we do a lazy creation of the render pass, hoping the render pass will be created by a call to clear()...
         // However, if snapshot rendering is enabled, we need to create the render pass immediately, to be sure currentRenderPass is not null when _endCurrentRenderPass() is called.
         // (as in snapshot rendering mode, we may not have a call to clear() before _endCurrentRenderPass(), so lazy creation would not work)
@@ -3517,15 +3386,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._resolveAndGenerateMipMapsFramebuffer(texture, disableGenerateMipMaps);
 
         this._currentRenderTarget = null;
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                Logger.Log("frame #" + (this as any)._count + " - unBindFramebuffer - rtt name=" + texture.label + ", internalTexture.uniqueId=", texture.texture?.uniqueId);
-            }
-        }
 
         this._mrtAttachments = [];
         this._cacheRenderPipeline.setMRT([]);
