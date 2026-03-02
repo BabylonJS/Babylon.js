@@ -16,7 +16,6 @@ import type {
     ShadowLight,
     SmartArray,
     SubMesh,
-    ClusteredLightContainer,
     RenderingGroup,
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
@@ -25,7 +24,6 @@ import { ObjectRenderer } from "../../../Rendering/objectRenderer";
 import { Constants } from "../../../Engines/constants";
 import { ThinDepthPeelingRenderer } from "../../../Rendering/thinDepthPeelingRenderer";
 import { FrameGraphRenderTarget } from "../../frameGraphRenderTarget";
-import { LightConstants } from "../../../Lights/lightConstants";
 
 /**
  * Task used to render objects to a texture.
