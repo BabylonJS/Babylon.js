@@ -494,7 +494,7 @@ export class Container extends Control {
             rebuildCount++;
         } while (this._rebuildLayout && rebuildCount < this.maxLayoutCycle);
 
-        if (rebuildCount >= this.maxLayoutCycle && this.logLayoutCycleErrors) {
+        if (this._rebuildLayout && rebuildCount >= this.maxLayoutCycle && this.logLayoutCycleErrors) {
             Logger.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
         }
 
