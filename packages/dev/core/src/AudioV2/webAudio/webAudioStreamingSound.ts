@@ -171,7 +171,7 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
 
 /** @internal */
 class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements IWebAudioOutNode {
-    private _blobUrl: Nullable<string> = null;
+    private _blobUrls: string[] = [];
     private _currentTimeChangedWhilePaused = false;
     private _enginePlayTime: number = Infinity;
     private _enginePauseTime: number = 0;
@@ -264,10 +264,10 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             this._mediaElement.removeChild(source);
         }
 
-        if (this._blobUrl) {
-            URL.revokeObjectURL(this._blobUrl);
-            this._blobUrl = null;
+        for (const blobUrl of this._blobUrls) {
+            URL.revokeObjectURL(blobUrl);
         }
+        this._blobUrls.length = 0;
 
         this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
         this.engine.userGestureObservable.removeCallback(this._onUserGesture);
@@ -411,49 +411,58 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
     }
 
     private _initFromUrls(urls: string[]): void {
-        // if there are modifiers we need to try loading each url until we find one that works, since we don't know which one will be compatible with the browser
+        const audio = new Audio();
+        this._initFromMediaElement(audio);
+
         if (WebRequest.IsCustomRequestAvailable) {
-            // When custom headers or request modifiers are registered, pre-fetch via WebRequest so they are applied.
-            // Try each URL in order, stopping at the first successful download.
-            const audio = new Audio();
-            this._initFromMediaElement(audio);
-            // eslint-disable-next-line no-restricted-syntax
-            const tryNextUrl = async (index: number): Promise<void> => {
-                if (index >= urls.length) {
+            // When custom headers or request modifiers are registered, pre-fetch all URLs via WebRequest so they are
+            // applied, then add the resulting blob URLs as <source> elements so the browser can pick the compatible format.
+            const fetchAll = urls.map(async (url) => await _LoadArrayBufferFromUrlAsync(_CleanUrl(url)));
+            // eslint-disable-next-line github/no-then
+            void Promise.allSettled(fetchAll).then((results) => {
+                let anySucceeded = false;
+                for (const result of results) {
+                    if (result.status === "fulfilled") {
+                        const { data, contentType } = result.value;
+                        this._setAudioSourceFromArrayBuffer(audio, data, contentType, true);
+                        anySucceeded = true;
+                    }
+                }
+                if (!anySucceeded) {
                     this._onError(new Error("No compatible audio format found."));
                     return;
                 }
-                try {
-                    const { data, contentType } = await _LoadArrayBufferFromUrlAsync(_CleanUrl(urls[index]));
-                    this._setAudioSourceFromArrayBuffer(audio, data, contentType);
-                } catch {
-                    await tryNextUrl(index + 1);
-                }
-            };
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            tryNextUrl(0);
+                // load is called twice because the sources were only added just now.
+                audio.load();
+            });
             return;
         }
-
-        const audio = new Audio();
 
         for (const url of urls) {
             const source = document.createElement("source");
             source.src = _CleanUrl(url);
             audio.appendChild(source);
         }
-
-        this._initFromMediaElement(audio);
     }
 
-    private _setAudioSourceFromArrayBuffer(audio: HTMLMediaElement, data: ArrayBuffer, contentType: Nullable<string>): void {
-        if (this._blobUrl) {
-            URL.revokeObjectURL(this._blobUrl);
-        }
+    private _setAudioSourceFromArrayBuffer(audio: HTMLMediaElement, data: ArrayBuffer, contentType: Nullable<string>, useSourceElement: boolean = false): void {
         const blob = new Blob([data], { type: contentType || "audio/mpeg" });
-        this._blobUrl = URL.createObjectURL(blob);
-        audio.src = this._blobUrl;
-        audio.load();
+        const blobUrl = URL.createObjectURL(blob);
+        if (useSourceElement) {
+            const source = document.createElement("source");
+            source.src = blobUrl;
+            audio.appendChild(source);
+            // notice - when using useSourceElement the audio is not being loaded immediately
+        } else {
+            // clear the existing blobs
+            let url: string | undefined;
+            while ((url = this._blobUrls.shift())) {
+                URL.revokeObjectURL(url);
+            }
+            audio.src = blobUrl;
+            audio.load();
+        }
+        this._blobUrls.push(blobUrl);
     }
 
     private _onCanPlayThrough: () => void = () => {
