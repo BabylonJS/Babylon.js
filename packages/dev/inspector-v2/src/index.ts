@@ -38,9 +38,10 @@ export type { IThemeService } from "./services/themeService";
 export { ThemeServiceIdentity } from "./services/themeService";
 export type { ISettingsStore, SettingDescriptor } from "./services/settingsStore";
 export { SettingsStoreIdentity } from "./services/settingsStore";
-
 export type { IGizmoService, GizmoMode } from "./services/gizmoService";
 export { GizmoServiceIdentity } from "./services/gizmoService";
+export type { IWatcherService } from "./services/watcherService";
+export { WatcherServiceIdentity } from "./services/watcherService";
 
 export * from "./services/sceneContext";
 export * from "./services/selectionService";
@@ -79,6 +80,7 @@ export * from "shared-ui-components/fluent/primitives/primitive";
 export * from "shared-ui-components/fluent/primitives/searchBar";
 export * from "shared-ui-components/fluent/primitives/searchBox";
 export * from "shared-ui-components/fluent/primitives/skeletonSelector";
+export * from "shared-ui-components/fluent/primitives/slider";
 export * from "shared-ui-components/fluent/primitives/spinButton";
 export * from "shared-ui-components/fluent/primitives/switch";
 export * from "shared-ui-components/fluent/primitives/syncedSlider";

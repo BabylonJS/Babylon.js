@@ -219,9 +219,26 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
 
     const envTexture = useProperty(scene, "environmentTexture");
     const fogMode = useProperty(scene, "fogMode");
+    const useOIT = useProperty(scene, "useOrderIndependentTransparency");
 
     return (
         <>
+            <BoundProperty component={SwitchPropertyLine} label="OIT" description="Order Independent Transparency" target={scene} propertyKey="useOrderIndependentTransparency" />
+
+            <Collapse visible={useOIT}>
+                {scene.depthPeelingRenderer && (
+                    <BoundProperty
+                        component={SyncedSliderPropertyLine}
+                        label="passCount"
+                        description="Render the number of transparent layers"
+                        target={scene.depthPeelingRenderer}
+                        propertyKey="passCount"
+                        min={2}
+                        max={8}
+                        step={1}
+                    />
+                )}
+            </Collapse>
             <NumberDropdownPropertyLine
                 options={
                     [

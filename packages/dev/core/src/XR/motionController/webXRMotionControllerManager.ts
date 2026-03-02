@@ -91,7 +91,7 @@ export class WebXRMotionControllerManager {
      * @returns an array with corresponding fallback profiles
      */
     public static FindFallbackWithProfileId(profileId: string): string[] {
-        const returnArray = this._Fallbacks[profileId] || [];
+        const returnArray = [...(this._Fallbacks[profileId] || [])];
 
         returnArray.unshift(profileId);
         return returnArray;
@@ -121,7 +121,7 @@ export class WebXRMotionControllerManager {
         // emulator support
         if (profileArray.length && !profileArray[0]) {
             // remove the first "undefined" that the emulator is adding
-            profileArray.pop();
+            profileArray.shift();
         }
 
         // legacy support - try using the gamepad id

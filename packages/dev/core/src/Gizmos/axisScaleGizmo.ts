@@ -235,10 +235,10 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
                 if (Math.abs(this.snapDistance) > 0 && this.incrementalSnap) {
                     // get current scaling
                     this.attachedNode.getWorldMatrix().decompose(undefined, TmpVectors.Quaternion[0], TmpVectors.Vector3[2], Gizmo.PreserveScaling ? transformNode : undefined);
-                    // apply incrementaly, without taking care of current scaling value
+                    // apply incrementally, without taking care of current scaling value
                     tmpVector.addInPlace(this._incrementalStartupValue);
                     tmpVector.addInPlaceFromFloats(-1, -1, -1);
-                    // keep same sign or stretching close to 0 will change orientation at each drag and scaling will oscilate around 0
+                    // keep same sign or stretching close to 0 will change orientation at each drag and scaling will oscillate around 0
                     tmpVector.x = Math.abs(tmpVector.x) * (this._incrementalStartupValue.x > 0 ? 1 : -1);
                     tmpVector.y = Math.abs(tmpVector.y) * (this._incrementalStartupValue.y > 0 ? 1 : -1);
                     tmpVector.z = Math.abs(tmpVector.z) * (this._incrementalStartupValue.z > 0 ? 1 : -1);

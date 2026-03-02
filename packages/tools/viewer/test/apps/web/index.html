@@ -318,7 +318,7 @@
 
             let inspectorToken = null;
             globalThis.onToggleInspector = async () => {
-                const { ShowInspector } = await import("inspector-v2/inspector");
+                const { ShowInspector } = await import("inspector/inspector");
                 console.log("toggle inspector");
                 if (inspectorToken) {
                     inspectorToken.dispose();

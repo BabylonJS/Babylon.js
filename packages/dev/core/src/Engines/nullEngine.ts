@@ -723,6 +723,10 @@ export class NullEngine extends Engine {
         if (format) {
             texture.format = format;
         }
+        // Store buffer to support export/serialization and other operations.
+        if (buffer) {
+            texture._buffer = buffer;
+        }
 
         texture.isReady = true;
 

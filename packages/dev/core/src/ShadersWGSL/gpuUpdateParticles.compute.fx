@@ -285,7 +285,7 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
 
             // Direction
             #ifdef DIRECTEDSPHEREEMITTER
-                newDirection = normalize(params.direction1 + (params.direction2 - params.direction1) * randoms3);
+                newDirection = params.direction1 + (params.direction2 - params.direction1) * randoms3;
             #else
                 newDirection = normalize(newPosition + params.directionRandomizer * randoms3);
             #endif

@@ -396,6 +396,7 @@ const useStyles = makeStyles({
     searchBox: {
         flex: 1,
         padding: 0,
+        maxWidth: "none",
     },
     tree: {
         rowGap: 0,

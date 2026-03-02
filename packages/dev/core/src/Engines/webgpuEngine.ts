@@ -713,10 +713,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     let numUncapturedErrors = -1;
                     this._device.addEventListener("uncapturederror", (event) => {
                         if (++numUncapturedErrors < this.numMaxUncapturedErrors) {
-                            Logger.Warn(`WebGPU uncaptured error (${numUncapturedErrors + 1}): ${(<GPUUncapturedErrorEvent>event).error} - ${(<any>event).error.message}`);
+                            Logger.Warn(
+                                `[Frame ${this._frameId}] WebGPU uncaptured error (${numUncapturedErrors + 1}): ${(<GPUUncapturedErrorEvent>event).error} - ${(<any>event).error.message}`
+                            );
                         } else if (numUncapturedErrors++ === this.numMaxUncapturedErrors) {
                             Logger.Warn(
-                                `WebGPU uncaptured error: too many warnings (${this.numMaxUncapturedErrors}), no more warnings will be reported to the console for this engine.`
+                                `[Frame ${this._frameId}] WebGPU uncaptured error: too many warnings (${this.numMaxUncapturedErrors}), no more warnings will be reported to the console for this engine.`
                             );
                         }
                     });

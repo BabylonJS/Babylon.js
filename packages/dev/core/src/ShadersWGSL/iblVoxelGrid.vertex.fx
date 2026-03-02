@@ -17,187 +17,211 @@ var<storage, read> position : array<f32>;
 #if NUM_BONE_INFLUENCERS > 0
   var<storage, read> matricesIndices : array<u32>;
   var<storage, read> matricesWeights : array<f32>;
-  uniform vp_matricesIndices_info: vec3f;
-  uniform vp_matricesWeights_info: vec3f;
-  #if NUM_BONE_INFLUENCERS > 4
+  uniform vp_matricesIndices_info : vec4f;
+  uniform vp_matricesWeights_info : vec4f;
+#if NUM_BONE_INFLUENCERS > 4
     var<storage, read> matricesIndicesExtra : array<u32>;
     var<storage, read> matricesWeightsExtra : array<f32>;
-    uniform vp_matricesIndicesExtra_info: vec3f;
-    uniform vp_matricesWeightsExtra_info: vec3f;
-  #endif
+    uniform vp_matricesIndicesExtra_info : vec4f;
+    uniform vp_matricesWeightsExtra_info : vec4f;
+#endif
 #endif
 
-uniform world : mat4x4f;
-uniform invWorldScale: mat4x4f;
+    // uniform world : mat4x4f;
+    uniform invWorldScale : mat4x4f;
 
-varying vNormalizedPosition : vec3f;
-flat varying f_swizzle: i32;
+    varying vNormalizedPosition : vec3f;
+    flat varying f_swizzle : i32;
 
-uniform vp_position_info: vec3f; // (offset, stride, type)
+    uniform vp_position_info : vec4f; // (offset, stride, type, normalized)
 
-fn convertToFloat(word: u32, byteInWord: u32, dataType: u32) -> f32 {
-    switch (dataType) {
-        case 5120u: { // BYTE
-            let shift = byteInWord * 8u;
-            let value = (word >> shift) & 0xFFu;
-            return f32(i32(value << 24u) >> 24u) / 127.0; // Sign extend and normalize
+    fn convertToFloat(word : u32, byteInWord : u32, dataType : u32,
+                      normalized : bool) -> f32 {
+      switch (dataType) {
+      case 5120u: { // BYTE
+        let shift = byteInWord * 8u;
+        let value = (word >> shift) & 0xFFu;
+        let signedValue = f32(i32(value << 24u) >> 24u);
+        if (normalized) {
+          return signedValue / 127.0;
         }
-        case 5121u: { // UNSIGNED_BYTE
-            let shift = byteInWord * 8u;
-            let value = (word >> shift) & 0xFFu;
-            return f32(value) / 255.0;
+        return signedValue;
+      }
+      case 5121u: { // UNSIGNED_BYTE
+        let shift = byteInWord * 8u;
+        let value = (word >> shift) & 0xFFu;
+        if (normalized) {
+          return f32(value) / 255.0;
         }
-        case 5122u: { // SHORT
-            let shift = (byteInWord & 0xFFFFFFFEu) * 8u; // Align to 2-byte boundary
-            let value = (word >> shift) & 0xFFFFu;
-            return f32(i32(value << 16u) >> 16u);
+        return f32(value);
+      }
+      case 5122u: {                                  // SHORT
+        let shift = (byteInWord & 0xFFFFFFFEu) * 8u; // Align to 2-byte boundary
+        let value = (word >> shift) & 0xFFFFu;
+        let signedValue = f32(i32(value << 16u) >> 16u);
+        if (normalized) {
+          return signedValue / 32767.0;
         }
-        case 5123u: { // UNSIGNED_SHORT
-            let shift = (byteInWord & 0xFFFFFFFEu) * 8u; // Align to 2-byte boundary
-            let value = (word >> shift) & 0xFFFFu;
-            return f32(value);
+        return signedValue;
+      }
+      case 5123u: {                                  // UNSIGNED_SHORT
+        let shift = (byteInWord & 0xFFFFFFFEu) * 8u; // Align to 2-byte boundary
+        let value = (word >> shift) & 0xFFFFu;
+        if (normalized) {
+          return f32(value) / 65535.0;
         }
-        case 5126u: { // FLOAT
-            return bitcast<f32>(word);
-        }
-        default: {
-            return 0.0;
-        }
+        return f32(value);
+      }
+      case 5126u: { // FLOAT
+        return bitcast<f32>(word);
+      }
+      default: {
+        return 0.0;
+      }
+      }
     }
-}
 
-fn readPositionValue(byteOffset: u32, dataType: u32) -> f32 {
-    let wordOffset = byteOffset / 4u;
-    let byteInWord = byteOffset % 4u;
-    let word: u32 = bitcast<u32>(position[wordOffset]);
-    
-    return convertToFloat(word, byteInWord, dataType);
+fn readPositionValue(byteOffset : u32, dataType : u32, normalized : bool)
+    -> f32 {
+  let wordOffset = byteOffset / 4u;
+  let byteInWord = byteOffset % 4u;
+  let word : u32 = bitcast<u32>(position[wordOffset]);
+
+    return convertToFloat(word, byteInWord, dataType, normalized);
 }
 
 // Helper function to read a vec3 attribute
-fn readVertexPosition(info: vec3f, vertexIndex: u32) -> vec3f {
-    let baseOffset = u32(info.x);
-    let stride = u32(info.y);
-    let dataType = u32(info.z);
-    
+fn readVertexPosition(info : vec4f, vertexIndex : u32) -> vec3f {
+  let baseOffset = u32(info.x);
+  let stride = u32(info.y);
+  let dataType = u32(info.z);
+    let normalized = info.w != 0.0;
+
     let offset = baseOffset + vertexIndex * stride;
     
     // Determine component size based on type
     let componentSize = select(select(2u, 1u, dataType == 5120u || dataType == 5121u), 4u, dataType == 5126u);
-    
+
     return vec3f(
-        readPositionValue(offset, dataType),
-        readPositionValue(offset + componentSize, dataType),
-        readPositionValue(offset + componentSize * 2u, dataType)
-    );
+        readPositionValue(offset, dataType, normalized),
+        readPositionValue(offset + componentSize, dataType, normalized),
+        readPositionValue(offset + componentSize * 2u, dataType, normalized));
 }
 
 #if NUM_BONE_INFLUENCERS > 0
 
-fn readMatrixIndexValue(byteOffset: u32, dataType: u32) -> f32 {
-    let wordOffset = byteOffset / 4u;
-    let byteInWord = byteOffset % 4u;
-    let word: u32 = matricesIndices[wordOffset];
-    
-    return convertToFloat(word, byteInWord, dataType);
+fn readMatrixIndexValue(byteOffset : u32, dataType : u32, normalized : bool)
+    -> f32 {
+  let wordOffset = byteOffset / 4u;
+  let byteInWord = byteOffset % 4u;
+  let word : u32 = matricesIndices[wordOffset];
+
+  return convertToFloat(word, byteInWord, dataType, normalized);
 }
 
-fn readMatrixIndices(info: vec3f, vertexIndex : u32) -> vec4f {
+fn readMatrixIndices(info : vec4f, vertexIndex : u32) -> vec4f {
   let baseOffset = u32(info.x);
   let stride = u32(info.y);
   let dataType = u32(info.z);
-  
+  let normalized = info.w != 0.0;
+
   let offset = baseOffset + vertexIndex * stride;
 
   // Determine component size based on type
   let componentSize = select(select(2u, 1u, dataType == 5120u || dataType == 5121u), 4u, dataType == 5126u);
 
   return vec4f(
-      readMatrixIndexValue(offset, dataType),
-      readMatrixIndexValue(offset + componentSize, dataType),
-      readMatrixIndexValue(offset + componentSize * 2u, dataType),
-      readMatrixIndexValue(offset + componentSize * 3u, dataType)
-  );
+      readMatrixIndexValue(offset, dataType, normalized),
+      readMatrixIndexValue(offset + componentSize, dataType, normalized),
+      readMatrixIndexValue(offset + componentSize * 2u, dataType, normalized),
+      readMatrixIndexValue(offset + componentSize * 3u, dataType, normalized));
 }
 
-fn readMatrixWeightValue(byteOffset: u32, dataType: u32) -> f32 {
-    let wordOffset = byteOffset / 4u;
-    let byteInWord = byteOffset % 4u;
-    let word: u32 = bitcast<u32>(matricesWeights[wordOffset]);
-    
-    return convertToFloat(word, byteInWord, dataType);
+fn readMatrixWeightValue(byteOffset : u32, dataType : u32, normalized : bool)
+    -> f32 {
+  let wordOffset = byteOffset / 4u;
+  let byteInWord = byteOffset % 4u;
+  let word : u32 = bitcast<u32>(matricesWeights[wordOffset]);
+
+  return convertToFloat(word, byteInWord, dataType, normalized);
 }
 
-fn readMatrixWeights(info: vec3f, vertexIndex : u32) -> vec4f {
+fn readMatrixWeights(info : vec4f, vertexIndex : u32) -> vec4f {
   let baseOffset = u32(info.x);
   let stride = u32(info.y);
   let dataType = u32(info.z);
-  
+  let normalized = info.w != 0.0;
+
   let offset = baseOffset + vertexIndex * stride;
 
   // Determine component size based on type
   let componentSize = select(select(2u, 1u, dataType == 5120u || dataType == 5121u), 4u, dataType == 5126u);
 
   return vec4f(
-      readMatrixWeightValue(offset, dataType),
-      readMatrixWeightValue(offset + componentSize, dataType),
-      readMatrixWeightValue(offset + componentSize * 2u, dataType),
-      readMatrixWeightValue(offset + componentSize * 3u, dataType)
-  );
+      readMatrixWeightValue(offset, dataType, normalized),
+      readMatrixWeightValue(offset + componentSize, dataType, normalized),
+      readMatrixWeightValue(offset + componentSize * 2u, dataType, normalized),
+      readMatrixWeightValue(offset + componentSize * 3u, dataType, normalized));
 }
 
 #if NUM_BONE_INFLUENCERS > 4
 
-fn readMatrixIndexExtraValue(byteOffset: u32, dataType: u32) -> f32 {
-    let wordOffset = byteOffset / 4u;
-    let byteInWord = byteOffset % 4u;
-    let word : u32 = matricesIndicesExtra[wordOffset];
+fn readMatrixIndexExtraValue(byteOffset : u32, dataType : u32,
+                             normalized : bool) -> f32 {
+  let wordOffset = byteOffset / 4u;
+  let byteInWord = byteOffset % 4u;
+  let word : u32 = matricesIndicesExtra[wordOffset];
 
-    return convertToFloat(word, byteInWord, dataType);
+  return convertToFloat(word, byteInWord, dataType, normalized);
 }
 
-fn readMatrixIndicesExtra(info: vec3f, vertexIndex : u32) -> vec4f {
+fn readMatrixIndicesExtra(info : vec4f, vertexIndex : u32) -> vec4f {
   let baseOffset = u32(info.x);
   let stride = u32(info.y);
   let dataType = u32(info.z);
-  
+  let normalized = info.w != 0.0;
+
   let offset = baseOffset + vertexIndex * stride;
 
   // Determine component size based on type
   let componentSize = select(select(2u, 1u, dataType == 5120u || dataType == 5121u), 4u, dataType == 5126u);
 
   return vec4f(
-      readMatrixIndexExtraValue(offset, dataType),
-      readMatrixIndexExtraValue(offset + componentSize, dataType),
-      readMatrixIndexExtraValue(offset + componentSize * 2u, dataType),
-      readMatrixIndexExtraValue(offset + componentSize * 3u, dataType)
-  );
+      readMatrixIndexExtraValue(offset, dataType, normalized),
+      readMatrixIndexExtraValue(offset + componentSize, dataType, normalized),
+      readMatrixIndexExtraValue(offset + componentSize * 2u, dataType,
+                                normalized),
+      readMatrixIndexExtraValue(offset + componentSize * 3u, dataType,
+                                normalized));
 }
 
-fn readMatrixWeightExtraValue(byteOffset: u32, dataType: u32) -> f32 {
-    let wordOffset = byteOffset / 4u;
-    let byteInWord = byteOffset % 4u;
-    let word: u32 = bitcast<u32>(matricesWeightsExtra[wordOffset]);
-    
-    return convertToFloat(word, byteInWord, dataType);
+fn readMatrixWeightExtraValue(byteOffset : u32, dataType : u32,
+                              normalized : bool) -> f32 {
+  let wordOffset = byteOffset / 4u;
+  let byteInWord = byteOffset % 4u;
+  let word : u32 = bitcast<u32>(matricesWeightsExtra[wordOffset]);
+
+  return convertToFloat(word, byteInWord, dataType, normalized);
 }
 
-fn readMatrixWeightsExtra(info : vec3f, vertexIndex : u32)->vec4f {
+fn readMatrixWeightsExtra(info : vec4f, vertexIndex : u32) -> vec4f {
   let baseOffset = u32(info.x);
   let stride = u32(info.y);
   let dataType = u32(info.z);
-  
+  let normalized = info.w != 0.0;
+
   let offset = baseOffset + vertexIndex * stride;
 
   // Determine component size based on type
   let componentSize = select(select(2u, 1u, dataType == 5120u || dataType == 5121u), 4u, dataType == 5126u);
 
   return vec4f(
-      readMatrixWeightExtraValue(offset, dataType),
-      readMatrixWeightExtraValue(offset + componentSize, dataType),
-      readMatrixWeightExtraValue(offset + componentSize * 2u, dataType),
-      readMatrixWeightExtraValue(offset + componentSize * 3u, dataType)
-  );
+      readMatrixWeightExtraValue(offset, dataType, normalized),
+      readMatrixWeightExtraValue(offset + componentSize, dataType, normalized),
+      readMatrixWeightExtraValue(offset + componentSize * 2u, dataType,
+                                 normalized),
+      readMatrixWeightExtraValue(offset + componentSize * 3u, dataType,
+                                 normalized));
 }
 #endif
 #endif
@@ -253,7 +277,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
       thisTriIndex = i;
     }
     var positionUpdated = readVertexPosition(uniforms.vp_position_info, vertIdx);
-    #include <instancesVertex>
+#include <instancesVertex>
     let inputPosition: vec3f = positionUpdated;
     #include <morphTargetsVertex>(vertexInputs.position\\),inputPosition),vertexInputs.vertexIndex,vertIdx)[0..maxSimultaneousMorphTargets]
 

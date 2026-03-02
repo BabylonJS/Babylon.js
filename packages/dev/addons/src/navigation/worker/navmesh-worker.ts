@@ -83,7 +83,7 @@ export function GenerateNavMeshWorker() {
             transferables.push(navMeshExport.buffer);
         }
 
-        // send tansferable message
+        // send transferable message
         self.postMessage(message, { transfer: transferables });
 
         // clean up

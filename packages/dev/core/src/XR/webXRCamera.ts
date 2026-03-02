@@ -20,6 +20,14 @@ export class WebXRCamera extends FreeCamera {
     private _referencedPosition: Vector3 = new Vector3();
     private _trackingState: WebXRTrackingState = WebXRTrackingState.NOT_TRACKING;
 
+    private _onWorldScaleFactorChanged = () => {
+        // only run if in session
+        if (!this._xrSessionManager.currentFrame) {
+            return;
+        }
+        this._updateDepthNearFar();
+    };
+
     /**
      * This will be triggered after the first XR Frame initialized the camera,
      * including the right number of views and their rendering parameters
@@ -89,14 +97,9 @@ export class WebXRCamera extends FreeCamera {
             this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
             // first frame - camera's y position should be 0 for the correct offset
             this._firstFrame = this.compensateOnFirstFrame;
-            this._xrSessionManager.onWorldScaleFactorChangedObservable.add(() => {
-                // only run if in session
-                if (!this._xrSessionManager.currentFrame) {
-                    return;
-                }
-                this._updateDepthNearFar();
-            });
         });
+
+        this._xrSessionManager.onWorldScaleFactorChangedObservable.add(this._onWorldScaleFactorChanged);
 
         // Check transformation changes on each frame. Callback is added to be first so that the transformation will be
         // applied to the rest of the elements using the referenceSpace object
@@ -209,6 +212,7 @@ export class WebXRCamera extends FreeCamera {
     }
 
     public override dispose() {
+        this._xrSessionManager.onWorldScaleFactorChangedObservable.removeCallback(this._onWorldScaleFactorChanged);
         super.dispose();
         this._lastXRViewerPose = undefined;
         this.onTrackingStateChanged.clear();

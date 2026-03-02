@@ -5309,8 +5309,33 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.onBeforeRenderObservable.notifyObservers(this);
 
+        // Customs render targets
+        this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
+
+        this._renderTargets.reset();
+
+        const currentActiveCamera = this._frameGraph?.findMainCamera() ?? null;
+        if (this.renderTargetsEnabled) {
+            if (this.environmentTexture && this.environmentTexture.isRenderTarget) {
+                this._renderTargets.pushNoDuplicate(this.environmentTexture as RenderTargetTexture);
+            }
+
+            this._renderTargets.concatWithNoDuplicate(this.customRenderTargets);
+
+            Tools.StartPerformanceCounter("Custom render targets", this._renderTargets.length > 0);
+            for (let customIndex = 0; customIndex < this._renderTargets.length; customIndex++) {
+                const renderTarget = this._renderTargets.data[customIndex];
+                const activeCamera = renderTarget.activeCamera || currentActiveCamera;
+
+                this._renderRenderTarget(renderTarget, activeCamera, true, this.dumpNextRenderTargets);
+            }
+            Tools.EndPerformanceCounter("Custom render targets", this._renderTargets.length > 0);
+            this._renderId++;
+        }
+
+        this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
+
         // We must keep these steps because the procedural texture component relies on them.
-        // TODO: move the procedural texture component to the frame graph.
         for (const step of this._beforeClearStage) {
             step.action();
         }

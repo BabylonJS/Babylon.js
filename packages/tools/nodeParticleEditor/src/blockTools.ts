@@ -31,7 +31,6 @@ import { BasicSpriteUpdateBlock } from "core/Particles/Node/Blocks/Update/basicS
 import { UpdateSpriteCellIndexBlock } from "core/Particles/Node/Blocks/Update/updateSpriteCellIndexBlock";
 import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlowMapBlock";
 import { UpdateNoiseBlock } from "core/Particles/Node/Blocks/Update/updateNoiseBlock";
-import { UpdateRemapBlock } from "core/Particles/Node/Blocks/Update/updateRemapBlock";
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "core/Particles/Node/Blocks/Conditions/particleConditionBlock";
 import { CreateParticleBlock } from "core/Particles/Node/Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "core/Particles/Node/Blocks/Emitters/boxShapeBlock";
@@ -46,7 +45,6 @@ import { AlignAngleBlock } from "core/Particles/Node/Blocks/Update/alignAngleBlo
 import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicColorUpdateBlock";
 import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
-import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
 import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
 import { ParticleClampBlock } from "core/Particles/Node/Blocks/particleClampBlock";
 import { ParticleNLerpBlock } from "core/Particles/Node/Blocks/particleNLerpBlock";
@@ -67,8 +65,6 @@ export class BlockTools {
                 return new ParticleSmoothStepBlock("SmoothStep");
             case "ClampBlock":
                 return new ParticleClampBlock("Clamp");
-            case "FresnelBlock":
-                return new ParticleFresnelBlock("Fresnel");
             case "LocalVariableBlock":
                 return new ParticleLocalVariableBlock("Local variable");
             case "VectorLengthBlock":
@@ -170,8 +166,6 @@ export class BlockTools {
                 return new UpdateNoiseBlock("Update noise");
             case "UpdateAttractorBlock":
                 return new UpdateAttractorBlock("Update attractor");
-            case "UpdateRemapBlock":
-                return new UpdateRemapBlock("Update remap");
             case "SystemBlock":
                 return new SystemBlock("System");
             case "TextureBlock":

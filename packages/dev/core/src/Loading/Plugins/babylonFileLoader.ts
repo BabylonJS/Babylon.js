@@ -36,6 +36,9 @@ import { GetIndividualParser, Parse } from "./babylonFileParser.function";
 import { Observable } from "../../Misc/observable";
 import type { MorphTarget } from "../../Morph/morphTarget";
 
+import "../../Physics/joinedPhysicsEngineComponent";
+import "../../Helpers/sceneHelpers";
+
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
 export var _BabylonLoaderRegistered = true;
