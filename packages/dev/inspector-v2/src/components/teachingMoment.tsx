@@ -9,7 +9,14 @@ const useStyles = makeStyles({
     },
 });
 
+/**
+ * The state returned by the teaching moment hook.
+ */
 type TeachingMomentState = ReturnType<ReturnType<typeof MakePopoverTeachingMoment>>;
+
+/**
+ * Props for the {@link TeachingMoment} component.
+ */
 type TeachingMomentProps = Pick<TeachingMomentState, "shouldDisplay" | "positioningRef" | "onOpenChange"> & {
     title: string;
     description: string;

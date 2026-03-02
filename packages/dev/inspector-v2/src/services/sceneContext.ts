@@ -2,6 +2,9 @@ import type { IReadonlyObservable, Nullable, Scene } from "core/index";
 
 import type { IService } from "../modularity/serviceDefinition";
 
+/**
+ * The unique identity symbol for the scene context service.
+ */
 export const SceneContextIdentity = Symbol("SceneScontext");
 
 /**
