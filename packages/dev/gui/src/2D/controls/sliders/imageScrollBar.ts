@@ -252,11 +252,9 @@ export class ImageScrollBar extends BaseSlider {
      * @internal
      */
     protected override _updateValueFromPointer(x: number, y: number): void {
-        if (this.rotation != 0) {
-            this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
-            x = this._transformedPosition.x;
-            y = this._transformedPosition.y;
-        }
+        this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
+        x = this._transformedPosition.x;
+        y = this._transformedPosition.y;
 
         const sign = this._invertScrollDirection ? -1 : 1;
 
