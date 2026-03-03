@@ -16,7 +16,7 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
-        "compile": "swc ../../../dev/core/src -d ./ --strip-leading-paths --ignore \"**/*.d.ts\" && swc ../../../lts/core/src -d ./ --strip-leading-paths --ignore \"**/*.d.ts\" && tsc -p tsconfig.build.json --emitDeclarationOnly && tsc -p tsconfig.lts.json --emitDeclarationOnly && build-tools -c ppp --dir ./ --base-package @babylonjs/core --append-js",
+        "compile": "OUTDIR=$(pwd) && SWCRC=$(cd ../../../../ && pwd)/.swcrc && (cd ../../../dev/core/src && swc . -d $OUTDIR --config-file $SWCRC --ignore \"**/*.d.ts\") && (cd ../../../lts/core/src && swc . -d $OUTDIR --config-file $SWCRC --ignore \"**/*.d.ts\") && tsc -p tsconfig.build.json --emitDeclarationOnly && tsc -p tsconfig.lts.json --emitDeclarationOnly && build-tools -c ppp --dir ./ --base-package @babylonjs/core --append-js",
         "postcompile": "build-tools -c run-tasks",
         "watch": "node ./watcher.cjs"
     },

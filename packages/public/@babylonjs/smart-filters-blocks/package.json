@@ -36,7 +36,7 @@
         "build": "npm run clean && npm run copySrc && npm run compile",
         "clean": "rimraf dist && rimraf src && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
         "copySrc": "node -e \"require('fs').cpSync('../../../dev/smartFilterBlocks/src', './src', { recursive: true })\"",
-        "compile": "swc ./src -d ./dist --strip-leading-paths --ignore \"**/*.d.ts\" && tsc -p tsconfig.build.json --emitDeclarationOnly && build-tools -c ppp --dir ./dist --base-package @babylonjs/smart-filters-blocks --append-js"
+        "compile": "OUTDIR=$(pwd)/dist && SWCRC=$(cd ../../../../ && pwd)/.swcrc && (cd src && swc . -d $OUTDIR --config-file $SWCRC --ignore \"**/*.d.ts\") && tsc -p tsconfig.build.json --emitDeclarationOnly && build-tools -c ppp --dir ./dist --base-package @babylonjs/smart-filters-blocks --append-js"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
