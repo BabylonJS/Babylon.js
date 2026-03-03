@@ -117,6 +117,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                     previousPosition = null;
                     this._offsetX = null;
                     this._offsetY = null;
+                    if (this.camera.movement) {
+                        this.camera.movement.activeInput = false;
+                    }
                 } else if (p.type === PointerEventTypes.POINTERMOVE) {
                     if (!noPreventDefault) {
                         evt.preventDefault();

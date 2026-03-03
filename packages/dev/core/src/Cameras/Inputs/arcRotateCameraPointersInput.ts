@@ -179,6 +179,9 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
      * @param _evt Defines the event to track
      */
     public override onButtonUp(_evt: IPointerEvent): void {
+        if (this.camera.movement) {
+            this.camera.movement.activeInput = false;
+        }
         super.onButtonUp(_evt);
     }
 
