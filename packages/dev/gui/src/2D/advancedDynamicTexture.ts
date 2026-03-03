@@ -1032,7 +1032,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     const transformedX = x / engine.getHardwareScalingLevel() - rigViewport.x;
                     const transformedY = y / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - rigViewport.y - rigViewport.height);
                     // check if the pointer is in the camera's viewport
-                    if (transformedX < 0 || transformedY < 0 || x > rigViewport.width || y > rigViewport.height) {
+                    if (transformedX < 0 || transformedY < 0 || transformedX > rigViewport.width || transformedY > rigViewport.height) {
                         // out of viewport - don't use this camera
                         return;
                     }
@@ -1236,7 +1236,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (this.wrapV === Texture.WRAP_ADDRESSMODE || this.wrapV === Texture.MIRROR_ADDRESSMODE) {
             if (result.y > 1) {
                 let fY = result.y - Math.trunc(result.y);
-                if (this.wrapV === Texture.MIRROR_ADDRESSMODE && Math.trunc(result.x) % 2 === 1) {
+                if (this.wrapV === Texture.MIRROR_ADDRESSMODE && Math.trunc(result.y) % 2 === 1) {
                     fY = 1 - fY;
                 }
                 result.y = fY;

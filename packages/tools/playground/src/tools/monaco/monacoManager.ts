@@ -557,6 +557,7 @@ export class MonacoManager {
             "https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts",
             "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
             "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
+            "https://preview.babylonjs.com/inspector/babylon.inspector-v2.d.ts",
             "https://preview.babylonjs.com/accessibility/babylon.accessibility.d.ts",
             "https://preview.babylonjs.com/addons/babylonjs.addons.d.ts",
             "https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts",

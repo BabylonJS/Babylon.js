@@ -11,6 +11,11 @@ const useStyles = makeStyles({
     },
 });
 
+/**
+ * A themed Fluent UI provider that applies the current theme mode (light or dark).
+ * @param props Fluent provider props, plus an optional `invert` flag to swap the theme.
+ * @returns The themed Fluent UI provider component.
+ */
 export const Theme: FunctionComponent<FluentProviderProps & { invert?: boolean }> = (props) => {
     // NOTE: We do not want to applyStylesToPortals by default. It makes classes flow into portals
     // (like popovers), and if those styles do things like disable overflow, they can completely

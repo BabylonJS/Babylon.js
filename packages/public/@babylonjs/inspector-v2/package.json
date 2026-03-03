@@ -1,11 +1,17 @@
 {
     "name": "@babylonjs/inspector",
     "version": "8.53.0",
-    "type": "module",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "esnext": "lib/index.js",
     "types": "lib/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./lib/index.d.ts",
+            "default": "./lib/index.js"
+        },
+        "./package.json": "./package.json"
+    },
     "files": [
         "lib/**/*.js",
         "lib/**/*.d.ts",

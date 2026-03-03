@@ -384,7 +384,6 @@ export class ThinNativeEngine extends ThinEngine {
             supportSpriteInstancing: false,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: true,
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
-            _collectUbosUpdatedInFrame: false,
         };
 
         Logger.Log("Babylon Native (v" + AbstractEngine.Version + ") launched");

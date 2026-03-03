@@ -592,6 +592,7 @@ export class PreviewManager {
         this._globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
 
+        this._scene.frameGraph = null;
         this._nodeRenderGraph?.dispose();
 
         this._scene.dispose();

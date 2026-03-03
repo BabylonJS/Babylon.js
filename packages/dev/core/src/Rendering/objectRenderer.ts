@@ -764,16 +764,21 @@ export class ObjectRenderer {
 
         const numPasses = this.options.numPasses;
         for (let passIndex = 0; passIndex < numPasses && returnValue; passIndex++) {
-            let currentRenderList: Nullable<Array<AbstractMesh>> = null;
             const defaultRenderList = this.renderList ? this.renderList : scene.frameGraph ? scene.meshes : scene.getActiveMeshes().data;
-            const defaultRenderListLength = this.renderList ? this.renderList.length : scene.frameGraph ? scene.meshes.length : scene.getActiveMeshes().length;
+            const defaultRenderListLength = this.renderList || scene.frameGraph ? defaultRenderList.length : scene.getActiveMeshes().length;
 
             this._engine.currentRenderPassId = this._renderPassIds[passIndex];
 
             this.onBeforeRenderObservable.notifyObservers(passIndex);
 
+            let currentRenderList: Nullable<Array<AbstractMesh>> = null;
+            let currentRenderListLength = defaultRenderListLength;
+
             if (this.getCustomRenderList) {
                 currentRenderList = this.getCustomRenderList(passIndex, defaultRenderList, defaultRenderListLength);
+                if (currentRenderList) {
+                    currentRenderListLength = currentRenderList.length;
+                }
             }
 
             if (!currentRenderList) {
@@ -784,7 +789,7 @@ export class ObjectRenderer {
                 scene.updateTransformMatrix(true);
             }
 
-            for (let i = 0; i < currentRenderList.length && returnValue; ++i) {
+            for (let i = 0; i < currentRenderListLength && returnValue; ++i) {
                 const mesh = currentRenderList[i];
 
                 if (!mesh.isEnabled() || mesh.isBlocked || !mesh.isVisible || !mesh.subMeshes) {
@@ -831,7 +836,7 @@ export class ObjectRenderer {
         let checkLayerMask = false;
 
         const defaultRenderList = this.renderList ? this.renderList : scene.frameGraph ? scene.meshes : scene.getActiveMeshes().data;
-        const defaultRenderListLength = this.renderList ? this.renderList.length : scene.frameGraph ? scene.meshes.length : scene.getActiveMeshes().length;
+        const defaultRenderListLength = this.renderList || scene.frameGraph ? defaultRenderList.length : scene.getActiveMeshes().length;
 
         if (this.getCustomRenderList) {
             currentRenderList = this.getCustomRenderList(passIndex, defaultRenderList, defaultRenderListLength);
