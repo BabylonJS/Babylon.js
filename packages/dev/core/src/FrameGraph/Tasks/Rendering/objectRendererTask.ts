@@ -17,13 +17,13 @@ import type {
     SmartArray,
     SubMesh,
     ClusteredLightContainer,
+    RenderingGroup,
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTaskMultiRenderTarget } from "../../frameGraphTaskMultiRenderTarget";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
 import { Constants } from "../../../Engines/constants";
 import { ThinDepthPeelingRenderer } from "../../../Rendering/thinDepthPeelingRenderer";
-import { RenderingManager } from "../../../Rendering/renderingManager";
 import { FrameGraphRenderTarget } from "../../frameGraphRenderTarget";
 import { LightConstants } from "../../../Lights/lightConstants";
 
@@ -628,22 +628,15 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected _renderTransparentMeshesWithOIT(transparentSubMeshes: SmartArray<SubMesh>): void {
-        const renderingGroups = this._renderer.renderingManager.renderingGroups;
+    protected _renderTransparentMeshesWithOIT(transparentSubMeshes: SmartArray<SubMesh>, renderingGroup: RenderingGroup): void {
         const saveOIT = this._scene._useOrderIndependentTransparency;
 
         this._scene._useOrderIndependentTransparency = true;
 
-        for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
-            const renderingGroup = renderingGroups[index];
-            if (!renderingGroup || renderingGroup._empty) {
-                continue;
-            }
-            const excludedMeshes = this._oitRenderer.render(transparentSubMeshes);
-            if (excludedMeshes.length) {
-                // Render leftover meshes that could not be processed by depth peeling
-                renderingGroup._renderTransparent(excludedMeshes);
-            }
+        const excludedMeshes = this._oitRenderer.render(transparentSubMeshes);
+        if (excludedMeshes.length) {
+            // Render leftover meshes that could not be processed by depth peeling
+            renderingGroup._renderTransparent(excludedMeshes);
         }
 
         this._scene._useOrderIndependentTransparency = saveOIT;

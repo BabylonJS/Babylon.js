@@ -14,7 +14,7 @@ declare module "../../Meshes/transformNode" {
         _physicsBody: Nullable<PhysicsBody>;
 
         /**
-         * @see
+         * Gets or sets the physics body associated with this node.
          */
         physicsBody: Nullable<PhysicsBody>;
 

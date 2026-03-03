@@ -261,7 +261,7 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                 propertyKey="transmissionDepth"
                 min={0}
                 max={5}
-                step={0.0001}
+                step={0.001}
                 convertTo={(value) => value * 100}
                 convertFrom={(value) => value / 100}
                 description="Controls how quickly light is absorbed with thickness. Distance is in scene units."
@@ -389,8 +389,8 @@ export const OpenPBRMaterialSubsurfaceProperties: FunctionComponent<{ material: 
                 target={material}
                 propertyKey="subsurfaceRadius"
                 min={0}
-                max={2}
-                step={0.00001}
+                max={4}
+                step={0.001}
                 convertTo={(value) => value * 100}
                 convertFrom={(value) => value / 100}
                 description="Controls how soft and spread-out the subsurface look appears."
@@ -835,7 +835,7 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 target={material}
                 propertyKey="geometryThickness"
                 min={0}
-                step={0.1}
+                step={0.001}
                 description="Controls the thickness of the geometry for volume approximations."
                 docLink="https://academysoftwarefoundation.github.io/OpenPBR/index.html#model/thickness"
             />

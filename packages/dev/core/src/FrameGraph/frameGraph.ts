@@ -165,6 +165,10 @@ export class FrameGraph implements IDisposable {
             throw new Error(`FrameGraph.addTask: Can't add the task "${task.name}" while another task is currently building (task: ${this._currentProcessedTask.name}).`);
         }
 
+        if (this._tasks.includes(task)) {
+            return;
+        }
+
         this._tasks.push(task);
         this._initAsyncPromises.push(task.initAsync());
     }

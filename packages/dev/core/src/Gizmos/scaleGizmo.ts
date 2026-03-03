@@ -317,7 +317,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     }
 
     /**
-     * posture that the gizmo will be display
+     * Orientation that the gizmo will be displayed with.
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
     public override get customRotationQuaternion(): Nullable<Quaternion> {

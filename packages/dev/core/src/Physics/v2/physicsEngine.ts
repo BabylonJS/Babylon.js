@@ -137,12 +137,6 @@ export class PhysicsEngine implements IPhysicsEngine {
     }
 
     /**
-     * Adding a new impostor for the impostor tracking.
-     * This will be done by the impostor itself.
-     * @param impostor the impostor to add
-     */
-
-    /**
      * Called by the scene. No need to call it.
      * @param delta defines the timespan between frames
      */

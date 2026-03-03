@@ -5,7 +5,7 @@ import { PhysicsBody } from "./physicsBody";
 import { PhysicsShapeCapsule, type PhysicsShape } from "./physicsShape";
 import { PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { HavokPlugin } from "./Plugins/havokPlugin";
-import { BuildArray } from "core/Misc/arrayTools";
+import { BuildArray } from "../../Misc/arrayTools";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Observable } from "../../Misc/observable";
 

@@ -122,7 +122,7 @@ Scene.prototype.disablePhysicsEngine = function (): void {
  * @returns a boolean indicating if there is an active physics engine
  */
 Scene.prototype.isPhysicsEnabled = function (): boolean {
-    return this._physicsEngine !== undefined;
+    return !!this._physicsEngine;
 };
 
 /**

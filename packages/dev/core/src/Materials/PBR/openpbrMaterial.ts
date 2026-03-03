@@ -2307,7 +2307,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         ubo.addUniform("pointSize", 1);
 
         ubo.addUniform("vDebugMode", 2);
-
+        ubo.addUniform("renderTargetSize", 2);
         ubo.addUniform("cameraInfo", 4);
         ubo.addUniform("backgroundRefractionMatrix", 16);
         ubo.addUniform("vBackgroundRefractionInfos", 3);

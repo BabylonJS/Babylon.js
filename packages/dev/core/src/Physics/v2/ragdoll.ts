@@ -4,13 +4,13 @@ import type { Scene } from "../../scene";
 import { PhysicsAggregate } from "./physicsAggregate";
 import { PhysicsConstraint } from "./physicsConstraint";
 import type { Mesh } from "../../Meshes/mesh";
-import { Axis, Space } from "core/Maths/math.axis";
+import { Axis, Space } from "../../Maths/math.axis";
 import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { Nullable } from "../../types";
 import type { Bone } from "../../Bones/bone";
 import { Logger } from "../../Misc/logger";
 import { TransformNode } from "../../Meshes/transformNode";
-import type { Observer } from "core/Misc/observable";
+import type { Observer } from "../../Misc/observable";
 
 /**
  * Ragdoll bone properties

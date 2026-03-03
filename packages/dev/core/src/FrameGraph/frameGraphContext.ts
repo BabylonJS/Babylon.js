@@ -112,6 +112,6 @@ export class FrameGraphContext {
      * @param requiredHeight defines the height required for rendering. If not provided the height of the render texture is used.
      */
     public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
-        this._engine.setViewport(viewport, requiredHeight, requiredWidth);
+        this._engine.setViewport(viewport, requiredWidth, requiredHeight);
     }
 }

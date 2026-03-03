@@ -210,7 +210,7 @@ export class RenderingManager {
         renderOpaqueMeshes: boolean = true,
         renderAlphaTestMeshes: boolean = true,
         renderTransparentMeshes: boolean = true,
-        customRenderTransparentSubMeshes?: (transparentSubMeshes: SmartArray<SubMesh>) => void
+        customRenderTransparentSubMeshes?: (transparentSubMeshes: SmartArray<SubMesh>, renderingGroup?: RenderingGroup) => void
     ): void {
         // Update the observable context (not null as it only goes away on dispose)
         const info = this._renderingGroupInfo!;

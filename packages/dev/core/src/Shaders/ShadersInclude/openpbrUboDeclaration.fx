@@ -6,6 +6,7 @@ uniform Material {
     float pointSize;
 
     vec2 vDebugMode;
+    vec2 renderTargetSize;
 
     vec4 cameraInfo;
     mat4 backgroundRefractionMatrix;

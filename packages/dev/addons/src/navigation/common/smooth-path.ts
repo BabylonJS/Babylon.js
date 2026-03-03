@@ -343,7 +343,7 @@ function inRange(a: Vector3, b: Vector3, r: number, h: number) {
     const dx = b.x - a.x;
     const dy = b.y - a.y;
     const dz = b.z - a.z;
-    return dx * dx + dz * dz < r && Math.abs(dy) < h;
+    return dx * dx + dz * dz < r * r && Math.abs(dy) < h;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
