@@ -6,22 +6,22 @@ import type { AbstractMesh } from "../abstractMesh";
 import { Mesh } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Matrix, TmpVectors, Vector2, Vector3 } from "core/Maths/math.vector";
-import { Quaternion } from "core/Maths/math.vector";
+import type { Quaternion } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
-import { GaussianSplattingMaterial, GaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import "core/Meshes/thinInstanceMesh";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import { ToHalfFloat } from "core/Misc/textureTools";
 import type { Material } from "core/Materials/material";
+import type { Effect } from "core/Materials/effect";
 import { Scalar } from "core/Maths/math.scalar";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
 import { EngineStore } from "core/Engines/engineStore";
 import { Camera } from "core/Cameras/camera";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
 import type { INative } from "core/Engines/Native/nativeInterfaces";
-import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
@@ -34,7 +34,6 @@ interface IDelayedTextureUpdate {
     colors: Uint8Array;
     centers: Float32Array;
     sh?: Uint8Array[];
-    partIndices?: Uint8Array;
 }
 interface IUpdateOptions {
     flipY?: boolean;
@@ -302,40 +301,38 @@ export interface PLYHeader {
  * Class used to render a gaussian splatting mesh
  */
 export class GaussianSplattingMesh extends Mesh {
-    private _vertexCount = 0;
-    private _worker: Nullable<Worker> = null;
+    /** @internal */
+    public _vertexCount = 0;
+    protected _worker: Nullable<Worker> = null;
     private _modelViewProjectionMatrix = Matrix.Identity();
     private _viewProjectionMatrix = Matrix.Identity();
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
     private _readyToDisplay = false;
-    private _covariancesATexture: Nullable<BaseTexture> = null;
-    private _covariancesBTexture: Nullable<BaseTexture> = null;
-    private _centersTexture: Nullable<BaseTexture> = null;
-    private _colorsTexture: Nullable<BaseTexture> = null;
-    private _splatPositions: Nullable<Float32Array> = null;
+    protected _covariancesATexture: Nullable<BaseTexture> = null;
+    protected _covariancesBTexture: Nullable<BaseTexture> = null;
+    protected _centersTexture: Nullable<BaseTexture> = null;
+    protected _colorsTexture: Nullable<BaseTexture> = null;
+    protected _splatPositions: Nullable<Float32Array> = null;
     private _splatIndex: Nullable<Float32Array> = null;
-    private _shTextures: Nullable<BaseTexture[]> = null;
-    private _splatsData: Nullable<ArrayBuffer> = null;
-    private _shData: Nullable<Uint8Array[]> = null;
-    private _partIndicesTexture: Nullable<BaseTexture> = null;
-    private _partIndices: Nullable<Uint8Array> = null;
-    private _partMatrices: Matrix[] = [];
-    private _partVisibility: number[] = [];
-    private _partProxies: Map<number, GaussianSplattingPartProxyMesh> = new Map();
+    protected _shTextures: Nullable<BaseTexture[]> = null;
+    /** @internal */
+    public _splatsData: Nullable<ArrayBuffer> = null;
+    /** @internal */
+    public _shData: Nullable<Uint8Array[]> = null;
     private _textureSize: Vector2 = new Vector2(0, 0);
     private readonly _keepInRam: boolean = false;
 
     private _delayedTextureUpdate: Nullable<IDelayedTextureUpdate> = null;
-    private _useRGBACovariants = false;
+    protected _useRGBACovariants = false;
     private _material: Nullable<Material> = null;
 
     private _tmpCovariances = [0, 0, 0, 0, 0, 0];
     private _sortIsDirty = false;
 
     // Cached bounding box for incremental addPart updates (O(1) vs O(N) scan of positions)
-    private _cachedBoundingMin: Nullable<Vector3> = null;
-    private _cachedBoundingMax: Nullable<Vector3> = null;
+    protected _cachedBoundingMin: Nullable<Vector3> = null;
+    protected _cachedBoundingMax: Nullable<Vector3> = null;
 
     private static _RowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // Vector3 position, Vector3 scale, 1 u8 quaternion, 1 color with alpha
     private static _SH_C0 = 0.28209479177387814;
@@ -344,7 +341,8 @@ export class GaussianSplattingMesh extends Mesh {
     private static _SplatBatchSize = 327680;
     // batch size between 2 yield calls during the PLY to splat conversion.
     private static _PlyConversionBatchSize = 32768;
-    private _shDegree = 0;
+    /** @internal */
+    public _shDegree = 0;
 
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
@@ -399,44 +397,18 @@ export class GaussianSplattingMesh extends Mesh {
 
     /**
      * returns the splats data array buffer that contains in order : postions (3 floats), size (3 floats), color (4 bytes), orientation quaternion (4 bytes)
+     * Only available if the mesh was created with keepInRam: true
      */
     public get splatsData() {
-        return this._splatsData;
+        return this._keepInRam ? this._splatsData : null;
     }
 
     /**
      * returns the SH data arrays
+     * Only available if the mesh was created with keepInRam: true
      */
     public get shData() {
-        return this._shData;
-    }
-
-    /**
-     * True when this mesh is a compound that regroups multiple Gaussian splatting parts.
-     */
-    public get isCompound() {
-        return this._partMatrices.length > 0;
-    }
-
-    /**
-     * returns the part indices array
-     */
-    public get partIndices() {
-        return this._partIndices;
-    }
-
-    /**
-     * Gets the part indices texture, if the mesh is a compound
-     */
-    public get partIndicesTexture() {
-        return this._partIndicesTexture;
-    }
-
-    /**
-     * Gets the part visibility array, if the mesh is a compound
-     */
-    public get partVisibility() {
-        return this._partVisibility;
+        return this._keepInRam ? this._shData : null;
     }
 
     /**
@@ -1497,19 +1469,17 @@ export class GaussianSplattingMesh extends Mesh {
                 shTexture.dispose();
             }
         }
-        if (this._partIndicesTexture) {
-            this._partIndicesTexture.dispose();
-        }
 
         this._covariancesATexture = null;
         this._covariancesBTexture = null;
         this._centersTexture = null;
         this._colorsTexture = null;
         this._shTextures = null;
-        this._partIndicesTexture = null;
-        this._partMatrices = [];
         this._cachedBoundingMin = null;
         this._cachedBoundingMax = null;
+        // Note: _splatsData and _shData are intentionally kept alive after dispose.
+        // They serve as the source reference for the compound API (addPart/removePart)
+        // when this mesh is held by a GaussianSplattingPartProxyMesh.compoundSplatMesh.
 
         this._worker?.terminate();
         this._worker = null;
@@ -1519,24 +1489,17 @@ export class GaussianSplattingMesh extends Mesh {
             cameraViewInfo.mesh.dispose();
         });
 
-        // dispose all proxy meshes
-        this._partProxies.forEach((proxy) => {
-            proxy.dispose();
-        });
-        this._partProxies.clear();
-
         super.dispose(doNotRecurse, true);
     }
 
-    private _copyTextures(source: GaussianSplattingMesh): void {
-        this._covariancesATexture = source.covariancesATexture?.clone()!;
-        this._covariancesBTexture = source.covariancesBTexture?.clone()!;
-        this._centersTexture = source.centersTexture?.clone()!;
-        this._colorsTexture = source.colorsTexture?.clone()!;
-        this._partIndicesTexture = source._partIndicesTexture?.clone()!;
-        if (source._shTextures) {
+    protected _copyTextures(): void {
+        this._covariancesATexture = this.covariancesATexture?.clone()!;
+        this._covariancesBTexture = this.covariancesBTexture?.clone()!;
+        this._centersTexture = this.centersTexture?.clone()!;
+        this._colorsTexture = this.colorsTexture?.clone()!;
+        if (this._shTextures) {
             this._shTextures = [];
-            for (const shTexture of source._shTextures) {
+            for (const shTexture of this._shTextures) {
                 this._shTextures?.push(shTexture.clone()!);
             }
         }
@@ -1552,13 +1515,12 @@ export class GaussianSplattingMesh extends Mesh {
         newGS._copySource(this);
         newGS.makeGeometryUnique();
         newGS._vertexCount = this._vertexCount;
-        newGS._copyTextures(this);
+        newGS._copyTextures();
         newGS._modelViewProjectionMatrix = Matrix.Identity();
         newGS._viewProjectionMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
         newGS._readyToDisplay = false;
         newGS._disableDepthSort = this._disableDepthSort;
-        newGS._partMatrices = this._partMatrices.map((m) => m.clone());
         newGS._instantiateWorker();
 
         const binfo = this.getBoundingInfo();
@@ -1654,7 +1616,7 @@ export class GaussianSplattingMesh extends Mesh {
         };
     };
 
-    private _makeEmptySplat(index: number, covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array): void {
+    protected _makeEmptySplat(index: number, covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array): void {
         const covBSItemSize = this._useRGBACovariants ? 4 : 2;
         this._splatPositions![4 * index + 0] = 0;
         this._splatPositions![4 * index + 1] = 0;
@@ -1669,8 +1631,23 @@ export class GaussianSplattingMesh extends Mesh {
         colorArray[index * 4 + 3] = 0;
     }
 
-    private _makeSplat(
-        index: number,
+    /**
+     * Processes a single splat from the source buffer (at srcIndex) and writes the result into
+     * the destination texture arrays at dstIndex. This decoupling allows addPart to feed multiple
+     * independent source buffers into a single set of destination arrays without merging them first.
+     * @param dstIndex - destination splat index (into _splatPositions, covA, covB, colorArray)
+     * @param fBuffer - float32 view of the source .splat buffer
+     * @param uBuffer - uint8 view of the source .splat buffer
+     * @param covA - destination covariancesA array
+     * @param covB - destination covariancesB array
+     * @param colorArray - destination color array
+     * @param minimum - accumulated bounding minimum (updated in-place)
+     * @param maximum - accumulated bounding maximum (updated in-place)
+     * @param flipY - whether to negate the Y position
+     * @param srcIndex - source splat index (defaults to dstIndex when omitted)
+     */
+    protected _makeSplat(
+        dstIndex: number,
         fBuffer: Float32Array,
         uBuffer: Uint8Array,
         covA: Uint16Array,
@@ -1678,34 +1655,35 @@ export class GaussianSplattingMesh extends Mesh {
         colorArray: Uint8Array,
         minimum: Vector3,
         maximum: Vector3,
-        flipY: boolean
+        flipY: boolean,
+        srcIndex: number = dstIndex
     ): void {
         const matrixRotation = TmpVectors.Matrix[0];
         const matrixScale = TmpVectors.Matrix[1];
         const quaternion = TmpVectors.Quaternion[0];
         const covBSItemSize = this._useRGBACovariants ? 4 : 2;
 
-        const x = fBuffer[8 * index + 0];
-        const y = fBuffer[8 * index + 1] * (flipY ? -1 : 1);
-        const z = fBuffer[8 * index + 2];
+        const x = fBuffer[8 * srcIndex + 0];
+        const y = fBuffer[8 * srcIndex + 1] * (flipY ? -1 : 1);
+        const z = fBuffer[8 * srcIndex + 2];
 
-        this._splatPositions![4 * index + 0] = x;
-        this._splatPositions![4 * index + 1] = y;
-        this._splatPositions![4 * index + 2] = z;
+        this._splatPositions![4 * dstIndex + 0] = x;
+        this._splatPositions![4 * dstIndex + 1] = y;
+        this._splatPositions![4 * dstIndex + 2] = z;
 
         minimum.minimizeInPlaceFromFloats(x, y, z);
         maximum.maximizeInPlaceFromFloats(x, y, z);
 
         quaternion.set(
-            (uBuffer[32 * index + 28 + 1] - 127.5) / 127.5,
-            (uBuffer[32 * index + 28 + 2] - 127.5) / 127.5,
-            (uBuffer[32 * index + 28 + 3] - 127.5) / 127.5,
-            -(uBuffer[32 * index + 28 + 0] - 127.5) / 127.5
+            (uBuffer[32 * srcIndex + 28 + 1] - 127.5) / 127.5,
+            (uBuffer[32 * srcIndex + 28 + 2] - 127.5) / 127.5,
+            (uBuffer[32 * srcIndex + 28 + 3] - 127.5) / 127.5,
+            -(uBuffer[32 * srcIndex + 28 + 0] - 127.5) / 127.5
         );
         quaternion.normalize();
         quaternion.toRotationMatrix(matrixRotation);
 
-        Matrix.ScalingToRef(fBuffer[8 * index + 3 + 0] * 2, fBuffer[8 * index + 3 + 1] * 2, fBuffer[8 * index + 3 + 2] * 2, matrixScale);
+        Matrix.ScalingToRef(fBuffer[8 * srcIndex + 3 + 0] * 2, fBuffer[8 * srcIndex + 3 + 1] * 2, fBuffer[8 * srcIndex + 3 + 2] * 2, matrixScale);
 
         const m = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
 
@@ -1723,25 +1701,61 @@ export class GaussianSplattingMesh extends Mesh {
             factor = Math.max(factor, Math.abs(covariances[covIndex]));
         }
 
-        this._splatPositions![4 * index + 3] = factor;
+        this._splatPositions![4 * dstIndex + 3] = factor;
         const transform = factor;
 
-        covA[index * 4 + 0] = ToHalfFloat(covariances[0] / transform);
-        covA[index * 4 + 1] = ToHalfFloat(covariances[1] / transform);
-        covA[index * 4 + 2] = ToHalfFloat(covariances[2] / transform);
-        covA[index * 4 + 3] = ToHalfFloat(covariances[3] / transform);
-        covB[index * covBSItemSize + 0] = ToHalfFloat(covariances[4] / transform);
-        covB[index * covBSItemSize + 1] = ToHalfFloat(covariances[5] / transform);
+        covA[dstIndex * 4 + 0] = ToHalfFloat(covariances[0] / transform);
+        covA[dstIndex * 4 + 1] = ToHalfFloat(covariances[1] / transform);
+        covA[dstIndex * 4 + 2] = ToHalfFloat(covariances[2] / transform);
+        covA[dstIndex * 4 + 3] = ToHalfFloat(covariances[3] / transform);
+        covB[dstIndex * covBSItemSize + 0] = ToHalfFloat(covariances[4] / transform);
+        covB[dstIndex * covBSItemSize + 1] = ToHalfFloat(covariances[5] / transform);
 
         // colors
-        colorArray[index * 4 + 0] = uBuffer[32 * index + 24 + 0];
-        colorArray[index * 4 + 1] = uBuffer[32 * index + 24 + 1];
-        colorArray[index * 4 + 2] = uBuffer[32 * index + 24 + 2];
-        colorArray[index * 4 + 3] = uBuffer[32 * index + 24 + 3];
+        colorArray[dstIndex * 4 + 0] = uBuffer[32 * srcIndex + 24 + 0];
+        colorArray[dstIndex * 4 + 1] = uBuffer[32 * srcIndex + 24 + 1];
+        colorArray[dstIndex * 4 + 2] = uBuffer[32 * srcIndex + 24 + 2];
+        colorArray[dstIndex * 4 + 3] = uBuffer[32 * srcIndex + 24 + 3];
+    }
+
+    protected _onUpdateTextures(_textureSize: Vector2) {}
+
+    /**
+     * Called when part index data is received during a data load. Override to store and manage
+     * part index state (e.g. allocating the padded Uint8Array).
+     * No-op in the base class.
+     * @param _partIndices - the raw part indices passed in by the caller
+     * @param _textureLength - the padded texture length (width × height) to allocate into
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected _onIndexDataReceived(_partIndices: Uint8Array, _textureLength: number): void {}
+
+    /**
+     * Called at the start of an incremental texture update, before any splats are processed.
+     * Override to perform incremental-specific setup, such as ensuring the part-index GPU texture
+     * exists before the sub-texture upload begins.
+     * No-op in the base class.
+     * @param _textureSize - current texture dimensions
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected _onIncrementalUpdateStart(_textureSize: Vector2): void {}
+
+    /**
+     * Whether this mesh is a compound mesh (i.e. `GaussianSplattingCompoundMesh`).
+     * Returns `false` in the base class; overridden to return `true` in the compound subclass.
+     * Consumed by the material and depth renderer to toggle compound-specific shader paths.
+     * @internal
+     */
+    public get isCompound(): boolean {
+        return false;
+    }
+
+    protected _setDelayedTextureUpdate(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[]): void {
+        this._delayedTextureUpdate = { covA, covB, colors: colorArray, centers: this._splatPositions!, sh };
     }
 
     // NB: partIndices is assumed to be padded to a round texture size
-    private _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[], partIndices?: Uint8Array): void {
+    protected _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[]): void {
         const textureSize = this._getTextureSize(this._vertexCount);
         // Update the textures
         const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
@@ -1764,7 +1778,7 @@ export class GaussianSplattingMesh extends Mesh {
         const textureSizeChanged = this._textureSize.y != textureSize.y;
 
         if (!firstTime && !textureSizeChanged) {
-            this._delayedTextureUpdate = { covA, covB, colors: colorArray, centers: this._splatPositions!, sh, partIndices };
+            this._setDelayedTextureUpdate(covA, covB, colorArray, sh);
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
             if (this._worker) {
@@ -1783,16 +1797,7 @@ export class GaussianSplattingMesh extends Mesh {
                 }
             }
 
-            // Handle compound data, if any
-            if (partIndices && !this._partIndicesTexture) {
-                const buffer = new Uint8Array(partIndices);
-                this._partIndicesTexture = createTextureFromDataU8(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RED);
-                this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-                this._partIndicesTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-            }
-            if (this._worker) {
-                this._worker.postMessage({ partIndices: partIndices ?? null });
-            }
+            this._onUpdateTextures(textureSize);
 
             this._postToWorker(true);
         } else {
@@ -1818,12 +1823,7 @@ export class GaussianSplattingMesh extends Mesh {
                 }
             }
 
-            if (partIndices) {
-                const buffer = new Uint8Array(partIndices);
-                this._partIndicesTexture = createTextureFromDataU8(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RED);
-                this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-                this._partIndicesTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-            }
+            this._onUpdateTextures(textureSize);
 
             if (firstTime) {
                 this._instantiateWorker();
@@ -1832,7 +1832,6 @@ export class GaussianSplattingMesh extends Mesh {
                     const positions = Float32Array.from(this._splatPositions!);
                     const vertexCount = this._vertexCount;
                     this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
-                    this._worker.postMessage({ partIndices: partIndices ?? null });
                 }
                 this._postToWorker(true);
             }
@@ -1847,7 +1846,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @param vertexCount - The new total number of splats
      * @returns true when only the new splat region needs to be uploaded
      */
-    private _canReuseCachedData(previousVertexCount: number, vertexCount: number): boolean {
+    protected _canReuseCachedData(previousVertexCount: number, vertexCount: number): boolean {
         if (previousVertexCount <= 0 || previousVertexCount > vertexCount) {
             return false;
         }
@@ -1863,47 +1862,17 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
-     * Posts updated positions and part indices to the sort worker and marks the sort as dirty.
+     * Posts updated positions to the sort worker and marks the sort as dirty.
      * Called after processing new splats so the worker can re-sort with the complete position set.
-     * @param partIndices - Optional part index array to send to the worker
+     * Subclasses (e.g. compound) may override to additionally post part-index data.
      */
-    private _notifyWorkerNewData(partIndices: Uint8Array | undefined): void {
+    protected _notifyWorkerNewData(): void {
         if (this._worker) {
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
             this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
-            this._worker.postMessage({ partIndices: partIndices ?? null });
         }
         this._sortIsDirty = true;
-    }
-
-    /**
-     * Creates the part indices GPU texture the first time an incremental addPart introduces
-     * compound data. Has no effect if the texture already exists or no partIndices are provided.
-     * @param textureSize - Current texture dimensions
-     * @param partIndices - Part index data; if undefined the method is a no-op
-     */
-    private _ensurePartIndicesTexture(textureSize: Vector2, partIndices: Uint8Array | undefined): void {
-        if (!partIndices || this._partIndicesTexture) {
-            return;
-        }
-        const buffer = new Uint8Array(this._partIndices!);
-        this._partIndicesTexture = new RawTexture(
-            buffer,
-            textureSize.x,
-            textureSize.y,
-            Constants.TEXTUREFORMAT_RED,
-            this._scene,
-            false,
-            false,
-            Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-            Constants.TEXTURETYPE_UNSIGNED_BYTE
-        );
-        this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-        this._partIndicesTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-        if (this._worker) {
-            this._worker.postMessage({ partIndices: partIndices ?? null });
-        }
     }
 
     private *_updateData(
@@ -1920,10 +1889,11 @@ export class GaussianSplattingMesh extends Mesh {
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
 
-        if (this._keepInRam) {
-            this._splatsData = data;
-            this._shData = sh ? sh.map((arr) => new Uint8Array(arr)) : null;
-        }
+        // Always store the raw splat buffer. This is the source reference used by _addPartsInternal
+        // when a full texture rebuild is needed. The merged compound buffer is never stored separately;
+        // each part keeps its own source reference via its proxy.
+        this._splatsData = data;
+        this._shData = sh ? sh.map((arr) => new Uint8Array(arr)) : null;
 
         const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
         if (vertexCount != this._vertexCount) {
@@ -1937,16 +1907,9 @@ export class GaussianSplattingMesh extends Mesh {
         const textureLength = textureSize.x * textureSize.y;
         const lineCountUpdate = GaussianSplattingMesh.ProgressiveUpdateAmount ?? textureSize.y;
 
-        // We always keep part indices in RAM because they are needed for sorting
+        // Delegate part index storage to subclasses (e.g. GaussianSplattingCompoundMesh).
         if (partIndices) {
-            this._partIndices = new Uint8Array(textureLength);
-            this._partIndices.set(partIndices);
-
-            let maxPartIndex = -1;
-            for (let i = 0; i < partIndices.length; i++) {
-                maxPartIndex = Math.max(maxPartIndex, partIndices[i]);
-            }
-            this._ensureMinimumPartMatricesLength(maxPartIndex + 1);
+            this._onIndexDataReceived(partIndices, textureLength);
         }
 
         const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -1976,14 +1939,14 @@ export class GaussianSplattingMesh extends Mesh {
             this._splatPositions.set(oldPositions!.subarray(0, previousVertexCount * 4));
             minimum.copyFrom(this._cachedBoundingMin!);
             maximum.copyFrom(this._cachedBoundingMax!);
-            // Create the partIndices texture if this is the first compound addPart
-            this._ensurePartIndicesTexture(textureSize, partIndices);
+            // Let subclasses handle any incremental-specific setup (e.g. ensuring part-index textures)
+            this._onIncrementalUpdateStart(textureSize);
         }
 
         if (GaussianSplattingMesh.ProgressiveUpdateAmount) {
             // Full rebuild: create GPU textures upfront with empty data; the loop fills them in batches via _updateSubTextures
             if (!incremental) {
-                this._updateTextures(covA, covB, colorArray, sh, this._partIndices ?? undefined);
+                this._updateTextures(covA, covB, colorArray, sh);
             }
             this.setEnabled(true);
 
@@ -2010,14 +1973,14 @@ export class GaussianSplattingMesh extends Mesh {
                     }
                 }
 
-                this._updateSubTextures(this._splatPositions, covA, covB, colorArray, uploadStartLine, batchEndLine - uploadStartLine, sh, this._partIndices ?? undefined);
+                this._updateSubTextures(this._splatPositions, covA, covB, colorArray, uploadStartLine, batchEndLine - uploadStartLine, sh);
                 this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
                 if (isAsync) {
                     yield;
                 }
             }
 
-            this._notifyWorkerNewData(partIndices);
+            this._notifyWorkerNewData();
         } else {
             // Process splats from firstNewTexel: re-processes the partial old row (incremental) or processes everything from 0 (full rebuild)
             for (let i = firstNewTexel; i < vertexCount; i++) {
@@ -2035,13 +1998,13 @@ export class GaussianSplattingMesh extends Mesh {
 
             if (incremental) {
                 // Partial upload: only rows from firstNewLine onwards; existing rows stay on GPU
-                this._updateSubTextures(this._splatPositions, covA, covB, colorArray, firstNewLine, textureSize.y - firstNewLine, sh, this._partIndices ?? undefined);
+                this._updateSubTextures(this._splatPositions, covA, covB, colorArray, firstNewLine, textureSize.y - firstNewLine, sh);
                 this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
                 this.setEnabled(true);
-                this._notifyWorkerNewData(partIndices);
+                this._notifyWorkerNewData();
             } else {
                 // Full upload: create or replace all GPU textures
-                this._updateTextures(covA, covB, colorArray, sh, this._partIndices ?? undefined);
+                this._updateTextures(covA, covB, colorArray, sh);
                 this.getBoundingInfo().reConstruct(minimum, maximum, this.getWorldMatrix());
                 this.setEnabled(true);
                 this._sortIsDirty = true;
@@ -2049,10 +2012,8 @@ export class GaussianSplattingMesh extends Mesh {
         }
 
         // Cache bounding box for the next incremental addPart call
-        if (incremental || this._keepInRam) {
-            this._cachedBoundingMin = minimum.clone();
-            this._cachedBoundingMax = maximum.clone();
-        }
+        this._cachedBoundingMin = minimum.clone();
+        this._cachedBoundingMax = maximum.clone();
 
         this._postToWorker(true);
     }
@@ -2090,7 +2051,7 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     // in case size is different
-    private _updateSplatIndexBuffer(vertexCount: number): void {
+    protected _updateSplatIndexBuffer(vertexCount: number): void {
         const paddedVertexCount = (vertexCount + 15) & ~0xf;
         if (!this._splatIndex || vertexCount != this._splatIndex.length) {
             this._splatIndex = new Float32Array(paddedVertexCount);
@@ -2112,20 +2073,11 @@ export class GaussianSplattingMesh extends Mesh {
         this.forcedInstanceCount = Math.max(paddedVertexCount >> 4, 1);
     }
 
-    private _updateSubTextures(
-        centers: Float32Array,
-        covA: Uint16Array,
-        covB: Uint16Array,
-        colors: Uint8Array,
-        lineStart: number,
-        lineCount: number,
-        sh?: Uint8Array[],
-        partIndices?: Uint8Array
-    ): void {
-        const updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
-            (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
-        };
+    protected _updateTextureFromData = (texture: BaseTexture, data: ArrayBufferView, width: number, lineStart: number, lineCount: number) => {
+        (this.getEngine() as ThinEngine).updateTextureData(texture.getInternalTexture()!, data, 0, lineStart, width, lineCount, 0, 0, false);
+    };
 
+    protected _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number, sh?: Uint8Array[]): void {
         const textureSize = this._getTextureSize(this._vertexCount);
         const covBSItemSize = this._useRGBACovariants ? 4 : 2;
         const texelStart = lineStart * textureSize.x;
@@ -2134,24 +2086,20 @@ export class GaussianSplattingMesh extends Mesh {
         const covBView = new Uint16Array(covB.buffer, texelStart * covBSItemSize * Uint16Array.BYTES_PER_ELEMENT, texelCount * covBSItemSize);
         const colorsView = new Uint8Array(colors.buffer, texelStart * 4, texelCount * 4);
         const centersView = new Float32Array(centers.buffer, texelStart * 4 * Float32Array.BYTES_PER_ELEMENT, texelCount * 4);
-        updateTextureFromData(this._covariancesATexture!, covAView, textureSize.x, lineStart, lineCount);
-        updateTextureFromData(this._covariancesBTexture!, covBView, textureSize.x, lineStart, lineCount);
-        updateTextureFromData(this._centersTexture!, centersView, textureSize.x, lineStart, lineCount);
-        updateTextureFromData(this._colorsTexture!, colorsView, textureSize.x, lineStart, lineCount);
+        this._updateTextureFromData(this._covariancesATexture!, covAView, textureSize.x, lineStart, lineCount);
+        this._updateTextureFromData(this._covariancesBTexture!, covBView, textureSize.x, lineStart, lineCount);
+        this._updateTextureFromData(this._centersTexture!, centersView, textureSize.x, lineStart, lineCount);
+        this._updateTextureFromData(this._colorsTexture!, colorsView, textureSize.x, lineStart, lineCount);
         if (sh) {
             for (let i = 0; i < sh.length; i++) {
                 const componentCount = 4;
                 const shView = new Uint32Array(sh[i].buffer, texelStart * componentCount * 4, texelCount * componentCount);
-                updateTextureFromData(this._shTextures![i], shView, textureSize.x, lineStart, lineCount);
+                this._updateTextureFromData(this._shTextures![i], shView, textureSize.x, lineStart, lineCount);
             }
-        }
-        if (partIndices && this._partIndicesTexture) {
-            const partIndicesView = new Uint8Array(partIndices.buffer, texelStart, texelCount);
-            updateTextureFromData(this._partIndicesTexture, partIndicesView, textureSize.x, lineStart, lineCount);
         }
     }
 
-    private _instantiateWorker(): void {
+    protected _instantiateWorker(): void {
         if (!this._vertexCount) {
             return;
         }
@@ -2176,12 +2124,9 @@ export class GaussianSplattingMesh extends Mesh {
         );
 
         const positions = Float32Array.from(this._splatPositions!);
-        const partIndices = this._partIndices ? new Uint8Array(this._partIndices) : null;
-        const partMatrices = this._partMatrices.map((matrix) => new Float32Array(matrix.m));
 
         this._worker.postMessage({ positions }, [positions.buffer]);
-        this._worker.postMessage({ partIndices });
-        this._worker.postMessage({ partMatrices });
+        this._onWorkerCreated(this._worker!);
 
         this._worker.onmessage = (e) => {
             // Recompute vertexCountPadded in case _vertexCount has changed since the last update
@@ -2213,8 +2158,7 @@ export class GaussianSplattingMesh extends Mesh {
                     this._delayedTextureUpdate.colors,
                     0,
                     textureSize.y,
-                    this._delayedTextureUpdate.sh,
-                    this._delayedTextureUpdate.partIndices
+                    this._delayedTextureUpdate.sh
                 );
                 this._delayedTextureUpdate = null;
             }
@@ -2240,7 +2184,7 @@ export class GaussianSplattingMesh extends Mesh {
         };
     }
 
-    private _getTextureSize(length: number): Vector2 {
+    protected _getTextureSize(length: number): Vector2 {
         const engine = this._scene.getEngine();
         const width = engine.getCaps().maxTextureSize;
 
@@ -2263,398 +2207,67 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
-     * Gets the number of parts in the compound
-     * @returns the number of parts in the compound, or 0 if the mesh is not a compound
+     * Called after the sort worker has been created and the initial positions message has been sent.
+     * Override in subclasses to post any additional setup messages the worker needs (e.g. group
+     * indices, per-part matrices, etc.).
+     * @param _worker the newly created worker
      */
-    public get partCount(): number {
-        return this._partMatrices.length;
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected _onWorkerCreated(_worker: Worker): void {}
 
     /**
-     * Sets the world matrix for a specific part of the compound (if this mesh is a compound).
-     * This will trigger a re-sort of the mesh.
-     * @param partIndex index of the part, that must be between 0 and partCount - 1
-     * @param worldMatrix the world matrix to set
+     * Called by the material to bind any extra shader uniforms that are specific to this mesh type.
+     * The base implementation is a no-op; override in subclasses to bind additional data.
+     * @param _effect the shader effect that is being bound
+     * @internal
      */
-    public setWorldMatrixForPart(partIndex: number, worldMatrix: Matrix): void {
-        this._partMatrices[partIndex].copyFrom(worldMatrix);
-        if (this._worker) {
-            this._worker.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
-        }
-        this._postToWorker(true);
-    }
+    public bindExtraEffectUniforms(_effect: Effect): void {}
 
     /**
-     * Gets the world matrix for a specific part of the compound (if this mesh is a compound).
-     * @param partIndex index of the part, that must be between 0 and partCount - 1
-     * @returns the world matrix for the part, or the current world matrix of the mesh if the mesh is not a compound
+     * Processes all splats from a source GaussianSplattingMesh directly into the destination
+     * texture arrays starting at dstOffset. This is the core of the texture-direct compound API:
+     * no merged CPU buffer is ever created; each source mesh is written straight into its region.
+     *
+     * @param source - The source mesh whose splats are appended
+     * @param dstOffset - The destination splat index at which writing starts
+     * @param covA - Destination covA array (full texture size)
+     * @param covB - Destination covB array (full texture size)
+     * @param colorArray - Destination color array (full texture size)
+     * @param sh - Destination SH arrays (full texture size), or undefined
+     * @param minimum - Accumulated bounding min (updated in-place)
+     * @param maximum - Accumulated bounding max (updated in-place)
+     * @internal Use GaussianSplattingCompoundMesh instead
      */
-    public getWorldMatrixForPart(partIndex: number): Matrix {
-        return this._partMatrices[partIndex] ?? this.getWorldMatrix();
-    }
-
-    /**
-     * Gets the visibility for a specific part of the compound (if this mesh is a compound).
-     * @param partIndex index of the part, that must be between 0 and partCount - 1
-     * @returns the visibility value (0.0 to 1.0) for the part
-     */
-    public getPartVisibility(partIndex: number): number {
-        return this._partVisibility[partIndex] ?? 1.0;
-    }
-
-    /**
-     * Sets the visibility for a specific part of the compound (if this mesh is a compound).
-     * @param partIndex index of the part, that must be between 0 and partCount - 1
-     * @param value the visibility value (0.0 to 1.0) to set
-     */
-    public setPartVisibility(partIndex: number, value: number): void {
-        this._partVisibility[partIndex] = Math.max(0.0, Math.min(1.0, value));
-    }
-
-    /**
-     * Ensure that the part world matrix array is at least the given length.
-     * NB: This length is used as reference for the number of parts in the compound.
-     * Newly inserted parts are initialized with the current world matrix of the mesh.
-     * @param length - The minimum length to ensure
-     */
-    private _ensureMinimumPartMatricesLength(length: number): void {
-        if (this._partMatrices.length < length) {
-            this._resizePartMatrices(length);
-        }
-    }
-
-    /**
-     * This sets the number of parts in the compound.
-     * Warning: This must be consistent with the indices used in the partIndices texture.
-     * Newly inserted parts are initialized with the current world matrix of the mesh.
-     * @param length - The length to resize to
-     */
-    private _resizePartMatrices(length: number): void {
-        if (this._partMatrices.length == length) {
-            return;
-        } else if (this._partMatrices.length > length) {
-            this._partMatrices = this._partMatrices.slice(0, length);
-            this._partVisibility = this._partVisibility.slice(0, length);
-        } else {
-            this.computeWorldMatrix(true);
-            const defaultMatrix = this.getWorldMatrix();
-            while (this._partMatrices.length < length) {
-                this._partMatrices.push(defaultMatrix.clone());
-                this._partVisibility.push(1.0);
-            }
-        }
-
-        if (this._worker) {
-            this._worker.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
-        }
-        this._postToWorker(true);
-    }
-
-    /**
-     * Merges splat data from multiple other meshes into the current mesh's data buffers.
-     * Validates all inputs, concatenates splat data, SH data, and part indices, and assigns
-     * a new part index to each incoming mesh.
-     * @param others - The other meshes whose data will be merged into this mesh
-     * @returns merged buffers and the part index assigned to each other mesh
-     */
-    private _buildMergedPartData(others: GaussianSplattingMesh[]): {
-        mergedSplatsData: ArrayBuffer;
-        mergedShData: Uint8Array[] | undefined;
-        mergedPartIndices: Uint8Array;
-        assignedPartIndices: number[];
-    } {
-        const splatCountA = this._vertexCount;
-        const splatsDataA = splatCountA == 0 ? new ArrayBuffer(0) : this.splatsData;
-        const shDataA = this.shData;
-
-        // Validate current mesh
-        if (!splatsDataA) {
-            throw new Error(`To call addPart()/addParts(), the current mesh must be loaded with keepInRam: true`);
-        }
-        const expectedSplatsDataSizeA = splatCountA * GaussianSplattingMesh._RowOutputLength;
-        if (splatsDataA.byteLength !== expectedSplatsDataSizeA) {
-            throw new Error(`splatsDataA size (${splatsDataA.byteLength}) does not match expected size (${expectedSplatsDataSizeA})`);
-        }
-
-        // Validate and gather data from each incoming mesh
-        const othersData = others.map((other) => {
-            const splatCountB = other._vertexCount;
-            const splatsDataB = other.splatsData;
-            const shDataB = other.shData;
-
-            if (!splatsDataB) {
-                throw new Error(`To call addPart()/addParts(), each other mesh must be loaded with keepInRam: true`);
-            }
-            const expectedSplatsDataSizeB = splatCountB * GaussianSplattingMesh._RowOutputLength;
-            if (splatsDataB.byteLength !== expectedSplatsDataSizeB) {
-                throw new Error(`splatsDataB size (${splatsDataB.byteLength}) does not match expected size (${expectedSplatsDataSizeB})`);
-            }
-            if (other.partIndices) {
-                throw new Error(`To call addPart()/addParts(), each other mesh must not be a compound`);
-            }
-
-            return { splatCountB, splatsDataB, shDataB };
-        });
-
-        const totalOtherSplatCount = othersData.reduce((sum, d) => sum + d.splatCountB, 0);
-        const totalSplatCount = splatCountA + totalOtherSplatCount;
-
-        // Concatenate splatsData (ArrayBuffer)
-        const mergedSplatsDataU8 = new Uint8Array(splatsDataA.byteLength + totalOtherSplatCount * GaussianSplattingMesh._RowOutputLength);
-        mergedSplatsDataU8.set(new Uint8Array(splatsDataA), 0);
-        let splatsWriteOffset = splatsDataA.byteLength;
-        for (const { splatsDataB } of othersData) {
-            mergedSplatsDataU8.set(new Uint8Array(splatsDataB), splatsWriteOffset);
-            splatsWriteOffset += splatsDataB.byteLength;
-        }
-
-        // Merge SH data — only when all meshes (current + others) have SH data
-        // Each SH texture texel stores 16 bytes (4 RGBA uint32 components)
+    protected _appendSourceToArrays(
+        source: GaussianSplattingMesh,
+        dstOffset: number,
+        covA: Uint16Array,
+        covB: Uint16Array,
+        colorArray: Uint8Array,
+        sh: Uint8Array[] | undefined,
+        minimum: Vector3,
+        maximum: Vector3
+    ): void {
+        const srcCount = source._vertexCount;
         const bytesPerTexel = 16;
-        const maxShDataLengthOthers = othersData.reduce((max, d) => Math.max(max, d.shDataB?.length || 0), 0);
-        const mergedShDataLength = Math.max(shDataA?.length || 0, maxShDataLengthOthers);
-        const hasMergedShData = shDataA !== null && othersData.every((d) => d.shDataB !== null);
+        const srcRaw = source._splatsData;
+        if (!srcRaw || srcCount === 0) {
+            return;
+        }
+        const uBuffer = new Uint8Array(srcRaw);
+        const fBuffer = new Float32Array(srcRaw);
 
-        let mergedShData: Uint8Array[] | undefined = undefined;
-        if (hasMergedShData) {
-            mergedShData = [];
-            for (let i = 0; i < mergedShDataLength; i++) {
-                const mergedShDataItem = new Uint8Array(totalSplatCount * bytesPerTexel);
-                if (shDataA && i < shDataA.length) {
-                    mergedShDataItem.set(shDataA[i], 0);
-                }
-                let shWriteOffset = splatCountA * bytesPerTexel;
-                for (const { splatCountB, shDataB } of othersData) {
-                    if (shDataB && i < shDataB.length) {
-                        mergedShDataItem.set(shDataB[i], shWriteOffset);
-                    }
-                    shWriteOffset += splatCountB * bytesPerTexel;
-                }
-                mergedShData.push(mergedShDataItem);
-            }
+        for (let i = 0; i < srcCount; i++) {
+            this._makeSplat(dstOffset + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, false, i);
         }
 
-        // Build merged part indices, assigning a new part index to each incoming mesh
-        let nextPartIndex = this.partCount;
-        let partIndicesA = this.partIndices;
-        if (!partIndicesA) {
-            partIndicesA = new Uint8Array(splatCountA);
-            nextPartIndex = splatCountA > 0 ? 1 : 0;
-        }
-        if (partIndicesA.length < splatCountA) {
-            throw new Error(`partIndices length (${partIndicesA.length}) should be at least vertexCount (${splatCountA}) in the current mesh`);
-        }
-
-        const mergedPartIndices = new Uint8Array(totalSplatCount);
-        mergedPartIndices.set(partIndicesA.slice(0, splatCountA), 0);
-
-        const assignedPartIndices: number[] = [];
-        let partWriteOffset = splatCountA;
-        for (const { splatCountB } of othersData) {
-            if (nextPartIndex >= GaussianSplattingMaxPartCount) {
-                throw new Error(`Cannot add part, as the maximum part count (${GaussianSplattingMaxPartCount}) has been reached`);
-            }
-            assignedPartIndices.push(nextPartIndex);
-            mergedPartIndices.fill(nextPartIndex, partWriteOffset, partWriteOffset + splatCountB);
-            partWriteOffset += splatCountB;
-            nextPartIndex++;
-        }
-
-        return {
-            mergedSplatsData: mergedSplatsDataU8.buffer,
-            mergedShData,
-            mergedPartIndices,
-            assignedPartIndices,
-        };
-    }
-
-    /**
-     * Add another mesh to this mesh, as a new part. This makes the current mesh a compound, if not already.
-     * NB: The current mesh needs to be loaded with keepInRam: true.
-     * @param other - The other mesh to add. This must be loaded with keepInRam: true.
-     * @param disposeOther - Whether to dispose the other mesh after adding it to the current mesh.
-     * @returns a placeholder mesh that can be used to manipulate the part transform
-     */
-    public addPart(other: GaussianSplattingMesh, disposeOther: boolean = true): Mesh {
-        const splatCountA = this._vertexCount;
-        const { mergedSplatsData, mergedShData, mergedPartIndices, assignedPartIndices } = this._buildMergedPartData([other]);
-        const newPartIndex = assignedPartIndices[0];
-
-        this.updateData(mergedSplatsData, mergedShData, { flipY: false, previousVertexCount: splatCountA }, mergedPartIndices);
-
-        const partWorldMatrix = other.getWorldMatrix();
-        this.setWorldMatrixForPart(newPartIndex, partWorldMatrix);
-
-        // Create a proxy mesh to manipulate the part transform
-        const proxyMesh = new GaussianSplattingPartProxyMesh(other.name, this.getScene(), this, other, newPartIndex);
-
-        if (disposeOther) {
-            other.dispose();
-        }
-
-        // Set the initial world matrix
-        const quaternion = new Quaternion();
-        partWorldMatrix.decompose(proxyMesh.scaling, quaternion, proxyMesh.position);
-        proxyMesh.rotationQuaternion = quaternion;
-        proxyMesh.computeWorldMatrix(true);
-
-        // Store the proxy in the map
-        this._partProxies.set(newPartIndex, proxyMesh);
-
-        return proxyMesh;
-    }
-
-    /**
-     * Add multiple meshes to this mesh as new parts in a single operation, calling updateData only once.
-     * This makes the current mesh a compound, if not already.
-     * NB: The current mesh and all other meshes need to be loaded with keepInRam: true.
-     * @param others - The meshes to add. Each must be loaded with keepInRam: true and must not be a compound.
-     * @param disposeOthers - Whether to dispose the other meshes after adding them to the current mesh.
-     * @returns an array of placeholder meshes that can be used to manipulate the part transforms
-     */
-    public addParts(others: GaussianSplattingMesh[], disposeOthers: boolean = true): GaussianSplattingPartProxyMesh[] {
-        if (others.length === 0) {
-            return [];
-        }
-
-        const splatCountA = this._vertexCount;
-        const { mergedSplatsData, mergedShData, mergedPartIndices, assignedPartIndices } = this._buildMergedPartData(others);
-
-        this.updateData(mergedSplatsData, mergedShData, { flipY: false, previousVertexCount: splatCountA }, mergedPartIndices);
-
-        const proxyMeshes: GaussianSplattingPartProxyMesh[] = [];
-        for (let i = 0; i < others.length; i++) {
-            const other = others[i];
-            const newPartIndex = assignedPartIndices[i];
-
-            const partWorldMatrix = other.getWorldMatrix();
-            this.setWorldMatrixForPart(newPartIndex, partWorldMatrix);
-
-            // Create a proxy mesh to manipulate the part transform
-            const proxyMesh = new GaussianSplattingPartProxyMesh(other.name, this.getScene(), this, other, newPartIndex);
-
-            if (disposeOthers) {
-                other.dispose();
-            }
-
-            // Set the initial world matrix
-            const quaternion = new Quaternion();
-            partWorldMatrix.decompose(proxyMesh.scaling, quaternion, proxyMesh.position);
-            proxyMesh.rotationQuaternion = quaternion;
-            proxyMesh.computeWorldMatrix(true);
-
-            // Store the proxy in the map
-            this._partProxies.set(newPartIndex, proxyMesh);
-            proxyMeshes.push(proxyMesh);
-        }
-
-        return proxyMeshes;
-    }
-
-    /**
-     * Remove a part from this compound mesh.
-     * @param index - The index of the part to remove
-     */
-    public removePart(index: number): void {
-        if (index < 0 || index >= this.partCount) {
-            throw new Error(`Part index ${index} is out of range [0, ${this.partCount})`);
-        }
-
-        // Get the current data
-        const splatsData = this.splatsData;
-        const shData = this.shData;
-        const partIndices = this.partIndices;
-
-        if (!splatsData || !partIndices) {
-            throw new Error("Cannot remove part from a non-compound mesh or mesh without keepInRam");
-        }
-
-        const splatCount = this._vertexCount;
-        const rowLength = GaussianSplattingMesh._RowOutputLength;
-
-        // Count splats that will remain (not in the removed part)
-        let newSplatCount = 0;
-        for (let i = 0; i < splatCount; i++) {
-            if (partIndices[i] !== index) {
-                newSplatCount++;
-            }
-        }
-
-        // Build new splats data excluding the removed part
-        const newSplatsData = new Uint8Array(newSplatCount * rowLength);
-        const newPartIndices = new Uint8Array(newSplatCount);
-        let newShData: Uint8Array[] | undefined = undefined;
-
-        if (shData) {
-            const bytesPerTexel = 16;
-            newShData = [];
-            for (let i = 0; i < shData.length; i++) {
-                newShData.push(new Uint8Array(newSplatCount * bytesPerTexel));
-            }
-        }
-
-        let writeIndex = 0;
-        for (let readIndex = 0; readIndex < splatCount; readIndex++) {
-            const currentPartIndex = partIndices[readIndex];
-            if (currentPartIndex === index) {
-                // Skip splats from the removed part
-                continue;
-            }
-
-            // Copy splat data
-            const srcOffset = readIndex * rowLength;
-            const dstOffset = writeIndex * rowLength;
-            newSplatsData.set(new Uint8Array(splatsData, srcOffset, rowLength), dstOffset);
-
-            // Renumber part indices: indices > removed index get decremented
-            newPartIndices[writeIndex] = currentPartIndex > index ? currentPartIndex - 1 : currentPartIndex;
-
-            // Copy SH data if present
-            if (shData && newShData) {
-                const bytesPerTexel = 16;
-                for (let shIndex = 0; shIndex < shData.length; shIndex++) {
-                    const srcShOffset = readIndex * bytesPerTexel;
-                    const dstShOffset = writeIndex * bytesPerTexel;
-                    newShData[shIndex].set(new Uint8Array(shData[shIndex].buffer, srcShOffset, bytesPerTexel), dstShOffset);
+        // Copy SH data if both source and destination have it
+        if (sh && source._shData) {
+            for (let texIdx = 0; texIdx < sh.length; texIdx++) {
+                if (texIdx < source._shData.length) {
+                    sh[texIdx].set(source._shData[texIdx].subarray(0, srcCount * bytesPerTexel), dstOffset * bytesPerTexel);
                 }
             }
-
-            writeIndex++;
-        }
-
-        // Remove the part matrix and visibility
-        this._partMatrices.splice(index, 1);
-        this._partVisibility.splice(index, 1);
-
-        // Update worker with new part matrices
-        if (this._worker) {
-            this._worker.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
-        }
-
-        // Update the mesh with the new data
-        this.updateData(newSplatsData.buffer, newShData, { flipY: false }, newPartIndices);
-
-        // Dispose and remove the proxy for the removed part
-        const proxyToRemove = this._partProxies.get(index);
-        if (proxyToRemove) {
-            proxyToRemove.dispose();
-            this._partProxies.delete(index);
-        }
-
-        // Update the proxy map: renumber proxies with index > removed index
-        const proxiesToUpdate: Array<[number, GaussianSplattingPartProxyMesh]> = [];
-        this._partProxies.forEach((proxy, proxyIndex) => {
-            if (proxyIndex > index) {
-                proxiesToUpdate.push([proxyIndex, proxy]);
-            }
-        });
-
-        // Remove and re-add with updated indices
-        for (const [oldIndex, proxy] of proxiesToUpdate) {
-            this._partProxies.delete(oldIndex);
-            // Update the proxy's internal partIndex
-            proxy.updatePartIndex(oldIndex - 1);
-            this._partProxies.set(oldIndex - 1, proxy);
         }
     }
 
