@@ -1293,7 +1293,6 @@ export class StandardMaterial extends StandardMaterialBase {
 
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
-                    effect = previousEffect;
                     defines.markAsUnprocessed();
 
                     forceWasNotReadyPreviously = this.isFrozen;

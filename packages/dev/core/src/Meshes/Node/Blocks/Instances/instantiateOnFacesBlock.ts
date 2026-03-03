@@ -195,7 +195,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
             }
 
             // Processing
-            let instanceGeometry: Nullable<VertexData> = null;
+            let instanceGeometry: Nullable<VertexData>;
             const instanceCount = this.count.getConnectedValue(state);
             const faceCount = this._vertexData.indices.length / 3;
             const instancePerFace = instanceCount / faceCount;

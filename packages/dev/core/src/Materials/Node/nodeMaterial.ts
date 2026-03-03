@@ -1703,7 +1703,6 @@ export class NodeMaterial extends NodeMaterialBase {
 
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
-                    effect = previousEffect;
                     defines.markAsUnprocessed();
 
                     if (result.lightDisposed) {

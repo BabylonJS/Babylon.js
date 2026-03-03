@@ -105,8 +105,8 @@ export class _PrimaryIsoTriangle {
         const m = this.m;
         const n = this.n;
         let g = m; // hcf of m, n when n != 0
-        let m1 = 1;
-        let n1 = 0;
+        let m1: number;
+        let n1: number;
         if (n !== 0) {
             g = HighestCommonFactor(m, n);
         }
@@ -401,7 +401,7 @@ export class _PrimaryIsoTriangle {
         const mapped = [];
 
         let idx: string;
-        let tempVec: Vector3 = TmpVectors.Vector3[0];
+        let tempVec: Vector3;
         for (let i = 0; i < this.cartesian.length; i++) {
             tempVec = x.scale(this.cartesian[i].x).add(y.scale(this.cartesian[i].y)).add(O);
             mapped[i] = [tempVec.x, tempVec.y, tempVec.z];
@@ -468,8 +468,8 @@ export class _PrimaryIsoTriangle {
             max[i] = -Infinity;
         }
 
-        let y: number = 0;
-        let x: number = 0;
+        let y: number;
+        let x: number;
 
         const len: number = vertices.length;
         for (let i = 0; i < len; i++) {
@@ -779,11 +779,11 @@ export class GeodesicData extends PolyhedronData {
                 map[this.face[f][i]].push(f);
             }
         }
-        let cx = 0;
-        let cy = 0;
-        let cz = 0;
-        let face = [];
-        let vertex = [];
+        let cx: number;
+        let cy: number;
+        let cz: number;
+        let face: number[];
+        let vertex: number[];
         this.adjacentFaces = [];
         for (let m = 0; m < map.length; m++) {
             goldbergPolyhedronData.face[m] = this.setOrder(m, map[m].concat([]));

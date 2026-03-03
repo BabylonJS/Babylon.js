@@ -333,7 +333,7 @@ function ExtrudeShapeGeneric(
     if (instance) {
         // instance update
         const storage = instance._creationDataStorage!;
-        path3D = firstNormal ? storage.path3D.update(curve, firstNormal) : storage.path3D.update(curve);
+        firstNormal ? storage.path3D.update(curve, firstNormal) : storage.path3D.update(curve);
         pathArray = extrusionPathArray(shape, curve, storage.path3D, storage.pathArray, scaleVector, rotation, scaleFunction, rotateFunction, storage.cap, custom, adjustFrame);
         instance = CreateRibbon("", { pathArray, closeArray: false, closePath: false, offset: 0, updatable: false, sideOrientation: 0, instance }, scene || undefined);
 

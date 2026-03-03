@@ -498,7 +498,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         const pathArrayLength = pathArray.length;
         this._vSegmentLengths = new Array(pathArrayLength);
         this._vTotalLengths = new Array(pathArrayLength);
-        let length = 0;
+        let length: number;
         for (let pi = 0; pi < pathArrayLength; pi++) {
             const points = pathArray[pi];
             this._vSegmentLengths[pi] = [0]; // first point has 0 distance

@@ -183,8 +183,8 @@ export class CurveBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         const output = this._outputs[0];
-        let registeredFunction = "";
-        let registeredFunctionName = "";
+        let registeredFunction: string;
+        let registeredFunctionName: string;
 
         const inputType = state._getShaderType(this.input.type);
         const isWGSL = state.shaderLanguage === ShaderLanguage.WGSL;
