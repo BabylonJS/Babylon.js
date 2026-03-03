@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
-import { addJsExtensionsToCompiledFilesCommand } from "./addJSToCompiledFiles.js";
 import { generateDeclaration } from "./generateDeclaration.js";
 import { transformLtsCommand } from "./ltsTransformer.js";
 import { prepareES6Build } from "./prepareEs6Build.js";
@@ -51,10 +50,6 @@ function RunCommand(command: string) {
             case "run-tasks":
             case "rt":
                 ProcessConfigFile();
-                break;
-            case "add-js-to-es6":
-            case "ajte":
-                addJsExtensionsToCompiledFilesCommand();
                 break;
             case "process-umd-declaration":
             case "pud":

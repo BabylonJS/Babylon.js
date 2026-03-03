@@ -33,11 +33,7 @@ const jsConfig = {
         exports: "named",
         paths: appendJsToExternalPaths,
     },
-    plugins: [
-        alias({ entries: devToPublicAliases }),
-        typescript({ tsconfig: "tsconfig.build.lib.json" }),
-        nodeResolve({ mainFields: ["browser", "module", "main"] }),
-    ],
+    plugins: [alias({ entries: devToPublicAliases }), typescript({ tsconfig: "tsconfig.build.lib.json" }), nodeResolve({ mainFields: ["browser", "module", "main"] })],
     onwarn(warning, warn) {
         // Treat all warnings as errors.
         throw new Error(warning.message);
@@ -51,10 +47,7 @@ const dtsConfig = {
         format: "es",
         paths: appendJsToExternalPaths,
     },
-    plugins: [
-        alias({ entries: devToPublicAliases }),
-        dts({ tsconfig: "tsconfig.build.lib.json" }),
-    ],
+    plugins: [alias({ entries: devToPublicAliases }), dts({ tsconfig: "tsconfig.build.lib.json" })],
 };
 
 export default [jsConfig, dtsConfig];

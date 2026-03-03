@@ -5,9 +5,6 @@
             "args": ["-r", "../../../dev/core/src/LibDeclarations", "-atf", "./Engines/engine.d.ts", "-cete"]
         },
         {
-            "command": "add-js-to-es6"
-        },
-        {
             "command": "prepare-es6-build",
             "args": ["-cf", "Engines/constants.js"]
         },
@@ -29,4 +26,3 @@
         }
     ]
 }
-

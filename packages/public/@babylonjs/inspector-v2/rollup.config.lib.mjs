@@ -87,10 +87,7 @@ const dtsConfig = {
     },
     plugins: [
         alias({
-            entries: [
-                { find: "shared-ui-components", replacement: path.resolve("../../../dev/sharedUiComponents/src") },
-                ...devToPublicAliases,
-            ],
+            entries: [{ find: "shared-ui-components", replacement: path.resolve("../../../dev/sharedUiComponents/src") }, ...devToPublicAliases],
         }),
         dts({ tsconfig: "tsconfig.build.lib.json" }),
     ],

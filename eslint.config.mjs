@@ -697,7 +697,7 @@ export default tseslint.config(
         },
     },
     {
-        // Dev packages produce the public packages that use add-js-to-es6 post-processing,
+        // Dev packages produce the public packages that use post-process-paths (ppp) post-processing,
         // which appends .js to imports. Directory imports like "core/Foo" become "core/Foo.js"
         // which fails if Foo is a directory. This rule catches those cases.
         files: ["packages/dev/**/*.{ts,tsx}"],

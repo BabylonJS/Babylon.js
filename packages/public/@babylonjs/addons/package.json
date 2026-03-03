@@ -15,8 +15,7 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json|lts.json)\" -g",
-        "compile": "tsc -b tsconfig.build.json && build-tools -c ppp --dir ./ --base-package @babylonjs/addons --append-js",
-        "postcompile": "build-tools -c add-js-to-es6"
+        "compile": "swc ../../../dev/addons/src -d ./ --ignore \"**/*.d.ts\" && tsc -p tsconfig.build.json --emitDeclarationOnly && build-tools -c ppp --dir ./ --base-package @babylonjs/addons --append-js"
     },
     "devDependencies": {
         "@babylonjs/core": "8.53.0",

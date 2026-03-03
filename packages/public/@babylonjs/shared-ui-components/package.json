@@ -16,9 +16,8 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json)\" -g",
-        "compile": "tsc -b tsconfig.build.json --verbose && build-tools -c ppp --dir ./ --base-package @babylonjs/shared-ui-components --append-js",
-        "precompile": "build-tools -c process-assets --path-prefix ../../../dev/sharedUiComponents/ --output-dir ./",
-        "postcompile": "build-tools -c add-js-to-es6"
+        "compile": "swc ../../../dev/sharedUiComponents/src -d ./ --ignore \"**/*.d.ts\" && tsc -p tsconfig.build.json --emitDeclarationOnly && build-tools -c ppp --dir ./ --base-package @babylonjs/shared-ui-components --append-js",
+        "precompile": "build-tools -c process-assets --path-prefix ../../../dev/sharedUiComponents/ --output-dir ./"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
