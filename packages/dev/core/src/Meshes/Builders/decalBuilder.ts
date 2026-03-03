@@ -254,7 +254,7 @@ export function CreateDecal(
         }
 
         for (let index = 0; index < vertices.length; index += 3) {
-            let total = 0;
+            let total: number;
             let nV1: Nullable<DecalVertex> = null;
             let nV2: Nullable<DecalVertex> = null;
             let nV3: Nullable<DecalVertex> = null;

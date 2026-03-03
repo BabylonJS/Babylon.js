@@ -118,7 +118,7 @@ export class SheenBlock extends NodeMaterialBlock {
      * @returns the shader code
      */
     public getCode(reflectionBlock: Nullable<ReflectionBlock>, state: NodeMaterialBuildState): string {
-        let code = "";
+        let code: string;
 
         const color = this.color.isConnected ? this.color.associatedVariableName : `vec3${state.fSuffix}(1.)`;
         const intensity = this.intensity.isConnected ? this.intensity.associatedVariableName : "1.";

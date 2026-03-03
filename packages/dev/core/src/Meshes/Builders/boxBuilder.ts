@@ -42,7 +42,7 @@ export function CreateBoxVertexData(options: {
         1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
     ];
     const uvs = [];
-    let positions = [];
+    let positions: number[];
     const width = options.width || options.size || 1;
     const height = options.height || options.size || 1;
     const depth = options.depth || options.size || 1;

@@ -56,8 +56,8 @@ export function CreateLathe(
     const paths = [];
     const invertUV = options.invertUV || false;
 
-    let i = 0;
-    let p = 0;
+    let i: number;
+    let p: number;
     const step = (pi2 / tessellation) * arc;
     let rotated;
     let path: Array<Vector3>;

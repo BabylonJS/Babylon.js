@@ -2156,7 +2156,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
             // Use previous effect while new one is compiling
             if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
-                effect = previousEffect;
                 defines.markAsUnprocessed();
 
                 forceWasNotReadyPreviously = this.isFrozen;
@@ -2290,7 +2289,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         // Bones
         BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
 
-        let radianceTexture: Nullable<BaseTexture> = null;
+        let radianceTexture: Nullable<BaseTexture>;
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);
@@ -2618,7 +2617,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             fallbacks.addFallback(fallbackRank++, "TANGENT");
         }
 
-        fallbackRank = HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights, fallbackRank++);
+        fallbackRank = HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights, fallbackRank);
 
         if (defines.SPECULARTERM) {
             fallbacks.addFallback(fallbackRank++, "SPECULARTERM");

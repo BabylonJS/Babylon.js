@@ -953,7 +953,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         };
 
-        let parent: Nullable<Node> = null;
+        let parent: Nullable<Node>;
         let cloneThinInstances = false;
 
         if (parentOrOptions && (parentOrOptions as Node)._addToSceneRootNodes === undefined) {
@@ -2810,8 +2810,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
             }
             this._internalMeshDataInfo._effectiveSideOrientation = sideOrientation!;
-        } else {
-            sideOrientation = this._internalMeshDataInfo._effectiveSideOrientation;
         }
 
         const reverse = this._internalMeshDataInfo._effectiveMaterial._preBind(drawWrapper, this._internalMeshDataInfo._effectiveSideOrientation);
@@ -3865,7 +3863,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             const matrixWeights: Array<number> = [];
             const matrixIndicesExtra: Array<number> = [];
             const matrixWeightsExtra: Array<number> = [];
-            let pstring: Array<string> = []; //lists facet vertex positions (a,b,c) as string "a|b|c"
+            let pstring: Array<string>; //lists facet vertex positions (a,b,c) as string "a|b|c"
 
             let indexPtr: number = 0; // pointer to next available index value
             const uniquePositions: { [key: string]: number } = {}; // unique vertex positions

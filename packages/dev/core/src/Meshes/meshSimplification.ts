@@ -892,7 +892,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
     private _calculateError(vertex1: DecimationVertex, vertex2: DecimationVertex, pointResult?: Vector3): number {
         const q = vertex1.q.add(vertex2.q);
         const border = vertex1.isBorder && vertex2.isBorder;
-        let error: number = 0;
+        let error: number;
         const qDet = q.det(0, 1, 2, 1, 4, 5, 2, 5, 7);
 
         if (qDet !== 0 && !border) {

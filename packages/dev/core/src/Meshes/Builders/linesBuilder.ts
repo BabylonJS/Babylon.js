@@ -72,12 +72,12 @@ export function CreateDashedLinesVertexData(options: { points: Vector3[]; dashSi
 
     const curvect = Vector3.Zero();
     let lg = 0;
-    let nb = 0;
-    let shft = 0;
-    let dashshft = 0;
-    let curshft = 0;
+    let nb: number;
+    let shft: number;
+    let dashshft: number;
+    let curshft: number;
     let idx = 0;
-    let i = 0;
+    let i: number;
     for (i = 0; i < points.length - 1; i++) {
         points[i + 1].subtractToRef(points[i], curvect);
         lg += curvect.length();
@@ -241,13 +241,13 @@ export function CreateDashedLines(
             const curvect = Vector3.Zero();
             const nbSeg = positions.length / 6;
             let lg = 0;
-            let nb = 0;
-            let shft = 0;
-            let dashshft = 0;
-            let curshft = 0;
+            let nb: number;
+            let shft: number;
+            let dashshft: number;
+            let curshft: number;
             let p = 0;
-            let i = 0;
-            let j = 0;
+            let i: number;
+            let j: number;
             for (i = 0; i < points.length - 1; i++) {
                 points[i + 1].subtractToRef(points[i], curvect);
                 lg += curvect.length();
