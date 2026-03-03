@@ -1252,7 +1252,7 @@ export class StandardMaterial extends StandardMaterialBase {
             const join = defines.toString();
 
             const previousEffect = subMesh.effect;
-            let effect = scene.getEngine().createEffect(
+            const effect = scene.getEngine().createEffect(
                 shaderName,
                 <IEffectCreationOptions>{
                     attributes: attribs,

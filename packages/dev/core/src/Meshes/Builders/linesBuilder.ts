@@ -73,8 +73,6 @@ export function CreateDashedLinesVertexData(options: { points: Vector3[]; dashSi
     const curvect = Vector3.Zero();
     let lg = 0;
     let nb: number;
-    let shft: number;
-    let dashshft: number;
     let curshft: number;
     let idx = 0;
     let i: number;
@@ -82,8 +80,8 @@ export function CreateDashedLinesVertexData(options: { points: Vector3[]; dashSi
         points[i + 1].subtractToRef(points[i], curvect);
         lg += curvect.length();
     }
-    shft = lg / dashNb;
-    dashshft = (dashSize * shft) / (dashSize + gapSize);
+    const shft = lg / dashNb;
+    const dashshft = (dashSize * shft) / (dashSize + gapSize);
     for (i = 0; i < points.length - 1; i++) {
         points[i + 1].subtractToRef(points[i], curvect);
         nb = Math.floor(curvect.length() / shft);
@@ -242,8 +240,6 @@ export function CreateDashedLines(
             const nbSeg = positions.length / 6;
             let lg = 0;
             let nb: number;
-            let shft: number;
-            let dashshft: number;
             let curshft: number;
             let p = 0;
             let i: number;
@@ -252,10 +248,10 @@ export function CreateDashedLines(
                 points[i + 1].subtractToRef(points[i], curvect);
                 lg += curvect.length();
             }
-            shft = lg / nbSeg;
+            const shft = lg / nbSeg;
             const dashSize = instance._creationDataStorage!.dashSize;
             const gapSize = instance._creationDataStorage!.gapSize;
-            dashshft = (dashSize * shft) / (dashSize + gapSize);
+            const dashshft = (dashSize * shft) / (dashSize + gapSize);
             for (i = 0; i < points.length - 1; i++) {
                 points[i + 1].subtractToRef(points[i], curvect);
                 nb = Math.floor(curvect.length() / shft);

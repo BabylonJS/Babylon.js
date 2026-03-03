@@ -105,13 +105,11 @@ export class _PrimaryIsoTriangle {
         const m = this.m;
         const n = this.n;
         let g = m; // hcf of m, n when n != 0
-        let m1: number;
-        let n1: number;
         if (n !== 0) {
             g = HighestCommonFactor(m, n);
         }
-        m1 = m / g;
-        n1 = n / g;
+        const m1 = m / g;
+        const n1 = n / g;
 
         let fr: number | string; //face to the right of current face
         let rot: number | string; //rotation about which vertex for fr
