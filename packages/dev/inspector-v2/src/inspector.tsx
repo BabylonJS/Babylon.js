@@ -77,7 +77,7 @@ type LayoutMode = "inline" | "overlay";
 /**
  * Options for configuring the inspector.
  */
-export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & {
+export type InspectorOptions = Omit<ModularToolOptions, "namespace" | "toolbarMode"> & {
     /**
      * Whether to automatically resize the engine when the inspector layout changes. Defaults to true.
      */
@@ -85,7 +85,7 @@ export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & {
 
     /**
      * The layout mode for the inspector.
-     * - "inline": The inspector is embedded within the same container as the rendering canvas.
+     * - "inline": The inspector is embedded within the same container as the rendering canvas, and re-hosts the canvas.
      * - "overlay": The inspector is rendered as an overlay on top of the rendering canvas.
      * Defaults to "overlay".
      */
