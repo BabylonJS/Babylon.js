@@ -5893,4 +5893,3 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 }
 
 RegisterClass("BABYLON.Mesh", Mesh);
-
