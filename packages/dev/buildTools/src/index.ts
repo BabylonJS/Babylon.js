@@ -11,6 +11,7 @@ import { prepareSnapshot } from "./prepareSnapshot.js";
 import { umdPackageMapping } from "./packageMapping.js";
 import { updateEngineVersion } from "./updateEngineVersion.js";
 import { declarationsEs6 } from "./declarationsEs6.js";
+import { postProcessPathsCommand, postProcessPaths, rewriteImportPaths } from "./postProcessPaths.js";
 // public API
 import transformer from "./pathTransform.js";
 import * as webpackTools from "./webpackTools.js";
@@ -96,6 +97,10 @@ function RunCommand(command: string) {
             case "des6":
                 declarationsEs6();
                 break;
+            case "post-process-paths":
+            case "ppp":
+                postProcessPathsCommand();
+                break;
             case "copy":
             case "cp":
                 copyFolder(checkArgs(["-f", "--from"], false, true) as string, checkArgs(["-t", "--to"], false, true) as string);
@@ -107,4 +112,4 @@ function RunCommand(command: string) {
     }
 }
 
-export { transformer, webpackTools, checkArgs, umdPackageMapping, populateEnvironment };
+export { transformer, webpackTools, checkArgs, umdPackageMapping, populateEnvironment, postProcessPaths, rewriteImportPaths };
