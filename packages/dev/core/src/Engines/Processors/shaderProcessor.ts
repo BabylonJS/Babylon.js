@@ -190,7 +190,7 @@ function BuildExpression(line: string, start: number): ShaderCodeTestNode {
 }
 
 function MoveCursorWithinIf(cursor: ShaderCodeCursor, rootNode: ShaderCodeConditionNode, ifNode: ShaderCodeNode, preProcessorsFromCode: { [key: string]: string }) {
-    let line = cursor.currentLine;
+    let line: string;
     while (MoveCursor(cursor, ifNode, preProcessorsFromCode)) {
         line = cursor.currentLine;
         const first5 = line.substring(0, 5).toLowerCase();
@@ -418,7 +418,7 @@ export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions
         ReusableMatches.push(match);
     }
 
-    let returnValue = String(sourceCode);
+    let returnValue: string;
     let parts = [sourceCode];
 
     let keepProcessing = false;

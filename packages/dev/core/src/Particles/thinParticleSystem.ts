@@ -1417,8 +1417,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         u = Math.abs(u) * 0.5 + 0.5;
         v = Math.abs(v) * 0.5 + 0.5;
 
-        const wrappedU = (u * width) % width | 0;
-        const wrappedV = (v * height) % height | 0;
+        const wrappedU = ((u * width) % width) | 0;
+        const wrappedV = ((v * height) % height) | 0;
 
         const position = (wrappedU + wrappedV * width) * 4;
         return pixels[position] / 255;

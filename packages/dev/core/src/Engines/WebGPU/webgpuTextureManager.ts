@@ -603,7 +603,6 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
-            commandEncoder = null as any;
         }
     }
 
@@ -769,7 +768,6 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
-            commandEncoder = null as any;
         }
     }
 
@@ -913,7 +911,6 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
-            commandEncoder = null as any;
         }
     }
 
@@ -1007,7 +1004,6 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
-            commandEncoder = null as any;
         }
     }
 
@@ -1220,7 +1216,6 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
-            commandEncoder = null as any;
         }
     }
 

@@ -276,7 +276,11 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                                                 <DialogTitle>Required Extensions</DialogTitle>
                                                 <DialogContent>
                                                     Opening this URL requires the following extensions to be installed and enabled:
-                                                    <ul>{requiredExtensions?.map((name) => <li key={name}>{name}</li>)}</ul>
+                                                    <ul>
+                                                        {requiredExtensions?.map((name) => (
+                                                            <li key={name}>{name}</li>
+                                                        ))}
+                                                    </ul>
                                                 </DialogContent>
                                                 <DialogActions>
                                                     <Button appearance="primary" onClick={onAcceptRequiredExtensions}>

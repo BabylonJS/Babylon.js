@@ -2713,7 +2713,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 return false;
             }
 
-            let internalTexture: Nullable<InternalTexture> = null;
+            let internalTexture: Nullable<InternalTexture>;
             if (depthStencilTexture) {
                 internalTexture = (<RenderTargetTexture>texture).depthStencilTexture!;
             } else if (texture.isReady()) {
