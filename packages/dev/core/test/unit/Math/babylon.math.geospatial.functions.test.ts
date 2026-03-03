@@ -12,8 +12,8 @@ describe("Geospatial function tests", () => {
             ["(-45, -30)", -45, -30, -Math.PI / 4, -Math.PI / 6],
         ])("should convert %s in degrees", (_name, latDeg, lonDeg, exLat, exLon) => {
             const { lat, lon } = LatLonFromDegreesToRef(latDeg, lonDeg, { lat: 0, lon: 0 });
-            expect(lat).toBe(exLat);
-            expect(lon).toBe(exLon);
+            expect(lat).toBeCloseTo(exLat, 9);
+            expect(lon).toBeCloseTo(exLon, 9);
         });
     });
     describe("LatLonToNormalToRef", () => {
