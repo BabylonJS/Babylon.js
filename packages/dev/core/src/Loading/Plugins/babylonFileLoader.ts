@@ -134,9 +134,10 @@ const LoadDetailLevels = (scene: Scene, mesh: AbstractMesh) => {
     }
 };
 
-const FindParent = (parentId: any, parentInstanceIndex: any, scene: Scene) => {
+const FindParent = (parentId: any, parentInstanceIndex: any, scene: Scene, container?: AssetContainer) => {
     if (typeof parentId !== "number") {
-        const parentEntry = scene.getLastEntryById(parentId);
+        // When loading into a container, entities aren't in scene arrays — search container instead
+        const parentEntry = container ? _containerGetLastEntryById(container, parentId) : scene.getLastEntryById(parentId);
         if (parentEntry && parentInstanceIndex !== undefined && parentInstanceIndex !== null) {
             const instance = (parentEntry as Mesh).instances[parseInt(parentInstanceIndex)];
             return instance;
@@ -153,12 +154,53 @@ const FindParent = (parentId: any, parentInstanceIndex: any, scene: Scene) => {
     return parent;
 };
 
-const FindMaterial = (materialId: any, scene: Scene) => {
+const FindMaterial = (materialId: any, scene: Scene, container?: AssetContainer) => {
     if (typeof materialId !== "number") {
+        if (container) {
+            // Search container arrays (materials + multiMaterials)
+            for (let i = container.materials.length - 1; i >= 0; i--) {
+                if (container.materials[i].id === materialId) {
+                    return container.materials[i];
+                }
+            }
+            for (let i = container.multiMaterials.length - 1; i >= 0; i--) {
+                if (container.multiMaterials[i].id === materialId) {
+                    return container.multiMaterials[i];
+                }
+            }
+            return null;
+        }
         return scene.getLastMaterialById(materialId, true);
     }
 
     return TempMaterialIndexContainer[materialId];
+};
+
+/**
+ * Search container arrays for an entity by id (mirrors scene.getLastEntryById).
+ */
+const _containerGetLastEntryById = (container: AssetContainer, id: string): Nullable<Node> => {
+    for (let i = container.meshes.length - 1; i >= 0; i--) {
+        if (container.meshes[i].id === id) {
+            return container.meshes[i];
+        }
+    }
+    for (let i = container.transformNodes.length - 1; i >= 0; i--) {
+        if (container.transformNodes[i].id === id) {
+            return container.transformNodes[i];
+        }
+    }
+    for (let i = container.cameras.length - 1; i >= 0; i--) {
+        if (container.cameras[i].id === id) {
+            return container.cameras[i];
+        }
+    }
+    for (let i = container.lights.length - 1; i >= 0; i--) {
+        if (container.lights[i].id === id) {
+            return container.lights[i];
+        }
+    }
+    return null;
 };
 
 /**
@@ -175,6 +217,8 @@ export function LoadAssetContainerFromSerializedScene(scene: Scene, serializedSc
 
 const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     const container = new AssetContainer(scene);
+    // When entities are blocked from scene arrays, use container arrays for lookups
+    const lookupContainer = !addToScene ? container : undefined;
 
     if (!addToScene) {
         scene._blockEntityCollection = true;
@@ -490,31 +534,35 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                 if (!nodeMap) {
                     nodeMap = new Map<Node["id"], Node>();
 
-                    // Nodes in scene does not change when parsing animationGroups, so it's safe to build a map.
-                    // This follows the order of scene.getNodeById: mesh, transformNode, light, camera, bone
-                    for (let index = 0; index < scene.meshes.length; index++) {
-                        // This follows the behavior of scene.getXXXById, which picks the first match
-                        if (!nodeMap.has(scene.meshes[index].id)) {
-                            nodeMap.set(scene.meshes[index].id, scene.meshes[index]);
+                    // When loading into a container, entities aren't in scene arrays
+                    const srcMeshes = lookupContainer ? container.meshes : scene.meshes;
+                    const srcTransformNodes = lookupContainer ? container.transformNodes : scene.transformNodes;
+                    const srcLights = lookupContainer ? container.lights : scene.lights;
+                    const srcCameras = lookupContainer ? container.cameras : scene.cameras;
+                    const srcSkeletons = lookupContainer ? container.skeletons : scene.skeletons;
+
+                    for (let index = 0; index < srcMeshes.length; index++) {
+                        if (!nodeMap.has(srcMeshes[index].id)) {
+                            nodeMap.set(srcMeshes[index].id, srcMeshes[index]);
                         }
                     }
-                    for (let index = 0; index < scene.transformNodes.length; index++) {
-                        if (!nodeMap.has(scene.transformNodes[index].id)) {
-                            nodeMap.set(scene.transformNodes[index].id, scene.transformNodes[index]);
+                    for (let index = 0; index < srcTransformNodes.length; index++) {
+                        if (!nodeMap.has(srcTransformNodes[index].id)) {
+                            nodeMap.set(srcTransformNodes[index].id, srcTransformNodes[index]);
                         }
                     }
-                    for (let index = 0; index < scene.lights.length; index++) {
-                        if (!nodeMap.has(scene.lights[index].id)) {
-                            nodeMap.set(scene.lights[index].id, scene.lights[index]);
+                    for (let index = 0; index < srcLights.length; index++) {
+                        if (!nodeMap.has(srcLights[index].id)) {
+                            nodeMap.set(srcLights[index].id, srcLights[index]);
                         }
                     }
-                    for (let index = 0; index < scene.cameras.length; index++) {
-                        if (!nodeMap.has(scene.cameras[index].id)) {
-                            nodeMap.set(scene.cameras[index].id, scene.cameras[index]);
+                    for (let index = 0; index < srcCameras.length; index++) {
+                        if (!nodeMap.has(srcCameras[index].id)) {
+                            nodeMap.set(srcCameras[index].id, srcCameras[index]);
                         }
                     }
-                    for (let skeletonIndex = 0; skeletonIndex < scene.skeletons.length; skeletonIndex++) {
-                        const skeleton = scene.skeletons[skeletonIndex];
+                    for (let skeletonIndex = 0; skeletonIndex < srcSkeletons.length; skeletonIndex++) {
+                        const skeleton = srcSkeletons[skeletonIndex];
                         for (let boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
                             if (!nodeMap.has(skeleton.bones[boneIndex].id)) {
                                 nodeMap.set(skeleton.bones[boneIndex].id, skeleton.bones[boneIndex]);
@@ -568,37 +616,41 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         }
 
         // Browsing all the graph to connect the dots
-        for (index = 0, cache = scene.cameras.length; index < cache; index++) {
-            const camera = scene.cameras[index];
+        const cameras = lookupContainer ? container.cameras : scene.cameras;
+        for (index = 0, cache = cameras.length; index < cache; index++) {
+            const camera = cameras[index];
             if (camera._waitingParentId !== null) {
-                camera.parent = FindParent(camera._waitingParentId, camera._waitingParentInstanceIndex, scene);
+                camera.parent = FindParent(camera._waitingParentId, camera._waitingParentInstanceIndex, scene, lookupContainer);
                 camera._waitingParentId = null;
                 camera._waitingParentInstanceIndex = null;
             }
         }
 
-        for (index = 0, cache = scene.lights.length; index < cache; index++) {
-            const light = scene.lights[index];
+        const lights = lookupContainer ? container.lights : scene.lights;
+        for (index = 0, cache = lights.length; index < cache; index++) {
+            const light = lights[index];
             if (light && light._waitingParentId !== null) {
-                light.parent = FindParent(light._waitingParentId, light._waitingParentInstanceIndex, scene);
+                light.parent = FindParent(light._waitingParentId, light._waitingParentInstanceIndex, scene, lookupContainer);
                 light._waitingParentId = null;
                 light._waitingParentInstanceIndex = null;
             }
         }
 
         // Connect parents & children and parse actions and lods
-        for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
-            const transformNode = scene.transformNodes[index];
+        const transformNodes = lookupContainer ? container.transformNodes : scene.transformNodes;
+        for (index = 0, cache = transformNodes.length; index < cache; index++) {
+            const transformNode = transformNodes[index];
             if (transformNode._waitingParentId !== null) {
-                transformNode.parent = FindParent(transformNode._waitingParentId, transformNode._waitingParentInstanceIndex, scene);
+                transformNode.parent = FindParent(transformNode._waitingParentId, transformNode._waitingParentInstanceIndex, scene, lookupContainer);
                 transformNode._waitingParentId = null;
                 transformNode._waitingParentInstanceIndex = null;
             }
         }
-        for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-            const mesh = scene.meshes[index];
+        const meshes = lookupContainer ? container.meshes : scene.meshes;
+        for (index = 0, cache = meshes.length; index < cache; index++) {
+            const mesh = meshes[index];
             if (mesh._waitingParentId !== null) {
-                mesh.parent = FindParent(mesh._waitingParentId, mesh._waitingParentInstanceIndex, scene);
+                mesh.parent = FindParent(mesh._waitingParentId, mesh._waitingParentInstanceIndex, scene, lookupContainer);
                 mesh._waitingParentId = null;
                 mesh._waitingParentInstanceIndex = null;
             }
@@ -608,23 +660,24 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         }
 
         // link multimats with materials
-        for (const multimat of scene.multiMaterials) {
+        const multiMaterials = lookupContainer ? container.multiMaterials : scene.multiMaterials;
+        for (const multimat of multiMaterials) {
             for (const subMaterial of multimat._waitingSubMaterialsUniqueIds) {
-                multimat.subMaterials.push(FindMaterial(subMaterial, scene));
+                multimat.subMaterials.push(FindMaterial(subMaterial, scene, lookupContainer));
             }
             multimat._waitingSubMaterialsUniqueIds = [];
         }
 
         // link meshes with materials
-        for (const mesh of scene.meshes) {
+        for (const mesh of meshes) {
             if (mesh._waitingMaterialId !== null) {
-                mesh.material = FindMaterial(mesh._waitingMaterialId, scene);
+                mesh.material = FindMaterial(mesh._waitingMaterialId, scene, lookupContainer);
                 mesh._waitingMaterialId = null;
             }
         }
 
         // link meshes with morph target managers
-        for (const mesh of scene.meshes) {
+        for (const mesh of meshes) {
             if (mesh._waitingMorphTargetManagerId !== null) {
                 mesh.morphTargetManager = TempMorphTargetManagerIndexContainer[mesh._waitingMorphTargetManagerId];
                 mesh._waitingMorphTargetManagerId = null;
@@ -632,15 +685,24 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         }
 
         // link meshes with skeletons
-        for (const mesh of scene.meshes) {
+        for (const mesh of meshes) {
             // First try to get it via uniqueId
             if (mesh._waitingSkeletonUniqueId !== null) {
                 mesh.skeleton = TempSkeletonIndexContainer[mesh._waitingSkeletonUniqueId];
             }
 
-            // If not possible or not found, try to get it from the scene (backwards compatibility)
+            // If not possible or not found, try to get it from the scene/container (backwards compatibility)
             if (mesh._waitingSkeletonId !== null && !mesh.skeleton) {
-                mesh.skeleton = scene.getLastSkeletonById(mesh._waitingSkeletonId);
+                if (lookupContainer) {
+                    for (let i = container.skeletons.length - 1; i >= 0; i--) {
+                        if (container.skeletons[i].id === mesh._waitingSkeletonId) {
+                            mesh.skeleton = container.skeletons[i];
+                            break;
+                        }
+                    }
+                } else {
+                    mesh.skeleton = scene.getLastSkeletonById(mesh._waitingSkeletonId);
+                }
             }
 
             mesh._waitingSkeletonId = null;
@@ -648,8 +710,9 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         }
 
         // link bones to transform nodes
-        for (index = 0, cache = scene.skeletons.length; index < cache; index++) {
-            const skeleton = scene.skeletons[index];
+        const skeletons = lookupContainer ? container.skeletons : scene.skeletons;
+        for (index = 0, cache = skeletons.length; index < cache; index++) {
+            const skeleton = skeletons[index];
             if (skeleton._hasWaitingData) {
                 if (skeleton.bones != null) {
                     for (const bone of skeleton.bones) {
@@ -659,9 +722,9 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                             linkTransformNode = TempIndexContainer[bone._waitingTransformNodeUniqueId];
                         }
 
-                        // If not possible or not found, try to get it from the scene (backwards compatibility)
+                        // If not possible or not found, try to get it from the scene/container (backwards compatibility)
                         if (bone._waitingTransformNodeId !== null && !linkTransformNode) {
-                            linkTransformNode = scene.getLastEntryById(bone._waitingTransformNodeId);
+                            linkTransformNode = lookupContainer ? _containerGetLastEntryById(container, bone._waitingTransformNodeId) : scene.getLastEntryById(bone._waitingTransformNodeId);
                         }
 
                         if (linkTransformNode) {
@@ -678,8 +741,8 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         }
 
         // freeze world matrix application
-        for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-            const currentMesh = scene.meshes[index];
+        for (index = 0, cache = meshes.length; index < cache; index++) {
+            const currentMesh = meshes[index];
             if (currentMesh._waitingData.freezeWorldMatrix) {
                 currentMesh.freezeWorldMatrix();
                 currentMesh._waitingData.freezeWorldMatrix = null;
@@ -689,12 +752,19 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         }
 
         // Lights exclusions / inclusions
-        for (index = 0, cache = scene.lights.length; index < cache; index++) {
-            const light = scene.lights[index];
+        for (index = 0, cache = lights.length; index < cache; index++) {
+            const light = lights[index];
             // Excluded check
             if (light._excludedMeshesIds.length > 0) {
                 for (let excludedIndex = 0; excludedIndex < light._excludedMeshesIds.length; excludedIndex++) {
-                    const excludedMesh = scene.getMeshById(light._excludedMeshesIds[excludedIndex]);
+                    let excludedMesh: Nullable<AbstractMesh> = null;
+                    if (lookupContainer) {
+                        for (const m of container.meshes) {
+                            if (m.id === light._excludedMeshesIds[excludedIndex]) { excludedMesh = m; break; }
+                        }
+                    } else {
+                        excludedMesh = scene.getMeshById(light._excludedMeshesIds[excludedIndex]);
+                    }
 
                     if (excludedMesh) {
                         light.excludedMeshes.push(excludedMesh);
@@ -707,7 +777,14 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
             // Included check
             if (light._includedOnlyMeshesIds.length > 0) {
                 for (let includedOnlyIndex = 0; includedOnlyIndex < light._includedOnlyMeshesIds.length; includedOnlyIndex++) {
-                    const includedOnlyMesh = scene.getMeshById(light._includedOnlyMeshesIds[includedOnlyIndex]);
+                    let includedOnlyMesh: Nullable<AbstractMesh> = null;
+                    if (lookupContainer) {
+                        for (const m of container.meshes) {
+                            if (m.id === light._includedOnlyMeshesIds[includedOnlyIndex]) { includedOnlyMesh = m; break; }
+                        }
+                    } else {
+                        includedOnlyMesh = scene.getMeshById(light._includedOnlyMeshesIds[includedOnlyIndex]);
+                    }
 
                     if (includedOnlyMesh) {
                         light.includedOnlyMeshes.push(includedOnlyMesh);
@@ -718,15 +795,16 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
             }
         }
 
-        for (const g of scene.geometries) {
+        const resolvedGeometries = lookupContainer ? container.geometries : scene.geometries;
+        for (const g of resolvedGeometries) {
             g._loadedUniqueId = "";
         }
 
         Parse(parsedData, scene, container, rootUrl);
 
         // Actions (scene) Done last as it can access other objects.
-        for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-            const mesh = scene.meshes[index];
+        for (index = 0, cache = meshes.length; index < cache; index++) {
+            const mesh = meshes[index];
             if (mesh._waitingData.actions) {
                 ActionManager.Parse(mesh._waitingData.actions, mesh, scene);
                 mesh._waitingData.actions = null;
