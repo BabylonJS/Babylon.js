@@ -5,6 +5,8 @@
 uniform float currentCount;
 uniform float timeDelta;
 uniform float stopFactor;
+uniform float emitIndex;
+uniform float emitCount;
 #ifndef LOCAL
 uniform mat4 emitterWM;
 #endif
@@ -187,8 +189,15 @@ vec4 getRandomVec4(float offset) {
 void main() {
   float newAge = age + timeDelta;    
 
-  // If particle is dead and system is not stopped, spawn as new particle
-  if (newAge >= life && stopFactor != 0.) {
+  // Check if this particle is in the emit range for this frame
+  float particleIndex = float(gl_VertexID);
+  float offsetFromEmitIndex = particleIndex - emitIndex;
+  if (offsetFromEmitIndex < 0.0) {
+    offsetFromEmitIndex += currentCount; // wrap around circular buffer
+  }
+  bool shouldEmit = offsetFromEmitIndex < emitCount && stopFactor != 0.;
+
+  if (shouldEmit) {
     vec3 newPosition;
     vec3 newDirection;
 
@@ -197,7 +206,7 @@ void main() {
 
     // Age and life
     outLife = lifeTime.x + (lifeTime.y - lifeTime.x) * randoms.r;
-    outAge = newAge - life;
+    outAge = 0.0;
 
     // Seed
     outSeed = seed;

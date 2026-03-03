@@ -69,6 +69,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _maxActiveParticleCount: number;
     private _currentActiveCount: number;
     private _accumulatedCount = 0;
+    private _writePointer = 0;
+    private _emitIndex = 0;
+    private _emitCount = 0;
     private _updateBuffer: UniformBufferEffectCommonAccessor;
 
     private _buffer0: Buffer;
@@ -464,6 +467,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._platform.releaseVertexBuffers();
         this._currentActiveCount = 0;
         this._targetIndex = 0;
+        this._writePointer = 0;
+        this._emitIndex = 0;
+        this._emitCount = 0;
+        this._accumulatedCount = 0;
     }
 
     /**
@@ -1803,6 +1810,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._updateBuffer.setFloat("currentCount", this._currentActiveCount);
         this._updateBuffer.setFloat("timeDelta", this._timeDelta);
         this._updateBuffer.setFloat("stopFactor", this._stopped ? 0 : 1);
+        this._updateBuffer.setFloat("emitIndex", this._emitIndex);
+        this._updateBuffer.setFloat("emitCount", this._emitCount);
         this._updateBuffer.setInt("randomTextureSize", this._randomTextureSize);
         this._updateBuffer.setFloat2("lifeTime", this.minLifeTime, this.maxLifeTime);
         this._updateBuffer.setFloat2("emitPower", this.minEmitPower, this.maxEmitPower);
@@ -1893,19 +1902,47 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         // Get everything ready to render
         this._initialize();
 
+        // Accumulate fractional particles over time. Manual emit bypasses the rate.
         if (this.manualEmitCount > -1) {
             this._accumulatedCount += this.manualEmitCount;
             this.manualEmitCount = 0;
-        } else {
+        } else if (!this._stopped) {
             this._accumulatedCount += this.emitRate * this._timeDelta;
         }
+
+        // Convert accumulated fractional count into whole particles to emit this frame.
+        // The fractional remainder carries over to the next frame.
+        let newParticles = 0;
         if (this._accumulatedCount >= 1) {
-            const intPart = this._accumulatedCount | 0;
-            this._accumulatedCount -= intPart;
-            this._currentActiveCount += intPart;
+            newParticles = this._accumulatedCount | 0;
+            this._accumulatedCount -= newParticles;
         }
 
-        this._currentActiveCount = Math.min(this._maxActiveParticleCount, this._currentActiveCount);
+        // The maximum number of particles that can be alive at once is bounded by
+        // emitRate * maxLifeTime (e.g. 1000 emit/s * 0.3s = 300 particles).
+        // This matches CPU particle system behavior and avoids filling the entire capacity.
+        const steadyStateCount = Math.min(Math.ceil(this.emitRate * this.maxLifeTime), this._maxActiveParticleCount);
+
+        // During ramp-up, grow the active buffer size by adding new slots.
+        // Once _currentActiveCount reaches steadyStateCount, no new slots are added —
+        // existing slots are recycled instead (handled by _emitIndex below).
+        if (this._currentActiveCount < steadyStateCount && newParticles > 0) {
+            const growth = Math.min(newParticles, steadyStateCount - this._currentActiveCount);
+            this._currentActiveCount += growth;
+        }
+
+        // Tell the update shader which particle slots to (re)initialize this frame.
+        // _emitIndex is where the circular write pointer starts in the buffer,
+        // _emitCount is how many consecutive slots to reinitialize (with wrapping).
+        // The shader checks each particle's index against this range to decide
+        // whether to recycle it (emit branch) or advance its simulation (update branch).
+        if (this._currentActiveCount > 0 && newParticles > 0) {
+            this._emitCount = Math.min(newParticles, this._currentActiveCount);
+            this._emitIndex = this._writePointer % this._currentActiveCount;
+            this._writePointer += this._emitCount;
+        } else {
+            this._emitCount = 0;
+        }
 
         if (!this._currentActiveCount) {
             return 0;
