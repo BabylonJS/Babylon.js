@@ -39,8 +39,6 @@ AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, co
             }
         }
     }
-
-    loadedSounds = [];
 });
 
 declare module "../scene" {

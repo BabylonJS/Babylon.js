@@ -417,7 +417,7 @@ export class SpriteManager implements ISpriteManager {
             } catch (e) {
                 this._fromPacked = false;
                 this._packedAndReady = false;
-                throw new Error("Invalid JSON from string. Spritesheet managed with constant cell size.");
+                throw new Error("Invalid JSON from string. Spritesheet managed with constant cell size.", { cause: e });
             }
         } else {
             const re = /\./g;
@@ -442,7 +442,7 @@ export class SpriteManager implements ISpriteManager {
                 } catch (e) {
                     this._fromPacked = false;
                     this._packedAndReady = false;
-                    throw new Error("Invalid JSON format. Please check documentation for format specifications.");
+                    throw new Error("Invalid JSON format. Please check documentation for format specifications.", { cause: e });
                 }
             };
             Tools.LoadFile(jsonUrl, onload, undefined, undefined, false, onerror);

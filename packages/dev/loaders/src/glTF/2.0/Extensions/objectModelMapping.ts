@@ -1051,7 +1051,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
             getTarget: GetMaterial,
             set: (value, material, _index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
-                (texture.uOffset = value.x), (texture.vOffset = value.y);
+                ((texture.uOffset = value.x), (texture.vOffset = value.y));
             },
             getPropertyName: [
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uOffset`,
@@ -1075,7 +1075,7 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
             getTarget: GetMaterial,
             set: (value, material, index?, payload?) => {
                 const texture = GetTexture(material, payload, textureType, textureInObject);
-                (texture.uScale = value.x), (texture.vScale = value.y);
+                ((texture.uScale = value.x), (texture.vScale = value.y));
             },
             getPropertyName: [
                 () => `${textureType}${textureInObject ? "." + textureInObject : ""}.uScale`,
