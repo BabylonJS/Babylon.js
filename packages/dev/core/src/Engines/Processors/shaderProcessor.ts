@@ -418,7 +418,6 @@ export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions
         ReusableMatches.push(match);
     }
 
-    let returnValue: string;
     let parts = [sourceCode];
 
     let keepProcessing = false;
@@ -509,7 +508,7 @@ export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions
     }
     ReusableMatches.length = 0;
 
-    returnValue = parts.join("");
+    const returnValue = parts.join("");
 
     if (keepProcessing) {
         ProcessIncludes(returnValue.toString(), options, callback);

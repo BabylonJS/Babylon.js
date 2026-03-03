@@ -325,8 +325,7 @@ export class SpritePacker {
         this._spritesCanvasContext.translate(this._currentX, this._currentY);
         this._spritesCanvasContext.scale(scalingFactor.x, scalingFactor.y);
 
-        let textInfo: RawTextDocument | undefined;
-        textInfo = textData.d.k[0].s as RawTextDocument;
+        const textInfo = textData.d.k[0].s as RawTextDocument;
 
         if (textInfo.fc !== undefined && textInfo.fc.length >= 3) {
             const rawFillStyle = textInfo.fc;
