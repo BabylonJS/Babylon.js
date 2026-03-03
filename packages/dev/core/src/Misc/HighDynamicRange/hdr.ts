@@ -78,9 +78,6 @@ function ReadStringLine(uint8array: Uint8Array, startIndex: number): string {
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
-    let height: number;
-    let width: number;
-
     let line = ReadStringLine(uint8array, 0);
     if (line[0] != "#" || line[1] != "?") {
         // eslint-disable-next-line no-throw-literal
@@ -118,8 +115,8 @@ export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
         // eslint-disable-next-line no-throw-literal
         throw "HDR Bad header format, no size";
     }
-    width = parseInt(match[2]);
-    height = parseInt(match[1]);
+    const width = parseInt(match[2]);
+    const height = parseInt(match[1]);
 
     if (width < 8 || width > 0x7fff) {
         // eslint-disable-next-line no-throw-literal

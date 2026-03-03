@@ -2143,7 +2143,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         const previousEffect = subMesh.effect;
         const lightDisposed = defines._areLightsDisposed;
-        let effect = this._prepareEffect(mesh, subMesh.getRenderingMesh(), defines, this.onCompiled, this.onError, useInstances, null);
+        const effect = this._prepareEffect(mesh, subMesh.getRenderingMesh(), defines, this.onCompiled, this.onError, useInstances, null);
 
         let forceWasNotReadyPreviously = false;
 

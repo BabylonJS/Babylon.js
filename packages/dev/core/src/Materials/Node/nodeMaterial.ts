@@ -1671,7 +1671,7 @@ export class NodeMaterial extends NodeMaterialBase {
             const previousEffect = subMesh.effect;
             // Compilation
             const join = defines.toString();
-            let effect = engine.createEffect(
+            const effect = engine.createEffect(
                 {
                     vertex: "nodeMaterial" + this._buildId,
                     fragment: "nodeMaterial" + this._buildId,

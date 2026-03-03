@@ -328,7 +328,6 @@ function ExtrudeShapeGeneric(
         return shapePaths;
     };
     const scaleVector = scale !== null ? new Vector3(scale, scale, scale) : null;
-    let path3D;
     let pathArray;
     if (instance) {
         // instance update
@@ -340,7 +339,7 @@ function ExtrudeShapeGeneric(
         return instance;
     }
     // extruded shape creation
-    path3D = firstNormal ? new Path3D(curve, firstNormal) : new Path3D(curve);
+    const path3D = firstNormal ? new Path3D(curve, firstNormal) : new Path3D(curve);
     const newShapePaths = new Array<Array<Vector3>>();
     cap = cap < 0 || cap > 3 ? 0 : cap;
     pathArray = extrusionPathArray(shape, curve, path3D, newShapePaths, scaleVector, rotation, scaleFunction, rotateFunction, cap, custom, adjustFrame);
