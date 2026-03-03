@@ -14,6 +14,12 @@ const devToPublicAliases = [
     { find: "loaders", replacement: "@babylonjs/loaders" },
     { find: "materials", replacement: "@babylonjs/materials" },
     { find: "addons", replacement: "@babylonjs/addons" },
+    { find: "gui-editor", replacement: "@babylonjs/gui-editor" },
+    { find: "serializers", replacement: "@babylonjs/serializers" },
+    { find: "node-editor", replacement: "@babylonjs/node-editor" },
+    { find: "node-geometry-editor", replacement: "@babylonjs/node-geometry-editor" },
+    { find: "node-particle-editor", replacement: "@babylonjs/node-particle-editor" },
+    { find: "node-render-graph-editor", replacement: "@babylonjs/node-render-graph-editor" },
 ];
 
 // Append .js extension to @babylonjs/ subpath imports for ESM compatibility
