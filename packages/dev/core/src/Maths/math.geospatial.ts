@@ -1,4 +1,4 @@
-/** Latitude and longitude. */
+/** Latitude and longitude in radians. */
 export interface ILatLonLike {
     /** Latitude in radians. */
     lat: number;
@@ -6,8 +6,8 @@ export interface ILatLonLike {
     lon: number;
 }
 
-/** Latitude, longitude, and altitude. */
+/** Latitude and longitude in radians, and altitude in meters. */
 export interface ILatLonAltLike extends ILatLonLike {
-    /** The height above the surface. */
+    /** The height above the surface in meters. */
     alt: number;
 }
