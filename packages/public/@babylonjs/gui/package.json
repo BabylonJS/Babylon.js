@@ -14,7 +14,7 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json|lts.json)\" -g",
-        "compile": "swc ../../../dev/gui/src -d ./ --ignore \"**/*.d.ts\" && swc ../../../lts/gui/src -d ./ --ignore \"**/*.d.ts\" && tsc -p tsconfig.build.json --emitDeclarationOnly && tsc -p tsconfig.lts.json --emitDeclarationOnly && build-tools -c ppp --dir ./ --base-package @babylonjs/gui --append-js"
+        "compile": "swc ../../../dev/gui/src -d ./ --strip-leading-paths --ignore \"**/*.d.ts\" && swc ../../../lts/gui/src -d ./ --strip-leading-paths --ignore \"**/*.d.ts\" && tsc -p tsconfig.build.json --emitDeclarationOnly && tsc -p tsconfig.lts.json --emitDeclarationOnly && build-tools -c ppp --dir ./ --base-package @babylonjs/gui --append-js"
     },
     "devDependencies": {
         "@babylonjs/core": "8.53.0",

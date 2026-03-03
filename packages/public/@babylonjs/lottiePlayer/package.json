@@ -35,7 +35,7 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
-        "compile": "swc ../../../dev/lottiePlayer/src -d ./ --ignore \"**/*.d.ts\" && tsc -p tsconfig.build.json --emitDeclarationOnly && build-tools -c ppp --dir ./ --base-package @babylonjs/lottie-player --append-js"
+        "compile": "swc ../../../dev/lottiePlayer/src -d ./ --strip-leading-paths --ignore \"**/*.d.ts\" && tsc -p tsconfig.build.json --emitDeclarationOnly && build-tools -c ppp --dir ./ --base-package @babylonjs/lottie-player --append-js"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",

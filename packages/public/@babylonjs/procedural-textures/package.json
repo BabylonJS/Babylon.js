@@ -14,7 +14,7 @@
     "scripts": {
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(md|json|build.json|lts.json)\" -g",
-        "compile": "swc ../../../dev/proceduralTextures/src -d ./ --ignore \"**/*.d.ts\" && swc ../../../lts/proceduralTextures/src -d ./ --ignore \"**/*.d.ts\" && tsc -p tsconfig.build.json --emitDeclarationOnly && tsc -p tsconfig.lts.json --emitDeclarationOnly && build-tools -c ppp --dir ./ --base-package @babylonjs/procedural-textures --append-js"
+        "compile": "swc ../../../dev/proceduralTextures/src -d ./ --strip-leading-paths --ignore \"**/*.d.ts\" && swc ../../../lts/proceduralTextures/src -d ./ --strip-leading-paths --ignore \"**/*.d.ts\" && tsc -p tsconfig.build.json --emitDeclarationOnly && tsc -p tsconfig.lts.json --emitDeclarationOnly && build-tools -c ppp --dir ./ --base-package @babylonjs/procedural-textures --append-js"
     },
     "devDependencies": {
         "@babylonjs/core": "8.53.0",
