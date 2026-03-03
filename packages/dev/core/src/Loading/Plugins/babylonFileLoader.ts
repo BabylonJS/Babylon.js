@@ -173,10 +173,6 @@ export function LoadAssetContainerFromSerializedScene(scene: Scene, serializedSc
 const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     const container = new AssetContainer(scene);
 
-    if (!addToScene) {
-        scene._blockEntityCollection = true;
-    }
-
     // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
     // when SceneLoader.debugLogging = true (default), or exception encountered.
     // Everything stored in var log instead of writing separate lines to support only writing in exception,
@@ -395,20 +391,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
             if (vertexData !== undefined && vertexData !== null) {
                 for (index = 0, cache = vertexData.length; index < cache; index++) {
                     const parsedVertexData = vertexData[index];
-
-                    // Geometies are found by loadedUniqueId when imported
-                    // So we need to temporarily unblock the entity collection to add them to the scene
-                    scene._blockEntityCollection = false;
-                    // Temporarily replace the onNewGeometryAddedObservable to avoid multiple notifications
-                    const onNewGeometryAddedObservable = scene.onNewGeometryAddedObservable;
-                    scene.onNewGeometryAddedObservable = new Observable<Geometry>();
-
                     addedGeometry.push(Geometry.Parse(parsedVertexData, scene, rootUrl));
-
-                    // Restore the onNewGeometryAddedObservable
-                    scene.onNewGeometryAddedObservable = onNewGeometryAddedObservable;
-                    // Restore the previous state of entity collection blocking
-                    scene._blockEntityCollection = !addToScene;
                 }
             }
 
@@ -748,10 +731,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         TempSkeletonIndexContainer = {};
 
         if (!addToScene) {
-            // Removes any breadcrumb left during the loading like geometries
             container.removeAllFromScene();
-            // Unblock entity collection
-            scene._blockEntityCollection = false;
         }
         if (log !== null && SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_NO_LOGGING) {
             Logger.Log(
