@@ -35,42 +35,19 @@ function IsString(input: unknown): input is string {
     return typeof input === "string" || input instanceof String;
 }
 
-/**
- * Checks recursively for functions on an object and returns `false` if any are found.
- * @param o any object, string or number
- * @returns boolean
- */
-function ObjectCanSafelyStringify(o: unknown): boolean {
-    if (typeof o === "function") {
-        return false;
-    }
-    if (o === null || o === true || o === false || typeof o === "number" || IsString(o)) {
-        return true;
-    }
-
-    if (typeof o === "object") {
-        if (Object.values(o).length === 0) {
-            return true;
-        }
-        return Object.values(o as Record<string, unknown>).every((value) => ObjectCanSafelyStringify(value));
-    }
-
-    if (Array.isArray(o)) {
-        return o.every((value) => ObjectCanSafelyStringify(value));
-    }
-
-    return false;
-}
-
 function GetMetadataEntityType(metadata: unknown): MetadataTypes {
     if (metadata == null) {
         return "null";
-    } else if (IsString(metadata)) {
+    }
+    if (IsString(metadata)) {
         return "string";
-    } else if (!ObjectCanSafelyStringify(metadata)) {
-        return "object";
-    } else {
+    }
+    // Try to stringify - if it fails (e.g., circular refs, functions), it's an "object"
+    try {
+        JSON.stringify(metadata);
         return "JSON";
+    } catch {
+        return "object";
     }
 }
 
