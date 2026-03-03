@@ -7,7 +7,6 @@ import { Epsilon } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Node } from "../node";
-import type { CameraMovement } from "./cameraMovement";
 
 Node.AddNodeConstructor("TargetCamera", (name, scene) => {
     return () => new TargetCamera(name, Vector3.Zero(), scene);
@@ -64,13 +63,6 @@ export class TargetCamera extends Camera {
      * around all axis.
      */
     public noRotationConstraint = false;
-
-    /**
-     * When set, enables framerate-independent movement using the CameraMovement class.
-     * Input plugins will write pixel deltas to this instance, and _checkInputs will use
-     * its computed per-frame deltas instead of the legacy inertia system.
-     */
-    public movement?: CameraMovement;
 
     /**
      * Reverses mouselook direction to 'natural' panning as opposed to traditional direct
@@ -331,12 +323,16 @@ export class TargetCamera extends Camera {
      * Input plugins should call this instead of writing to cameraDirection directly.
      * @internal
      */
-    public _addDirectionDelta(delta: Vector3): void {
+    public _addPanDelta(x: number, y: number, z: number = 0): void {
         if (this.movement) {
-            this.movement.panAccumulatedPixels.addInPlace(delta);
+            this.movement.panAccumulatedPixels.x += x;
+            this.movement.panAccumulatedPixels.y += y;
+            this.movement.panAccumulatedPixels.z += z;
             this.movement.activeInput = true;
         } else {
-            this.cameraDirection.addInPlace(delta);
+            this.cameraDirection.x += x;
+            this.cameraDirection.y += y;
+            this.cameraDirection.z += z;
         }
     }
 

@@ -228,7 +228,7 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
 
                 camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
                 Vector3.TransformNormalToRef(camera._localDirection, camera._cameraTransformMatrix, camera._transformedDirection);
-                camera._addDirectionDelta(camera._transformedDirection);
+                camera._addPanDelta(camera._transformedDirection.x, camera._transformedDirection.y, camera._transformedDirection.z);
             }
         }
     }

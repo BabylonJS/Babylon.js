@@ -37,7 +37,7 @@ export class GeospatialCamera extends Camera {
     override inputs: GeospatialCameraInputsManager;
 
     /** Movement controller that turns input pixelDeltas into currentFrameDeltas used by camera*/
-    public readonly movement: GeospatialCameraMovement;
+    public override readonly movement: GeospatialCameraMovement;
 
     // Temp vars
     private _tempPosition: Vector3 = new Vector3();

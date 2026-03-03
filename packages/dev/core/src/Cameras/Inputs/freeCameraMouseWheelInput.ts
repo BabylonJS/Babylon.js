@@ -304,8 +304,8 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
 
         // Apply updates to camera position.
         this.camera._addRotationDelta(this._rotateRelative.x / 200, this._rotateRelative.y / 200);
-        this.camera._addDirectionDelta(transformedDirection);
-        this.camera._addDirectionDelta(this._moveScene);
+        this.camera._addPanDelta(transformedDirection.x, transformedDirection.y, transformedDirection.z);
+        this.camera._addPanDelta(this._moveScene.x, this._moveScene.y, this._moveScene.z);
 
         // Call the base class implementation to handle observers and do cleanup.
         super.checkInputs();

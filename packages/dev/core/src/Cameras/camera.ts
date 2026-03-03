@@ -17,6 +17,7 @@ import { Viewport } from "../Maths/math.viewport";
 import { Frustum } from "../Maths/math.frustum";
 import type { Plane } from "../Maths/math.plane";
 import { Constants } from "../Engines/constants";
+import { CameraMovement } from "./cameraMovement";
 
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -300,6 +301,35 @@ export class Camera extends Node {
      */
     @serialize()
     public inertia = 0.9;
+
+    /**
+     * When set, enables framerate-independent movement using the CameraMovement class.
+     * Input plugins will write pixel deltas to this instance, and _checkInputs will use
+     * its computed per-frame deltas instead of the legacy inertia system.
+     */
+    public movement?: CameraMovement;
+
+    private _useFramerateIndependentMovement = false;
+
+    /**
+     * When enabled, instantiates a CameraMovement instance to provide framerate-independent
+     * inertia for camera movement. When disabled, reverts to the legacy per-frame inertia system.
+     */
+    public get useFramerateIndependentMovement(): boolean {
+        return this._useFramerateIndependentMovement;
+    }
+
+    public set useFramerateIndependentMovement(value: boolean) {
+        if (this._useFramerateIndependentMovement === value) {
+            return;
+        }
+        this._useFramerateIndependentMovement = value;
+        if (value) {
+            this.movement = new CameraMovement(this.getScene(), this.position);
+        } else {
+            this.movement = undefined;
+        }
+    }
 
     private _mode = Camera.PERSPECTIVE_CAMERA;
 

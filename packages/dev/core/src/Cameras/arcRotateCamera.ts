@@ -1056,7 +1056,7 @@ export class ArcRotateCamera extends TargetCamera {
      * @param delta - The radius offset delta
      * @internal
      */
-    public _addZoomInput(delta: number): void {
+    public _addZoomDelta(delta: number): void {
         if (this.movement) {
             this.movement.zoomAccumulatedPixels += delta;
             this.movement.activeInput = true;
@@ -1070,9 +1070,10 @@ export class ArcRotateCamera extends TargetCamera {
      * Input plugins should call this instead of writing to inertialPanningX/Y directly.
      * @param x - The panning X delta
      * @param y - The panning Y delta
+     * @param _z - Unused for arc rotate camera
      * @internal
      */
-    public _addPanInput(x: number, y: number): void {
+    public override _addPanDelta(x: number, y: number, _z: number = 0): void {
         if (this.movement) {
             this.movement.panAccumulatedPixels.x += x;
             this.movement.panAccumulatedPixels.y += y;

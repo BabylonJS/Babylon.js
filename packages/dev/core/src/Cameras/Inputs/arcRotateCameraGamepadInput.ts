@@ -115,7 +115,7 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
             if (lsValues && lsValues.y != 0) {
                 const normalizedLY = lsValues.y / this.gamepadMoveSensibility;
                 if (normalizedLY != 0 && Math.abs(normalizedLY) > 0.005) {
-                    camera._addZoomInput(-normalizedLY);
+                    camera._addZoomDelta(-normalizedLY);
                 }
             }
         }

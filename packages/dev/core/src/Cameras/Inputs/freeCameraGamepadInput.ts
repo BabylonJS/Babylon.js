@@ -129,7 +129,7 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
             const speed = (camera.movement ? camera.getEngine().getDeltaTime() : camera._computeLocalCameraSpeed()) * 50.0;
             this._vector3.copyFromFloats(lsValues.x * speed, 0, -lsValues.y * speed);
             Vector3.TransformCoordinatesToRef(this._vector3, this._cameraTransform, this._deltaTransform);
-            camera._addDirectionDelta(this._deltaTransform);
+            camera._addPanDelta(this._deltaTransform.x, this._deltaTransform.y, this._deltaTransform.z);
             camera._addRotationDelta(rsValues.y, rsValues.x);
         }
     }

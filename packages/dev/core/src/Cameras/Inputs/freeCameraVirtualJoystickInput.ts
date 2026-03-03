@@ -68,7 +68,7 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
                 new Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed),
                 cameraTransform
             );
-            camera._addDirectionDelta(deltaTransform);
+            camera._addPanDelta(deltaTransform.x, deltaTransform.y, deltaTransform.z);
             camera._addRotationDelta(this._rightjoystick.deltaPosition.x, this._rightjoystick.deltaPosition.y);
 
             if (!this._leftjoystick.pressed) {
