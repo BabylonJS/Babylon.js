@@ -102,7 +102,7 @@ export const SearchPanel: React.FC<{
             if (!uriStr.startsWith("file:///pg/")) {
                 continue;
             }
-            let found: monaco.editor.FindMatch[] = [];
+            let found: monaco.editor.FindMatch[];
 
             if (rx) {
                 // Regex path

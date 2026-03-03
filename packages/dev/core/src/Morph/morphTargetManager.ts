@@ -609,7 +609,7 @@ export class MorphTargetManager implements IDisposable {
             const targetCount = this._targets.length;
             const data = new Float32Array(targetCount * this._textureWidth * this._textureHeight * 4);
 
-            let offset = 0;
+            let offset: number;
             for (let index = 0; index < targetCount; index++) {
                 const target = this._targets[index];
 

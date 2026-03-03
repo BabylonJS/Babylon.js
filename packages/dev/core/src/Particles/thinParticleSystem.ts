@@ -1516,7 +1516,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             offsets = this._spriteBuffer.createVertexBuffer("offset", 0, 2);
         } else {
             offsets = this._vertexBuffer.createVertexBuffer("offset", dataOffset, 2, this._vertexBufferSize, this._useInstancing);
-            dataOffset += 2;
         }
         this._vertexBuffers["offset"] = offsets;
 
@@ -1761,7 +1760,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             }
 
             this._vertexData[offset++] = offsetX;
-            this._vertexData[offset++] = offsetY;
+            this._vertexData[offset] = offsetY;
         }
     }
 
@@ -2148,7 +2147,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         if (!this._useInstancing) {
             this._appendParticleVertex(offset++, particle, 1, 0);
             this._appendParticleVertex(offset++, particle, 1, 1);
-            this._appendParticleVertex(offset++, particle, 0, 1);
+            this._appendParticleVertex(offset, particle, 0, 1);
         }
     }
 
@@ -2334,7 +2333,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             }
         }
 
-        let outparticles = 0;
+        let outparticles: number;
 
         if (this.blendMode === BaseParticleSystem.BLENDMODE_MULTIPLYADD) {
             outparticles = this._render(BaseParticleSystem.BLENDMODE_MULTIPLY) + this._render(BaseParticleSystem.BLENDMODE_ADD);
