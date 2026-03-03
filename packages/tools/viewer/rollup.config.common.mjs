@@ -3,8 +3,6 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import alias from "@rollup/plugin-alias";
 
-const source = "dev";
-
 export function createConfig(outDir) {
     return {
         input: "src/index.ts",
@@ -24,9 +22,9 @@ export function createConfig(outDir) {
             typescript({ tsconfig: "tsconfig.build.json", sourceMap: false, inlineSources: false, declaration: false, declarationMap: false, outDir }),
             alias({
                 entries: [
-                    { find: "core", replacement: `@${source}/core/dist` },
-                    { find: "loaders", replacement: `@${source}/loaders/dist` },
-                    { find: "materials", replacement: `@${source}/materials/dist` },
+                    { find: "core", replacement: "@babylonjs/core" },
+                    { find: "loaders", replacement: "@babylonjs/loaders" },
+                    { find: "materials", replacement: "@babylonjs/materials" },
                 ],
             }),
             nodeResolve({ mainFields: ["browser", "module", "main"] }),

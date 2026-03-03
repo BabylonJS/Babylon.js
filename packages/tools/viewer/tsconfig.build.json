@@ -4,7 +4,11 @@
     "compilerOptions": {
         "outDir": "./dist/tsbuild",
         "rootDir": "./src",
-        "composite": true
+        "composite": true,
+        "paths": {
+            "core/*": ["public/@babylonjs/core/*"],
+            "loaders/*": ["public/@babylonjs/loaders/*"]
+        }
     },
 
     "references": [

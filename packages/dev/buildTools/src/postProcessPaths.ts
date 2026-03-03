@@ -114,7 +114,19 @@ export function rewriteImportPaths(content: string, options: IPostProcessPathsOp
 
     const replacePath = (originalPath: string): string => {
         const transformed = transformPackageLocation(originalPath, transformerOptions, sourceFilename);
-        return transformed ?? originalPath;
+        if (transformed !== undefined) {
+            return transformed;
+        }
+        // transformPackageLocation returned undefined — it's a non-dev-package import
+        // (e.g. a relative path like "../../Misc/logger" or an external package like "react").
+        // When appendJS is set, add .js to relative paths that don't already end in .js.
+        // This mirrors the AddJS() logic used for package-level transforms and replicates
+        // what the old `add-js-to-es6` command did for same-package relative imports.
+        if (options.appendJS && originalPath.startsWith(".") && !originalPath.endsWith(".js")) {
+            const ext = options.appendJS === true ? ".js" : options.appendJS;
+            return originalPath + ext;
+        }
+        return originalPath;
     };
 
     let result = content;

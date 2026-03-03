@@ -9,7 +9,7 @@
         "importHelpers": true,
         "paths": {
             "core/*": ["dev/core/dist/*"],
-            "materials/*": ["dev/materials/dist/*"]
+            "materials/*": ["public/@babylonjs/materials/*"]
         }
     },
 

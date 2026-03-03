@@ -9,7 +9,7 @@
         "target": "ES2020",
         "paths": {
             "core/*": ["dev/core/dist/*"],
-            "serializers/*": ["dev/serializers/dist/*"]
+            "serializers/*": ["public/@babylonjs/serializers/*"]
         }
     },
 

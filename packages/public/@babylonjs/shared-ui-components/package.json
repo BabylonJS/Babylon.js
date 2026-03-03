@@ -22,7 +22,9 @@
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
         "@lts/core": "1.0.0",
-        "@lts/gui": "1.0.0"
+        "@lts/gui": "1.0.0",
+        "react-dnd": "15.0.1",
+        "react-dnd-touch-backend": "15.0.1"
     },
     "peerDependencies": {
         "@types/dagre": "^0.7.47",

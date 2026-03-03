@@ -9,7 +9,12 @@
         "importHelpers": true,
         "sourceMap": true,
         "declarationMap": true,
-        "inlineSources": false
+        "inlineSources": false,
+        "paths": {
+            "core/*": ["public/@babylonjs/core/*"],
+            "smart-filters": ["public/@babylonjs/smart-filters/dist"],
+            "smart-filters/*": ["public/@babylonjs/smart-filters/dist/*"]
+        }
     },
 
     "include": ["./src/**/*"]

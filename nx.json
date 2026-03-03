@@ -29,6 +29,11 @@
             }
         ]
     },
+    "targetDefaults": {
+        "build": {
+            "outputs": ["{projectRoot}/**/*.js", "{projectRoot}/**/*.d.ts", "{projectRoot}/**/*.map"]
+        }
+    },
     "affected": {
         "defaultBase": "main"
     }
