@@ -822,8 +822,8 @@ export class PhysicsCharacterController {
         const axis = sci0.planeNormal.cross(sci1.planeNormal);
         const axisLen2 = axis.lengthSquared();
 
-        let solveSequentially = false;
-        let axisVel = null;
+        let solveSequentially: boolean;
+        let axisVel: Vector3 | null;
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
@@ -920,14 +920,14 @@ export class PhysicsCharacterController {
     ) {
         const eps = 1e-5;
         //  Calculate the velocity of the point axis
-        let pointVel = null;
+        let pointVel: Vector3 | null;
         {
             const r0 = sci1.planeNormal.cross(sci2.planeNormal);
             const r1 = sci2.planeNormal.cross(sci0.planeNormal);
             const r2 = sci0.planeNormal.cross(sci1.planeNormal);
 
             const det = r0.dot(sci0.planeNormal);
-            let solveSequentially = false;
+            let solveSequentially: boolean;
             // eslint-disable-next-line no-constant-condition
             while (true) {
                 if (Math.abs(det) < eps || solveSequentially) {
@@ -1398,8 +1398,8 @@ export class PhysicsCharacterController {
             // Calculate and apply impulse on contacted body
             {
                 //<todo input/output for callbacks
-                let inputObjectMassInv = 0;
-                let inputObjectImpulse = 0;
+                let inputObjectMassInv: number;
+                let inputObjectImpulse: number;
                 let outputObjectImpulse = Vector3.Zero();
                 const outputImpulsePosition = contact.position;
 
@@ -1440,9 +1440,6 @@ export class PhysicsCharacterController {
                         inputObjectImpulse = maxPushImpulse;
                     }
                     outputObjectImpulse = contact.normal.scale(inputObjectImpulse);
-                } else {
-                    inputObjectImpulse = 0;
-                    inputObjectMassInv = this._getInvMass(bodyB);
                 }
 
                 // Add gravity

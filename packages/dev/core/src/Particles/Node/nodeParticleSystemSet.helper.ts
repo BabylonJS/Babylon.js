@@ -512,7 +512,7 @@ function _UpdateParticleColorBlockGroup(
     colorGradients: Nullable<Array<ColorGradient>>,
     context: RuntimeConversionContext
 ): NodeParticleConnectionPoint {
-    let colorCalculation: NodeParticleConnectionPoint | undefined = undefined;
+    let colorCalculation: NodeParticleConnectionPoint | undefined;
     if (colorGradients && colorGradients.length > 0) {
         if (context.colorGradientValue0Output === undefined) {
             throw new Error("Initial color gradient values not found in context.");

@@ -430,7 +430,7 @@ export class SolidParticleSystem implements IDisposable {
             }
 
             // create a model shape for each single particle
-            let idx: number = this.nbParticles;
+            const idx: number = this.nbParticles;
             const shape: Vector3[] = this._posToShape(facetPos);
             const shapeUV: number[] = this._uvsToShapeUV(facetUV);
             const shapeInd = facetInd.slice();
@@ -491,7 +491,6 @@ export class SolidParticleSystem implements IDisposable {
 
             if (!storage) {
                 this._index += shape.length;
-                idx++;
                 this.nbParticles++;
                 this._lastParticleId++;
             }
@@ -1157,12 +1156,12 @@ export class SolidParticleSystem implements IDisposable {
 
         Matrix.IdentityToRef(rotMatrix);
         let idx = 0; // current position index in the global array positions32
-        let index = 0; // position start index in the global array positions32 of the current particle
-        let colidx = 0; // current color index in the global array colors32
-        let colorIndex = 0; // color start index in the global array colors32 of the current particle
-        let uvidx = 0; // current uv index in the global array uvs32
-        let uvIndex = 0; // uv start index in the global array uvs32 of the current particle
-        let pt = 0; // current index in the particle model shape
+        let index: number; // position start index in the global array positions32 of the current particle
+        let colidx: number; // current color index in the global array colors32
+        let colorIndex: number; // color start index in the global array colors32 of the current particle
+        let uvidx: number; // current uv index in the global array uvs32
+        let uvIndex: number; // uv start index in the global array uvs32 of the current particle
+        let pt: number; // current index in the particle model shape
 
         if (this.mesh.isFacetDataEnabled) {
             this._computeBoundingBox = true;
