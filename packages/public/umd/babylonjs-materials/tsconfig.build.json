@@ -10,7 +10,7 @@
         "paths": {
             "core/*": ["dev/core/dist/*"],
             "materials/*": ["dev/materials/dist/*"],
-            "@lts/materials/*": ["lts/materials/dist/*"]
+            "@lts/materials/*": ["lts/materials/src/*"]
         }
     },
     "include": ["./src/**/*", "../../../dev/materials/src/**/*", "../../../lts/materials/src/**/*"]

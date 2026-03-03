@@ -19,7 +19,7 @@ module.exports = (env) => {
         resolve: {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
-                "core/*": path.resolve("../../dev/core/dist/*"),
+                core: path.resolve("../../public/@babylonjs/core"),
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
                 "smart-filters": path.resolve("../../dev/smartFilters/dist"),
                 "smart-filters-blocks": path.resolve("../../dev/smartFilterBlocks/dist"),
