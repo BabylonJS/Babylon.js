@@ -62,14 +62,14 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
     public checkInputs() {
         if (this._leftjoystick) {
             const camera = this.camera;
-            const speed = camera._computeLocalCameraSpeed() * 50;
+            const speed = (camera.movement ? camera.getEngine().getDeltaTime() : camera._computeLocalCameraSpeed()) * 50;
             const cameraTransform = Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
             const deltaTransform = Vector3.TransformCoordinates(
                 new Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed),
                 cameraTransform
             );
-            camera.cameraDirection = camera.cameraDirection.add(deltaTransform);
-            camera.cameraRotation = camera.cameraRotation.addVector3(this._rightjoystick.deltaPosition);
+            camera._addDirectionDelta(deltaTransform);
+            camera._addRotationDelta(this._rightjoystick.deltaPosition.x, this._rightjoystick.deltaPosition.y);
 
             if (!this._leftjoystick.pressed) {
                 this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);

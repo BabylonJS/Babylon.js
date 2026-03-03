@@ -4,7 +4,7 @@ import type { Nullable } from "../../types";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { FreeCamera } from "../../Cameras/freeCamera";
-import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Gamepad } from "../../Gamepads/gamepad";
 
 /**
@@ -61,7 +61,6 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
     private _cameraTransform: Matrix = Matrix.Identity();
     private _deltaTransform: Vector3 = Vector3.Zero();
     private _vector3: Vector3 = Vector3.Zero();
-    private _vector2: Vector2 = Vector2.Zero();
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -127,13 +126,11 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
                 camera.rotationQuaternion.toRotationMatrix(this._cameraTransform);
             }
 
-            const speed = camera._computeLocalCameraSpeed() * 50.0;
+            const speed = (camera.movement ? camera.getEngine().getDeltaTime() : camera._computeLocalCameraSpeed()) * 50.0;
             this._vector3.copyFromFloats(lsValues.x * speed, 0, -lsValues.y * speed);
-
             Vector3.TransformCoordinatesToRef(this._vector3, this._cameraTransform, this._deltaTransform);
-            camera.cameraDirection.addInPlace(this._deltaTransform);
-            this._vector2.copyFromFloats(rsValues.y, rsValues.x);
-            camera.cameraRotation.addInPlace(this._vector2);
+            camera._addDirectionDelta(this._deltaTransform);
+            camera._addRotationDelta(rsValues.y, rsValues.x);
         }
     }
 

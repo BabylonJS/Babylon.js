@@ -185,10 +185,16 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
             const camera = this.camera;
-            // Keyboard
+            const movement = camera.movement;
+            // When CameraMovement is active, use raw deltaTime as the speed proxy
+            // so CameraMovement handles framerate normalization.
+            const speed = movement ? this._engine.getDeltaTime() : camera._computeLocalCameraSpeed();
+            if (movement) {
+                movement.activeInput = true;
+            }
+
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];
-                const speed = camera._computeLocalCameraSpeed();
 
                 if (this.keysLeft.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(-speed, 0, 0);
@@ -204,16 +210,16 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                     camera._localDirection.copyFromFloats(0, -speed, 0);
                 } else if (this.keysRotateLeft.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera.cameraRotation.y -= this._getLocalRotation();
+                    camera._addRotationDelta(0, -this._getLocalRotation());
                 } else if (this.keysRotateRight.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera.cameraRotation.y += this._getLocalRotation();
+                    camera._addRotationDelta(0, this._getLocalRotation());
                 } else if (this.keysRotateUp.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera.cameraRotation.x -= this._getLocalRotation();
+                    camera._addRotationDelta(-this._getLocalRotation(), 0);
                 } else if (this.keysRotateDown.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera.cameraRotation.x += this._getLocalRotation();
+                    camera._addRotationDelta(this._getLocalRotation(), 0);
                 }
 
                 if (camera.getScene().useRightHandedSystem) {
@@ -222,7 +228,7 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
 
                 camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
                 Vector3.TransformNormalToRef(camera._localDirection, camera._cameraTransformMatrix, camera._transformedDirection);
-                camera.cameraDirection.addInPlace(camera._transformedDirection);
+                camera._addDirectionDelta(camera._transformedDirection);
             }
         }
     }

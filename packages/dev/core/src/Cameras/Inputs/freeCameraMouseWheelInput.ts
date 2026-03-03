@@ -303,10 +303,9 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
         Vector3.TransformNormalToRef(this._moveRelative, cameraTransformMatrix, transformedDirection);
 
         // Apply updates to camera position.
-        this.camera.cameraRotation.x += this._rotateRelative.x / 200;
-        this.camera.cameraRotation.y += this._rotateRelative.y / 200;
-        this.camera.cameraDirection.addInPlace(transformedDirection);
-        this.camera.cameraDirection.addInPlace(this._moveScene);
+        this.camera._addRotationDelta(this._rotateRelative.x / 200, this._rotateRelative.y / 200);
+        this.camera._addDirectionDelta(transformedDirection);
+        this.camera._addDirectionDelta(this._moveScene);
 
         // Call the base class implementation to handle observers and do cleanup.
         super.checkInputs();

@@ -190,18 +190,21 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
 
         const camera = this.camera;
         const handednessMultiplier = camera._calculateHandednessMultiplier();
-        camera.cameraRotation.y = (this._offsetX * handednessMultiplier) / this.touchAngularSensibility;
+        const movement = camera.movement;
 
         const rotateCamera = (this.singleFingerRotate && this._pointerPressed.length === 1) || (!this.singleFingerRotate && this._pointerPressed.length > 1);
 
+        const yawDelta = (this._offsetX * handednessMultiplier) / this.touchAngularSensibility;
         if (rotateCamera) {
-            camera.cameraRotation.x = -(this._offsetY * handednessMultiplier) / this.touchAngularSensibility;
+            const pitchDelta = -(this._offsetY * handednessMultiplier) / this.touchAngularSensibility;
+            camera._addRotationDelta(pitchDelta, yawDelta);
         } else {
-            const speed = camera._computeLocalCameraSpeed();
+            // Yaw rotation only, plus forward movement
+            camera._addRotationDelta(0, yawDelta);
+            const speed = movement ? camera.getEngine().getDeltaTime() : camera._computeLocalCameraSpeed();
             const direction = new Vector3(0, 0, this.touchMoveSensibility !== 0 ? (speed * this._offsetY) / this.touchMoveSensibility : 0);
-
             Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
-            camera.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
+            camera._addDirectionDelta(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
         }
     }
 
