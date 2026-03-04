@@ -11,7 +11,7 @@ import { prepareSnapshot } from "./prepareSnapshot.js";
 import { umdPackageMapping } from "./packageMapping.js";
 import { updateEngineVersion } from "./updateEngineVersion.js";
 import { declarationsEs6 } from "./declarationsEs6.js";
-import { buildSmartFilterShaders, watchSmartFilterShaders } from "./smartFilterShadersCli.js";
+import { BuildSmartFilterShaders, WatchSmartFilterShaders } from "./smartFilterShadersCli.js";
 // public API
 import transformer from "./pathTransform.js";
 import * as webpackTools from "./webpackTools.js";
@@ -103,11 +103,11 @@ function RunCommand(command: string) {
                 break;
             case "smart-filter-shaders":
             case "sfs":
-                buildSmartFilterShaders();
+                BuildSmartFilterShaders();
                 break;
             case "watch-smart-filter-shaders":
             case "wsfs":
-                watchSmartFilterShaders();
+                WatchSmartFilterShaders();
                 break;
             default:
                 console.log(`Unknown command: ${command}`);
