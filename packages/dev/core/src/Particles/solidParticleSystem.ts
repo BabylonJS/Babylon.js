@@ -1157,9 +1157,9 @@ export class SolidParticleSystem implements IDisposable {
         Matrix.IdentityToRef(rotMatrix);
         let idx = 0; // current position index in the global array positions32
         let index: number; // position start index in the global array positions32 of the current particle
-        let colidx: number; // current color index in the global array colors32
+        let colidx: number = 0; // current color index in the global array colors32
         let colorIndex: number; // color start index in the global array colors32 of the current particle
-        let uvidx: number; // current uv index in the global array uvs32
+        let uvidx: number = 0; // current uv index in the global array uvs32
         let uvIndex: number; // uv start index in the global array uvs32 of the current particle
         let pt: number; // current index in the particle model shape
 

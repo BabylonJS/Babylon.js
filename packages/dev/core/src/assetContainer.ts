@@ -1213,7 +1213,7 @@ export class AssetContainer extends AbstractAssetContainer {
                 // Remove old animations with same target property as a new one
                 for (const animationInAC of nodeInAC.animations) {
                     // Doing treatment on an array for safety measure
-                    const animationsWithSameProperty = nodeInScene.animations.filter((animationInScene) => {
+                    const animationsWithSameProperty = nodeInScene.animations.filter((animationInScene: Animation) => {
                         return animationInScene.targetProperty === animationInAC.targetProperty;
                     });
                     for (const animationWithSameProperty of animationsWithSameProperty) {

@@ -506,7 +506,7 @@ export class ThinDepthPeelingRenderer {
 
         // depth peeling ping-pong
         let readId: number;
-        let writeId: number;
+        let writeId: number = 0;
 
         for (let i = 0; i < this._passCount; i++) {
             readId = i % 2;

@@ -231,7 +231,8 @@ export class Ragdoll {
 
             const wmat = this._transforms[boneParentIndex].computeWorldMatrix();
             const invertedWorldMat = Matrix.Invert(wmat);
-            const distanceFromParentBoxToBone = Vector3.TransformCoordinates(this._bones[i].getAbsolutePosition(this._rootTransformNode), invertedWorldMat);
+            const boneAbsPos = this._bones[i].getAbsolutePosition(this._rootTransformNode);
+            const distanceFromParentBoxToBone = Vector3.TransformCoordinates(boneAbsPos, invertedWorldMat);
             const boxAbsPos = this._transforms[i].position.clone();
             const myConnectedPivot = boneAbsPos.subtract(boxAbsPos);
 

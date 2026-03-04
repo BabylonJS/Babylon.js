@@ -498,7 +498,7 @@ export class SpriteManager implements ISpriteManager {
         const cameraSpacePosition = TmpVectors.Vector3[1];
         const cameraView = camera.getViewMatrix();
         let activeRay: Ray;
-        let pickedRay: Ray;
+        let pickedRay!: Ray;
 
         for (let index = 0; index < count; index++) {
             const sprite = this.sprites[index];
