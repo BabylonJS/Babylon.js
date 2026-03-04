@@ -42,8 +42,6 @@
     #include<reflectionFunction>
 #endif
 
-uniform renderTargetSize: vec2f;
-
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
 #include<openpbrDielectricReflectance>

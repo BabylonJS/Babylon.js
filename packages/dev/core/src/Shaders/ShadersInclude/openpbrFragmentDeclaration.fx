@@ -33,11 +33,10 @@ uniform vec2 vThinFilmThickness;
 uniform float vThinFilmIor;
 uniform float vGeometryThinWalled;
 
-uniform vec2 renderTargetSize;
-
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
 uniform float visibility;
+uniform vec2 renderTargetSize;
 
 // Samplers
 #ifdef BASE_COLOR

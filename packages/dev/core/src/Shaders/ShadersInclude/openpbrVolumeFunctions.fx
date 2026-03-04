@@ -180,7 +180,7 @@ vec3 sss_convolve(sampler2D sss_irradiance_texture, sampler2D depth_texture, vec
     vec3 weight_sum = vec3(0.0f);
     for (int i = 0; i < sample_count; i++)
     {
-        vec2 r = fract(plasticSequence(uint(i + sample_count)) + noise);
+        vec2 r = fract(plasticSequence(uint(i + sample_count)) + noise * 0.2);
         r.x *= TWO_PI;
         r.y *= filter_samples_scale;
         float icdf = sss_samples_icdf(1.0 - r.y, dz);

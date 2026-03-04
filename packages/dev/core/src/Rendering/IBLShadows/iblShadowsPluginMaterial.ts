@@ -10,7 +10,7 @@ import { expandToProperty, serialize } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 /**
  * @internal
  */
@@ -78,6 +78,10 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
+    private _isOpenPBRMaterial(): boolean {
+        return this._material.getClassName() === "OpenPBRMaterial";
+    }
+
     public override prepareDefines(defines: MaterialIBLShadowsRenderDefines) {
         defines.RENDER_WITH_IBL_SHADOWS = this._isEnabled;
         defines.COLORED_IBL_SHADOWS = this.isColored;
@@ -90,7 +94,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
     public override getUniforms(_shaderLanguage: ShaderLanguage) {
         const result: any = {};
         result.ubo = [];
-        if (this._material instanceof OpenPBRMaterial) {
+        if (this._isOpenPBRMaterial()) {
             if (_shaderLanguage === ShaderLanguage.WGSL) {
                 result.fragment = `#ifdef RENDER_WITH_IBL_SHADOWS
                     var shadowOpacity: f32;
@@ -179,7 +183,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     #endif
                 #endif
             `;
-            } else if (this._material instanceof OpenPBRMaterial) {
+            } else if (this._isOpenPBRMaterial()) {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 frag["CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
@@ -256,7 +260,7 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     #endif
                 #endif
             `;
-            } else if (this._material instanceof OpenPBRMaterial) {
+            } else if (this._isOpenPBRMaterial()) {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 frag["CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS

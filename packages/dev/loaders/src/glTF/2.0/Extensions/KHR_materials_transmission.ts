@@ -172,7 +172,10 @@ class TransmissionHelper {
         Tools.SetImmediate(() => {
             if (mesh.material) {
                 if (!this._loader.isMatchingMaterialType(mesh.material)) {
-                    return;
+                    // We can still treat unsupported materials as opaque. e.g. BackgroundMaterial for a skybox.
+                    if (this._opaqueMeshesCache.indexOf(mesh) === -1) {
+                        this._opaqueMeshesCache.push(mesh);
+                    }
                 }
                 const adapter = this._loader._getOrCreateMaterialAdapter(mesh.material);
                 if (adapter.isTranslucent()) {
