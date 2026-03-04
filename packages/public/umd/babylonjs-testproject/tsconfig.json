@@ -5,10 +5,12 @@
         "declaration": false,
         "strict": true,
         "target": "es2015",
+        "lib": ["es2020", "dom"],
         "moduleResolution": "bundler",
         "jsx": "react",
         "esModuleInterop": true,
         "skipLibCheck": false,
+        "types": [],
         "noEmit": true
     },
     "include": ["./src/**/*"]
