@@ -69,10 +69,10 @@ export type ConstPropertyMetadata = {
 export const DecorateChar = "_";
 
 /**
- * Decorates a symbol name by prepending the DecorateChar.
+ * Decorates a symbol name by wrapping it with the DecorateChar on both sides.
  * @param symbol - The symbol to decorate
  * @returns The decorated symbol
  */
 export function DecorateSymbol(symbol: string): string {
-    return DecorateChar + symbol;
+    return DecorateChar + symbol + DecorateChar;
 }
