@@ -21,6 +21,7 @@
         "build-tools": "./dist/index.js"
     },
     "dependencies": {
+        "chokidar": "~3.6.0",
         "dotenv": "^16.0.0"
     }
 }

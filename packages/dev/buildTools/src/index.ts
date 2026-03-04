@@ -11,6 +11,7 @@ import { prepareSnapshot } from "./prepareSnapshot.js";
 import { umdPackageMapping } from "./packageMapping.js";
 import { updateEngineVersion } from "./updateEngineVersion.js";
 import { declarationsEs6 } from "./declarationsEs6.js";
+import { buildSmartFilterShaders, watchSmartFilterShaders } from "./smartFilterShadersCli.js";
 // public API
 import transformer from "./pathTransform.js";
 import * as webpackTools from "./webpackTools.js";
@@ -99,6 +100,14 @@ function RunCommand(command: string) {
             case "copy":
             case "cp":
                 copyFolder(checkArgs(["-f", "--from"], false, true) as string, checkArgs(["-t", "--to"], false, true) as string);
+                break;
+            case "smart-filter-shaders":
+            case "sfs":
+                buildSmartFilterShaders();
+                break;
+            case "watch-smart-filter-shaders":
+            case "wsfs":
+                watchSmartFilterShaders();
                 break;
             default:
                 console.log(`Unknown command: ${command}`);
