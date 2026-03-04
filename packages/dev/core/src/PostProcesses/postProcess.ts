@@ -1155,7 +1155,6 @@ export class PostProcess {
             index = this._scene.removePostProcess(this);
         }
 
-        let index: number;
         if (this._parentContainer) {
             index = this._parentContainer.postProcesses.indexOf(this);
             if (index > -1) {
