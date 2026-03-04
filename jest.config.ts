@@ -3,8 +3,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { JestConfigWithTsJest, pathsToModuleNameMapper } from "ts-jest";
 
-// const t = Object.assign(ts_preset, puppeteer_preset);
-
 const compilerOptions = JSON.parse(fs.readFileSync(path.resolve(__dirname, "./tsconfig.json"), "utf8")).compilerOptions;
 
 const stripAnyJsExtensionFound = (mappings: any): any => {
@@ -52,28 +50,7 @@ const createProject = (type: string) => {
     if (setupFilesAfterEnv) {
         returnValue.setupFilesAfterEnv?.push(...setupFilesAfterEnv);
     }
-    if (type === "unit") {
-        return {
-            ...returnValue,
-            preset: "ts-jest/presets/default", // if puppeteer is needed: "./" + path.relative(__dirname, path.resolve(__dirname, "./scripts/tsPuppeteer.js")),
-            testEnvironment: "node",
-        };
-    } else if (type === "visualization") {
-        return {
-            ...returnValue,
-            preset: "./" + path.relative(__dirname, path.resolve(__dirname, "./scripts/tsPuppeteer.js")),
-        };
-    } else if (type === "integration" || type === "performance") {
-        // not yet used
-        return {
-            ...returnValue,
-            // preset: "./" + path.relative(__dirname, path.resolve(__dirname, "./scripts/tsPuppeteer.js")),
-            globalSetup: "jest-environment-puppeteer/setup",
-            globalTeardown: "jest-environment-puppeteer/teardown",
-            testEnvironment: "jest-environment-puppeteer",
-            preset: "jest-puppeteer",
-        };
-    } else if (type === "interactions") {
+    if (type === "unit" || type === "integration" || type === "performance" || type === "interactions") {
         return {
             ...returnValue,
             preset: "ts-jest/presets/default",
@@ -86,7 +63,7 @@ const createProject = (type: string) => {
 
 // Sync object
 const config: Config = {
-    projects: [createProject("unit"), createProject("visualization"), createProject("integration"), createProject("performance"), createProject("interactions")],
+    projects: [createProject("unit"), createProject("integration"), createProject("performance"), createProject("interactions")],
     reporters: ["default", "./scripts/jest-imagediff-reporter", "jest-junit"],
 };
 export default config;

@@ -1,8 +1,21 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-console */
-import type { Page } from "puppeteer";
 import type { StacktracedObject } from "./window";
 
+// Minimal Page-like interface to avoid depending on the puppeteer package.
+// eslint-disable-next-line @typescript-eslint/naming-convention
+interface Page {
+    evaluate: (...args: any[]) => Promise<any>;
+    evaluateHandle: (...args: any[]) => Promise<any>;
+    queryObjects: (...args: any[]) => Promise<any>;
+    goto: (...args: any[]) => Promise<any>;
+    waitForSelector: (...args: any[]) => Promise<any>;
+    waitForNetworkIdle: (...args: any[]) => Promise<any>;
+    on: (event: string, handler: (...args: any[]) => void) => Page;
+}
+
+declare const page: Page;
+declare const jestPuppeteer: { debug: () => Promise<void>; resetBrowser: () => Promise<void> };
 declare const BABYLON: typeof window.BABYLON;
 
 const ClassesToCheck = ["BABYLON.Camera", "BABYLON.TransformNode", "BABYLON.Scene", "BABYLON.Vector3", "BABYLON.BaseTexture", "BABYLON.Material"];
@@ -323,7 +336,7 @@ export const countObjects = async (page: Page, classes = ClassesToCheck) => {
 
     const prototypeHandle = await page.evaluateHandle(() => Object.prototype);
     const objectsHandle = await page.queryObjects(prototypeHandle);
-    const numberOfObjects = await page.evaluate((instances) => instances.length, objectsHandle);
+    const numberOfObjects = await page.evaluate((instances: any[]) => instances.length, objectsHandle);
     const usedJSHeapSize = await page.evaluate(() => {
         return ((window.performance as any).memory && (window.performance as any).memory.usedJSHeapSize) || 0;
     });
@@ -337,10 +350,10 @@ export const countObjects = async (page: Page, classes = ClassesToCheck) => {
     for (const classToCheck of classes) {
         const prototype = classToCheck + ".prototype";
         // tslint:disable-next-line: no-eval
-        const prototypeHandle = await page.evaluateHandle((p) => eval(p), prototype);
+        const prototypeHandle = await page.evaluateHandle((p: string) => eval(p), prototype);
         const objectsHandle = await page.queryObjects(prototypeHandle);
         const array = await page.evaluate(
-            (objects) =>
+            (objects: any[]) =>
                 objects.map((object: any) => {
                     if (!object.__id) {
                         object.__id = Math.random().toString(36).substring(2, 15);
@@ -429,5 +442,7 @@ export const logPageErrors = async (page: Page, debug?: boolean) => {
             console.log(`${msg.type().substring(0, 3).toUpperCase()} ${msg.text()}`);
         }
     });
-    page.on("pageerror", ({ message }) => console.log(message)).on("requestfailed", (request) => console.log(`${request.failure()?.errorText} ${request.url()}`));
+    page.on("pageerror", ({ message }: { message: string }) => console.log(message)).on("requestfailed", (request: any) =>
+        console.log(`${request.failure()?.errorText} ${request.url()}`)
+    );
 };

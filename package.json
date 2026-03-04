@@ -13,12 +13,9 @@
         "@nrwl/tao": "^19.8.4",
         "@nrwl/workspace": "^19.8.4",
         "@playwright/test": "1.57.0",
-        "@types/expect-puppeteer": "~5.0.3",
         "@types/fs-extra": "^9.0.13",
         "@types/jest": "^30.0.0",
-        "@types/jest-environment-puppeteer": "~5.0.0",
         "@types/jest-expect-message": "~1.0.3",
-        "@types/puppeteer": "~5.4.4",
         "@typescript-eslint/eslint-plugin": "^8.29.0",
         "@typescript-eslint/parser": "^8.29.0",
         "ajv": "~8.18.0",
@@ -41,7 +38,6 @@
         "jest-environment-jsdom": "^30.2.0",
         "jest-environment-node": "^30.2.0",
         "jest-junit": "^16.0.0",
-        "jest-puppeteer": "^11.0.0",
         "mini-css-extract-plugin": "~2.6.0",
         "nx": "^22.2.3",
         "prettier": "^3.0.3",
@@ -129,9 +125,6 @@
         "jest-image-snapshot": {
             "jest": "^30.0.0"
         },
-        "jest-environment-node": "^30.2.0",
-        "@types/jest-environment-puppeteer": {
-            "jest-environment-node": "^30.2.0"
-        }
+        "jest-environment-node": "^30.2.0"
     }
 }
