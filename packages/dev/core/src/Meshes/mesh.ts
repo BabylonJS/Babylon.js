@@ -1663,8 +1663,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (!instanceDataStorage.visibleInstances[renderId]) {
-            if (instanceDataStorage.previousRenderId !== undefined && this._instanceDataStorage.isFrozen) {
-                instanceDataStorage.visibleInstances[instanceDataStorage.previousRenderId] = null;
+            if (instanceDataStorage.previousRenderId !== undefined && (!this._instanceDataStorage.useMonoDataStorageRenderPass || this._instanceDataStorage.isFrozen)) {
+                delete instanceDataStorage.visibleInstances[instanceDataStorage.previousRenderId];
             }
             instanceDataStorage.previousRenderId = renderId;
             instanceDataStorage.visibleInstances[renderId] = new Array<InstancedMesh>();
@@ -2552,6 +2552,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             dataStorage.instancesBuffer = null;
         }
+        if (dataStorage?.instancesPreviousBuffer) {
+            if (dispose) {
+                dataStorage.instancesPreviousBuffer.dispose();
+            }
+            dataStorage.instancesPreviousBuffer = null;
+        }
     }
 
     /**
@@ -2580,6 +2586,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
         this._internalMeshDataInfo._effectiveMaterial = null;
         super._rebuild(dispose);
+    }
+
+    /** @internal */
+    public override _releaseRenderPassId(id: number): void {
+        const renderPassStorage = this._instanceDataStorage.renderPasses[id];
+        if (renderPassStorage) {
+            this._disposeInstanceDataStorageRenderPass(renderPassStorage, true);
+            delete this._instanceDataStorage.renderPasses[id];
+        }
+        if (this._userInstancedBuffersStorage?.renderPasses) {
+            delete this._userInstancedBuffersStorage.renderPasses[id];
+        }
     }
 
     /** @internal */
