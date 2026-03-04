@@ -1663,7 +1663,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (!instanceDataStorage.visibleInstances[renderId]) {
-            if (instanceDataStorage.previousRenderId !== undefined && this._instanceDataStorage.isFrozen) {
+            if (instanceDataStorage.previousRenderId !== undefined) {
                 instanceDataStorage.visibleInstances[instanceDataStorage.previousRenderId] = null;
             }
             instanceDataStorage.previousRenderId = renderId;
@@ -2580,6 +2580,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
         this._internalMeshDataInfo._effectiveMaterial = null;
         super._rebuild(dispose);
+    }
+
+    /** @internal */
+    public override _releaseRenderPassId(id: number): void {
+        const renderPassStorage = this._instanceDataStorage.renderPasses[id];
+        if (renderPassStorage) {
+            this._disposeInstanceDataStorageRenderPass(renderPassStorage, true);
+            delete this._instanceDataStorage.renderPasses[id];
+        }
+        if (this._userInstancedBuffersStorage?.renderPasses) {
+            delete this._userInstancedBuffersStorage.renderPasses[id];
+        }
     }
 
     /** @internal */
