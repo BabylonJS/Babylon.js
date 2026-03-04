@@ -1,0 +1,20 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "composite": false,
+        "strict": true,
+        "declaration": false,
+        "sourceMap": false,
+        "inlineSources": false,
+        "outDir": "../smartFilters/dist",
+        "rootDir": "../smartFilters/src"
+    },
+
+    "include": [
+        "../smartFilters/src/utils/buildTools/**/*",
+        "../smartFilters/src/connection/connectionPointType.ts",
+        "../smartFilters/src/blockFoundation/blockDisableStrategy.ts",
+        "../smartFilters/src/utils/shaderCodeUtils.ts"
+    ]
+}

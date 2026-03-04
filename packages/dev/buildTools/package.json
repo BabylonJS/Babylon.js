@@ -10,7 +10,7 @@
     ],
     "scripts": {
         "build": "npm run compile",
-        "compile": "tsc -b tsconfig.build.json"
+        "compile": "tsc -p tsconfig.sfBuildTools.json --noCheck && tsc -b tsconfig.build.json"
     },
     "sideEffects": true,
     "devDependencies": {
