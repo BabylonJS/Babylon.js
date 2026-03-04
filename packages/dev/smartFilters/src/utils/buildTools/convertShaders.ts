@@ -1,6 +1,6 @@
+/* eslint-disable no-console */
 import * as fs from "fs";
 import * as path from "path";
-import { Logger } from "core/Misc/logger.js";
 import { ConvertGlslIntoShaderProgram } from "./convertGlslIntoShaderProgram.js";
 import { ConvertGlslIntoBlock } from "./convertGlslIntoBlock.js";
 
@@ -35,7 +35,7 @@ export function ConvertShaders(shaderPath: string, smartFiltersCorePath: string,
         // Find all shaders (files with .fragment.glsl or .block.glsl extensions)
         shaderFiles = allFiles.filter((file) => file.isFile() && (file.name.endsWith(".fragment.glsl") || file.name.endsWith(".block.glsl")));
     } else {
-        Logger.Log(`Error: ${shaderPath} is neither a file nor a directory.`);
+        console.error(`Error: ${shaderPath} is neither a file nor a directory.`);
         return;
     }
 
@@ -53,13 +53,13 @@ export function ConvertShaders(shaderPath: string, smartFiltersCorePath: string,
  * @param babylonCorePath - The path to import the Babylon core from (optional).
  */
 export function ConvertShader(fullPathAndFileName: string, smartFiltersCorePath: string, babylonCorePath?: string): void {
-    Logger.Log(`\nProcessing shader: ${fullPathAndFileName}`);
+    console.log(`\nProcessing shader: ${fullPathAndFileName}`);
 
     if (fullPathAndFileName.endsWith(".fragment.glsl")) {
-        Logger.Log("Generating a .ts file that exports a ShaderProgram.");
+        console.log("Generating a .ts file that exports a ShaderProgram.");
         ConvertGlslIntoShaderProgram(fullPathAndFileName, smartFiltersCorePath);
     } else if (fullPathAndFileName.endsWith(".block.glsl")) {
-        Logger.Log("Generating a .ts file that exports the block as a class.");
+        console.log("Generating a .ts file that exports the block as a class.");
         ConvertGlslIntoBlock(fullPathAndFileName, smartFiltersCorePath, babylonCorePath);
     }
 }

@@ -103,10 +103,12 @@ function RunCommand(command: string) {
                 break;
             case "smart-filter-shaders":
             case "sfs":
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 BuildSmartFilterShaders();
                 break;
             case "watch-smart-filter-shaders":
             case "wsfs":
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 WatchSmartFilterShaders();
                 break;
             default:

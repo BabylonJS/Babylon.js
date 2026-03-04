@@ -6,6 +6,21 @@
     "main": "dist/index",
     "module": "dist/index",
     "type": "module",
+    "exports": {
+        ".": "./dist/index.js",
+        "./buildShaders": "./dist/utils/buildTools/buildShaders.js",
+        "./watchShaders": "./dist/utils/buildTools/watchShaders.js"
+    },
+    "typesVersions": {
+        "*": {
+            "buildShaders": [
+                "dist/utils/buildTools/buildShaders.d.ts"
+            ],
+            "watchShaders": [
+                "dist/utils/buildTools/watchShaders.d.ts"
+            ]
+        }
+    },
     "files": [
         "dist",
         "src"
