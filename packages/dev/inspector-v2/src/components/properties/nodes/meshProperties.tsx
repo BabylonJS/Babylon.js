@@ -7,6 +7,7 @@ import { EditRegular } from "@fluentui/react-icons";
 import { Constants } from "core/Engines/constants";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { EditNodeGeometry, GetNodeGeometry } from "../../../misc/nodeGeometryEditor";
 import { BoundProperty } from "../boundProperty";
@@ -73,13 +74,11 @@ export const MeshMorphTargetsProperties: FunctionComponent<{ mesh: Mesh }> = (pr
             {morphTargets.map((target, index) => (
                 <BoundProperty
                     key={index}
-                    component={SyncedSliderPropertyLine}
+                    component={NumberInputPropertyLine}
                     label={target.name || `Target ${index}`}
                     description={`Influence of morph target "${target.name || `Target ${index}`}"`}
                     target={target}
                     propertyKey="influence"
-                    min={0}
-                    max={1}
                     step={0.01}
                 />
             ))}
