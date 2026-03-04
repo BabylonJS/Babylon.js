@@ -1,5 +1,5 @@
 // Screen Space Ray Tracing based on:
-// * http://casual-effects.blogspot.com/2014/08/screen-space-ray-tracing.html and https://sourceforge.net/p/g3d/code/HEAD/tree/G3D10/data-files/shader/screenSpaceRayTrace.glsl
+// * http://casual-effects.blogspot.com/2014/08/screen-space-ray-tracing.html
 // * https://sourceforge.net/p/g3d/code/HEAD/tree/G3D10/data-files/shader/screenSpaceRayTrace.glsl
 // * https://github.com/kode80/kode80SSR
 // Adapted to Babylon.js case where the camera space coordinate system is left-handed (visible geometries in this space have positive Z values)
