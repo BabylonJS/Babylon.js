@@ -307,7 +307,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _modelViewProjectionMatrix = Matrix.Identity();
     private _viewProjectionMatrix = Matrix.Identity();
     private _depthMix: BigInt64Array;
-    private _canPostToWorker = true;
+    protected _canPostToWorker = true;
     private _readyToDisplay = false;
     protected _covariancesATexture: Nullable<BaseTexture> = null;
     protected _covariancesBTexture: Nullable<BaseTexture> = null;
@@ -1492,14 +1492,14 @@ export class GaussianSplattingMesh extends Mesh {
         super.dispose(doNotRecurse, true);
     }
 
-    protected _copyTextures(): void {
-        this._covariancesATexture = this.covariancesATexture?.clone()!;
-        this._covariancesBTexture = this.covariancesBTexture?.clone()!;
-        this._centersTexture = this.centersTexture?.clone()!;
-        this._colorsTexture = this.colorsTexture?.clone()!;
-        if (this._shTextures) {
+    protected _copyTextures(source: GaussianSplattingMesh): void {
+        this._covariancesATexture = source.covariancesATexture?.clone()!;
+        this._covariancesBTexture = source.covariancesBTexture?.clone()!;
+        this._centersTexture = source.centersTexture?.clone()!;
+        this._colorsTexture = source.colorsTexture?.clone()!;
+        if (source._shTextures) {
             this._shTextures = [];
-            for (const shTexture of this._shTextures) {
+            for (const shTexture of source._shTextures) {
                 this._shTextures?.push(shTexture.clone()!);
             }
         }
@@ -1515,7 +1515,7 @@ export class GaussianSplattingMesh extends Mesh {
         newGS._copySource(this);
         newGS.makeGeometryUnique();
         newGS._vertexCount = this._vertexCount;
-        newGS._copyTextures();
+        newGS._copyTextures(this);
         newGS._modelViewProjectionMatrix = Matrix.Identity();
         newGS._viewProjectionMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
@@ -1595,10 +1595,13 @@ export class GaussianSplattingMesh extends Mesh {
 
                     // NB: For performance reasons, we assume that part indices are valid
                     const length = partIndices.length;
+                    const matCount = modelViewProjs.length;
                     for (let j = 0; j < vertexCountPadded; j++) {
                         // NB: We need this 'min' because vertex array is padded, not partIndices
                         const partIndex = partIndices[Math.min(j, length - 1)];
-                        const mvp = modelViewProjs[partIndex];
+                        // Clamp to available matrices — protects against a sort firing mid-rebuild
+                        // before all partMatrices have been posted to the worker.
+                        const mvp = modelViewProjs[Math.min(partIndex, matCount - 1)];
                         floatMix[2 * j + 1] = 10000 - (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) * depthScale;
                     }
                 } else {
@@ -1727,7 +1730,6 @@ export class GaussianSplattingMesh extends Mesh {
      * @param _partIndices - the raw part indices passed in by the caller
      * @param _textureLength - the padded texture length (width × height) to allocate into
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _onIndexDataReceived(_partIndices: Uint8Array, _textureLength: number): void {}
 
     /**
@@ -1737,7 +1739,6 @@ export class GaussianSplattingMesh extends Mesh {
      * No-op in the base class.
      * @param _textureSize - current texture dimensions
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _onIncrementalUpdateStart(_textureSize: Vector2): void {}
 
     /**
@@ -1889,10 +1890,12 @@ export class GaussianSplattingMesh extends Mesh {
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
 
-        // Always store the raw splat buffer. This is the source reference used by _addPartsInternal
-        // when a full texture rebuild is needed. The merged compound buffer is never stored separately;
-        // each part keeps its own source reference via its proxy.
-        this._splatsData = data;
+        // Always store the raw splat buffer as an ArrayBuffer. This is the source reference used
+        // by _addPartsInternal when a full texture rebuild is needed. Callers may pass a TypedArray
+        // (e.g. Uint8Array) even though the signature says ArrayBuffer; normalise here so that
+        // _appendSourceToArrays can safely do new Float32Array(this._splatsData!) without
+        // accidentally value-converting bytes instead of reinterpreting them.
+        this._splatsData = data instanceof ArrayBuffer ? data : ((data as unknown as ArrayBufferView).buffer as ArrayBuffer);
         this._shData = sh ? sh.map((arr) => new Uint8Array(arr)) : null;
 
         const vertexCount = uBuffer.length / GaussianSplattingMesh._RowOutputLength;
@@ -2115,6 +2118,10 @@ export class GaussianSplattingMesh extends Mesh {
 
         // Start the worker thread
         this._worker?.terminate();
+        // Reset the posting gate so the new worker can immediately receive sort requests.
+        // If the previous worker was terminated mid-sort it would never have set _canPostToWorker
+        // back to true, leaving the sort permanently frozen on the new worker.
+        this._canPostToWorker = true;
         this._worker = new Worker(
             URL.createObjectURL(
                 new Blob(["(", GaussianSplattingMesh._CreateWorker.toString(), ")(self)"], {
@@ -2212,7 +2219,6 @@ export class GaussianSplattingMesh extends Mesh {
      * indices, per-part matrices, etc.).
      * @param _worker the newly created worker
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _onWorkerCreated(_worker: Worker): void {}
 
     /**
@@ -2254,8 +2260,12 @@ export class GaussianSplattingMesh extends Mesh {
         if (!srcRaw || srcCount === 0) {
             return;
         }
-        const uBuffer = new Uint8Array(srcRaw);
-        const fBuffer = new Float32Array(srcRaw);
+        // _splatsData is typed as ArrayBuffer but callers may have stored a TypedArray before this
+        // guard was added. Extract the underlying ArrayBuffer so Float32Array reinterprets bytes
+        // correctly instead of value-converting each element.
+        const srcBuffer: ArrayBuffer = srcRaw instanceof ArrayBuffer ? srcRaw : ((srcRaw as unknown as ArrayBufferView).buffer as ArrayBuffer);
+        const uBuffer = new Uint8Array(srcBuffer);
+        const fBuffer = new Float32Array(srcBuffer);
 
         for (let i = 0; i < srcCount; i++) {
             this._makeSplat(dstOffset + i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum, false, i);

@@ -30,6 +30,9 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
      */
     protected _partMatrices: Matrix[] = [];
 
+    /** When true, suppresses the sort trigger inside setWorldMatrixForPart during batch rebuilds. */
+    private _rebuilding: boolean = false;
+
     /**
      * Visibility values for each part (0.0 to 1.0), indexed by part index.
      */
@@ -102,11 +105,32 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
     }
 
     /**
-     * Returns `true` since this is a compound mesh.
+     * Returns `true` when at least one part has been added to this compound mesh.
+     * Returns `false` before any parts are added, so the mesh renders in normal
+     * (non-compound) mode until the first addPart/addParts call. This matches the
+     * old base-class behavior of `this._partMatrices.length > 0` and avoids
+     * binding unset partWorld uniforms (which would cause division-by-zero in the
+     * Gaussian projection Jacobian and produce huge distorted splats).
      * @internal
      */
     public override get isCompound(): boolean {
-        return true;
+        return this._partMatrices.length > 0;
+    }
+
+    /**
+     * During a removePart rebuild, keep the existing sort worker alive rather than
+     * tearing it down and spinning up a new one. This avoids startup latency and the
+     * transient state window where a stale sort could fire against an incomplete
+     * partMatrices array.
+     * Outside of a rebuild the base-class behaviour is used unchanged.
+     */
+    protected override _instantiateWorker(): void {
+        if (this._rebuilding && this._worker) {
+            // Worker already exists and is kept alive; just resize the splat-index buffer.
+            this._updateSplatIndexBuffer(this._vertexCount);
+            return;
+        }
+        super._instantiateWorker();
     }
 
     /**
@@ -187,10 +211,14 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
             }
         }
         this._partMatrices[partIndex].copyFrom(worldMatrix);
-        if (this._worker) {
-            this._worker.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
+        // During a batch rebuild suppress intermediate posts — the final correct set is posted
+        // once the full rebuild completes (at the end of removePart).
+        if (!this._rebuilding) {
+            if (this._worker) {
+                this._worker.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
+            }
+            this._postToWorker(true);
         }
-        this._postToWorker(true);
     }
 
     /**
@@ -220,9 +248,9 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
         this._partVisibility[partIndex] = Math.max(0.0, Math.min(1.0, value));
     }
 
-    protected override _copyTextures(): void {
-        super._copyTextures();
-        this._partIndicesTexture = this._partIndicesTexture?.clone()!;
+    protected override _copyTextures(source: GaussianSplattingMesh): void {
+        super._copyTextures(source);
+        this._partIndicesTexture = (source as GaussianSplattingCompoundMesh)._partIndicesTexture?.clone()!;
     }
 
     protected override _onUpdateTextures(textureSize: Vector2) {
@@ -230,12 +258,29 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
             return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
         };
 
-        // Handle compound data, if any
-        if (this._partIndices && !this._partIndicesTexture) {
+        // Keep the part indices texture in sync with _partIndices whenever textures are rebuilt.
+        // The old "only create if absent" logic left the texture stale after a second addPart/addParts
+        // call that doesn't change the texture dimensions: all new splats kept reading partIndex=0
+        // (the first part), causing wrong positions, broken GPU picking, and shared movement.
+        if (this._partIndices) {
             const buffer = new Uint8Array(this._partIndices);
-            this._partIndicesTexture = createTextureFromDataU8(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RED);
-            this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-            this._partIndicesTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            if (!this._partIndicesTexture) {
+                this._partIndicesTexture = createTextureFromDataU8(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RED);
+                this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                this._partIndicesTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            } else {
+                const existingSize = this._partIndicesTexture.getSize();
+                if (existingSize.width !== textureSize.x || existingSize.height !== textureSize.y) {
+                    // Dimensions changed — dispose and recreate at the new size.
+                    this._partIndicesTexture.dispose();
+                    this._partIndicesTexture = createTextureFromDataU8(buffer, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RED);
+                    this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    this._partIndicesTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                } else {
+                    // Same size — update data in-place (e.g. second addParts fitting in existing dims).
+                    this._updateTextureFromData(this._partIndicesTexture, buffer, textureSize.x, 0, textureSize.y);
+                }
+            }
         }
     }
 
@@ -393,8 +438,8 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
                     const sortedProxies = [...this._partProxies.entries()].sort(([a], [b]) => a - b);
                     let rebuildOffset = 0;
                     for (const [, proxy] of sortedProxies) {
-                        this._appendSourceToArrays(proxy.compoundSplatMesh, rebuildOffset, covA, covB, colorArray, sh, minimum, maximum);
-                        rebuildOffset += proxy.compoundSplatMesh._vertexCount;
+                        this._appendSourceToArrays(proxy.proxiedMesh, rebuildOffset, covA, covB, colorArray, sh, minimum, maximum);
+                        rebuildOffset += proxy.proxiedMesh._vertexCount;
                     }
                 } else {
                     // Not yet compound: base mesh source is in _splatsData.
@@ -533,17 +578,22 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
 
         // Validate every survivor still has its source data. If even one is missing we cannot rebuild.
         for (const { proxyMesh } of survivors) {
-            if (!proxyMesh.compoundSplatMesh._splatsData) {
+            if (!proxyMesh.proxiedMesh._splatsData) {
                 throw new Error(`Cannot remove part: the source mesh for part "${proxyMesh.name}" no longer has its splat data available.`);
             }
         }
 
         // --- Reset this mesh to an empty state ---
-        // Dispose GPU textures and clear CPU state; the subsequent addParts call rebuilds everything.
+        // Dispose and null GPU textures so _updateTextures sees firstTime=true and creates
+        // fresh GPU textures. The sort worker is kept alive (see _instantiateWorker override).
         this._covariancesATexture?.dispose();
         this._covariancesBTexture?.dispose();
         this._centersTexture?.dispose();
         this._colorsTexture?.dispose();
+        this._covariancesATexture = null;
+        this._covariancesBTexture = null;
+        this._centersTexture = null;
+        this._colorsTexture = null;
         if (this._shTextures) {
             for (const t of this._shTextures) {
                 t.dispose();
@@ -554,10 +604,6 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
             this._partIndicesTexture.dispose();
             this._partIndicesTexture = null;
         }
-        this._covariancesATexture = null;
-        this._covariancesBTexture = null;
-        this._centersTexture = null;
-        this._colorsTexture = null;
         this._vertexCount = 0;
         this._splatPositions = null;
         this._partIndices = null;
@@ -573,10 +619,6 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
         }
         this._partProxies.clear();
 
-        // Terminate the worker — _addPartsInternal / _updateTextures will restart it
-        this._worker?.terminate();
-        this._worker = null;
-
         // Rebuild from surviving sources. _addPartsInternal assigns part indices in order 0, 1, 2, …
         // so the new index for each survivor is simply its position in the survivors array.
         if (survivors.length === 0) {
@@ -585,7 +627,10 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
             return;
         }
 
-        const sources = survivors.map((s) => s.proxyMesh.compoundSplatMesh);
+        // Gate the sort worker: suppress any sort request until the full rebuild is committed.
+        this._rebuilding = true;
+        this._canPostToWorker = false;
+        const sources = survivors.map((s) => s.proxyMesh.proxiedMesh);
         const { proxyMeshes: newProxies } = this._addPartsInternal(sources, false);
 
         // Restore world matrices and re-map proxies
@@ -608,5 +653,14 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
             // newProxy is redundant — it was created inside _addPartsInternal; dispose it
             newProxy.dispose();
         }
+
+        // Rebuild is complete: all partMatrices are now set correctly.
+        // Post the final complete set and fire one sort.
+        this._rebuilding = false;
+        if (this._worker) {
+            this._worker.postMessage({ partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)) });
+        }
+        this._canPostToWorker = true;
+        this._postToWorker(true);
     }
 }

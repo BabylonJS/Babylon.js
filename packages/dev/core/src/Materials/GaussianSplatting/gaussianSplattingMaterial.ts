@@ -253,7 +253,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
             defines["SH_DEGREE"] = gsMesh.shDegree;
         }
 
-        defines["IS_COMPOUND"] = gsMesh.isCompound;
+        const isCompoundVal = gsMesh.isCompound;
+        defines["IS_COMPOUND"] = isCompoundVal;
 
         // Compensation
         const splatMaterial = gsMesh.material as GaussianSplattingMaterial;
