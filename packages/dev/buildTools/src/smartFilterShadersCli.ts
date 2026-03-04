@@ -18,7 +18,8 @@ function setupArgv(commandNames: string[]): void {
  */
 export async function BuildSmartFilterShaders(): Promise<void> {
     setupArgv(["smart-filter-shaders", "sfs"]);
-    await import("@dev/smart-filters/buildShaders");
+    const module = "@dev/smart-filters/buildShaders";
+    await import(module);
 }
 
 /**
@@ -27,5 +28,6 @@ export async function BuildSmartFilterShaders(): Promise<void> {
  */
 export async function WatchSmartFilterShaders(): Promise<void> {
     setupArgv(["watch-smart-filter-shaders", "wsfs"]);
-    await import("@dev/smart-filters/watchShaders");
+    const module = "@dev/smart-filters/watchShaders";
+    await import(module);
 }
