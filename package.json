@@ -57,20 +57,7 @@
     "overrides": {
         "@rollup/plugin-commonjs": {
             "glob": "^13.0.6"
-        },
-        "@nrwl/tao": {
-            "minimatch": "9.0.9"
-        },
-        "@nrwl/workspace": {
-            "minimatch": "9.0.9"
-        },
-        "@nrwl/devkit": {
-            "minimatch": "9.0.9"
-        },
-        "nx": {
-            "minimatch": "10.2.4"
-        },
-        "serialize-javascript": "7.0.4"
+        }
     },
     "optionalDependencies": {
         "canvas": "~3.2.1"
