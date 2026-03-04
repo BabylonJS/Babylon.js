@@ -7,7 +7,6 @@ import { Epsilon } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Node } from "../node";
-import { CameraMovement } from "./cameraMovement";
 
 Node.AddNodeConstructor("TargetCamera", (name, scene) => {
     return () => new TargetCamera(name, Vector3.Zero(), scene);
@@ -58,37 +57,6 @@ export class TargetCamera extends Camera {
      */
     @serialize()
     public speed = 2.0;
-
-    /**
-     * When set, enables framerate-independent movement using the CameraMovement class.
-     * Input plugins will write pixel deltas to this instance, and _checkInputs will use
-     * its computed per-frame deltas instead of the legacy inertia system.
-     */
-    public movement?: CameraMovement;
-
-    private _useFramerateIndependentMovement = false;
-
-    /**
-     * When enabled, instantiates a CameraMovement instance to provide framerate-independent
-     * inertia for camera movement. When disabled, reverts to the legacy per-frame inertia system.
-     *
-     */
-    public get useFramerateIndependentMovement(): boolean {
-        return this._useFramerateIndependentMovement;
-    }
-
-    public set useFramerateIndependentMovement(value: boolean) {
-        if (this._useFramerateIndependentMovement === value) {
-            return;
-        }
-        this._useFramerateIndependentMovement = value;
-        if (value) {
-            this.movement = new CameraMovement(this.getScene(), this.position);
-            this.movement.speed = this.speed; // match legacy default
-        } else {
-            this.movement = undefined;
-        }
-    }
 
     /**
      * Add constraint to the camera to prevent it to move freely in all directions and
