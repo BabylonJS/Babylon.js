@@ -2552,6 +2552,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             dataStorage.instancesBuffer = null;
         }
+        if (dataStorage?.instancesPreviousBuffer) {
+            if (dispose) {
+                dataStorage.instancesPreviousBuffer.dispose();
+            }
+            dataStorage.instancesPreviousBuffer = null;
+        }
     }
 
     /**
