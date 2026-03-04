@@ -1663,7 +1663,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (!instanceDataStorage.visibleInstances[renderId]) {
-            if (instanceDataStorage.previousRenderId !== undefined) {
+            if (instanceDataStorage.previousRenderId !== undefined && (!this._instanceDataStorage.useMonoDataStorageRenderPass || this._instanceDataStorage.isFrozen)) {
                 delete instanceDataStorage.visibleInstances[instanceDataStorage.previousRenderId];
             }
             instanceDataStorage.previousRenderId = renderId;
