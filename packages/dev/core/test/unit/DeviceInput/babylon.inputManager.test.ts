@@ -885,7 +885,7 @@ describe("InputManager", () => {
 
         if (deviceInputSystem && scene && engine) {
             // Create a SpriteManager to test if it affects the picking behavior
-            const spriteManager = new SpriteManager("name", "", 1, 1, scene);
+            new SpriteManager("name", "", 1, 1, scene);
             MeshBuilder.CreateBox("box", { size: 5 }, scene);
 
             // Set flag to constantly update the mesh that's under the pointer (not use lazy picking)
