@@ -157,6 +157,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleBlockConnectionPointTypes.Color4: {
                     const col4Value = inputBlock.value as Color4;
                     value = `(${col4Value.r.toFixed(2)}, ${col4Value.g.toFixed(2)}, ${col4Value.b.toFixed(2)}, ${col4Value.a.toFixed(2)})`;
+                    // Use black or white text for readability based on color brightness
+                    const desaturated = (col4Value.r + col4Value.g + col4Value.b) / 3;
+                    contentArea.style.color = 1 - Math.round(desaturated) ? "white" : "black";
                     break;
                 }
             }
