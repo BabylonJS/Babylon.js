@@ -42,6 +42,21 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
      */
     public deadzoneDelta = 0.1;
 
+    /**
+     * Defines the number of virtual pixels of pan input per frame while a stick is held.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     * Default calibrated to match legacy _computeLocalCameraSpeed() at 60fps with camera.speed=1.
+     */
+    @serialize()
+    public panSensitivity = 0.2;
+
+    /**
+     * Defines the number of virtual pixels of rotation input per frame while a stick is held.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     */
+    @serialize()
+    public rotationSensitivity = 1.0;
+
     private _yAxisScale = 1.0;
 
     /**
@@ -126,11 +141,14 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
                 camera.rotationQuaternion.toRotationMatrix(this._cameraTransform);
             }
 
-            const speed = (camera.movement ? camera.getEngine().getDeltaTime() : camera._computeLocalCameraSpeed()) * 50.0;
+            // Continuous inputs (held stick) have no physical pixel displacement.
+            // CameraMovement path: pass fixed 1.0 as "virtual pixels" per frame.
+            // Legacy path: _computeLocalCameraSpeed() returns a pre-scaled distance value.
+            const speed = (camera.movement ? this.panSensitivity : camera._computeLocalCameraSpeed()) * 50.0;
             this._vector3.copyFromFloats(lsValues.x * speed, 0, -lsValues.y * speed);
             Vector3.TransformCoordinatesToRef(this._vector3, this._cameraTransform, this._deltaTransform);
             camera._addPanDelta(this._deltaTransform.x, this._deltaTransform.y, this._deltaTransform.z);
-            camera._addRotationDelta(rsValues.y, rsValues.x);
+            camera._addRotationDelta(camera.movement ? rsValues.y * this.rotationSensitivity : rsValues.y, camera.movement ? rsValues.x * this.rotationSensitivity : rsValues.x);
         }
     }
 

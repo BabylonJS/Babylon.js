@@ -63,6 +63,22 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     public rotationSpeed = 0.5;
 
     /**
+     * Defines the number of virtual pixels of pan input per frame while a movement key is held.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     * Default calibrated to match legacy _computeLocalCameraSpeed() at 60fps with camera.speed=1.
+     */
+    @serialize()
+    public panSensitivity = 0.2;
+
+    /**
+     * Defines the number of virtual pixels of rotation input per frame while a rotation key is held.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     * Default calibrated to match legacy rotationSpeed * dt/1000 at 60fps.
+     */
+    @serialize()
+    public rotationSensitivity = 0.008;
+
+    /**
      * Gets or Set the list of keyboard keys used to control the left rotation move of the camera.
      */
     @serialize()
@@ -152,6 +168,9 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                         if (index >= 0) {
                             this._keys.splice(index, 1);
                         }
+                        if (this._keys.length === 0 && this.camera.movement) {
+                            this.camera.movement.activeInput = false;
+                        }
                         if (!noPreventDefault) {
                             evt.preventDefault();
                         }
@@ -186,10 +205,14 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
         if (this._onKeyboardObserver) {
             const camera = this.camera;
             const movement = camera.movement;
-            // When CameraMovement is active, use raw deltaTime as the speed proxy
-            // so CameraMovement handles framerate normalization.
-            const speed = movement ? this._engine.getDeltaTime() : camera._computeLocalCameraSpeed();
-            if (movement) {
+            // Continuous inputs (held keys) have no physical pixel displacement.
+            // - CameraMovement path: pass a fixed 1.0 per frame as "virtual pixels."
+            //   CameraMovement normalizes for framerate internally (velocity = pixels/dt, output = velocity * speed * dt).
+            // - Legacy path: _computeLocalCameraSpeed() returns a pre-scaled distance value that
+            //   already factors in camera.speed and deltaTime, applied directly to cameraDirection.
+            const speed = movement ? this.panSensitivity : camera._computeLocalCameraSpeed();
+
+            if (movement && this._keys.length > 0) {
                 movement.activeInput = true;
             }
 
@@ -210,16 +233,16 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                     camera._localDirection.copyFromFloats(0, -speed, 0);
                 } else if (this.keysRotateLeft.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera._addRotationDelta(0, -this._getLocalRotation());
+                    camera._addRotationDelta(0, movement ? -this.rotationSensitivity : -this._getLocalRotation());
                 } else if (this.keysRotateRight.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera._addRotationDelta(0, this._getLocalRotation());
+                    camera._addRotationDelta(0, movement ? this.rotationSensitivity : this._getLocalRotation());
                 } else if (this.keysRotateUp.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera._addRotationDelta(-this._getLocalRotation(), 0);
+                    camera._addRotationDelta(movement ? -this.rotationSensitivity : -this._getLocalRotation(), 0);
                 } else if (this.keysRotateDown.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera._addRotationDelta(this._getLocalRotation(), 0);
+                    camera._addRotationDelta(movement ? this.rotationSensitivity : this._getLocalRotation(), 0);
                 }
 
                 if (camera.getScene().useRightHandedSystem) {

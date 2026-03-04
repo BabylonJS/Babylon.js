@@ -1108,6 +1108,8 @@ export class ArcRotateCamera extends TargetCamera {
             radiusOffset = this.movement.zoomDeltaCurrentFrame;
             panningX = this.movement.panDeltaCurrentFrame.x;
             panningY = this.movement.panDeltaCurrentFrame.y;
+            // Mark as consumed so TargetCamera._checkInputs doesn't call computeCurrentFrameDeltas again
+            this._movementDeltasConsumed = true;
         } else {
             alphaOffset = this.inertialAlphaOffset;
             betaOffset = this.inertialBetaOffset;

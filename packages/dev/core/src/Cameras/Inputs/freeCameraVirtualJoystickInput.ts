@@ -40,6 +40,19 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
     private _rightjoystick: VirtualJoystick;
 
     /**
+     * Defines the number of virtual pixels of pan input per frame while a stick is held.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     * Default calibrated to match legacy _computeLocalCameraSpeed() at 60fps with camera.speed=1.
+     */
+    public panSensitivity = 0.2;
+
+    /**
+     * Defines the number of virtual pixels of rotation input per frame while a stick is held.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     */
+    public rotationSensitivity = 1.0;
+
+    /**
      * Gets the left stick of the virtual joystick.
      * @returns The virtual Joystick
      */
@@ -62,14 +75,18 @@ export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> 
     public checkInputs() {
         if (this._leftjoystick) {
             const camera = this.camera;
-            const speed = (camera.movement ? camera.getEngine().getDeltaTime() : camera._computeLocalCameraSpeed()) * 50;
+            // Continuous inputs (held joystick) have no physical pixel displacement.
+            // CameraMovement path: pass fixed 1.0 as "virtual pixels" — CameraMovement normalizes for framerate.
+            // Legacy path: _computeLocalCameraSpeed() returns a pre-scaled distance value.
+            const speed = (camera.movement ? this.panSensitivity : camera._computeLocalCameraSpeed()) * 50;
             const cameraTransform = Matrix.RotationYawPitchRoll(camera.rotation.y, camera.rotation.x, 0);
             const deltaTransform = Vector3.TransformCoordinates(
                 new Vector3(this._leftjoystick.deltaPosition.x * speed, this._leftjoystick.deltaPosition.y * speed, this._leftjoystick.deltaPosition.z * speed),
                 cameraTransform
             );
             camera._addPanDelta(deltaTransform.x, deltaTransform.y, deltaTransform.z);
-            camera._addRotationDelta(this._rightjoystick.deltaPosition.x, this._rightjoystick.deltaPosition.y);
+            const rotSens = camera.movement ? this.rotationSensitivity : 1.0;
+            camera._addRotationDelta(this._rightjoystick.deltaPosition.x * rotSens, this._rightjoystick.deltaPosition.y * rotSens);
 
             if (!this._leftjoystick.pressed) {
                 this._leftjoystick.deltaPosition = this._leftjoystick.deltaPosition.scale(0.9);

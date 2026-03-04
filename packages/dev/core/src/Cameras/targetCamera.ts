@@ -7,6 +7,7 @@ import { Epsilon } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Node } from "../node";
+import { CameraMovement } from "./cameraMovement";
 
 Node.AddNodeConstructor("TargetCamera", (name, scene) => {
     return () => new TargetCamera(name, Vector3.Zero(), scene);
@@ -59,10 +60,44 @@ export class TargetCamera extends Camera {
     public speed = 2.0;
 
     /**
+     * When set, enables framerate-independent movement using the CameraMovement class.
+     * Input plugins will write pixel deltas to this instance, and _checkInputs will use
+     * its computed per-frame deltas instead of the legacy inertia system.
+     */
+    public movement?: CameraMovement;
+
+    private _useFramerateIndependentMovement = false;
+
+    /**
+     * When enabled, instantiates a CameraMovement instance to provide framerate-independent
+     * inertia for camera movement. When disabled, reverts to the legacy per-frame inertia system.
+     *
+     */
+    public get useFramerateIndependentMovement(): boolean {
+        return this._useFramerateIndependentMovement;
+    }
+
+    public set useFramerateIndependentMovement(value: boolean) {
+        if (this._useFramerateIndependentMovement === value) {
+            return;
+        }
+        this._useFramerateIndependentMovement = value;
+        if (value) {
+            this.movement = new CameraMovement(this.getScene(), this.position);
+            this.movement.speed = this.speed; // match legacy default
+        } else {
+            this.movement = undefined;
+        }
+    }
+
+    /**
      * Add constraint to the camera to prevent it to move freely in all directions and
      * around all axis.
      */
     public noRotationConstraint = false;
+
+    /** @internal */
+    public _movementDeltasConsumed = false;
 
     /**
      * Reverses mouselook direction to 'natural' panning as opposed to traditional direct
@@ -379,11 +414,13 @@ export class TargetCamera extends Camera {
 
         // When CameraMovement is set, compute framerate-independent deltas and write them
         // into cameraDirection/cameraRotation so the existing position/rotation update code works unchanged.
-        if (this.movement) {
+        // Skip if a subclass (e.g. ArcRotateCamera) already called computeCurrentFrameDeltas this frame.
+        if (this.movement && !this._movementDeltasConsumed) {
             this.movement.computeCurrentFrameDeltas();
             this.cameraDirection.copyFrom(this.movement.panDeltaCurrentFrame);
             this.cameraRotation.copyFromFloats(this.movement.rotationDeltaCurrentFrame.x, this.movement.rotationDeltaCurrentFrame.y);
         }
+        this._movementDeltasConsumed = false;
 
         const needToMove = this._decideIfNeedsToMove();
         const needToRotate = this.cameraRotation.x || this.cameraRotation.y;
