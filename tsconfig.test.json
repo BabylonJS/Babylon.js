@@ -3,6 +3,7 @@
 
     "compilerOptions": {
         "esModuleInterop": true,
+        "resolveJsonModule": true,
         "lib": [
             "es5",
             "dom",
