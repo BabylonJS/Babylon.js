@@ -320,7 +320,7 @@ export class LightingVolume {
 
         if (this._shadowGenerator) {
             const depthTexture = this._shadowGenerator.getShadowMap()?.depthStencilTexture;
-            this._currentShadowDepthTexture = depthTexture!;
+            this._currentShadowDepthTexture = depthTexture || null;
             if (depthTexture) {
                 this._cs?.setInternalTexture("shadowMap", depthTexture);
                 this._cs2?.setInternalTexture("shadowMap", depthTexture);

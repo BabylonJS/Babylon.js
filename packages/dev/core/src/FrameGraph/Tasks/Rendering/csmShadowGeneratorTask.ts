@@ -51,6 +51,7 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
         this._numCascades = value;
         if (this._shadowGenerator) {
             this._shadowGenerator.numCascades = value;
+            this._updateShadowMap();
         }
     }
 
