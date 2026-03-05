@@ -107,7 +107,7 @@ export class KHR_materials_volume_scatter implements IGLTFExporterExtensionV2 {
                 let transmissionScatterAnisotropy = 0;
                 if (babylonMaterial.transmissionWeight > 0) {
                     const invDepth = 1.0 / babylonMaterial.transmissionDepth;
-                    const transmissionExtinctionCoefficient = new Vector3(
+                    let transmissionExtinctionCoefficient = new Vector3(
                         -Math.log(babylonMaterial.transmissionColor.r) * invDepth,
                         -Math.log(babylonMaterial.transmissionColor.g) * invDepth,
                         -Math.log(babylonMaterial.transmissionColor.b) * invDepth
@@ -119,16 +119,17 @@ export class KHR_materials_volume_scatter implements IGLTFExporterExtensionV2 {
                     );
                     const transmissionAbsorptionCoefficient = transmissionExtinctionCoefficient.subtract(transmissionScatteringCoefficient);
                     const minCoeff = Math.min(transmissionAbsorptionCoefficient.x, transmissionAbsorptionCoefficient.y, transmissionAbsorptionCoefficient.z);
-                    if (minCoeff < 0.0) {
-                        transmissionAbsorptionCoefficient.subtractInPlace(new Vector3(minCoeff, minCoeff, minCoeff));
-                        // Set extinction coefficient after shifting the absorption to be non-negative.
-                        transmissionExtinctionCoefficient.copyFrom(transmissionAbsorptionCoefficient).addInPlace(transmissionScatteringCoefficient);
+                    if (minCoeff < 0) {
+                        transmissionAbsorptionCoefficient.x = transmissionAbsorptionCoefficient.x - minCoeff;
+                        transmissionAbsorptionCoefficient.y = transmissionAbsorptionCoefficient.y - minCoeff;
+                        transmissionAbsorptionCoefficient.z = transmissionAbsorptionCoefficient.z - minCoeff;
                     }
+                    transmissionExtinctionCoefficient = transmissionAbsorptionCoefficient.add(transmissionScatteringCoefficient);
 
                     const ssAlbedo = new Vector3(
-                        transmissionScatteringCoefficient.x / transmissionExtinctionCoefficient.x,
-                        transmissionScatteringCoefficient.y / transmissionExtinctionCoefficient.y,
-                        transmissionScatteringCoefficient.z / transmissionExtinctionCoefficient.z
+                        transmissionScatteringCoefficient.x / Math.max(transmissionExtinctionCoefficient.x, 0.000001),
+                        transmissionScatteringCoefficient.y / Math.max(transmissionExtinctionCoefficient.y, 0.000001),
+                        transmissionScatteringCoefficient.z / Math.max(transmissionExtinctionCoefficient.z, 0.000001)
                     );
                     transmissionMultiscatterColor = SingleScatterToMultiScatterAlbedo(ssAlbedo);
                     transmissionScatterAnisotropy = babylonMaterial.transmissionScatterAnisotropy;

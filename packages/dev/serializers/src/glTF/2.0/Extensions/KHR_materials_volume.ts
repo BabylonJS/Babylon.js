@@ -57,7 +57,7 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
                 return additionalTextures;
             }
         } else if (babylonMaterial instanceof OpenPBRMaterial) {
-            if (babylonMaterial.transmissionWeight > 0) {
+            if (babylonMaterial.transmissionWeight > 0 || babylonMaterial.subsurfaceWeight > 0) {
                 if (babylonMaterial.geometryThicknessTexture) {
                     additionalTextures.push(babylonMaterial.geometryThicknessTexture);
                 }
@@ -130,10 +130,32 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
                     const thicknessFactor = babylonMaterial.geometryThickness;
                     const thicknessTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.geometryThicknessTexture) ?? undefined;
                     let transmissionAttenuationDistance = 1;
-                    let transmissionAttenuationColor = Color3.White().asArray();
+                    const transmissionAttenuationColor = Color3.White().asArray();
                     if (transmissionVolume) {
-                        transmissionAttenuationDistance = babylonMaterial.transmissionDepth;
-                        transmissionAttenuationColor = babylonMaterial.transmissionColor.asArray();
+                        const invDepth = 1.0 / babylonMaterial.transmissionDepth;
+                        let transmissionExtinctionCoefficient = new Vector3(
+                            -Math.log(babylonMaterial.transmissionColor.r) * invDepth,
+                            -Math.log(babylonMaterial.transmissionColor.g) * invDepth,
+                            -Math.log(babylonMaterial.transmissionColor.b) * invDepth
+                        );
+                        const transmissionScatteringCoefficient = new Vector3(
+                            babylonMaterial.transmissionScatter.r * invDepth,
+                            babylonMaterial.transmissionScatter.g * invDepth,
+                            babylonMaterial.transmissionScatter.b * invDepth
+                        );
+                        const transmissionAbsorptionCoefficient = transmissionExtinctionCoefficient.subtract(transmissionScatteringCoefficient);
+                        const minCoeff = Math.min(transmissionAbsorptionCoefficient.x, transmissionAbsorptionCoefficient.y, transmissionAbsorptionCoefficient.z);
+                        if (minCoeff < 0) {
+                            transmissionAbsorptionCoefficient.x = transmissionAbsorptionCoefficient.x - minCoeff;
+                            transmissionAbsorptionCoefficient.y = transmissionAbsorptionCoefficient.y - minCoeff;
+                            transmissionAbsorptionCoefficient.z = transmissionAbsorptionCoefficient.z - minCoeff;
+                        }
+                        transmissionExtinctionCoefficient = transmissionAbsorptionCoefficient.add(transmissionScatteringCoefficient);
+                        const maxCoeff = Math.max(transmissionExtinctionCoefficient.x, transmissionExtinctionCoefficient.y, transmissionExtinctionCoefficient.z);
+                        transmissionAttenuationDistance = 1.0 / maxCoeff;
+                        transmissionAttenuationColor[0] = Math.exp(-transmissionExtinctionCoefficient.x * transmissionAttenuationDistance);
+                        transmissionAttenuationColor[1] = Math.exp(-transmissionExtinctionCoefficient.y * transmissionAttenuationDistance);
+                        transmissionAttenuationColor[2] = Math.exp(-transmissionExtinctionCoefficient.z * transmissionAttenuationDistance);
                     }
                     let subsurfaceAttenuationDistance = 1;
                     const subsurfaceAttenuationColor = Color3.White().asArray();

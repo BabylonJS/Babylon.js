@@ -26,8 +26,7 @@ declare module "../../glTFFileLoader" {
 function multiScatterToSingleScatterAlbedo(multiScatter: Color3): Vector3 {
     const multiScatterAlbedo = new Vector3(multiScatter.r, multiScatter.g, multiScatter.b);
     const s: Vector3 = new Vector3(4.09712, 4.09712, 4.09712);
-    s.multiplyInPlace(multiScatterAlbedo);
-    s.addInPlace(new Vector3(4.20863, 4.20863, 4.20863));
+    s.addInPlace(new Vector3(4.20863, 4.20863, 4.20863).multiplyInPlace(multiScatterAlbedo));
 
     const p: Vector3 = new Vector3(9.59217, 9.59217, 9.59217);
     p.addInPlace(new Vector3(41.6808, 41.6808, 41.6808).multiplyInPlace(multiScatterAlbedo));
