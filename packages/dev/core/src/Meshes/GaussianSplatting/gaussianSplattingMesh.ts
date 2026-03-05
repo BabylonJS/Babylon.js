@@ -22,6 +22,7 @@ import { Camera } from "core/Cameras/camera";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
 import type { INative } from "core/Engines/Native/nativeInterfaces";
 import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh";
+import { EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
@@ -2573,5 +2574,64 @@ export class GaussianSplattingMesh extends Mesh {
         this.updateData(arrayBuffer, this.shData ?? undefined, { flipY: false });
 
         return this;
+    }
+
+    /**
+     * Serialize current GaussianSplattingMesh
+     * @param serializationObject defines the object which will receive the serialization data
+     * @param encoding the encoding of binary data, defaults to base64 for json serialize,
+     * kept for future internal use like cloning where base64 encoding wastes cycles and memory
+     * @returns the serialized object
+     */
+    override serialize(serializationObject: any = {}, encoding: string = "base64"): any {
+        serializationObject = super.serialize(serializationObject);
+        // GaussianSplattingMesh would need one and only subMesh created in constructor
+        // so no need to keep this
+        serializationObject.subMeshes = [];
+        // Geometry is created at runtime, no need to serialize
+        serializationObject.geometryUniqueId = undefined;
+        serializationObject.geometryId = undefined;
+        // Material is created in constructor, no need to serialize
+        serializationObject.materialUniqueId = undefined;
+        serializationObject.materialId = undefined;
+        serializationObject.instances = [];
+        serializationObject.actions = undefined;
+        serializationObject.type = this.getClassName();
+        serializationObject.keepInRam = this._keepInRam;
+        serializationObject._flipY = this._flipY;
+        if (this._splatsData) {
+            serializationObject.splatsData =
+                encoding === "base64"
+                    ? // Make it JSON-serializable
+                      EncodeArrayBufferToBase64(this._splatsData)
+                    : this._splatsData;
+        }
+        if (this._shData) {
+            serializationObject.shData =
+                encoding === "base64"
+                    ? // Make it JSON-serializable
+                      this._shData.map(EncodeArrayBufferToBase64)
+                    : this._shData;
+        }
+        // Compress _partIndices via RLE: [count, value, count, value, ...]
+        if (this._partIndices) {
+            const compressedIndices = CompressPartIndices(this._partIndices.subarray(0, this._vertexCount));
+            serializationObject.partIndices =
+                encoding === "base64"
+                    ? // Make it JSON-serializable
+                      EncodeArrayBufferToBase64(compressedIndices)
+                    : compressedIndices;
+        }
+        if (this._partProxies) {
+            const parts = this._partProxies;
+            const serializedParts: Record<number, any> = {};
+            for (const [partId, partMesh] of parts) {
+                // TODO: GaussianSplattingPartProxyMesh.doNotSerialize
+                // not fully sure if skipping a part is safe
+                serializedParts[partId] = partMesh.serialize();
+            }
+            serializationObject.partProxies = serializedParts;
+        }
+        return serializationObject;
     }
 }
