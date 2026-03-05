@@ -13,30 +13,65 @@ import { Color3LineComponent } from "shared-ui-components/lines/color3LineCompon
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { MatrixLineComponent } from "shared-ui-components/lines/matrixLineComponent";
 import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import type { IEditablePropertyListOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 
+/** Primitive types that can be shown as editable fields in the right panel. */
+const PRIMITIVE_FG_TYPES = new Set(["string", "number", "boolean", "FlowGraphInteger"]);
+
+/**
+ * Returns true if the given connection should be shown as an editable field.
+ * Shows: unconnected inputs whose default value is a string, number, boolean, or FlowGraphInteger,
+ *        OR whose rich type is one of those primitives (even if the current default is undefined).
+ * @param conn The data connection to test.
+ * @returns True if the connection should be shown as an editable field.
+ */
+function IsPrimitiveEditableInput(conn: FlowGraphDataConnection<any>): boolean {
+    if (conn.isConnected()) {
+        return false;
+    }
+    const def = (conn as any)._defaultValue;
+    if (def instanceof FlowGraphInteger) {
+        return true;
+    }
+    const defType = typeof def;
+    if (defType === "string" || defType === "number" || defType === "boolean") {
+        return true;
+    }
+    // No value yet, but the richType declares a primitive — still show it
+    return PRIMITIVE_FG_TYPES.has(conn.richType.typeName);
+}
+
+/** Default property panel for any FlowGraph block. */
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
+    /** {@inheritDoc} */
     constructor(props: IPropertyComponentProps) {
         super(props);
     }
 
+    /** {@inheritDoc} */
     override render() {
         return (
             <>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
+                <DataConnectionsPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <GenericPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
             </>
         );
     }
 }
 
+/** Renders the "GENERAL" section (Name, Type, Comments) for any block. */
 export class GeneralPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+    /** {@inheritDoc} */
     constructor(props: IPropertyComponentProps) {
         super(props);
     }
 
+    /** {@inheritDoc} */
     override render() {
         const block = this.props.nodeData.data as FlowGraphBlock;
 
@@ -71,11 +106,122 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
     }
 }
 
-export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+/**
+ * Renders editable fields for all primitive-valued unconnected data-input connections of any block.
+ * This makes it possible to set fixed values (like a property name) directly in the right panel
+ * without requiring a connected input port.
+ */
+export class DataConnectionsPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+    /** {@inheritDoc} */
     constructor(props: IPropertyComponentProps) {
         super(props);
     }
 
+    /**
+     * Updates the default value of a data connection and keeps block.config in sync.
+     * @param conn - The data connection to update.
+     * @param value - The new value to set.
+     */
+    private _setDefaultValue(conn: FlowGraphDataConnection<any>, value: any) {
+        const block = this.props.nodeData.data as FlowGraphBlock;
+        // Update the DataConnection's internal default value
+        (conn as any)._defaultValue = value;
+        // Keep block.config in sync so serialization picks it up
+        if (block.config) {
+            (block.config as any)[conn.name] = value;
+        }
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+    }
+
+    /** {@inheritDoc} */
+    override render() {
+        const block = this.props.nodeData.data as FlowGraphBlock;
+        const editableInputs = block.dataInputs.filter(IsPrimitiveEditableInput);
+
+        if (editableInputs.length === 0) {
+            return <></>;
+        }
+
+        return (
+            <LineContainerComponent title="INPUT VALUES">
+                {editableInputs.map((conn) => {
+                    const def = (conn as any)._defaultValue;
+                    const typeName = conn.richType.typeName;
+                    const label = conn.name;
+
+                    // Boolean
+                    if (typeName === "boolean" || typeof def === "boolean") {
+                        return (
+                            <CheckBoxLineComponent
+                                key={label}
+                                label={label}
+                                isSelected={() => (conn as any)._defaultValue === true}
+                                onSelect={(v) => this._setDefaultValue(conn, v)}
+                            />
+                        );
+                    }
+
+                    // FlowGraphInteger
+                    if (def instanceof FlowGraphInteger || typeName === "FlowGraphInteger") {
+                        const intVal = def instanceof FlowGraphInteger ? def.value : 0;
+                        const proxy = { v: intVal };
+                        return (
+                            <FloatLineComponent
+                                key={label}
+                                label={label}
+                                lockObject={this.props.stateManager.lockObject}
+                                digits={0}
+                                step={"1"}
+                                isInteger={true}
+                                target={proxy}
+                                propertyName="v"
+                                onChange={(v) => this._setDefaultValue(conn, new FlowGraphInteger(v))}
+                            />
+                        );
+                    }
+
+                    // Number
+                    if (typeName === "number" || typeof def === "number") {
+                        const proxy = { v: typeof def === "number" ? def : 0 };
+                        return (
+                            <FloatLineComponent
+                                key={label}
+                                label={label}
+                                lockObject={this.props.stateManager.lockObject}
+                                target={proxy}
+                                propertyName="v"
+                                onChange={(v) => this._setDefaultValue(conn, v)}
+                            />
+                        );
+                    }
+
+                    // String (default — also covers RichTypeAny with string default)
+                    const proxy = { v: typeof def === "string" ? def : "" };
+                    return (
+                        <TextInputLineComponent
+                            key={label}
+                            label={label}
+                            lockObject={this.props.stateManager.lockObject}
+                            target={proxy}
+                            propertyName="v"
+                            throttlePropertyChangedNotification={true}
+                            onChange={(v) => this._setDefaultValue(conn, v)}
+                        />
+                    );
+                })}
+            </LineContainerComponent>
+        );
+    }
+}
+
+/** Renders properties registered via the `editableInPropertyPage` decorator on any block. */
+export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+    /** {@inheritDoc} */
+    constructor(props: IPropertyComponentProps) {
+        super(props);
+    }
+
+    /** {@inheritDoc} */
     override render() {
         const block = this.props.nodeData.data as FlowGraphBlock,
             propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;

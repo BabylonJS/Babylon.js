@@ -20,7 +20,7 @@ export class DraggableLineComponent extends React.Component<IButtonLineComponent
                     event.dataTransfer.setData("babylonjs-flow-graph-node", this.props.data);
                 }}
             >
-                {this.props.data.replace("Block", "")}
+                {this.props.data.startsWith("FlowGraph") ? this.props.data.slice(9).replace("Block", "") : this.props.data.replace("Block", "")}
             </div>
         );
     }

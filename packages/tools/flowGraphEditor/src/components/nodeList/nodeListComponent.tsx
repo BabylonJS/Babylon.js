@@ -9,13 +9,21 @@ import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 
 import "./nodeList.scss";
 
+/** Props for the NodeListComponent. */
 interface INodeListComponentProps {
     globalState: GlobalState;
 }
 
+/**
+ * Left-panel block list with filter/search for the Flow Graph Editor.
+ */
 export class NodeListComponent extends React.Component<INodeListComponentProps, { filter: string }> {
+    /** Observer for the reset event. */
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
+    /** Ref for the filter input element, used to restore focus after clearing. */
+    private _inputRef = React.createRef<HTMLInputElement>();
 
+    /** Tooltip descriptions keyed by block class name. */
     private static _Tooltips: { [key: string]: string } = {
         // Events
         FlowGraphSceneReadyEventBlock: "Triggered when the scene is ready",
@@ -195,6 +203,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FlowGraphFunctionReference: "Reference to a function flow graph",
     };
 
+    /**
+     * Creates a new NodeListComponent.
+     * @param props - component props
+     */
     constructor(props: INodeListComponentProps) {
         super(props);
 
@@ -205,14 +217,28 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         });
     }
 
+    /** Removes the reset observer when the component is unmounted. */
     override componentWillUnmount() {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     }
 
+    /**
+     * Updates the block list filter.
+     * @param filter - the new filter string
+     */
     filterContent(filter: string) {
         this.setState({ filter: filter });
     }
 
+    /** Clears the current filter and returns focus to the input. */
+    clearFilter() {
+        this.setState({ filter: "" }, () => this._inputRef.current?.focus());
+    }
+
+    /**
+     * Renders the node list panel.
+     * @returns the rendered JSX
+     */
     override render() {
         // Block types organized by category
         const allBlocks: {
@@ -414,14 +440,19 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                     <div className="pane">
                         <div className="filter">
                             <input
+                                ref={this._inputRef}
                                 type="text"
                                 placeholder="Filter"
+                                value={this.state.filter}
                                 onFocus={() => (this.props.globalState.lockObject.lock = true)}
                                 onBlur={() => {
                                     this.props.globalState.lockObject.lock = false;
                                 }}
                                 onChange={(evt) => this.filterContent(evt.target.value)}
                             />
+                            <button className={"filter-clear" + (this.state.filter ? " visible" : "")} onClick={() => this.clearFilter()} title="Clear filter">
+                                ✕
+                            </button>
                         </div>
                         <div className="list-container">{blockMenu}</div>
                     </div>

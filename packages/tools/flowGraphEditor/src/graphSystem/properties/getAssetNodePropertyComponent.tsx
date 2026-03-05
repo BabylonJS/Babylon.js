@@ -1,0 +1,214 @@
+import * as React from "react";
+import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
+import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
+import type { FlowGraphGetAssetBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetAssetBlock";
+import type { IFlowGraphGetAssetBlockConfiguration } from "core/FlowGraph/Blocks/Data/flowGraphGetAssetBlock";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+import type { GlobalState } from "../../globalState";
+import type { SceneContext } from "../../sceneContext";
+import type { Observer } from "core/Misc/observable";
+
+// FlowGraphAssetType is a const enum — mirror string values here so webpack doesn't inline stale values.
+const AssetTypeOptions = [
+    { label: "Mesh", value: "Mesh" },
+    { label: "Light", value: "Light" },
+    { label: "Camera", value: "Camera" },
+    { label: "Material", value: "Material" },
+    { label: "AnimationGroup", value: "AnimationGroup" },
+    { label: "Animation", value: "Animation" },
+];
+
+/**
+ * Returns the named scene objects for a given FlowGraphAssetType string.
+ * @param ctx The SceneContext holding scene objects catalogued by category.
+ * @param assetType The FlowGraphAssetType string value (e.g. "Mesh").
+ * @returns Array of objects with uniqueId and name.
+ */
+function GetSceneListForType(ctx: SceneContext, assetType: string): Array<{ uniqueId: number; name: string }> {
+    switch (assetType) {
+        case "Mesh":
+            return ctx.meshes;
+        case "Light":
+            return ctx.lights;
+        case "Camera":
+            return ctx.cameras;
+        case "Material":
+            return ctx.materials;
+        case "AnimationGroup":
+            return ctx.animationGroups;
+        default:
+            return [];
+    }
+}
+
+/**
+ * Returns the numeric value stored in a FlowGraphInteger-or-number config index field.
+ * @param idx The raw config index value (number, FlowGraphInteger, or undefined).
+ * @returns The integer value, or -1 if absent.
+ */
+function GetIndexValue(idx: number | FlowGraphInteger | undefined): number {
+    if (idx == null) {
+        return -1;
+    }
+    if (typeof idx === "number") {
+        return idx;
+    }
+    return (idx as FlowGraphInteger).value ?? -1;
+}
+
+interface IGetAssetPropertyState {
+    sceneContext: SceneContext | null;
+}
+
+/**
+ * Specialized property panel for FlowGraphGetAssetBlock.
+ * Shows a type dropdown and — when a scene is loaded — a named asset picker.
+ */
+export class GetAssetPropertyComponent extends React.Component<IPropertyComponentProps, IGetAssetPropertyState> {
+    private _sceneContextObserver: Observer<SceneContext | null> | null = null;
+
+    constructor(props: IPropertyComponentProps) {
+        super(props);
+        const globalState = props.stateManager.data as GlobalState;
+        this.state = { sceneContext: globalState.sceneContext };
+    }
+
+    override componentDidMount() {
+        const globalState = this.props.stateManager.data as GlobalState;
+        this._sceneContextObserver = globalState.onSceneContextChanged.add((ctx) => {
+            this.setState({ sceneContext: ctx });
+        });
+    }
+
+    override componentWillUnmount() {
+        const globalState = this.props.stateManager.data as GlobalState;
+        if (this._sceneContextObserver) {
+            globalState.onSceneContextChanged.remove(this._sceneContextObserver);
+            this._sceneContextObserver = null;
+        }
+    }
+
+    private _getBlock(): FlowGraphGetAssetBlock<any> {
+        return this.props.nodeData.data as FlowGraphGetAssetBlock<any>;
+    }
+
+    private _getConfig(): IFlowGraphGetAssetBlockConfiguration<any> {
+        return this._getBlock().config;
+    }
+
+    private _onTypeChange(newType: string) {
+        const block = this._getBlock();
+        const config = this._getConfig();
+
+        config.type = newType as any;
+
+        // Sync DataConnection default value so in-session execution reflects the change.
+        const typeDC = (block as any).type;
+        if (typeDC && "_defaultValue" in typeDC) {
+            typeDC._defaultValue = newType;
+        }
+
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+        this.forceUpdate();
+    }
+
+    private _onIndexChange(newIndex: number, useUniqueId: boolean) {
+        const block = this._getBlock();
+        const config = this._getConfig();
+
+        config.index = new FlowGraphInteger(newIndex);
+        config.useIndexAsUniqueId = useUniqueId;
+
+        const indexDC = (block as any).index;
+        if (indexDC && "_defaultValue" in indexDC) {
+            indexDC._defaultValue = new FlowGraphInteger(newIndex);
+        }
+
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+        this.forceUpdate();
+    }
+
+    override render() {
+        const { stateManager, nodeData } = this.props;
+        const config = this._getConfig();
+        const currentType: string = (config.type as string) ?? "Mesh";
+        const currentIndexVal = GetIndexValue(config.index);
+        const useUniqueId = config.useIndexAsUniqueId ?? false;
+        const { sceneContext } = this.state;
+
+        const sceneAssets = sceneContext ? GetSceneListForType(sceneContext, currentType) : null;
+
+        return (
+            <>
+                <GeneralPropertyTabComponent stateManager={stateManager} nodeData={nodeData} />
+
+                <LineContainerComponent title="ASSET CONFIGURATION">
+                    {/* Asset type selector */}
+                    <OptionsLine
+                        label="Asset Type"
+                        options={AssetTypeOptions}
+                        target={config}
+                        propertyName="type"
+                        valuesAreStrings={true}
+                        onSelect={(value) => this._onTypeChange(value as string)}
+                    />
+
+                    {sceneAssets ? (
+                        /* Scene-aware picker: dropdown of real scene objects */
+                        <>
+                            <OptionsLine
+                                label="Asset"
+                                options={[
+                                    { label: "(none)", value: -1 },
+                                    ...sceneAssets.map((a) => ({
+                                        label: a.name || `(id ${a.uniqueId})`,
+                                        value: a.uniqueId,
+                                    })),
+                                ]}
+                                target={config}
+                                propertyName="index"
+                                extractValue={() => (useUniqueId ? currentIndexVal : -1)}
+                                noDirectUpdate={true}
+                                onSelect={(value) => {
+                                    const uid = value as number;
+                                    this._onIndexChange(uid, uid !== -1);
+                                }}
+                            />
+                            {sceneAssets.length === 0 && (
+                                <div style={{ padding: "4px 8px", color: "#aaa", fontSize: "11px" }}>No {currentType.toLowerCase()}s found in the scene.</div>
+                            )}
+                        </>
+                    ) : (
+                        /* No scene loaded: raw index input */
+                        <>
+                            <FloatLineComponent
+                                label="Index"
+                                lockObject={stateManager.lockObject}
+                                digits={0}
+                                step={"1"}
+                                isInteger={true}
+                                target={{ _idx: currentIndexVal }}
+                                propertyName="_idx"
+                                onChange={(v) => this._onIndexChange(v, false)}
+                            />
+                            <CheckBoxLineComponent
+                                label="Use Unique ID"
+                                isSelected={() => useUniqueId}
+                                onSelect={(v) => {
+                                    config.useIndexAsUniqueId = v;
+                                    this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this._getBlock());
+                                    this.forceUpdate();
+                                }}
+                            />
+                            <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>Load a scene snippet in the Preview panel to pick assets by name.</div>
+                        </>
+                    )}
+                </LineContainerComponent>
+            </>
+        );
+    }
+}

@@ -24,6 +24,12 @@ import { HistoryStack } from "shared-ui-components/historyStack";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import type { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 
+/**
+ * Pre-populate string (and other primitive) config fields for blocks whose constructors
+ * receive those fields via the config object. Without this, `_defaultValue` on the
+ * DataConnection starts as `undefined` and the property panel can't show a text field.
+ * Key = FlowGraphBlockNames string value (i.e. `getClassName()` output).
+ */
 interface IGraphEditorProps {
     globalState: GlobalState;
 }
