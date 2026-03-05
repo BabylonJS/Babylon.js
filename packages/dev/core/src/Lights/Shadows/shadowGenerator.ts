@@ -897,8 +897,9 @@ export class ShadowGenerator implements IShadowGenerator {
         if (this._light === light) {
             return;
         }
+        this.dispose(false);
         this._light = light;
-        this._createInstance(true);
+        this._createInstance();
     }
 
     /**
@@ -913,8 +914,9 @@ export class ShadowGenerator implements IShadowGenerator {
         if (this._usefullFloatFirst === useFloat32TextureType) {
             return;
         }
+        this.dispose(false);
         this._usefullFloatFirst = useFloat32TextureType;
-        this._createInstance(true);
+        this._createInstance();
     }
 
     /**
@@ -929,8 +931,9 @@ export class ShadowGenerator implements IShadowGenerator {
         if (this._camera === camera) {
             return;
         }
+        this.dispose(false);
         this._camera = camera;
-        this._createInstance(true);
+        this._createInstance();
     }
 
     /**
@@ -945,8 +948,9 @@ export class ShadowGenerator implements IShadowGenerator {
         if (this._useRedTextureType === useRedTextureFormat) {
             return;
         }
+        this.dispose(false);
         this._useRedTextureType = useRedTextureFormat;
-        this._createInstance(true);
+        this._createInstance();
     }
 
     /**
@@ -973,11 +977,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._createInstance();
     }
 
-    private _createInstance(dispose = false) {
-        if (dispose) {
-            this.dispose(false);
-        }
-
+    private _createInstance() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(this._forceGLSL);
 
