@@ -380,6 +380,10 @@ export class GaussianSplattingMesh extends Mesh {
 
     private _tmpCovariances = [0, 0, 0, 0, 0, 0];
     private _sortIsDirty = false;
+    /**
+     * The flipY option from last call to {@link _updateData}
+     */
+    private _flipY = false;
 
     private static _RowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // Vector3 position, Vector3 scale, 1 u8 quaternion, 1 color with alpha
     private static _SH_C0 = 0.28209479177387814;
@@ -1886,6 +1890,7 @@ export class GaussianSplattingMesh extends Mesh {
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
         }
+        this._flipY = options.flipY ?? false;
 
         // Parse the data
         const uBuffer = new Uint8Array(data);
