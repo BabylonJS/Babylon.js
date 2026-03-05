@@ -325,7 +325,8 @@ export class SceneSerializer {
         for (index = 0; index < scene.meshes.length; index++) {
             const abstractMesh = scene.meshes[index];
 
-            if (abstractMesh instanceof Mesh) {
+            // GaussianSplattingPartProxyMesh would be serialized with the GaussianSplattingMesh holding it
+            if (abstractMesh instanceof Mesh && abstractMesh.getClassName() !== "GaussianSplattingPartProxyMesh") {
                 const mesh = abstractMesh;
                 if (!mesh.doNotSerialize) {
                     if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
