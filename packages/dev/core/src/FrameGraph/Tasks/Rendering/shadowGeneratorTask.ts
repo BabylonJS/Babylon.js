@@ -25,7 +25,10 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         }
 
         this._light = value;
-        this._setupShadowGenerator();
+        this._createShadowGenerator(); // make sure the shadow generator is created
+        if (this._shadowGenerator) {
+            this._shadowGenerator.light = value;
+        }
     }
 
     private _camera: Camera;
@@ -38,7 +41,11 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
 
     public set camera(camera: Camera) {
         this._camera = camera;
-        this._setupShadowGenerator();
+
+        if (this._shadowGenerator) {
+            this._shadowGenerator.camera = camera;
+            this._shadowGenerator.getShadowMap()!.cameraForLOD = camera;
+        }
     }
 
     private _mapSize = 1024;
@@ -55,7 +62,9 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         }
 
         this._mapSize = value;
-        this._setupShadowGenerator();
+        if (this._shadowGenerator) {
+            this._shadowGenerator.mapSize = value;
+        }
     }
 
     private _useFloat32TextureType = false;
@@ -72,7 +81,9 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         }
 
         this._useFloat32TextureType = value;
-        this._setupShadowGenerator();
+        if (this._shadowGenerator) {
+            this._shadowGenerator.useFloat32TextureType = value;
+        }
     }
 
     private _useRedTextureFormat = true;
@@ -89,7 +100,9 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         }
 
         this._useRedTextureFormat = value;
-        this._setupShadowGenerator();
+        if (this._shadowGenerator) {
+            this._shadowGenerator.useRedTextureFormat = value;
+        }
     }
 
     private _bias = 0.01;
@@ -256,15 +269,13 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
 
     protected _shadowGenerator: ShadowGenerator | undefined;
 
-    protected _createShadowGenerator() {
+    protected _createShadowGeneratorInstance() {
         this._shadowGenerator = new ShadowGenerator(this._mapSize, this._light, this._useFloat32TextureType, undefined, this._useRedTextureFormat);
     }
 
-    protected _setupShadowGenerator() {
-        this._shadowGenerator?.dispose();
-        this._shadowGenerator = undefined;
-        if (this._light !== undefined) {
-            this._createShadowGenerator();
+    protected _createShadowGenerator() {
+        if (!this._shadowGenerator && this._light) {
+            this._createShadowGeneratorInstance();
             const shadowGenerator = this._shadowGenerator as ShadowGenerator | undefined;
             if (shadowGenerator === undefined) {
                 return;
@@ -282,8 +293,12 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
             shadowMap._disableEngineStages = true;
             shadowMap.cameraForLOD = this._camera;
 
-            (this.shadowGenerator as WritableObject<ShadowGenerator | undefined>) = shadowGenerator;
+            (this.shadowGenerator as WritableObject<ShadowGenerator>) = shadowGenerator;
+
+            return true;
         }
+
+        return false;
     }
 
     public override isReady(): boolean {

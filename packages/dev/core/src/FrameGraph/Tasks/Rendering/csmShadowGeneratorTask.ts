@@ -49,7 +49,9 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
         }
 
         this._numCascades = value;
-        this._setupShadowGenerator();
+        if (this._shadowGenerator) {
+            this._shadowGenerator.numCascades = value;
+        }
     }
 
     private _debug = false;
@@ -265,28 +267,32 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
         });
     }
 
-    protected override _createShadowGenerator() {
+    protected override _createShadowGeneratorInstance() {
         if (!(this.light instanceof DirectionalLight)) {
             throw new Error(`FrameGraphCascadedShadowGeneratorTask ${this.name}: the CSM shadow generator only supports directional lights.`);
         }
         this._shadowGenerator = new CascadedShadowGenerator(this.mapSize, this.light, this.useFloat32TextureType, this.camera, this.useRedTextureFormat);
-        this._shadowGenerator.numCascades = this._numCascades;
     }
 
-    protected override _setupShadowGenerator() {
-        super._setupShadowGenerator();
+    protected override _createShadowGenerator() {
+        if (super._createShadowGenerator()) {
+            const shadowGenerator = this._shadowGenerator;
+            if (shadowGenerator === undefined) {
+                return;
+            }
 
-        const shadowGenerator = this._shadowGenerator;
-        if (shadowGenerator === undefined) {
-            return;
+            shadowGenerator.numCascades = this._numCascades;
+            shadowGenerator.debug = this._debug;
+            shadowGenerator.stabilizeCascades = this._stabilizeCascades;
+            shadowGenerator.lambda = this._lambda;
+            shadowGenerator.cascadeBlendPercentage = this._cascadeBlendPercentage;
+            shadowGenerator.depthClamp = this._depthClamp;
+            shadowGenerator.shadowMaxZ = this._shadowMaxZ;
+
+            return true;
         }
 
-        shadowGenerator.debug = this._debug;
-        shadowGenerator.stabilizeCascades = this._stabilizeCascades;
-        shadowGenerator.lambda = this._lambda;
-        shadowGenerator.cascadeBlendPercentage = this._cascadeBlendPercentage;
-        shadowGenerator.depthClamp = this._depthClamp;
-        shadowGenerator.shadowMaxZ = this._shadowMaxZ;
+        return false;
     }
 
     public override getClassName(): string {
