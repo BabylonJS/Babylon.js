@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, @typescript-eslint/naming-convention */
 
 /**
  * Log function - defaults to console.log, upgraded to Logger.Log if @babylonjs/core is available.

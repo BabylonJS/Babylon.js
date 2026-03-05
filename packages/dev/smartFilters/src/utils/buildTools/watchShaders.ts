@@ -3,14 +3,14 @@ import { extname } from "path";
 import { ConvertShader } from "./convertShaders.js";
 import { initLogger, log, error } from "./buildToolsLogger.js";
 
-(async () => {
+await (async () => {
     await initLogger();
 
-    const ExternalArguments = process.argv.slice(2);
-    if (ExternalArguments.length >= 2 && ExternalArguments[0] && ExternalArguments[1]) {
-        const shaderPath = ExternalArguments[0];
-        const smartFiltersCorePath = ExternalArguments[1];
-        const babylonCorePath = ExternalArguments[2];
+    const externalArguments = process.argv.slice(2);
+    if (externalArguments.length >= 2 && externalArguments[0] && externalArguments[1]) {
+        const shaderPath = externalArguments[0];
+        const smartFiltersCorePath = externalArguments[1];
+        const babylonCorePath = externalArguments[2];
 
         watch(shaderPath).on("all", (event, file) => {
             // Only process file changes and added files
