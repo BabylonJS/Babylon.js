@@ -251,25 +251,25 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                         const activeCamera = getActiveCamera();
                         if (enabled && activeCamera !== camera) {
                             if (scene.frameGraph) {
-                                let updated = false;
-                                const nrg = scene.frameGraph.getLinkedNodeRenderGraph();
-                                if (nrg) {
-                                    void (async () => {
+                                void (async (frameGraph) => {
+                                    let updated = false;
+                                    const nrg = frameGraph.getLinkedNodeRenderGraph();
+                                    if (nrg) {
                                         updated = await nrg.replaceCameraAsync(activeCamera, camera);
-                                    })();
-                                } else {
-                                    for (const task of scene.frameGraph.tasks) {
-                                        if (IsCameraFrameGraphTask(task)) {
-                                            task.camera = camera;
-                                            updated = true;
+                                    } else {
+                                        for (const task of frameGraph.tasks) {
+                                            if (IsCameraFrameGraphTask(task)) {
+                                                task.camera = camera;
+                                                updated = true;
+                                            }
                                         }
                                     }
-                                }
-                                if (updated) {
-                                    activeCamera?.detachControl();
-                                    camera.attachControl(true);
-                                    onChangeObservable.notifyObservers();
-                                }
+                                    if (updated) {
+                                        activeCamera?.detachControl();
+                                        camera.attachControl(true);
+                                        onChangeObservable.notifyObservers();
+                                    }
+                                })(scene.frameGraph);
                             } else {
                                 activeCamera?.detachControl();
                                 scene.activeCamera = camera;
