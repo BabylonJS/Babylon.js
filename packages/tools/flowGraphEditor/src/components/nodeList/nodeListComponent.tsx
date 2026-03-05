@@ -1,0 +1,432 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+import * as React from "react";
+import type { GlobalState } from "../../globalState";
+import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
+import { DraggableLineComponent } from "../../sharedComponents/draggableLineComponent";
+import type { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
+
+import "./nodeList.scss";
+
+interface INodeListComponentProps {
+    globalState: GlobalState;
+}
+
+export class NodeListComponent extends React.Component<INodeListComponentProps, { filter: string }> {
+    private _onResetRequiredObserver: Nullable<Observer<boolean>>;
+
+    private static _Tooltips: { [key: string]: string } = {
+        // Events
+        FlowGraphSceneReadyEventBlock: "Triggered when the scene is ready",
+        FlowGraphSceneTickEventBlock: "Triggered every frame",
+        FlowGraphMeshPickEventBlock: "Triggered when a mesh is picked",
+        FlowGraphPointerEventBlock: "Triggered on pointer events",
+        FlowGraphPointerDownEventBlock: "Triggered on pointer down",
+        FlowGraphPointerUpEventBlock: "Triggered on pointer up",
+        FlowGraphPointerMoveEventBlock: "Triggered on pointer move",
+        FlowGraphPointerOverEventBlock: "Triggered on pointer over",
+        FlowGraphPointerOutEventBlock: "Triggered on pointer out",
+        FlowGraphReceiveCustomEventBlock: "Triggered when a custom event is received",
+        FlowGraphSendCustomEventBlock: "Sends a custom event",
+
+        // Control Flow
+        FlowGraphBranchBlock: "Branches execution based on a condition",
+        FlowGraphForLoopBlock: "Loops over a range of values",
+        FlowGraphWhileLoopBlock: "Loops while a condition is true",
+        FlowGraphSwitchBlock: "Switches between outputs based on a value",
+        FlowGraphSequenceBlock: "Executes outputs in sequence",
+        FlowGraphMultiGateBlock: "Executes one of multiple outputs",
+        FlowGraphFlipFlopBlock: "Alternates between two outputs",
+        FlowGraphDoNBlock: "Executes N times then stops",
+        FlowGraphWaitAllBlock: "Waits for all inputs to fire",
+        FlowGraphSetDelayBlock: "Delays execution",
+        FlowGraphCancelDelayBlock: "Cancels a pending delay",
+        FlowGraphCallCounterBlock: "Counts how many times it was called",
+        FlowGraphDebounceBlock: "Debounces execution",
+        FlowGraphThrottleBlock: "Throttles execution",
+
+        // Animation
+        FlowGraphPlayAnimationBlock: "Plays an animation",
+        FlowGraphStopAnimationBlock: "Stops an animation",
+        FlowGraphPauseAnimationBlock: "Pauses an animation",
+        FlowGraphInterpolationBlock: "Interpolates a value over time",
+
+        // Math Constants
+        FlowGraphEBlock: "Euler's number (e)",
+        FlowGraphPIBlock: "Pi constant",
+        FlowGraphInfBlock: "Infinity constant",
+        FlowGraphNaNBlock: "NaN constant",
+        FlowGraphRandomBlock: "Random number generator",
+
+        // Math Arithmetic
+        FlowGraphAddBlock: "Adds two values",
+        FlowGraphSubtractBlock: "Subtracts two values",
+        FlowGraphMultiplyBlock: "Multiplies two values",
+        FlowGraphDivideBlock: "Divides two values",
+        FlowGraphModuloBlock: "Modulo operation",
+        FlowGraphNegationBlock: "Negates a value",
+        FlowGraphAbsBlock: "Absolute value",
+        FlowGraphSignBlock: "Sign of a value",
+        FlowGraphMinBlock: "Minimum of two values",
+        FlowGraphMaxBlock: "Maximum of two values",
+        FlowGraphClampBlock: "Clamps a value between min and max",
+        FlowGraphSaturateBlock: "Clamps a value between 0 and 1",
+        FlowGraphMathInterpolationBlock: "Linearly interpolates between two values",
+        FlowGraphPowerBlock: "Raises a value to a power",
+        FlowGraphSquareRootBlock: "Square root",
+        FlowGraphCubeRootBlock: "Cube root",
+
+        // Math Rounding
+        FlowGraphFloorBlock: "Rounds down",
+        FlowGraphCeilBlock: "Rounds up",
+        FlowGraphRoundBlock: "Rounds to nearest",
+        FlowGraphTruncBlock: "Truncates to integer",
+        FlowGraphFractBlock: "Fractional part",
+
+        // Math Trigonometry
+        FlowGraphSinBlock: "Sine",
+        FlowGraphCosBlock: "Cosine",
+        FlowGraphTanBlock: "Tangent",
+        FlowGraphASinBlock: "Arc sine",
+        FlowGraphACosBlock: "Arc cosine",
+        FlowGraphATanBlock: "Arc tangent",
+        FlowGraphATan2Block: "Arc tangent 2",
+        FlowGraphSinhBlock: "Hyperbolic sine",
+        FlowGraphCoshBlock: "Hyperbolic cosine",
+        FlowGraphTanhBlock: "Hyperbolic tangent",
+        FlowGraphASinhBlock: "Hyperbolic arc sine",
+        FlowGraphACoshBlock: "Hyperbolic arc cosine",
+        FlowGraphATanhBlock: "Hyperbolic arc tangent",
+        FlowGraphDegToRadBlock: "Degrees to radians",
+        FlowGraphRadToDegBlock: "Radians to degrees",
+
+        // Math Logarithmic
+        FlowGraphExponentialBlock: "Exponential (e^x)",
+        FlowGraphLogBlock: "Natural logarithm",
+        FlowGraphLog2Block: "Base-2 logarithm",
+        FlowGraphLog10Block: "Base-10 logarithm",
+
+        // Math Comparison
+        FlowGraphEqualityBlock: "Tests equality",
+        FlowGraphLessThanBlock: "Less than comparison",
+        FlowGraphLessThanOrEqualBlock: "Less than or equal comparison",
+        FlowGraphGreaterThanBlock: "Greater than comparison",
+        FlowGraphGreaterThanOrEqualBlock: "Greater than or equal comparison",
+        FlowGraphIsNaNBlock: "Tests if NaN",
+        FlowGraphIsInfBlock: "Tests if Infinity",
+        FlowGraphConditionalBlock: "Selects between two values based on a condition",
+
+        // Vector Math
+        FlowGraphLengthBlock: "Vector length",
+        FlowGraphNormalizeBlock: "Normalizes a vector",
+        FlowGraphDotBlock: "Dot product",
+        FlowGraphCrossBlock: "Cross product",
+        FlowGraphRotate2DBlock: "Rotates a 2D vector",
+        FlowGraphRotate3DBlock: "Rotates a 3D vector",
+
+        // Matrix Math
+        FlowGraphTransposeBlock: "Transposes a matrix",
+        FlowGraphDeterminantBlock: "Determinant of a matrix",
+        FlowGraphInvertMatrixBlock: "Inverts a matrix",
+        FlowGraphMatrixMultiplicationBlock: "Multiplies two matrices",
+
+        // Bitwise
+        FlowGraphBitwiseAndBlock: "Bitwise AND",
+        FlowGraphBitwiseOrBlock: "Bitwise OR",
+        FlowGraphBitwiseXorBlock: "Bitwise XOR",
+        FlowGraphBitwiseNotBlock: "Bitwise NOT",
+        FlowGraphBitwiseLeftShiftBlock: "Bitwise left shift",
+        FlowGraphBitwiseRightShiftBlock: "Bitwise right shift",
+        FlowGraphLeadingZerosBlock: "Count leading zeros",
+        FlowGraphTrailingZerosBlock: "Count trailing zeros",
+        FlowGraphOneBitsCounterBlock: "Count set bits",
+
+        // Data Conversion
+        FlowGraphCombineVector2Block: "Combines components into a Vector2",
+        FlowGraphCombineVector3Block: "Combines components into a Vector3",
+        FlowGraphCombineVector4Block: "Combines components into a Vector4",
+        FlowGraphCombineMatrixBlock: "Combines components into a Matrix",
+        FlowGraphCombineMatrix2DBlock: "Combines components into a 2D Matrix",
+        FlowGraphCombineMatrix3DBlock: "Combines components into a 3D Matrix",
+        FlowGraphExtractVector2Block: "Extracts components from a Vector2",
+        FlowGraphExtractVector3Block: "Extracts components from a Vector3",
+        FlowGraphExtractVector4Block: "Extracts components from a Vector4",
+        FlowGraphExtractMatrixBlock: "Extracts components from a Matrix",
+        FlowGraphExtractMatrix2DBlock: "Extracts components from a 2D Matrix",
+        FlowGraphExtractMatrix3DBlock: "Extracts components from a 3D Matrix",
+        FlowGraphTransformVectorBlock: "Transforms a vector by a matrix",
+        FlowGraphTransformCoordinatesBlock: "Transforms coordinates by a matrix",
+        FlowGraphTransformCoordinatesSystemBlock: "Transforms a coordinate system",
+        FlowGraphConjugateBlock: "Conjugate of a quaternion",
+        FlowGraphAngleBetweenBlock: "Angle between two vectors",
+        FlowGraphQuaternionFromAxisAngleBlock: "Creates quaternion from axis/angle",
+        FlowGraphAxisAngleFromQuaternionBlock: "Extracts axis/angle from quaternion",
+        FlowGraphQuaternionFromDirectionsBlock: "Creates quaternion from directions",
+        FlowGraphMatrixDecompose: "Decomposes a matrix into components",
+        FlowGraphMatrixCompose: "Composes a matrix from components",
+
+        // Type Conversion
+        FlowGraphBooleanToFloat: "Converts boolean to float",
+        FlowGraphBooleanToInt: "Converts boolean to integer",
+        FlowGraphFloatToBoolean: "Converts float to boolean",
+        FlowGraphIntToBoolean: "Converts integer to boolean",
+        FlowGraphIntToFloat: "Converts integer to float",
+        FlowGraphFloatToInt: "Converts float to integer",
+
+        // Data Access
+        FlowGraphConstantBlock: "A constant value",
+        FlowGraphGetPropertyBlock: "Gets a property from an object",
+        FlowGraphSetPropertyBlock: "Sets a property on an object",
+        FlowGraphGetVariableBlock: "Gets a context variable",
+        FlowGraphSetVariableBlock: "Sets a context variable",
+        FlowGraphGetAssetBlock: "Gets an asset by name",
+        FlowGraphJsonPointerParserBlock: "Parses a JSON pointer path",
+        FlowGraphArrayIndexBlock: "Gets an element from an array",
+        FlowGraphIndexOfBlock: "Finds the index of an element",
+        FlowGraphDataSwitchBlock: "Selects data based on an index",
+
+        // Utility
+        FlowGraphConsoleLogBlock: "Logs a message to the console",
+        FlowGraphEasingBlock: "Applies an easing function",
+        FlowGraphBezierCurveEasing: "Applies a bezier curve easing",
+        FlowGraphContextBlock: "Gets the flow graph context",
+        FlowGraphCodeExecutionBlock: "Executes custom code",
+        FlowGraphFunctionReference: "Reference to a function flow graph",
+    };
+
+    constructor(props: INodeListComponentProps) {
+        super(props);
+
+        this.state = { filter: "" };
+
+        this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
+    }
+
+    override componentWillUnmount() {
+        this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
+    }
+
+    filterContent(filter: string) {
+        this.setState({ filter: filter });
+    }
+
+    override render() {
+        // Block types organized by category
+        const allBlocks: {
+            [key: string]: string[];
+        } = {
+            Events: [
+                "FlowGraphSceneReadyEventBlock",
+                "FlowGraphSceneTickEventBlock",
+                "FlowGraphMeshPickEventBlock",
+                "FlowGraphPointerDownEventBlock",
+                "FlowGraphPointerUpEventBlock",
+                "FlowGraphPointerMoveEventBlock",
+                "FlowGraphPointerOverEventBlock",
+                "FlowGraphPointerOutEventBlock",
+                "FlowGraphReceiveCustomEventBlock",
+                "FlowGraphSendCustomEventBlock",
+            ],
+            Control_Flow: [
+                "FlowGraphBranchBlock",
+                "FlowGraphForLoopBlock",
+                "FlowGraphWhileLoopBlock",
+                "FlowGraphSwitchBlock",
+                "FlowGraphSequenceBlock",
+                "FlowGraphMultiGateBlock",
+                "FlowGraphFlipFlopBlock",
+                "FlowGraphDoNBlock",
+                "FlowGraphWaitAllBlock",
+                "FlowGraphSetDelayBlock",
+                "FlowGraphCancelDelayBlock",
+                "FlowGraphCallCounterBlock",
+                "FlowGraphDebounceBlock",
+                "FlowGraphThrottleBlock",
+            ],
+            Animation: ["FlowGraphPlayAnimationBlock", "FlowGraphStopAnimationBlock", "FlowGraphPauseAnimationBlock", "FlowGraphInterpolationBlock"],
+            Math__Constants: ["FlowGraphEBlock", "FlowGraphPIBlock", "FlowGraphInfBlock", "FlowGraphNaNBlock", "FlowGraphRandomBlock"],
+            Math__Arithmetic: [
+                "FlowGraphAddBlock",
+                "FlowGraphSubtractBlock",
+                "FlowGraphMultiplyBlock",
+                "FlowGraphDivideBlock",
+                "FlowGraphModuloBlock",
+                "FlowGraphNegationBlock",
+                "FlowGraphAbsBlock",
+                "FlowGraphSignBlock",
+                "FlowGraphMinBlock",
+                "FlowGraphMaxBlock",
+                "FlowGraphClampBlock",
+                "FlowGraphSaturateBlock",
+                "FlowGraphMathInterpolationBlock",
+                "FlowGraphPowerBlock",
+                "FlowGraphSquareRootBlock",
+                "FlowGraphCubeRootBlock",
+            ],
+            Math__Rounding: ["FlowGraphFloorBlock", "FlowGraphCeilBlock", "FlowGraphRoundBlock", "FlowGraphTruncBlock", "FlowGraphFractBlock"],
+            Math__Trigonometry: [
+                "FlowGraphSinBlock",
+                "FlowGraphCosBlock",
+                "FlowGraphTanBlock",
+                "FlowGraphASinBlock",
+                "FlowGraphACosBlock",
+                "FlowGraphATanBlock",
+                "FlowGraphATan2Block",
+                "FlowGraphSinhBlock",
+                "FlowGraphCoshBlock",
+                "FlowGraphTanhBlock",
+                "FlowGraphASinhBlock",
+                "FlowGraphACoshBlock",
+                "FlowGraphATanhBlock",
+                "FlowGraphDegToRadBlock",
+                "FlowGraphRadToDegBlock",
+            ],
+            Math__Logarithmic: ["FlowGraphExponentialBlock", "FlowGraphLogBlock", "FlowGraphLog2Block", "FlowGraphLog10Block"],
+            Math__Comparison: [
+                "FlowGraphEqualityBlock",
+                "FlowGraphLessThanBlock",
+                "FlowGraphLessThanOrEqualBlock",
+                "FlowGraphGreaterThanBlock",
+                "FlowGraphGreaterThanOrEqualBlock",
+                "FlowGraphIsNaNBlock",
+                "FlowGraphIsInfBlock",
+                "FlowGraphConditionalBlock",
+            ],
+            Vector_and_Matrix: [
+                "FlowGraphLengthBlock",
+                "FlowGraphNormalizeBlock",
+                "FlowGraphDotBlock",
+                "FlowGraphCrossBlock",
+                "FlowGraphRotate2DBlock",
+                "FlowGraphRotate3DBlock",
+                "FlowGraphTransposeBlock",
+                "FlowGraphDeterminantBlock",
+                "FlowGraphInvertMatrixBlock",
+                "FlowGraphMatrixMultiplicationBlock",
+            ],
+            Bitwise: [
+                "FlowGraphBitwiseAndBlock",
+                "FlowGraphBitwiseOrBlock",
+                "FlowGraphBitwiseXorBlock",
+                "FlowGraphBitwiseNotBlock",
+                "FlowGraphBitwiseLeftShiftBlock",
+                "FlowGraphBitwiseRightShiftBlock",
+                "FlowGraphLeadingZerosBlock",
+                "FlowGraphTrailingZerosBlock",
+                "FlowGraphOneBitsCounterBlock",
+            ],
+            Data_Conversion: [
+                "FlowGraphCombineVector2Block",
+                "FlowGraphCombineVector3Block",
+                "FlowGraphCombineVector4Block",
+                "FlowGraphExtractVector2Block",
+                "FlowGraphExtractVector3Block",
+                "FlowGraphExtractVector4Block",
+                "FlowGraphCombineMatrixBlock",
+                "FlowGraphExtractMatrixBlock",
+                "FlowGraphTransformVectorBlock",
+                "FlowGraphTransformCoordinatesBlock",
+                "FlowGraphConjugateBlock",
+                "FlowGraphAngleBetweenBlock",
+                "FlowGraphQuaternionFromAxisAngleBlock",
+                "FlowGraphAxisAngleFromQuaternionBlock",
+                "FlowGraphQuaternionFromDirectionsBlock",
+                "FlowGraphMatrixDecompose",
+                "FlowGraphMatrixCompose",
+                "FlowGraphBooleanToFloat",
+                "FlowGraphBooleanToInt",
+                "FlowGraphFloatToBoolean",
+                "FlowGraphIntToBoolean",
+                "FlowGraphIntToFloat",
+                "FlowGraphFloatToInt",
+            ],
+            Data_Access: [
+                "FlowGraphConstantBlock",
+                "FlowGraphGetPropertyBlock",
+                "FlowGraphSetPropertyBlock",
+                "FlowGraphGetVariableBlock",
+                "FlowGraphSetVariableBlock",
+                "FlowGraphGetAssetBlock",
+                "FlowGraphJsonPointerParserBlock",
+                "FlowGraphArrayIndexBlock",
+                "FlowGraphIndexOfBlock",
+                "FlowGraphDataSwitchBlock",
+            ],
+            Utility: [
+                "FlowGraphConsoleLogBlock",
+                "FlowGraphEasingBlock",
+                "FlowGraphBezierCurveEasing",
+                "FlowGraphContextBlock",
+                "FlowGraphCodeExecutionBlock",
+                "FlowGraphFunctionReference",
+            ],
+        };
+
+        // Create node menu
+        const blockMenu = [];
+        for (const key in allBlocks) {
+            const blockList = allBlocks[key]
+                .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
+                .sort((a: string, b: string) => a.localeCompare(b))
+                .map((blockName: string) => {
+                    return <DraggableLineComponent key={blockName} data={blockName} tooltip={NodeListComponent._Tooltips[blockName] || ""} />;
+                });
+
+            if (blockList.length) {
+                blockMenu.push(
+                    <LineContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}>
+                        {blockList}
+                    </LineContainerComponent>
+                );
+            }
+
+            // Register blocks
+            const ledger = NodeLedger.RegisteredNodeNames;
+            for (const cat in allBlocks) {
+                const blocks = allBlocks[cat] as string[];
+                if (blocks.length) {
+                    for (const block of blocks) {
+                        if (!ledger.includes(block)) {
+                            ledger.push(block);
+                        }
+                    }
+                }
+            }
+            NodeLedger.NameFormatter = (name) => {
+                let finalName = name;
+                // Remove "FlowGraph" prefix and "Block" suffix for display
+                if (finalName.startsWith("FlowGraph")) {
+                    finalName = finalName.substring(9);
+                }
+                if (finalName.endsWith("Block")) {
+                    finalName = finalName.substring(0, finalName.length - 5);
+                }
+                return finalName;
+            };
+        }
+
+        return (
+            <div id="fgeNodeList">
+                <div className="panes">
+                    <div className="pane">
+                        <div className="filter">
+                            <input
+                                type="text"
+                                placeholder="Filter"
+                                onFocus={() => (this.props.globalState.lockObject.lock = true)}
+                                onBlur={() => {
+                                    this.props.globalState.lockObject.lock = false;
+                                }}
+                                onChange={(evt) => this.filterContent(evt.target.value)}
+                            />
+                        </div>
+                        <div className="list-container">{blockMenu}</div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+}
