@@ -8,13 +8,24 @@ import { PickingInfo } from "../../Collisions/pickingInfo";
 import { Vector3 } from "../../Maths/math.vector";
 
 /**
+ * This is a dummy class for holding BoundingInfo for serialization,
+ * it keeps the exact same getBoundingInfo() like Mesh to not break code
+ */
+interface IBoundingInfoProvider {
+    /**
+     * Get underlying BoundingInfo
+     */
+    getBoundingInfo(): BoundingInfo;
+}
+
+/**
  * Class used as a proxy mesh for a part of a compound Gaussian Splatting mesh
  */
 export class GaussianSplattingPartProxyMesh extends Mesh {
     /**
      * The Gaussian Splatting mesh that this proxy represents a part of
      */
-    public readonly proxiedMesh: GaussianSplattingMesh;
+    public readonly proxiedMesh: GaussianSplattingMesh | IBoundingInfoProvider;
 
     /**
      * The index of the part in the compound mesh (internal storage)
@@ -41,7 +52,7 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
      * @param proxiedMesh The Gaussian Splatting mesh that this proxy represents a part of
      * @param partIndex The index of the part in the compound mesh
      */
-    constructor(name: string, scene: Nullable<Scene>, compoundSplatMesh: GaussianSplattingMesh, proxiedMesh: GaussianSplattingMesh, partIndex: number) {
+    constructor(name: string, scene: Nullable<Scene>, compoundSplatMesh: GaussianSplattingMesh, proxiedMesh: GaussianSplattingMesh | IBoundingInfoProvider, partIndex: number) {
         super(name, scene);
         this.proxiedMesh = proxiedMesh;
         this._partIndex = partIndex;
