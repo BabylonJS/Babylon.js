@@ -1,4 +1,4 @@
-import type { IDisposable, Nullable } from "core/index";
+import type { FrameGraphTask, IDisposable, Nullable } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IGizmoService } from "../../gizmoService";
 import type { ISceneContext } from "../../sceneContext";
@@ -39,6 +39,10 @@ import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMet
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Rendering/boundingBoxRenderer";
+
+function IsCameraFrameGraphTask(task: FrameGraphTask): task is FrameGraphTask & { camera: Camera } {
+    return (task as Partial<{ camera: Camera }>).camera instanceof Camera;
+}
 
 export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService, IWatcherService]> = {
     friendlyName: "Node Explorer",
@@ -255,8 +259,8 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                                     })();
                                 } else {
                                     for (const task of scene.frameGraph.tasks) {
-                                        if ("camera" in task && (task as unknown as { camera: unknown }).camera === activeCamera) {
-                                            (task as unknown as { camera: unknown }).camera = camera;
+                                        if (IsCameraFrameGraphTask(task)) {
+                                            task.camera = camera;
                                             updated = true;
                                         }
                                     }
