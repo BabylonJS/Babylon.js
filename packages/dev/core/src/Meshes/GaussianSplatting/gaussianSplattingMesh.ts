@@ -2695,3 +2695,5 @@ export class GaussianSplattingMesh extends Mesh {
         return mesh;
     }
 }
+
+Mesh._GaussianSplattingMeshParser = GaussianSplattingMesh.Parse;
