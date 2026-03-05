@@ -55,6 +55,15 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
                 this.setState({ sceneObjectCount: ctx.entries.length });
             }
         });
+
+        // When a graph is loaded from JSON with a stored snippet ID, auto-load the scene
+        this.props.globalState.onSnippetIdChanged.add((snippetId) => {
+            if (snippetId) {
+                this.setState({ snippetId }, () => {
+                    void this.loadSnippetAsync();
+                });
+            }
+        });
     }
 
     /** @internal */
@@ -263,6 +272,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             // Build the scene context
             const sceneContext = new SceneContext(scene);
             this.props.globalState.sceneContext = sceneContext;
+            this.props.globalState.snippetId = this.state.snippetId;
             this.props.globalState.onSceneContextChanged.notifyObservers(sceneContext);
 
             this.setState({

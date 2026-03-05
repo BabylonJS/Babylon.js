@@ -20,6 +20,7 @@ interface IGraphControlsState {
  */
 export class GraphControlsComponent extends React.Component<IGraphControlsProps, IGraphControlsState> {
     private _stateObserver: Nullable<Observer<FlowGraphState>> = null;
+    private _builtObserver: Nullable<Observer<void>> = null;
 
     constructor(props: IGraphControlsProps) {
         super(props);
@@ -29,14 +30,42 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
     }
 
     override componentDidMount() {
-        this._stateObserver = this.props.globalState.flowGraph.onStateChangedObservable.add((newState) => {
-            this.setState({ graphState: newState });
+        this._subscribeToFlowGraph();
+
+        // When a new graph is loaded (deserialized), the flowGraph reference on
+        // globalState is replaced.  Re-subscribe so we track the *new* graph's state.
+        this._builtObserver = this.props.globalState.onBuiltObservable.add(() => {
+            this._subscribeToFlowGraph();
         });
     }
 
     override componentWillUnmount() {
         this._stateObserver?.remove();
         this._stateObserver = null;
+        this._builtObserver?.remove();
+        this._builtObserver = null;
+    }
+
+    /**
+     * (Re-)subscribe to the current flowGraph's onStateChangedObservable and
+     * sync the component state with the graph's current state.
+     */
+    private _subscribeToFlowGraph() {
+        // Remove previous subscription (may point to an old FlowGraph instance)
+        this._stateObserver?.remove();
+        this._stateObserver = null;
+
+        const flowGraph = this.props.globalState.flowGraph;
+        if (!flowGraph) {
+            return;
+        }
+
+        this._stateObserver = flowGraph.onStateChangedObservable.add((newState) => {
+            this.setState({ graphState: newState });
+        });
+
+        // Sync immediately – the new graph is likely in Stopped state
+        this.setState({ graphState: flowGraph.state });
     }
 
     private _log(message: string) {

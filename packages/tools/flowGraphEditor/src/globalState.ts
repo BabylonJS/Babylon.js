@@ -71,6 +71,11 @@ export class GlobalState {
     /** Observable triggered when the scene context changes (snippet loaded/disposed) */
     onSceneContextChanged = new Observable<Nullable<SceneContext>>();
 
+    /** The snippet ID of the currently loaded scene (persisted in the serialized JSON) */
+    snippetId: string = "";
+    /** Observable triggered when the snippet ID changes (e.g. after deserialization) */
+    onSnippetIdChanged = new Observable<string>();
+
     private _flowGraph: FlowGraph;
     private _sceneContextObserver: Nullable<Observer<Nullable<SceneContext>>> = null;
     private _originalCreateContext: Nullable<() => FlowGraphContext> = null;

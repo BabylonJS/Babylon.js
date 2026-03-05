@@ -43,6 +43,9 @@ export class SerializationTools {
         }
 
         globalState.storeEditorData(editorData, frame);
+
+        // Persist editor data on the flow graph so it survives serialization round-trips
+        (flowGraph as any)._editorData = editorData;
     }
 
     /**
@@ -58,6 +61,15 @@ export class SerializationTools {
         const serializationObject: any = {};
         flowGraph.serialize(serializationObject);
 
+        // Include editor layout data (block positions, frames, zoom) so the
+        // graph looks the same when loaded back
+        serializationObject.editorData = (flowGraph as any)._editorData;
+
+        // Persist the scene snippet ID so loading the graph can also restore the scene context
+        if (globalState.snippetId) {
+            serializationObject.sceneSnippetId = globalState.snippetId;
+        }
+
         return JSON.stringify(serializationObject, undefined, 2);
     }
 
@@ -72,8 +84,21 @@ export class SerializationTools {
         try {
             const coordinator = new FlowGraphCoordinator({ scene: globalState.scene });
             const parsedGraph = await ParseFlowGraphAsync(serializationObject, { coordinator });
+
+            // Restore editor layout data (block positions, frames, zoom)
+            if (serializationObject.editorData) {
+                (parsedGraph as any)._editorData = serializationObject.editorData;
+            }
+
             // eslint-disable-next-line require-atomic-updates
             globalState.flowGraph = parsedGraph;
+
+            // Restore the scene snippet ID so the preview component can auto-load the scene
+            const snippetId = serializationObject.sceneSnippetId ?? "";
+            if (snippetId && snippetId !== globalState.snippetId) {
+                globalState.snippetId = snippetId;
+                globalState.onSnippetIdChanged.notifyObservers(snippetId);
+            }
         } finally {
             globalState.onIsLoadingChanged.notifyObservers(false);
         }
