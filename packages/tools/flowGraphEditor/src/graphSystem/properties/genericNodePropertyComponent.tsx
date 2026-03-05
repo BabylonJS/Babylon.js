@@ -98,6 +98,116 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
 }
 
 /**
+ * Renders the "CONSTRUCTION VARIABLES" section for any block that has
+ * constructor-configurable fields (e.g. the `type` pin-type selector on math
+ * blocks like FlowGraphAddBlock).
+ *
+ * The set of configurable fields per block class is defined in
+ * constructorConfigRegistry.ts, keeping all editor-specific knowledge out of
+ * core.
+ */
+export class ConstructorVariablesPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+    /** {@inheritDoc} */
+    constructor(props: IPropertyComponentProps) {
+        super(props);
+    }
+
+    /**
+     * Applies a change to a constructor config field.
+     * Always writes to block.config so serialization picks it up.
+     * When affectsPortTypes is true the richType on every data connection is
+     * updated immediately so port colours refresh without reloading the graph.
+     * @param block - The block whose config should be updated.
+     * @param key - The config property key.
+     * @param value - The new value.
+     * @param affectsPortTypes - Whether to also update the block's port richTypes.
+     */
+    private _updateConfig(block: FlowGraphBlock, key: string, value: any, affectsPortTypes?: boolean): void {
+        if (!block.config) {
+            (block as any).config = {};
+        }
+        // block.config is guaranteed non-null by the guard above;
+        // the cast is needed because TypeScript loses narrowing through (block as any).
+        (block.config as Record<string, any>)[key] = value;
+
+        if (affectsPortTypes) {
+            const richType = getRichTypeByFlowGraphType(value as string);
+            for (const conn of [...block.dataInputs, ...block.dataOutputs]) {
+                (conn as any).richType = richType;
+            }
+        }
+
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+    }
+
+    /** {@inheritDoc} */
+    override render() {
+        const block = this.props.nodeData.data as FlowGraphBlock;
+        const fields = CONSTRUCTOR_CONFIG.get(block.getClassName());
+
+        if (!fields || fields.length === 0) {
+            return <></>;
+        }
+
+        return (
+            <LineContainerComponent title="CONSTRUCTION VARIABLES">
+                {fields.map((field) => {
+                    const currentVal = block.config ? block.config[field.key] : undefined;
+
+                    if (field.kind === "boolean") {
+                        return (
+                            <CheckBoxLineComponent
+                                key={field.key}
+                                label={field.label}
+                                isSelected={() => !!(block.config && block.config[field.key])}
+                                onSelect={(v) => this._updateConfig(block, field.key, v)}
+                            />
+                        );
+                    }
+
+                    if (field.kind === "number") {
+                        const proxy = { v: typeof currentVal === "number" ? currentVal : 0 };
+                        return (
+                            <FloatLineComponent
+                                key={field.key}
+                                label={field.label}
+                                lockObject={this.props.stateManager.lockObject}
+                                target={proxy}
+                                propertyName="v"
+                                onChange={(v) => this._updateConfig(block, field.key, v)}
+                            />
+                        );
+                    }
+
+                    if (field.kind === "flowgraph-type") {
+                        // OptionsLine with valuesAreStrings + noDirectUpdate lets us
+                        // control the update ourselves while still benefiting from the
+                        // component's stateful re-render on selection.
+                        const configProxy = block.config ?? {};
+                        return (
+                            <OptionsLine
+                                key={field.key}
+                                label={field.label}
+                                options={FLOW_GRAPH_TYPE_OPTIONS}
+                                valuesAreStrings={true}
+                                noDirectUpdate={true}
+                                target={configProxy}
+                                propertyName={field.key}
+                                extractValue={() => (block.config && block.config[field.key] != null ? (block.config[field.key] as string) : "any")}
+                                onSelect={(v) => this._updateConfig(block, field.key, v as string, field.affectsPortTypes)}
+                            />
+                        );
+                    }
+
+                    return null;
+                })}
+            </LineContainerComponent>
+        );
+    }
+}
+
+/**
  * Renders editable fields for all primitive-valued unconnected data-input connections of any block.
  * This makes it possible to set fixed values (like a property name) directly in the right panel
  * without requiring a connected input port.

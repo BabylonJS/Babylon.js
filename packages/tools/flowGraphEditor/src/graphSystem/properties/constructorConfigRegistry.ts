@@ -46,6 +46,7 @@ export interface IConstructorConfigField {
  * plain strings, so they are safe to use at runtime even though the enum is
  * declared as `const enum` in core).
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const FLOW_GRAPH_TYPE_OPTIONS: ReadonlyArray<{ label: string; value: string }> = [
     { label: "Any", value: "any" },
     { label: "Number", value: "number" },
