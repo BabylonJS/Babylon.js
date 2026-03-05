@@ -273,6 +273,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         this.reOrganize(editorData);
+
+        // Notify that the graph has been (re-)built so components like
+        // GraphControlsComponent can re-subscribe to the current flow graph.
+        this.props.globalState.onBuiltObservable.notifyObservers();
     }
 
     /** @internal */
