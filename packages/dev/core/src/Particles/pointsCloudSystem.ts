@@ -309,7 +309,7 @@ export class PointsCloudSystem implements IDisposable {
 
         let facetPoint: Vector3;
         let uvPoint: Vector2;
-        let colPoint: Vector4 = new Vector4(0, 0, 0, 0);
+        let colPoint: Vector4 = new Vector4(0, 0, 0, 1);
 
         let norm = Vector3.Zero();
         let tang = Vector3.Zero();
