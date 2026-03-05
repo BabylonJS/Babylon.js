@@ -21,6 +21,7 @@ import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProp
 import { EDITABLE_INPUTS } from "./editableInputsRegistry";
 import { CONSTRUCTOR_CONFIG, FLOW_GRAPH_TYPE_OPTIONS } from "./constructorConfigRegistry";
 import { getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
+import { FlowGraphBlockDisplayName } from "../blockDisplayUtils";
 
 /**
  * Returns true if the given connection should be shown as an editable field
@@ -73,6 +74,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         label="Name"
                         propertyName="name"
                         target={block}
+                        value={this.props.nodeData.name}
                         lockObject={this.props.stateManager.lockObject}
                         onChange={() => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block)}
                         throttlePropertyChangedNotification={true}
@@ -80,7 +82,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                             return true;
                         }}
                     />
-                    <TextLineComponent label="Type" value={block.getClassName()} />
+                    <TextLineComponent label="Type" value={FlowGraphBlockDisplayName(block.getClassName())} />
                     <TextInputLineComponent
                         label="Comments"
                         multilines={true}

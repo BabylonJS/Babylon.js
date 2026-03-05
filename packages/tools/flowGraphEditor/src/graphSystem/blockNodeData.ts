@@ -5,6 +5,7 @@ import { ConnectionPointPortData } from "./connectionPointPortData";
 import * as styles from "./blockNodeData.module.scss";
 import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
+import { FlowGraphBlockDisplayName } from "./blockDisplayUtils";
 
 /**
  * Adapts a FlowGraphBlock to the INodeData interface used by the graph canvas.
@@ -26,9 +27,17 @@ export class BlockNodeData implements INodeData {
 
     private _numericId: number;
 
-    /** Gets the display name of the block */
+    /** Gets the display name of the block.
+     * If the block name hasn't been user-customized (i.e. it's still the raw class name),
+     * a cleaned-up label is returned with the "FlowGraph" prefix and "Block" suffix stripped.
+     */
     public get name() {
-        return this.data.name;
+        const raw = this.data.name;
+        // Only strip the boilerplate when the user hasn't chosen a custom name yet.
+        if (raw === this.data.getClassName()) {
+            return FlowGraphBlockDisplayName(raw);
+        }
+        return raw;
     }
 
     /**

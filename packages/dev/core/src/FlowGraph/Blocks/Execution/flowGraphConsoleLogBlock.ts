@@ -35,10 +35,14 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
      */
     public readonly logType: FlowGraphDataConnection<"log" | "warn" | "error">;
 
+    /**
+     * Creates a new console log block.
+     * @param config optional configuration
+     */
     public constructor(config?: IFlowGraphConsoleLogBlockConfiguration) {
         super(config);
         this.message = this.registerDataInput("message", RichTypeAny);
-        this.logType = this.registerDataInput("logType", RichTypeString, "log");
+        this.logType = this.registerDataInput("logType", RichTypeString, "log") as FlowGraphDataConnection<"log" | "warn" | "error">;
         if (config?.messageTemplate) {
             const matches = this._getTemplateMatches(config.messageTemplate);
             for (const match of matches) {
