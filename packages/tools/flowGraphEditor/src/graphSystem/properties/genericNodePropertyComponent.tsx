@@ -217,6 +217,38 @@ export class ConstructorVariablesPropertyTabComponent extends React.Component<IP
                         );
                     }
 
+                    if (field.kind === "string") {
+                        const proxy = { v: typeof currentVal === "string" ? currentVal : "" };
+                        return (
+                            <TextInputLineComponent
+                                key={field.key}
+                                label={field.label}
+                                lockObject={this.props.stateManager.lockObject}
+                                target={proxy}
+                                propertyName="v"
+                                throttlePropertyChangedNotification={true}
+                                onChange={(v) => this._updateConfig(block, field.key, v)}
+                            />
+                        );
+                    }
+
+                    if (field.kind === "options" && field.options) {
+                        const configProxy = block.config ?? {};
+                        return (
+                            <OptionsLine
+                                key={field.key}
+                                label={field.label}
+                                options={field.options}
+                                valuesAreStrings={true}
+                                noDirectUpdate={true}
+                                target={configProxy}
+                                propertyName={field.key}
+                                extractValue={() => (block.config && block.config[field.key] != null ? (block.config[field.key] as string) : (field.options![0]?.value ?? ""))}
+                                onSelect={(v) => this._updateConfig(block, field.key, v as string)}
+                            />
+                        );
+                    }
+
                     return null;
                 })}
             </LineContainerComponent>

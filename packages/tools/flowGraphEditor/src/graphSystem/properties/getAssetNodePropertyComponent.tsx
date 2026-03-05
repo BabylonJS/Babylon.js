@@ -167,6 +167,7 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
                         /* Scene-aware picker: dropdown of real scene objects */
                         <>
                             <OptionsLine
+                                key={sceneContext?.scene?.uid ?? "no-scene"}
                                 label="Asset"
                                 options={[
                                     { label: "(none)", value: -1 },

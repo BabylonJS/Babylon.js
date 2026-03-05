@@ -20,7 +20,9 @@
 export type ConstructorConfigFieldKind =
     | "flowgraph-type" // drop-down of all FlowGraphTypes string values
     | "boolean" // checkbox
-    | "number"; // float input
+    | "number" // float input
+    | "string" // text input
+    | "options"; // drop-down with custom options
 
 /**
  * Describes a single constructor-configurable field.
@@ -38,6 +40,11 @@ export interface IConstructorConfigField {
      * that port colours/labels refresh immediately without a full graph reload.
      */
     affectsPortTypes?: boolean;
+    /**
+     * For "options" fields: the list of options to show in the drop-down.
+     * Each entry has a human-readable label and a string value.
+     */
+    options?: ReadonlyArray<{ label: string; value: string }>;
 }
 
 /**
@@ -71,6 +78,20 @@ const MATH_BLOCK_FIELDS: ReadonlyArray<IConstructorConfigField> = [
     { key: "preventIntegerFloatArithmetic", label: "Prevent int/float arithmetic", kind: "boolean" },
 ];
 
+/** Fields shared by all IFlowGraphBitwiseBlockConfiguration blocks. */
+const BITWISE_BLOCK_FIELDS: ReadonlyArray<IConstructorConfigField> = [{ key: "valueType", label: "Value type", kind: "flowgraph-type", affectsPortTypes: true }];
+
+/** Fields shared by all IFlowGraphMatrixBlockConfiguration blocks. */
+const MATRIX_BLOCK_FIELDS: ReadonlyArray<IConstructorConfigField> = [{ key: "matrixType", label: "Matrix type", kind: "flowgraph-type", affectsPortTypes: true }];
+
+/** Rounding mode options for FlowGraphFloatToInt. */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const ROUNDING_MODE_OPTIONS: ReadonlyArray<{ label: string; value: string }> = [
+    { label: "Floor", value: "floor" },
+    { label: "Ceil", value: "ceil" },
+    { label: "Round", value: "round" },
+];
+
 /**
  * Maps a block's getClassName() result to the ordered list of constructor
  * config fields that should appear in the "CONSTRUCTION VARIABLES" panel
@@ -96,4 +117,62 @@ export const CONSTRUCTOR_CONFIG: ReadonlyMap<string, ReadonlyArray<IConstructorC
             { key: "seed", label: "Seed", kind: "number" },
         ],
     ],
+
+    // ---------- Variable blocks ----------
+    ["FlowGraphGetVariableBlock", [{ key: "variable", label: "Variable", kind: "string" }]],
+    ["FlowGraphSetVariableBlock", [{ key: "variable", label: "Variable", kind: "string" }]],
+
+    // ---------- Console log ----------
+    ["FlowGraphConsoleLogBlock", [{ key: "messageTemplate", label: "Message template", kind: "string" }]],
+
+    // ---------- Control flow blocks ----------
+    ["FlowGraphSequenceBlock", [{ key: "outputSignalCount", label: "Output count", kind: "number" }]],
+    [
+        "FlowGraphMultiGateBlock",
+        [
+            { key: "outputSignalCount", label: "Output count", kind: "number" },
+            { key: "isRandom", label: "Random", kind: "boolean" },
+            { key: "isLoop", label: "Loop", kind: "boolean" },
+        ],
+    ],
+    ["FlowGraphWaitAllBlock", [{ key: "inputSignalCount", label: "Input count", kind: "number" }]],
+    ["FlowGraphFlipFlopBlock", [{ key: "startValue", label: "Start value", kind: "boolean" }]],
+    ["FlowGraphWhileLoopBlock", [{ key: "doWhile", label: "Do-while", kind: "boolean" }]],
+    ["FlowGraphForLoopBlock", [{ key: "incrementIndexWhenLoopDone", label: "Increment when done", kind: "boolean" }]],
+
+    // ---------- Normalize block ----------
+    ["FlowGraphNormalizeBlock", [{ key: "nanOnZeroLength", label: "NaN on zero length", kind: "boolean" }]],
+
+    // ---------- Transform vector block ----------
+    ["FlowGraphTransformVectorBlock", [{ key: "vectorType", label: "Vector type", kind: "flowgraph-type", affectsPortTypes: true }]],
+
+    // ---------- Matrix blocks (IFlowGraphMatrixBlockConfiguration) ----------
+    ["FlowGraphTransposeBlock", MATRIX_BLOCK_FIELDS],
+    ["FlowGraphDeterminantBlock", MATRIX_BLOCK_FIELDS],
+    ["FlowGraphInvertMatrixBlock", MATRIX_BLOCK_FIELDS],
+    ["FlowGraphMatrixMultiplicationBlock", MATRIX_BLOCK_FIELDS],
+
+    // ---------- Bitwise blocks (IFlowGraphBitwiseBlockConfiguration) ----------
+    ["FlowGraphBitwiseNotBlock", BITWISE_BLOCK_FIELDS],
+    ["FlowGraphBitwiseAndBlock", BITWISE_BLOCK_FIELDS],
+    ["FlowGraphBitwiseOrBlock", BITWISE_BLOCK_FIELDS],
+
+    // ---------- Combine matrix blocks ----------
+    ["FlowGraphCombineMatrixBlock", [{ key: "inputIsColumnMajor", label: "Column-major input", kind: "boolean" }]],
+    ["FlowGraphCombineMatrix2DBlock", [{ key: "inputIsColumnMajor", label: "Column-major input", kind: "boolean" }]],
+    ["FlowGraphCombineMatrix3DBlock", [{ key: "inputIsColumnMajor", label: "Column-major input", kind: "boolean" }]],
+
+    // ---------- Pointer / pick event blocks (stopPropagation) ----------
+    ["FlowGraphPointerDownEventBlock", [{ key: "stopPropagation", label: "Stop propagation", kind: "boolean" }]],
+    ["FlowGraphPointerUpEventBlock", [{ key: "stopPropagation", label: "Stop propagation", kind: "boolean" }]],
+    ["FlowGraphPointerMoveEventBlock", [{ key: "stopPropagation", label: "Stop propagation", kind: "boolean" }]],
+    ["FlowGraphPointerOverEventBlock", [{ key: "stopPropagation", label: "Stop propagation", kind: "boolean" }]],
+    ["FlowGraphPointerOutEventBlock", [{ key: "stopPropagation", label: "Stop propagation", kind: "boolean" }]],
+    ["FlowGraphMeshPickEventBlock", [{ key: "stopPropagation", label: "Stop propagation", kind: "boolean" }]],
+
+    // ---------- Float to Int (rounding mode) ----------
+    ["FlowGraphFloatToInt", [{ key: "roundingMode", label: "Rounding mode", kind: "options", options: ROUNDING_MODE_OPTIONS }]],
+
+    // ---------- Data switch ----------
+    ["FlowGraphDataSwitchBlock", [{ key: "treatCasesAsIntegers", label: "Treat cases as integers", kind: "boolean" }]],
 ]);

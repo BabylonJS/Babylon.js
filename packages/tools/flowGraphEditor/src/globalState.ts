@@ -18,6 +18,7 @@ import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import type { Scene } from "core/scene";
 import type { SceneContext } from "./sceneContext";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 
 /**
  * Class used to hold the global state of the flow graph editor
@@ -84,6 +85,12 @@ export class GlobalState {
     private _originalCreateContext: Nullable<() => FlowGraphContext> = null;
 
     /**
+     * Cached uniqueId → name lookup per asset type from the PREVIOUS scene.
+     * Built eagerly when a scene context arrives so it survives scene disposal.
+     */
+    private _cachedOldIdToName: Map<string, Map<number, string>> | null = null;
+
+    /**
      * Gets the current flow graph
      */
     public get flowGraph(): FlowGraph {
@@ -127,6 +134,15 @@ export class GlobalState {
             const assetsContainer: IAssetContainer | undefined = ctx?.scene;
             this._applyAssetsContextToGraph(assetsContainer);
             if (ctx?.scene) {
+                // Remap GetAsset block references from old uniqueIds to new ones
+                // (uniqueId values change when a snippet is re-executed).
+                // Uses the cached id→name map built from the previous scene
+                // (the old scene is already disposed by the time this fires).
+                this._remapAssetReferences(ctx.scene);
+
+                // Cache the NEW scene's id→name map for the next reload
+                this._cacheSceneIdToNameMap(ctx.scene);
+
                 flowGraph.setScene(ctx.scene);
             }
         });
@@ -165,6 +181,90 @@ export class GlobalState {
             index++;
             context = this._flowGraph.getContext(index);
         }
+    }
+
+    /**
+     * When a scene is reloaded from the same snippet, objects get new uniqueId values.
+     * This method visits all GetAsset blocks and remaps their stored uniqueId references
+     * to the corresponding objects in the new scene, matching by name and type.
+     *
+     * Uses `_cachedOldIdToName` — a snapshot built from the previous scene BEFORE it was disposed.
+     * @param newScene - the newly loaded scene
+     */
+    private _remapAssetReferences(newScene: Scene): void {
+        if (!this._flowGraph || !this._cachedOldIdToName) {
+            return;
+        }
+
+        // Build a name → newUniqueId lookup per asset type from the new scene
+        const nameLookup = new Map<string, Map<string, number>>([
+            ["Mesh", new Map(newScene.meshes.map((m) => [m.name, m.uniqueId]))],
+            ["Light", new Map(newScene.lights.map((l) => [l.name, l.uniqueId]))],
+            ["Camera", new Map(newScene.cameras.map((c) => [c.name, c.uniqueId]))],
+            ["Material", new Map(newScene.materials.map((m) => [m.name, m.uniqueId]))],
+            ["AnimationGroup", new Map(newScene.animationGroups.map((ag) => [ag.name, ag.uniqueId]))],
+            ["Animation", new Map(newScene.animations.map((a) => [a.name, a.uniqueId]))],
+        ]);
+
+        const oldIdToName = this._cachedOldIdToName;
+
+        this._flowGraph.visitAllBlocks((block: FlowGraphBlock) => {
+            if (block.getClassName() !== "FlowGraphGetAssetBlock") {
+                return;
+            }
+
+            const config = (block as any).config;
+            if (!config || !config.useIndexAsUniqueId) {
+                return;
+            }
+
+            const assetType: string | undefined = config.type;
+            const rawIdx = config.index ?? -1;
+            const oldIndex = rawIdx instanceof FlowGraphInteger ? rawIdx.value : typeof rawIdx === "number" ? rawIdx : -1;
+            if (!assetType || oldIndex < 0) {
+                return;
+            }
+
+            // Find the name of the old asset
+            const oldMap = oldIdToName.get(assetType);
+            const newMap = nameLookup.get(assetType);
+            if (!oldMap || !newMap) {
+                return;
+            }
+
+            const name = oldMap.get(oldIndex);
+            if (name === undefined) {
+                return;
+            }
+
+            const newId = newMap.get(name);
+            if (newId === undefined) {
+                return;
+            }
+
+            // Update config and DataConnection default value
+            config.index = new FlowGraphInteger(newId);
+            const indexDC = (block as any).index;
+            if (indexDC && "_defaultValue" in indexDC) {
+                indexDC._defaultValue = new FlowGraphInteger(newId);
+            }
+        });
+    }
+
+    /**
+     * Snapshot the current scene's uniqueId→name mappings so they survive scene disposal.
+     * Called immediately after a scene context arrives — before the scene can be disposed.
+     * @param scene - the scene to snapshot
+     */
+    private _cacheSceneIdToNameMap(scene: Scene): void {
+        this._cachedOldIdToName = new Map<string, Map<number, string>>([
+            ["Mesh", new Map(scene.meshes.map((m) => [m.uniqueId, m.name]))],
+            ["Light", new Map(scene.lights.map((l) => [l.uniqueId, l.name]))],
+            ["Camera", new Map(scene.cameras.map((c) => [c.uniqueId, c.name]))],
+            ["Material", new Map(scene.materials.map((m) => [m.uniqueId, m.name]))],
+            ["AnimationGroup", new Map(scene.animationGroups.map((ag) => [ag.uniqueId, ag.name]))],
+            ["Animation", new Map(scene.animations.map((a) => [a.uniqueId, a.name]))],
+        ]);
     }
 
     /**
