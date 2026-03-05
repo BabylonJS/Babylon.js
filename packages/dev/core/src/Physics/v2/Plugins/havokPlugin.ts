@@ -2413,6 +2413,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
     /**
      * Sets the target of an axis motor of a constraint.
+     * Uses the explicit position/velocity target functions as recommended by the Havok API,
+     * which ensures correct behavior with non-default constraint frames (custom axisA/perpAxisA).
      *
      * @param constraint - The constraint to set the axis motor target of.
      * @param axis - The axis of the constraint to set the motor target of.
@@ -2421,12 +2423,21 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     public setAxisMotorTarget(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, target: number): void {
         for (const jointId of constraint._pluginData) {
-            this._hknp.HP_Constraint_SetAxisMotorTarget(jointId, this._constraintAxisToNative(axis), target);
+            const nativeAxis = this._constraintAxisToNative(axis);
+            const motorType = this._hknp.HP_Constraint_GetAxisMotorType(jointId, nativeAxis)[1];
+            if (motorType === this._hknp.ConstraintMotorType.POSITION) {
+                this._hknp.HP_Constraint_SetAxisMotorPositionTarget(jointId, nativeAxis, target);
+            } else if (motorType === this._hknp.ConstraintMotorType.VELOCITY) {
+                this._hknp.HP_Constraint_SetAxisMotorVelocityTarget(jointId, nativeAxis, target);
+            } else {
+                this._hknp.HP_Constraint_SetAxisMotorTarget(jointId, nativeAxis, target);
+            }
         }
     }
 
     /**
      * Gets the target of the motor of the given axis of the given constraint.
+     * Uses the explicit position/velocity target functions as recommended by the Havok API.
      *
      * @param constraint - The constraint to get the motor target from.
      * @param axis - The axis of the constraint to get the motor target from.
@@ -2436,7 +2447,14 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     public getAxisMotorTarget(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number> {
         const firstId = constraint._pluginData && constraint._pluginData[0];
         if (firstId) {
-            return this._hknp.HP_Constraint_GetAxisMotorTarget(constraint._pluginData, this._constraintAxisToNative(axis))[1];
+            const nativeAxis = this._constraintAxisToNative(axis);
+            const motorType = this._hknp.HP_Constraint_GetAxisMotorType(firstId, nativeAxis)[1];
+            if (motorType === this._hknp.ConstraintMotorType.POSITION) {
+                return this._hknp.HP_Constraint_GetAxisMotorPositionTarget(firstId, nativeAxis)[1];
+            } else if (motorType === this._hknp.ConstraintMotorType.VELOCITY) {
+                return this._hknp.HP_Constraint_GetAxisMotorVelocityTarget(firstId, nativeAxis)[1];
+            }
+            return this._hknp.HP_Constraint_GetAxisMotorTarget(firstId, nativeAxis)[1];
         }
         return null;
     }
@@ -2466,6 +2484,60 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const firstId = constraint._pluginData && constraint._pluginData[0];
         if (firstId) {
             return this._hknp.HP_Constraint_GetAxisMotorMaxForce(firstId, this._constraintAxisToNative(axis))[1];
+        }
+        return null;
+    }
+
+    /**
+     * Sets the stiffness of the motor of the given constraint axis.
+     * This is used for spring-type motors to control position targeting strength.
+     * @param constraint - The constraint to set the motor stiffness for.
+     * @param axis - The axis of the constraint to set the motor stiffness for.
+     * @param stiffness - The stiffness value for the motor.
+     */
+    public setAxisMotorStiffness(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, stiffness: number): void {
+        for (const jointId of constraint._pluginData) {
+            this._hknp.HP_Constraint_SetAxisMotorStiffness(jointId, this._constraintAxisToNative(axis), stiffness);
+        }
+    }
+
+    /**
+     * Gets the stiffness of the motor of the given constraint axis.
+     * @param constraint - The constraint to get the motor stiffness from.
+     * @param axis - The axis of the constraint to get the motor stiffness from.
+     * @returns The stiffness of the motor, or null if the constraint hasn't been initialized yet.
+     */
+    public getAxisMotorStiffness(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number> {
+        const firstId = constraint._pluginData && constraint._pluginData[0];
+        if (firstId) {
+            return this._hknp.HP_Constraint_GetAxisMotorStiffness(firstId, this._constraintAxisToNative(axis))[1];
+        }
+        return null;
+    }
+
+    /**
+     * Sets the damping of the motor of the given constraint axis.
+     * This is used for spring-type motors to control velocity targeting damping.
+     * @param constraint - The constraint to set the motor damping for.
+     * @param axis - The axis of the constraint to set the motor damping for.
+     * @param damping - The damping value for the motor.
+     */
+    public setAxisMotorDamping(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, damping: number): void {
+        for (const jointId of constraint._pluginData) {
+            this._hknp.HP_Constraint_SetAxisMotorDamping(jointId, this._constraintAxisToNative(axis), damping);
+        }
+    }
+
+    /**
+     * Gets the damping of the motor of the given constraint axis.
+     * @param constraint - The constraint to get the motor damping from.
+     * @param axis - The axis of the constraint to get the motor damping from.
+     * @returns The damping of the motor, or null if the constraint hasn't been initialized yet.
+     */
+    public getAxisMotorDamping(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number> {
+        const firstId = constraint._pluginData && constraint._pluginData[0];
+        if (firstId) {
+            return this._hknp.HP_Constraint_GetAxisMotorDamping(firstId, this._constraintAxisToNative(axis))[1];
         }
         return null;
     }

@@ -323,6 +323,44 @@ export class Physics6DoFConstraint extends PhysicsConstraint {
     public getAxisMotorMaxForce(axis: PhysicsConstraintAxis): Nullable<number> {
         return this._physicsPlugin.getAxisMotorMaxForce(this, axis);
     }
+
+    /**
+     * Sets the stiffness of the motor of the given axis of the constraint.
+     * This is used for spring-type motors to control position targeting strength.
+     * @param axis - The axis of the constraint.
+     * @param stiffness - The stiffness value for the motor.
+     */
+    public setAxisMotorStiffness(axis: PhysicsConstraintAxis, stiffness: number): void {
+        this._physicsPlugin.setAxisMotorStiffness(this, axis, stiffness);
+    }
+
+    /**
+     * Gets the stiffness of the motor of the given axis of the constraint.
+     * @param axis - The axis of the constraint.
+     * @returns The stiffness of the motor, or null if the constraint hasn't been initialized yet.
+     */
+    public getAxisMotorStiffness(axis: PhysicsConstraintAxis): Nullable<number> {
+        return this._physicsPlugin.getAxisMotorStiffness(this, axis);
+    }
+
+    /**
+     * Sets the damping of the motor of the given axis of the constraint.
+     * This is used for spring-type motors to control velocity targeting damping.
+     * @param axis - The axis of the constraint.
+     * @param damping - The damping value for the motor.
+     */
+    public setAxisMotorDamping(axis: PhysicsConstraintAxis, damping: number): void {
+        this._physicsPlugin.setAxisMotorDamping(this, axis, damping);
+    }
+
+    /**
+     * Gets the damping of the motor of the given axis of the constraint.
+     * @param axis - The axis of the constraint.
+     * @returns The damping of the motor, or null if the constraint hasn't been initialized yet.
+     */
+    public getAxisMotorDamping(axis: PhysicsConstraintAxis): Nullable<number> {
+        return this._physicsPlugin.getAxisMotorDamping(this, axis);
+    }
 }
 
 /**

@@ -488,6 +488,10 @@ export interface IPhysicsEnginePluginV2 {
     getAxisMotorTarget(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number>;
     setAxisMotorMaxForce(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, maxForce: number): void;
     getAxisMotorMaxForce(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number>;
+    setAxisMotorStiffness(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, stiffness: number): void;
+    getAxisMotorStiffness(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number>;
+    setAxisMotorDamping(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, damping: number): void;
+    getAxisMotorDamping(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number>;
     disposeConstraint(constraint: PhysicsConstraint): void;
     getBodiesUsingConstraint(constraint: PhysicsConstraint): ConstrainedBodyPair[];
 
