@@ -9,9 +9,11 @@
 import { ConvertShaders } from "./convertShaders.js";
 import { initLogger } from "./buildToolsLogger.js";
 
-await initLogger();
+(async () => {
+    await initLogger();
 
-const ExternalArguments = process.argv.slice(2);
-if (ExternalArguments.length >= 2 && ExternalArguments[0] && ExternalArguments[1]) {
-    ConvertShaders(ExternalArguments[0], ExternalArguments[1], ExternalArguments[2]);
-}
+    const ExternalArguments = process.argv.slice(2);
+    if (ExternalArguments.length >= 2 && ExternalArguments[0] && ExternalArguments[1]) {
+        ConvertShaders(ExternalArguments[0], ExternalArguments[1], ExternalArguments[2]);
+    }
+})();
