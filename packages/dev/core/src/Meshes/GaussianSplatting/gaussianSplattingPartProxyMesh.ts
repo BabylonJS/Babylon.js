@@ -176,4 +176,24 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
         };
         return serializationObject;
     }
+
+    /**
+     * Parses a serialized GaussianSplattingPartProxyMesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the GaussianSplattingPartProxyMesh in
+     * @returns the created GaussianSplattingPartProxyMesh
+     */
+    public static override Parse(parsedMesh: any, scene: Scene): GaussianSplattingPartProxyMesh {
+        const partIndex = parsedMesh.partIndex;
+        const compoundSplatMesh = parsedMesh.compoundSplatMesh as GaussianSplattingMesh;
+        const minimum = Vector3.FromArray(parsedMesh.boundingInfo.minimum);
+        const maximum = Vector3.FromArray(parsedMesh.boundingInfo.maximum);
+        const boundingInfo = new BoundingInfo(minimum, maximum);
+        const proxiedMesh: IBoundingInfoProvider = {
+            getBoundingInfo() {
+                return boundingInfo;
+            },
+        };
+        return new GaussianSplattingPartProxyMesh(parsedMesh.name, scene, compoundSplatMesh, proxiedMesh, partIndex);
+    }
 }
