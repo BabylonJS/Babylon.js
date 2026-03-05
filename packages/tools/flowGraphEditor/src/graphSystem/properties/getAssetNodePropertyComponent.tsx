@@ -82,6 +82,12 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
         this._sceneContextObserver = globalState.onSceneContextChanged.add((ctx) => {
             this.setState({ sceneContext: ctx });
         });
+        // If no type has been set yet, initialise to "Mesh" so the DataConnection
+        // default value is never undefined when the graph runs.
+        const config = this._getConfig();
+        if (config.type == null) {
+            this._onTypeChange("Mesh");
+        }
     }
 
     override componentWillUnmount() {

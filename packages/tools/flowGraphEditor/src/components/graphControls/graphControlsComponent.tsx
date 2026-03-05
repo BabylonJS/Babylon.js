@@ -53,13 +53,21 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
     }
 
     private _onPause() {
-        this.props.globalState.flowGraph.pause();
-        this._log("Flow graph paused.");
+        try {
+            this.props.globalState.flowGraph.pause();
+            this._log("Flow graph paused.");
+        } catch (err) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error pausing graph: ${err}`, true));
+        }
     }
 
     private _onStop() {
-        this.props.globalState.flowGraph.stop();
-        this._log("Flow graph stopped.");
+        try {
+            this.props.globalState.flowGraph.stop();
+            this._log("Flow graph stopped.");
+        } catch (err) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error stopping graph: ${err}`, true));
+        }
     }
 
     private _onReset() {
