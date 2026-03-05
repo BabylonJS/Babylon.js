@@ -721,6 +721,7 @@ export class GaussianSplattingMesh extends Mesh {
                 cameraMesh.reservedDataStore = { hidden: true };
                 cameraMesh.setEnabled(false);
                 cameraMesh.material = this.material;
+                cameraMesh.doNotSerialize = true;
                 GaussianSplattingMesh._MakeSplatGeometryForMesh(cameraMesh);
 
                 const newViewInfos: ICameraViewInfo = {
