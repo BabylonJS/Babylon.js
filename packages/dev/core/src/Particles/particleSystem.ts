@@ -514,7 +514,7 @@ export class ParticleSystem extends ThinParticleSystem {
         // Emitter
         if (!parsedParticleSystem.emitterId && parsedParticleSystem.emitterId !== 0 && parsedParticleSystem.emitter === undefined) {
             particleSystem.emitter = Vector3.Zero();
-        } else if (parsedParticleSystem.emitterId && scene) {
+        } else if ((parsedParticleSystem.emitterId || parsedParticleSystem.emitterId === 0) && scene) {
             particleSystem.emitter = scene.getLastMeshById(parsedParticleSystem.emitterId);
             if (!particleSystem.emitter) {
                 particleSystem.emitter = Vector3.Zero();
@@ -1282,4 +1282,3 @@ export class ParticleSystem extends ThinParticleSystem {
 }
 
 SubEmitter._ParseParticleSystem = ParticleSystem.Parse;
-
