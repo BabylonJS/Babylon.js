@@ -1,0 +1,102 @@
+.fge-graph-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: #2a2a2a;
+    border-bottom: 1px solid #555;
+    flex-shrink: 0;
+    height: 36px;
+    box-sizing: border-box;
+
+    .fge-ctrl-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 26px;
+        background: #464646;
+        color: #ccc;
+        border: 1px solid #666;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        transition:
+            background 0.15s,
+            color 0.15s,
+            border-color 0.15s;
+
+        &:hover:not(:disabled) {
+            background: #555;
+            color: white;
+            border-color: #888;
+        }
+
+        &:active:not(:disabled) {
+            background: #666;
+        }
+
+        &:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+    }
+
+    .fge-ctrl-start:not(:disabled) {
+        color: rgb(51, 183, 102);
+        border-color: rgb(51, 183, 102);
+
+        &:hover {
+            background: rgba(51, 183, 102, 0.2);
+        }
+    }
+
+    .fge-ctrl-pause:not(:disabled) {
+        color: rgb(220, 180, 60);
+        border-color: rgb(220, 180, 60);
+
+        &:hover {
+            background: rgba(220, 180, 60, 0.2);
+        }
+    }
+
+    .fge-ctrl-stop:not(:disabled) {
+        color: rgb(220, 80, 60);
+        border-color: rgb(220, 80, 60);
+
+        &:hover {
+            background: rgba(220, 80, 60, 0.2);
+        }
+    }
+
+    .fge-ctrl-reset:not(:disabled) {
+        color: rgb(100, 160, 220);
+        border-color: rgb(100, 160, 220);
+
+        &:hover {
+            background: rgba(100, 160, 220, 0.2);
+        }
+    }
+
+    .fge-ctrl-state {
+        margin-left: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+
+        &.state-stopped {
+            color: #888;
+        }
+
+        &.state-running {
+            color: rgb(51, 183, 102);
+        }
+
+        &.state-paused {
+            color: rgb(220, 180, 60);
+        }
+    }
+}

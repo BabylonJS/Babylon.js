@@ -18,31 +18,21 @@ import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import type { IEditablePropertyListOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
-
-/** Primitive types that can be shown as editable fields in the right panel. */
-const PRIMITIVE_FG_TYPES = new Set(["string", "number", "boolean", "FlowGraphInteger"]);
+import { EDITABLE_INPUTS } from "./editableInputsRegistry";
+import { CONSTRUCTOR_CONFIG, FLOW_GRAPH_TYPE_OPTIONS } from "./constructorConfigRegistry";
+import { getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
 
 /**
- * Returns true if the given connection should be shown as an editable field.
- * Shows: unconnected inputs whose default value is a string, number, boolean, or FlowGraphInteger,
- *        OR whose rich type is one of those primitives (even if the current default is undefined).
+ * Returns true if the given connection should be shown as an editable field
+ * in the right-hand property panel.
+ * The set of editable connections is defined in editableInputsRegistry.ts,
+ * keeping all editor-specific knowledge out of core.
  * @param conn The data connection to test.
+ * @param block The block that owns the connection.
  * @returns True if the connection should be shown as an editable field.
  */
-function IsPrimitiveEditableInput(conn: FlowGraphDataConnection<any>): boolean {
-    if (conn.isConnected()) {
-        return false;
-    }
-    const def = (conn as any)._defaultValue;
-    if (def instanceof FlowGraphInteger) {
-        return true;
-    }
-    const defType = typeof def;
-    if (defType === "string" || defType === "number" || defType === "boolean") {
-        return true;
-    }
-    // No value yet, but the richType declares a primitive — still show it
-    return PRIMITIVE_FG_TYPES.has(conn.richType.typeName);
+function IsPrimitiveEditableInput(conn: FlowGraphDataConnection<any>, block: FlowGraphBlock): boolean {
+    return EDITABLE_INPUTS.get(block.getClassName())?.has(conn.name) ?? false;
 }
 
 /** Default property panel for any FlowGraph block. */
@@ -57,6 +47,7 @@ export class GenericPropertyComponent extends React.Component<IPropertyComponent
         return (
             <>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
+                <ConstructorVariablesPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <DataConnectionsPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <GenericPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
             </>
@@ -136,7 +127,7 @@ export class DataConnectionsPropertyTabComponent extends React.Component<IProper
     /** {@inheritDoc} */
     override render() {
         const block = this.props.nodeData.data as FlowGraphBlock;
-        const editableInputs = block.dataInputs.filter(IsPrimitiveEditableInput);
+        const editableInputs = block.dataInputs.filter((conn) => IsPrimitiveEditableInput(conn, block));
 
         if (editableInputs.length === 0) {
             return <></>;
@@ -147,13 +138,14 @@ export class DataConnectionsPropertyTabComponent extends React.Component<IProper
                 {editableInputs.map((conn) => {
                     const def = (conn as any)._defaultValue;
                     const typeName = conn.richType.typeName;
-                    const label = conn.name;
+                    const connected = conn.isConnected();
+                    const label = connected ? `${conn.name} (connected)` : conn.name;
 
                     // Boolean
                     if (typeName === "boolean" || typeof def === "boolean") {
                         return (
                             <CheckBoxLineComponent
-                                key={label}
+                                key={conn.name}
                                 label={label}
                                 isSelected={() => (conn as any)._defaultValue === true}
                                 onSelect={(v) => this._setDefaultValue(conn, v)}
@@ -167,7 +159,7 @@ export class DataConnectionsPropertyTabComponent extends React.Component<IProper
                         const proxy = { v: intVal };
                         return (
                             <FloatLineComponent
-                                key={label}
+                                key={conn.name}
                                 label={label}
                                 lockObject={this.props.stateManager.lockObject}
                                 digits={0}
@@ -185,7 +177,7 @@ export class DataConnectionsPropertyTabComponent extends React.Component<IProper
                         const proxy = { v: typeof def === "number" ? def : 0 };
                         return (
                             <FloatLineComponent
-                                key={label}
+                                key={conn.name}
                                 label={label}
                                 lockObject={this.props.stateManager.lockObject}
                                 target={proxy}
@@ -199,11 +191,12 @@ export class DataConnectionsPropertyTabComponent extends React.Component<IProper
                     const proxy = { v: typeof def === "string" ? def : "" };
                     return (
                         <TextInputLineComponent
-                            key={label}
+                            key={conn.name}
                             label={label}
                             lockObject={this.props.stateManager.lockObject}
                             target={proxy}
                             propertyName="v"
+                            disabled={connected}
                             throttlePropertyChangedNotification={true}
                             onChange={(v) => this._setDefaultValue(conn, v)}
                         />

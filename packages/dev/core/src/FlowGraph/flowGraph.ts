@@ -25,6 +25,10 @@ export const enum FlowGraphState {
      * The graph is running
      */
     Started,
+    /**
+     * The graph is paused (contexts kept, pending tasks cancelled)
+     */
+    Paused,
 }
 
 /**
@@ -49,6 +53,7 @@ export interface IFlowGraphParseOptions {
      * A function that parses complex values in a scene.
      * @param key the key of the value
      * @param serializationObject the object to read the value from
+     * @param assetsContainer the assets container to read assets from
      * @param scene the scene to read the value from
      */
     valueParseFunction?: (key: string, serializationObject: any, assetsContainer: IAssetContainer, scene: Scene) => any;
@@ -203,25 +208,52 @@ export class FlowGraph {
     }
 
     /**
+     * Stops the flow graph. Cancels all pending tasks and clears execution contexts,
+     * but keeps event blocks so the graph can be restarted.
+     */
+    public stop() {
+        if (this.state === FlowGraphState.Stopped) {
+            return;
+        }
+        this.state = FlowGraphState.Stopped;
+        for (const context of this._executionContexts) {
+            context._clearPendingBlocks();
+        }
+        this._executionContexts.length = 0;
+    }
+
+    /**
+     * Pauses the flow graph. Cancels pending tasks but keeps execution contexts and event blocks.
+     * Call start() to resume.
+     */
+    public pause() {
+        if (this.state !== FlowGraphState.Started) {
+            return;
+        }
+        this.state = FlowGraphState.Paused;
+        for (const context of this._executionContexts) {
+            context._clearPendingBlocks();
+        }
+    }
+
+    /**
      * Starts the flow graph. Initializes the event blocks and starts listening to events.
+     * Can also be called to resume from a paused state.
      */
     public start() {
         if (this.state === FlowGraphState.Started) {
             return;
         }
+        const resumingFromPause = this.state === FlowGraphState.Paused;
         if (this._executionContexts.length === 0) {
             this.createContext();
         }
-        this.onStateChangedObservable.add((state) => {
-            if (state === FlowGraphState.Started) {
-                this._startPendingEvents();
-                // the only event we need to check is the scene ready event. If the scene is already ready when the graph starts, we should start the pending tasks.
-                if (this._scene.isReady(true)) {
-                    this._sceneEventCoordinator.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
-                }
-            }
-        });
         this.state = FlowGraphState.Started;
+        this._startPendingEvents();
+        // On a fresh start (not resume), fire the SceneReady event if the scene is already ready.
+        if (!resumingFromPause && this._scene.isReady(true)) {
+            this._sceneEventCoordinator.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
+        }
     }
 
     private _startPendingEvents() {

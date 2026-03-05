@@ -20,6 +20,7 @@ import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 import { ScenePreviewComponent } from "./components/preview/scenePreviewComponent";
+import { GraphControlsComponent } from "./components/graphControls/graphControlsComponent";
 import { HistoryStack } from "shared-ui-components/historyStack";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import type { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
@@ -429,13 +430,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                             event.preventDefault();
                         }}
                     >
-                        <GraphCanvasComponent
-                            ref={this._graphCanvasRef}
-                            stateManager={this.props.globalState.stateManager}
-                            onEmitNewNode={(nodeData) => {
-                                return this.appendBlock(nodeData.data as FlowGraphBlock);
-                            }}
-                        />
+                        <div className="diagram-canvas-pane">
+                            <GraphControlsComponent globalState={this.props.globalState} />
+                            <GraphCanvasComponent
+                                ref={this._graphCanvasRef}
+                                stateManager={this.props.globalState.stateManager}
+                                onEmitNewNode={(nodeData) => {
+                                    return this.appendBlock(nodeData.data as FlowGraphBlock);
+                                }}
+                            />
+                        </div>
                         <Splitter size={8} minSize={40} initialSize={120} maxSize={500} controlledSide={ControlledSize.Second} />
                         <LogComponent globalState={this.props.globalState} />
                     </SplitContainer>

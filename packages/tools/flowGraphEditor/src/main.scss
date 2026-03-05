@@ -42,6 +42,21 @@
         }
     }
 
+    .diagram-canvas-pane {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+
+        // GraphCanvasComponent sits below the controls bar and fills remaining space
+        > :last-child {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+    }
+
     .fge-right-panel {
         height: 100%;
         overflow: hidden;
