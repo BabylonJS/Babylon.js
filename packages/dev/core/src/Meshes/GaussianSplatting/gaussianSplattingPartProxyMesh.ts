@@ -8,7 +8,7 @@ import { PickingInfo } from "../../Collisions/pickingInfo";
 import { Vector3 } from "../../Maths/math.vector";
 
 /**
- * This is a dummy class for holding BoundingInfo for serialization,
+ * This is a dummy interface for holding BoundingInfo for serialization,
  * it keeps the exact same getBoundingInfo() like Mesh to not break code
  */
 interface IBoundingInfoProvider {
@@ -148,5 +148,32 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
         pickingInfo.subMeshId = 0;
 
         return pickingInfo;
+    }
+
+    /**
+     * Serialize current GaussianSplattingPartProxyMesh
+     * @param serializationObject defines the object which will receive the serialization data
+     * @returns the serialized object
+     */
+    override serialize(serializationObject: any = {}): any {
+        serializationObject = super.serialize(serializationObject);
+        // GaussianSplattingPartProxyMesh needs no SubMesh, Geometry, or Material
+        serializationObject.subMeshes = [];
+        serializationObject.geometryUniqueId = undefined;
+        serializationObject.geometryId = undefined;
+        serializationObject.materialUniqueId = undefined;
+        serializationObject.materialId = undefined;
+        serializationObject.instances = [];
+        serializationObject.actions = undefined;
+        serializationObject.type = this.getClassName();
+        // partIndex is needed in constructor
+        serializationObject.partIndex = this._partIndex;
+        const boundingInfo = this.getBoundingInfo();
+        // boundingInfo is needed in constructor
+        serializationObject.boundingInfo = {
+            minimum: boundingInfo.minimum.asArray(),
+            maximum: boundingInfo.maximum.asArray(),
+        };
+        return serializationObject;
     }
 }
