@@ -71,17 +71,20 @@ export const MeshMorphTargetsProperties: FunctionComponent<{ mesh: Mesh }> = (pr
 
     return (
         <>
-            {morphTargets.map((target, index) => (
-                <BoundProperty
-                    key={index}
-                    component={NumberInputPropertyLine}
-                    label={target.name || `Target ${index}`}
-                    description={`Influence of morph target "${target.name || `Target ${index}`}"`}
-                    target={target}
-                    propertyKey="influence"
-                    step={0.01}
-                />
-            ))}
+            {morphTargets.map((target, index) => {
+                const targetName = target.name || `Target ${index}`;
+                return (
+                    <BoundProperty
+                        key={index}
+                        component={NumberInputPropertyLine}
+                        label={targetName}
+                        description={`Influence of morph target "${targetName}"`}
+                        target={target}
+                        propertyKey="influence"
+                        step={0.01}
+                    />
+                );
+            })}
         </>
     );
 };

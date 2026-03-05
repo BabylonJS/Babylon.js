@@ -10,8 +10,6 @@
         "@alex_neo/jest-expect-message": "~1.0.5",
         "@dev/build-tools": "^1.0.0",
         "@eslint/js": "^9.18.0",
-        "@nrwl/tao": "^19.8.4",
-        "@nrwl/workspace": "^19.8.4",
         "@playwright/test": "1.57.0",
         "@types/fs-extra": "^9.0.13",
         "@types/jest": "^30.0.0",
@@ -32,17 +30,18 @@
         "eslint-plugin-prettier": "~5.0.0",
         "eslint-plugin-tsdoc": "^0.5.0",
         "fs-extra": "^10.0.1",
-        "glob": "^12.0.0",
+        "glob": "^13.0.6",
         "globals": "^16.0.0",
         "jest": "^30.2.0",
         "jest-environment-jsdom": "^30.2.0",
         "jest-environment-node": "^30.2.0",
         "jest-junit": "^16.0.0",
         "mini-css-extract-plugin": "~2.6.0",
-        "nx": "^22.2.3",
+        "nx": "^22.5.4",
         "prettier": "^3.0.3",
-        "rimraf": "~6.0.1",
         "ts-jest": "~29.4.0",
+        "rimraf": "^6.1.3",
+        "serialize-javascript": "7.0.4",
         "ts-node": "~10.9.0",
         "ts-patch": "3.3.0",
         "tslib": "^2.4.0",
@@ -125,6 +124,9 @@
         "jest-image-snapshot": {
             "jest": "^30.0.0"
         },
-        "jest-environment-node": "^30.2.0"
+        "jest-environment-node": "^30.2.0",
+        "@rollup/plugin-commonjs": {
+            "glob": "^13.0.6"
+        }
     }
 }
