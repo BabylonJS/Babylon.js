@@ -516,6 +516,9 @@ export class ParticleSystem extends ThinParticleSystem {
             particleSystem.emitter = Vector3.Zero();
         } else if (parsedParticleSystem.emitterId && scene) {
             particleSystem.emitter = scene.getLastMeshById(parsedParticleSystem.emitterId);
+            if (!particleSystem.emitter) {
+                particleSystem.emitter = Vector3.Zero();
+            }
         } else {
             particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
         }
@@ -1279,3 +1282,4 @@ export class ParticleSystem extends ThinParticleSystem {
 }
 
 SubEmitter._ParseParticleSystem = ParticleSystem.Parse;
+
