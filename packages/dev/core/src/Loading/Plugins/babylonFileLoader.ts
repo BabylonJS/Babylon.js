@@ -173,6 +173,50 @@ export function LoadAssetContainerFromSerializedScene(scene: Scene, serializedSc
     return LoadAssetContainer(scene, serializedScene, rootUrl);
 }
 
+type SavedObservables = Record<string, Observable<any>>;
+
+function suppressSceneObservables(scene: Scene): SavedObservables {
+    const saved = {
+        mesh: scene.onNewMeshAddedObservable,
+        transformNode: scene.onNewTransformNodeAddedObservable,
+        light: scene.onNewLightAddedObservable,
+        camera: scene.onNewCameraAddedObservable,
+        material: scene.onNewMaterialAddedObservable,
+        multiMaterial: scene.onNewMultiMaterialAddedObservable,
+        texture: scene.onNewTextureAddedObservable,
+        skeleton: scene.onNewSkeletonAddedObservable,
+        geometry: scene.onNewGeometryAddedObservable,
+        animationGroup: scene.onNewAnimationGroupAddedObservable,
+        particleSystem: scene.onNewParticleSystemAddedObservable,
+    };
+    scene.onNewMeshAddedObservable = new Observable();
+    scene.onNewTransformNodeAddedObservable = new Observable();
+    scene.onNewLightAddedObservable = new Observable();
+    scene.onNewCameraAddedObservable = new Observable();
+    scene.onNewMaterialAddedObservable = new Observable();
+    scene.onNewMultiMaterialAddedObservable = new Observable();
+    scene.onNewTextureAddedObservable = new Observable();
+    scene.onNewSkeletonAddedObservable = new Observable();
+    scene.onNewGeometryAddedObservable = new Observable();
+    scene.onNewAnimationGroupAddedObservable = new Observable();
+    scene.onNewParticleSystemAddedObservable = new Observable();
+    return saved;
+}
+
+function restoreSceneObservables(scene: Scene, saved: SavedObservables): void {
+    scene.onNewMeshAddedObservable = saved.mesh;
+    scene.onNewTransformNodeAddedObservable = saved.transformNode;
+    scene.onNewLightAddedObservable = saved.light;
+    scene.onNewCameraAddedObservable = saved.camera;
+    scene.onNewMaterialAddedObservable = saved.material;
+    scene.onNewMultiMaterialAddedObservable = saved.multiMaterial;
+    scene.onNewTextureAddedObservable = saved.texture;
+    scene.onNewSkeletonAddedObservable = saved.skeleton;
+    scene.onNewGeometryAddedObservable = saved.geometry;
+    scene.onNewAnimationGroupAddedObservable = saved.animationGroup;
+    scene.onNewParticleSystemAddedObservable = saved.particleSystem;
+}
+
 const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     const container = new AssetContainer(scene);
 
@@ -180,32 +224,9 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
     // observables to prevent scene events during loading. Entities still get added to scene
     // arrays (so the linking code can find them), but no events fire.
     // They are removed from the scene at the end via container.removeAllFromScene().
-    let savedObservables: Record<string, Observable<any>> | undefined;
+    let savedObservables: SavedObservables | undefined;
     if (!addToScene) {
-        savedObservables = {
-            mesh: scene.onNewMeshAddedObservable,
-            transformNode: scene.onNewTransformNodeAddedObservable,
-            light: scene.onNewLightAddedObservable,
-            camera: scene.onNewCameraAddedObservable,
-            material: scene.onNewMaterialAddedObservable,
-            multiMaterial: scene.onNewMultiMaterialAddedObservable,
-            texture: scene.onNewTextureAddedObservable,
-            skeleton: scene.onNewSkeletonAddedObservable,
-            geometry: scene.onNewGeometryAddedObservable,
-            animationGroup: scene.onNewAnimationGroupAddedObservable,
-            particleSystem: scene.onNewParticleSystemAddedObservable,
-        };
-        scene.onNewMeshAddedObservable = new Observable();
-        scene.onNewTransformNodeAddedObservable = new Observable();
-        scene.onNewLightAddedObservable = new Observable();
-        scene.onNewCameraAddedObservable = new Observable();
-        scene.onNewMaterialAddedObservable = new Observable();
-        scene.onNewMultiMaterialAddedObservable = new Observable();
-        scene.onNewTextureAddedObservable = new Observable();
-        scene.onNewSkeletonAddedObservable = new Observable();
-        scene.onNewGeometryAddedObservable = new Observable();
-        scene.onNewAnimationGroupAddedObservable = new Observable();
-        scene.onNewParticleSystemAddedObservable = new Observable();
+        savedObservables = suppressSceneObservables(scene);
     }
 
     // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
@@ -769,17 +790,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         if (!addToScene) {
             // Restore observables before removing from scene
             if (savedObservables) {
-                scene.onNewMeshAddedObservable = savedObservables.mesh;
-                scene.onNewTransformNodeAddedObservable = savedObservables.transformNode;
-                scene.onNewLightAddedObservable = savedObservables.light;
-                scene.onNewCameraAddedObservable = savedObservables.camera;
-                scene.onNewMaterialAddedObservable = savedObservables.material;
-                scene.onNewMultiMaterialAddedObservable = savedObservables.multiMaterial;
-                scene.onNewTextureAddedObservable = savedObservables.texture;
-                scene.onNewSkeletonAddedObservable = savedObservables.skeleton;
-                scene.onNewGeometryAddedObservable = savedObservables.geometry;
-                scene.onNewAnimationGroupAddedObservable = savedObservables.animationGroup;
-                scene.onNewParticleSystemAddedObservable = savedObservables.particleSystem;
+                restoreSceneObservables(scene, savedObservables);
             }
             // Removes entities from scene arrays and moves them to the container
             container.removeAllFromScene();
