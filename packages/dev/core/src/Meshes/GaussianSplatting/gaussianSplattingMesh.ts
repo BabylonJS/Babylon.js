@@ -22,7 +22,7 @@ import { Camera } from "core/Cameras/camera";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
 import type { INative } from "core/Engines/Native/nativeInterfaces";
 import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh";
-import { EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
+import { DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
@@ -611,6 +611,8 @@ export class GaussianSplattingMesh extends Mesh {
         }
         const gaussianSplattingMaterial = new GaussianSplattingMaterial(this.name + "_material", this._scene);
         gaussianSplattingMaterial.setSourceMesh(this);
+        // No need to serialize this material created constructor.
+        gaussianSplattingMaterial.doNotSerialize = true;
         this._material = gaussianSplattingMaterial;
 
         // delete meshes created for cameras on camera removal
@@ -2633,5 +2635,63 @@ export class GaussianSplattingMesh extends Mesh {
             serializationObject.partProxies = serializedParts;
         }
         return serializationObject;
+    }
+
+    /**
+     * Parses a serialized GaussianSplattingMesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the GaussianSplattingMesh in
+     * @returns the created GaussianSplattingMesh
+     */
+    public static override Parse(parsedMesh: any, scene: Scene): GaussianSplattingMesh {
+        const mesh = new GaussianSplattingMesh(parsedMesh.name, null, scene, parsedMesh.keepInRam);
+
+        let splatsData: ArrayBuffer | string = parsedMesh.splatsData;
+        if (typeof splatsData === "string") {
+            splatsData = DecodeBase64ToBinary(splatsData);
+        }
+        const shData: string[] | Uint8Array[] | undefined = parsedMesh.shData;
+        let parsedShData: Uint8Array[] | undefined;
+        if (Array.isArray(shData) && shData.length) {
+            const newData: Uint8Array[] = [];
+            for (let i = 0, length = shData.length; i < length; i++) {
+                const data = shData[i];
+                if (typeof data === "string") {
+                    newData[i] = new Uint8Array(DecodeBase64ToBinary(data));
+                } else {
+                    newData[i] = data;
+                }
+            }
+            parsedShData = newData;
+        } else {
+            parsedShData = undefined;
+        }
+        let partIndices: string | Uint32Array | undefined = parsedMesh.partIndices;
+        let parsedPartIndices: Uint8Array | undefined;
+        if (typeof partIndices === "string") {
+            partIndices = new Uint32Array(DecodeBase64ToBinary(partIndices));
+        }
+        if (partIndices) {
+            parsedPartIndices = ParsePartIndices(partIndices);
+        }
+        const flipY = parsedMesh._flipY ?? false;
+        mesh.updateData(splatsData, parsedShData, { flipY }, parsedPartIndices);
+
+        if (parsedMesh.partProxies) {
+            for (const partIndex in parsedMesh.partProxies) {
+                const part = parsedMesh.partProxies[partIndex];
+                const newPartIndex = Number(partIndex);
+                part.compoundSplatMesh = mesh;
+                // No rootUrl needed to parse a part
+                const proxyMesh = Mesh.Parse(part, scene, "") as GaussianSplattingPartProxyMesh;
+                delete part.compoundSplatMesh;
+
+                mesh.setWorldMatrixForPart(newPartIndex, proxyMesh.getWorldMatrix());
+
+                // Store the proxy in the map
+                mesh._partProxies.set(newPartIndex, proxyMesh);
+            }
+        }
+        return mesh;
     }
 }
