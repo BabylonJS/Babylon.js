@@ -7,6 +7,9 @@
  */
 
 import { ConvertShaders } from "./convertShaders.js";
+import { initLogger } from "./buildToolsLogger.js";
+
+await initLogger();
 
 const ExternalArguments = process.argv.slice(2);
 if (ExternalArguments.length >= 2 && ExternalArguments[0] && ExternalArguments[1]) {

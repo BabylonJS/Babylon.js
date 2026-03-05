@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
 import type { ShaderCode, ShaderFunction } from "./shaderCode.types.js";
 import { ConnectionPointType } from "../../connection/connectionPointType.js";
 import { BlockDisableStrategy } from "../../blockFoundation/blockDisableStrategy.js";
 import type { ConstPropertyMetadata } from "../../serialization/v1/shaderBlockSerialization.types.js";
 import { DecorateSymbol } from "../shaderCodeUtils.js";
+import { log, error } from "./buildToolsLogger.js";
 
 // Note: creating a global RegExp object is risky, because it holds state (e.g. lastIndex) that has to be
 // cleared at the right time to ensure correctness, which is easy to forget to do.
@@ -251,15 +251,15 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
     // Collect uniform, const, and function names which need to be decorated
     // eslint-disable-next-line prettier/prettier
     const uniformNames = uniforms.map((uniform) => uniform.name);
-    console.log(`Uniforms found: ${JSON.stringify(uniforms)}`);
+    log(`Uniforms found: ${JSON.stringify(uniforms)}`);
     const consts = [...fragmentShader.matchAll(/\S*const\s+\w*\s+(\w*)\s*=.*;/g)].map((match) => match[1]);
-    console.log(`Consts found: ${JSON.stringify(consts)}`);
+    log(`Consts found: ${JSON.stringify(consts)}`);
     const constPropertyFriendlyNames = fragmentConstProperties.map((c) => c.friendlyName);
-    console.log(`Const properties found: ${JSON.stringify(constPropertyFriendlyNames)}`);
+    log(`Const properties found: ${JSON.stringify(constPropertyFriendlyNames)}`);
     const defineNames = [...fragmentShader.matchAll(new RegExp(GetDefineRegExString, GetDefineRegExOptions))].map((match) => match[1]);
-    console.log(`Defines found: ${JSON.stringify(defineNames)}`);
+    log(`Defines found: ${JSON.stringify(defineNames)}`);
     const functionNames = [...fragmentShaderWithNoFunctionBodies.matchAll(new RegExp(GetFunctionHeaderRegExString, GetFunctionHeaderRegExOptions))].map((match) => match[1]);
-    console.log(`Functions found: ${JSON.stringify(functionNames)}`);
+    log(`Functions found: ${JSON.stringify(functionNames)}`);
 
     // Decorate the uniforms, consts, defines, and functions
     const symbolsToDecorate = [...uniformNames, ...consts, ...constPropertyFriendlyNames, ...defineNames, ...functionNames];
@@ -274,7 +274,7 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
         const regex = new RegExp(`(?<=\\W+)${symbol}(?=\\W+)`, "gs");
         fragmentShaderWithRenamedSymbols = fragmentShaderWithRenamedSymbols.replace(regex, DecorateSymbol(symbol));
     }
-    console.log(`${symbolsToDecorate.length} symbol(s) renamed`);
+    log(`${symbolsToDecorate.length} symbol(s) renamed`);
 
     // Extract all the uniforms
     const finalUniforms = [...fragmentShaderWithRenamedSymbols.matchAll(/^\s*(uniform\s.*)/gm)].map((match) => match[1]);
@@ -434,7 +434,7 @@ function RemoveFunctionBodies(input: string): string {
     }
 
     if (depth !== 0) {
-        console.error("Unbalanced curly braces in shader code");
+        error("Unbalanced curly braces in shader code");
     }
 
     return output;
