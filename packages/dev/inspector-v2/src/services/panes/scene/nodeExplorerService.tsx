@@ -22,7 +22,7 @@ import {
 } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
-import { FindMainCamera, FindMainObjectRenderer } from "core/FrameGraph/frameGraphUtils";
+import { FindMainCamera } from "core/FrameGraph/frameGraphUtils";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -246,15 +246,28 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                     set isEnabled(enabled: boolean) {
                         const activeCamera = getActiveCamera();
                         if (enabled && activeCamera !== camera) {
-                            activeCamera?.detachControl();
                             if (scene.frameGraph) {
-                                const objectRenderer = FindMainObjectRenderer(scene.frameGraph);
-                                if (objectRenderer) {
-                                    objectRenderer.camera = camera;
-                                    onChangeObservable.notifyObservers(); // manual trigger, because scene.onActiveCameraChanged won't be triggered by the line above
+                                let updated = false;
+                                const nrg = scene.frameGraph.getLinkedNodeRenderGraph();
+                                if (nrg) {
+                                    void (async () => {
+                                        updated = await nrg.replaceCameraAsync(activeCamera, camera);
+                                    })();
+                                } else {
+                                    for (const task of scene.frameGraph.tasks) {
+                                        if ("camera" in task && (task as unknown as { camera: unknown }).camera === activeCamera) {
+                                            (task as unknown as { camera: unknown }).camera = camera;
+                                            updated = true;
+                                        }
+                                    }
+                                }
+                                if (updated) {
+                                    activeCamera?.detachControl();
                                     camera.attachControl(true);
+                                    onChangeObservable.notifyObservers();
                                 }
                             } else {
+                                activeCamera?.detachControl();
                                 scene.activeCamera = camera;
                                 camera.attachControl(true);
                             }
