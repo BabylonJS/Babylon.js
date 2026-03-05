@@ -297,6 +297,56 @@ export interface PLYHeader {
 }
 
 /**
+ * Run-Length Encoding (RLE) compression for serialization
+ * Compressed Uint32Array can be parsed using {@link ParsePartIndices}
+ * Some notes for devs: We do not expect Uint8Array larger than 4GB,
+ * so it should be safe to use Uint32Array.
+ * @param partIndices A view of partIndices from GaussianSplattingMesh
+ * @returns A compressed Uint32Array of [count, value, ...]
+ */
+function CompressPartIndices(partIndices: Uint8Array): Uint32Array {
+    const runs: number[] = [];
+    const length = partIndices.length;
+    let i = 0;
+    while (i < length) {
+        const value = partIndices[i];
+        let count = 1;
+        while (i + count < length && partIndices[i + count] === value) {
+            count++;
+        }
+        runs.push(count, value);
+        i += count;
+    }
+    return new Uint32Array(runs);
+}
+
+/**
+ * Parse partIndices compressed by {@link CompressPartIndices} to runtime array
+ * @param compressed The compressed partIndices of [count, value, ...]
+ * @returns runtime Uint8Array for GaussianSplattingMesh
+ */
+function ParsePartIndices(compressed: Uint32Array | number[]): Uint8Array {
+    // First pass: compute total vertex count
+    let totalCount = 0;
+    const length = compressed.length;
+    for (let i = 0; i < length; i += 2) {
+        totalCount += compressed[i];
+    }
+
+    // Second pass: expand runs
+    const partIndices = new Uint8Array(totalCount);
+    let offset = 0;
+    for (let i = 0; i < length; i += 2) {
+        const count = compressed[i];
+        const value = compressed[i + 1];
+        partIndices.fill(value, offset, offset + count);
+        offset += count;
+    }
+
+    return partIndices;
+}
+
+/**
  * Class used to render a gaussian splatting mesh
  */
 export class GaussianSplattingMesh extends Mesh {
