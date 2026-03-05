@@ -15,6 +15,8 @@ import type { IFlowGraphEventTrigger } from "./flowGraphSceneEventCoordinator";
 import { FlowGraphSceneEventCoordinator } from "./flowGraphSceneEventCoordinator";
 import type { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
 import { _IsDescendantOf } from "./utils";
+import type { IFlowGraphValidationResult } from "./flowGraphValidator";
+import { ValidateFlowGraph } from "./flowGraphValidator";
 
 export const enum FlowGraphState {
     /**
@@ -380,6 +382,14 @@ export class FlowGraph {
                 }
             }
         }
+    }
+
+    /**
+     * Validates the flow graph and returns all issues found.
+     * @returns The validation result containing errors and warnings.
+     */
+    public validate(): IFlowGraphValidationResult {
+        return ValidateFlowGraph(this);
     }
 
     /**

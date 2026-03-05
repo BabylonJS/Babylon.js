@@ -37,6 +37,7 @@ export class GraphNode {
     private _comments: HTMLDivElement;
     private _executionTime: HTMLDivElement;
     private _selectionBorder: HTMLDivElement;
+    private _validationBadge: HTMLDivElement;
     private _inputPorts: NodePort[] = [];
     private _outputPorts: NodePort[] = [];
     private _links: NodeLink[] = [];
@@ -66,6 +67,26 @@ export class GraphNode {
 
     public removeClassFromVisual(className: string) {
         this._visual.classList.remove(className);
+    }
+
+    /**
+     * Shows a validation badge on the node header.
+     * @param severity - "error" | "warning" | null. Pass null to hide the badge.
+     * @param tooltip - tooltip text shown on hover.
+     */
+    public setValidationState(severity: "error" | "warning" | null, tooltip?: string): void {
+        if (!this._validationBadge) {
+            return;
+        }
+        this._validationBadge.classList.remove(localStyles["validationError"], localStyles["validationWarning"]);
+        if (!severity) {
+            this._validationBadge.style.display = "none";
+            this._validationBadge.title = "";
+            return;
+        }
+        this._validationBadge.style.display = "";
+        this._validationBadge.classList.add(severity === "error" ? localStyles["validationError"] : localStyles["validationWarning"]);
+        this._validationBadge.title = tooltip ?? "";
     }
 
     public get isCollapsed() {
@@ -818,6 +839,12 @@ export class GraphNode {
         this._executionTime.classList.add(localStyles.executionTime);
 
         this._visual.appendChild(this._executionTime);
+
+        // Validation badge
+        this._validationBadge = root.ownerDocument.createElement("div");
+        this._validationBadge.classList.add(localStyles.validationBadge);
+        this._validationBadge.style.display = "none";
+        this._headerContainer.appendChild(this._validationBadge);
 
         // Options
         const propStore: IPropertyDescriptionForEdition[] = this.content.data._propStore;

@@ -19,6 +19,8 @@ import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import type { Scene } from "core/scene";
 import type { SceneContext } from "./sceneContext";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+import type { IFlowGraphValidationResult } from "core/FlowGraph/flowGraphValidator";
+import { ValidateFlowGraphWithBlockList } from "core/FlowGraph/flowGraphValidator";
 
 /**
  * Class used to hold the global state of the flow graph editor
@@ -67,6 +69,95 @@ export class GlobalState {
 
     /** Optional custom save handler */
     customSave?: { label: string; action: (data: string) => Promise<void> };
+
+    // ── Validation ─────────────────────────────────────────────────────
+    /** Whether live validation is enabled (re-validates on graph changes). */
+    private _liveValidation: boolean = true;
+    /** Observable triggered when live validation mode changes. */
+    onLiveValidationChanged = new Observable<boolean>();
+    /** The latest validation result. Null if validation has not run yet. */
+    private _validationResult: Nullable<IFlowGraphValidationResult> = null;
+    /** Observable triggered when validation results change. */
+    onValidationResultChanged = new Observable<Nullable<IFlowGraphValidationResult>>();
+    /** Debounce timer for live validation */
+    private _validationDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+    /** Debounce delay for live validation (ms) */
+    private static readonly _VALIDATION_DEBOUNCE_MS = 300;
+
+    /** Gets whether live validation is enabled. */
+    public get liveValidation(): boolean {
+        return this._liveValidation;
+    }
+
+    /** Sets live validation mode. When enabled, triggers an immediate validation. */
+    public set liveValidation(value: boolean) {
+        if (this._liveValidation === value) {
+            return;
+        }
+        this._liveValidation = value;
+        this.onLiveValidationChanged.notifyObservers(value);
+        if (value) {
+            this.runValidation();
+        }
+    }
+
+    /** Gets the latest validation result. */
+    public get validationResult(): Nullable<IFlowGraphValidationResult> {
+        return this._validationResult;
+    }
+
+    /**
+     * Run validation immediately and publish results.
+     * Uses `ValidateFlowGraphWithBlockList` to also detect unreachable blocks.
+     */
+    public runValidation(): void {
+        if (!this._flowGraph) {
+            this._validationResult = null;
+            this.onValidationResultChanged.notifyObservers(null);
+            return;
+        }
+        // Collect all known blocks from the editor graph canvas (via onGetNodeFromBlock callback)
+        const allBlocks: FlowGraphBlock[] = [];
+        this._flowGraph.visitAllBlocks((b) => allBlocks.push(b));
+        // Also include any blocks in the canvas that aren't reachable
+        if (this._allEditorBlocks) {
+            for (const block of this._allEditorBlocks()) {
+                if (!allBlocks.find((b) => b.uniqueId === block.uniqueId)) {
+                    allBlocks.push(block);
+                }
+            }
+        }
+        this._validationResult = ValidateFlowGraphWithBlockList(this._flowGraph, allBlocks);
+        this.onValidationResultChanged.notifyObservers(this._validationResult);
+    }
+
+    /**
+     * Schedule a debounced live validation run.
+     * Call this when graph structure changes (connection added/removed, block added/removed).
+     */
+    public scheduleLiveValidation(): void {
+        if (!this._liveValidation) {
+            return;
+        }
+        if (this._validationDebounceTimer !== null) {
+            clearTimeout(this._validationDebounceTimer);
+        }
+        this._validationDebounceTimer = setTimeout(() => {
+            this._validationDebounceTimer = null;
+            this.runValidation();
+        }, GlobalState._VALIDATION_DEBOUNCE_MS);
+    }
+
+    /** Callback that returns all blocks the editor knows about (set by GraphEditor) */
+    private _allEditorBlocks: Nullable<() => FlowGraphBlock[]> = null;
+
+    /**
+     * Register a callback that provides the full list of blocks in the editor.
+     * @param provider - callback returning all editor blocks
+     */
+    public registerEditorBlocksProvider(provider: () => FlowGraphBlock[]): void {
+        this._allEditorBlocks = provider;
+    }
 
     /** Whether debug mode is active (execution highlighting, value probes) */
     private _isDebugMode: boolean = false;

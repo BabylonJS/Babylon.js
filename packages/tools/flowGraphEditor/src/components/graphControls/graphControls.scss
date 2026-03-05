@@ -120,4 +120,46 @@
             background: rgba(180, 130, 255, 0.1);
         }
     }
+
+    .fge-ctrl-validate {
+        color: rgb(100, 200, 120);
+        border-color: rgb(100, 200, 120);
+
+        &:hover:not(:disabled) {
+            background: rgba(100, 200, 120, 0.2);
+        }
+    }
+
+    .fge-ctrl-live-validate {
+        color: #aaa;
+
+        &.active {
+            color: rgb(243, 156, 18);
+            border-color: rgb(243, 156, 18);
+            background: rgba(243, 156, 18, 0.15);
+        }
+
+        &:not(.active):hover {
+            background: rgba(243, 156, 18, 0.1);
+        }
+    }
+
+    .fge-validation-summary {
+        margin-left: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        padding: 2px 6px;
+        border-radius: 3px;
+
+        &.error {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.15);
+        }
+
+        &.warning {
+            color: #f39c12;
+            background: rgba(243, 156, 18, 0.15);
+        }
+    }
 }

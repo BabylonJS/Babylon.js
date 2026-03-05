@@ -1252,6 +1252,17 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.y = 0;
     }
 
+    /**
+     * Pans the canvas so the given node is visible and roughly centered.
+     * @param node - the node to bring into view
+     */
+    zoomToNode(node: GraphNode) {
+        const containerWidth = this._rootContainer.clientWidth;
+        const containerHeight = this._rootContainer.clientHeight;
+        this.x = -node.x + containerWidth / (2 * this.zoom) - 100;
+        this.y = -node.y + containerHeight / (2 * this.zoom) - 20;
+    }
+
     processCandidatePort() {
         let pointB = this._candidateLink!.portA.portData;
         let nodeB = this._candidateLink!.portA.node;

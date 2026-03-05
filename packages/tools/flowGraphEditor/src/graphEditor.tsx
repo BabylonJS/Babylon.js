@@ -24,6 +24,8 @@ import { GraphControlsComponent } from "./components/graphControls/graphControls
 import { HistoryStack } from "shared-ui-components/historyStack";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import type { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
+import type { IFlowGraphValidationResult } from "core/FlowGraph/flowGraphValidator";
+import { FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 
 /**
  * Pre-populate string (and other primitive) config fields for blocks whose constructors
@@ -246,11 +248,67 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.add((message: string) => {
             this.setState({ message: message, isError: true });
         });
+
+        // ── Validation wiring ──────────────────────────────────────────
+        // Provide the editor's block list so "unreachable" detection works.
+        this.props.globalState.registerEditorBlocksProvider(() => {
+            const blocks: FlowGraphBlock[] = [];
+            for (const node of this._graphCanvas.nodes) {
+                if (node.content?.data) {
+                    blocks.push(node.content.data as FlowGraphBlock);
+                }
+            }
+            return blocks;
+        });
+
+        // When validation results change, update badges on all graph nodes.
+        this.props.globalState.onValidationResultChanged.add((result) => {
+            this._applyValidationBadges(result);
+        });
+
+        // Trigger live validation whenever the graph structure changes.
+        const scheduleLiveValidation = () => this.props.globalState.scheduleLiveValidation();
+        this.props.globalState.stateManager.onUpdateRequiredObservable.add(scheduleLiveValidation);
+        this.props.globalState.stateManager.onNewNodeCreatedObservable.add(scheduleLiveValidation);
+        this.props.globalState.stateManager.onRebuildRequiredObservable.add(scheduleLiveValidation);
+        this.props.globalState.stateManager.onGraphNodeRemovalObservable.add(scheduleLiveValidation);
     }
 
     /** @internal */
     zoomToFit() {
         this._graphCanvas.zoomToFit();
+    }
+
+    /**
+     * Applies validation badges (error/warning icons) to all graph nodes based on
+     * the given validation result. Clears all badges first, then sets them.
+     * @param result the validation result to apply badges for
+     */
+    private _applyValidationBadges(result: Nullable<IFlowGraphValidationResult>) {
+        if (!this._graphCanvas) {
+            return;
+        }
+        // Clear all badges first
+        for (const node of this._graphCanvas.nodes) {
+            node.setValidationState(null);
+        }
+        if (!result) {
+            return;
+        }
+        // Apply badges
+        for (const [blockId, issues] of result.issuesByBlock) {
+            // Find the corresponding GraphNode
+            const node = this._graphCanvas.nodes.find((n) => {
+                const block = n.content?.data as FlowGraphBlock | undefined;
+                return block && block.uniqueId === blockId;
+            });
+            if (!node) {
+                continue;
+            }
+            const hasError = issues.some((i) => i.severity === FlowGraphValidationSeverity.Error);
+            const tooltip = issues.map((i) => (i.severity === FlowGraphValidationSeverity.Error ? "[Error] " : "[Warn] ") + i.message).join("\n");
+            node.setValidationState(hasError ? "error" : "warning", tooltip);
+        }
     }
 
     /** @internal */
@@ -277,6 +335,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         // Notify that the graph has been (re-)built so components like
         // GraphControlsComponent can re-subscribe to the current flow graph.
         this.props.globalState.onBuiltObservable.notifyObservers();
+
+        // Run validation after build completes
+        this.props.globalState.scheduleLiveValidation();
     }
 
     /** @internal */

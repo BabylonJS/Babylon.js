@@ -4,6 +4,8 @@ import type { Observer } from "core/Misc/observable";
 import { FlowGraphState } from "core/FlowGraph/flowGraph";
 import type { GlobalState } from "../../globalState";
 import { LogEntry } from "../log/logComponent";
+import type { IFlowGraphValidationResult } from "core/FlowGraph/flowGraphValidator";
+import { FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 
 import "./graphControls.scss";
 
@@ -14,6 +16,8 @@ interface IGraphControlsProps {
 interface IGraphControlsState {
     graphState: FlowGraphState;
     debugMode: boolean;
+    liveValidation: boolean;
+    validationResult: Nullable<IFlowGraphValidationResult>;
 }
 
 /**
@@ -23,12 +27,16 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
     private _stateObserver: Nullable<Observer<FlowGraphState>> = null;
     private _builtObserver: Nullable<Observer<void>> = null;
     private _debugModeObserver: Nullable<Observer<boolean>> = null;
+    private _liveValidationObserver: Nullable<Observer<boolean>> = null;
+    private _validationResultObserver: Nullable<Observer<Nullable<IFlowGraphValidationResult>>> = null;
 
     constructor(props: IGraphControlsProps) {
         super(props);
         this.state = {
             graphState: props.globalState.flowGraph.state,
             debugMode: props.globalState.isDebugMode,
+            liveValidation: props.globalState.liveValidation,
+            validationResult: props.globalState.validationResult,
         };
     }
 
@@ -44,6 +52,14 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         this._debugModeObserver = this.props.globalState.onDebugModeChanged.add((debugMode) => {
             this.setState({ debugMode });
         });
+
+        this._liveValidationObserver = this.props.globalState.onLiveValidationChanged.add((liveValidation) => {
+            this.setState({ liveValidation });
+        });
+
+        this._validationResultObserver = this.props.globalState.onValidationResultChanged.add((validationResult) => {
+            this.setState({ validationResult });
+        });
     }
 
     override componentWillUnmount() {
@@ -53,6 +69,10 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         this._builtObserver = null;
         this._debugModeObserver?.remove();
         this._debugModeObserver = null;
+        this._liveValidationObserver?.remove();
+        this._liveValidationObserver = null;
+        this._validationResultObserver?.remove();
+        this._validationResultObserver = null;
     }
 
     /**
@@ -146,6 +166,21 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         }
     }
 
+    private _renderValidationSummary(): React.ReactNode {
+        const result = this.state.validationResult;
+        if (!result || result.issues.length === 0) {
+            return null;
+        }
+        const hasErrors = result.errorCount > 0;
+        const cls = hasErrors ? "fge-validation-summary error" : "fge-validation-summary warning";
+        const label = hasErrors ? `${result.errorCount}E ${result.warningCount}W` : `${result.warningCount}W`;
+        return (
+            <span className={cls} title={`${result.errorCount} error(s), ${result.warningCount} warning(s)`}>
+                {label}
+            </span>
+        );
+    }
+
     override render() {
         const { graphState } = this.state;
         const isStopped = graphState === FlowGraphState.Stopped;
@@ -185,6 +220,48 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
                 >
                     🔍
                 </button>
+                <span className="fge-ctrl-separator" />
+                <button
+                    className="fge-ctrl-btn fge-ctrl-validate"
+                    title="Validate graph"
+                    onClick={() => {
+                        this.props.globalState.runValidation();
+                        const result = this.props.globalState.validationResult;
+                        if (result && result.issues.length > 0) {
+                            const errorStr = result.errorCount > 0 ? `${result.errorCount} error(s)` : "";
+                            const warnStr = result.warningCount > 0 ? `${result.warningCount} warning(s)` : "";
+                            const parts = [errorStr, warnStr].filter(Boolean).join(", ");
+                            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Validation: ${parts}`, result.errorCount > 0));
+                            // Emit individual issues as clickable log entries (max 20 to avoid flooding)
+                            const maxIssues = 20;
+                            for (let i = 0; i < Math.min(result.issues.length, maxIssues); i++) {
+                                const issue = result.issues[i];
+                                const prefix = issue.severity === FlowGraphValidationSeverity.Error ? "[Error]" : "[Warn]";
+                                const blockName = issue.block?.name ?? "Graph";
+                                this.props.globalState.onLogRequiredObservable.notifyObservers(
+                                    new LogEntry(`  ${prefix} ${blockName}: ${issue.message}`, issue.severity === FlowGraphValidationSeverity.Error, issue.block)
+                                );
+                            }
+                            if (result.issues.length > maxIssues) {
+                                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`  ... and ${result.issues.length - maxIssues} more issue(s).`, false));
+                            }
+                        } else {
+                            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Validation passed — no issues found.", false));
+                        }
+                    }}
+                >
+                    ✓
+                </button>
+                <button
+                    className={`fge-ctrl-btn fge-ctrl-live-validate ${this.state.liveValidation ? "active" : ""}`}
+                    title={this.state.liveValidation ? "Disable Live Validation" : "Enable Live Validation"}
+                    onClick={() => {
+                        this.props.globalState.liveValidation = !this.props.globalState.liveValidation;
+                    }}
+                >
+                    ⚡
+                </button>
+                {this._renderValidationSummary()}
             </div>
         );
     }

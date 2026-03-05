@@ -18,5 +18,15 @@
         &.error {
             color: red;
         }
+
+        &.clickable {
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+
+            &:hover {
+                opacity: 0.8;
+            }
+        }
     }
 }
