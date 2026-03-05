@@ -468,7 +468,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                 if (mesh.getClassName() === "GaussianSplattingMesh") {
                     const partProxies = (mesh as any)._partProxies as Map<number, AbstractMesh>;
                     if (partProxies.size) {
-                        for (const partProxy of ((mesh as any)._partProxies as Map<number, AbstractMesh>).values()) {
+                        for (const partProxy of partProxies.values()) {
                             container.meshes.push(partProxy);
                             partProxy._parentContainer = container;
                         }
