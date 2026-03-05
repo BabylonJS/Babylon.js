@@ -19,10 +19,15 @@
 }
 
 .highlighted {
-    animation: glow 0.5s infinite alternate;
-    @keyframes glow {
-        to {
-            border-color: white;
+    animation: executionPulse 0.3s ease-out;
+    @keyframes executionPulse {
+        0% {
+            border-color: rgb(51, 183, 102);
+            box-shadow: 0 0 12px rgba(51, 183, 102, 0.6);
+        }
+        100% {
+            border-color: black;
+            box-shadow: none;
         }
     }
 }

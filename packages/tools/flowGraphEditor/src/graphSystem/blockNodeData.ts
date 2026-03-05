@@ -76,8 +76,11 @@ export class BlockNodeData implements INodeData {
         this.data.metadata.comments = value;
     }
 
-    /** Gets the execution time (not applicable for flow graph blocks) */
+    /** Gets the execution time (from the last measured execution, if applicable) */
     public get executionTime() {
+        if (this._isExecutionBlock()) {
+            return (this.data as unknown as FlowGraphExecutionBlock)._lastExecutionTime;
+        }
         return -1;
     }
 

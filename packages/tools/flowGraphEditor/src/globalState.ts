@@ -68,6 +68,77 @@ export class GlobalState {
     /** Optional custom save handler */
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
+    /** Whether debug mode is active (execution highlighting, value probes) */
+    private _isDebugMode: boolean = false;
+    /** Observable triggered when debug mode changes */
+    onDebugModeChanged = new Observable<boolean>();
+    /** The index of the context to observe in debug mode (0 = first context) */
+    selectedContextIndex: number = 0;
+    /** Observer tracking node execution for debug highlighting */
+    private _debugExecutionObserver: Nullable<Observer<FlowGraphBlock>> = null;
+    /** Per-node throttle timestamps to avoid excessive highlighting */
+    private _highlightThrottleMap = new Map<string, number>();
+    /** Minimum interval between highlight pulses per node (ms) */
+    private static readonly _HIGHLIGHT_THROTTLE_MS = 100;
+
+    /** Gets whether debug mode is active */
+    public get isDebugMode(): boolean {
+        return this._isDebugMode;
+    }
+
+    /** Sets debug mode and subscribes/unsubscribes from execution observables */
+    public set isDebugMode(value: boolean) {
+        if (this._isDebugMode === value) {
+            return;
+        }
+        this._isDebugMode = value;
+        if (value) {
+            this._subscribeDebugObservers();
+        } else {
+            this._unsubscribeDebugObservers();
+        }
+        this.onDebugModeChanged.notifyObservers(value);
+    }
+
+    /** Subscribe to the selected context's onNodeExecutedObservable for execution highlighting */
+    private _subscribeDebugObservers(): void {
+        this._unsubscribeDebugObservers();
+        const context = this._flowGraph?.getContext(this.selectedContextIndex);
+        if (!context) {
+            return;
+        }
+        this._highlightThrottleMap.clear();
+        this._debugExecutionObserver = context.onNodeExecutedObservable.add((block) => {
+            const now = performance.now();
+            const lastTime = this._highlightThrottleMap.get(block.uniqueId) ?? 0;
+            if (now - lastTime < GlobalState._HIGHLIGHT_THROTTLE_MS) {
+                return;
+            }
+            this._highlightThrottleMap.set(block.uniqueId, now);
+
+            // Highlight the node briefly
+            this.stateManager.onHighlightNodeObservable.notifyObservers({ data: block, active: true });
+            setTimeout(() => {
+                this.stateManager.onHighlightNodeObservable.notifyObservers({ data: block, active: false });
+            }, 300);
+
+            // Trigger a refresh so executionTime updates in the UI
+            if (this.onGetNodeFromBlock) {
+                const graphNode = this.onGetNodeFromBlock(block);
+                if (graphNode) {
+                    graphNode.refresh();
+                }
+            }
+        });
+    }
+
+    /** Unsubscribe from debug execution observers */
+    private _unsubscribeDebugObservers(): void {
+        this._debugExecutionObserver?.remove();
+        this._debugExecutionObserver = null;
+        this._highlightThrottleMap.clear();
+    }
+
     /** The scene context populated when a Playground snippet is loaded */
     sceneContext: Nullable<SceneContext> = null;
     /** Observable triggered when the scene context changes (snippet loaded/disposed) */
@@ -161,6 +232,11 @@ export class GlobalState {
         // If a scene context is already loaded, apply it immediately
         if (this.sceneContext) {
             this._applyAssetsContextToGraph(this.sceneContext.scene);
+        }
+
+        // Re-subscribe debug observers if debug mode is active
+        if (this._isDebugMode) {
+            this._subscribeDebugObservers();
         }
     }
 

@@ -13,6 +13,7 @@ interface IGraphControlsProps {
 
 interface IGraphControlsState {
     graphState: FlowGraphState;
+    debugMode: boolean;
 }
 
 /**
@@ -21,11 +22,13 @@ interface IGraphControlsState {
 export class GraphControlsComponent extends React.Component<IGraphControlsProps, IGraphControlsState> {
     private _stateObserver: Nullable<Observer<FlowGraphState>> = null;
     private _builtObserver: Nullable<Observer<void>> = null;
+    private _debugModeObserver: Nullable<Observer<boolean>> = null;
 
     constructor(props: IGraphControlsProps) {
         super(props);
         this.state = {
             graphState: props.globalState.flowGraph.state,
+            debugMode: props.globalState.isDebugMode,
         };
     }
 
@@ -37,6 +40,10 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         this._builtObserver = this.props.globalState.onBuiltObservable.add(() => {
             this._subscribeToFlowGraph();
         });
+
+        this._debugModeObserver = this.props.globalState.onDebugModeChanged.add((debugMode) => {
+            this.setState({ debugMode });
+        });
     }
 
     override componentWillUnmount() {
@@ -44,6 +51,8 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         this._stateObserver = null;
         this._builtObserver?.remove();
         this._builtObserver = null;
+        this._debugModeObserver?.remove();
+        this._debugModeObserver = null;
     }
 
     /**
@@ -166,6 +175,16 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
                     ↺
                 </button>
                 <span className={`fge-ctrl-state ${stateCls}`}>{stateLabel}</span>
+                <span className="fge-ctrl-separator" />
+                <button
+                    className={`fge-ctrl-btn fge-ctrl-debug ${this.state.debugMode ? "active" : ""}`}
+                    title={this.state.debugMode ? "Disable Debug Mode" : "Enable Debug Mode"}
+                    onClick={() => {
+                        this.props.globalState.isDebugMode = !this.props.globalState.isDebugMode;
+                    }}
+                >
+                    🔍
+                </button>
             </div>
         );
     }

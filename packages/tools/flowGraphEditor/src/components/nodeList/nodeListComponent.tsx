@@ -201,6 +201,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FlowGraphContextBlock: "Gets the flow graph context",
         FlowGraphCodeExecutionBlock: "Executes custom code",
         FlowGraphFunctionReference: "Reference to a function flow graph",
+        FlowGraphDebugBlock: "Debug passthrough — shows the value flowing through a data connection",
     };
 
     /**
@@ -388,6 +389,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FlowGraphContextBlock",
                 "FlowGraphCodeExecutionBlock",
                 "FlowGraphFunctionReference",
+                "FlowGraphDebugBlock",
             ],
         };
 

@@ -99,4 +99,25 @@
             color: rgb(220, 180, 60);
         }
     }
+
+    .fge-ctrl-separator {
+        width: 1px;
+        height: 20px;
+        background: #555;
+        margin: 0 4px;
+    }
+
+    .fge-ctrl-debug {
+        color: #aaa;
+
+        &.active {
+            color: rgb(180, 130, 255);
+            border-color: rgb(180, 130, 255);
+            background: rgba(180, 130, 255, 0.15);
+        }
+
+        &:not(.active):hover {
+            background: rgba(180, 130, 255, 0.1);
+        }
+    }
 }

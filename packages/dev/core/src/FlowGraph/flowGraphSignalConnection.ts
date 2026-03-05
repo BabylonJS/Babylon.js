@@ -46,7 +46,9 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
         });
         if (this.connectionType === FlowGraphConnectionType.Input) {
             context._notifyExecuteNode(this._ownerBlock);
+            const startTime = performance.now();
             this._ownerBlock._execute(context, this);
+            this._ownerBlock._lastExecutionTime = performance.now() - startTime;
             context._increaseExecutionId();
         } else {
             for (const connectedPoint of this._connectedPoint) {
