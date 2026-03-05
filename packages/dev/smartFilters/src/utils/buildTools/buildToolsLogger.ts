@@ -16,7 +16,9 @@ export let error: (message: string) => void = console.error;
  */
 export async function initLogger(): Promise<void> {
     try {
-        const { Logger } = await import("@babylonjs/core/Misc/logger.js");
+        // Use a variable so TypeScript doesn't try to resolve the module at compile time
+        const coreLoggerModule = "@babylonjs/core/Misc/logger.js";
+        const { Logger } = await import(/* webpackIgnore: true */ coreLoggerModule);
         log = Logger.Log.bind(Logger);
         error = Logger.Error.bind(Logger);
     } catch {
