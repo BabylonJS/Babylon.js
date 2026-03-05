@@ -464,6 +464,16 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                         instance._parentContainer = container;
                     }
                 }
+                // Load partProxies from GaussianSplattingMesh into AssetContainer
+                if (mesh.getClassName() === "GaussianSplattingMesh") {
+                    const partProxies = (mesh as any)._partProxies as Map<number, AbstractMesh>;
+                    if (partProxies.size) {
+                        for (const partProxy of ((mesh as any)._partProxies as Map<number, AbstractMesh>).values()) {
+                            container.meshes.push(partProxy);
+                            partProxy._parentContainer = container;
+                        }
+                    }
+                }
                 log += index === 0 ? "\n\tMeshes:" : "";
                 log += "\n\t\t" + mesh.toString(fullDetails);
             }
