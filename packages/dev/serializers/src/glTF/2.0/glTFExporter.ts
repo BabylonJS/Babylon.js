@@ -874,13 +874,13 @@ export class GLTFExporter {
         const rootNodesLH = new Array<Node>();
         const rootNoopNodesRH = new Array<Node>();
 
-        // Collect nodes targeted by animation groups so we don't remove them as noop nodes.
+        // Collect root nodes targeted by animation groups so we don't remove them as noop nodes.
         let animationTargetNodes: Set<Node> | undefined;
         if (this._options.removeNoopRootNodes && !this._options.includeCoordinateSystemConversionNodes) {
             for (const animationGroup of this._babylonScene.animationGroups) {
                 for (const targetedAnimation of animationGroup.targetedAnimations) {
                     const target = targetedAnimation.target;
-                    if (target instanceof TransformNode) {
+                    if (target instanceof TransformNode && !target.parent) {
                         (animationTargetNodes ??= new Set()).add(target);
                     }
                 }
