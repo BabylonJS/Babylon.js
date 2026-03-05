@@ -197,3 +197,5 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
         return new GaussianSplattingPartProxyMesh(parsedMesh.name, scene, compoundSplatMesh, proxiedMesh, partIndex);
     }
 }
+
+Mesh._GaussianSplattingPartProxyMeshParser = GaussianSplattingPartProxyMesh.Parse;
