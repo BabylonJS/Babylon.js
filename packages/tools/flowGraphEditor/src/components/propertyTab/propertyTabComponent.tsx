@@ -77,11 +77,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             file,
             (data) => {
                 const decoder = new TextDecoder("utf-8");
-                SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
-
-                this.props.globalState.onResetRequiredObservable.notifyObservers(false);
-                this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-                this.props.globalState.onClearUndoStack.notifyObservers();
+                const doLoadAsync = async () => {
+                    await SerializationTools.DeserializeAsync(JSON.parse(decoder.decode(data)), this.props.globalState);
+                    this.props.globalState.onResetRequiredObservable.notifyObservers(false);
+                    this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                    this.props.globalState.onClearUndoStack.notifyObservers();
+                };
+                void doLoadAsync();
             },
             undefined,
             true

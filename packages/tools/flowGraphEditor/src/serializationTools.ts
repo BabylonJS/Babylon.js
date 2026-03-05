@@ -3,6 +3,8 @@ import type { Nullable } from "core/types";
 import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import type { FlowGraph } from "core/FlowGraph/flowGraph";
 import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 
 /**
  * Provides serialization and deserialization utilities for the flow graph editor.
@@ -61,11 +63,19 @@ export class SerializationTools {
 
     /**
      * Deserialize a flow graph from a serialization object.
+     * Creates a new FlowGraph from the serialized data and sets it on the global state.
      * @param serializationObject - the serialized data to load
      * @param globalState - the editor's global state
      */
-    public static Deserialize(serializationObject: any, globalState: GlobalState) {
-        // FlowGraph deserialization would be handled through the parser
-        globalState.onIsLoadingChanged.notifyObservers(false);
+    public static async DeserializeAsync(serializationObject: any, globalState: GlobalState): Promise<void> {
+        globalState.onIsLoadingChanged.notifyObservers(true);
+        try {
+            const coordinator = new FlowGraphCoordinator({ scene: globalState.scene });
+            const parsedGraph = await ParseFlowGraphAsync(serializationObject, { coordinator });
+            // eslint-disable-next-line require-atomic-updates
+            globalState.flowGraph = parsedGraph;
+        } finally {
+            globalState.onIsLoadingChanged.notifyObservers(false);
+        }
     }
 }

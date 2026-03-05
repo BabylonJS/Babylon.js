@@ -79,9 +79,12 @@ export class FlowGraphEditor {
 
         if (options.customLoadObservable) {
             options.customLoadObservable.add((data) => {
-                SerializationTools.Deserialize(data, globalState);
-                globalState.onResetRequiredObservable.notifyObservers(false);
-                globalState.onBuiltObservable.notifyObservers();
+                const doLoadAsync = async () => {
+                    await SerializationTools.DeserializeAsync(data, globalState);
+                    globalState.onResetRequiredObservable.notifyObservers(false);
+                    globalState.onBuiltObservable.notifyObservers();
+                };
+                void doLoadAsync();
             });
         }
 
