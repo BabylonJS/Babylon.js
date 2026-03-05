@@ -24,16 +24,31 @@ import { getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBlockDisplayName } from "../blockDisplayUtils";
 
 /**
+ * Concrete primitive type names whose data inputs can be edited directly in
+ * the right-hand property panel without explicit registration.
+ */
+const _PRIMITIVE_TYPE_NAMES: ReadonlySet<string> = new Set(["number", "boolean", "string", "FlowGraphInteger"]);
+
+/**
  * Returns true if the given connection should be shown as an editable field
  * in the right-hand property panel.
- * The set of editable connections is defined in editableInputsRegistry.ts,
- * keeping all editor-specific knowledge out of core.
+ *
+ * A connection is editable if:
+ * 1. It is explicitly listed in the EDITABLE_INPUTS registry, **or**
+ * 2. Its richType.typeName is a concrete primitive type (number, boolean,
+ *    string, FlowGraphInteger). This allows any block with typed primitive
+ *    inputs — such as math blocks pinned to "number" — to expose those
+ *    inputs automatically without requiring manual registration.
+ *
  * @param conn The data connection to test.
  * @param block The block that owns the connection.
  * @returns True if the connection should be shown as an editable field.
  */
 function IsPrimitiveEditableInput(conn: FlowGraphDataConnection<any>, block: FlowGraphBlock): boolean {
-    return EDITABLE_INPUTS.get(block.getClassName())?.has(conn.name) ?? false;
+    if (EDITABLE_INPUTS.get(block.getClassName())?.has(conn.name)) {
+        return true;
+    }
+    return _PRIMITIVE_TYPE_NAMES.has(conn.richType.typeName);
 }
 
 /** Default property panel for any FlowGraph block. */

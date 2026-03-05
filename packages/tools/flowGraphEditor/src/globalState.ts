@@ -1,4 +1,5 @@
 import type { FlowGraph } from "core/FlowGraph/flowGraph";
+import { FlowGraphState } from "core/FlowGraph/flowGraph";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { Observable } from "core/Misc/observable";
 import type { Observer } from "core/Misc/observable";
@@ -75,6 +76,8 @@ export class GlobalState {
     snippetId: string = "";
     /** Observable triggered when the snippet ID changes (e.g. after deserialization) */
     onSnippetIdChanged = new Observable<string>();
+    /** Observable triggered to request a snippet reload (e.g. from the Reset button) */
+    onReloadSnippetRequested = new Observable<void>();
 
     private _flowGraph: FlowGraph;
     private _sceneContextObserver: Nullable<Observer<Nullable<SceneContext>>> = null;
@@ -110,10 +113,22 @@ export class GlobalState {
             return;
         }
 
+        // The editor always starts in Stopped state — the user must explicitly
+        // press Start or Reset.  The graph may arrive already started when
+        // opened from KHR_interactivity or another runtime path.
+        if (flowGraph.state === FlowGraphState.Started || flowGraph.state === FlowGraphState.Paused) {
+            flowGraph.stop();
+        }
+
         // Wire the observer: when scene context changes, update all execution contexts
+        // and re-point the flow graph's event coordinator at the new scene so that
+        // scene-based events (e.g. SceneOnTick) fire correctly.
         this._sceneContextObserver = this.onSceneContextChanged.add((ctx) => {
             const assetsContainer: IAssetContainer | undefined = ctx?.scene;
             this._applyAssetsContextToGraph(assetsContainer);
+            if (ctx?.scene) {
+                flowGraph.setScene(ctx.scene);
+            }
         });
 
         // Wrap createContext() so newly created contexts also inherit the loaded scene

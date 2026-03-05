@@ -64,6 +64,13 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
                 });
             }
         });
+
+        // When a reload is requested (e.g. from the Reset button), re-run the current snippet
+        this.props.globalState.onReloadSnippetRequested.add(() => {
+            if (this.state.snippetId) {
+                void this.loadSnippetAsync();
+            }
+        });
     }
 
     /** @internal */
@@ -262,11 +269,22 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
                 scene.render();
             });
 
-            // Handle window resize
+            // Ensure the engine matches the actual canvas layout size on first frame
+            engine.resize();
+
+            // Handle window resize and canvas container resize
             const resizeHandler = () => engine.resize();
             window.addEventListener("resize", resizeHandler);
+
+            let resizeObserver: ResizeObserver | null = null;
+            if (canvas.parentElement) {
+                resizeObserver = new ResizeObserver(resizeHandler);
+                resizeObserver.observe(canvas.parentElement);
+            }
+
             scene.onDisposeObservable.addOnce(() => {
                 window.removeEventListener("resize", resizeHandler);
+                resizeObserver?.disconnect();
             });
 
             // Build the scene context

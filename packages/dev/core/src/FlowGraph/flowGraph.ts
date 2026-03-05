@@ -96,7 +96,7 @@ export class FlowGraph {
     /**
      * @internal
      */
-    public readonly _scene: Scene;
+    public _scene: Scene;
     private _coordinator: FlowGraphCoordinator;
     private _executionContexts: FlowGraphContext[] = [];
     private _sceneEventCoordinator: FlowGraphSceneEventCoordinator;
@@ -130,8 +130,15 @@ export class FlowGraph {
         this._scene = params.scene;
         this._sceneEventCoordinator = new FlowGraphSceneEventCoordinator(this._scene);
         this._coordinator = params.coordinator;
+    }
 
+    private _attachEventObserver() {
         this._eventObserver = this._sceneEventCoordinator.onEventTriggeredObservable.add((event) => {
+            if (event.type === FlowGraphEventType.SceneDispose) {
+                this.dispose();
+                return;
+            }
+
             for (const context of this._executionContexts) {
                 const order = this._getContextualOrder(event.type, context);
                 for (const block of order) {
@@ -151,11 +158,36 @@ export class FlowGraph {
                         context._notifyOnTick(event.payload);
                     }
                     break;
-                case FlowGraphEventType.SceneDispose:
-                    this.dispose();
-                    break;
             }
         });
+    }
+
+    private _detachEventObserver() {
+        this._eventObserver?.remove();
+        this._eventObserver = null;
+    }
+
+    /**
+     * Sets a new scene for this flow graph, re-wiring all event listeners.
+     * This is useful when the scene the flow graph should listen to changes
+     * (e.g. when a new scene is loaded in an editor preview).
+     * If the graph is currently running, it will be stopped first and must be
+     * restarted manually after calling this method.
+     * @param scene the new scene to attach to
+     */
+    public setScene(scene: Scene): void {
+        if (scene === this._scene) {
+            return;
+        }
+        if (this.state === FlowGraphState.Started) {
+            this.stop();
+        }
+        // Tear down old event coordinator
+        this._detachEventObserver();
+        this._sceneEventCoordinator.dispose();
+        // Rebuild with the new scene
+        this._scene = scene;
+        this._sceneEventCoordinator = new FlowGraphSceneEventCoordinator(this._scene);
     }
 
     /**
@@ -215,6 +247,7 @@ export class FlowGraph {
         if (this.state === FlowGraphState.Stopped) {
             return;
         }
+        this._detachEventObserver();
         this.state = FlowGraphState.Stopped;
         for (const context of this._executionContexts) {
             context._clearPendingBlocks();
@@ -248,6 +281,7 @@ export class FlowGraph {
         if (this._executionContexts.length === 0) {
             this.createContext();
         }
+        this._attachEventObserver();
         this.state = FlowGraphState.Started;
         this._startPendingEvents();
         // On a fresh start (not resume), fire the SceneReady event if the scene is already ready.
@@ -305,7 +339,7 @@ export class FlowGraph {
         for (const type in this._eventBlocks) {
             this._eventBlocks[type as FlowGraphEventType].length = 0;
         }
-        this._eventObserver?.remove();
+        this._detachEventObserver();
         this._sceneEventCoordinator.dispose();
     }
 

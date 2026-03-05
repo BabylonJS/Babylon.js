@@ -99,11 +99,39 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         }
     }
 
-    private _onReset() {
+    private async _onResetAsync() {
         try {
             this.props.globalState.flowGraph.stop();
-            this.props.globalState.flowGraph.start();
-            this._log("Flow graph reset and started.");
+
+            // If a scene was loaded from a snippet, reload it
+            if (this.props.globalState.snippetId && this.props.globalState.sceneContext) {
+                this._log("Reloading scene snippet...");
+
+                // Wait for the scene context to be rebuilt after the snippet reloads
+                const sceneContextReady = new Promise<void>((resolve) => {
+                    const observer = this.props.globalState.onSceneContextChanged.add((ctx) => {
+                        if (ctx) {
+                            this.props.globalState.onSceneContextChanged.remove(observer);
+                            resolve();
+                        }
+                    });
+                });
+
+                // Request the snippet reload
+                this.props.globalState.onReloadSnippetRequested.notifyObservers();
+
+                // Wait for the new scene context to arrive
+                await sceneContextReady;
+
+                // Wait for all assets in the new scene to finish loading
+                const scene = this.props.globalState.sceneContext!.scene;
+                if (!scene.isReady(true)) {
+                    this._log("Waiting for scene assets to load...");
+                    await scene.whenReadyAsync(true);
+                }
+            }
+
+            this._log("Flow graph reset. Press Start to run.");
         } catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error resetting graph: ${err}`, true));
         }
@@ -118,7 +146,7 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         const canStart = isStopped || isPaused;
         const canPause = isStarted;
         const canStop = isStarted || isPaused;
-        const canReset = isStarted || isPaused;
+        const canReset = true; // Always available — reloads the scene and stops the graph
 
         const stateLabel = isStopped ? "Stopped" : isStarted ? "Running" : "Paused";
         const stateCls = isStopped ? "state-stopped" : isStarted ? "state-running" : "state-paused";
@@ -134,7 +162,7 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
                 <button className="fge-ctrl-btn fge-ctrl-stop" title="Stop" onClick={() => this._onStop()} disabled={!canStop}>
                     ⏹
                 </button>
-                <button className="fge-ctrl-btn fge-ctrl-reset" title="Reset" onClick={() => this._onReset()} disabled={!canReset}>
+                <button className="fge-ctrl-btn fge-ctrl-reset" title="Reset" onClick={() => void this._onResetAsync()} disabled={!canReset}>
                     ↺
                 </button>
                 <span className={`fge-ctrl-state ${stateCls}`}>{stateLabel}</span>
