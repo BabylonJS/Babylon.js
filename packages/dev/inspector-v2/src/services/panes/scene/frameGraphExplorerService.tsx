@@ -3,6 +3,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { EditRegular, FrameRegular, PlayFilled, PlayRegular } from "@fluentui/react-icons";
 
 import { FrameGraph } from "core/FrameGraph/frameGraph";
@@ -42,7 +43,7 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
                     },
                 };
             },
-            entityIcon: () => <FrameRegular />,
+            entityIcon: () => <FrameRegular color={tokens.colorPaletteGreenForeground2} />,
             getEntityAddedObservables: () => [scene.onNewFrameGraphAddedObservable],
             getEntityRemovedObservables: () => [scene.onFrameGraphRemovedObservable],
         });

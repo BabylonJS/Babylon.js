@@ -6,7 +6,7 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
  *
  */
 
-const TsOptions: typescript.CompilerOptions = {
+const TsOptions = {
     allowJs: true,
     allowSyntheticDefaultImports: true,
     esModuleInterop: true,
@@ -31,16 +31,29 @@ const TsOptions: typescript.CompilerOptions = {
     jsx: typescript.JsxEmit.ReactJSX,
     jsxFactory: "JSXAlone.createElement",
     lib: ["es2020", "dom", "dom.iterable"],
-};
+} as const satisfies typescript.CompilerOptions;
 
-const JsOptions: typescript.CompilerOptions = {
+const JsOptions = {
     ...TsOptions,
-    checkJs: false,
+    checkJs: true,
     noImplicitAny: false,
     allowJs: true,
     jsxFactory: "JSXAlone.createElement",
     jsx: typescript.JsxEmit.ReactJSX,
-};
+} as const satisfies typescript.CompilerOptions;
+
+const TsDiagnosticsOptions = {
+    noSemanticValidation: false,
+    noSyntaxValidation: false,
+    noSuggestionDiagnostics: false,
+} as const satisfies typescript.DiagnosticsOptions;
+
+const JsDiagnosticsOptions = {
+    noSemanticValidation: true,
+    noSyntaxValidation: false,
+    noSuggestionDiagnostics: false,
+} as const satisfies typescript.DiagnosticsOptions;
+
 /**
  *
  */
@@ -95,11 +108,8 @@ declare module "*.fx"   { const content: string; export default content; }`;
             ...JsOptions,
             paths: { ...this._paths },
         });
-        typescript.typescriptDefaults.setDiagnosticsOptions({
-            noSemanticValidation: false,
-            noSyntaxValidation: false,
-            noSuggestionDiagnostics: false,
-        });
+        typescript.typescriptDefaults.setDiagnosticsOptions(TsDiagnosticsOptions);
+        typescript.javascriptDefaults.setDiagnosticsOptions(JsDiagnosticsOptions);
     }
 
     addForwarder(raw: string, canonical: string) {
@@ -160,17 +170,9 @@ declare module "*.fx"   { const content: string; export default content; }`;
         const ts = typescript;
 
         // Force worker restart to pick up all models
-        ts.typescriptDefaults.setDiagnosticsOptions({
-            noSemanticValidation: false,
-            noSyntaxValidation: false,
-            noSuggestionDiagnostics: false,
-        });
+        ts.typescriptDefaults.setDiagnosticsOptions(TsDiagnosticsOptions);
 
-        ts.javascriptDefaults.setDiagnosticsOptions({
-            noSemanticValidation: false,
-            noSyntaxValidation: false,
-            noSuggestionDiagnostics: false,
-        });
+        ts.javascriptDefaults.setDiagnosticsOptions(JsDiagnosticsOptions);
     }
     private _workspaceDecls?: { ts: monaco.IDisposable; js: monaco.IDisposable };
 

@@ -55,7 +55,7 @@ describe("WebDeviceInputSystem", () => {
     afterEach(() => {
         wdis.dispose();
         engine.dispose();
-        window.PointerEvent = undefined;
+        window.PointerEvent = undefined as any;
     });
 
     describe("when pointerdown comes before pointermove", () => {

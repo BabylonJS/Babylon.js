@@ -73,7 +73,7 @@ describe("AudioEngine", () => {
         (audioEngine._v2._audioContext as unknown as AudioContextMock).requireUserInteraction = true;
 
         const arrayBuffer = AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = new Sound(expect.getState().currentTestName, arrayBuffer);
+        const sound = new Sound(expect.getState().currentTestName!, arrayBuffer);
 
         expect((audioEngine._v2 as any)._unmuteUI._button.style.display).toBe("none");
 
@@ -89,7 +89,7 @@ describe("AudioEngine", () => {
         const audioEngine = createAudioEngine("running");
 
         const arrayBuffer = AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = new Sound(expect.getState().currentTestName, arrayBuffer);
+        const sound = new Sound(expect.getState().currentTestName!, arrayBuffer);
 
         expect((audioEngine._v2 as any)._unmuteUI._button.style.display).toBe("none");
 

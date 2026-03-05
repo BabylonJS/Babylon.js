@@ -19,6 +19,7 @@ test.beforeEach(({ page }) => {
     });
 
     page.on("console", (message) => {
+        console.log(`[browser] ${message.text()}`);
         if (message.type() === "error" || message.type() === "warning") {
             const text = message.text();
             // Only capture messages from Babylon.js (prefixed with "BJS -").
@@ -30,12 +31,17 @@ test.beforeEach(({ page }) => {
 });
 
 test.afterEach(async ({ page }) => {
-    // Wait until 100 frames have been rendered to allow async errors (e.g. WebGPU validation) to surface.
-    await page.waitForFunction(() => {
+    // Wait until at least 50 frames have been rendered to allow async errors (e.g. WebGPU validation) to surface.
+    const minFrameCount = 50;
+    const frameIdHandle = await page.waitForFunction((minFrameCount) => {
         const viewer = document.querySelector("babylon-viewer") as ViewerElement;
         const engine = viewer.viewerDetails?.scene.getEngine();
-        return engine && engine.frameId >= 100;
-    });
+        return engine && engine.frameId >= minFrameCount ? engine.frameId : null;
+    }, minFrameCount);
+
+    const actualFrameCount = await frameIdHandle.jsonValue();
+    console.log(`${actualFrameCount} of minimum ${minFrameCount} frames rendered.`);
+    expect(actualFrameCount).toBeGreaterThanOrEqual(minFrameCount);
     expect(pageErrors, "Unhandled page errors").toEqual([]);
     expect(consoleErrors, "Console errors").toEqual([]);
 });
@@ -242,22 +248,21 @@ test('environment="auto"', async ({ page }) => {
     expect(isEnvironmentLoaded).toBeTruthy();
 });
 
-// TODO: Uncomment when IBL shadow bugs with WebGPU are resolved.
-// test('shadow-quality="high"', async ({ page }) => {
-//     const viewerElementHandle = await attachViewerElement(
-//         page,
-//         `
-//         <babylon-viewer render-when-idle
-//             source="https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb"
-//             shadow-quality="high"
-//         >
-//         </babylon-viewer>
-//         `
-//     );
+test('shadow-quality="high"', async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer render-when-idle
+            source="https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb"
+            shadow-quality="high"
+        >
+        </babylon-viewer>
+        `
+    );
 
-//     // Wait for the viewerDetails property to become defined
-//     await page.waitForFunction((viewerElement) => {
-//         // For now, we'll just rely on the common per-test validation that there are now unhandled page errors or console errors.
-//         return (viewerElement as ViewerElement).viewerDetails;
-//     }, viewerElementHandle);
-// });
+    // Wait for the viewerDetails property to become defined
+    await page.waitForFunction((viewerElement) => {
+        // For now, we'll just rely on the common per-test validation that there are no unhandled page errors or console errors.
+        return (viewerElement as ViewerElement).viewerDetails;
+    }, viewerElementHandle);
+});
