@@ -70,6 +70,11 @@ export class SerializationTools {
             serializationObject.sceneSnippetId = globalState.snippetId;
         }
 
+        // Persist the flow graph snippet ID so it survives round-trips
+        if (globalState.flowGraphSnippetId) {
+            serializationObject.flowGraphSnippetId = globalState.flowGraphSnippetId;
+        }
+
         return JSON.stringify(serializationObject, undefined, 2);
     }
 
@@ -98,6 +103,11 @@ export class SerializationTools {
             if (snippetId && snippetId !== globalState.snippetId) {
                 globalState.snippetId = snippetId;
                 globalState.onSnippetIdChanged.notifyObservers(snippetId);
+            }
+
+            // Restore the flow graph snippet ID
+            if (serializationObject.flowGraphSnippetId) {
+                globalState.flowGraphSnippetId = serializationObject.flowGraphSnippetId;
             }
         } finally {
             globalState.onIsLoadingChanged.notifyObservers(false);

@@ -242,6 +242,9 @@ export class GlobalState {
     /** Observable triggered to request a snippet reload (e.g. from the Reset button) */
     onReloadSnippetRequested = new Observable<void>();
 
+    /** The snippet ID of the flow graph itself (for save/load to snippet server) */
+    flowGraphSnippetId: string = "";
+
     private _flowGraph: FlowGraph;
     private _sceneContextObserver: Nullable<Observer<Nullable<SceneContext>>> = null;
     private _originalCreateContext: Nullable<() => FlowGraphContext> = null;

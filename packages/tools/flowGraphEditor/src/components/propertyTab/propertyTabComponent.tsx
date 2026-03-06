@@ -24,6 +24,8 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { Constants } from "core/Engines/constants";
+import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -110,6 +112,103 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
                 this.setState({ uploadInProgress: false });
             });
+    }
+
+    saveToSnippetServer() {
+        const json = SerializationTools.Serialize(this.props.globalState.flowGraph, this.props.globalState);
+        const dataToSend = {
+            payload: JSON.stringify({ flowGraph: json }),
+            name: "",
+            description: "",
+            tags: "",
+        };
+
+        const snippetId = this.props.globalState.flowGraphSnippetId;
+        const url = Constants.SnippetUrl + (snippetId ? "/" + snippetId : "");
+
+        const xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = () => {
+            if (xmlHttp.readyState !== 4) {
+                return;
+            }
+            if (xmlHttp.status === 200) {
+                const snippet = JSON.parse(xmlHttp.responseText);
+                let newId = snippet.id;
+                if (snippet.version && snippet.version !== "0") {
+                    newId += "#" + snippet.version;
+                }
+                this.props.globalState.flowGraphSnippetId = newId;
+                this.forceUpdate();
+
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(newId).catch(() => {
+                        /* clipboard may not be available in all contexts */
+                    });
+                }
+
+                const windowAsAny = window as any;
+                if (windowAsAny.Playground && snippetId) {
+                    windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                        regex: new RegExp(snippetId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
+                        replace: newId,
+                    });
+                }
+
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph saved with ID: " + newId, false));
+                this.props.globalState.hostDocument.defaultView!.alert("Flow graph saved with ID: " + newId + " (the ID was also copied to your clipboard)");
+            } else {
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to save flow graph to snippet server", true));
+                this.props.globalState.hostDocument.defaultView!.alert(`Unable to save your flow graph (${(dataToSend.payload.length / 1024).toFixed(0)} KB). Please try again.`);
+            }
+        };
+
+        xmlHttp.open("POST", url, true);
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+        xmlHttp.send(JSON.stringify(dataToSend));
+    }
+
+    loadFromSnippet(snippetId?: string) {
+        const id = snippetId || this.props.globalState.hostDocument.defaultView!.prompt("Please enter the snippet ID to load");
+        if (!id) {
+            return;
+        }
+
+        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Loading flow graph from snippet " + id + "...", false));
+
+        const xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = () => {
+            if (xmlHttp.readyState !== 4) {
+                return;
+            }
+            if (xmlHttp.status === 200) {
+                const snippet = JSON.parse(xmlHttp.responseText);
+                const jsonPayload = JSON.parse(snippet.jsonPayload);
+                const serializationObject = JSON.parse(jsonPayload.flowGraph);
+
+                const doLoadAsync = async () => {
+                    try {
+                        await SerializationTools.DeserializeAsync(serializationObject, this.props.globalState);
+                        this.props.globalState.flowGraphSnippetId = id;
+                        this.props.globalState.onResetRequiredObservable.notifyObservers(false);
+                        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                        this.props.globalState.onClearUndoStack.notifyObservers();
+                        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph loaded from snippet " + id, false));
+                        this.forceUpdate();
+                    } catch (err) {
+                        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error loading snippet: " + err, true));
+                    }
+                };
+                void doLoadAsync();
+            } else {
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Unable to load snippet " + id, true));
+                this.props.globalState.hostDocument.defaultView!.alert("Unable to load snippet " + id);
+            }
+        };
+
+        const url = Constants.SnippetUrl + "/" + id.replace(/#/g, "/");
+        xmlHttp.open("GET", url);
+        xmlHttp.send();
     }
 
     override render() {
@@ -217,6 +316,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 }}
                             />
                         )}
+                    </LineContainerComponent>
+                    <LineContainerComponent title="SNIPPET">
+                        {this.props.globalState.flowGraphSnippetId && (
+                            <TextInputLineComponent
+                                label="Snippet ID"
+                                lockObject={this.props.lockObject}
+                                value={this.props.globalState.flowGraphSnippetId}
+                                target={this.props.globalState}
+                                propertyName="flowGraphSnippetId"
+                            />
+                        )}
+                        <ButtonLineComponent label="Load from snippet server" onClick={() => this.loadFromSnippet()} />
+                        <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippetServer()} />
                     </LineContainerComponent>
                 </div>
             </div>
