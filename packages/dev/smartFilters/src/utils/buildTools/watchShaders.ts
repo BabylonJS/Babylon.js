@@ -1,3 +1,10 @@
+/**
+ * Watches all .glsl files under <shaderPath> and rebuilds them when changed.
+ * @param shaderPath - The path to the shaders to watch
+ * @param smartFiltersCorePath - The path to import the Smart Filters core from
+ * @param babylonCorePath - The path to import the Babylon core from (optional)
+ * @example node watchShaders.js <shaderPath> @babylonjs/smart-filters
+ */
 import { watch } from "chokidar";
 import { extname } from "path";
 import { ConvertShader } from "./convertShaders.js";
