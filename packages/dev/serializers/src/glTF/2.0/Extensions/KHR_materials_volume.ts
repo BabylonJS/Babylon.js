@@ -129,6 +129,9 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
 
                     const thicknessFactor = babylonMaterial.geometryThickness;
                     const thicknessTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.geometryThicknessTexture) ?? undefined;
+                    if (thicknessTexture) {
+                        this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                    }
                     let transmissionAttenuationDistance = 1;
                     const transmissionAttenuationColor = Color3.White().asArray();
                     if (transmissionVolume) {
