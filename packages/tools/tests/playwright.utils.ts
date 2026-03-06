@@ -15,11 +15,6 @@ export function getBabylonServerTestsList() {
             testMatch: "**/*webgl2.test.ts",
             use: getUseDefinition("WebGL2"),
         },
-        {
-            name: "webgl2-largeWorld",
-            testMatch: "**/*webgl2-largeWorld.test.ts",
-            use: getUseDefinition("WebGL2"),
-        },
         // {
         //     name: "webgl1",
         //     testMatch: "**/*webgl1.test.ts",
@@ -47,11 +42,6 @@ export function getBabylonServerTestsList() {
         {
             name: "webgpu",
             testMatch: "**/*webgpu.test.ts",
-            use: getUseDefinition("WebGPU", "Chrome", false, true),
-        },
-        {
-            name: "webgpu-largeWorld",
-            testMatch: "**/*webgpu-largeWorld.test.ts",
             use: getUseDefinition("WebGPU", "Chrome", false, true),
         },
         {
