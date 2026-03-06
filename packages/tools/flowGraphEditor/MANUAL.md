@@ -227,3 +227,55 @@ Select the frame and press **Ctrl+C** / **Cmd+C**, then **Ctrl+V** / **Cmd+V** t
 - **Step through unfamiliar graphs** — set a breakpoint on the first block and use Step to trace the execution path.
 - **Watch the flow animation** — in debug mode, the animated dots show you the actual order of execution, which can reveal unexpected paths.
 - **Reset vs. Stop** — use Reset when you've modified the scene's state and need a clean slate; use Stop when you just want to halt execution.
+
+---
+
+## Block Property Panel
+
+Select a block on the canvas to view and edit its properties in the right-hand panel. The panel has up to four sections:
+
+### General
+
+Name, type, and comments for the selected block.
+
+### Construction Variables
+
+Shows constructor configuration fields that control how the block is created. These vary by block type. Examples:
+
+| Block                          | Fields                                                   |
+| ------------------------------ | -------------------------------------------------------- |
+| Math blocks (Add, Subtract, …) | Type, Matrix per component, Prevent int/float arithmetic |
+| Interpolation                  | Key frames count, Animation type                         |
+| Custom event (Send/Receive)    | Event ID                                                 |
+| ForLoop                        | Initial index, Increment when done                       |
+| DoN                            | Start index                                              |
+| Bitwise blocks                 | Value type                                               |
+| GetProperty                    | Reset to default when undefined                          |
+| Pointer/Pick events            | Stop propagation                                         |
+
+> **Note:** Some construction variables (like key frames count) control the block's port structure. Changing them updates the saved config but may require re-creating the block for new ports to appear.
+
+### Input Values
+
+Editable default values for unconnected data-input ports. Primitive types (number, boolean, string, FlowGraphInteger) are shown automatically. Connected inputs are displayed as read-only.
+
+### Properties
+
+Additional properties registered with the `editableInPropertyPage` decorator on the block class.
+
+### Specialized Property Panels
+
+Some blocks have dedicated property panels that replace the generic panel with richer editing controls:
+
+| Block(s)                                | Special Section           | Description                                                                                                                                                   |
+| --------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GetAsset                                | Asset Configuration       | Type dropdown + named asset picker from the loaded scene.                                                                                                     |
+| Pointer Down/Up/Move/Over/Out, MeshPick | Target Mesh               | Mesh dropdown picker from the loaded scene. Filters which mesh triggers the event.                                                                            |
+| PlayAnimation                           | Animation Group           | AnimationGroup dropdown from the loaded scene. Sets the default animation group to play.                                                                      |
+| Constant                                | Constant Value            | Type selector (Number, Integer, Boolean, String, Vector2/3, Color3/4, Matrix) + matching value editor. Changing the type updates the output port's rich type. |
+| Switch                                  | Cases                     | Dynamic list of numeric case values with add/remove buttons. Each case creates a signal output.                                                               |
+| DataSwitch                              | Cases                     | Numeric case list like Switch; also shows the `treatCasesAsIntegers` toggle. Each case creates a data input.                                                  |
+| SetVariable (multi mode)                | Variables                 | Dynamic list of variable names with add/remove. Each variable creates a data input.                                                                           |
+| Send/Receive Custom Event               | Event Data Inputs/Outputs | Key-type list editor. Add entries by name + FlowGraph-type dropdown. Each entry creates a data input (Send) or output (Receive).                              |
+
+> **Scene-dependent pickers:** The mesh and animation-group pickers require a scene to be loaded in the Preview panel. Without a loaded scene, an info message is shown instead.

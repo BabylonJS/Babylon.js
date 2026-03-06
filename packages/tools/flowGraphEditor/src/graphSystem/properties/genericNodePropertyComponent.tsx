@@ -197,6 +197,24 @@ export class ConstructorVariablesPropertyTabComponent extends React.Component<IP
                         );
                     }
 
+                    if (field.kind === "integer") {
+                        const intVal = currentVal instanceof FlowGraphInteger ? currentVal.value : typeof currentVal === "number" ? currentVal : 0;
+                        const proxy = { v: intVal };
+                        return (
+                            <FloatLineComponent
+                                key={field.key}
+                                label={field.label}
+                                lockObject={this.props.stateManager.lockObject}
+                                digits={0}
+                                step={"1"}
+                                isInteger={true}
+                                target={proxy}
+                                propertyName="v"
+                                onChange={(v) => this._updateConfig(block, field.key, new FlowGraphInteger(v))}
+                            />
+                        );
+                    }
+
                     if (field.kind === "flowgraph-type") {
                         // OptionsLine with valuesAreStrings + noDirectUpdate lets us
                         // control the update ourselves while still benefiting from the

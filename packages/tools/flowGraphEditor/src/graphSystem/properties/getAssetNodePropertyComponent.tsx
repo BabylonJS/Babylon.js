@@ -140,7 +140,9 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
 
     override render() {
         const { stateManager, nodeData } = this.props;
+        const block = this._getBlock();
         const config = this._getConfig();
+        const blockId = block.uniqueId;
         const currentType: string = (config.type as string) ?? "Mesh";
         const currentIndexVal = GetIndexValue(config.index);
         const useUniqueId = config.useIndexAsUniqueId ?? false;
@@ -155,6 +157,7 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
                 <LineContainerComponent title="ASSET CONFIGURATION">
                     {/* Asset type selector */}
                     <OptionsLine
+                        key={`type-${blockId}`}
                         label="Asset Type"
                         options={AssetTypeOptions}
                         target={config}
@@ -167,7 +170,7 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
                         /* Scene-aware picker: dropdown of real scene objects */
                         <>
                             <OptionsLine
-                                key={sceneContext?.scene?.uid ?? "no-scene"}
+                                key={`asset-${blockId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
                                 label="Asset"
                                 options={[
                                     { label: "(none)", value: -1 },

@@ -21,6 +21,7 @@ export type ConstructorConfigFieldKind =
     | "flowgraph-type" // drop-down of all FlowGraphTypes string values
     | "boolean" // checkbox
     | "number" // float input
+    | "integer" // integer input (stored as FlowGraphInteger)
     | "string" // text input
     | "options"; // drop-down with custom options
 
@@ -138,7 +139,13 @@ export const CONSTRUCTOR_CONFIG: ReadonlyMap<string, ReadonlyArray<IConstructorC
     ["FlowGraphWaitAllBlock", [{ key: "inputSignalCount", label: "Input count", kind: "number" }]],
     ["FlowGraphFlipFlopBlock", [{ key: "startValue", label: "Start value", kind: "boolean" }]],
     ["FlowGraphWhileLoopBlock", [{ key: "doWhile", label: "Do-while", kind: "boolean" }]],
-    ["FlowGraphForLoopBlock", [{ key: "incrementIndexWhenLoopDone", label: "Increment when done", kind: "boolean" }]],
+    [
+        "FlowGraphForLoopBlock",
+        [
+            { key: "initialIndex", label: "Initial index", kind: "number" },
+            { key: "incrementIndexWhenLoopDone", label: "Increment when done", kind: "boolean" },
+        ],
+    ],
 
     // ---------- Normalize block ----------
     ["FlowGraphNormalizeBlock", [{ key: "nanOnZeroLength", label: "NaN on zero length", kind: "boolean" }]],
@@ -156,6 +163,7 @@ export const CONSTRUCTOR_CONFIG: ReadonlyMap<string, ReadonlyArray<IConstructorC
     ["FlowGraphBitwiseNotBlock", BITWISE_BLOCK_FIELDS],
     ["FlowGraphBitwiseAndBlock", BITWISE_BLOCK_FIELDS],
     ["FlowGraphBitwiseOrBlock", BITWISE_BLOCK_FIELDS],
+    ["FlowGraphBitwiseXorBlock", BITWISE_BLOCK_FIELDS],
 
     // ---------- Combine matrix blocks ----------
     ["FlowGraphCombineMatrixBlock", [{ key: "inputIsColumnMajor", label: "Column-major input", kind: "boolean" }]],
@@ -175,4 +183,32 @@ export const CONSTRUCTOR_CONFIG: ReadonlyMap<string, ReadonlyArray<IConstructorC
 
     // ---------- Data switch ----------
     ["FlowGraphDataSwitchBlock", [{ key: "treatCasesAsIntegers", label: "Treat cases as integers", kind: "boolean" }]],
+
+    // ---------- DoN block ----------
+    ["FlowGraphDoNBlock", [{ key: "startIndex", label: "Start index", kind: "integer" }]],
+
+    // ---------- JsonPointerParser block ----------
+    [
+        "FlowGraphJsonPointerParserBlock",
+        [
+            { key: "jsonPointer", label: "JSON Pointer", kind: "string" },
+            { key: "outputValue", label: "Output value", kind: "boolean" },
+        ],
+    ],
+
+    // ---------- Interpolation / animation block ----------
+    [
+        "FlowGraphInterpolationBlock",
+        [
+            { key: "keyFramesCount", label: "Key frames count", kind: "number" },
+            { key: "animationType", label: "Animation type", kind: "flowgraph-type", affectsPortTypes: true },
+        ],
+    ],
+
+    // ---------- Custom event blocks ----------
+    ["FlowGraphReceiveCustomEventBlock", [{ key: "eventId", label: "Event ID", kind: "string" }]],
+    ["FlowGraphSendCustomEventBlock", [{ key: "eventId", label: "Event ID", kind: "string" }]],
+
+    // ---------- Get property block ----------
+    ["FlowGraphGetPropertyBlock", [{ key: "resetToDefaultWhenUndefined", label: "Reset to default when undefined", kind: "boolean" }]],
 ]);
