@@ -2289,11 +2289,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         // Bones
         BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
 
-        let radianceTexture: Nullable<BaseTexture>;
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);
-            radianceTexture = this._getRadianceTexture();
+            const radianceTexture: Nullable<BaseTexture> = this._getRadianceTexture();
 
             if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || subMesh._drawWrapper._forceRebindOnNextCall) {
                 // Texture uniforms
