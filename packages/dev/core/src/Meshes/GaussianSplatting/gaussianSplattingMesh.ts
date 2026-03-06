@@ -2628,11 +2628,13 @@ export class GaussianSplattingMesh extends Mesh {
                     : compressedIndices;
         }
         if (this._partProxies) {
-            const serializedParts: Record<number, any> = {};
-            this._partProxies.forEach((proxy, proxyIndex) => {
+            // partIndex is serialized in GaussianSplattingPartProxyMesh
+            // so no need to keep it again here
+            const serializedParts: any[] = [];
+            this._partProxies.forEach((proxy) => {
                 // TODO: GaussianSplattingPartProxyMesh.doNotSerialize
                 // not fully sure if skipping a part is safe
-                serializedParts[proxyIndex] = proxy.serialize();
+                serializedParts.push(proxy.serialize());
             });
             serializationObject.partProxies = serializedParts;
         }
@@ -2684,13 +2686,13 @@ export class GaussianSplattingMesh extends Mesh {
         }
 
         if (parsedMesh.partProxies) {
-            for (const partIndex in parsedMesh.partProxies) {
-                const part = parsedMesh.partProxies[partIndex];
-                const newPartIndex = Number(partIndex);
+            for (const serializedPart of parsedMesh.partProxies) {
+                // Shallow copy to avoid changing the original serializedPart
+                const part = Object.assign({}, serializedPart);
                 part.compoundSplatMesh = mesh;
                 // No rootUrl needed to parse a part
                 const proxyMesh = Mesh.Parse(part, scene, "") as GaussianSplattingPartProxyMesh;
-                delete part.compoundSplatMesh;
+                const newPartIndex = proxyMesh.partIndex;
 
                 mesh.setWorldMatrixForPart(newPartIndex, proxyMesh.getWorldMatrix());
 
