@@ -6,7 +6,7 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 ## Critical (blocks productive work)
 
-- [ ] **No Copy/Paste or Duplicate** — Can't duplicate blocks or groups of blocks. The keyboard handler has a placeholder that returns `null`. Users end up rebuilding identical subgraphs manually.
+- [x] **No Copy/Paste or Duplicate** — Can't duplicate blocks or groups of blocks. The keyboard handler has a placeholder that returns `null`. Users end up rebuilding identical subgraphs manually. _(Implemented — Ctrl+C/V clones blocks with config and default values; Ctrl+G creates smart groups with auto-exposed ports)_
 
 - [x] **No runtime data inspection / value probes** — When the graph is running in the preview, there's no way to see what values are flowing through connections. Debug support is explicitly disabled (`RegisterDebugSupport` returns false). _(Implemented)_
 

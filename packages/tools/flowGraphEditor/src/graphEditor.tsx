@@ -12,6 +12,7 @@ import { blockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 import "./main.scss";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
+import { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
@@ -27,6 +28,7 @@ import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import type { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import type { IFlowGraphValidationResult } from "core/FlowGraph/flowGraphValidator";
 import { FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
+import { AnalyzeSmartGroup, ApplySmartGroupExposure } from "./graphSystem/smartGroup";
 
 /**
  * Pre-populate string (and other primitive) config fields for blocks whose constructors
@@ -237,6 +239,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 return;
             }
 
+            // Ctrl+G — Create smart group from selected nodes
+            if ((evt.ctrlKey || evt.metaKey) && (evt.key === "g" || evt.key === "G")) {
+                evt.preventDefault();
+                this._createSmartGroup();
+                return;
+            }
+
             void this._graphCanvas.handleKeyDownAsync(
                 evt,
                 (_nodeData) => {
@@ -245,9 +254,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 },
                 this._mouseLocationX,
                 this._mouseLocationY,
-                async (_nodeData) => {
-                    // Clone is not directly supported for all FlowGraph blocks
-                    return null;
+                async (nodeData) => {
+                    return this._cloneBlockAsync(nodeData);
                 },
                 this.props.globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement
             );
@@ -460,6 +468,167 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return evt.preventDefault();
         }
     };
+
+    /**
+     * Creates a smart group (frame) from the currently selected nodes.
+     * Analyzes the blocks to determine which ports to expose on the frame boundary.
+     * If the group has a single execution block + data blocks, ports are auto-configured.
+     * Otherwise, all signal boundary ports are exposed and the user can refine later.
+     */
+    private _createSmartGroup(): void {
+        const selectedNodes = this._graphCanvas.selectedNodes;
+        if (selectedNodes.length < 2) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Select at least 2 blocks to create a smart group", false));
+            return;
+        }
+
+        // Analyze the selection
+        const analysis = AnalyzeSmartGroup(selectedNodes);
+
+        // Compute bounding box of selected nodes
+        let minX = Infinity,
+            minY = Infinity,
+            maxX = -Infinity,
+            maxY = -Infinity;
+        for (const node of selectedNodes) {
+            if (node.x < minX) {
+                minX = node.x;
+            }
+            if (node.y < minY) {
+                minY = node.y;
+            }
+            const nodeRight = node.x + GraphCanvasComponent.NodeWidth;
+            const nodeBottom = node.y + (node.height || 150);
+            if (nodeRight > maxX) {
+                maxX = nodeRight;
+            }
+            if (nodeBottom > maxY) {
+                maxY = nodeBottom;
+            }
+        }
+
+        // Add padding around the bounding box
+        const padding = 30;
+        minX -= padding;
+        minY -= padding;
+        maxX += padding;
+        maxY += padding;
+
+        // Create frame programmatically
+        const newFrame = new GraphFrame(null, this._graphCanvas, true);
+        this._graphCanvas.frames.push(newFrame);
+
+        newFrame.x = minX;
+        newFrame.y = minY;
+        newFrame.width = maxX - minX;
+        newFrame.height = maxY - minY;
+        newFrame.name = analysis.isAutoConfigurable ? "Smart Group" : "Block Group";
+
+        // Add nodes to the frame
+        for (const node of selectedNodes) {
+            newFrame.nodes.push(node);
+            node.enclosingFrameId = newFrame.id;
+        }
+
+        // Apply smart port exposure
+        ApplySmartGroupExposure(newFrame, analysis);
+
+        // Collapse the frame to show it as a compact unit with exposed ports
+        newFrame.isCollapsed = true;
+
+        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newFrame });
+
+        const modeLabel = analysis.isAutoConfigurable ? "auto-configured" : "manual";
+        this.props.globalState.onLogRequiredObservable.notifyObservers(
+            new LogEntry(`Smart group created (${modeLabel}): ${analysis.exposedInputPorts.length} inputs, ${analysis.exposedOutputPorts.length} outputs exposed`, false)
+        );
+    }
+
+    /**
+     * Clone a flow graph block from the given node data.
+     * Serializes the block's config and default values, creates a new block of the same type
+     * with a fresh uniqueId, registers event blocks with the flow graph, and returns a new GraphNode.
+     */
+    private async _cloneBlockAsync(nodeData: INodeData): Promise<Nullable<GraphNode>> {
+        const sourceBlock = nodeData.data as FlowGraphBlock;
+        if (!sourceBlock) {
+            return null;
+        }
+
+        try {
+            const className = sourceBlock.getClassName();
+
+            // Serialize the source block to capture config and default values
+            const serialized: any = {};
+            sourceBlock.serialize(serialized);
+
+            // Use the block factory to get the class constructor
+            const factory = blockFactory(className);
+            const blockClass = await factory();
+
+            // Parse config (just copy it — values are already serialized)
+            const config = serialized.config ?? {};
+            config.name = className;
+
+            // Create the new block with the same config
+            const newBlock = new (blockClass as any)(config) as FlowGraphBlock;
+            // newBlock gets a fresh uniqueId from RandomGUID() in the constructor — no need to set it
+
+            // Restore data input default values (but not connections)
+            for (const serializedInput of serialized.dataInputs) {
+                const input = newBlock.getDataInput(serializedInput.name);
+                if (input) {
+                    // Clear connectedPointIds so no stale connections are restored
+                    const cleanInput = { ...serializedInput, connectedPointIds: [] };
+                    input.deserialize(cleanInput);
+                }
+            }
+
+            // Restore data output default values (but not connections)
+            for (const serializedOutput of serialized.dataOutputs) {
+                const output = newBlock.getDataOutput(serializedOutput.name);
+                if (output) {
+                    const cleanOutput = { ...serializedOutput, connectedPointIds: [] };
+                    output.deserialize(cleanOutput);
+                }
+            }
+
+            // Restore metadata (comments, etc.) except connection data
+            if (sourceBlock.metadata) {
+                newBlock.metadata = JSON.parse(JSON.stringify(sourceBlock.metadata));
+            }
+
+            // Also handle signal connection deserialization for execution blocks — clear connectedPointIds
+            if (newBlock instanceof FlowGraphExecutionBlock && serialized.signalInputs) {
+                for (const serializedSigIn of serialized.signalInputs) {
+                    const sigIn = newBlock.getSignalInput(serializedSigIn.name);
+                    if (sigIn) {
+                        sigIn.deserialize({ ...serializedSigIn, connectedPointIds: [] });
+                    }
+                }
+                for (const serializedSigOut of serialized.signalOutputs) {
+                    const sigOut = newBlock.getSignalOutput(serializedSigOut.name);
+                    if (sigOut) {
+                        sigOut.deserialize({ ...serializedSigOut, connectedPointIds: [] });
+                    }
+                }
+            }
+
+            // Register event blocks with the flow graph
+            const maybeEvent = newBlock as unknown as FlowGraphEventBlock;
+            if (typeof maybeEvent._executeEvent === "function" && maybeEvent.type !== FlowGraphEventType.NoTrigger) {
+                this.props.globalState.flowGraph.addEventBlock(maybeEvent);
+            }
+
+            // Create the visual graph node
+            const newNode = this.appendBlock(newBlock);
+            newNode.addClassToVisual(newBlock.getClassName());
+            return newNode;
+        } catch (err) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error cloning block: ${err}`, true));
+            return null;
+        }
+    }
 
     /** @internal */
     async _emitNewBlockAsync(blockType: string, targetX: number, targetY: number): Promise<GraphNode | undefined> {

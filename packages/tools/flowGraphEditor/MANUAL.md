@@ -165,8 +165,59 @@ Validation issues include the block name, severity (error/warning), and a descri
 
 | Key                                | Action                                        |
 | ---------------------------------- | --------------------------------------------- |
+| **Ctrl+C** / **Cmd+C**             | Copy selected blocks (or frames)              |
+| **Ctrl+V** / **Cmd+V**             | Paste copied blocks at cursor position        |
+| **Ctrl+G** / **Cmd+G**             | Create a smart group from selected blocks     |
 | **F9**                             | Toggle breakpoint on selected execution block |
 | **Enter** (in scene preview input) | Load the Playground snippet                   |
+
+---
+
+## Copy & Paste
+
+Select one or more blocks and press **Ctrl+C** (or **Cmd+C** on macOS) to copy them. Press **Ctrl+V** (or **Cmd+V**) to paste copies at the cursor position.
+
+- Cloned blocks retain all **config values** and **data input defaults** from the originals.
+- Signal and data connections are **not** copied — only internal connections between pasted blocks are re-established.
+- Event blocks are automatically registered with the flow graph.
+
+You can also copy and paste entire **frames** (groups) — select a frame and use Ctrl+C/V to duplicate it along with all its contained blocks.
+
+---
+
+## Smart Groups (Ctrl+G)
+
+Smart groups let you bundle multiple blocks into a collapsed frame with automatically exposed input/output ports, creating a reusable visual unit.
+
+### Creating a Smart Group
+
+1. Select 2 or more blocks on the canvas (Ctrl+click or drag-select).
+2. Press **Ctrl+G** (or **Cmd+G** on macOS).
+
+The editor analyzes the selected blocks and creates a collapsed frame with exposed boundary ports.
+
+### Auto-Configuration (Single Execution Block)
+
+If your selection contains **exactly one execution block** plus any number of data blocks:
+
+- The execution block's **signal input** ("in") is exposed as the group's entry point.
+- The execution block's **signal outputs** ("out", "done", "error") are exposed as group exit points.
+- Any **data input ports** that are unconnected or connected to blocks outside the group are exposed.
+- Any **data output ports** connected to blocks outside the group are exposed.
+
+This is the most common case — e.g., a "Set Variable" block with a few constant/math blocks feeding its inputs.
+
+### Multi-Execution-Block Groups
+
+If the selection contains **multiple execution blocks**, all signal ports that cross the group boundary (or are unconnected) are exposed. You can then expand the frame and refine which ports are exposed by toggling them in the frame port settings.
+
+### Ungrouping (Deleting a Smart Group)
+
+Deleting a frame (selecting the frame and pressing **Delete**) removes **only the frame**, not the blocks inside it. This is the "ungroup" operation — the blocks remain on the canvas with their connections intact. To delete the frame and its contents, expand the frame first, select all blocks inside, then delete them.
+
+### Copying a Smart Group
+
+Select the frame and press **Ctrl+C** / **Cmd+C**, then **Ctrl+V** / **Cmd+V** to paste a copy. The copy includes all blocks, their internal connections, and the frame's collapse/port exposure state.
 
 ---
 

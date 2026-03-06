@@ -31,24 +31,27 @@ export class ConnectionPointPortData implements IPortData {
         return this.data.name;
     }
 
+    private _isExposedOnFrame = false;
+    private _exposedPortPosition = -1;
+
     /** Whether this port is exposed on a frame */
     public get isExposedOnFrame() {
-        return false;
+        return this._isExposedOnFrame;
     }
 
-    /** Sets whether this port is exposed on a frame (not supported) */
-    public set isExposedOnFrame(_value: boolean) {
-        // Not supported for flow graph connections
+    /** Sets whether this port is exposed on a frame */
+    public set isExposedOnFrame(value: boolean) {
+        this._isExposedOnFrame = value;
     }
 
     /** Gets the exposed port position */
     public get exposedPortPosition() {
-        return -1;
+        return this._exposedPortPosition;
     }
 
-    /** Sets the exposed port position (not supported) */
-    public set exposedPortPosition(_value: number) {
-        // Not supported
+    /** Sets the exposed port position */
+    public set exposedPortPosition(value: number) {
+        this._exposedPortPosition = value;
     }
 
     /** Whether this port has any connections */

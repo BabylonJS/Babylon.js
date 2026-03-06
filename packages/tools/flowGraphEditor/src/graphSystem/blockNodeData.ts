@@ -180,5 +180,17 @@ export class BlockNodeData implements INodeData {
         for (const output of data.dataOutputs) {
             this._outputs.push(new ConnectionPointPortData(output, nodeContainer, "data"));
         }
+
+        // Compatibility shim: GraphCanvasComponent.reconnectNewNodes accesses
+        // content.data.outputs[index].connectTo() to re-establish internal connections
+        // after copy/paste. FlowGraphBlock doesn't have a combined `outputs` property
+        // (it uses dataOutputs + signalOutputs), so we expose the raw connection points
+        // in the same order as this._outputs.
+        const rawOutputs: any[] = [];
+        if ((data as unknown as FlowGraphExecutionBlock).signalOutputs) {
+            rawOutputs.push(...(data as unknown as FlowGraphExecutionBlock).signalOutputs);
+        }
+        rawOutputs.push(...data.dataOutputs);
+        (data as any).outputs = rawOutputs;
     }
 }
