@@ -2694,8 +2694,6 @@ export class GaussianSplattingMesh extends Mesh {
                 const proxyMesh = Mesh.Parse(part, scene, "") as GaussianSplattingPartProxyMesh;
                 const newPartIndex = proxyMesh.partIndex;
 
-                mesh.setWorldMatrixForPart(newPartIndex, proxyMesh.getWorldMatrix());
-
                 // Store the proxy in the map
                 mesh._partProxies.set(newPartIndex, proxyMesh);
             }
