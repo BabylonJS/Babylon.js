@@ -2646,7 +2646,7 @@ export class GaussianSplattingMesh extends Mesh {
     public static override Parse(parsedMesh: any, scene: Scene): GaussianSplattingMesh {
         const mesh = new GaussianSplattingMesh(parsedMesh.name, null, scene, parsedMesh.keepInRam);
 
-        let splatsData: ArrayBuffer | string = parsedMesh.splatsData;
+        let splatsData: ArrayBuffer | string | undefined = parsedMesh.splatsData;
         if (typeof splatsData === "string") {
             splatsData = DecodeBase64ToBinary(splatsData);
         }
@@ -2674,8 +2674,10 @@ export class GaussianSplattingMesh extends Mesh {
         if (partIndices) {
             parsedPartIndices = ParsePartIndices(partIndices);
         }
-        const flipY = parsedMesh._flipY ?? false;
-        mesh.updateData(splatsData, parsedShData, { flipY }, parsedPartIndices);
+        if (splatsData) {
+            const flipY = parsedMesh._flipY ?? false;
+            mesh.updateData(splatsData, parsedShData, { flipY }, parsedPartIndices);
+        }
 
         if (parsedMesh.partProxies) {
             for (const partIndex in parsedMesh.partProxies) {
