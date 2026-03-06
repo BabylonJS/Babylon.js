@@ -253,6 +253,7 @@ export class FlowGraph {
         this.state = FlowGraphState.Stopped;
         for (const context of this._executionContexts) {
             context._clearPendingBlocks();
+            context._clearPendingActivation();
         }
         this._executionContexts.length = 0;
     }
@@ -336,6 +337,7 @@ export class FlowGraph {
         this.state = FlowGraphState.Stopped;
         for (const context of this._executionContexts) {
             context._clearPendingBlocks();
+            context._clearPendingActivation();
         }
         this._executionContexts.length = 0;
         for (const type in this._eventBlocks) {

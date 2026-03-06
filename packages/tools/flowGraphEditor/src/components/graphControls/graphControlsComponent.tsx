@@ -2,6 +2,7 @@ import * as React from "react";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { FlowGraphState } from "core/FlowGraph/flowGraph";
+import type { IFlowGraphPendingActivation } from "core/FlowGraph/flowGraphContext";
 import type { GlobalState } from "../../globalState";
 import { LogEntry } from "../log/logComponent";
 import type { IFlowGraphValidationResult } from "core/FlowGraph/flowGraphValidator";
@@ -18,6 +19,7 @@ interface IGraphControlsState {
     debugMode: boolean;
     liveValidation: boolean;
     validationResult: Nullable<IFlowGraphValidationResult>;
+    breakpointPaused: boolean;
 }
 
 /**
@@ -29,6 +31,7 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
     private _debugModeObserver: Nullable<Observer<boolean>> = null;
     private _liveValidationObserver: Nullable<Observer<boolean>> = null;
     private _validationResultObserver: Nullable<Observer<Nullable<IFlowGraphValidationResult>>> = null;
+    private _breakpointHitObserver: Nullable<Observer<IFlowGraphPendingActivation>> = null;
 
     constructor(props: IGraphControlsProps) {
         super(props);
@@ -37,6 +40,7 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
             debugMode: props.globalState.isDebugMode,
             liveValidation: props.globalState.liveValidation,
             validationResult: props.globalState.validationResult,
+            breakpointPaused: false,
         };
     }
 
@@ -60,6 +64,13 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         this._validationResultObserver = this.props.globalState.onValidationResultChanged.add((validationResult) => {
             this.setState({ validationResult });
         });
+
+        this._breakpointHitObserver = this.props.globalState.onBreakpointHit.add((activation) => {
+            this.setState({ breakpointPaused: true });
+            this.props.globalState.onLogRequiredObservable.notifyObservers(
+                new LogEntry(`Breakpoint hit: ${activation.block.getClassName()} (${activation.block.name ?? activation.block.uniqueId})`, false)
+            );
+        });
     }
 
     override componentWillUnmount() {
@@ -73,6 +84,8 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         this._liveValidationObserver = null;
         this._validationResultObserver?.remove();
         this._validationResultObserver = null;
+        this._breakpointHitObserver?.remove();
+        this._breakpointHitObserver = null;
     }
 
     /**
@@ -90,7 +103,12 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         }
 
         this._stateObserver = flowGraph.onStateChangedObservable.add((newState) => {
-            this.setState({ graphState: newState });
+            // When the graph stops or is paused externally, clear the breakpoint-paused state
+            if (newState === FlowGraphState.Stopped || newState === FlowGraphState.Paused) {
+                this.setState({ graphState: newState, breakpointPaused: false });
+            } else {
+                this.setState({ graphState: newState });
+            }
         });
 
         // Sync immediately – the new graph is likely in Stopped state
@@ -122,9 +140,31 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
     private _onStop() {
         try {
             this.props.globalState.flowGraph.stop();
+            this.setState({ breakpointPaused: false });
             this._log("Flow graph stopped.");
         } catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error stopping graph: ${err}`, true));
+        }
+    }
+
+    private _onContinue() {
+        try {
+            this.props.globalState.continueExecution();
+            this.setState({ breakpointPaused: false });
+            this._log("Resuming from breakpoint.");
+        } catch (err) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error continuing: ${err}`, true));
+        }
+    }
+
+    private _onStep() {
+        try {
+            this.setState({ breakpointPaused: false });
+            this.props.globalState.stepExecution();
+            // stepExecution is synchronous — if another breakpoint was hit, the
+            // observer will have already fired and set breakpointPaused back to true.
+        } catch (err) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Error stepping: ${err}`, true));
         }
     }
 
@@ -182,7 +222,7 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
     }
 
     override render() {
-        const { graphState } = this.state;
+        const { graphState, breakpointPaused } = this.state;
         const isStopped = graphState === FlowGraphState.Stopped;
         const isStarted = graphState === FlowGraphState.Started;
         const isPaused = graphState === FlowGraphState.Paused;
@@ -191,9 +231,11 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         const canPause = isStarted;
         const canStop = isStarted || isPaused;
         const canReset = true; // Always available — reloads the scene and stops the graph
+        const canContinue = breakpointPaused;
+        const canStep = breakpointPaused;
 
-        const stateLabel = isStopped ? "Stopped" : isStarted ? "Running" : "Paused";
-        const stateCls = isStopped ? "state-stopped" : isStarted ? "state-running" : "state-paused";
+        const stateLabel = breakpointPaused ? "Breakpoint" : isStopped ? "Stopped" : isStarted ? "Running" : "Paused";
+        const stateCls = breakpointPaused ? "state-breakpoint" : isStopped ? "state-stopped" : isStarted ? "state-running" : "state-paused";
 
         return (
             <div className="fge-graph-controls">
@@ -208,6 +250,12 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
                 </button>
                 <button className="fge-ctrl-btn fge-ctrl-reset" title="Reset" onClick={() => void this._onResetAsync()} disabled={!canReset}>
                     ↺
+                </button>
+                <button className="fge-ctrl-btn fge-ctrl-continue" title="Continue (resume from breakpoint)" onClick={() => this._onContinue()} disabled={!canContinue}>
+                    ▶▶
+                </button>
+                <button className="fge-ctrl-btn fge-ctrl-step" title="Step (execute one block)" onClick={() => this._onStep()} disabled={!canStep}>
+                    ▶|
                 </button>
                 <span className={`fge-ctrl-state ${stateCls}`}>{stateLabel}</span>
                 <span className="fge-ctrl-separator" />

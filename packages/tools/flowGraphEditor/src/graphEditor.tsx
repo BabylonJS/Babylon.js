@@ -16,6 +16,7 @@ import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
@@ -229,6 +230,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 return;
             }
 
+            // F9 — Toggle breakpoint on the selected node
+            if (evt.key === "F9") {
+                evt.preventDefault();
+                this._toggleBreakpointOnSelection();
+                return;
+            }
+
             void this._graphCanvas.handleKeyDownAsync(
                 evt,
                 (_nodeData) => {
@@ -272,6 +280,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.props.globalState.stateManager.onNewNodeCreatedObservable.add(scheduleLiveValidation);
         this.props.globalState.stateManager.onRebuildRequiredObservable.add(scheduleLiveValidation);
         this.props.globalState.stateManager.onGraphNodeRemovalObservable.add(scheduleLiveValidation);
+
+        // ── Breakpoint wiring ─────────────────────────────────────────
+        // When breakpoints change, update badges on all graph nodes.
+        this.props.globalState.onBreakpointsChanged.add(() => {
+            this._applyBreakpointBadges();
+        });
+
+        // When a breakpoint is hit, highlight the paused node with the paused state.
+        this.props.globalState.onBreakpointHit.add((activation) => {
+            this._applyBreakpointBadges(activation.block.uniqueId);
+        });
     }
 
     /** @internal */
@@ -308,6 +327,41 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             const hasError = issues.some((i) => i.severity === FlowGraphValidationSeverity.Error);
             const tooltip = issues.map((i) => (i.severity === FlowGraphValidationSeverity.Error ? "[Error] " : "[Warn] ") + i.message).join("\n");
             node.setValidationState(hasError ? "error" : "warning", tooltip);
+        }
+    }
+
+    /**
+     * Toggle a breakpoint on the currently selected graph node.
+     * Only execution blocks (blocks with signal inputs) can have breakpoints.
+     */
+    private _toggleBreakpointOnSelection(): void {
+        if (!this._graphCanvas) {
+            return;
+        }
+        for (const node of this._graphCanvas.selectedNodes) {
+            const block = node.content?.data as FlowGraphBlock | undefined;
+            if (block && block instanceof FlowGraphExecutionBlock) {
+                this.props.globalState.toggleBreakpoint(block.uniqueId);
+            }
+        }
+    }
+
+    /**
+     * Applies breakpoint badges (red dots) to all graph nodes.
+     * @param pausedBlockId - if provided, the block that is currently paused on a breakpoint
+     */
+    private _applyBreakpointBadges(pausedBlockId?: string): void {
+        if (!this._graphCanvas) {
+            return;
+        }
+        for (const node of this._graphCanvas.nodes) {
+            const block = node.content?.data as FlowGraphBlock | undefined;
+            if (!block) {
+                continue;
+            }
+            const hasBreakpoint = this.props.globalState.hasBreakpoint(block.uniqueId);
+            const isPaused = pausedBlockId === block.uniqueId;
+            node.setBreakpointState(hasBreakpoint, isPaused);
         }
     }
 

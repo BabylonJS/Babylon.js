@@ -98,6 +98,31 @@
         &.state-paused {
             color: rgb(220, 180, 60);
         }
+
+        &.state-breakpoint {
+            color: rgb(231, 76, 60);
+            animation: breakpoint-pulse 1s ease-in-out infinite;
+        }
+    }
+
+    .fge-ctrl-continue:not(:disabled) {
+        color: rgb(51, 183, 102);
+        border-color: rgb(51, 183, 102);
+        font-size: 11px;
+
+        &:hover {
+            background: rgba(51, 183, 102, 0.2);
+        }
+    }
+
+    .fge-ctrl-step:not(:disabled) {
+        color: rgb(100, 160, 220);
+        border-color: rgb(100, 160, 220);
+        font-size: 11px;
+
+        &:hover {
+            background: rgba(100, 160, 220, 0.2);
+        }
     }
 
     .fge-ctrl-separator {
@@ -161,5 +186,15 @@
             color: #f39c12;
             background: rgba(243, 156, 18, 0.15);
         }
+    }
+}
+
+@keyframes breakpoint-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
     }
 }

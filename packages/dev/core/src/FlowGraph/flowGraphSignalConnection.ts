@@ -52,6 +52,10 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
             },
         });
         if (this.connectionType === FlowGraphConnectionType.Input) {
+            // Check breakpoint before executing
+            if (context._shouldBreak(this._ownerBlock, this)) {
+                return; // Execution paused — stored as pending activation
+            }
             context._notifyExecuteNode(this._ownerBlock);
             const startTime = performance.now();
             this._ownerBlock._execute(context, this);

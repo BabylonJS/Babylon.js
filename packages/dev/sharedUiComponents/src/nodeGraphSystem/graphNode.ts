@@ -38,6 +38,7 @@ export class GraphNode {
     private _executionTime: HTMLDivElement;
     private _selectionBorder: HTMLDivElement;
     private _validationBadge: HTMLDivElement;
+    private _breakpointBadge: HTMLDivElement;
     private _inputPorts: NodePort[] = [];
     private _outputPorts: NodePort[] = [];
     private _links: NodeLink[] = [];
@@ -87,6 +88,24 @@ export class GraphNode {
         this._validationBadge.style.display = "";
         this._validationBadge.classList.add(severity === "error" ? localStyles["validationError"] : localStyles["validationWarning"]);
         this._validationBadge.title = tooltip ?? "";
+    }
+
+    /**
+     * Shows or hides a breakpoint indicator on the node.
+     * @param active - true to show the red breakpoint dot, false to hide.
+     * @param paused - true if execution is currently paused on this breakpoint.
+     */
+    public setBreakpointState(active: boolean, paused: boolean = false): void {
+        if (!this._breakpointBadge) {
+            return;
+        }
+        this._breakpointBadge.classList.remove(localStyles["breakpointActive"], localStyles["breakpointPaused"]);
+        if (!active) {
+            this._breakpointBadge.style.display = "none";
+            return;
+        }
+        this._breakpointBadge.style.display = "";
+        this._breakpointBadge.classList.add(paused ? localStyles["breakpointPaused"] : localStyles["breakpointActive"]);
     }
 
     public get isCollapsed() {
@@ -845,6 +864,12 @@ export class GraphNode {
         this._validationBadge.classList.add(localStyles.validationBadge);
         this._validationBadge.style.display = "none";
         this._headerContainer.appendChild(this._validationBadge);
+
+        // Breakpoint badge
+        this._breakpointBadge = root.ownerDocument.createElement("div");
+        this._breakpointBadge.classList.add(localStyles.breakpointBadge);
+        this._breakpointBadge.style.display = "none";
+        this._headerContainer.appendChild(this._breakpointBadge);
 
         // Options
         const propStore: IPropertyDescriptionForEdition[] = this.content.data._propStore;

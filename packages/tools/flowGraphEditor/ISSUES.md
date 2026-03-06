@@ -10,7 +10,7 @@
 
 ## High (significantly impacts experience)
 
-- [ ] **No breakpoints or step-through execution** — You can Start/Pause/Stop the graph, but can't set a breakpoint on a block to pause there. Step-through execution would be invaluable for understanding complex control flow (ForLoop, Switch, MultiGate).
+- [x] **No breakpoints or step-through execution** — You can Start/Pause/Stop the graph, but can't set a breakpoint on a block to pause there. Step-through execution would be invaluable for understanding complex control flow (ForLoop, Switch, MultiGate). _(Implemented)_
 
 - [ ] **No minimap** — For large graphs, there's no spatial overview. Zoom-to-fit and reorganize exist, but no persistent minimap showing current position in the graph.
 

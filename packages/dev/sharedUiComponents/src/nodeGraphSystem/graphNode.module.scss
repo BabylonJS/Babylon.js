@@ -449,3 +449,29 @@
     background: #f39c12;
     box-shadow: 0 0 6px rgba(243, 156, 18, 0.7);
 }
+
+// Breakpoint badge — shown on the left side of the header
+.breakpointBadge {
+    position: absolute;
+    top: 50%;
+    left: -8px;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    z-index: 20;
+    pointer-events: none;
+    border: 2px solid black;
+    box-sizing: border-box;
+}
+
+.breakpointActive {
+    background: #e74c3c;
+    box-shadow: 0 0 4px rgba(231, 76, 60, 0.6);
+}
+
+.breakpointPaused {
+    background: #e74c3c;
+    box-shadow: 0 0 10px 3px rgba(255, 255, 0, 0.8);
+    border-color: #ffcc00;
+}

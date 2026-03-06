@@ -1,6 +1,7 @@
 import type { FlowGraph } from "core/FlowGraph/flowGraph";
 import { FlowGraphState } from "core/FlowGraph/flowGraph";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import type { IFlowGraphPendingActivation } from "core/FlowGraph/flowGraphContext";
 import { Observable } from "core/Misc/observable";
 import type { Observer } from "core/Misc/observable";
 import type { IAssetContainer } from "core/IAssetContainer";
@@ -250,6 +251,9 @@ export class GlobalState {
             return;
         }
 
+        // Install breakpoint predicate when attaching to a context
+        this._installBreakpointPredicate(context);
+
         this._debugExecutionObserver = context.onNodeExecutedObservable.add((block) => {
             const now = performance.now();
             const lastTime = this._highlightThrottleMap.get(block.uniqueId) ?? 0;
@@ -316,6 +320,77 @@ export class GlobalState {
         this._debugStateObserver?.remove();
         this._debugStateObserver = null;
         this._highlightThrottleMap.clear();
+        this._removeBreakpointPredicate();
+    }
+
+    // ── Breakpoints ────────────────────────────────────────────────────
+    /** Set of block uniqueIds that have breakpoints */
+    private _breakpointBlockIds = new Set<string>();
+    /** Observer for breakpoint-hit events on the current context */
+    private _breakpointHitObserver: Nullable<Observer<IFlowGraphPendingActivation>> = null;
+    /** Observable fired when the set of breakpoints changes (add/remove/clear) */
+    onBreakpointsChanged = new Observable<void>();
+    /** Observable fired when a breakpoint is hit (carries the paused activation) */
+    onBreakpointHit = new Observable<IFlowGraphPendingActivation>();
+
+    /** Check whether a block has a breakpoint set */
+    public hasBreakpoint(blockId: string): boolean {
+        return this._breakpointBlockIds.has(blockId);
+    }
+
+    /** Toggle a breakpoint on a block. Returns the new state (true = set). */
+    public toggleBreakpoint(blockId: string): boolean {
+        if (this._breakpointBlockIds.has(blockId)) {
+            this._breakpointBlockIds.delete(blockId);
+            this.onBreakpointsChanged.notifyObservers();
+            return false;
+        }
+        this._breakpointBlockIds.add(blockId);
+        this.onBreakpointsChanged.notifyObservers();
+        return true;
+    }
+
+    /** Remove all breakpoints */
+    public clearAllBreakpoints(): void {
+        if (this._breakpointBlockIds.size === 0) {
+            return;
+        }
+        this._breakpointBlockIds.clear();
+        this.onBreakpointsChanged.notifyObservers();
+    }
+
+    /** Install the breakpoint predicate on the given context */
+    private _installBreakpointPredicate(context: FlowGraphContext): void {
+        // Set the predicate
+        context.breakpointPredicate = (block) => this._breakpointBlockIds.has(block.uniqueId);
+        // Subscribe to breakpoint-hit events
+        this._breakpointHitObserver?.remove();
+        this._breakpointHitObserver = context.onBreakpointHitObservable.add((activation) => {
+            this.onBreakpointHit.notifyObservers(activation);
+        });
+    }
+
+    /** Remove the breakpoint predicate from the current context */
+    private _removeBreakpointPredicate(): void {
+        this._breakpointHitObserver?.remove();
+        this._breakpointHitObserver = null;
+        const ctx = this._flowGraph?.getContext(this.selectedContextIndex);
+        if (ctx) {
+            ctx.breakpointPredicate = null;
+            ctx._clearPendingActivation();
+        }
+    }
+
+    /** Resume execution from a breakpoint */
+    public continueExecution(): void {
+        const ctx = this._flowGraph?.getContext(this.selectedContextIndex);
+        ctx?.continueExecution();
+    }
+
+    /** Step one block and pause again */
+    public stepExecution(): void {
+        const ctx = this._flowGraph?.getContext(this.selectedContextIndex);
+        ctx?.stepExecution();
     }
 
     /** The scene context populated when a Playground snippet is loaded */
