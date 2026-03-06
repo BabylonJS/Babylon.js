@@ -9,25 +9,26 @@
     "devDependencies": {
         "@alex_neo/jest-expect-message": "~1.0.5",
         "@dev/build-tools": "^1.0.0",
-        "@eslint/js": "^9.18.0",
+        "@eslint/js": "^10.0.1",
         "@playwright/test": "1.57.0",
         "@types/fs-extra": "^9.0.13",
         "@types/jest": "^30.0.0",
         "@types/jest-expect-message": "~1.0.3",
-        "@typescript-eslint/eslint-plugin": "^8.29.0",
-        "@typescript-eslint/parser": "^8.29.0",
+        "@typescript-eslint/eslint-plugin": "^8.56.1",
+        "@typescript-eslint/parser": "^8.56.1",
+        "@typescript-eslint/utils": "^8.56.1",
         "ajv": "~8.18.0",
         "chokidar": "~3.6.0",
         "dotenv": "~16.0.0",
         "es-check": "^7.1.1",
-        "eslint": "^9.39.1",
-        "eslint-config-prettier": "~9.0.0",
+        "eslint": "^10.0.2",
+        "eslint-config-prettier": "^10.1.8",
         "eslint-formatter-azure-devops": "^1.2.0",
         "eslint-plugin-github": "^6.0.0",
-        "eslint-plugin-import": "^2.31.0",
-        "eslint-plugin-jest": "~28.11.0",
-        "eslint-plugin-jsdoc": "^50.0.0",
-        "eslint-plugin-prettier": "~5.0.0",
+        "eslint-plugin-import": "^2.32.0",
+        "eslint-plugin-jest": "^29.15.0",
+        "eslint-plugin-jsdoc": "^62.7.1",
+        "eslint-plugin-prettier": "^5.5.5",
         "eslint-plugin-tsdoc": "^0.5.0",
         "fs-extra": "^10.0.1",
         "glob": "^13.0.6",
@@ -121,6 +122,13 @@
     },
     "nx": {},
     "overrides": {
+        "eslint-plugin-github": {
+            "eslint": "^10.0.0"
+        },
+        "eslint-plugin-import": {
+            "eslint": "^10.0.0"
+        },
+        "typescript-eslint": "^8.56.1",
         "jest-image-snapshot": {
             "jest": "^30.0.0"
         },

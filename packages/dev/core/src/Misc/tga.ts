@@ -35,7 +35,7 @@ export function GetTGAHeader(data: Uint8Array): any {
         width: data[offset++] | (data[offset++] << 8),
         height: data[offset++] | (data[offset++] << 8),
         pixel_size: data[offset++],
-        flags: data[offset++],
+        flags: data[offset],
     };
 
     return header;
@@ -144,7 +144,7 @@ export function UploadContent(texture: InternalTexture, data: Uint8Array): void 
     }
     // RAW Pixels
     else {
-        pixel_data = data.subarray(offset, (offset += use_pal ? header.width * header.height : pixel_total));
+        pixel_data = data.subarray(offset, offset + (use_pal ? header.width * header.height : pixel_total));
     }
 
     // Load to texture

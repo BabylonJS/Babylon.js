@@ -430,7 +430,7 @@ export class SolidParticleSystem implements IDisposable {
             }
 
             // create a model shape for each single particle
-            let idx: number = this.nbParticles;
+            const idx: number = this.nbParticles;
             const shape: Vector3[] = this._posToShape(facetPos);
             const shapeUV: number[] = this._uvsToShapeUV(facetUV);
             const shapeInd = facetInd.slice();
@@ -491,7 +491,6 @@ export class SolidParticleSystem implements IDisposable {
 
             if (!storage) {
                 this._index += shape.length;
-                idx++;
                 this.nbParticles++;
                 this._lastParticleId++;
             }

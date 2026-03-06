@@ -119,8 +119,8 @@ export function CreateRibbonVertexData(options: {
     // vertical distances (v)
     let path1: Vector3[];
     let path2: Vector3[];
-    let vertex1: Nullable<Vector3> = null;
-    let vertex2: Nullable<Vector3> = null;
+    let vertex1: Nullable<Vector3>;
+    let vertex2: Nullable<Vector3>;
     for (i = 0; i < minlg + closePathCorr; i++) {
         vTotalDistance[i] = 0;
         vs[i] = [0];
@@ -195,8 +195,8 @@ export function CreateRibbonVertexData(options: {
 
     if (closePath) {
         // update both the first and last vertex normals to their average value
-        let indexFirst: number = 0;
-        let indexLast: number = 0;
+        let indexFirst: number;
+        let indexLast: number;
         for (p = 0; p < pathArray.length; p++) {
             indexFirst = idx[p] * 3;
             if (p + 1 < pathArray.length) {
@@ -389,8 +389,8 @@ export function CreateRibbon(
             VertexData.ComputeNormals(positions, indices, normals, params);
 
             if (instance._creationDataStorage && instance._creationDataStorage.closePath) {
-                let indexFirst: number = 0;
-                let indexLast: number = 0;
+                let indexFirst: number;
+                let indexLast: number;
                 for (let p = 0; p < pathArray.length; p++) {
                     indexFirst = instance._creationDataStorage.idx[p] * 3;
                     if (p + 1 < pathArray.length) {

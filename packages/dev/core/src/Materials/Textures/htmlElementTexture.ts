@@ -115,8 +115,8 @@ export class HtmlElementTexture extends BaseTexture {
     }
 
     private _createInternalTexture(): void {
-        let width = 0;
-        let height = 0;
+        let width: number;
+        let height: number;
         if (this._isVideo) {
             width = (this.element as HTMLVideoElement).videoWidth;
             height = (this.element as HTMLVideoElement).videoHeight;

@@ -253,75 +253,75 @@ export class PointsCloudSystem implements IDisposable {
             }
         }
 
-        let idxPoints: number = 0;
+        let idxPoints: number;
 
-        let id0: number = 0;
-        let id1: number = 0;
-        let id2: number = 0;
-        let v0X: number = 0;
-        let v0Y: number = 0;
-        let v0Z: number = 0;
-        let v1X: number = 0;
-        let v1Y: number = 0;
-        let v1Z: number = 0;
-        let v2X: number = 0;
-        let v2Y: number = 0;
-        let v2Z: number = 0;
+        let id0: number;
+        let id1: number;
+        let id2: number;
+        let v0X: number;
+        let v0Y: number;
+        let v0Z: number;
+        let v1X: number;
+        let v1Y: number;
+        let v1Z: number;
+        let v2X: number;
+        let v2Y: number;
+        let v2Z: number;
         const vertex0 = Vector3.Zero();
         const vertex1 = Vector3.Zero();
         const vertex2 = Vector3.Zero();
         const vec0 = Vector3.Zero();
         const vec1 = Vector3.Zero();
 
-        let uv0X: number = 0;
-        let uv0Y: number = 0;
-        let uv1X: number = 0;
-        let uv1Y: number = 0;
-        let uv2X: number = 0;
-        let uv2Y: number = 0;
+        let uv0X: number;
+        let uv0Y: number;
+        let uv1X: number;
+        let uv1Y: number;
+        let uv2X: number;
+        let uv2Y: number;
         const uv0 = Vector2.Zero();
         const uv1 = Vector2.Zero();
         const uv2 = Vector2.Zero();
         const uvec0 = Vector2.Zero();
         const uvec1 = Vector2.Zero();
 
-        let col0X: number = 0;
-        let col0Y: number = 0;
-        let col0Z: number = 0;
-        let col0A: number = 0;
-        let col1X: number = 0;
-        let col1Y: number = 0;
-        let col1Z: number = 0;
-        let col1A: number = 0;
-        let col2X: number = 0;
-        let col2Y: number = 0;
-        let col2Z: number = 0;
-        let col2A: number = 0;
+        let col0X: number;
+        let col0Y: number;
+        let col0Z: number;
+        let col0A: number;
+        let col1X: number;
+        let col1Y: number;
+        let col1Z: number;
+        let col1A: number;
+        let col2X: number;
+        let col2Y: number;
+        let col2Z: number;
+        let col2A: number;
         const col0 = Vector4.Zero();
         const col1 = Vector4.Zero();
         const col2 = Vector4.Zero();
         const colvec0 = Vector4.Zero();
         const colvec1 = Vector4.Zero();
 
-        let lamda: number = 0;
-        let mu: number = 0;
+        let lamda: number;
+        let mu: number;
         range = range ? range : 0;
 
         let facetPoint: Vector3;
         let uvPoint: Vector2;
         let colPoint: Vector4 = new Vector4(0, 0, 0, 1);
 
-        let norm = Vector3.Zero();
-        let tang = Vector3.Zero();
-        let biNorm = Vector3.Zero();
-        let angle = 0;
-        let facetPlaneVec = Vector3.Zero();
+        let norm: Vector3;
+        let tang: Vector3;
+        let biNorm: Vector3;
+        let angle: number;
+        let facetPlaneVec: Vector3;
 
-        let gap = 0;
-        let distance = 0;
+        let gap: number;
+        let distance: number;
         const ray = new Ray(Vector3.Zero(), new Vector3(1, 0, 0));
         let pickInfo: PickingInfo;
-        let direction = Vector3.Zero();
+        let direction: Vector3;
 
         for (let index = 0; index < meshInd.length / 3; index++) {
             id0 = meshInd[3 * index];
@@ -763,7 +763,7 @@ export class PointsCloudSystem implements IDisposable {
         const maximum = tempVectors[9].setAll(-Number.MAX_VALUE);
 
         Matrix.IdentityToRef(rotMatrix);
-        let idx = 0; // current index of the particle
+        let idx: number; // current index of the particle
 
         if (this.mesh?.isFacetDataEnabled) {
             this._computeBoundingBox = true;
@@ -781,10 +781,9 @@ export class PointsCloudSystem implements IDisposable {
             }
         }
 
-        idx = 0; // particle index
-        let pindex = 0; //index in positions array
-        let cindex = 0; //index in color array
-        let uindex = 0; //index in uv array
+        let pindex: number; //index in positions array
+        let cindex: number; //index in color array
+        let uindex: number; //index in uv array
 
         // particle loop
         for (let p = start; p <= end; p++) {

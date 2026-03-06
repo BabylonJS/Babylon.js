@@ -1988,7 +1988,7 @@ export class GLTFLoader implements IGLTFLoader {
             try {
                 return new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
             } catch (e) {
-                throw new Error(`${context}: ${e.message}`);
+                throw new Error(`${context}: ${e.message}`, { cause: e });
             }
         });
     }
@@ -2767,7 +2767,7 @@ export class GLTFLoader implements IGLTFLoader {
         try {
             return GetTypedArrayConstructor(componentType);
         } catch (e) {
-            throw new Error(`${context}: ${e.message}`);
+            throw new Error(`${context}: ${e.message}`, { cause: e });
         }
     }
 

@@ -206,7 +206,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
             currentDistance = currentDistance2D;
         }
 
-        let clampedDistance = currentDistance;
+        let clampedDistance: number;
 
         if (moveToDefault) {
             clampedDistance = defaultDistance;

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable babylonjs/available */
-/* eslint-disable jsdoc/require-jsdoc */
 // License for the mipmap generation code:
 //
 // Copyright 2020 Brandon Jones
@@ -603,6 +602,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -769,6 +769,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -913,6 +914,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -1007,6 +1009,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -1221,6 +1224,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }

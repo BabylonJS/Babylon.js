@@ -832,8 +832,8 @@ export class ObjectRenderer {
 
         // Get the list of meshes to dispatch to the rendering manager
         let currentRenderList: Nullable<Array<AbstractMesh>> = null;
-        let currentRenderListLength = 0;
-        let checkLayerMask = false;
+        let currentRenderListLength: number;
+        let checkLayerMask: boolean;
 
         const defaultRenderList = this.renderList ? this.renderList : scene.frameGraph ? scene.meshes : scene.getActiveMeshes().data;
         const defaultRenderListLength = this.renderList || scene.frameGraph ? defaultRenderList.length : scene.getActiveMeshes().length;
@@ -904,7 +904,7 @@ export class ObjectRenderer {
                         continue;
                     }
 
-                    let meshToRender: Nullable<AbstractMesh> = null;
+                    let meshToRender: Nullable<AbstractMesh>;
 
                     if (cameraForLOD) {
                         const meshToRenderAndFrameId = mesh._internalAbstractMeshDataInfo._currentLOD.get(cameraForLOD);

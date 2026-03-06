@@ -235,7 +235,6 @@ const plugin: IPlugin = {
                 type: "problem",
                 docs: {
                     description: "Validates that TypeScript documentation comments conform to the TSDoc standard",
-                    category: "Stylistic Issues",
                     // This package is experimental
                     recommended: false,
                     url: "https://tsdoc.org/pages/packages/eslint-plugin-tsdoc",
@@ -346,7 +345,6 @@ const plugin: IPlugin = {
                 type: "problem",
                 docs: {
                     description: "Make sure documentation is available for public members",
-                    category: "Stylistic Issues",
                     // This package is experimental
                     recommended: false,
                     url: "https://tsdoc.org/pages/packages/eslint-plugin-tsdoc",
@@ -424,7 +422,6 @@ const plugin: IPlugin = {
                 type: "problem",
                 docs: {
                     description: "Make sure a comment exists",
-                    category: "Stylistic Issues",
                     recommended: false,
                     url: "https://tsdoc.org/pages/packages/eslint-plugin-tsdoc",
                 },

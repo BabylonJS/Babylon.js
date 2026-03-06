@@ -891,8 +891,8 @@ export class Effect implements IDisposable {
         Logger.Error("Defines:\n" + this.defines);
         if (Effect.LogShaderCodeOnCompilationError) {
             let lineErrorVertex = null,
-                lineErrorFragment = null,
-                code = null;
+                lineErrorFragment = null;
+            let code: Nullable<string>;
             if (this._pipelineContext?._getVertexShaderCode()) {
                 [code, lineErrorVertex] = this._getShaderCodeAndErrorLine(this._pipelineContext._getVertexShaderCode(), this._compilationError, false);
                 if (code) {

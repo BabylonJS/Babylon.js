@@ -135,9 +135,11 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 ];
                 break;
             case NodeParticleBlockConnectionPointTypes.Int:
-                contextualSourcesOptions = [{ label: "Sprite cell index", value: NodeParticleContextualSources.SpriteCellIndex }];
-                contextualSourcesOptions = [{ label: "Sprite cell start", value: NodeParticleContextualSources.SpriteCellStart }];
-                contextualSourcesOptions = [{ label: "Sprite cell end", value: NodeParticleContextualSources.SpriteCellEnd }];
+                contextualSourcesOptions = [
+                    { label: "Sprite cell index", value: NodeParticleContextualSources.SpriteCellIndex },
+                    { label: "Sprite cell start", value: NodeParticleContextualSources.SpriteCellStart },
+                    { label: "Sprite cell end", value: NodeParticleContextualSources.SpriteCellEnd },
+                ];
                 break;
             case NodeParticleBlockConnectionPointTypes.Vector2:
                 contextualSourcesOptions = [{ label: "Scale", value: NodeParticleContextualSources.Scale }];

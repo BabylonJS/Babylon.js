@@ -137,7 +137,7 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
         const sprite = this.props.sprite;
         const manager = sprite.manager;
         const textureSize = manager.texture.getSize();
-        let maxCellCount = 0;
+        let maxCellCount: number;
 
         if (!textureSize.width || !textureSize.height) {
             maxCellCount = Math.max(sprite.fromIndex, sprite.toIndex);
