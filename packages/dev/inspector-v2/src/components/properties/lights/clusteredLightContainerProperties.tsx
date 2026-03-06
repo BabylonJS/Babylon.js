@@ -1,9 +1,11 @@
-import type { ClusteredLightContainer } from "core/index";
 import type { FunctionComponent } from "react";
+
+import type { ClusteredLightContainer } from "core/index";
 import type { ISelectionService } from "../../../services/selectionService";
 
 import { Badge, makeStyles } from "@fluentui/react-components";
 import { useCallback } from "react";
+
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
