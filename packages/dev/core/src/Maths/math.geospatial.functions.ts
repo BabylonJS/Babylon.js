@@ -52,8 +52,8 @@ export function LatLonToNormalToRef<T extends IVector3Like>(latLon: DeepImmutabl
  * Will clamp the latitude to -PI/2 to PI/2.
  * @param latLonAlt - The latitude and longitude in radians, and the altitude relative to the reference ellipsoid's surface.
  * @param ellipsoid - Parameters for a reference ellipsoid (e.g., the {@link Wgs84Ellipsoid}).
- * @param result - The resulting ECEF coordinates
- * @returns The resulting ECEF coordinates
+ * @param result - The resulting ECEF position
+ * @returns The resulting ECEF position
  */
 export function EcefFromLatLonAltToRef<T extends IVector3Like>(
     latLonAlt: DeepImmutable<ILatLonAltLike>,
