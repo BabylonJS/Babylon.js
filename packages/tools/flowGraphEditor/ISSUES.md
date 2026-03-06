@@ -1,5 +1,9 @@
 # Flow Graph Editor — Open Issues & Feature Requests
 
+## Notes
+
+When done with an issue, update the MANUAL.md to reflect the new feature or fix, and mark the issue as implemented (if applicable). If an issue is a bug, add a note in the manual about the expected behavior and how to reproduce it.
+
 ## Critical (blocks productive work)
 
 - [ ] **No Copy/Paste or Duplicate** — Can't duplicate blocks or groups of blocks. The keyboard handler has a placeholder that returns `null`. Users end up rebuilding identical subgraphs manually.

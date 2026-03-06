@@ -174,24 +174,52 @@ export class GlobalState {
     private _debugStateObserver: Nullable<Observer<FlowGraphState>> = null;
     /** Per-node throttle timestamps to avoid excessive highlighting */
     private _highlightThrottleMap = new Map<string, number>();
+    /** Port elements currently glowing — tracked so we can clear them on stop */
+    private _activePortHighlights = new Set<HTMLElement>();
     /** Minimum interval between highlight pulses per node (ms) */
     private static readonly _HIGHLIGHT_THROTTLE_MS = 100;
-    /** Duration of the green glow pulse on port connectors (ms) */
-    private static readonly _PORT_PULSE_MS = 600;
+    /** Whether the debug pulse CSS has been injected into the document */
+    private static _DEBUG_STYLE_INJECTED = false;
 
-    /** Apply a brief green glow to a port connector element */
-    private static _pulsePortElement(el: HTMLElement): void {
-        const prev = el.style.transition;
-        const prevShadow = el.style.boxShadow;
-        el.style.transition = "box-shadow 0.1s ease-in";
-        el.style.boxShadow = "0 0 8px 4px #33B766";
-        setTimeout(() => {
-            el.style.transition = `box-shadow ${GlobalState._PORT_PULSE_MS - 100}ms ease-out`;
-            el.style.boxShadow = prevShadow;
-            setTimeout(() => {
-                el.style.transition = prev;
-            }, GlobalState._PORT_PULSE_MS - 100);
-        }, 100);
+    /** Inject the CSS keyframe animation for port pulsing (once per document) */
+    private static _InjectDebugStyle(): void {
+        if (GlobalState._DEBUG_STYLE_INJECTED) {
+            return;
+        }
+        GlobalState._DEBUG_STYLE_INJECTED = true;
+        const style = document.createElement("style");
+        style.textContent = `
+            @keyframes debug-port-pulse {
+                0%   { box-shadow: 0 0 8px 4px #33B766; }
+                16%  { box-shadow: 0 0 8px 4px #33B766; }
+                100% { box-shadow: none; }
+            }
+            [data-debug-pulse] {
+                animation: debug-port-pulse 600ms ease-out forwards;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    /**
+     * Apply a brief green glow to a port connector element
+     * @param el - the port HTML element to pulse
+     */
+    private _pulsePortElement(el: HTMLElement): void {
+        GlobalState._InjectDebugStyle();
+        // Remove and re-add to restart the CSS animation if already playing
+        delete el.dataset.debugPulse;
+        void el.offsetWidth; // force reflow so the browser sees the removal
+        el.dataset.debugPulse = "1";
+        this._activePortHighlights.add(el);
+    }
+
+    /** Immediately clear all active port highlights */
+    private _clearAllPortHighlights(): void {
+        for (const el of this._activePortHighlights) {
+            delete el.dataset.debugPulse;
+        }
+        this._activePortHighlights.clear();
     }
 
     /** Gets whether debug mode is active */
@@ -231,6 +259,7 @@ export class GlobalState {
                 this._debugExecutionObserver?.remove();
                 this._debugExecutionObserver = null;
                 this._highlightThrottleMap.clear();
+                this._clearAllPortHighlights();
             }
         });
 
@@ -279,7 +308,7 @@ export class GlobalState {
                     // Pulse the port connector dots for each triggered input
                     for (const port of graphNode.inputPorts) {
                         if (inputSet.has(port.portData.data)) {
-                            GlobalState._pulsePortElement(port.element);
+                            this._pulsePortElement(port.element);
                         }
                     }
 
@@ -293,7 +322,7 @@ export class GlobalState {
                         }
                         for (const port of graphNode.outputPorts) {
                             if (firedOutputs.has(port.portData.data)) {
-                                GlobalState._pulsePortElement(port.element);
+                                this._pulsePortElement(port.element);
                             }
                         }
                     }
@@ -320,6 +349,7 @@ export class GlobalState {
         this._debugStateObserver?.remove();
         this._debugStateObserver = null;
         this._highlightThrottleMap.clear();
+        this._clearAllPortHighlights();
         this._removeBreakpointPredicate();
     }
 
@@ -333,12 +363,20 @@ export class GlobalState {
     /** Observable fired when a breakpoint is hit (carries the paused activation) */
     onBreakpointHit = new Observable<IFlowGraphPendingActivation>();
 
-    /** Check whether a block has a breakpoint set */
+    /**
+     * Check whether a block has a breakpoint set
+     * @param blockId - the unique id of the block
+     * @returns true if the block has a breakpoint
+     */
     public hasBreakpoint(blockId: string): boolean {
         return this._breakpointBlockIds.has(blockId);
     }
 
-    /** Toggle a breakpoint on a block. Returns the new state (true = set). */
+    /**
+     * Toggle a breakpoint on a block.
+     * @param blockId - the unique id of the block
+     * @returns the new state (true = breakpoint set, false = removed)
+     */
     public toggleBreakpoint(blockId: string): boolean {
         if (this._breakpointBlockIds.has(blockId)) {
             this._breakpointBlockIds.delete(blockId);
@@ -359,7 +397,10 @@ export class GlobalState {
         this.onBreakpointsChanged.notifyObservers();
     }
 
-    /** Install the breakpoint predicate on the given context */
+    /**
+     * Install the breakpoint predicate on the given context
+     * @param context - the flow graph context to install the predicate on
+     */
     private _installBreakpointPredicate(context: FlowGraphContext): void {
         // Set the predicate
         context.breakpointPredicate = (block) => this._breakpointBlockIds.has(block.uniqueId);
