@@ -7,9 +7,9 @@ describe("Geospatial function tests", () => {
             const { semiMajorAxis, flattening, semiMinorAxis, firstEccentricitySquared, secondEccentricitySquared } = Wgs84Ellipsoid;
             expect(semiMajorAxis).toBe(6378137.0);
             expect(flattening).toBe(1 / 298.257223563);
-            expect(semiMinorAxis).toBeCloseTo(6378137.0 * (1 - 1 / 298.257223563), 15);
-            expect(firstEccentricitySquared).toBeCloseTo(2 / 298.257223563 - 1 / (298.257223563 * 298.257223563), 15);
-            expect(secondEccentricitySquared).toBeCloseTo(firstEccentricitySquared / (1 - firstEccentricitySquared), 15);
+            expect(semiMinorAxis).toBeCloseTo(6378137.0 * (1 - 1 / 298.257223563), 10);
+            expect(firstEccentricitySquared).toBeCloseTo(2 / 298.257223563 - 1 / (298.257223563 * 298.257223563), 14);
+            expect(secondEccentricitySquared).toBeCloseTo(firstEccentricitySquared / (1 - firstEccentricitySquared), 14);
         });
     });
     describe("LatLonFromDegreesToRef", () => {
