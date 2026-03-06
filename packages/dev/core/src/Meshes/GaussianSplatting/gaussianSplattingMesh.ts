@@ -2601,6 +2601,8 @@ export class GaussianSplattingMesh extends Mesh {
         serializationObject.actions = undefined;
         serializationObject.type = this.getClassName();
         serializationObject.keepInRam = this._keepInRam;
+        serializationObject.disableDepthSort = this._disableDepthSort;
+        serializationObject.viewUpdateThreshold = this.viewUpdateThreshold;
         serializationObject._flipY = this._flipY;
         if (this._splatsData) {
             serializationObject.splatsData =
@@ -2646,6 +2648,8 @@ export class GaussianSplattingMesh extends Mesh {
     public static override Parse(parsedMesh: any, scene: Scene): GaussianSplattingMesh {
         const mesh = new GaussianSplattingMesh(parsedMesh.name, null, scene, parsedMesh.keepInRam);
 
+        mesh.disableDepthSort = parsedMesh.disableDepthSort;
+        mesh.viewUpdateThreshold = parsedMesh.viewUpdateThreshold;
         let splatsData: ArrayBuffer | string | undefined = parsedMesh.splatsData;
         if (typeof splatsData === "string") {
             splatsData = DecodeBase64ToBinary(splatsData);
