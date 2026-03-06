@@ -21,9 +21,9 @@ import { RawTexture } from "../../Materials/Textures/rawTexture";
  */
 export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
     /**
-     * Map from part index to proxy mesh. Maintained in sync with _partMatrices.
+     * Proxy meshes indexed by part index. Maintained in sync with _partMatrices.
      */
-    private _partProxies: Map<number, GaussianSplattingPartProxyMesh> = new Map();
+    private _partProxies: GaussianSplattingPartProxyMesh[] = [];
 
     /**
      * World matrices for each part, indexed by part index.
@@ -65,13 +65,13 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
      * @param doNotRecurse Set to true to not recurse into each children
      */
     public override dispose(doNotRecurse?: boolean): void {
-        this._partProxies.forEach((proxy) => {
+        for (const proxy of this._partProxies) {
             proxy.dispose();
-        });
+        }
         if (this._partIndicesTexture) {
             this._partIndicesTexture.dispose();
         }
-        this._partProxies.clear();
+        this._partProxies = [];
         this._partMatrices = [];
         this._partVisibility = [];
         this._partIndicesTexture = null;
@@ -432,12 +432,11 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
         if (!incremental) {
             // Full rebuild path: re-derive all existing splats from their source references.
             if (splatCountA > 0) {
-                if (this._partProxies.size > 0) {
+                if (this._partProxies.length > 0) {
                     // Already compound: rebuild each existing part from its proxy's source mesh.
-                    // Proxies are iterated in part-index order so dstOffsets are correct.
-                    const sortedProxies = [...this._partProxies.entries()].sort(([a], [b]) => a - b);
+                    // Proxies are in part-index order so dstOffsets are correct.
                     let rebuildOffset = 0;
-                    for (const [, proxy] of sortedProxies) {
+                    for (const proxy of this._partProxies) {
                         this._appendSourceToArrays(proxy.proxiedMesh, rebuildOffset, covA, covB, colorArray, sh, minimum, maximum);
                         rebuildOffset += proxy.proxiedMesh._vertexCount;
                     }
@@ -516,7 +515,7 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
             proxyMesh.rotationQuaternion = quaternion;
             proxyMesh.computeWorldMatrix(true);
 
-            this._partProxies.set(newPartIndex, proxyMesh);
+            this._partProxies[newPartIndex] = proxyMesh;
             proxyMeshes.push(proxyMesh);
         }
 
@@ -569,11 +568,12 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
 
         // Collect surviving proxy objects (sorted by current part index so part 0 is added first)
         const survivors: Array<{ proxyMesh: GaussianSplattingPartProxyMesh; oldIndex: number; worldMatrix: Matrix }> = [];
-        this._partProxies.forEach((proxy, proxyIndex) => {
-            if (proxyIndex !== index) {
+        for (let proxyIndex = 0; proxyIndex < this._partProxies.length; proxyIndex++) {
+            const proxy = this._partProxies[proxyIndex];
+            if (proxy && proxyIndex !== index) {
                 survivors.push({ proxyMesh: proxy, oldIndex: proxyIndex, worldMatrix: proxy.getWorldMatrix().clone() });
             }
-        });
+        }
         survivors.sort((a, b) => a.oldIndex - b.oldIndex);
 
         // Validate every survivor still has its source data. If even one is missing we cannot rebuild.
@@ -613,11 +613,11 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
         this._cachedBoundingMax = null;
 
         // Remove the proxy for the removed part and dispose it
-        const proxyToRemove = this._partProxies.get(index);
+        const proxyToRemove = this._partProxies[index];
         if (proxyToRemove) {
             proxyToRemove.dispose();
         }
-        this._partProxies.clear();
+        this._partProxies = [];
 
         // Rebuild from surviving sources. _addPartsInternal assigns part indices in order 0, 1, 2, …
         // so the new index for each survivor is simply its position in the survivors array.
@@ -648,7 +648,7 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
 
             // Update the old proxy's index so any existing user references still work
             oldProxy.updatePartIndex(newPartIndex);
-            this._partProxies.set(newPartIndex, oldProxy);
+            this._partProxies[newPartIndex] = oldProxy;
 
             // newProxy is redundant — it was created inside _addPartsInternal; dispose it
             newProxy.dispose();
