@@ -53,12 +53,10 @@ function IsPrimitiveEditableInput(conn: FlowGraphDataConnection<any>, block: Flo
 
 /** Default property panel for any FlowGraph block. */
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
-    /** {@inheritDoc} */
     constructor(props: IPropertyComponentProps) {
         super(props);
     }
 
-    /** {@inheritDoc} */
     override render() {
         return (
             <>
@@ -73,12 +71,10 @@ export class GenericPropertyComponent extends React.Component<IPropertyComponent
 
 /** Renders the "GENERAL" section (Name, Type, Comments) for any block. */
 export class GeneralPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-    /** {@inheritDoc} */
     constructor(props: IPropertyComponentProps) {
         super(props);
     }
 
-    /** {@inheritDoc} */
     override render() {
         const block = this.props.nodeData.data as FlowGraphBlock;
 
@@ -124,7 +120,6 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
  * core.
  */
 export class ConstructorVariablesPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-    /** {@inheritDoc} */
     constructor(props: IPropertyComponentProps) {
         super(props);
     }
@@ -158,7 +153,6 @@ export class ConstructorVariablesPropertyTabComponent extends React.Component<IP
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
     }
 
-    /** {@inheritDoc} */
     override render() {
         const block = this.props.nodeData.data as FlowGraphBlock;
         const fields = CONSTRUCTOR_CONFIG.get(block.getClassName());
@@ -222,7 +216,7 @@ export class ConstructorVariablesPropertyTabComponent extends React.Component<IP
                         const configProxy = block.config ?? {};
                         return (
                             <OptionsLine
-                                key={field.key}
+                                key={`${field.key}-${block.uniqueId}`}
                                 label={field.label}
                                 options={FLOW_GRAPH_TYPE_OPTIONS}
                                 valuesAreStrings={true}
@@ -254,7 +248,7 @@ export class ConstructorVariablesPropertyTabComponent extends React.Component<IP
                         const configProxy = block.config ?? {};
                         return (
                             <OptionsLine
-                                key={field.key}
+                                key={`${field.key}-${block.uniqueId}`}
                                 label={field.label}
                                 options={field.options}
                                 valuesAreStrings={true}
@@ -280,7 +274,6 @@ export class ConstructorVariablesPropertyTabComponent extends React.Component<IP
  * without requiring a connected input port.
  */
 export class DataConnectionsPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-    /** {@inheritDoc} */
     constructor(props: IPropertyComponentProps) {
         super(props);
     }
@@ -301,7 +294,6 @@ export class DataConnectionsPropertyTabComponent extends React.Component<IProper
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
     }
 
-    /** {@inheritDoc} */
     override render() {
         const block = this.props.nodeData.data as FlowGraphBlock;
         const editableInputs = block.dataInputs.filter((conn) => IsPrimitiveEditableInput(conn, block));
@@ -386,12 +378,10 @@ export class DataConnectionsPropertyTabComponent extends React.Component<IProper
 
 /** Renders properties registered via the `editableInPropertyPage` decorator on any block. */
 export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-    /** {@inheritDoc} */
     constructor(props: IPropertyComponentProps) {
         super(props);
     }
 
-    /** {@inheritDoc} */
     override render() {
         const block = this.props.nodeData.data as FlowGraphBlock,
             propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;

@@ -80,6 +80,9 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
     override componentDidMount() {
         const globalState = this.props.stateManager.data as GlobalState;
         this._sceneContextObserver = globalState.onSceneContextChanged.add((ctx) => {
+            if (ctx) {
+                this._rebindAssetReference(ctx);
+            }
             this.setState({ sceneContext: ctx });
         });
         // If no type has been set yet, initialise to "Mesh" so the DataConnection
@@ -129,6 +132,15 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
         config.index = new FlowGraphInteger(newIndex);
         config.useIndexAsUniqueId = useUniqueId;
 
+        // Store the selected asset name for rebinding after scene resets.
+        if (useUniqueId && this.state.sceneContext) {
+            const assets = GetSceneListForType(this.state.sceneContext, (config.type as string) ?? "Mesh");
+            const asset = assets.find((a) => a.uniqueId === newIndex);
+            (config as any)._assetName = asset?.name;
+        } else {
+            (config as any)._assetName = undefined;
+        }
+
         const indexDC = (block as any).index;
         if (indexDC && "_defaultValue" in indexDC) {
             indexDC._defaultValue = new FlowGraphInteger(newIndex);
@@ -136,6 +148,23 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
 
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
         this.forceUpdate();
+    }
+
+    /**
+     * After a scene reset the old objects are disposed and replaced by new
+     * ones with different uniqueIds. Re-bind the stored asset reference by
+     * matching on name so the picker stays in sync.
+     */
+    private _rebindAssetReference(newCtx: SceneContext) {
+        const config = this._getConfig();
+        const savedName: string | undefined = (config as any)._assetName;
+        if (!savedName || !config.useIndexAsUniqueId) return;
+
+        const assets = GetSceneListForType(newCtx, (config.type as string) ?? "Mesh");
+        const match = assets.find((a) => a.name === savedName);
+        if (match) {
+            this._onIndexChange(match.uniqueId, true);
+        }
     }
 
     override render() {

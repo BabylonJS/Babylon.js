@@ -28,8 +28,37 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
     override componentDidMount() {
         const globalState = this.props.stateManager.data as GlobalState;
         this._sceneContextObserver = globalState.onSceneContextChanged.add((ctx) => {
+            if (ctx) {
+                this._rebindAnimationGroupReference(ctx);
+            }
             this.setState({ sceneContext: ctx });
         });
+    }
+
+    /**
+     * After a scene reset the old animation group objects are disposed and
+     * replaced by new ones with different uniqueIds. Re-bind the stored
+     * reference by matching on the name so the picker stays in sync.
+     */
+    private _rebindAnimationGroupReference(newCtx: SceneContext) {
+        const block = this._getBlock();
+        const agInput = block.getDataInput("animationGroup");
+        if (!agInput) return;
+
+        const oldAg = (agInput as any)._defaultValue;
+        if (!oldAg) return;
+
+        const name: string | undefined = oldAg.name;
+        if (!name) return;
+
+        const newAg = newCtx.animationGroups.find((a) => a.name === name);
+        if (newAg) {
+            if (!block.config) {
+                (block as any).config = {};
+            }
+            (block.config as any).animationGroup = newAg;
+            (agInput as any)._defaultValue = newAg;
+        }
     }
 
     override componentWillUnmount() {
@@ -80,6 +109,7 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
                     {sceneContext ? (
                         <>
                             <OptionsLine
+                                key={`ag-${block.uniqueId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
                                 label="Animation Group"
                                 options={[
                                     { label: "(none)", value: -1 },

@@ -192,6 +192,7 @@ export class ConstantBlockPropertyComponent extends React.Component<IPropertyCom
 
                 <LineContainerComponent title="CONSTANT VALUE">
                     <OptionsLine
+                        key={`type-${block.uniqueId}`}
                         label="Type"
                         options={VALUE_TYPE_OPTIONS}
                         target={{}}

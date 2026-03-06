@@ -33,8 +33,37 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
     override componentDidMount() {
         const globalState = this.props.stateManager.data as GlobalState;
         this._sceneContextObserver = globalState.onSceneContextChanged.add((ctx) => {
+            if (ctx) {
+                this._rebindMeshReference(ctx);
+            }
             this.setState({ sceneContext: ctx });
         });
+    }
+
+    /**
+     * After a scene reset the old mesh objects are disposed and replaced by
+     * new ones with different uniqueIds. Re-bind the stored reference by
+     * matching on the mesh name so the picker stays in sync.
+     */
+    private _rebindMeshReference(newCtx: SceneContext) {
+        const meshInput = this._getTargetMeshInput();
+        if (!meshInput) return;
+
+        const oldMesh = (meshInput as any)._defaultValue;
+        if (!oldMesh) return;
+
+        const name: string | undefined = oldMesh.name;
+        if (!name) return;
+
+        const newMesh = newCtx.meshes.find((m) => m.name === name);
+        if (newMesh) {
+            const block = this._getBlock();
+            if (!block.config) {
+                (block as any).config = {};
+            }
+            (block.config as any).targetMesh = newMesh;
+            (meshInput as any)._defaultValue = newMesh;
+        }
     }
 
     override componentWillUnmount() {
@@ -78,6 +107,8 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
     override render() {
         const { stateManager, nodeData } = this.props;
         const { sceneContext } = this.state;
+        const block = this._getBlock();
+        const blockId = block.uniqueId;
         const meshInput = this._getTargetMeshInput();
         const currentMesh = meshInput ? (meshInput as any)._defaultValue : undefined;
         const currentUniqueId = currentMesh?.uniqueId ?? -1;
@@ -91,6 +122,7 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
                     {sceneContext ? (
                         <>
                             <OptionsLine
+                                key={`mesh-${blockId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
                                 label="Mesh"
                                 options={[
                                     { label: "(none)", value: -1 },
