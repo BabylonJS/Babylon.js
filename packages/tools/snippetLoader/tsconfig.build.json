@@ -1,0 +1,15 @@
+{
+    "extends": "../../../tsconfig.build.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "declarationDir": "./dist",
+        "paths": {
+            "@dev/core": ["../../dev/core/src"]
+        }
+    },
+    "include": ["./src/**/*"],
+    "references": [
+        { "path": "../../dev/core/tsconfig.build.json" }
+    ]
+}
