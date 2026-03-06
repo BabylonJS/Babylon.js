@@ -15,6 +15,8 @@ import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager"
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
 import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
+import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import type { Scene } from "core/scene";
 import type { SceneContext } from "./sceneContext";
@@ -167,10 +169,29 @@ export class GlobalState {
     selectedContextIndex: number = 0;
     /** Observer tracking node execution for debug highlighting */
     private _debugExecutionObserver: Nullable<Observer<FlowGraphBlock>> = null;
+    /** Observer tracking graph state changes for debug re-subscription */
+    private _debugStateObserver: Nullable<Observer<FlowGraphState>> = null;
     /** Per-node throttle timestamps to avoid excessive highlighting */
     private _highlightThrottleMap = new Map<string, number>();
     /** Minimum interval between highlight pulses per node (ms) */
     private static readonly _HIGHLIGHT_THROTTLE_MS = 100;
+    /** Duration of the green glow pulse on port connectors (ms) */
+    private static readonly _PORT_PULSE_MS = 600;
+
+    /** Apply a brief green glow to a port connector element */
+    private static _pulsePortElement(el: HTMLElement): void {
+        const prev = el.style.transition;
+        const prevShadow = el.style.boxShadow;
+        el.style.transition = "box-shadow 0.1s ease-in";
+        el.style.boxShadow = "0 0 8px 4px #33B766";
+        setTimeout(() => {
+            el.style.transition = `box-shadow ${GlobalState._PORT_PULSE_MS - 100}ms ease-out`;
+            el.style.boxShadow = prevShadow;
+            setTimeout(() => {
+                el.style.transition = prev;
+            }, GlobalState._PORT_PULSE_MS - 100);
+        }, 100);
+    }
 
     /** Gets whether debug mode is active */
     public get isDebugMode(): boolean {
@@ -194,11 +215,41 @@ export class GlobalState {
     /** Subscribe to the selected context's onNodeExecutedObservable for execution highlighting */
     private _subscribeDebugObservers(): void {
         this._unsubscribeDebugObservers();
+
+        if (!this._flowGraph) {
+            return;
+        }
+
+        // Listen for graph state changes so we can (re-)attach to the context
+        // when the graph starts (contexts may not exist until start() is called).
+        this._debugStateObserver = this._flowGraph.onStateChangedObservable.add((state) => {
+            if (state === FlowGraphState.Started) {
+                this._attachContextExecutionObserver();
+            } else if (state === FlowGraphState.Stopped) {
+                // Detach the per-context observer but keep the state observer alive
+                this._debugExecutionObserver?.remove();
+                this._debugExecutionObserver = null;
+                this._highlightThrottleMap.clear();
+            }
+        });
+
+        // If the graph is already running, attach immediately
+        if (this._flowGraph.state === FlowGraphState.Started) {
+            this._attachContextExecutionObserver();
+        }
+    }
+
+    /** Attach the execution observer to the currently selected context */
+    private _attachContextExecutionObserver(): void {
+        this._debugExecutionObserver?.remove();
+        this._debugExecutionObserver = null;
+        this._highlightThrottleMap.clear();
+
         const context = this._flowGraph?.getContext(this.selectedContextIndex);
         if (!context) {
             return;
         }
-        this._highlightThrottleMap.clear();
+
         this._debugExecutionObserver = context.onNodeExecutedObservable.add((block) => {
             const now = performance.now();
             const lastTime = this._highlightThrottleMap.get(block.uniqueId) ?? 0;
@@ -207,17 +258,52 @@ export class GlobalState {
             }
             this._highlightThrottleMap.set(block.uniqueId, now);
 
-            // Highlight the node briefly
-            this.stateManager.onHighlightNodeObservable.notifyObservers({ data: block, active: true });
-            setTimeout(() => {
-                this.stateManager.onHighlightNodeObservable.notifyObservers({ data: block, active: false });
-            }, 300);
-
             // Trigger a refresh so executionTime updates in the UI
             if (this.onGetNodeFromBlock) {
                 const graphNode = this.onGetNodeFromBlock(block);
                 if (graphNode) {
                     graphNode.refresh();
+
+                    // Build lookup of this block's input connections (data + signal)
+                    const inputSet = new Set<unknown>(block.dataInputs);
+                    if (block instanceof FlowGraphExecutionBlock) {
+                        for (const sig of block.signalInputs) {
+                            inputSet.add(sig);
+                        }
+                    }
+
+                    // Pulse the port connector dots for each triggered input
+                    for (const port of graphNode.inputPorts) {
+                        if (inputSet.has(port.portData.data)) {
+                            GlobalState._pulsePortElement(port.element);
+                        }
+                    }
+
+                    // Pulse output signal ports that actually fired (recently)
+                    const firedOutputs = new Set<unknown>();
+                    if (block instanceof FlowGraphExecutionBlock) {
+                        for (const sig of block.signalOutputs) {
+                            if (now - (sig as FlowGraphSignalConnection)._lastActivationTime < GlobalState._HIGHLIGHT_THROTTLE_MS) {
+                                firedOutputs.add(sig);
+                            }
+                        }
+                        for (const port of graphNode.outputPorts) {
+                            if (firedOutputs.has(port.portData.data)) {
+                                GlobalState._pulsePortElement(port.element);
+                            }
+                        }
+                    }
+
+                    // Animate traveling dot on incoming links
+                    for (const link of graphNode.links) {
+                        if (link.portB && inputSet.has(link.portB.portData.data)) {
+                            link.triggerFlowAnimation();
+                        }
+                        // Also animate outgoing signal links that fired
+                        if (link.portA && firedOutputs.has(link.portA.portData.data)) {
+                            link.triggerFlowAnimation();
+                        }
+                    }
                 }
             }
         });
@@ -227,6 +313,8 @@ export class GlobalState {
     private _unsubscribeDebugObservers(): void {
         this._debugExecutionObserver?.remove();
         this._debugExecutionObserver = null;
+        this._debugStateObserver?.remove();
+        this._debugStateObserver = null;
         this._highlightThrottleMap.clear();
     }
 

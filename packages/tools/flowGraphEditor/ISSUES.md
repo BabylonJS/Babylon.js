@@ -20,6 +20,8 @@
 
 - [ ] **Several constructor config fields not editable in the panel** — Some blocks (like `FlowGraphInterpolationBlock` with `keyFramesCount`, `duration`, `animationType`; custom events with `eventId`/`eventData`; `FlowGraphGetAssetBlock` with `useIndexAsUniqueId`) have config fields that aren't exposed in the CONSTRUCTION VARIABLES panel.
 
+- [ ] **No time-scale control for scene execution** — No way to slow down (or speed up) the scene while debugging the flow graph. A time-scale slider would let users observe execution step by step in slow motion, making it much easier to follow fast-running logic like animations, loops, and event chains.
+
 ## Medium (quality-of-life improvements)
 
 - [ ] **No floating comment/note annotations** — Block-level comments exist, but free-floating sticky notes can't be placed on the canvas to document sections of the graph.

@@ -32,9 +32,16 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
     }
 
     /**
+     * Timestamp of the last activation (set on output signals when they fire).
+     * @internal
+     */
+    public _lastActivationTime: number = -1;
+
+    /**
      * @internal
      */
     public _activateSignal(context: FlowGraphContext): void {
+        this._lastActivationTime = performance.now();
         context.logger?.addLogItem({
             action: FlowGraphAction.ActivateSignal,
             className: this._ownerBlock.getClassName(),
