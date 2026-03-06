@@ -28,37 +28,8 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
     override componentDidMount() {
         const globalState = this.props.stateManager.data as GlobalState;
         this._sceneContextObserver = globalState.onSceneContextChanged.add((ctx) => {
-            if (ctx) {
-                this._rebindAnimationGroupReference(ctx);
-            }
             this.setState({ sceneContext: ctx });
         });
-    }
-
-    /**
-     * After a scene reset the old animation group objects are disposed and
-     * replaced by new ones with different uniqueIds. Re-bind the stored
-     * reference by matching on the name so the picker stays in sync.
-     */
-    private _rebindAnimationGroupReference(newCtx: SceneContext) {
-        const block = this._getBlock();
-        const agInput = block.getDataInput("animationGroup");
-        if (!agInput) return;
-
-        const oldAg = (agInput as any)._defaultValue;
-        if (!oldAg) return;
-
-        const name: string | undefined = oldAg.name;
-        if (!name) return;
-
-        const newAg = newCtx.animationGroups.find((a) => a.name === name);
-        if (newAg) {
-            if (!block.config) {
-                (block as any).config = {};
-            }
-            (block.config as any).animationGroup = newAg;
-            (agInput as any)._defaultValue = newAg;
-        }
     }
 
     override componentWillUnmount() {
@@ -87,19 +58,49 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
             (block as any).config = {};
         }
         (block.config as any).animationGroup = ag;
+        (block.config as any)._animationGroupName = ag?.name;
         (agInput as any)._defaultValue = ag;
 
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
         this.forceUpdate();
     }
 
+    /**
+     * Resolve the current animation group uniqueId, rebinding by saved name
+     * when the stored reference is stale (e.g. after a scene reset).
+     */
+    private _resolveCurrentAgId(sceneContext: SceneContext | null): number {
+        const block = this._getBlock();
+        const agInput = block.getDataInput("animationGroup");
+        const currentAg = agInput ? (agInput as any)._defaultValue : undefined;
+        if (!currentAg || !sceneContext) return currentAg?.uniqueId ?? -1;
+
+        const uid = currentAg.uniqueId;
+        if (sceneContext.animationGroups.some((a) => a.uniqueId === uid)) {
+            return uid;
+        }
+
+        const savedName: string | undefined = (block.config as any)?._animationGroupName ?? currentAg.name;
+        if (savedName) {
+            const match = sceneContext.animationGroups.find((a) => a.name === savedName);
+            if (match) {
+                if (!block.config) {
+                    (block as any).config = {};
+                }
+                (block.config as any).animationGroup = match;
+                (agInput as any)._defaultValue = match;
+                return match.uniqueId;
+            }
+        }
+
+        return -1;
+    }
+
     override render() {
         const { stateManager, nodeData } = this.props;
         const { sceneContext } = this.state;
         const block = this._getBlock();
-        const agInput = block.getDataInput("animationGroup");
-        const currentAg = agInput ? (agInput as any)._defaultValue : undefined;
-        const currentUniqueId = currentAg?.uniqueId ?? -1;
+        const currentUniqueId = this._resolveCurrentAgId(sceneContext);
 
         return (
             <>

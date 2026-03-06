@@ -80,9 +80,6 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
     override componentDidMount() {
         const globalState = this.props.stateManager.data as GlobalState;
         this._sceneContextObserver = globalState.onSceneContextChanged.add((ctx) => {
-            if (ctx) {
-                this._rebindAssetReference(ctx);
-            }
             this.setState({ sceneContext: ctx });
         });
         // If no type has been set yet, initialise to "Mesh" so the DataConnection
@@ -151,20 +148,40 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
     }
 
     /**
-     * After a scene reset the old objects are disposed and replaced by new
-     * ones with different uniqueIds. Re-bind the stored asset reference by
-     * matching on name so the picker stays in sync.
+     * Resolve the current asset uniqueId for the picker, rebinding by saved
+     * name when the stored uniqueId is stale (e.g. after a scene reset).
      */
-    private _rebindAssetReference(newCtx: SceneContext) {
+    private _resolveCurrentAssetId(sceneAssets: Array<{ uniqueId: number; name: string }> | null): number {
         const config = this._getConfig();
-        const savedName: string | undefined = (config as any)._assetName;
-        if (!savedName || !config.useIndexAsUniqueId) return;
+        const currentIndexVal = GetIndexValue(config.index);
+        const useUniqueId = config.useIndexAsUniqueId ?? false;
 
-        const assets = GetSceneListForType(newCtx, (config.type as string) ?? "Mesh");
-        const match = assets.find((a) => a.name === savedName);
-        if (match) {
-            this._onIndexChange(match.uniqueId, true);
+        if (!useUniqueId || currentIndexVal === -1 || !sceneAssets) {
+            return useUniqueId ? currentIndexVal : -1;
         }
+
+        // If the stored uniqueId still matches an asset in the scene, use it
+        if (sceneAssets.some((a) => a.uniqueId === currentIndexVal)) {
+            return currentIndexVal;
+        }
+
+        // Stale reference — try to rebind by the saved name
+        const savedName: string | undefined = (config as any)._assetName;
+        if (savedName) {
+            const match = sceneAssets.find((a) => a.name === savedName);
+            if (match) {
+                // Update the config so runtime also picks up the new id
+                config.index = new FlowGraphInteger(match.uniqueId);
+                const block = this._getBlock();
+                const indexDC = (block as any).index;
+                if (indexDC && "_defaultValue" in indexDC) {
+                    indexDC._defaultValue = new FlowGraphInteger(match.uniqueId);
+                }
+                return match.uniqueId;
+            }
+        }
+
+        return -1;
     }
 
     override render() {
@@ -173,11 +190,11 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
         const config = this._getConfig();
         const blockId = block.uniqueId;
         const currentType: string = (config.type as string) ?? "Mesh";
-        const currentIndexVal = GetIndexValue(config.index);
         const useUniqueId = config.useIndexAsUniqueId ?? false;
         const { sceneContext } = this.state;
 
         const sceneAssets = sceneContext ? GetSceneListForType(sceneContext, currentType) : null;
+        const resolvedAssetId = this._resolveCurrentAssetId(sceneAssets);
 
         return (
             <>
@@ -210,7 +227,7 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
                                 ]}
                                 target={config}
                                 propertyName="index"
-                                extractValue={() => (useUniqueId ? currentIndexVal : -1)}
+                                extractValue={() => resolvedAssetId}
                                 noDirectUpdate={true}
                                 onSelect={(value) => {
                                     const uid = value as number;
@@ -230,7 +247,7 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
                                 digits={0}
                                 step={"1"}
                                 isInteger={true}
-                                target={{ _idx: currentIndexVal }}
+                                target={{ _idx: GetIndexValue(config.index) }}
                                 propertyName="_idx"
                                 onChange={(v) => this._onIndexChange(v, false)}
                             />

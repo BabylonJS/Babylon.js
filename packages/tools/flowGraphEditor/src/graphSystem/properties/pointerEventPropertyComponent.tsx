@@ -33,37 +33,8 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
     override componentDidMount() {
         const globalState = this.props.stateManager.data as GlobalState;
         this._sceneContextObserver = globalState.onSceneContextChanged.add((ctx) => {
-            if (ctx) {
-                this._rebindMeshReference(ctx);
-            }
             this.setState({ sceneContext: ctx });
         });
-    }
-
-    /**
-     * After a scene reset the old mesh objects are disposed and replaced by
-     * new ones with different uniqueIds. Re-bind the stored reference by
-     * matching on the mesh name so the picker stays in sync.
-     */
-    private _rebindMeshReference(newCtx: SceneContext) {
-        const meshInput = this._getTargetMeshInput();
-        if (!meshInput) return;
-
-        const oldMesh = (meshInput as any)._defaultValue;
-        if (!oldMesh) return;
-
-        const name: string | undefined = oldMesh.name;
-        if (!name) return;
-
-        const newMesh = newCtx.meshes.find((m) => m.name === name);
-        if (newMesh) {
-            const block = this._getBlock();
-            if (!block.config) {
-                (block as any).config = {};
-            }
-            (block.config as any).targetMesh = newMesh;
-            (meshInput as any)._defaultValue = newMesh;
-        }
     }
 
     override componentWillUnmount() {
@@ -98,10 +69,45 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
             (block as any).config = {};
         }
         (block.config as any).targetMesh = mesh;
+        (block.config as any)._meshName = mesh?.name;
         (meshInput as any)._defaultValue = mesh;
 
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
         this.forceUpdate();
+    }
+
+    /**
+     * Resolve the current mesh uniqueId, rebinding by saved name when the
+     * stored reference is stale (e.g. after a scene reset that creates new
+     * objects with different uniqueIds).
+     */
+    private _resolveCurrentMeshId(sceneContext: SceneContext | null): number {
+        const meshInput = this._getTargetMeshInput();
+        const currentMesh = meshInput ? (meshInput as any)._defaultValue : undefined;
+        if (!currentMesh || !sceneContext) return currentMesh?.uniqueId ?? -1;
+
+        const uid = currentMesh.uniqueId;
+        // If the stored uniqueId still matches a mesh in the scene, use it
+        if (sceneContext.meshes.some((m) => m.uniqueId === uid)) {
+            return uid;
+        }
+
+        // Stale reference — try to rebind by the saved name
+        const block = this._getBlock();
+        const savedName: string | undefined = (block.config as any)?._meshName ?? currentMesh.name;
+        if (savedName) {
+            const match = sceneContext.meshes.find((m) => m.name === savedName);
+            if (match) {
+                if (!block.config) {
+                    (block as any).config = {};
+                }
+                (block.config as any).targetMesh = match;
+                (meshInput as any)._defaultValue = match;
+                return match.uniqueId;
+            }
+        }
+
+        return -1;
     }
 
     override render() {
@@ -109,9 +115,7 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
         const { sceneContext } = this.state;
         const block = this._getBlock();
         const blockId = block.uniqueId;
-        const meshInput = this._getTargetMeshInput();
-        const currentMesh = meshInput ? (meshInput as any)._defaultValue : undefined;
-        const currentUniqueId = currentMesh?.uniqueId ?? -1;
+        const currentUniqueId = this._resolveCurrentMeshId(sceneContext);
 
         return (
             <>
