@@ -198,7 +198,6 @@ export class DepthRenderer {
 
         this._depthMap.onBeforeBindObservable.add(() => {
             if (engine._enableGPUDebugMarkers) {
-                engine.restoreDefaultFramebuffer(true);
                 engine._debugPushGroup?.(`Depth renderer`);
             }
         });

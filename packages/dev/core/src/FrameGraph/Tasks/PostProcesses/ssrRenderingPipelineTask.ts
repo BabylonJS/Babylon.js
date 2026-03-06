@@ -70,6 +70,9 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
         this._camera = camera;
 
         this.ssr.camera = camera;
+        if (this._ssr) {
+            this._ssr.camera = camera;
+        }
     }
 
     /**
