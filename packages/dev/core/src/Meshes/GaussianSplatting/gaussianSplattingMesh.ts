@@ -611,7 +611,7 @@ export class GaussianSplattingMesh extends Mesh {
         }
         const gaussianSplattingMaterial = new GaussianSplattingMaterial(this.name + "_material", this._scene);
         gaussianSplattingMaterial.setSourceMesh(this);
-        // No need to serialize this material created constructor.
+        // No need to serialize this material created in constructor.
         gaussianSplattingMaterial.doNotSerialize = true;
         this._material = gaussianSplattingMaterial;
 
@@ -2626,13 +2626,12 @@ export class GaussianSplattingMesh extends Mesh {
                     : compressedIndices;
         }
         if (this._partProxies) {
-            const parts = this._partProxies;
             const serializedParts: Record<number, any> = {};
-            for (const [partId, partMesh] of parts) {
+            this._partProxies.forEach((proxy, proxyIndex) => {
                 // TODO: GaussianSplattingPartProxyMesh.doNotSerialize
                 // not fully sure if skipping a part is safe
-                serializedParts[partId] = partMesh.serialize();
-            }
+                serializedParts[proxyIndex] = proxy.serialize();
+            });
             serializationObject.partProxies = serializedParts;
         }
         return serializationObject;
