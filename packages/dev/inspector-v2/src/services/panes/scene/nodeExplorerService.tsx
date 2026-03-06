@@ -241,9 +241,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                 return {
                     type: "toggle",
                     displayName: "Activate and Attach Controls",
-                    icon: () => {
-                        return getActiveCamera() === camera ? <VideoFilled /> : <VideoRegular />;
-                    },
+                    icon: () => (getActiveCamera() === camera ? <VideoFilled /> : <VideoRegular />),
                     get isEnabled() {
                         return getActiveCamera() === camera;
                     },

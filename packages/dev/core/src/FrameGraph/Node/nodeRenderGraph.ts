@@ -283,7 +283,7 @@ export class NodeRenderGraph {
             if (rebuildGraph) {
                 const currentAutoFill = this._options.autoFillExternalInputs;
                 try {
-                    this._options.autoFillExternalInputs = false; // makes sure that the camera input block(s) we just updated don't get overwritten by autoFillExternalInputs
+                    this._options.autoFillExternalInputs = false; // Prevent autoFillExternalInputs from overwriting our camera updates
 
                     await this.buildAsync();
                 } finally {
