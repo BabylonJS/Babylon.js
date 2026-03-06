@@ -822,8 +822,8 @@ export class PhysicsCharacterController {
         const axis = sci0.planeNormal.cross(sci1.planeNormal);
         const axisLen2 = axis.lengthSquared();
 
-        let solveSequentially = false;
-        let axisVel = null;
+        let solveSequentially: boolean = false;
+        let axisVel: Vector3 | null;
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
@@ -927,7 +927,7 @@ export class PhysicsCharacterController {
             const r2 = sci0.planeNormal.cross(sci1.planeNormal);
 
             const det = r0.dot(sci0.planeNormal);
-            let solveSequentially = false;
+            let solveSequentially: boolean = false;
             // eslint-disable-next-line no-constant-condition
             while (true) {
                 if (Math.abs(det) < eps || solveSequentially) {

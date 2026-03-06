@@ -123,7 +123,7 @@ describe("Scene Materials", () => {
 
         it("should looking for material first before looking for multiMaterial", () => {
             const materialX = new StandardMaterial("materialX", scene);
-            const multiMaterial = new MultiMaterial("materialX", scene);
+            new MultiMaterial("materialX", scene);
 
             expect(scene.getMaterialByName("materialX", true)).toBe(materialX);
         });
@@ -139,7 +139,7 @@ describe("Scene Materials", () => {
 
     describe("getLastMaterialById", () => {
         it("should return the last material with the given id", () => {
-            const materialX1 = new StandardMaterial("materialX", scene);
+            new StandardMaterial("materialX", scene);
             const materialX2 = new StandardMaterial("materialX", scene);
 
             expect(scene.getLastMaterialById("000")).toBeNull();
@@ -155,7 +155,7 @@ describe("Scene Materials", () => {
         });
 
         it("should looking for material first before looking for multiMaterial", () => {
-            const materialX1 = new StandardMaterial("materialX", scene);
+            new StandardMaterial("materialX", scene);
             const materialX2 = new StandardMaterial("materialX", scene);
 
             expect(scene.getLastMaterialById("materialX", true)).toBe(materialX2);
@@ -195,13 +195,13 @@ describe("Scene Materials", () => {
 
             scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (material) => material.name === "materialX");
 
-            expect(materialXSpy).toBeCalledTimes(1);
+            expect(materialXSpy).toHaveBeenCalledTimes(1);
             expect(materialXSpy).toHaveBeenCalledWith(Material.TextureDirtyFlag);
             expect(materialYSpy).not.toHaveBeenCalled();
 
             scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (material) => material.name === "000");
 
-            expect(materialXSpy).toBeCalledTimes(1);
+            expect(materialXSpy).toHaveBeenCalledTimes(1);
             expect(materialYSpy).not.toHaveBeenCalled();
         });
     });
@@ -219,9 +219,9 @@ describe("Scene Materials", () => {
 
             scene.freezeMaterials();
 
-            expect(materialXSpy).toBeCalledTimes(1);
-            expect(materialYSpy).toBeCalledTimes(1);
-            expect(materialZSpy).toBeCalledTimes(0);
+            expect(materialXSpy).toHaveBeenCalledTimes(1);
+            expect(materialYSpy).toHaveBeenCalledTimes(1);
+            expect(materialZSpy).toHaveBeenCalledTimes(0);
         });
 
         it("should don't touch multimaterials", () => {
@@ -243,10 +243,10 @@ describe("Scene Materials", () => {
 
             scene.freezeMaterials();
 
-            expect(multiMaterialSpy).toBeCalledTimes(0);
-            expect(materialXSpy).toBeCalledTimes(1);
-            expect(materialYSpy).toBeCalledTimes(1);
-            expect(materialZSpy).toBeCalledTimes(0);
+            expect(multiMaterialSpy).toHaveBeenCalledTimes(0);
+            expect(materialXSpy).toHaveBeenCalledTimes(1);
+            expect(materialYSpy).toHaveBeenCalledTimes(1);
+            expect(materialZSpy).toHaveBeenCalledTimes(0);
         });
     });
 
@@ -263,9 +263,9 @@ describe("Scene Materials", () => {
 
             scene.unfreezeMaterials();
 
-            expect(materialXSpy).toBeCalledTimes(1);
-            expect(materialYSpy).toBeCalledTimes(1);
-            expect(materialZSpy).toBeCalledTimes(0);
+            expect(materialXSpy).toHaveBeenCalledTimes(1);
+            expect(materialYSpy).toHaveBeenCalledTimes(1);
+            expect(materialZSpy).toHaveBeenCalledTimes(0);
         });
 
         it("should don't touch multimaterials", () => {
@@ -287,10 +287,10 @@ describe("Scene Materials", () => {
 
             scene.unfreezeMaterials();
 
-            expect(multiMaterialSpy).toBeCalledTimes(0);
-            expect(materialXSpy).toBeCalledTimes(1);
-            expect(materialYSpy).toBeCalledTimes(1);
-            expect(materialZSpy).toBeCalledTimes(0);
+            expect(multiMaterialSpy).toHaveBeenCalledTimes(0);
+            expect(materialXSpy).toHaveBeenCalledTimes(1);
+            expect(materialYSpy).toHaveBeenCalledTimes(1);
+            expect(materialZSpy).toHaveBeenCalledTimes(0);
         });
     });
 });

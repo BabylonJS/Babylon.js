@@ -505,8 +505,8 @@ export class ThinDepthPeelingRenderer {
         this._scene.resetCachedMaterial();
 
         // depth peeling ping-pong
-        let readId = 0;
-        let writeId = 0;
+        let readId: number;
+        let writeId: number = 0;
 
         for (let i = 0; i < this._passCount; i++) {
             readId = i % 2;
