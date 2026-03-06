@@ -32,7 +32,7 @@ export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
 
                 return {
                     get name() {
-                        return atmosphere.name;
+                        return atmosphere.name || `Unnamed ${atmosphere.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {

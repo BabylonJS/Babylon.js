@@ -40,7 +40,7 @@ export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
 
                 return {
                     get name() {
-                        return skeletonOrBone.name;
+                        return skeletonOrBone.name || `Unnamed ${skeletonOrBone.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {

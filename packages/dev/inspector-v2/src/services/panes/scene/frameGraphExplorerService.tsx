@@ -34,7 +34,7 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
 
                 return {
                     get name() {
-                        return frameGraph.name;
+                        return frameGraph.name || `Unnamed ${frameGraph.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
