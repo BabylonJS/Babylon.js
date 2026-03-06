@@ -602,6 +602,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -768,6 +769,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -912,6 +914,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -1006,6 +1009,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
@@ -1220,6 +1224,7 @@ export class WebGPUTextureManager {
 
         if (useOwnCommandEncoder) {
             this._device.queue.submit([commandEncoder!.finish()]);
+            // eslint-disable-next-line no-useless-assignment
             commandEncoder = null as any;
         }
     }
