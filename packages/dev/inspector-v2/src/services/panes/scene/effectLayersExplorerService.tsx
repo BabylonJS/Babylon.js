@@ -32,7 +32,7 @@ export const EffectLayerExplorerServiceDefinition: ServiceDefinition<[], [IScene
 
                 return {
                     get name() {
-                        return effectLayer.name;
+                        return effectLayer.name || `Unnamed ${effectLayer.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {

@@ -35,7 +35,7 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
 
                 return {
                     get name() {
-                        return material.name;
+                        return material.name || `Unnamed ${material.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
