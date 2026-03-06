@@ -11,6 +11,11 @@ import { ToolsServiceIdentity } from "../../toolsService";
 
 export const GLTFLoaderServiceIdentity = Symbol("GLTFLoaderService");
 
+// Controls whether the inspector globally overrides GLTF loader options on every load.
+// Defaults to false to avoid interfering with per-load options set by application code.
+export const GlobalOverrideSettings = { enabled: false };
+export type GlobalOverrideSettingsType = typeof GlobalOverrideSettings;
+
 // Options exposed in Inspector includes all the properties from the default loader options (GLTFLoaderDefaultOptions)
 // plus some options that only exist directly on the GLTFFileLoader class itself.
 const CurrentLoaderOptions = Object.assign(
@@ -68,7 +73,11 @@ export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsSe
             if (plugin.name === "gltf") {
                 const loader = plugin as GLTFFileLoader;
 
-                // Apply loader settings
+                // Only apply loader settings when global override is explicitly enabled.
+                // When disabled (default), per-load options set by application code are preserved.
+                if (!GlobalOverrideSettings.enabled) {
+                    return;
+                }
                 Object.assign(loader, CurrentLoaderOptions);
 
                 // Subscribe to extension loading
@@ -90,7 +99,7 @@ export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsSe
                 return (
                     <>
                         <MessageBar intent="info" message="Reload the file for changes to take effect" />
-                        <GLTFLoaderOptionsTool loaderOptions={CurrentLoaderOptions} />
+                        <GLTFLoaderOptionsTool loaderOptions={CurrentLoaderOptions} overrideSettings={GlobalOverrideSettings} />
                         <GLTFExtensionOptionsTool extensionOptions={CurrentExtensionOptions} />
                     </>
                 );
