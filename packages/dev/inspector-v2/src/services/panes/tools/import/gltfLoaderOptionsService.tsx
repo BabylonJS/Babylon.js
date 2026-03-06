@@ -5,15 +5,22 @@ import type { IToolsService } from "../../toolsService";
 
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { GLTFLoaderDefaultOptions } from "loaders/glTF/glTFFileLoader";
+import { registeredGLTFExtensions } from "loaders/glTF/2.0/glTFLoaderExtensionRegistry";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { GLTFExtensionOptionsTool, GLTFLoaderOptionsTool } from "../../../../components/tools/import/gltfLoaderOptionsTool";
 import { ToolsServiceIdentity } from "../../toolsService";
 
 export const GLTFLoaderServiceIdentity = Symbol("GLTFLoaderService");
 
+/**
+ * Helper type to make all properties of T nullable.
+ */
+type NullableProperties<T> = { [K in keyof T]: T[K] | null };
+
 // Options exposed in Inspector includes all the properties from the default loader options (GLTFLoaderDefaultOptions)
 // plus some options that only exist directly on the GLTFFileLoader class itself.
-const CurrentLoaderOptions = Object.assign(
+// These are the non-null defaults, used as defaultValue for the nullable property lines.
+export const LoaderOptionDefaults = Object.assign(
     {
         capturePerformanceCounters: false,
         loggingEnabled: false,
@@ -21,62 +28,50 @@ const CurrentLoaderOptions = Object.assign(
     GLTFLoaderDefaultOptions
 );
 
+// Current loader options with nullable properties (null means "don't override the options coming in with load calls")
+const CurrentLoaderOptions: NullableProperties<typeof LoaderOptionDefaults> = Object.fromEntries(Object.keys(LoaderOptionDefaults).map((key) => [key, null])) as NullableProperties<
+    typeof LoaderOptionDefaults
+>;
+
 export type GLTFLoaderOptionsType = typeof CurrentLoaderOptions;
 
-const CurrentExtensionOptions = {
+// Non-null defaults for extension options that have properties beyond just 'enabled'.
+export const ExtensionOptionDefaults = {
     /* eslint-disable @typescript-eslint/naming-convention */
-    EXT_lights_image_based: { enabled: true },
-    EXT_mesh_gpu_instancing: { enabled: true },
-    EXT_texture_webp: { enabled: true },
-    EXT_texture_avif: { enabled: true },
-    KHR_draco_mesh_compression: { enabled: true },
-    KHR_materials_pbrSpecularGlossiness: { enabled: true },
-    KHR_materials_clearcoat: { enabled: true },
-    KHR_materials_iridescence: { enabled: true },
-    KHR_materials_anisotropy: { enabled: true },
-    KHR_materials_emissive_strength: { enabled: true },
-    KHR_materials_ior: { enabled: true },
-    KHR_materials_sheen: { enabled: true },
-    KHR_materials_specular: { enabled: true },
-    KHR_materials_unlit: { enabled: true },
-    KHR_materials_variants: { enabled: true },
-    KHR_materials_transmission: { enabled: true },
-    KHR_materials_diffuse_transmission: { enabled: true },
-    KHR_materials_volume: { enabled: true },
-    KHR_materials_dispersion: { enabled: true },
-    KHR_materials_diffuse_roughness: { enabled: true },
-    KHR_mesh_quantization: { enabled: true },
-    KHR_lights_punctual: { enabled: true },
-    EXT_lights_area: { enabled: true },
-    KHR_texture_basisu: { enabled: true },
-    KHR_texture_transform: { enabled: true },
-    KHR_xmp_json_ld: { enabled: true },
-    MSFT_lod: { enabled: true, maxLODsToLoad: 10 },
-    MSFT_minecraftMesh: { enabled: true },
-    MSFT_sRGBFactors: { enabled: true },
-    MSFT_audio_emitter: { enabled: true },
-} satisfies SceneLoaderPluginOptions["gltf"]["extensionOptions"];
+    MSFT_lod: { maxLODsToLoad: 10 },
+} satisfies Partial<SceneLoaderPluginOptions["gltf"]["extensionOptions"]>;
 
-export type GLTFExtensionOptionsType = typeof CurrentExtensionOptions;
+export type GLTFExtensionOptionsType = Record<string, { enabled: boolean | null; [key: string]: unknown }>;
 
 export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
     friendlyName: "GLTF Loader Options",
     consumes: [ToolsServiceIdentity],
     factory: (toolsService) => {
+        // Build extension options dynamically from the registered extensions.
+        // Every extension gets an 'enabled' toggle; extensions in ExtensionOptionDefaults also get their extra properties.
+        const CurrentExtensionOptions: GLTFExtensionOptionsType = {};
+        for (const extName of registeredGLTFExtensions.keys()) {
+            const defaults = (ExtensionOptionDefaults as Record<string, Record<string, unknown>>)[extName];
+            const extraNulls = defaults ? Object.fromEntries(Object.keys(defaults).map((key) => [key, null])) : {};
+            CurrentExtensionOptions[extName] = { enabled: null, ...extraNulls };
+        }
+
         // Subscribe to plugin activation
         const pluginObserver = SceneLoader.OnPluginActivatedObservable.add((plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync) => {
             if (plugin.name === "gltf") {
                 const loader = plugin as GLTFFileLoader;
 
-                // Apply loader settings
-                Object.assign(loader, CurrentLoaderOptions);
+                // Apply loader settings (filter out null values to not override options coming in with load calls)
+                const nonNullLoaderOptions = Object.fromEntries(Object.entries(CurrentLoaderOptions).filter(([_, v]) => v !== null));
+                Object.assign(loader, nonNullLoaderOptions);
 
                 // Subscribe to extension loading
                 loader.onExtensionLoadedObservable.add((extension: IGLTFLoaderExtension) => {
-                    const extensionOptions = CurrentExtensionOptions[extension.name as keyof GLTFExtensionOptionsType];
+                    const extensionOptions = CurrentExtensionOptions[extension.name];
                     if (extensionOptions) {
-                        // Apply extension settings
-                        Object.assign(extension, extensionOptions);
+                        // Apply extension settings (filter out null values to not override options coming in with load calls)
+                        const nonNullExtOptions = Object.fromEntries(Object.entries(extensionOptions).filter(([_, v]) => v !== null));
+                        Object.assign(extension, nonNullExtOptions);
                     }
                 });
             }

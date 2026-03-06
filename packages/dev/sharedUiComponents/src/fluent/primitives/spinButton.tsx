@@ -308,6 +308,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
                 className={mergedClassName}
                 input={{ className: inputSlotClassName }}
                 value={isEditing ? editText : formattedValue}
+                disabled={props.disabled}
                 onChange={handleInputChange}
                 onFocus={handleFocus}
                 onKeyDown={handleKeyDown}
