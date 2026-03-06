@@ -4441,6 +4441,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     };
 
     /**
+     * Holder function for GaussianSplattingMesh Parser, should be GaussianSplattingMesh.Parse after imported
+     * @internal
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static _GaussianSplattingMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _WarnImport("GaussianSplattingMesh");
+    };
+
+    /**
+     * Holder function for GaussianSplattingPartProxyMesh Parser, should be GaussianSplattingPartProxyMesh.Parse after imported
+     * @internal
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static _GaussianSplattingPartProxyMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _WarnImport("GaussianSplattingPartProxyMesh");
+    };
+
+    /**
      * Returns a new Mesh object parsed from the source provided.
      * @param parsedMesh is the source
      * @param scene defines the hosting scene
@@ -4449,6 +4467,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public static override Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
         let mesh: Mesh;
+        // Should not import Geometry for GaussianSplattingMesh and GaussianSplattingPartProxyMesh
+        let skipImportGeometry = false;
 
         if (parsedMesh.type && parsedMesh.type === "LinesMesh") {
             mesh = Mesh._LinesMeshParser(parsedMesh, scene);
@@ -4460,6 +4480,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             mesh = Mesh._GreasedLineMeshParser(parsedMesh, scene);
         } else if (parsedMesh.type && parsedMesh.type === "TrailMesh") {
             mesh = Mesh._TrailMeshParser(parsedMesh, scene);
+        } else if (parsedMesh.type && parsedMesh.type === "GaussianSplattingMesh") {
+            mesh = Mesh._GaussianSplattingMeshParser(parsedMesh, scene);
+            skipImportGeometry = true;
+        } else if (parsedMesh.type && parsedMesh.type === "GaussianSplattingPartProxyMesh") {
+            mesh = Mesh._GaussianSplattingPartProxyMeshParser(parsedMesh, scene);
+            skipImportGeometry = true;
         } else {
             mesh = new Mesh(parsedMesh.name, scene);
         }
@@ -4633,7 +4659,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             if (SceneLoaderFlags.ForceFullSceneLoadingForIncremental) {
                 mesh._checkDelayState();
             }
-        } else {
+        } else if (!skipImportGeometry) {
             Geometry._ImportGeometry(parsedMesh, mesh);
         }
 

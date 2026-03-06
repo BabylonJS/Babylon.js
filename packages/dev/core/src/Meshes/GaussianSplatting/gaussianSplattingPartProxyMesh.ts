@@ -8,13 +8,24 @@ import { PickingInfo } from "../../Collisions/pickingInfo";
 import { Vector3 } from "../../Maths/math.vector";
 
 /**
+ * This is a dummy interface for holding BoundingInfo for serialization,
+ * it keeps the exact same getBoundingInfo() like Mesh to not break code
+ */
+interface IBoundingInfoProvider {
+    /**
+     * Get underlying BoundingInfo
+     */
+    getBoundingInfo(): BoundingInfo;
+}
+
+/**
  * Class used as a proxy mesh for a part of a compound Gaussian Splatting mesh
  */
 export class GaussianSplattingPartProxyMesh extends Mesh {
     /**
      * The Gaussian Splatting mesh that this proxy represents a part of
      */
-    public readonly proxiedMesh: GaussianSplattingMesh;
+    public readonly proxiedMesh: GaussianSplattingMesh | IBoundingInfoProvider;
 
     /**
      * The index of the part in the compound mesh (internal storage)
@@ -41,7 +52,7 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
      * @param proxiedMesh The Gaussian Splatting mesh that this proxy represents a part of
      * @param partIndex The index of the part in the compound mesh
      */
-    constructor(name: string, scene: Nullable<Scene>, compoundSplatMesh: GaussianSplattingMesh, proxiedMesh: GaussianSplattingMesh, partIndex: number) {
+    constructor(name: string, scene: Nullable<Scene>, compoundSplatMesh: GaussianSplattingMesh, proxiedMesh: GaussianSplattingMesh | IBoundingInfoProvider, partIndex: number) {
         super(name, scene);
         this.proxiedMesh = proxiedMesh;
         this._partIndex = partIndex;
@@ -138,4 +149,53 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
 
         return pickingInfo;
     }
+
+    /**
+     * Serialize current GaussianSplattingPartProxyMesh
+     * @param serializationObject defines the object which will receive the serialization data
+     * @returns the serialized object
+     */
+    override serialize(serializationObject: any = {}): any {
+        serializationObject = super.serialize(serializationObject);
+        // GaussianSplattingPartProxyMesh needs no SubMesh, Geometry, or Material
+        serializationObject.subMeshes = [];
+        serializationObject.geometryUniqueId = undefined;
+        serializationObject.geometryId = undefined;
+        serializationObject.materialUniqueId = undefined;
+        serializationObject.materialId = undefined;
+        serializationObject.instances = [];
+        serializationObject.actions = undefined;
+        serializationObject.type = this.getClassName();
+        // partIndex is needed in constructor
+        serializationObject.partIndex = this._partIndex;
+        const boundingInfo = this.getBoundingInfo();
+        // boundingInfo is needed in constructor
+        serializationObject.boundingInfo = {
+            minimum: boundingInfo.minimum.asArray(),
+            maximum: boundingInfo.maximum.asArray(),
+        };
+        return serializationObject;
+    }
+
+    /**
+     * Parses a serialized GaussianSplattingPartProxyMesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the GaussianSplattingPartProxyMesh in
+     * @returns the created GaussianSplattingPartProxyMesh
+     */
+    public static override Parse(parsedMesh: any, scene: Scene): GaussianSplattingPartProxyMesh {
+        const partIndex = parsedMesh.partIndex;
+        const compoundSplatMesh = parsedMesh.compoundSplatMesh as GaussianSplattingMesh;
+        const minimum = Vector3.FromArray(parsedMesh.boundingInfo.minimum);
+        const maximum = Vector3.FromArray(parsedMesh.boundingInfo.maximum);
+        const boundingInfo = new BoundingInfo(minimum, maximum);
+        const proxiedMesh: IBoundingInfoProvider = {
+            getBoundingInfo() {
+                return boundingInfo;
+            },
+        };
+        return new GaussianSplattingPartProxyMesh(parsedMesh.name, scene, compoundSplatMesh, proxiedMesh, partIndex);
+    }
 }
+
+Mesh._GaussianSplattingPartProxyMeshParser = GaussianSplattingPartProxyMesh.Parse;
