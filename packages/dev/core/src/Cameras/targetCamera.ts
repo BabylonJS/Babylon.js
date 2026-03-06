@@ -64,6 +64,9 @@ export class TargetCamera extends Camera {
      */
     public noRotationConstraint = false;
 
+    /** @internal */
+    public _movementDeltasConsumed = false;
+
     /**
      * Reverses mouselook direction to 'natural' panning as opposed to traditional direct
      * panning
@@ -318,6 +321,40 @@ export class TargetCamera extends Camera {
         return Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
     }
 
+    /**
+     * Routes a pan (translation) delta to CameraMovement or the legacy cameraDirection.
+     * Input plugins should call this instead of writing to cameraDirection directly.
+     * @internal
+     */
+    public _addPanDelta(x: number, y: number, z: number = 0): void {
+        if (this.movement) {
+            this.movement.panAccumulatedPixels.x += x;
+            this.movement.panAccumulatedPixels.y += y;
+            this.movement.panAccumulatedPixels.z += z;
+            this.movement.activeInput = true;
+        } else {
+            this.cameraDirection.x += x;
+            this.cameraDirection.y += y;
+            this.cameraDirection.z += z;
+        }
+    }
+
+    /**
+     * Routes a rotation delta to CameraMovement or the legacy cameraRotation.
+     * Input plugins should call this instead of writing to cameraRotation directly.
+     * @internal
+     */
+    public _addRotationDelta(x: number, y: number): void {
+        if (this.movement) {
+            this.movement.rotationAccumulatedPixels.x += x;
+            this.movement.rotationAccumulatedPixels.y += y;
+            this.movement.activeInput = true;
+        } else {
+            this.cameraRotation.x += x;
+            this.cameraRotation.y += y;
+        }
+    }
+
     /** @internal */
     public _updatePosition(): void {
         if (this.parent) {
@@ -342,6 +379,17 @@ export class TargetCamera extends Camera {
     /** @internal */
     public override _checkInputs(): void {
         const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
+
+        // When CameraMovement is set, compute framerate-independent deltas and write them
+        // into cameraDirection/cameraRotation so the existing position/rotation update code works unchanged.
+        // Skip if a subclass (e.g. ArcRotateCamera) already called computeCurrentFrameDeltas this frame.
+        if (this.movement && !this._movementDeltasConsumed) {
+            this.movement.computeCurrentFrameDeltas();
+            this.cameraDirection.copyFrom(this.movement.panDeltaCurrentFrame);
+            this.cameraRotation.copyFromFloats(this.movement.rotationDeltaCurrentFrame.x, this.movement.rotationDeltaCurrentFrame.y);
+        }
+        this._movementDeltasConsumed = false;
+
         const needToMove = this._decideIfNeedsToMove();
         const needToRotate = this.cameraRotation.x || this.cameraRotation.y;
 
@@ -404,33 +452,36 @@ export class TargetCamera extends Camera {
             }
         }
 
-        const inertialPanningLimit = this.speed * this._panningEpsilon;
-        const inertialRotationLimit = this.speed * this._rotationEpsilon;
-        // Inertia
-        if (needToMove) {
-            if (Math.abs(this.cameraDirection.x) < inertialPanningLimit) {
-                this.cameraDirection.x = 0;
-            }
+        // Skip legacy inertia when CameraMovement handles it
+        if (!this.movement) {
+            const inertialPanningLimit = this.speed * this._panningEpsilon;
+            const inertialRotationLimit = this.speed * this._rotationEpsilon;
+            // Inertia
+            if (needToMove) {
+                if (Math.abs(this.cameraDirection.x) < inertialPanningLimit) {
+                    this.cameraDirection.x = 0;
+                }
 
-            if (Math.abs(this.cameraDirection.y) < inertialPanningLimit) {
-                this.cameraDirection.y = 0;
-            }
+                if (Math.abs(this.cameraDirection.y) < inertialPanningLimit) {
+                    this.cameraDirection.y = 0;
+                }
 
-            if (Math.abs(this.cameraDirection.z) < inertialPanningLimit) {
-                this.cameraDirection.z = 0;
-            }
+                if (Math.abs(this.cameraDirection.z) < inertialPanningLimit) {
+                    this.cameraDirection.z = 0;
+                }
 
-            this.cameraDirection.scaleInPlace(this.inertia);
-        }
-        if (needToRotate) {
-            if (Math.abs(this.cameraRotation.x) < inertialRotationLimit) {
-                this.cameraRotation.x = 0;
+                this.cameraDirection.scaleInPlace(this.inertia);
             }
+            if (needToRotate) {
+                if (Math.abs(this.cameraRotation.x) < inertialRotationLimit) {
+                    this.cameraRotation.x = 0;
+                }
 
-            if (Math.abs(this.cameraRotation.y) < inertialRotationLimit) {
-                this.cameraRotation.y = 0;
+                if (Math.abs(this.cameraRotation.y) < inertialRotationLimit) {
+                    this.cameraRotation.y = 0;
+                }
+                this.cameraRotation.scaleInPlace(this.inertia);
             }
-            this.cameraRotation.scaleInPlace(this.inertia);
         }
 
         super._checkInputs();

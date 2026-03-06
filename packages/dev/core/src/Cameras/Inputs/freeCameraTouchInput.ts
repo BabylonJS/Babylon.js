@@ -38,6 +38,14 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
      */
     public singleFingerRotate: boolean = false;
 
+    /**
+     * Defines the number of virtual pixels of pan input per frame while touching.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     * Default calibrated to match legacy _computeLocalCameraSpeed() at 60fps with camera.speed=1.
+     */
+    @serialize()
+    public panSensitivity = 0.2;
+
     private _offsetX: Nullable<number> = null;
     private _offsetY: Nullable<number> = null;
 
@@ -117,6 +125,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                     previousPosition = null;
                     this._offsetX = null;
                     this._offsetY = null;
+                    if (this.camera.movement) {
+                        this.camera.movement.activeInput = false;
+                    }
                 } else if (p.type === PointerEventTypes.POINTERMOVE) {
                     if (!noPreventDefault) {
                         evt.preventDefault();
@@ -190,18 +201,25 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
 
         const camera = this.camera;
         const handednessMultiplier = camera._calculateHandednessMultiplier();
-        camera.cameraRotation.y = (this._offsetX * handednessMultiplier) / this.touchAngularSensibility;
+        const movement = camera.movement;
 
         const rotateCamera = (this.singleFingerRotate && this._pointerPressed.length === 1) || (!this.singleFingerRotate && this._pointerPressed.length > 1);
 
+        const yawDelta = (this._offsetX * handednessMultiplier) / this.touchAngularSensibility;
         if (rotateCamera) {
-            camera.cameraRotation.x = -(this._offsetY * handednessMultiplier) / this.touchAngularSensibility;
+            const pitchDelta = -(this._offsetY * handednessMultiplier) / this.touchAngularSensibility;
+            camera._addRotationDelta(pitchDelta, yawDelta);
         } else {
-            const speed = camera._computeLocalCameraSpeed();
+            // Yaw rotation only, plus forward movement
+            camera._addRotationDelta(0, yawDelta);
+            // Continuous "move forward while touching" has no physical pixel displacement.
+            // CameraMovement path: pass fixed 1.0 as "virtual pixels" per frame.
+            // Legacy path: _computeLocalCameraSpeed() returns a pre-scaled distance.
+            const speed = movement ? this.panSensitivity : camera._computeLocalCameraSpeed();
             const direction = new Vector3(0, 0, this.touchMoveSensibility !== 0 ? (speed * this._offsetY) / this.touchMoveSensibility : 0);
-
             Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
-            camera.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
+            const transformed = Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix);
+            camera._addPanDelta(transformed.x, transformed.y, transformed.z);
         }
     }
 

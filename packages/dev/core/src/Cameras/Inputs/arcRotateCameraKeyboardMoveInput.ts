@@ -78,6 +78,30 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     @serialize()
     public angularSpeed = 0.01;
 
+    /**
+     * Defines the number of virtual pixels of pan input per frame while a key is held.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     * Default calibrated to match legacy 1/panningSensibility (1/50 = 0.02).
+     */
+    @serialize()
+    public panSensitivity = 0.02;
+
+    /**
+     * Defines the number of virtual pixels of zoom input per frame while a key is held.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     * Default calibrated to match legacy 1/zoomingSensibility (1/25 = 0.04).
+     */
+    @serialize()
+    public zoomSensitivity = 0.04;
+
+    /**
+     * Defines the number of virtual pixels of rotation input per frame while a key is held.
+     * Only used when CameraMovement is active. CameraMovement handles framerate normalization.
+     * Default calibrated to match legacy angularSpeed (0.01).
+     */
+    @serialize()
+    public rotationSensitivity = 0.01;
+
     private _keys = new Array<number>();
     private _ctrlPressed: boolean;
     private _altPressed: boolean;
@@ -144,6 +168,9 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                         if (index >= 0) {
                             this._keys.splice(index, 1);
                         }
+                        if (this._keys.length === 0 && this.camera.movement) {
+                            this.camera.movement.activeInput = false;
+                        }
 
                         if (evt.preventDefault) {
                             if (!noPreventDefault) {
@@ -181,36 +208,37 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     public checkInputs(): void {
         if (this._onKeyboardObserver) {
             const camera = this.camera;
+            const movement = camera.movement;
 
             for (let index = 0; index < this._keys.length; index++) {
                 const keyCode = this._keys[index];
                 if (this.keysLeft.indexOf(keyCode) !== -1) {
                     if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera.inertialPanningX -= 1 / this.panningSensibility;
+                        camera._addPanDelta(movement ? -this.panSensitivity : -1 / this.panningSensibility, 0);
                     } else {
-                        camera.inertialAlphaOffset -= this.angularSpeed;
+                        camera._addRotationDelta(movement ? -this.rotationSensitivity : -this.angularSpeed, 0);
                     }
                 } else if (this.keysUp.indexOf(keyCode) !== -1) {
                     if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera.inertialPanningY += 1 / this.panningSensibility;
+                        camera._addPanDelta(0, movement ? this.panSensitivity : 1 / this.panningSensibility);
                     } else if (this._altPressed && this.useAltToZoom) {
-                        camera.inertialRadiusOffset += 1 / this.zoomingSensibility;
+                        camera._addZoomDelta(movement ? this.zoomSensitivity : 1 / this.zoomingSensibility);
                     } else {
-                        camera.inertialBetaOffset -= this.angularSpeed;
+                        camera._addRotationDelta(0, movement ? -this.rotationSensitivity : -this.angularSpeed);
                     }
                 } else if (this.keysRight.indexOf(keyCode) !== -1) {
                     if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera.inertialPanningX += 1 / this.panningSensibility;
+                        camera._addPanDelta(movement ? this.panSensitivity : 1 / this.panningSensibility, 0);
                     } else {
-                        camera.inertialAlphaOffset += this.angularSpeed;
+                        camera._addRotationDelta(movement ? this.rotationSensitivity : this.angularSpeed, 0);
                     }
                 } else if (this.keysDown.indexOf(keyCode) !== -1) {
                     if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera.inertialPanningY -= 1 / this.panningSensibility;
+                        camera._addPanDelta(0, movement ? -this.panSensitivity : -1 / this.panningSensibility);
                     } else if (this._altPressed && this.useAltToZoom) {
-                        camera.inertialRadiusOffset -= 1 / this.zoomingSensibility;
+                        camera._addZoomDelta(movement ? -this.zoomSensitivity : -1 / this.zoomingSensibility);
                     } else {
-                        camera.inertialBetaOffset += this.angularSpeed;
+                        camera._addRotationDelta(0, movement ? this.rotationSensitivity : this.angularSpeed);
                     }
                 } else if (this.keysReset.indexOf(keyCode) !== -1) {
                     if (camera.useInputToRestoreState) {

@@ -95,8 +95,7 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
         if (this.panningSensibility !== 0 && previousMultiTouchPanPosition && multiTouchPanPosition) {
             const moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
             const moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-            this.camera.inertialPanningX += -moveDeltaX / this.panningSensibility;
-            this.camera.inertialPanningY += moveDeltaY / this.panningSensibility;
+            this.camera._addPanDelta(-moveDeltaX / this.panningSensibility, moveDeltaY / this.panningSensibility);
         }
     }
 
@@ -110,11 +109,12 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
         if (this.useNaturalPinchZoom) {
             this.camera.radius = (radius * Math.sqrt(previousPinchSquaredDistance)) / Math.sqrt(pinchSquaredDistance);
         } else if (this.pinchDeltaPercentage) {
-            this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 * radius * this.pinchDeltaPercentage;
+            this.camera._addZoomDelta((pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 * radius * this.pinchDeltaPercentage);
         } else {
-            this.camera.inertialRadiusOffset +=
+            this.camera._addZoomDelta(
                 (pinchSquaredDistance - previousPinchSquaredDistance) /
-                ((this.pinchPrecision * (this.pinchInwards ? 1 : -1) * (this.angularSensibilityX + this.angularSensibilityY)) / 2);
+                    ((this.pinchPrecision * (this.pinchInwards ? 1 : -1) * (this.angularSensibilityX + this.angularSensibilityY)) / 2)
+            );
         }
     }
 
@@ -126,11 +126,9 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
      */
     public override onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
         if (this.panningSensibility !== 0 && ((this._ctrlKey && this.camera._useCtrlForPanning) || this._isPanClick)) {
-            this.camera.inertialPanningX += -offsetX / this.panningSensibility;
-            this.camera.inertialPanningY += offsetY / this.panningSensibility;
+            this.camera._addPanDelta(-offsetX / this.panningSensibility, offsetY / this.panningSensibility);
         } else {
-            this.camera.inertialAlphaOffset -= offsetX / this.angularSensibilityX;
-            this.camera.inertialBetaOffset -= offsetY / this.angularSensibilityY;
+            this.camera._addRotationDelta(-offsetX / this.angularSensibilityX, -offsetY / this.angularSensibilityY);
         }
     }
 
@@ -181,6 +179,9 @@ export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
      * @param _evt Defines the event to track
      */
     public override onButtonUp(_evt: IPointerEvent): void {
+        if (this.camera.movement) {
+            this.camera.movement.activeInput = false;
+        }
         super.onButtonUp(_evt);
     }
 

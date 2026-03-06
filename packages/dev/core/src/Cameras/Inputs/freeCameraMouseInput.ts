@@ -133,6 +133,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     this._currentActiveButton = -1;
 
                     this._previousPosition = null;
+                    if (this.camera.movement) {
+                        this.camera.movement.activeInput = false;
+                    }
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -147,8 +150,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                         const offsetY = (evt.clientY - this._previousPosition.y) * handednessMultiplier;
 
                         if (this._allowCameraRotation) {
-                            this.camera.cameraRotation.y += offsetX / this.angularSensibility;
-                            this.camera.cameraRotation.x += offsetY / this.angularSensibility;
+                            this.camera._addRotationDelta(offsetY / this.angularSensibility, offsetX / this.angularSensibility);
                         }
                         this.onPointerMovedObservable.notifyObservers({ offsetX: offsetX, offsetY: offsetY });
 
@@ -171,8 +173,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             }
 
             const handednessMultiplier = this.camera._calculateHandednessMultiplier();
-            this.camera.cameraRotation.y += (evt.movementX * handednessMultiplier) / this.angularSensibility;
-            this.camera.cameraRotation.x += (evt.movementY * handednessMultiplier) / this.angularSensibility;
+            this.camera._addRotationDelta((evt.movementY * handednessMultiplier) / this.angularSensibility, (evt.movementX * handednessMultiplier) / this.angularSensibility);
 
             this._previousPosition = null;
 

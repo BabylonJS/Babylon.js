@@ -25,6 +25,7 @@ import type { TargetCamera } from "./targetCamera";
 import type { Ray } from "../Culling/ray";
 import type { ArcRotateCamera } from "./arcRotateCamera";
 import { SerializationHelper } from "../Misc/decorators.serialization";
+import { CameraMovement } from "./cameraMovement";
 
 /**
  * Oblique projection values
@@ -118,6 +119,35 @@ export class Camera extends Node {
      * Define the input manager associated with the camera.
      */
     public inputs: CameraInputsManager<Camera>;
+
+    /**
+     * When set, enables framerate-independent movement using the CameraMovement class.
+     * Input plugins will write pixel deltas to this instance, and _checkInputs will use
+     * its computed per-frame deltas instead of the legacy inertia system.
+     */
+    public movement?: CameraMovement;
+
+    private _useFramerateIndependentMovement = false;
+
+    /**
+     * When enabled, instantiates a CameraMovement instance to provide framerate-independent
+     * inertia for camera movement. When disabled, reverts to the legacy per-frame inertia system.
+     */
+    public get useFramerateIndependentMovement(): boolean {
+        return this._useFramerateIndependentMovement;
+    }
+
+    public set useFramerateIndependentMovement(value: boolean) {
+        if (this._useFramerateIndependentMovement === value) {
+            return;
+        }
+        this._useFramerateIndependentMovement = value;
+        if (value) {
+            this.movement = new CameraMovement(this.getScene(), this.position);
+        } else {
+            this.movement = undefined;
+        }
+    }
 
     /** @internal */
     @serializeAsVector3("position")
