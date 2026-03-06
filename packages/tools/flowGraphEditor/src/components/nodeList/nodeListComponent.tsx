@@ -6,6 +6,8 @@ import { DraggableLineComponent } from "../../sharedComponents/draggableLineComp
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
+import { AllFlowGraphBlocks } from "../../allBlockNames";
+import { GetBlockType, BlockTypeHeaderColor } from "../../graphSystem/blockTypeColors";
 
 import "./nodeList.scss";
 
@@ -241,157 +243,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
      * @returns the rendered JSX
      */
     override render() {
-        // Block types organized by category
-        const allBlocks: {
-            [key: string]: string[];
-        } = {
-            Events: [
-                "FlowGraphSceneReadyEventBlock",
-                "FlowGraphSceneTickEventBlock",
-                "FlowGraphMeshPickEventBlock",
-                "FlowGraphPointerDownEventBlock",
-                "FlowGraphPointerUpEventBlock",
-                "FlowGraphPointerMoveEventBlock",
-                "FlowGraphPointerOverEventBlock",
-                "FlowGraphPointerOutEventBlock",
-                "FlowGraphReceiveCustomEventBlock",
-                "FlowGraphSendCustomEventBlock",
-            ],
-            Control_Flow: [
-                "FlowGraphBranchBlock",
-                "FlowGraphForLoopBlock",
-                "FlowGraphWhileLoopBlock",
-                "FlowGraphSwitchBlock",
-                "FlowGraphSequenceBlock",
-                "FlowGraphMultiGateBlock",
-                "FlowGraphFlipFlopBlock",
-                "FlowGraphDoNBlock",
-                "FlowGraphWaitAllBlock",
-                "FlowGraphSetDelayBlock",
-                "FlowGraphCancelDelayBlock",
-                "FlowGraphCallCounterBlock",
-                "FlowGraphDebounceBlock",
-                "FlowGraphThrottleBlock",
-            ],
-            Animation: ["FlowGraphPlayAnimationBlock", "FlowGraphStopAnimationBlock", "FlowGraphPauseAnimationBlock", "FlowGraphInterpolationBlock"],
-            Math__Constants: ["FlowGraphEBlock", "FlowGraphPIBlock", "FlowGraphInfBlock", "FlowGraphNaNBlock", "FlowGraphRandomBlock"],
-            Math__Arithmetic: [
-                "FlowGraphAddBlock",
-                "FlowGraphSubtractBlock",
-                "FlowGraphMultiplyBlock",
-                "FlowGraphDivideBlock",
-                "FlowGraphModuloBlock",
-                "FlowGraphNegationBlock",
-                "FlowGraphAbsBlock",
-                "FlowGraphSignBlock",
-                "FlowGraphMinBlock",
-                "FlowGraphMaxBlock",
-                "FlowGraphClampBlock",
-                "FlowGraphSaturateBlock",
-                "FlowGraphMathInterpolationBlock",
-                "FlowGraphPowerBlock",
-                "FlowGraphSquareRootBlock",
-                "FlowGraphCubeRootBlock",
-            ],
-            Math__Rounding: ["FlowGraphFloorBlock", "FlowGraphCeilBlock", "FlowGraphRoundBlock", "FlowGraphTruncBlock", "FlowGraphFractBlock"],
-            Math__Trigonometry: [
-                "FlowGraphSinBlock",
-                "FlowGraphCosBlock",
-                "FlowGraphTanBlock",
-                "FlowGraphASinBlock",
-                "FlowGraphACosBlock",
-                "FlowGraphATanBlock",
-                "FlowGraphATan2Block",
-                "FlowGraphSinhBlock",
-                "FlowGraphCoshBlock",
-                "FlowGraphTanhBlock",
-                "FlowGraphASinhBlock",
-                "FlowGraphACoshBlock",
-                "FlowGraphATanhBlock",
-                "FlowGraphDegToRadBlock",
-                "FlowGraphRadToDegBlock",
-            ],
-            Math__Logarithmic: ["FlowGraphExponentialBlock", "FlowGraphLogBlock", "FlowGraphLog2Block", "FlowGraphLog10Block"],
-            Math__Comparison: [
-                "FlowGraphEqualityBlock",
-                "FlowGraphLessThanBlock",
-                "FlowGraphLessThanOrEqualBlock",
-                "FlowGraphGreaterThanBlock",
-                "FlowGraphGreaterThanOrEqualBlock",
-                "FlowGraphIsNaNBlock",
-                "FlowGraphIsInfBlock",
-                "FlowGraphConditionalBlock",
-            ],
-            Vector_and_Matrix: [
-                "FlowGraphLengthBlock",
-                "FlowGraphNormalizeBlock",
-                "FlowGraphDotBlock",
-                "FlowGraphCrossBlock",
-                "FlowGraphRotate2DBlock",
-                "FlowGraphRotate3DBlock",
-                "FlowGraphTransposeBlock",
-                "FlowGraphDeterminantBlock",
-                "FlowGraphInvertMatrixBlock",
-                "FlowGraphMatrixMultiplicationBlock",
-            ],
-            Bitwise: [
-                "FlowGraphBitwiseAndBlock",
-                "FlowGraphBitwiseOrBlock",
-                "FlowGraphBitwiseXorBlock",
-                "FlowGraphBitwiseNotBlock",
-                "FlowGraphBitwiseLeftShiftBlock",
-                "FlowGraphBitwiseRightShiftBlock",
-                "FlowGraphLeadingZerosBlock",
-                "FlowGraphTrailingZerosBlock",
-                "FlowGraphOneBitsCounterBlock",
-            ],
-            Data_Conversion: [
-                "FlowGraphCombineVector2Block",
-                "FlowGraphCombineVector3Block",
-                "FlowGraphCombineVector4Block",
-                "FlowGraphExtractVector2Block",
-                "FlowGraphExtractVector3Block",
-                "FlowGraphExtractVector4Block",
-                "FlowGraphCombineMatrixBlock",
-                "FlowGraphExtractMatrixBlock",
-                "FlowGraphTransformVectorBlock",
-                "FlowGraphTransformCoordinatesBlock",
-                "FlowGraphConjugateBlock",
-                "FlowGraphAngleBetweenBlock",
-                "FlowGraphQuaternionFromAxisAngleBlock",
-                "FlowGraphAxisAngleFromQuaternionBlock",
-                "FlowGraphQuaternionFromDirectionsBlock",
-                "FlowGraphMatrixDecompose",
-                "FlowGraphMatrixCompose",
-                "FlowGraphBooleanToFloat",
-                "FlowGraphBooleanToInt",
-                "FlowGraphFloatToBoolean",
-                "FlowGraphIntToBoolean",
-                "FlowGraphIntToFloat",
-                "FlowGraphFloatToInt",
-            ],
-            Data_Access: [
-                "FlowGraphConstantBlock",
-                "FlowGraphGetPropertyBlock",
-                "FlowGraphSetPropertyBlock",
-                "FlowGraphGetVariableBlock",
-                "FlowGraphSetVariableBlock",
-                "FlowGraphGetAssetBlock",
-                "FlowGraphJsonPointerParserBlock",
-                "FlowGraphArrayIndexBlock",
-                "FlowGraphIndexOfBlock",
-                "FlowGraphDataSwitchBlock",
-            ],
-            Utility: [
-                "FlowGraphConsoleLogBlock",
-                "FlowGraphEasingBlock",
-                "FlowGraphBezierCurveEasing",
-                "FlowGraphContextBlock",
-                "FlowGraphCodeExecutionBlock",
-                "FlowGraphFunctionReference",
-                "FlowGraphDebugBlock",
-            ],
-        };
+        const allBlocks = AllFlowGraphBlocks;
 
         // Create node menu
         const blockMenu = [];
@@ -400,7 +252,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
                 .sort((a: string, b: string) => a.localeCompare(b))
                 .map((blockName: string) => {
-                    return <DraggableLineComponent key={blockName} data={blockName} tooltip={NodeListComponent._Tooltips[blockName] || ""} />;
+                    const blockType = GetBlockType(blockName);
+                    const color = BlockTypeHeaderColor[blockType];
+                    return <DraggableLineComponent key={blockName} data={blockName} tooltip={NodeListComponent._Tooltips[blockName] || ""} color={color} />;
                 });
 
             if (blockList.length) {
