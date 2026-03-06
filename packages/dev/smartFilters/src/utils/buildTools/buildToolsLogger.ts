@@ -1,27 +1,21 @@
 /* eslint-disable no-console, @typescript-eslint/naming-convention */
 
 /**
- * Log function - defaults to console.log, upgraded to Logger.Log if @babylonjs/core is available.
+ * Log function - defaults to console.log, upgraded to Logger.Log via setLogger.
  */
 export let log: (message: string) => void = console.log;
 
 /**
- * Error function - defaults to console.error, upgraded to Logger.Error if @babylonjs/core is available.
+ * Error function - defaults to console.error, upgraded to Logger.Error via setLogger.
  */
 export let error: (message: string) => void = console.error;
 
 /**
- * Initializes the logger. Attempts to use Logger from @babylonjs/core if available,
- * otherwise falls back to console. Must be called (and awaited) before any logging.
+ * Upgrades the build tools logger to use the provided Logger class.
+ * Call this synchronously after importing to switch from console to Babylon's Logger.
+ * @param LoggerClass - The Logger class (e.g. from core/Misc/logger)
  */
-export async function initLogger(): Promise<void> {
-    try {
-        // Use a variable so TypeScript doesn't try to resolve the module at compile time
-        const coreLoggerModule = "@babylonjs/core/Misc/logger.js";
-        const { Logger } = await import(/* webpackIgnore: true */ coreLoggerModule);
-        log = Logger.Log.bind(Logger);
-        error = Logger.Error.bind(Logger);
-    } catch {
-        // @babylonjs/core not available (e.g. pre-build context), keep console defaults
-    }
+export function setLogger(LoggerClass: { Log: (message: string) => void; Error: (message: string) => void }): void {
+    log = LoggerClass.Log.bind(LoggerClass);
+    error = LoggerClass.Error.bind(LoggerClass);
 }
