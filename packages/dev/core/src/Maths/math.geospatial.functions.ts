@@ -36,7 +36,7 @@ export function LatLonFromDegreesToRef<T extends ILatLonLike>(lat: number, lon: 
 
 /**
  * Computes the normal (up direction) in ECEF (Earth-Centered, Earth-Fixed) coordinates from the specified latitude and longitude in radians.
- * Will clamp the latitude to -PI/2 to PI/2.
+ * For the calculation, latitude is clamped to -PI/2 to PI/2.
  * @param latLon - The latitude and longitude in radians
  * @param result - The resulting normal
  * @returns The resulting normal
@@ -49,7 +49,7 @@ export function LatLonToNormalToRef<T extends IVector3Like>(latLon: DeepImmutabl
 
 /**
  * Converts latitude, longitude, and altitude to an ECEF (Earth-Centered, Earth-Fixed) position using the specified ellipsoid.
- * Will clamp the latitude to -PI/2 to PI/2.
+ * For the calculation, latitude is clamped to -PI/2 to PI/2.
  * @param latLonAlt - The latitude and longitude in radians, and the altitude relative to the reference ellipsoid's surface.
  * @param ellipsoid - Parameters for a reference ellipsoid (e.g., the {@link Wgs84Ellipsoid}).
  * @param result - The resulting ECEF position
