@@ -1,9 +1,8 @@
-import type { Engine } from 'core/Engines';
-import { NullEngine } from 'core/Engines';
-import { Matrix } from 'core/Maths';
-import { AbstractMesh } from 'core/Meshes';
-import { Scene } from 'core/scene';
-
+import type { Engine } from "core/Engines";
+import { NullEngine } from "core/Engines";
+import { Matrix } from "core/Maths";
+import { Mesh } from "core/Meshes";
+import { Scene } from "core/scene";
 
 describe("TransformNode", () => {
     let subject: Engine;
@@ -21,8 +20,8 @@ describe("TransformNode", () => {
     describe("setParent", () => {
         it("should have a parent after call setParent method", () => {
             const scene = new Scene(subject);
-            const child = new AbstractMesh("Child", scene);
-            const parent = new AbstractMesh("Parent", scene);
+            const child = new Mesh("Child", scene);
+            const parent = new Mesh("Parent", scene);
 
             expect(child.parent).toBeFalsy();
 
@@ -32,10 +31,10 @@ describe("TransformNode", () => {
             expect(child.parent?.name).toEqual("Parent");
         });
 
-        it('should work with nullable node', () => {
+        it("should work with nullable node", () => {
             const scene = new Scene(subject);
-            const child = new AbstractMesh("Child", scene);
-            const parent = new AbstractMesh("Parent", scene);
+            const child = new Mesh("Child", scene);
+            const parent = new Mesh("Parent", scene);
 
             child.setParent(parent);
             child.setParent(null);
@@ -43,10 +42,10 @@ describe("TransformNode", () => {
             expect(child.parent).toBeFalsy();
         });
 
-        it('should update pivot when it need', () => {
+        it("should update pivot when it need", () => {
             const scene = new Scene(subject);
-            const child = new AbstractMesh("Child", scene);
-            const parent = new AbstractMesh("Parent", scene);
+            const child = new Mesh("Child", scene);
+            const parent = new Mesh("Parent", scene);
 
             // set not default pivot
             child.setPivotMatrix(Matrix.Translation(1, -1, -0.5));
@@ -58,10 +57,10 @@ describe("TransformNode", () => {
             expect(child.getPivotMatrix().asArray()).toEqual(Matrix.Identity().asArray());
         });
 
-        it('should not update pivot when it no need', () => {
+        it("should not update pivot when it no need", () => {
             const scene = new Scene(subject);
-            const child = new AbstractMesh("Child", scene);
-            const parent = new AbstractMesh("Parent", scene);
+            const child = new Mesh("Child", scene);
+            const parent = new Mesh("Parent", scene);
 
             // set not default pivot
             child.setPivotMatrix(Matrix.Translation(1, -1, -0.5));

@@ -10,8 +10,8 @@
         "jsx": "react",
         "esModuleInterop": true,
         "skipLibCheck": false,
-        "types": [],
-        "noEmit": true
+        "noEmit": true,
+        "types": []
     },
     "include": ["./src/**/*"]
 }

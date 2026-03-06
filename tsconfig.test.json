@@ -1,7 +1,21 @@
 {
-    "extends": "./tsconfig.build.json",
+    "extends": "./tsconfig.json",
 
     "compilerOptions": {
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "lib": [
+            "es5",
+            "dom",
+            "es2015.promise",
+            "es2015.collection",
+            "es2015.iterable",
+            "es2015.symbol.wellknown",
+            "es2020.bigint",
+            "es2017",
+            "es2022.error",
+            "es2022.array",
+            "es2021.string"
+        ]
     }
 }

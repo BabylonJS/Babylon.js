@@ -165,7 +165,12 @@ async function main() {
     // update engine version
     await updateEngineVersion(version);
     // generate changelog
-    await generateChangelog(version);
+    const latestVersionMarkdown = await generateChangelog(version);
+    // write release notes for the GitHub Release task
+    if (latestVersionMarkdown) {
+        fs.writeFileSync(path.resolve(__dirname, "../.build/release-notes.md"), latestVersionMarkdown);
+        console.log("Release notes written to .build/release-notes.md");
+    }
     // update since tags
     updateSinceTag(version);
     // if major, update peer dependencies

@@ -1108,6 +1108,11 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     /**
      * @internal
      */
+    public _releaseRenderPassId(_id: number): void {}
+
+    /**
+     * @internal
+     */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _rebuild(dispose = false): void {
         this.onRebuildObservable.notifyObservers(this);

@@ -12,11 +12,11 @@ import { _ObserveArray } from "core/Misc/arrayTools";
 
             const array: number[] = [];
             array.push(1);
-            expect(listener).not.toBeCalled();
+            expect(listener).not.toHaveBeenCalled();
 
             _ObserveArray(array, listener);
             array.push(2);
-            expect(listener).toBeCalledWith("push", 1);
+            expect(listener).toHaveBeenCalledWith("push", 1);
 
             expect(array.length).toEqual(2);
         });
@@ -37,11 +37,11 @@ import { _ObserveArray } from "core/Misc/arrayTools";
 
             const array = [1, 2, 3];
             array.shift();
-            expect(listener).not.toBeCalled();
+            expect(listener).not.toHaveBeenCalled();
 
             _ObserveArray(array, listener);
             array.shift();
-            expect(listener).toBeCalledWith("shift", 2);
+            expect(listener).toHaveBeenCalledWith("shift", 2);
 
             expect(array.length).toEqual(1);
         });
@@ -52,14 +52,14 @@ import { _ObserveArray } from "core/Misc/arrayTools";
             const listener = jest.fn();
             _ObserveArray(array, listener);
             array.push(4);
-            expect(listener).toBeCalledWith("push", 3);
+            expect(listener).toHaveBeenCalledWith("push", 3);
 
             const listener2 = jest.fn();
             _ObserveArray(array, listener2);
             array.push(5);
-            expect(listener).toBeCalledTimes(2);
-            expect(listener2).toBeCalledWith("push", 4);
-            expect(listener2).toBeCalledTimes(1);
+            expect(listener).toHaveBeenCalledTimes(2);
+            expect(listener2).toHaveBeenCalledWith("push", 4);
+            expect(listener2).toHaveBeenCalledTimes(1);
 
             expect(array.length).toEqual(5);
         });
@@ -71,17 +71,17 @@ import { _ObserveArray } from "core/Misc/arrayTools";
 
             const array = [1, 2, 3, 4];
             array.pop();
-            expect(listener).not.toBeCalled();
+            expect(listener).not.toHaveBeenCalled();
 
             const unObserve = _ObserveArray(array, listener);
             let value = array.pop();
-            expect(listener).toBeCalledWith("pop", 3);
+            expect(listener).toHaveBeenCalledWith("pop", 3);
             expect(value).toEqual(3);
 
             unObserve();
             listener.mockReset();
             value = array.pop();
-            expect(listener).not.toBeCalledWith("pop");
+            expect(listener).not.toHaveBeenCalledWith("pop");
             expect(value).toEqual(2);
 
             expect(array.length).toEqual(1);
@@ -101,10 +101,10 @@ import { _ObserveArray } from "core/Misc/arrayTools";
             const unObserve4 = _ObserveArray(array, listener4);
 
             array.push(1);
-            expect(listener1).toBeCalledWith("push", 0);
-            expect(listener2).toBeCalledWith("push", 0);
-            expect(listener3).toBeCalledWith("push", 0);
-            expect(listener4).toBeCalledWith("push", 0);
+            expect(listener1).toHaveBeenCalledWith("push", 0);
+            expect(listener2).toHaveBeenCalledWith("push", 0);
+            expect(listener3).toHaveBeenCalledWith("push", 0);
+            expect(listener4).toHaveBeenCalledWith("push", 0);
 
             unObserve2();
             listener1.mockReset();
@@ -113,10 +113,10 @@ import { _ObserveArray } from "core/Misc/arrayTools";
             listener4.mockReset();
 
             array.push(2);
-            expect(listener1).toBeCalledWith("push", 1);
-            expect(listener2).not.toBeCalled();
-            expect(listener3).toBeCalledWith("push", 1);
-            expect(listener4).toBeCalledWith("push", 1);
+            expect(listener1).toHaveBeenCalledWith("push", 1);
+            expect(listener2).not.toHaveBeenCalled();
+            expect(listener3).toHaveBeenCalledWith("push", 1);
+            expect(listener4).toHaveBeenCalledWith("push", 1);
 
             unObserve3();
             listener1.mockReset();
@@ -125,10 +125,10 @@ import { _ObserveArray } from "core/Misc/arrayTools";
             listener4.mockReset();
 
             array.push(3);
-            expect(listener1).toBeCalledWith("push", 2);
-            expect(listener2).not.toBeCalled();
-            expect(listener3).not.toBeCalled();
-            expect(listener4).toBeCalledWith("push", 2);
+            expect(listener1).toHaveBeenCalledWith("push", 2);
+            expect(listener2).not.toHaveBeenCalled();
+            expect(listener3).not.toHaveBeenCalled();
+            expect(listener4).toHaveBeenCalledWith("push", 2);
 
             unObserve4();
             listener1.mockReset();
@@ -137,10 +137,10 @@ import { _ObserveArray } from "core/Misc/arrayTools";
             listener4.mockReset();
 
             array.push(4);
-            expect(listener1).toBeCalledWith("push", 3);
-            expect(listener2).not.toBeCalled();
-            expect(listener3).not.toBeCalled();
-            expect(listener4).not.toBeCalled();
+            expect(listener1).toHaveBeenCalledWith("push", 3);
+            expect(listener2).not.toHaveBeenCalled();
+            expect(listener3).not.toHaveBeenCalled();
+            expect(listener4).not.toHaveBeenCalled();
 
             unObserve1();
             listener1.mockReset();
@@ -149,10 +149,10 @@ import { _ObserveArray } from "core/Misc/arrayTools";
             listener4.mockReset();
 
             array.push(5);
-            expect(listener1).not.toBeCalled();
-            expect(listener2).not.toBeCalled();
-            expect(listener3).not.toBeCalled();
-            expect(listener4).not.toBeCalled();
+            expect(listener1).not.toHaveBeenCalled();
+            expect(listener2).not.toHaveBeenCalled();
+            expect(listener3).not.toHaveBeenCalled();
+            expect(listener4).not.toHaveBeenCalled();
 
             expect(array.length).toEqual(5);
         });

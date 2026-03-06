@@ -1,5 +1,38 @@
 # Changelog
 
+## 8.54.1
+
+### Core
+
+- FrameGraph: miscellaneous fixes - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18037](https://github.com/BabylonJS/Babylon.js/pull/18037))
+- Upgrade Jest - by [RaananW](https://github.com/RaananW) ([#18026](https://github.com/BabylonJS/Babylon.js/pull/18026))
+- Particle System: Set a default position if emitter mesh is not found during parsing - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18033](https://github.com/BabylonJS/Babylon.js/pull/18033))
+
+### Loaders
+
+- Upgrade Jest - by [RaananW](https://github.com/RaananW) ([#18026](https://github.com/BabylonJS/Babylon.js/pull/18026))
+
+## 8.54.0
+
+### Core
+
+- WebGPU: Fix leaks when using instances in an intermediate rendering - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18022](https://github.com/BabylonJS/Babylon.js/pull/18022))
+- SSR: Refactor screen space ray tracing shader code - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18021](https://github.com/BabylonJS/Babylon.js/pull/18021))
+- Fix LoadAssetContainerAsync for .babylon files — suppress observables - by [alexchuber](https://github.com/alexchuber) ([#18017](https://github.com/BabylonJS/Babylon.js/pull/18017))
+- Geo math helpers - by [kircher1](https://github.com/kircher1) ([#18002](https://github.com/BabylonJS/Babylon.js/pull/18002))
+
+### GUI Editor
+
+- Update dependencies (fixing audit) - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18028](https://github.com/BabylonJS/Babylon.js/pull/18028))
+
+### Node Editor
+
+- Update dependencies (fixing audit) - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18028](https://github.com/BabylonJS/Babylon.js/pull/18028))
+
+### Playground
+
+- Update dependencies (fixing audit) - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18028](https://github.com/BabylonJS/Babylon.js/pull/18028))
+
 ## 8.53.1
 
 ### Core
