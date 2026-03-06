@@ -77,6 +77,21 @@ uniform vec2 vTransmissionDispersionScaleInfos;
 uniform mat4 transmissionDispersionScaleMatrix;
 #endif
 
+#ifdef SUBSURFACE_WEIGHT
+uniform vec2 vSubsurfaceWeightInfos;
+uniform mat4 subsurfaceWeightMatrix;
+#endif
+
+#ifdef SUBSURFACE_COLOR
+uniform vec2 vSubsurfaceColorInfos;
+uniform mat4 subsurfaceColorMatrix;
+#endif
+
+#ifdef SUBSURFACE_RADIUS_SCALE
+uniform vec2 vSubsurfaceRadiusScaleInfos;
+uniform mat4 subsurfaceRadiusScaleMatrix;
+#endif
+
 #ifdef COAT_WEIGHT
 uniform vec2 vCoatWeightInfos;
 uniform mat4 coatWeightMatrix;

@@ -6,11 +6,14 @@
 #include<samplerFragmentDeclaration>(_DEFINENAME_,SPECULAR_COLOR,_VARYINGNAME_,SpecularColor,_SAMPLERNAME_,specularColor)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,SPECULAR_ROUGHNESS,_VARYINGNAME_,SpecularRoughness,_SAMPLERNAME_,specularRoughness)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,SPECULAR_ROUGHNESS_ANISOTROPY,_VARYINGNAME_,SpecularRoughnessAnisotropy,_SAMPLERNAME_,specularRoughnessAnisotropy)
-#include <samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_WEIGHT,_VARYINGNAME_,TransmissionWeight,_SAMPLERNAME_,transmissionWeight)
-#include <samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_COLOR,_VARYINGNAME_,TransmissionColor,_SAMPLERNAME_,transmissionColor)
-#include <samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_DEPTH,_VARYINGNAME_,TransmissionDepth,_SAMPLERNAME_,transmissionDepth)
-#include <samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_SCATTER,_VARYINGNAME_,TransmissionScatter,_SAMPLERNAME_,transmissionScatter)
-#include <samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_DISPERSION_SCALE,_VARYINGNAME_,TransmissionDispersionScale,_SAMPLERNAME_,transmissionDispersionScale)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_WEIGHT,_VARYINGNAME_,TransmissionWeight,_SAMPLERNAME_,transmissionWeight)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_COLOR,_VARYINGNAME_,TransmissionColor,_SAMPLERNAME_,transmissionColor)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_DEPTH,_VARYINGNAME_,TransmissionDepth,_SAMPLERNAME_,transmissionDepth)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_SCATTER,_VARYINGNAME_,TransmissionScatter,_SAMPLERNAME_,transmissionScatter)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,TRANSMISSION_DISPERSION_SCALE,_VARYINGNAME_,TransmissionDispersionScale,_SAMPLERNAME_,transmissionDispersionScale)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,SUBSURFACE_WEIGHT,_VARYINGNAME_,SubsurfaceWeight,_SAMPLERNAME_,subsurfaceWeight)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,SUBSURFACE_COLOR,_VARYINGNAME_,SubsurfaceColor,_SAMPLERNAME_,subsurfaceColor)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,SUBSURFACE_RADIUS_SCALE,_VARYINGNAME_,SubsurfaceRadiusScale,_SAMPLERNAME_,subsurfaceRadiusScale)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,COAT_WEIGHT,_VARYINGNAME_,CoatWeight,_SAMPLERNAME_,coatWeight)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,COAT_COLOR,_VARYINGNAME_,CoatColor,_SAMPLERNAME_,coatColor)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,COAT_ROUGHNESS,_VARYINGNAME_,CoatRoughness,_SAMPLERNAME_,coatRoughness)
@@ -30,51 +33,7 @@
 #include<samplerFragmentDeclaration>(_DEFINENAME_,AMBIENT_OCCLUSION,_VARYINGNAME_,AmbientOcclusion,_SAMPLERNAME_,ambientOcclusion)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,DECAL,_VARYINGNAME_,Decal,_SAMPLERNAME_,decal)
 
-// Reflection
-#ifdef REFLECTION
-    #ifdef REFLECTIONMAP_3D
-        var reflectionSamplerSampler: sampler;
-        var reflectionSampler: texture_cube<f32>;
-
-        #ifdef LODBASEDMICROSFURACE
-        #else
-            var reflectionLowSamplerSampler: sampler;
-            var reflectionLowSampler: texture_cube<f32>;
-            var reflectionHighSamplerSampler: sampler;
-            var reflectionHighSampler: texture_cube<f32>;
-        #endif
-
-        #ifdef USEIRRADIANCEMAP
-            var irradianceSamplerSampler: sampler;
-            var irradianceSampler: texture_cube<f32>;
-        #endif
-    #else
-
-        var reflectionSamplerSampler: sampler;
-        var reflectionSampler: texture_2d<f32>;
-
-        #ifdef LODBASEDMICROSFURACE
-        #else
-            var reflectionLowSamplerSampler: sampler;
-            var reflectionLowSampler: texture_2d<f32>;
-            var reflectionHighSamplerSampler: sampler;
-            var reflectionHighSampler: texture_2d<f32>;
-        #endif
-
-        #ifdef USEIRRADIANCEMAP
-            var irradianceSamplerSampler: sampler;
-            var irradianceSampler: texture_2d<f32>;
-        #endif
-    #endif
-
-    #ifdef REFLECTIONMAP_SKYBOX
-        varying vPositionUVW: vec3f;
-    #else
-        #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
-            varying vDirectionW: vec3f;
-        #endif
-    #endif
-#endif
+#include<pbrFragmentReflectionDeclaration>
 
 #ifdef ENVIRONMENTBRDF
     var environmentBrdfSamplerSampler: sampler;
@@ -91,7 +50,12 @@
     var backgroundRefractionSampler: texture_2d<f32>;
 #endif
 
-#if defined(ANISOTROPIC) || defined(FUZZ) || defined(REFRACTED_BACKGROUND)
+#ifdef USE_IRRADIANCE_TEXTURE_FOR_SCATTERING
+    var sceneIrradianceSampler: texture_2d<f32>;
+    var sceneDepthSampler: texture_2d<f32>;
+#endif
+
+#if defined(ANISOTROPIC) || defined(FUZZ) || defined(REFRACTED_BACKGROUND) || defined(USE_IRRADIANCE_TEXTURE_FOR_SCATTERING)
     var blueNoiseSamplerSampler: sampler;
     var blueNoiseSampler: texture_2d<f32>;
 #endif
