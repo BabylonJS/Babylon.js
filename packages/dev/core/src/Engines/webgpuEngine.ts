@@ -3024,8 +3024,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
 
         if (_fromEndFrame) {
-            this._debugMarkersStackRenderPassStartIndex = 9999;
-            this._debugMarkersStack.length = 0;
+            this._debugMarkersEncoderGroups.length = 0;
+            this._debugMarkersPassGroups.length = 0;
         } else {
             this._debugPushAfterStartOfEncoder();
         }
