@@ -64,9 +64,10 @@ export function EcefFromLatLonAltToRef<T extends IVector3Like>(
     const { lon, alt } = latLonAlt;
     const { semiMajorAxis, firstEccentricitySquared } = ellipsoid;
     const sinLat = Math.sin(lat);
+    const cosLat = Math.cos(lat);
+    // Prime vertical radius of curvature (N)
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const N = semiMajorAxis / Math.sqrt(1 - firstEccentricitySquared * sinLat * sinLat);
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const NPlusAltTimesCosLat = (N + alt) * Math.cos(lat);
-    return Vector3FromFloatsToRef(NPlusAltTimesCosLat * Math.cos(lon), NPlusAltTimesCosLat * Math.sin(lon), (N * (1 - firstEccentricitySquared) + alt) * sinLat, result);
+    const radiusTimesCosLat = (N + alt) * cosLat;
+    return Vector3FromFloatsToRef(radiusTimesCosLat * Math.cos(lon), radiusTimesCosLat * Math.sin(lon), (N * (1 - firstEccentricitySquared) + alt) * sinLat, result);
 }
