@@ -70,6 +70,7 @@
             "@lts/inspector-legacy/*": ["lts/inspector/src/*"],
             "@lts/shared-ui-components/*": ["lts/sharedUiComponents/src/*"],
             "smart-filters": ["dev/smartFilters/src"],
+            "smart-filters/*": ["dev/smartFilters/src/*"],
             "smart-filters-blocks": ["dev/smartFilterBlocks/src"],
             "smart-filters-blocks/*": ["dev/smartFilterBlocks/src/*"],
             "smart-filters-editor-control": ["tools/smartFiltersEditorControl/src"],

@@ -14,3 +14,8 @@ export * from "./version.js";
 
 // So that users of the Smart Filters core can easily modify the logger settings (e.g. to change the logging level)
 export { Logger } from "core/Misc/logger.js";
+
+// Upgrade build tools logging from console to Babylon's Logger when the library is imported
+import { Logger as _Logger } from "core/Misc/logger.js";
+import { setLogger } from "./utils/buildTools/buildToolsLogger.js";
+setLogger(_Logger);
