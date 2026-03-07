@@ -14,6 +14,11 @@ export interface IMaterialLoadingAdapter {
     readonly material: Material;
 
     /**
+     * Disposes internal adapter resources if any
+     */
+    dispose?(): void;
+
+    /**
      * Whether the material should be treated as unlit
      */
     isUnlit: boolean;
@@ -305,7 +310,7 @@ export interface IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
-    configureVolume(attenuationColor: Color3, attenuationDistance: number): void;
+    configureVolume(): void;
 
     /**
      * Sets whether the material is thin-walled (i.e. non-volumetric) or not.
@@ -352,14 +357,14 @@ export interface IMaterialLoadingAdapter {
     subsurfaceColorTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets/gets the surface tint of the material (when using subsurface scattering)
+     * Sets/gets the diffuse transmission tint of the material
      */
-    subsurfaceConstantTint: Color3;
+    diffuseTransmissionTint: Color3;
 
     /**
-     * Sets/gets the surface tint texture of the material (when using subsurface scattering)
+     * Sets/gets the diffuse transmission tint texture of the material
      */
-    subsurfaceConstantTintTexture: Nullable<BaseTexture>;
+    diffuseTransmissionTintTexture: Nullable<BaseTexture>;
 
     /**
      * Sets/gets the subsurface radius (used for subsurface scattering)

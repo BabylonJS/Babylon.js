@@ -826,10 +826,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // VOLUME PROPERTIES
     // ========================================
 
-    public configureVolume(attenuationColor: Color3, attenuationDistance: number): void {
-        this.transmissionColor = attenuationColor;
-        this.transmissionDepth = attenuationDistance;
-    }
+    public configureVolume(): void {}
 
     /**
      * Sets whether the material is thin-walled (i.e. non-volumetric) or not.
@@ -942,7 +939,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     /**
      * Sets the surface tint of the material (when using subsurface scattering)
      */
-    public set subsurfaceConstantTint(value: Color3) {
+    public set diffuseTransmissionTint(value: Color3) {
         this._material.subSurface.tintColor = value;
     }
 
@@ -950,7 +947,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Gets the subsurface constant tint (when using subsurface scattering)
      * @returns The subsurface constant tint as a Color3
      */
-    public get subsurfaceConstantTint(): Color3 {
+    public get diffuseTransmissionTint(): Color3 {
         return this._material.subSurface.tintColor;
     }
 
@@ -958,7 +955,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Sets the subsurface constant tint texture (when using subsurface scattering)
      * @param value The subsurface constant tint texture or null
      */
-    public set subsurfaceConstantTintTexture(value: Nullable<BaseTexture>) {
+    public set diffuseTransmissionTintTexture(value: Nullable<BaseTexture>) {
         this._material.subSurface.translucencyColorTexture = value;
     }
 

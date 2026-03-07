@@ -229,6 +229,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
     private readonly _postSceneLoadActions = new Array<() => void>();
     private readonly _materialAdapterCache = new WeakMap<Material, IMaterialLoadingAdapter>();
+    private readonly _materialAdapters = new Set<IMaterialLoadingAdapter>();
 
     /** @internal */
     public _pbrMaterialImpl: Nullable<Readonly<PBRMaterialImplementation>> | false = null;
@@ -341,7 +342,9 @@ export class GLTFLoader implements IGLTFLoader {
             } else {
                 throw new Error(`Appropriate material adapter class not found`);
             }
-            this._materialAdapterCache.set(material, adapter);
+            const createdAdapter = adapter;
+            this._materialAdapterCache.set(material, createdAdapter);
+            this._materialAdapters.add(createdAdapter);
         }
         return adapter;
     }
@@ -358,6 +361,11 @@ export class GLTFLoader implements IGLTFLoader {
 
         this._extensions.forEach((extension) => extension.dispose && extension.dispose());
         this._extensions.length = 0;
+
+        for (const adapter of this._materialAdapters) {
+            adapter.dispose?.();
+        }
+        this._materialAdapters.clear();
 
         (this._gltf as Nullable<IGLTF>) = null; // TODO
         this._bin = null;

@@ -92,7 +92,9 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
         adapter.geometryThinWalled = false;
         const attenuationDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
         const attenuationColor = extension.attenuationColor !== undefined && extension.attenuationColor.length == 3 ? Color3.FromArray(extension.attenuationColor) : Color3.White();
-        adapter.configureVolume(attenuationColor, attenuationDistance);
+        adapter.configureVolume();
+        adapter.transmissionColor = attenuationColor;
+        adapter.transmissionDepth = attenuationDistance;
 
         adapter.volumeThickness = extension.thicknessFactor ?? 0;
 
