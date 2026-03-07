@@ -888,8 +888,7 @@ export class GLTFExporter {
         }
 
         for (const rootNode of this._babylonScene.rootNodes) {
-            const animations = rootNode.animations;
-            const hasAnimations = (!!animations && animations.length > 0) || animGroupTargets?.has(rootNode);
+            const hasAnimations = (rootNode.animations?.length > 0) || animGroupTargets?.has(rootNode);
             if (
                 this._options.removeNoopRootNodes &&
                 !this._options.includeCoordinateSystemConversionNodes &&
