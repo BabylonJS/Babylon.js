@@ -1116,6 +1116,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             useCameraPostProcess = this.useCameraPostProcesses;
         }
 
+        const engine = scene.getEngine();
+
+        engine._debugPushGroup?.(`Render to ${this.name}`);
+
         this._objectRenderer.prepareRenderList();
 
         this.onBeforeBindObservable.notifyObservers(this);
@@ -1141,6 +1145,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         this.onAfterUnbindObservable.notifyObservers(this);
 
         this._objectRenderer.finishRender();
+
+        engine._debugPopGroup?.();
     }
 
     private _bestReflectionRenderTargetDimension(renderDimension: number, scale: number): number {
