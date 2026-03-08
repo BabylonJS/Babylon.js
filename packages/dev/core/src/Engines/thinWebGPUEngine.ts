@@ -159,30 +159,18 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
             return;
         }
 
-        if (this._currentRenderPass) {
-            // Close all pass-level groups on the active render pass before it ends.
-            // Their names remain in _debugMarkersPassGroups so we can re-push them on the next pass.
-            for (let i = this._debugMarkersPassGroups.length - 1; i >= 0; --i) {
-                if (this._showGPUDebugMarkersLog) {
-                    Logger.Log(
-                        `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] [automatic] Popping debug group '${this._debugMarkersPassGroups[i]}' on '${this._currentRenderPass.label}'.`
-                    );
-                }
-                this._currentRenderPass.popDebugGroup();
+        // When a render pass is active, pop its groups; otherwise pop encoder-level groups.
+        // Pass-level groups are never pushed on the encoder, so we never pop them from it.
+        const groups = this._currentRenderPass ? this._debugMarkersPassGroups : this._debugMarkersEncoderGroups;
+        const target = this._currentRenderPass ?? this._renderEncoder;
+
+        for (let i = groups.length - 1; i >= 0; --i) {
+            if (this._showGPUDebugMarkersLog) {
+                Logger.Log(
+                    `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] [automatic] Popping debug group '${groups[i]}' on '${target.label}'.`
+                );
             }
-        } else {
-            // Close all encoder-level groups on the render encoder before it is finalized.
-            // Their names remain in _debugMarkersEncoderGroups so we can re-push them on the new encoder.
-            // Pass-level groups (_debugMarkersPassGroups) are floating — they were never pushed on
-            // the encoder, so we must not pop them from it.
-            for (let i = this._debugMarkersEncoderGroups.length - 1; i >= 0; --i) {
-                if (this._showGPUDebugMarkersLog) {
-                    Logger.Log(
-                        `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] [automatic] Popping debug group '${this._debugMarkersEncoderGroups[i]}' on '${this._renderEncoder.label}'.`
-                    );
-                }
-                this._renderEncoder.popDebugGroup();
-            }
+            target.popDebugGroup();
         }
     }
 
@@ -191,27 +179,19 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
             return;
         }
 
-        if (this._currentRenderPass) {
-            // Re-push pass-level groups (floating since the previous pass ended) onto the new render pass.
-            for (const groupName of this._debugMarkersPassGroups) {
-                if (this._showGPUDebugMarkersLog) {
-                    Logger.Log(
-                        `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] [automatic] Pushing debug group '${groupName}' on '${this._currentRenderPass.label}'.`
-                    );
-                }
-                this._currentRenderPass.pushDebugGroup(groupName);
+        // When a render pass is active, re-push its floating groups onto it; otherwise re-push
+        // encoder-level groups onto the new render encoder.
+        // Pass-level groups stay floating until the next render pass starts.
+        const groups = this._currentRenderPass ? this._debugMarkersPassGroups : this._debugMarkersEncoderGroups;
+        const target = this._currentRenderPass ?? this._renderEncoder;
+
+        for (const groupName of groups) {
+            if (this._showGPUDebugMarkersLog) {
+                Logger.Log(
+                    `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] [automatic] Pushing debug group '${groupName}' on '${target.label}'.`
+                );
             }
-        } else {
-            // Re-push encoder-level groups onto the new render encoder.
-            // Pass-level groups stay floating until the next render pass starts.
-            for (const groupName of this._debugMarkersEncoderGroups) {
-                if (this._showGPUDebugMarkersLog) {
-                    Logger.Log(
-                        `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] [automatic] Pushing debug group '${groupName}' on '${this._renderEncoder.label}'.`
-                    );
-                }
-                this._renderEncoder.pushDebugGroup(groupName);
-            }
+            target.pushDebugGroup(groupName);
         }
     }
 
