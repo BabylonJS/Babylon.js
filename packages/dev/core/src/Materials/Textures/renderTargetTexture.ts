@@ -706,11 +706,15 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 }
             }
 
-            engine._debugPushGroup?.(`Render to ${this.name} (face #${this._currentFaceIndex} layer #${this._currentLayer})`);
+            if (engine._debugPushGroup) {
+                engine._debugPushGroup(`Render to ${this.name} (face #${this._currentFaceIndex} layer #${this._currentLayer})`);
+            }
         });
 
         this._onAfterRenderingManagerRenderObserver = this._objectRenderer.onAfterRenderingManagerRenderObservable.add(() => {
-            engine._debugPopGroup?.();
+            if (engine._debugPopGroup) {
+                engine._debugPopGroup();
+            }
 
             // After Camera Draw
             if (!this._disableEngineStages) {
@@ -1118,7 +1122,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         const engine = scene.getEngine();
 
-        engine._debugPushGroup?.(`Render to ${this.name}`);
+        if (engine._debugPushGroup) {
+            engine._debugPushGroup(`Render to ${this.name}`);
+        }
 
         this._objectRenderer.prepareRenderList();
 
@@ -1146,7 +1152,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         this._objectRenderer.finishRender();
 
-        engine._debugPopGroup?.();
+        if (engine._debugPopGroup) {
+            engine._debugPopGroup();
+        }
     }
 
     private _bestReflectionRenderTargetDimension(renderDimension: number, scale: number): number {
