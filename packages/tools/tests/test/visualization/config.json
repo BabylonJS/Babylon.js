@@ -3014,49 +3014,49 @@
         },
         {
             "title": "Atmosphere Day",
-            "playgroundId": "#VO1Z0C#34",
+            "playgroundId": "#VO1Z0C#39",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Day (Planet Origin)",
-            "playgroundId": "#VO1Z0C#35",
+            "playgroundId": "#VO1Z0C#40",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Day (Ray Marching)",
-            "playgroundId": "#VO1Z0C#38",
+            "playgroundId": "#VO1Z0C#41",
             "referenceImage": "atmosphere-day-ray-marching.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Sunset",
-            "playgroundId": "#VO1Z0C#36",
+            "playgroundId": "#VO1Z0C#42",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Sunset (Planet Origin)",
-            "playgroundId": "#VO1Z0C#31",
+            "playgroundId": "#VO1Z0C#43",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Night",
-            "playgroundId": "#VO1Z0C#13",
+            "playgroundId": "#VO1Z0C#45",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Night (Planet Origin)",
-            "playgroundId": "#VO1Z0C#32",
+            "playgroundId": "#VO1Z0C#46",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Space View",
-            "playgroundId": "#VO1Z0C#6",
+            "playgroundId": "#VO1Z0C#47",
             "referenceImage": "atmosphere-space-view.png",
             "excludedEngines": ["webgl1"]
         },
