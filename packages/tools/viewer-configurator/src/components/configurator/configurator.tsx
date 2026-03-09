@@ -96,13 +96,6 @@ const useStyles = makeStyles({
         alignItems: "center",
         gap: tokens.spacingHorizontalS,
     },
-    headerLogo: {
-        height: "32px",
-    },
-    headerTitle: {
-        flex: 1,
-        fontWeight: tokens.fontWeightBold,
-    },
     snippetTextarea: {
         minHeight: "160px",
     },
@@ -1307,10 +1300,6 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         <ToolContext.Provider value={{ toolName: "Viewer Configurator", size: "medium", disableCopy: true, useFluent: true }}>
             <div className={classes.root}>
                 <div className={classes.snippetSection}>
-                    <div className={classes.headerRow}>
-                        <img className={classes.headerLogo} src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                        <div className={classes.headerTitle}>VIEWER CONFIGURATOR</div>
-                    </div>
                     <PropertyLine label="Format" uniqueId="output-format">
                         <Dropdown options={OutputOptions} value={outputFormat} onChange={(value) => setOutputFormat(value as OutputFormat)} />
                     </PropertyLine>

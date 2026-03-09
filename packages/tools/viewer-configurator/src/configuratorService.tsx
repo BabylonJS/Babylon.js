@@ -10,6 +10,7 @@ import { useCallback } from "react";
 import type { IViewerService } from "./viewerService";
 import { ViewerServiceIdentity } from "./viewerService";
 import { Configurator } from "./components/configurator/configurator";
+import { BabylonLogo } from "./components/icons";
 
 export const ConfiguratorServiceDefinition: ServiceDefinition<[], [IShellService, IViewerService]> = {
     friendlyName: "Configurator Service",
@@ -18,7 +19,7 @@ export const ConfiguratorServiceDefinition: ServiceDefinition<[], [IShellService
         const sidePaneRegistration = shellService.addSidePane({
             key: "Configurator",
             title: "Viewer Configurator",
-            icon: SettingsRegular,
+            icon: BabylonLogo,
             horizontalLocation: "right",
             verticalLocation: "top",
             teachingMoment: false,
