@@ -110,15 +110,17 @@ export function setAndStartTimer<T = any>(options: ITimerOptions<T>): Nullable<O
                 completeRate: timer / options.timeout,
                 payload,
             };
-            options.onTick && options.onTick(data);
-            if (options.breakCondition && options.breakCondition()) {
+            if (options.breakCondition && options.breakCondition(data)) {
                 options.contextObservable.remove(observer);
                 options.onAborted && options.onAborted(data);
+                return;
             }
             if (timer >= options.timeout) {
                 options.contextObservable.remove(observer);
                 options.onEnded && options.onEnded(data);
+                return;
             }
+            options.onTick && options.onTick(data);
         },
         options.observableParameters.mask,
         options.observableParameters.insertFirst,
