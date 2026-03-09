@@ -91,7 +91,7 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
         const processNoise = (particle: Particle) => {
             // Get the texture directly from the block's stored value to support procedural textures
             // (as the block caches the texture data)
-            const texture = noiseTextureBlock.texture._storedValue as ProceduralTexture;
+            const texture = noiseTextureBlock.textureOutput._storedValue as ProceduralTexture;
             if (!texture || !texture.isReady()) {
                 return;
             }
