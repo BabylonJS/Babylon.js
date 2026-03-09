@@ -170,11 +170,11 @@ If you release the mouse on an incompatible port, an error dialog explains the t
 
 **Compatibility rules:**
 
-| Source type | Accepted by |
-|---|---|
-| Any | All types (wildcard) |
-| Same type | Always compatible |
-| Number ↔ Integer | Interchangeable |
+| Source type                           | Accepted by                   |
+| ------------------------------------- | ----------------------------- |
+| Any                                   | All types (wildcard)          |
+| Same type                             | Always compatible             |
+| Number ↔ Integer                     | Interchangeable               |
 | Vector3, Vector4, Matrix → Quaternion | Accepted via type transformer |
 
 Signal ports (execution flow) have no type restrictions — any signal output can connect to any signal input.
