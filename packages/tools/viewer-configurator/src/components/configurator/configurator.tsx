@@ -84,6 +84,11 @@ const useStyles = makeStyles({
         flex: 1,
         minWidth: 0,
     },
+    buttonGroup: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+    },
     hotspotRow: {
         display: "flex",
         flexDirection: "row",
@@ -1301,9 +1306,11 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                     />
                     <div className={classes.snippetActions}>
                         <Button style={{ flex: 1 }} label="Reset" onClick={resetAll} />
-                        <Button title="Revert all state to snippet" appearance="transparent" icon={ArrowResetRegular} onClick={revertAll} disabled={!canRevertAll} />
-                        <Button title="Copy html to clipboard" appearance="transparent" icon={CopyRegular} onClick={copyToClipboard} />
-                        <Button title="Save as snippet" appearance="transparent" icon={SaveRegular} onClick={saveSnippet} disabled={!canSaveSnippet} />
+                        <div className={classes.buttonGroup}>
+                            <Button title="Revert all state to snippet" appearance="transparent" icon={ArrowResetRegular} onClick={revertAll} disabled={!canRevertAll} />
+                            <Button title="Copy html to clipboard" appearance="transparent" icon={CopyRegular} onClick={copyToClipboard} />
+                            <Button title="Save as snippet" appearance="transparent" icon={SaveRegular} onClick={saveSnippet} disabled={!canSaveSnippet} />
+                        </div>
                     </div>
                 </div>
                 <div className={classes.accordionContainer}>
@@ -1314,8 +1321,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                     <div className={classes.fillControl}>
                                         <TextInput style={{ width: "100%" }} value={modelUrl} onChange={onModelUrlChange} />
                                     </div>
-                                    <Button title="Load from model url" appearance="transparent" icon={CheckmarkRegular} onClick={onModelUrlBlur} />
-                                    <Button title="Load local model" appearance="transparent" icon={ArrowUploadRegular} onClick={onLoadModelClick} />
+                                    <div className={classes.buttonGroup}>
+                                        <Button title="Load from model url" appearance="transparent" icon={CheckmarkRegular} onClick={onModelUrlBlur} />
+                                        <Button title="Load local model" appearance="transparent" icon={ArrowUploadRegular} onClick={onLoadModelClick} />
+                                    </div>
                                 </div>
                             </LineContainer>
                         </AccordionSection>
@@ -1337,20 +1346,22 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                             onChange={onEnvironmentLightingUrlChange}
                                         />
                                     </div>
-                                    <Button
-                                        title={syncEnvironment ? "Load environment url" : "Load lighting url"}
-                                        appearance="transparent"
-                                        icon={CheckmarkRegular}
-                                        disabled={!isEnvironmentLightingUrlValid}
-                                        onClick={onEnvironmentUrlSubmit}
-                                    />
-                                    <Button
-                                        title={syncEnvironment ? "Reset environment" : "Reset lighting"}
-                                        appearance="transparent"
-                                        icon={DeleteRegular}
-                                        disabled={!lightingUrlConfig.canReset}
-                                        onClick={onEnvironmentLightingResetClick}
-                                    />
+                                    <div className={classes.buttonGroup}>
+                                        <Button
+                                            title={syncEnvironment ? "Load environment url" : "Load lighting url"}
+                                            appearance="transparent"
+                                            icon={CheckmarkRegular}
+                                            disabled={!isEnvironmentLightingUrlValid}
+                                            onClick={onEnvironmentUrlSubmit}
+                                        />
+                                        <Button
+                                            title={syncEnvironment ? "Reset environment" : "Reset lighting"}
+                                            appearance="transparent"
+                                            icon={DeleteRegular}
+                                            disabled={!lightingUrlConfig.canReset}
+                                            onClick={onEnvironmentLightingResetClick}
+                                        />
+                                    </div>
                                 </div>
                             </LineContainer>
                             {!syncEnvironment && (
@@ -1359,14 +1370,16 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                         <div className={classes.fillControl}>
                                             <TextInput style={{ width: "100%" }} value={skyboxUrlConfig.configuredState} onChange={onEnvironmentSkyboxUrlChange} />
                                         </div>
-                                        <Button title="Load skybox url" appearance="transparent" icon={CheckmarkRegular} onClick={onEnvironmentUrlSubmit} />
-                                        <Button
-                                            title="Reset skybox"
-                                            appearance="transparent"
-                                            icon={DeleteRegular}
-                                            disabled={!skyboxUrlConfig.canReset}
-                                            onClick={onEnvironmentSkyboxResetClick}
-                                        />
+                                        <div className={classes.buttonGroup}>
+                                            <Button title="Load skybox url" appearance="transparent" icon={CheckmarkRegular} onClick={onEnvironmentUrlSubmit} />
+                                            <Button
+                                                title="Reset skybox"
+                                                appearance="transparent"
+                                                icon={DeleteRegular}
+                                                disabled={!skyboxUrlConfig.canReset}
+                                                onClick={onEnvironmentSkyboxResetClick}
+                                            />
+                                        </div>
                                     </div>
                                 </LineContainer>
                             )}
@@ -1520,20 +1533,22 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             <LineContainer uniqueId="camera-pose">
                                 <div className={classes.propertyContent}>
                                     <Button style={{ flex: 1 }} label="Use Current Pose" onClick={cameraConfig.snapshot} />
-                                    <Button
-                                        title="Revert camera pose to snippet"
-                                        appearance="transparent"
-                                        disabled={!cameraConfig.canRevert}
-                                        icon={ArrowResetRegular}
-                                        onClick={cameraConfig.revert}
-                                    />
-                                    <Button
-                                        title="Reset camera pose attributes"
-                                        appearance="transparent"
-                                        disabled={!cameraConfig.canReset}
-                                        icon={DeleteRegular}
-                                        onClick={cameraConfig.reset}
-                                    />
+                                    <div className={classes.buttonGroup}>
+                                        <Button
+                                            title="Revert camera pose to snippet"
+                                            appearance="transparent"
+                                            disabled={!cameraConfig.canRevert}
+                                            icon={ArrowResetRegular}
+                                            onClick={cameraConfig.revert}
+                                        />
+                                        <Button
+                                            title="Reset camera pose attributes"
+                                            appearance="transparent"
+                                            disabled={!cameraConfig.canReset}
+                                            icon={DeleteRegular}
+                                            onClick={cameraConfig.reset}
+                                        />
+                                    </div>
                                 </div>
                             </LineContainer>
                             <PropertyLine label="Auto Orbit" uniqueId="auto-orbit">
@@ -1591,20 +1606,22 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                 <LineContainer uniqueId="animation-state">
                                     <div className={classes.propertyContent}>
                                         <Button style={{ flex: 1 }} label="Use Current Selections" onClick={animationStateConfig.snapshot} disabled={!hasAnimations} />
-                                        <Button
-                                            title="Revert animation state to snippet"
-                                            appearance="transparent"
-                                            disabled={!animationStateConfig.canRevert}
-                                            icon={ArrowResetRegular}
-                                            onClick={animationStateConfig.revert}
-                                        />
-                                        <Button
-                                            title="Reset animation state attributes"
-                                            appearance="transparent"
-                                            disabled={!animationStateConfig.canReset}
-                                            icon={DeleteRegular}
-                                            onClick={animationStateConfig.reset}
-                                        />
+                                        <div className={classes.buttonGroup}>
+                                            <Button
+                                                title="Revert animation state to snippet"
+                                                appearance="transparent"
+                                                disabled={!animationStateConfig.canRevert}
+                                                icon={ArrowResetRegular}
+                                                onClick={animationStateConfig.revert}
+                                            />
+                                            <Button
+                                                title="Reset animation state attributes"
+                                                appearance="transparent"
+                                                disabled={!animationStateConfig.canReset}
+                                                icon={DeleteRegular}
+                                                onClick={animationStateConfig.reset}
+                                            />
+                                        </div>
                                     </div>
                                 </LineContainer>
                                 <PropertyLine label="Auto Play" uniqueId="auto-play">
@@ -1626,20 +1643,22 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                             onClick={selectedMaterialVariantConfig.snapshot}
                                             disabled={!hasMaterialVariants}
                                         />
-                                        <Button
-                                            title="Revert selected material variant to snippet"
-                                            appearance="transparent"
-                                            disabled={!selectedMaterialVariantConfig.canRevert}
-                                            icon={ArrowResetRegular}
-                                            onClick={selectedMaterialVariantConfig.revert}
-                                        />
-                                        <Button
-                                            title="Reset material variant attribute"
-                                            appearance="transparent"
-                                            icon={DeleteRegular}
-                                            disabled={!selectedMaterialVariantConfig.canReset}
-                                            onClick={selectedMaterialVariantConfig.reset}
-                                        />
+                                        <div className={classes.buttonGroup}>
+                                            <Button
+                                                title="Revert selected material variant to snippet"
+                                                appearance="transparent"
+                                                disabled={!selectedMaterialVariantConfig.canRevert}
+                                                icon={ArrowResetRegular}
+                                                onClick={selectedMaterialVariantConfig.revert}
+                                            />
+                                            <Button
+                                                title="Reset material variant attribute"
+                                                appearance="transparent"
+                                                icon={DeleteRegular}
+                                                disabled={!selectedMaterialVariantConfig.canReset}
+                                                onClick={selectedMaterialVariantConfig.reset}
+                                            />
+                                        </div>
                                     </div>
                                 </LineContainer>
                             </AccordionSection>
