@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { GlobalState } from "../globalState";
+import { SandboxCameraTypes } from "../globalState";
 import { FooterButton } from "./footerButton";
 import { DropUpButton } from "./dropUpButton";
 import { EnvironmentTools } from "../tools/environmentTools";
@@ -21,7 +22,9 @@ interface IFooterProps {
     globalState: GlobalState;
 }
 
-interface IFooterState {}
+interface IFooterState {
+    selectedCameraType: string;
+}
 
 /**
  * Footer
@@ -31,9 +34,15 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
 
     public constructor(props: IFooterProps) {
         super(props);
+
+        this.state = { selectedCameraType: props.globalState.selectedCameraType };
+
         props.globalState.onSceneLoaded.add(() => {
             this._updateCameraNames();
             this.forceUpdate();
+        });
+        props.globalState.onCameraTypeChanged.add((type) => {
+            this.setState({ selectedCameraType: type });
         });
         if (props.globalState.currentScene) {
             this._updateCameraNames();
@@ -115,8 +124,10 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
         }
 
         const hasCameras = this._cameraNames.length > 1;
+        const sceneLoaded = !!this.props.globalState.currentScene;
 
         // Determine footer class based on which controls are present
+        // Base size accounts for: Open + Environment + Inspector + CameraType (always shown when scene loaded)
         let footerClass = "footer";
         if (hasCameras && hasVariants) {
             footerClass += " longer";
@@ -148,7 +159,7 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
                         options={EnvironmentTools.SkyboxesNames}
                         activeEntry={() => EnvironmentTools.GetActiveSkyboxName()}
                         onOptionPicked={(option) => this.props.globalState.onEnvironmentChanged.notifyObservers(option)}
-                        enabled={!!this.props.globalState.currentScene}
+                        enabled={sceneLoaded}
                         searchPlaceholder="Search environment"
                     />
                     <FooterButton
@@ -156,7 +167,19 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
                         icon={iconEdit}
                         label="Display inspector"
                         onClick={() => this.showInspector()}
-                        enabled={!!this.props.globalState.currentScene}
+                        enabled={sceneLoaded}
+                    />
+                    <DropUpButton
+                        globalState={this.props.globalState}
+                        icon={iconCameras}
+                        label="Select camera type"
+                        options={[...SandboxCameraTypes]}
+                        activeEntry={() => this.state.selectedCameraType}
+                        onOptionPicked={(option) => {
+                            this.props.globalState.onCameraTypeChanged.notifyObservers(option as (typeof SandboxCameraTypes)[number]);
+                        }}
+                        enabled={sceneLoaded}
+                        searchPlaceholder="Search camera type"
                     />
                     <DropUpButton
                         globalState={this.props.globalState}
