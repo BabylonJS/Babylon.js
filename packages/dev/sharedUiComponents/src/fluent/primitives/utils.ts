@@ -21,7 +21,7 @@ export const TokenMap = {
 };
 
 export const CustomTokens = {
-    inputWidth: "150px",
+    valueWidth: "150px",
     lineHeight: TokenMap.px36,
     lineHeightSmall: TokenMap.px28,
     dividerGap: TokenMap.px10,
@@ -32,7 +32,7 @@ export const CustomTokens = {
     rightAlignOffset: `-${TokenMap.px8}`,
 };
 
-export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.inputWidth, boxSizing: "border-box" };
+export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.valueWidth, boxSizing: "border-box" };
 export const useInputStyles = makeStyles({
     inputSlot: { textAlign: "right" },
     invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
