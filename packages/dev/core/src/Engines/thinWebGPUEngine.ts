@@ -56,11 +56,11 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     /** @internal */
     public _showGPUDebugMarkersLog = false;
     /** @internal */
-    public _debugStackRenderEncoder: string[] = [];
+    public _debugMarkersEncoderGroups: string[] = [];
     /** @internal */
-    public _debugStackRenderPass: string[] = [];
+    public _debugMarkersPassGroups: string[] = [];
     /** @internal */
-    public _debugNumPopPending = 0;
+    public _debugMarkersPendingEncoderPops = 0;
 
     /**
      * Gets the GPU time spent in the main render pass for the last frame rendered (in nanoseconds).
@@ -101,13 +101,7 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
             return 0;
         }
 
-        if (this._debugStackRenderPass.length !== 0) {
-            // We have pushed debug groups without popping them, we need to pop them before ending the render pass to avoid WebGPU validation errors
-            // We will re-push them after starting the new render pass (if any)
-            for (let i = 0; i < this._debugStackRenderPass.length; ++i) {
-                this._currentRenderPass.popDebugGroup();
-            }
-        }
+        this._debugPopBeforeEndOfEncoder();
 
         const currentPassIndex = this._currentPassIsMainPass() ? 2 : 1;
 
@@ -125,19 +119,9 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
         );
         this._timestampIndex += 2;
 
-        // Pop all pending debug groups that couldn't be popped while the render pass was active
-        while (this._debugNumPopPending-- > 0) {
-            if (this._showGPUDebugMarkersLog) {
-                Logger.Log(
-                    `[${this.frameId}] Re-popping pending debug group on render encoder '${this._renderEncoder.label}' after ending current render pass '${this._currentRenderPass.label}'`
-                );
-            }
-            this._renderEncoder.popDebugGroup();
-            this._debugStackRenderEncoder.pop();
-        }
+        this._debugPendingPop(this._currentRenderPass);
 
         this._currentRenderPass = null;
-        this._debugNumPopPending = 0;
 
         return currentPassIndex;
     }
@@ -170,17 +154,68 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
         }
     }
 
-    protected _debugPushPendingGroups(forRenderPass: boolean) {
-        const debugStack = forRenderPass ? this._debugStackRenderPass : this._debugStackRenderEncoder;
-        const currentEncoder = forRenderPass ? this._currentRenderPass : this._renderEncoder;
+    protected _debugPopBeforeEndOfEncoder() {
+        if (!this._enableGPUDebugMarkers) {
+            return;
+        }
 
-        for (const groupName of debugStack) {
+        // When a render pass is active, pop its groups; otherwise pop encoder-level groups.
+        // Pass-level groups are never pushed on the encoder, so we never pop them from it.
+        const groups = this._currentRenderPass ? this._debugMarkersPassGroups : this._debugMarkersEncoderGroups;
+        const target = this._currentRenderPass ?? this._renderEncoder;
+
+        for (let i = groups.length - 1; i >= 0; --i) {
             if (this._showGPUDebugMarkersLog) {
                 Logger.Log(
-                    `[${this.frameId}] Re-pushing debug group '${groupName}' on ${forRenderPass ? "current render pass '" + this._currentRenderPass?.label + "'" : "render encoder '" + this._renderEncoder.label + "'"} after starting a new ${forRenderPass ? "render pass" : "render encoder"}`
+                    `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] [automatic] Popping debug group '${groups[i]}' on '${target.label}'.`
                 );
             }
-            currentEncoder!.pushDebugGroup(groupName);
+            target.popDebugGroup();
         }
+    }
+
+    protected _debugPushAfterStartOfEncoder() {
+        if (!this._enableGPUDebugMarkers) {
+            return;
+        }
+
+        // When a render pass is active, re-push its floating groups onto it; otherwise re-push
+        // encoder-level groups onto the new render encoder.
+        // Pass-level groups stay floating until the next render pass starts.
+        const groups = this._currentRenderPass ? this._debugMarkersPassGroups : this._debugMarkersEncoderGroups;
+        const target = this._currentRenderPass ?? this._renderEncoder;
+
+        for (const groupName of groups) {
+            if (this._showGPUDebugMarkersLog) {
+                Logger.Log(
+                    `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] [automatic] Pushing debug group '${groupName}' on '${target.label}'.`
+                );
+            }
+            target.pushDebugGroup(groupName);
+        }
+    }
+
+    protected _debugPendingPop(currentRenderPass: GPURenderPassEncoder) {
+        if (!this._enableGPUDebugMarkers) {
+            return;
+        }
+
+        // The user popped encoder-level groups while a render pass was active (the pass was the live
+        // object, so the pops were deferred). Now that the pass has ended we replay them on the render
+        // encoder. Because _debugMarkersEncoderGroups only ever contains encoder-level entries, popping
+        // from it here can never accidentally consume a pass-level group.
+        while (this._debugMarkersPendingEncoderPops-- > 0) {
+            const groupName = this._debugMarkersEncoderGroups.pop();
+
+            if (this._showGPUDebugMarkersLog) {
+                Logger.Log(
+                    `[${this.frameId}] [E${this._debugMarkersEncoderGroups.length}|P${this._debugMarkersPassGroups.length}] [automatic] Popping debug group '${groupName}' on render encoder '${this._renderEncoder.label}' after the end of render pass '${currentRenderPass.label}'.`
+                );
+            }
+
+            this._renderEncoder.popDebugGroup();
+        }
+
+        this._debugMarkersPendingEncoderPops = 0;
     }
 }
