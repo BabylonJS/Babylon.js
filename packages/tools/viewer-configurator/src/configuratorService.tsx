@@ -2,8 +2,10 @@ import type { ServiceDefinition } from "inspector/modularity/serviceDefinition";
 import type { IShellService } from "inspector/services/shellService";
 
 import { ShellServiceIdentity } from "inspector/services/shellService";
-import { SettingsRegular } from "@fluentui/react-icons";
+import { QuestionCircleRegular, SettingsRegular } from "@fluentui/react-icons";
 import { useObservableState } from "inspector/hooks/observableHooks";
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { useCallback } from "react";
 
 import type { IViewerService } from "./viewerService";
 import { ViewerServiceIdentity } from "./viewerService";
@@ -13,7 +15,7 @@ export const ConfiguratorServiceDefinition: ServiceDefinition<[], [IShellService
     friendlyName: "Configurator Service",
     consumes: [ShellServiceIdentity, ViewerServiceIdentity],
     factory: (shellService, viewerService) => {
-        const registration = shellService.addSidePane({
+        const sidePaneRegistration = shellService.addSidePane({
             key: "Configurator",
             title: "Viewer Configurator",
             icon: SettingsRegular,
@@ -34,8 +36,24 @@ export const ConfiguratorServiceDefinition: ServiceDefinition<[], [IShellService
             },
         });
 
+        const toolbarRegistration = shellService.addToolbarItem({
+            key: "Documentation",
+            horizontalLocation: "right",
+            verticalLocation: "bottom",
+            teachingMoment: false,
+            component: () => {
+                const openDocumentation = useCallback(() => {
+                    window.open("https://doc.babylonjs.com/toolsAndResources/viewerConfigurator");
+                }, []);
+                return <Button title="Documentation" appearance="transparent" icon={QuestionCircleRegular} onClick={openDocumentation} />;
+            },
+        });
+
         return {
-            dispose: () => registration.dispose(),
+            dispose: () => {
+                sidePaneRegistration.dispose();
+                toolbarRegistration.dispose();
+            },
         };
     },
 };

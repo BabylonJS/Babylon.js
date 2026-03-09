@@ -9,7 +9,6 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from "@dnd-kit/utilities";
 import { makeStyles, tokens, Textarea } from "@fluentui/react-components";
 import {
-    QuestionCircleRegular,
     TargetRegular,
     CameraRegular,
     CheckmarkRegular,
@@ -1298,10 +1297,6 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         selectedMaterialVariantConfig.reset,
     ]);
 
-    const openDocumentation = useCallback(() => {
-        window.open("https://doc.babylonjs.com/toolsAndResources/viewerConfigurator");
-    }, []);
-
     // SSAO is not supported when shadow quality is set to high (IBL).
     const validSSAOOptions = shadowQualityConfig.configuredState !== "high" ? SSAOOptions : SSAOOptions.filter((option) => option.value !== "enabled");
     const validShadowQualityOptions = ssaoConfig.configuredState !== "enabled" ? ShadowQualityOptions : ShadowQualityOptions.filter((option) => option.value !== "high");
@@ -1315,7 +1310,6 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                     <div className={classes.headerRow}>
                         <img className={classes.headerLogo} src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
                         <div className={classes.headerTitle}>VIEWER CONFIGURATOR</div>
-                        <Button title="Documentation" appearance="transparent" icon={QuestionCircleRegular} onClick={openDocumentation} />
                     </div>
                     <PropertyLine label="Format" uniqueId="output-format">
                         <Dropdown options={OutputOptions} value={outputFormat} onChange={(value) => setOutputFormat(value as OutputFormat)} />
