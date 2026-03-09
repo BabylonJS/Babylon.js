@@ -1,4 +1,4 @@
-import type { IDisposable } from "core/index";
+import type { IDisposable, IReadonlyObservable } from "core/index";
 import type { ViewerElement, ViewerOptions } from "viewer/index";
 
 import type { IService, ServiceDefinition } from "inspector/modularity/serviceDefinition";
@@ -15,7 +15,7 @@ export const ViewerServiceIdentity = Symbol("ViewerService");
 export interface IViewerService extends IService<typeof ViewerServiceIdentity> {
     readonly viewerElement: ViewerElement | undefined;
     readonly viewerOptions: ViewerOptions | undefined;
-    readonly onStateChanged: Observable<void>;
+    readonly onStateChanged: IReadonlyObservable<void>;
 }
 
 export const ViewerServiceDefinition: ServiceDefinition<[IViewerService], [IShellService]> = {
