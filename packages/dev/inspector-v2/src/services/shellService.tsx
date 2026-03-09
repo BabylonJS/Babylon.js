@@ -212,6 +212,12 @@ export type SidePaneDefinition = {
      * user to lose the complex visual state when switching between tabs.
      */
     keepMounted?: boolean;
+
+    /**
+     * An optional component to render at the right side of the pane header, between the title and
+     * the dock menu button. Useful for adding icon-button actions specific to the pane.
+     */
+    headerExtra?: ComponentType;
 };
 
 type RegisteredSidePane = {
@@ -620,7 +626,13 @@ const DockMenu: FunctionComponent<
     );
 };
 
-const PaneHeader: FunctionComponent<{ id: string; title: string; icon?: ComponentType; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> }> = (props) => {
+const PaneHeader: FunctionComponent<{
+    id: string;
+    title: string;
+    icon?: ComponentType;
+    headerExtra?: ComponentType;
+    dockOptions: Map<DockLocation, (sidePaneKey: string) => void>;
+}> = (props) => {
     const { id, title, dockOptions } = props;
 
     const classes = useStyles();
@@ -633,6 +645,7 @@ const PaneHeader: FunctionComponent<{ id: string; title: string; icon?: Componen
                 </div>
             )}
             <Subtitle2Stronger className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}>{title}</Subtitle2Stronger>
+            {props.headerExtra && <props.headerExtra />}
             <DockMenu sidePaneId={id} dockOptions={dockOptions}>
                 <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
             </DockMenu>
@@ -1070,6 +1083,7 @@ function usePane(
                                     id={topSelectedTab.key}
                                     title={topSelectedTab.title}
                                     icon={topPanes.length > 1 ? undefined : topSelectedTab.icon}
+                                    headerExtra={topSelectedTab.headerExtra}
                                     dockOptions={validTopDockOptions}
                                 />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
@@ -1110,6 +1124,7 @@ function usePane(
                                     id={bottomSelectedTab.key}
                                     title={bottomSelectedTab.title}
                                     icon={bottomPanes.length > 1 ? undefined : bottomSelectedTab.icon}
+                                    headerExtra={bottomSelectedTab.headerExtra}
                                     dockOptions={validBottomDockOptions}
                                 />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
