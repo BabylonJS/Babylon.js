@@ -7,7 +7,7 @@ import type { DropdownOption } from "shared-ui-components/fluent/primitives/drop
 import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { makeStyles, tokens, MessageBar, MessageBarBody, Textarea, Input } from "@fluentui/react-components";
+import { makeStyles, tokens, MessageBar, MessageBarBody, Textarea } from "@fluentui/react-components";
 import {
     QuestionCircleRegular,
     TargetRegular,
@@ -26,11 +26,11 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FunctionCompone
 import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { AccordionSection, Accordion } from "shared-ui-components/fluent/primitives/accordion";
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
-import { StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { LineContainer, PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { ColorPickerPopup } from "shared-ui-components/fluent/primitives/colorPicker";
+import { Dropdown } from "shared-ui-components/fluent/primitives/dropdown";
+import { Switch } from "shared-ui-components/fluent/primitives/switch";
+import { SyncedSliderInput } from "shared-ui-components/fluent/primitives/syncedSlider";
 import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
 
 import { DefaultViewerOptions, SSAOOptions } from "viewer/viewer";
@@ -70,6 +70,17 @@ const useStyles = makeStyles({
     accordionContainer: {
         flex: 1,
         overflow: "hidden",
+    },
+    propertyContent: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+        width: "100%",
+    },
+    fillControl: {
+        flex: 1,
+        minWidth: 0,
     },
     hotspotRow: {
         display: "flex",
@@ -1270,7 +1281,9 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                     <div style={{ flex: 1, fontWeight: "bold" }}>VIEWER CONFIGURATOR</div>
                     <Button title="Documentation" appearance="transparent" icon={QuestionCircleRegular} onClick={openDocumentation} />
                 </div>
-                <StringDropdownPropertyLine label="Format" options={OutputOptions} value={outputFormat} onChange={(value) => setOutputFormat(value as OutputFormat)} />
+                <PropertyLine label="Format" uniqueId="output-format">
+                    <Dropdown options={OutputOptions} value={outputFormat} onChange={(value) => setOutputFormat(value as OutputFormat)} />
+                </PropertyLine>
                 <MessageBar>
                     <MessageBarBody>
                         {outputFormat === "html" ? "The HTML snippet can be used directly in a web page." : "The JSON snippet can be used as the Viewer options."}
@@ -1283,9 +1296,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                     style={{ fontFamily: "monospace", whiteSpace: "pre", minHeight: "160px" }}
                 />
                 <div className={classes.snippetActions}>
-                    <div style={{ flex: 1 }}>
-                        <ButtonLine label="Reset" onClick={resetAll} />
-                    </div>
+                    <Button style={{ flex: 1 }} label="Reset" onClick={resetAll} />
                     <Button title="Revert all state to snippet" appearance="transparent" icon={ArrowResetRegular} onClick={revertAll} disabled={!canRevertAll} />
                     <Button title="Copy html to clipboard" appearance="transparent" icon={CopyRegular} onClick={copyToClipboard} />
                     <Button title="Save as snippet" appearance="transparent" icon={SaveRegular} onClick={saveSnippet} disabled={!canSaveSnippet} />
@@ -1294,13 +1305,15 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             <div className={classes.accordionContainer}>
                 <Accordion>
                     <AccordionSection title="Model">
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                            <div style={{ flex: 1 }}>
-                                <Input placeholder="Model url" value={modelUrl} onChange={(_, data) => onModelUrlChange(data.value)} />
+                        <LineContainer uniqueId="model-url">
+                            <div className={classes.propertyContent}>
+                                <div className={classes.fillControl}>
+                                    <TextInput style={{ width: "100%" }} value={modelUrl} onChange={onModelUrlChange} />
+                                </div>
+                                <Button title="Load from model url" appearance="transparent" icon={CheckmarkRegular} onClick={onModelUrlBlur} />
+                                <Button title="Load local model" appearance="transparent" icon={ArrowUploadRegular} onClick={onLoadModelClick} />
                             </div>
-                            <Button title="Load from model url" appearance="transparent" icon={CheckmarkRegular} onClick={onModelUrlBlur} />
-                            <Button title="Load local model" appearance="transparent" icon={ArrowUploadRegular} onClick={onLoadModelClick} />
-                        </div>
+                        </LineContainer>
                     </AccordionSection>
                     <AccordionSection title="Environment">
                         <MessageBar>
@@ -1308,242 +1321,243 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                 The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each.
                             </MessageBarBody>
                         </MessageBar>
-                        <SwitchPropertyLine label="Sync Lighting & Skybox" value={syncEnvironment} onChange={onSyncEnvironmentChanged} />
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                            <div style={{ flex: 1 }}>
-                                <Input
-                                    key={syncEnvironment ? "env-url" : "light-url"}
-                                    placeholder={syncEnvironment ? "Environment url" : "Lighting url"}
-                                    value={lightingUrlConfig.configuredState}
-                                    onChange={(_, data) => onEnvironmentLightingUrlChange(data.value)}
-                                />
-                            </div>
-                            <Button
-                                title={syncEnvironment ? "Load environment url" : "Load lighting url"}
-                                appearance="transparent"
-                                icon={CheckmarkRegular}
-                                disabled={!isEnvironmentLightingUrlValid}
-                                onClick={onEnvironmentUrlSubmit}
-                            />
-                            <Button
-                                title={syncEnvironment ? "Reset environment" : "Reset lighting"}
-                                appearance="transparent"
-                                icon={DeleteRegular}
-                                disabled={!lightingUrlConfig.canReset}
-                                onClick={onEnvironmentLightingResetClick}
-                            />
-                        </div>
-                        {!syncEnvironment && (
-                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                                <div style={{ flex: 1 }}>
-                                    <Input placeholder="Skybox url" value={skyboxUrlConfig.configuredState} onChange={(_, data) => onEnvironmentSkyboxUrlChange(data.value)} />
+                        <PropertyLine label="Sync Lighting & Skybox" uniqueId="sync-env">
+                            <Switch value={syncEnvironment} onChange={onSyncEnvironmentChanged} />
+                        </PropertyLine>
+                        <LineContainer uniqueId="lighting-url">
+                            <div className={classes.propertyContent}>
+                                <div className={classes.fillControl}>
+                                    <TextInput
+                                        style={{ width: "100%" }}
+                                        key={syncEnvironment ? "env-url" : "light-url"}
+                                        value={lightingUrlConfig.configuredState}
+                                        onChange={onEnvironmentLightingUrlChange}
+                                    />
                                 </div>
-                                <Button title="Load skybox url" appearance="transparent" icon={CheckmarkRegular} onClick={onEnvironmentUrlSubmit} />
                                 <Button
-                                    title="Reset skybox"
+                                    title={syncEnvironment ? "Load environment url" : "Load lighting url"}
+                                    appearance="transparent"
+                                    icon={CheckmarkRegular}
+                                    disabled={!isEnvironmentLightingUrlValid}
+                                    onClick={onEnvironmentUrlSubmit}
+                                />
+                                <Button
+                                    title={syncEnvironment ? "Reset environment" : "Reset lighting"}
                                     appearance="transparent"
                                     icon={DeleteRegular}
-                                    disabled={!skyboxUrlConfig.canReset}
-                                    onClick={onEnvironmentSkyboxResetClick}
+                                    disabled={!lightingUrlConfig.canReset}
+                                    onClick={onEnvironmentLightingResetClick}
                                 />
                             </div>
+                        </LineContainer>
+                        {!syncEnvironment && (
+                            <LineContainer uniqueId="skybox-url">
+                                <div className={classes.propertyContent}>
+                                    <div className={classes.fillControl}>
+                                        <TextInput style={{ width: "100%" }} value={skyboxUrlConfig.configuredState} onChange={onEnvironmentSkyboxUrlChange} />
+                                    </div>
+                                    <Button title="Load skybox url" appearance="transparent" icon={CheckmarkRegular} onClick={onEnvironmentUrlSubmit} />
+                                    <Button
+                                        title="Reset skybox"
+                                        appearance="transparent"
+                                        icon={DeleteRegular}
+                                        disabled={!skyboxUrlConfig.canReset}
+                                        onClick={onEnvironmentSkyboxResetClick}
+                                    />
+                                </div>
+                            </LineContainer>
                         )}
                         {hasSkybox && (
-                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                                <div style={{ flex: 1 }}>
-                                    <SyncedSliderPropertyLine
-                                        label="Blur"
+                            <PropertyLine label="Blur" uniqueId="skybox-blur">
+                                <div className={classes.propertyContent}>
+                                    <SyncedSliderInput
+                                        style={{ flex: 1 }}
                                         value={skyboxBlurConfig.configuredState}
                                         min={0}
                                         max={1}
                                         step={0.01}
                                         onChange={skyboxBlurConfig.update}
                                     />
+                                    <Button
+                                        title="Reset skybox blur"
+                                        appearance="transparent"
+                                        icon={DeleteRegular}
+                                        disabled={!skyboxBlurConfig.canReset}
+                                        onClick={skyboxBlurConfig.reset}
+                                    />
                                 </div>
-                                <Button
-                                    title="Reset skybox blur"
-                                    appearance="transparent"
-                                    icon={DeleteRegular}
-                                    disabled={!skyboxBlurConfig.canReset}
-                                    onClick={skyboxBlurConfig.reset}
-                                />
-                            </div>
+                            </PropertyLine>
                         )}
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                            <div style={{ flex: 1 }}>
-                                <SyncedSliderPropertyLine
-                                    label="Intensity"
+                        <PropertyLine label="Intensity" uniqueId="env-intensity">
+                            <div className={classes.propertyContent}>
+                                <SyncedSliderInput
+                                    style={{ flex: 1 }}
                                     value={environmentIntensityConfig.configuredState}
                                     min={0}
                                     max={5}
                                     step={0.01}
                                     onChange={environmentIntensityConfig.update}
                                 />
+                                <Button
+                                    title="Reset skybox intensity"
+                                    appearance="transparent"
+                                    icon={DeleteRegular}
+                                    disabled={!environmentIntensityConfig.canReset}
+                                    onClick={environmentIntensityConfig.reset}
+                                />
                             </div>
-                            <Button
-                                title="Reset skybox intensity"
-                                appearance="transparent"
-                                icon={DeleteRegular}
-                                disabled={!environmentIntensityConfig.canReset}
-                                onClick={environmentIntensityConfig.reset}
-                            />
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                            <div style={{ flex: 1 }}>
-                                <SyncedSliderPropertyLine
-                                    label="Rotation"
+                        </PropertyLine>
+                        <PropertyLine label="Rotation" uniqueId="env-rotation">
+                            <div className={classes.propertyContent}>
+                                <SyncedSliderInput
+                                    style={{ flex: 1 }}
                                     value={environmentRotationConfig.configuredState}
                                     min={0}
                                     max={2 * Math.PI}
                                     step={0.01}
                                     onChange={environmentRotationConfig.update}
                                 />
+                                <Button
+                                    title="Reset skybox rotation"
+                                    appearance="transparent"
+                                    icon={DeleteRegular}
+                                    disabled={!environmentRotationConfig.canReset}
+                                    onClick={environmentRotationConfig.reset}
+                                />
                             </div>
-                            <Button
-                                title="Reset skybox rotation"
-                                appearance="transparent"
-                                icon={DeleteRegular}
-                                disabled={!environmentRotationConfig.canReset}
-                                onClick={environmentRotationConfig.reset}
-                            />
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                            <div style={{ flex: 1 }}>
-                                <Color4PropertyLine label="Clear color" value={clearColorConfig.configuredState} onChange={(color) => clearColorConfig.update(color)} />
+                        </PropertyLine>
+                        <PropertyLine label="Clear Color" uniqueId="clear-color">
+                            <div className={classes.propertyContent}>
+                                <ColorPickerPopup style={{ flex: 1 }} value={clearColorConfig.configuredState} onChange={(color) => clearColorConfig.update(color as Color4)} />
+                                <Button
+                                    title="Reset clear color"
+                                    appearance="transparent"
+                                    icon={DeleteRegular}
+                                    disabled={!clearColorConfig.canReset}
+                                    onClick={clearColorConfig.reset}
+                                />
                             </div>
-                            <Button
-                                title="Reset clear color"
-                                appearance="transparent"
-                                icon={DeleteRegular}
-                                disabled={!clearColorConfig.canReset}
-                                onClick={clearColorConfig.reset}
-                            />
-                        </div>
+                        </PropertyLine>
                     </AccordionSection>
                     <AccordionSection title="Shadows">
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                            <div style={{ flex: 1 }}>
-                                <StringDropdownPropertyLine
-                                    label="Quality"
+                        <PropertyLine label="Quality" uniqueId="shadow-quality">
+                            <div className={classes.propertyContent}>
+                                <Dropdown
+                                    style={{ flex: 1 }}
                                     options={validShadowQualityOptions}
                                     value={shadowQualityConfig.configuredState}
                                     onChange={(value) => shadowQualityConfig.update(value as ShadowQuality)}
                                 />
+                                <Button
+                                    title="Reset shadow quality"
+                                    appearance="transparent"
+                                    icon={DeleteRegular}
+                                    disabled={!shadowQualityConfig.canReset}
+                                    onClick={shadowQualityConfig.reset}
+                                />
                             </div>
-                            <Button
-                                title="Reset shadow quality"
-                                appearance="transparent"
-                                icon={DeleteRegular}
-                                disabled={!shadowQualityConfig.canReset}
-                                onClick={shadowQualityConfig.reset}
-                            />
-                        </div>
+                        </PropertyLine>
                     </AccordionSection>
                     <AccordionSection title="Post Processing">
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                            <div style={{ flex: 1 }}>
-                                <StringDropdownPropertyLine
-                                    label="Tone Mapping"
+                        <PropertyLine label="Tone Mapping" uniqueId="tone-mapping">
+                            <div className={classes.propertyContent}>
+                                <Dropdown
+                                    style={{ flex: 1 }}
                                     options={ToneMappingOptions}
                                     value={toneMappingConfig.configuredState}
                                     onChange={(value) => toneMappingConfig.update(value as ToneMapping)}
                                 />
-                            </div>
-                            <Button
-                                title="Reset tone mapping"
-                                appearance="transparent"
-                                icon={DeleteRegular}
-                                disabled={!toneMappingConfig.canReset}
-                                onClick={toneMappingConfig.reset}
-                            />
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                            <div style={{ flex: 1 }}>
-                                <SyncedSliderPropertyLine label="Contrast" value={contrastConfig.configuredState} min={0} max={5} step={0.05} onChange={contrastConfig.update} />
-                            </div>
-                            <Button title="Reset contrast" appearance="transparent" icon={DeleteRegular} disabled={!contrastConfig.canReset} onClick={contrastConfig.reset} />
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                            <div style={{ flex: 1 }}>
-                                <SyncedSliderPropertyLine label="Exposure" value={exposureConfig.configuredState} min={0} max={5} step={0.05} onChange={exposureConfig.update} />
-                            </div>
-                            <Button title="Reset exposure" appearance="transparent" icon={DeleteRegular} disabled={!exposureConfig.canReset} onClick={exposureConfig.reset} />
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                            <div style={{ flex: 1 }}>
-                                <StringDropdownPropertyLine
-                                    label="SSAO (Ambient Occlusion)"
-                                    options={validSSAOOptions}
-                                    value={ssaoConfig.configuredState}
-                                    onChange={(value) => ssaoConfig.update(value as SSAOOptions)}
+                                <Button
+                                    title="Reset tone mapping"
+                                    appearance="transparent"
+                                    icon={DeleteRegular}
+                                    disabled={!toneMappingConfig.canReset}
+                                    onClick={toneMappingConfig.reset}
                                 />
                             </div>
-                        </div>
+                        </PropertyLine>
+                        <PropertyLine label="Contrast" uniqueId="contrast">
+                            <div className={classes.propertyContent}>
+                                <SyncedSliderInput style={{ flex: 1 }} value={contrastConfig.configuredState} min={0} max={5} step={0.05} onChange={contrastConfig.update} />
+                                <Button title="Reset contrast" appearance="transparent" icon={DeleteRegular} disabled={!contrastConfig.canReset} onClick={contrastConfig.reset} />
+                            </div>
+                        </PropertyLine>
+                        <PropertyLine label="Exposure" uniqueId="exposure">
+                            <div className={classes.propertyContent}>
+                                <SyncedSliderInput style={{ flex: 1 }} value={exposureConfig.configuredState} min={0} max={5} step={0.05} onChange={exposureConfig.update} />
+                                <Button title="Reset exposure" appearance="transparent" icon={DeleteRegular} disabled={!exposureConfig.canReset} onClick={exposureConfig.reset} />
+                            </div>
+                        </PropertyLine>
+                        <PropertyLine label="SSAO (Ambient Occlusion)" uniqueId="ssao">
+                            <Dropdown options={validSSAOOptions} value={ssaoConfig.configuredState} onChange={(value) => ssaoConfig.update(value as SSAOOptions)} />
+                        </PropertyLine>
                     </AccordionSection>
                     <AccordionSection title="Camera">
                         <MessageBar>
                             <MessageBarBody>Position the camera in the viewer, and then click the button below to add the camera pose to the html snippet.</MessageBarBody>
                         </MessageBar>
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                            <div style={{ flex: 1 }}>
-                                <ButtonLine label="Use Current Pose" onClick={cameraConfig.snapshot} />
+                        <LineContainer uniqueId="camera-pose">
+                            <div className={classes.propertyContent}>
+                                <Button style={{ flex: 1 }} label="Use Current Pose" onClick={cameraConfig.snapshot} />
+                                <Button
+                                    title="Revert camera pose to snippet"
+                                    appearance="transparent"
+                                    disabled={!cameraConfig.canRevert}
+                                    icon={ArrowResetRegular}
+                                    onClick={cameraConfig.revert}
+                                />
+                                <Button
+                                    title="Reset camera pose attributes"
+                                    appearance="transparent"
+                                    disabled={!cameraConfig.canReset}
+                                    icon={DeleteRegular}
+                                    onClick={cameraConfig.reset}
+                                />
                             </div>
-                            <Button
-                                title="Revert camera pose to snippet"
-                                appearance="transparent"
-                                disabled={!cameraConfig.canRevert}
-                                icon={ArrowResetRegular}
-                                onClick={cameraConfig.revert}
-                            />
-                            <Button
-                                title="Reset camera pose attributes"
-                                appearance="transparent"
-                                disabled={!cameraConfig.canReset}
-                                icon={DeleteRegular}
-                                onClick={cameraConfig.reset}
-                            />
-                        </div>
-                        <SwitchPropertyLine label="Auto Orbit" value={autoOrbitConfig.configuredState} onChange={autoOrbitConfig.update} />
+                        </LineContainer>
+                        <PropertyLine label="Auto Orbit" uniqueId="auto-orbit">
+                            <Switch value={autoOrbitConfig.configuredState} onChange={autoOrbitConfig.update} />
+                        </PropertyLine>
                         {autoOrbitConfig.configuredState && (
                             <>
-                                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                                    <div style={{ flex: 1 }}>
-                                        <SyncedSliderPropertyLine
-                                            label="Speed"
+                                <PropertyLine label="Speed" uniqueId="orbit-speed">
+                                    <div className={classes.propertyContent}>
+                                        <SyncedSliderInput
+                                            style={{ flex: 1 }}
                                             value={autoOrbitSpeedConfig.configuredState}
                                             min={0}
                                             max={0.524}
                                             step={0.01}
                                             onChange={autoOrbitSpeedConfig.update}
                                         />
+                                        <Button
+                                            title="Reset auto orbit speed"
+                                            appearance="transparent"
+                                            disabled={!autoOrbitSpeedConfig.canReset}
+                                            icon={DeleteRegular}
+                                            onClick={autoOrbitSpeedConfig.reset}
+                                        />
                                     </div>
-                                    <Button
-                                        title="Reset auto orbit speed"
-                                        appearance="transparent"
-                                        disabled={!autoOrbitSpeedConfig.canReset}
-                                        icon={DeleteRegular}
-                                        onClick={autoOrbitSpeedConfig.reset}
-                                    />
-                                </div>
-                                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                                    <div style={{ flex: 1 }}>
-                                        <SyncedSliderPropertyLine
-                                            label="Delay"
+                                </PropertyLine>
+                                <PropertyLine label="Delay" uniqueId="orbit-delay">
+                                    <div className={classes.propertyContent}>
+                                        <SyncedSliderInput
+                                            style={{ flex: 1 }}
                                             value={autoOrbitDelayConfig.configuredState}
                                             min={0}
                                             max={5000}
                                             step={1}
                                             onChange={autoOrbitDelayConfig.update}
                                         />
+                                        <Button
+                                            title="Reset auto orbit delay"
+                                            appearance="transparent"
+                                            disabled={!autoOrbitDelayConfig.canReset}
+                                            icon={DeleteRegular}
+                                            onClick={autoOrbitDelayConfig.reset}
+                                        />
                                     </div>
-                                    <Button
-                                        title="Reset auto orbit delay"
-                                        appearance="transparent"
-                                        disabled={!autoOrbitDelayConfig.canReset}
-                                        icon={DeleteRegular}
-                                        onClick={autoOrbitDelayConfig.reset}
-                                    />
-                                </div>
+                                </PropertyLine>
                             </>
                         )}
                     </AccordionSection>
@@ -1554,26 +1568,28 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                     Select the animation and animation speed in the viewer, and then click the button below to add those selections to the html snippet.
                                 </MessageBarBody>
                             </MessageBar>
-                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                                <div style={{ flex: 1 }}>
-                                    <ButtonLine label="Use Current Selections" onClick={animationStateConfig.snapshot} disabled={!hasAnimations} />
+                            <LineContainer uniqueId="animation-state">
+                                <div className={classes.propertyContent}>
+                                    <Button style={{ flex: 1 }} label="Use Current Selections" onClick={animationStateConfig.snapshot} disabled={!hasAnimations} />
+                                    <Button
+                                        title="Revert animation state to snippet"
+                                        appearance="transparent"
+                                        disabled={!animationStateConfig.canRevert}
+                                        icon={ArrowResetRegular}
+                                        onClick={animationStateConfig.revert}
+                                    />
+                                    <Button
+                                        title="Reset animation state attributes"
+                                        appearance="transparent"
+                                        disabled={!animationStateConfig.canReset}
+                                        icon={DeleteRegular}
+                                        onClick={animationStateConfig.reset}
+                                    />
                                 </div>
-                                <Button
-                                    title="Revert animation state to snippet"
-                                    appearance="transparent"
-                                    disabled={!animationStateConfig.canRevert}
-                                    icon={ArrowResetRegular}
-                                    onClick={animationStateConfig.revert}
-                                />
-                                <Button
-                                    title="Reset animation state attributes"
-                                    appearance="transparent"
-                                    disabled={!animationStateConfig.canReset}
-                                    icon={DeleteRegular}
-                                    onClick={animationStateConfig.reset}
-                                />
-                            </div>
-                            <SwitchPropertyLine label="Auto Play" value={animationAutoPlayConfig.configuredState} onChange={animationAutoPlayConfig.update} />
+                            </LineContainer>
+                            <PropertyLine label="Auto Play" uniqueId="auto-play">
+                                <Switch value={animationAutoPlayConfig.configuredState} onChange={animationAutoPlayConfig.update} />
+                            </PropertyLine>
                         </AccordionSection>
                     )}
                     {hasMaterialVariants && (
@@ -1581,25 +1597,25 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             <MessageBar>
                                 <MessageBarBody>Select the material variant the viewer, and then click the button below to add that selection to the html snippet.</MessageBarBody>
                             </MessageBar>
-                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                                <div style={{ flex: 1 }}>
-                                    <ButtonLine label="Snapshot Current State" onClick={selectedMaterialVariantConfig.snapshot} disabled={!hasMaterialVariants} />
+                            <LineContainer uniqueId="material-variant-state">
+                                <div className={classes.propertyContent}>
+                                    <Button style={{ flex: 1 }} label="Snapshot Current State" onClick={selectedMaterialVariantConfig.snapshot} disabled={!hasMaterialVariants} />
+                                    <Button
+                                        title="Revert selected material variant to snippet"
+                                        appearance="transparent"
+                                        disabled={!selectedMaterialVariantConfig.canRevert}
+                                        icon={ArrowResetRegular}
+                                        onClick={selectedMaterialVariantConfig.revert}
+                                    />
+                                    <Button
+                                        title="Reset material variant attribute"
+                                        appearance="transparent"
+                                        icon={DeleteRegular}
+                                        disabled={!selectedMaterialVariantConfig.canReset}
+                                        onClick={selectedMaterialVariantConfig.reset}
+                                    />
                                 </div>
-                                <Button
-                                    title="Revert selected material variant to snippet"
-                                    appearance="transparent"
-                                    disabled={!selectedMaterialVariantConfig.canRevert}
-                                    icon={ArrowResetRegular}
-                                    onClick={selectedMaterialVariantConfig.revert}
-                                />
-                                <Button
-                                    title="Reset material variant attribute"
-                                    appearance="transparent"
-                                    icon={DeleteRegular}
-                                    disabled={!selectedMaterialVariantConfig.canReset}
-                                    onClick={selectedMaterialVariantConfig.reset}
-                                />
-                            </div>
+                            </LineContainer>
                         </AccordionSection>
                     )}
                     <AccordionSection title="Hot Spots">
@@ -1610,12 +1626,12 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                 camera button. Annotations are optional child html elements that track a hotspot, and samples are included in the html snippet.
                             </MessageBarBody>
                         </MessageBar>
-                        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                            <div style={{ flex: 1 }}>
-                                <StringDropdownPropertyLine label="Hot Spot Type" options={HotSpotTypeOptions} value="surface" onChange={() => {}} />
+                        <PropertyLine label="Hot Spot Type" uniqueId="hotspot-type">
+                            <div className={classes.propertyContent}>
+                                <Dropdown style={{ flex: 1 }} options={HotSpotTypeOptions} value="surface" onChange={() => {}} />
+                                <Button title="Add Hot Spot" appearance="transparent" icon={AddSquareRegular} onClick={onAddHotspotClick} />
                             </div>
-                            <Button title="Add Hot Spot" appearance="transparent" icon={AddSquareRegular} onClick={onAddHotspotClick} />
-                        </div>
+                        </PropertyLine>
                         <DndContext sensors={dndSensors} modifiers={HotSpotsDndModifers} collisionDetection={closestCenter} onDragEnd={onHotSpotsReorder}>
                             <SortableContext items={hotspots} strategy={verticalListSortingStrategy}>
                                 {hotspots.map((hotspot) => (
