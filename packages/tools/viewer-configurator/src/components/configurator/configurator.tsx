@@ -105,9 +105,12 @@ const useStyles = makeStyles({
         fontWeight: tokens.fontWeightBold,
     },
     snippetTextarea: {
+        minHeight: "160px",
+    },
+    snippetTextareaInner: {
         fontFamily: "monospace",
         whiteSpace: "pre",
-        minHeight: "160px",
+        overflowX: "auto",
     },
     pickingActive: {
         color: "rgb(51, 122, 183)",
@@ -1321,7 +1324,13 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                         message={outputFormat === "html" ? "The HTML snippet can be used directly in a web page." : "The JSON snippet can be used as the Viewer options."}
                         intent="info"
                     />
-                    <Textarea value={outputFormat === "html" ? htmlSnippet : jsonSnippet} readOnly resize="vertical" className={classes.snippetTextarea} />
+                    <Textarea
+                        value={outputFormat === "html" ? htmlSnippet : jsonSnippet}
+                        readOnly
+                        resize="vertical"
+                        className={classes.snippetTextarea}
+                        textarea={{ className: classes.snippetTextareaInner }}
+                    />
                     <div className={classes.snippetActions}>
                         <Button className={classes.fillControl} label="Reset" onClick={resetAll} />
                         <div className={classes.buttonGroup}>
