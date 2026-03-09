@@ -8,14 +8,14 @@
     font-size: 0;
     display: grid;
     grid-template-rows: 100%;
-    grid-template-columns: 201px 1fr 210px;
+    grid-template-columns: 201px 1fr 280px;
 
     &.long {
-        grid-template-columns: 201px 1fr 280px;
+        grid-template-columns: 201px 1fr 350px;
     }
 
     &.longer {
-        grid-template-columns: 201px 1fr 350px;
+        grid-template-columns: 201px 1fr 420px;
     }
 
     .footerLeft {
@@ -208,14 +208,14 @@
 
 @media (max-width: 768px) {
     .footer {
-        grid-template-columns: 0px 1fr 150px;
+        grid-template-columns: 0px 1fr 200px;
 
         &.long {
-            grid-template-columns: 0px 1fr 200px;
+            grid-template-columns: 0px 1fr 250px;
         }
 
         &.longer {
-            grid-template-columns: 0px 1fr 250px;
+            grid-template-columns: 0px 1fr 300px;
         }
 
         .dropup {

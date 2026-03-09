@@ -1,6 +1,10 @@
 import type { FilesInput, IDisposable, Nullable, Scene, Vector3 } from "core/index";
 import { Observable } from "core/Misc/observable";
 
+/** Camera types available in the sandbox */
+export const SandboxCameraTypes = ["ArcRotate", "FirstPerson", "ThirdPerson", "Target"] as const;
+export type SandboxCameraType = (typeof SandboxCameraTypes)[number];
+
 type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 
 export class GlobalState {
@@ -25,6 +29,9 @@ export class GlobalState {
     public cameraPosition?: Vector3;
     public skybox = true;
     public toneMapping?: number;
+
+    public selectedCameraType: SandboxCameraType = "ArcRotate";
+    public onCameraTypeChanged = new Observable<SandboxCameraType>();
 
     public reflector?: {
         hostname: string;

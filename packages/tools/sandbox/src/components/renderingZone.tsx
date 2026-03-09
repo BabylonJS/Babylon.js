@@ -8,13 +8,18 @@ import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Scene } from "core/scene";
-import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
+import { UniversalCamera } from "core/Cameras/universalCamera";
+import { FollowCamera } from "core/Cameras/followCamera";
+import { TargetCamera } from "core/Cameras/targetCamera";
+import { Vector3 } from "core/Maths/math.vector";
 import { EnvironmentTools } from "../tools/environmentTools";
 import { Tools } from "core/Misc/tools";
 import { FilesInput } from "core/Misc/filesInput";
 import { Animation } from "core/Animations/animation";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
+import type { SandboxCameraType } from "../globalState";
 
 import "core/Helpers/sceneHelpers";
 
@@ -191,54 +196,136 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     prepareCamera() {
-        let camera = this._scene.activeCamera as ArcRotateCamera;
+        let camera = this._scene.activeCamera;
         // Attach camera to canvas inputs
         if (!camera) {
-            this._scene.createDefaultCamera(true);
-
-            camera = this._scene.activeCamera! as ArcRotateCamera;
-
-            if (this._currentPluginName === "gltf" || this._currentPluginName === "obj") {
-                // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
-                // We do this same for obj as it matches other viewers, but obj does not specify a forward convention.
-                camera.alpha += Math.PI;
-            }
-
-            // Enable camera's behaviors
-            camera.useFramingBehavior = true;
-
-            const framingBehavior = camera.getBehaviorByName("Framing") as FramingBehavior;
-            framingBehavior.framingTime = 0;
-            framingBehavior.elevationReturnTime = -1;
-
-            if (this._scene.meshes.length) {
-                camera.lowerRadiusLimit = null;
-
-                const worldExtends = this._scene.getWorldExtends(function (mesh) {
-                    return mesh.isVisible && mesh.isEnabled();
-                });
-                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-            }
-
-            if (this.props.globalState.autoRotate) {
-                camera.useAutoRotationBehavior = true;
-            }
-
-            camera.pinchPrecision = 200 / camera.radius;
-            camera.upperRadiusLimit = 5 * camera.radius;
-
-            camera.wheelDeltaPercentage = 0.01;
-            camera.pinchDeltaPercentage = 0.01;
-
-            if (this.props.globalState.cameraPosition) {
-                camera.lowerRadiusLimit = null;
-                camera.setPosition(this.props.globalState.cameraPosition);
-                camera.lowerRadiusLimit = camera.radius;
-            }
+            camera = this._createCameraByType(this.props.globalState.selectedCameraType);
         }
 
         camera.attachControl();
         return camera;
+    }
+
+    private _getSceneExtents() {
+        let worldMin = new Vector3(-1, -1, -1);
+        let worldMax = new Vector3(1, 1, 1);
+        if (this._scene.meshes.length) {
+            const worldExtends = this._scene.getWorldExtends((mesh) => mesh.isVisible && mesh.isEnabled());
+            worldMin = worldExtends.min;
+            worldMax = worldExtends.max;
+        }
+        return { worldMin, worldMax };
+    }
+
+    private _createCameraByType(type: SandboxCameraType) {
+        const scene = this._scene;
+        const { worldMin, worldMax } = this._getSceneExtents();
+        const center = Vector3.Center(worldMin, worldMax);
+        const radius = Math.max(Vector3.Distance(worldMin, worldMax) * 1.5, 1);
+        const defaultPos = this.props.globalState.cameraPosition ?? new Vector3(center.x, center.y, worldMin.z - radius);
+        const nearPlane = radius * 0.001;
+        const farPlane = radius * 100;
+
+        switch (type) {
+            case "FirstPerson": {
+                const camera = new UniversalCamera("default camera", defaultPos, scene);
+                scene.activeCamera = camera;
+                camera.setTarget(center);
+                camera.speed = radius * 0.1;
+                camera.minZ = nearPlane;
+                camera.maxZ = farPlane;
+                return camera;
+            }
+            case "ThirdPerson": {
+                const camera = new FollowCamera("default camera", defaultPos, scene);
+                scene.activeCamera = camera;
+                camera.radius = radius * 0.5;
+                camera.heightOffset = radius * 0.3;
+                camera.rotationOffset = 0;
+                camera.minZ = nearPlane;
+                camera.maxZ = farPlane;
+                if (scene.meshes.length) {
+                    camera.lockedTarget = scene.meshes[0];
+                }
+                return camera;
+            }
+            case "Target": {
+                const camera = new TargetCamera("default camera", defaultPos, scene);
+                scene.activeCamera = camera;
+                camera.setTarget(center);
+                camera.minZ = nearPlane;
+                camera.maxZ = farPlane;
+                return camera;
+            }
+            case "ArcRotate":
+            default: {
+                scene.createDefaultCamera(true);
+                const arcCamera = scene.activeCamera! as ArcRotateCamera;
+
+                if (this._currentPluginName === "gltf" || this._currentPluginName === "obj") {
+                    // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
+                    // We do this same for obj as it matches other viewers, but obj does not specify a forward convention.
+                    arcCamera.alpha += Math.PI;
+                }
+
+                // Enable camera's behaviors
+                arcCamera.useFramingBehavior = true;
+
+                const framingBehavior = arcCamera.getBehaviorByName("Framing") as FramingBehavior;
+                framingBehavior.framingTime = 0;
+                framingBehavior.elevationReturnTime = -1;
+
+                if (scene.meshes.length) {
+                    arcCamera.lowerRadiusLimit = null;
+                    framingBehavior.zoomOnBoundingInfo(worldMin, worldMax);
+                }
+
+                if (this.props.globalState.autoRotate) {
+                    arcCamera.useAutoRotationBehavior = true;
+                }
+
+                arcCamera.pinchPrecision = 200 / arcCamera.radius;
+                arcCamera.upperRadiusLimit = 5 * arcCamera.radius;
+
+                arcCamera.wheelDeltaPercentage = 0.01;
+                arcCamera.pinchDeltaPercentage = 0.01;
+
+                if (this.props.globalState.cameraPosition) {
+                    arcCamera.lowerRadiusLimit = null;
+                    arcCamera.setPosition(this.props.globalState.cameraPosition);
+                    arcCamera.lowerRadiusLimit = arcCamera.radius;
+                }
+
+                return arcCamera;
+            }
+        }
+    }
+
+    private _switchToCamera(type: SandboxCameraType): void {
+        if (!this._scene) {
+            return;
+        }
+
+        const prevCamera = this._scene.activeCamera;
+        let prevPosition: Vector3 | undefined;
+
+        if (prevCamera) {
+            prevPosition = prevCamera.position.clone();
+            prevCamera.detachControl();
+            prevCamera.dispose();
+        }
+
+        const savedCameraPosition = this.props.globalState.cameraPosition;
+        if (prevPosition) {
+            this.props.globalState.cameraPosition = prevPosition;
+        }
+
+        this.props.globalState.selectedCameraType = type;
+        const camera = this._createCameraByType(type);
+        this._scene.activeCamera = camera;
+        camera.attachControl();
+
+        this.props.globalState.cameraPosition = savedCameraPosition;
     }
 
     handleErrors() {
@@ -316,13 +403,16 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         this._scene.executeWhenReady(() => {
             this._engine.runRenderLoop(() => {
-                // NOTE: this logic to adjust camera parameters based on radius is copied in viewer.ts.
-                // Please keep them in sync.
-                // Adapt the camera sensibility based on the distance to the object
-                camera.panningSensibility = 5000 / camera.radius;
-                // Update the camera speed based on the camera's distance from the target.
-                // TODO: This makes mouse wheel zooming behave well, but makes mouse based rotation a bit worse.
-                camera.speed = camera.radius * 0.2;
+                const activeCamera = this._scene.activeCamera;
+                if (activeCamera instanceof ArcRotateCamera) {
+                    // NOTE: this logic to adjust camera parameters based on radius is copied in viewer.ts.
+                    // Please keep them in sync.
+                    // Adapt the camera sensibility based on the distance to the object
+                    activeCamera.panningSensibility = 5000 / activeCamera.radius;
+                    // Update the camera speed based on the camera's distance from the target.
+                    // TODO: This makes mouse wheel zooming behave well, but makes mouse based rotation a bit worse.
+                    activeCamera.speed = activeCamera.radius * 0.2;
+                }
                 this._scene.render();
             });
         });
@@ -437,6 +527,12 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         });
 
         this.initEngine();
+
+        this.props.globalState.onCameraTypeChanged.add((type) => {
+            if (this._scene) {
+                this._switchToCamera(type);
+            }
+        });
     }
 
     override shouldComponentUpdate(nextProps: IRenderingZoneProps) {
