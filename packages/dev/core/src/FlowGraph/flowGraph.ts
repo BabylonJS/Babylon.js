@@ -95,6 +95,12 @@ export class FlowGraph {
         [FlowGraphEventType.SceneAfterRender]: [],
         [FlowGraphEventType.NoTrigger]: [],
     };
+
+    /**
+     * All blocks that belong to this graph, including unreachable ones.
+     * @internal
+     */
+    public _allBlocks: FlowGraphBlock[] = [];
     /**
      * @internal
      */
@@ -212,11 +218,71 @@ export class FlowGraph {
     }
 
     /**
+     * Returns all blocks registered in this graph, including disconnected ones.
+     * @returns a read-only array of all blocks
+     */
+    public getAllBlocks(): readonly FlowGraphBlock[] {
+        return this._allBlocks;
+    }
+
+    /**
+     * Register a block with the graph. This does not wire any connections;
+     * it simply ensures the block is tracked so that serialization, editor
+     * display, and validation see it even when it is not reachable from an
+     * event block.
+     * @param block the block to register
+     */
+    public addBlock(block: FlowGraphBlock): void {
+        if (this._allBlocks.indexOf(block) === -1) {
+            this._allBlocks.push(block);
+        }
+    }
+
+    /**
+     * Remove a block from the graph. Disconnects all of its ports and, if it
+     * is an event block, unregisters it from the event-block lists.
+     * @param block the block to remove
+     */
+    public removeBlock(block: FlowGraphBlock): void {
+        const idx = this._allBlocks.indexOf(block);
+        if (idx !== -1) {
+            this._allBlocks.splice(idx, 1);
+        }
+        // If it is an event block, remove from the event-block registry
+        if (block instanceof FlowGraphExecutionBlock && "type" in block) {
+            const eventBlock = block as unknown as FlowGraphEventBlock;
+            const list = this._eventBlocks[eventBlock.type];
+            if (list) {
+                const eIdx = list.indexOf(eventBlock);
+                if (eIdx !== -1) {
+                    list.splice(eIdx, 1);
+                }
+            }
+        }
+        // Disconnect all ports
+        for (const input of block.dataInputs) {
+            input.disconnectFromAll();
+        }
+        for (const output of block.dataOutputs) {
+            output.disconnectFromAll();
+        }
+        if (block instanceof FlowGraphExecutionBlock) {
+            for (const signalIn of block.signalInputs) {
+                signalIn.disconnectFromAll();
+            }
+            for (const signalOut of block.signalOutputs) {
+                signalOut.disconnectFromAll();
+            }
+        }
+    }
+
+    /**
      * Add an event block. When the graph is started, it will start listening to events
      * from the block and execute the graph when they are triggered.
      * @param block the event block to be added
      */
     public addEventBlock(block: FlowGraphEventBlock): void {
+        this.addBlock(block);
         if (block.type === FlowGraphEventType.PointerOver || block.type === FlowGraphEventType.PointerOut) {
             this._scene.constantlyUpdateMeshUnderPointer = true;
         }
@@ -343,6 +409,7 @@ export class FlowGraph {
         for (const type in this._eventBlocks) {
             this._eventBlocks[type as FlowGraphEventType].length = 0;
         }
+        this._allBlocks.length = 0;
         this._detachEventObserver();
         this._sceneEventCoordinator.dispose();
     }
@@ -401,11 +468,22 @@ export class FlowGraph {
      */
     public serialize(serializationObject: any = {}, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject.allBlocks = [];
-        this.visitAllBlocks((block) => {
+        // Collect all blocks: traversal-reachable ones plus any registered
+        // orphans in _allBlocks (e.g. disconnected blocks in the editor).
+        const seen = new Set<string>();
+        const serializeBlock = (block: FlowGraphBlock) => {
+            if (seen.has(block.uniqueId)) {
+                return;
+            }
+            seen.add(block.uniqueId);
             const serializedBlock: any = {};
             block.serialize(serializedBlock);
             serializationObject.allBlocks.push(serializedBlock);
-        });
+        };
+        this.visitAllBlocks(serializeBlock);
+        for (const block of this._allBlocks) {
+            serializeBlock(block);
+        }
         serializationObject.executionContexts = [];
         for (const context of this._executionContexts) {
             const serializedContext: any = {};

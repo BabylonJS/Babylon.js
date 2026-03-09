@@ -90,9 +90,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             // Include editor layout so positions are restored on undo/redo
             serializationObject.editorData = (fg as any)._editorData;
             // Cache block class constructors for synchronous parsing in applyUpdate
-            fg.visitAllBlocks((block) => {
+            for (const block of fg.getAllBlocks()) {
                 this._blockClassRegistry.set(block.getClassName(), block.constructor as typeof FlowGraphBlock);
-            });
+            }
             return serializationObject;
         };
 
@@ -272,9 +272,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             void this._graphCanvas.handleKeyDownAsync(
                 evt,
-                (_nodeData) => {
-                    // Block removal: FlowGraph blocks are removed by disconnecting them.
-                    // The graph traversal will no longer visit disconnected blocks.
+                (nodeData) => {
+                    const block = nodeData.data as FlowGraphBlock;
+                    if (block) {
+                        this.props.globalState.flowGraph.removeBlock(block);
+                    }
                 },
                 this._mouseLocationX,
                 this._mouseLocationY,
@@ -429,11 +431,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     /** @internal */
     loadGraph() {
         const flowGraph = this.props.globalState.flowGraph;
-        const allBlocks: FlowGraphBlock[] = [];
-
-        flowGraph.visitAllBlocks((block) => {
-            allBlocks.push(block);
-        });
+        const allBlocks = flowGraph.getAllBlocks();
 
         for (const block of allBlocks) {
             this.appendBlock(block, true);
@@ -642,6 +640,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             const maybeEvent = newBlock as unknown as FlowGraphEventBlock;
             if (typeof maybeEvent._executeEvent === "function" && maybeEvent.type !== FlowGraphEventType.NoTrigger) {
                 this.props.globalState.flowGraph.addEventBlock(maybeEvent);
+            } else {
+                this.props.globalState.flowGraph.addBlock(newBlock);
             }
 
             // Create the visual graph node
@@ -678,6 +678,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             const maybeEvent = block as unknown as FlowGraphEventBlock;
             if (typeof maybeEvent._executeEvent === "function" && maybeEvent.type !== FlowGraphEventType.NoTrigger) {
                 this.props.globalState.flowGraph.addEventBlock(maybeEvent);
+            } else {
+                this.props.globalState.flowGraph.addBlock(block);
             }
 
             newNode = this.appendBlock(block);

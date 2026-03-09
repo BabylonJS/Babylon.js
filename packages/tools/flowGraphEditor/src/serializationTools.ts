@@ -21,14 +21,12 @@ export class SerializationTools {
             locations: [],
         };
 
-        // Gather all blocks by visiting the graph
+        // Gather all blocks from the graph
         const blocks: FlowGraphBlock[] = [];
         if (frame) {
             frame.nodes.forEach((n) => blocks.push(n.content.data));
         } else {
-            flowGraph.visitAllBlocks((block) => {
-                blocks.push(block);
-            });
+            blocks.push(...flowGraph.getAllBlocks());
         }
 
         for (const block of blocks) {
