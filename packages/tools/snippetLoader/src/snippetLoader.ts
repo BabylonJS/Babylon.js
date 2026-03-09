@@ -15,7 +15,7 @@ import type {
     IRuntimeFeatures,
     IInitializeRuntimeOptions,
 } from "./types";
-import { RuntimeScriptUrls } from "./types";
+import { DefaultRuntimeBaseUrl, RuntimeScriptPaths } from "./types";
 import { fetchSnippet, DEFAULT_SNIPPET_URL } from "./fetchSnippet";
 // Monaco bundles a browser-safe TypeScript (require = void 0) that avoids
 // Node.js builtins.  We only need the compiler API, not the editor.
@@ -849,12 +849,15 @@ async function InitializeRuntimeAsync(features: IRuntimeFeatures, options?: IIni
     const g = globalThis as any;
     const inject = options?.loadScripts === true;
     const urls = options?.scriptUrls ?? {};
+    const base = (options?.baseUrl ?? DefaultRuntimeBaseUrl).replace(/\/+$/, "");
+
+    const resolveUrl = (feature: keyof IRuntimeFeatures): string => urls[feature] ?? `${base}/${RuntimeScriptPaths[feature]}`;
 
     // AMMO
     if (features.ammo) {
         if (typeof g.Ammo !== "function" && inject) {
             try {
-                await LoadScriptOnce(urls.ammo ?? RuntimeScriptUrls.ammo);
+                await LoadScriptOnce(resolveUrl("ammo"));
             } catch {
                 /* best-effort */
             }
@@ -872,7 +875,7 @@ async function InitializeRuntimeAsync(features: IRuntimeFeatures, options?: IIni
     if (features.recast) {
         if (typeof g.Recast !== "function" && inject) {
             try {
-                await LoadScriptOnce(urls.recast ?? RuntimeScriptUrls.recast);
+                await LoadScriptOnce(resolveUrl("recast"));
             } catch {
                 /* best-effort */
             }
@@ -890,7 +893,7 @@ async function InitializeRuntimeAsync(features: IRuntimeFeatures, options?: IIni
     if (features.havok) {
         if (typeof g.HavokPhysics !== "function" && inject) {
             try {
-                await LoadScriptOnce(urls.havok ?? RuntimeScriptUrls.havok);
+                await LoadScriptOnce(resolveUrl("havok"));
             } catch {
                 /* best-effort */
             }

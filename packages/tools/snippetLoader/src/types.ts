@@ -320,11 +320,16 @@ export interface IRuntimeFeatures {
     recast: boolean;
 }
 
-/** Default CDN URLs for runtime dependency scripts. */
-export const RuntimeScriptUrls: Readonly<Record<keyof IRuntimeFeatures, string>> = {
-    havok: "https://cdn.babylonjs.com/havok/HavokPhysics_umd.js",
-    ammo: "https://cdn.babylonjs.com/ammo/ammo.js",
-    recast: "https://cdn.babylonjs.com/recast.js",
+/** Default CDN base URL for runtime dependency scripts. */
+export const DefaultRuntimeBaseUrl = "https://cdn.babylonjs.com";
+
+/**
+ * Relative paths for each runtime dependency script, appended to a base URL.
+ */
+export const RuntimeScriptPaths: Readonly<Record<keyof IRuntimeFeatures, string>> = {
+    havok: "havok/HavokPhysics_umd.js",
+    ammo: "ammo/ammo.js",
+    recast: "recast.js",
 };
 
 /**
@@ -332,13 +337,23 @@ export const RuntimeScriptUrls: Readonly<Record<keyof IRuntimeFeatures, string>>
  */
 export interface IInitializeRuntimeOptions {
     /**
-     * When `true`, injects `<script>` tags from the CDN for any detected
-     * feature whose factory function is not already on `window`.
+     * When `true`, injects `<script>` tags for any detected feature whose
+     * factory function is not already on `window`.
      * Defaults to `false`.
      */
     loadScripts?: boolean;
     /**
-     * Override the default CDN URLs for each feature.
+     * Base URL for runtime scripts. The relative path for each feature
+     * (e.g. `"havok/HavokPhysics_umd.js"`) is appended to this.
+     * Defaults to `"https://cdn.babylonjs.com"`.
+     *
+     * Ignored when the corresponding entry in `scriptUrls` provides a
+     * full override.
+     */
+    baseUrl?: string;
+    /**
+     * Override the full URL for individual features.
+     * Takes precedence over `baseUrl`.
      * Only used when `loadScripts` is `true`.
      */
     scriptUrls?: Partial<Record<keyof IRuntimeFeatures, string>>;
