@@ -1630,12 +1630,16 @@ export class GaussianSplattingMesh extends Mesh {
                         const partIndex = partIndices[Math.min(j, length - 1)];
                         const mvp = modelViewProjs[partIndex];
                         floatMix[2 * j + 1] = (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) * depthScale;
+                        // instead of using minus to sort back to front, we use bitwise not operator to invert the order of indices
+                        // might not be faster but a minus sign implies a reference value that may not be enough and will decrease floatting precision
+                        indices[2 * j + 1] = ~indices[2 * j + 1];
                     }
                 } else {
                     // If there are no rig node matrices, we use the global model view proj
                     const mvp = globalModelViewProjection;
                     for (let j = 0; j < vertexCountPadded; j++) {
                         floatMix[2 * j + 1] = (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) * depthScale;
+                        indices[2 * j + 1] = ~indices[2 * j + 1];
                     }
                 }
 
@@ -2073,10 +2077,7 @@ export class GaussianSplattingMesh extends Mesh {
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
             if (this._splatIndex) {
                 for (let j = 0; j < vertexCountPadded; j++) {
-                    // invert index because of the way depthMix is sorted in the worker (descending order)
-                    // splat are sorted front to back (incresing depth values) but we want the index buffer to be in
-                    // back to front order for correct blending without pre-multiplied alpha
-                    this._splatIndex[j] = indexMix[2 * (vertexCountPadded - 1 - j)];
+                    this._splatIndex[j] = indexMix[2 * j];
                 }
             }
             if (this._delayedTextureUpdate) {
