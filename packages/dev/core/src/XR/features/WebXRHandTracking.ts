@@ -618,7 +618,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                     if (physicsVersion === 2) {
                         // V2 physics
                         const impostorType = props?.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
-                        let shapeType = PhysicsShapeType.SPHERE;
+                        let shapeType: PhysicsShapeType;
 
                         // Map v1 impostor types to v2 shape types
                         switch (impostorType) {

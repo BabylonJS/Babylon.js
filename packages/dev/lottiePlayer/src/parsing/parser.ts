@@ -534,7 +534,7 @@ export class Parser {
 
         const keyframes: ScalarKeyframe[] = [];
         const rawKeyFrames = property.k as RawVectorKeyframe[];
-        let i = 0;
+        let i: number;
         for (i = 0; i < rawKeyFrames.length; i++) {
             let easeFunction: BezierCurve | undefined = undefined;
             if (rawKeyFrames[i].o !== undefined && rawKeyFrames[i].i !== undefined) {
@@ -624,7 +624,7 @@ export class Parser {
 
         const keyframes: Vector2Keyframe[] = [];
         const rawKeyFrames = property.k as RawVectorKeyframe[];
-        let i = 0;
+        let i: number;
         for (i = 0; i < rawKeyFrames.length; i++) {
             let easeFunction1: BezierCurve | undefined = undefined;
             if (rawKeyFrames[i].o !== undefined && rawKeyFrames[i].i !== undefined) {

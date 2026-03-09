@@ -47,7 +47,6 @@ export class MeshExploder {
     }
 
     private _setCenterMesh(): void {
-        let averageCenter = Vector3.Zero();
         const totalCenters = Vector3.Zero();
         let shortestToCenter = Number.MAX_VALUE;
         for (let index = 0; index < this._meshes.length; index++) {
@@ -59,7 +58,7 @@ export class MeshExploder {
                 }
             }
         }
-        averageCenter = totalCenters.scale(1 / this._meshes.length);
+        const averageCenter = totalCenters.scale(1 / this._meshes.length);
         for (let index = 0; index < this._meshes.length; index++) {
             if (this._meshes[index]) {
                 const mesh = this._meshes[index];

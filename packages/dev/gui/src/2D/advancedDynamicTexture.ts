@@ -1131,7 +1131,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         });
         this._focusProperties.total = sortedTabbableControls.length;
         // if no control is focused, focus the first one
-        let nextIndex = -1;
+        let nextIndex: number;
         if (!this._focusedControl) {
             nextIndex = forward ? 0 : sortedTabbableControls.length - 1;
         } else {

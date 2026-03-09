@@ -73,14 +73,14 @@ describe("VertexAnimationBaker", function () {
             end = performance.now();
             console.log(`Asynchronous bake took: ${end - start} ms`);
             // Assert: Check type and size
-            expect(vertexData.length).toEqual(asyncVertexData.length, "Synchronous and asynchronous vertex data should match");
-            expect(vertexData).toBeInstanceOf(Float32Array, "Vertex data should be Float32Array");
+            expect(vertexData.length, "Synchronous and asynchronous vertex data should match").toEqual(asyncVertexData.length);
+            expect(vertexData, "Vertex data should be Float32Array").toBeInstanceOf(Float32Array);
         });
 
         it("should bake vertex data as Uint16Array for half-float", () => {
             const baker = new VertexAnimationBaker(scene, mesh);
             const vertexData = baker.bakeVertexDataSync(animationRanges as AnimationRange[], true);
-            expect(vertexData).toBeInstanceOf(Uint16Array, "Vertex data should be Uint16Array");
+            expect(vertexData, "Vertex data should be Uint16Array").toBeInstanceOf(Uint16Array);
         });
 
         it("should throw an error if no skeleton is provided", () => {

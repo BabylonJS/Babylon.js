@@ -106,7 +106,7 @@ export class SmartFilterRenderer {
      */
     public async startRenderingAsync(filter: SmartFilter): Promise<RenderResult> {
         let optimizationTimeMs: Nullable<number> = null;
-        let runtimeCreationTimeMs: Nullable<number> = null;
+        let runtimeCreationTimeMs: Nullable<number>;
         const optimizerDebugMode = this.optimize ? this.optimizerDebugMode : null;
 
         try {

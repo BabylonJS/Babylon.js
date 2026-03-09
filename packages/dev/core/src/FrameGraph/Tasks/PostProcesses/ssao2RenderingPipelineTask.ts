@@ -58,6 +58,9 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
         this._camera = camera;
 
         this.ssao.camera = camera;
+        if (this._ssao) {
+            this._ssao.camera = camera;
+        }
     }
 
     /**

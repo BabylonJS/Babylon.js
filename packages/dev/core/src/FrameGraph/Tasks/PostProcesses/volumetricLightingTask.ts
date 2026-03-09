@@ -31,10 +31,22 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
      */
     public depthTexture: FrameGraphTextureHandle;
 
+    private _camera: Camera;
     /**
      * The camera used for volumetric lighting calculations.
      */
-    public camera: Camera;
+    public get camera() {
+        return this._camera;
+    }
+
+    public set camera(value: Camera) {
+        if (this._camera === value) {
+            return;
+        }
+        this._camera = value;
+        this._renderLightingVolumeTask.camera = value;
+        this._blendLightingVolumeTask.camera = value;
+    }
 
     /**
      * The mesh representing the lighting volume.

@@ -1,4 +1,4 @@
-import type { IDisposable, Nullable } from "core/index";
+import type { FrameGraphTask, IDisposable, Nullable } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IGizmoService } from "../../gizmoService";
 import type { ISceneContext } from "../../sceneContext";
@@ -22,7 +22,7 @@ import {
 } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
-import { FindMainCamera, FindMainObjectRenderer } from "core/FrameGraph/frameGraphUtils";
+import { FindMainCamera } from "core/FrameGraph/frameGraphUtils";
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -39,6 +39,10 @@ import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMet
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Rendering/boundingBoxRenderer";
+
+function IsCameraFrameGraphTask(task: FrameGraphTask): task is FrameGraphTask & { camera: Camera } {
+    return (task as Partial<{ camera: Camera }>).camera instanceof Camera;
+}
 
 export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService, IWatcherService]> = {
     friendlyName: "Node Explorer",
@@ -96,7 +100,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
                 return {
                     get name() {
-                        return node.name;
+                        return node.name || `Unnamed ${node.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -246,15 +250,28 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                     set isEnabled(enabled: boolean) {
                         const activeCamera = getActiveCamera();
                         if (enabled && activeCamera !== camera) {
-                            activeCamera?.detachControl();
                             if (scene.frameGraph) {
-                                const objectRenderer = FindMainObjectRenderer(scene.frameGraph);
-                                if (objectRenderer) {
-                                    objectRenderer.camera = camera;
-                                    onChangeObservable.notifyObservers(); // manual trigger, because scene.onActiveCameraChanged won't be triggered by the line above
-                                    camera.attachControl(true);
-                                }
+                                void (async (frameGraph) => {
+                                    let updated = false;
+                                    const nrg = frameGraph.getLinkedNodeRenderGraph();
+                                    if (nrg) {
+                                        updated = await nrg.replaceCameraAsync(activeCamera, camera);
+                                    } else {
+                                        for (const task of frameGraph.tasks) {
+                                            if (IsCameraFrameGraphTask(task)) {
+                                                task.camera = camera;
+                                                updated = true;
+                                            }
+                                        }
+                                    }
+                                    if (updated) {
+                                        activeCamera?.detachControl();
+                                        camera.attachControl(true);
+                                        onChangeObservable.notifyObservers();
+                                    }
+                                })(scene.frameGraph);
                             } else {
+                                activeCamera?.detachControl();
                                 scene.activeCamera = camera;
                                 camera.attachControl(true);
                             }

@@ -25,7 +25,7 @@
         "@types/chrome": "^0.0.268",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
-        "copy-webpack-plugin": "^11.0.0",
+        "copy-webpack-plugin": "^14.0.0",
         "css-loader": "^7.1.0",
         "file-loader": "^6.2.0",
         "react": "^18.2.0",

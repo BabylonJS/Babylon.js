@@ -477,7 +477,7 @@ export class WebXRFeaturesManager implements IDisposable {
         required: boolean = true
     ): ResolveWebXRFeature<T> {
         const name = typeof featureName === "string" ? featureName : featureName.Name;
-        let versionToLoad = 0;
+        let versionToLoad: number;
         if (typeof version === "string") {
             if (!version) {
                 throw new Error(`Error in provided version - ${name} (${version})`);

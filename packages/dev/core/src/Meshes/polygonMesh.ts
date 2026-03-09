@@ -338,7 +338,7 @@ export class PolygonMeshBuilder {
 
             const vcNorm = vc.normalizeToNew();
             let vpNorm = vp.normalizeToNew();
-            let vnNorm = vn.normalizeToNew();
+            let vnNorm: Vector3;
 
             const dotp = Vector3.Dot(vpNorm, vcNorm);
             if (dotp > smoothingThreshold) {

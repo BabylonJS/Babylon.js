@@ -1,5 +1,4 @@
 {
-    "extends": "@nrwl/workspace/presets/npm.json",
     "npmScope": "babylonjs",
     "tasksRunnerOptions": {
         "default": {
@@ -9,25 +8,16 @@
             }
         }
     },
-    "targetDependencies": {
-        "build": [
-            {
-                "target": "build",
-                "projects": "dependencies"
-            }
-        ],
-        "prepare": [
-            {
-                "target": "prepare",
-                "projects": "dependencies"
-            }
-        ],
-        "package": [
-            {
-                "target": "package",
-                "projects": "dependencies"
-            }
-        ]
+    "targetDefaults": {
+        "build": {
+            "dependsOn": ["^build"]
+        },
+        "prepare": {
+            "dependsOn": ["^prepare"]
+        },
+        "package": {
+            "dependsOn": ["^package"]
+        }
     },
     "affected": {
         "defaultBase": "main"

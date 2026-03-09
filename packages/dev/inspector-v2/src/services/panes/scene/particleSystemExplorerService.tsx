@@ -34,7 +34,7 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
 
                 return {
                     get name() {
-                        return particleSystem.name;
+                        return particleSystem.name || `Unnamed ${particleSystem.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
