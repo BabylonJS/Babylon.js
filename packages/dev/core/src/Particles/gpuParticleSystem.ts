@@ -1947,7 +1947,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             // The maximum number of particles that can be alive at once is bounded by
             // emitRate * maxLifeTime (e.g. 1000 emit/s * 0.3s = 300 particles).
             // This matches CPU particle system behavior and avoids filling the entire capacity.
-            const steadyStateCount = Math.min(Math.ceil(this.emitRate * this.maxLifeTime), this._maxActiveParticleCount);
+            // When emitRate is 0 but manualEmitCount is used, the rate-based steady state
+            // would be 0, blocking buffer growth. Use newParticles as a floor so manual
+            // emissions can always allocate slots.
+            const steadyStateCount = Math.min(Math.max(Math.ceil(this.emitRate * this.maxLifeTime), newParticles), this._maxActiveParticleCount);
 
             // During ramp-up, grow the active buffer size by adding new slots.
             // Once _currentActiveCount reaches steadyStateCount, no new slots are added —
@@ -2212,6 +2215,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         serializationObject.activeParticleCount = this.activeParticleCount;
         serializationObject.randomTextureSize = this._randomTextureSize;
+        serializationObject.emitRateControl = this._emitRateControl;
         serializationObject.customShader = this.customShader;
 
         serializationObject.preventAutoStart = this.preventAutoStart;
@@ -2247,7 +2251,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         const particleSystem = new GPUParticleSystem(
             name,
-            { capacity: capacity || parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize },
+            {
+                capacity: capacity || parsedParticleSystem.capacity,
+                randomTextureSize: parsedParticleSystem.randomTextureSize,
+                emitRateControl: parsedParticleSystem.emitRateControl,
+            },
             sceneOrEngine,
             null,
             parsedParticleSystem.isAnimationSheetEnabled
