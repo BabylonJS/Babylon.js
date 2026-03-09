@@ -603,8 +603,6 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
 
                             this._anchorMesh.addChild(this.attachedMesh);
                             if (this.incrementalSnap) {
-                                // TODO: I don't understand incrementalSnap yet
-                                // i'm guessing it needs change too but not sure how to apply them
                                 fullScale.x /= Math.abs(this._incrementalStartupValue.x) < Epsilon ? 1 : this._incrementalStartupValue.x;
                                 fullScale.y /= Math.abs(this._incrementalStartupValue.y) < Epsilon ? 1 : this._incrementalStartupValue.y;
                                 fullScale.z /= Math.abs(this._incrementalStartupValue.z) < Epsilon ? 1 : this._incrementalStartupValue.z;
@@ -612,6 +610,12 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                                 fullScale.x = Math.max(this._incrementalAnchorStartupValue.x * fullScale.x, this.scalingSnapDistance);
                                 fullScale.y = Math.max(this._incrementalAnchorStartupValue.y * fullScale.y, this.scalingSnapDistance);
                                 fullScale.z = Math.max(this._incrementalAnchorStartupValue.z * fullScale.z, this.scalingSnapDistance);
+
+                                if (this._isCenterScaleModeActive) {
+                                    fullScale.x = this._incrementalAnchorStartupValue.x + (fullScale.x - this._incrementalAnchorStartupValue.x) * 2;
+                                    fullScale.y = this._incrementalAnchorStartupValue.y + (fullScale.y - this._incrementalAnchorStartupValue.y) * 2;
+                                    fullScale.z = this._incrementalAnchorStartupValue.z + (fullScale.z - this._incrementalAnchorStartupValue.z) * 2;
+                                }
 
                                 this._anchorMesh.scaling.x += (fullScale.x - this._anchorMesh.scaling.x) * Math.abs(dragAxis.x);
                                 this._anchorMesh.scaling.y += (fullScale.y - this._anchorMesh.scaling.y) * Math.abs(dragAxis.y);
