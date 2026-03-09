@@ -44,6 +44,7 @@ export const useInputStyles = makeStyles({
     },
     inputFill: {
         width: "100%",
+        minWidth: 0,
     },
 });
 
