@@ -1629,13 +1629,15 @@ export class GaussianSplattingMesh extends Mesh {
                         // NB: We need this 'min' because vertex array is padded, not partIndices
                         const partIndex = partIndices[Math.min(j, length - 1)];
                         const mvp = modelViewProjs[partIndex];
-                        floatMix[2 * j + 1] = 10000 - (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) * depthScale;
+                        floatMix[2 * j + 1] = (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) * depthScale;
+                        indices[2 * j + 1] = ~indices[2 * j + 1]; // get rid of the minus operation to get back to front order
                     }
                 } else {
                     // If there are no rig node matrices, we use the global model view proj
                     const mvp = globalModelViewProjection;
                     for (let j = 0; j < vertexCountPadded; j++) {
-                        floatMix[2 * j + 1] = 10000 - (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) * depthScale;
+                        floatMix[2 * j + 1] = (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) * depthScale;
+                        indices[2 * j + 1] = ~indices[2 * j + 1];
                     }
                 }
 
