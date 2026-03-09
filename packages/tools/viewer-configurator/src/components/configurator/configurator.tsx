@@ -1234,6 +1234,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         toneMappingConfig.reset();
         contrastConfig.reset();
         exposureConfig.reset();
+        ssaoConfig.reset();
         cameraConfig.reset();
         autoOrbitConfig.reset();
         autoOrbitSpeedConfig.reset();
@@ -1254,6 +1255,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         toneMappingConfig.reset,
         contrastConfig.reset,
         exposureConfig.reset,
+        ssaoConfig.reset,
         cameraConfig.reset,
         autoOrbitConfig.reset,
         autoOrbitSpeedConfig.reset,
@@ -1489,7 +1491,15 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             </div>
                         </PropertyLine>
                         <PropertyLine label="SSAO (Ambient Occlusion)" uniqueId="ssao">
-                            <Dropdown options={validSSAOOptions} value={ssaoConfig.configuredState} onChange={(value) => ssaoConfig.update(value as SSAOOptions)} />
+                            <div className={classes.propertyContent}>
+                                <Dropdown
+                                    style={{ flex: 1 }}
+                                    options={validSSAOOptions}
+                                    value={ssaoConfig.configuredState}
+                                    onChange={(value) => ssaoConfig.update(value as SSAOOptions)}
+                                />
+                                <Button title="Reset SSAO" appearance="transparent" icon={DeleteRegular} disabled={!ssaoConfig.canReset} onClick={ssaoConfig.reset} />
+                            </div>
                         </PropertyLine>
                     </AccordionSection>
                     <AccordionSection title="Camera">
