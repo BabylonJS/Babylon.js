@@ -187,6 +187,16 @@
             background: rgba(243, 156, 18, 0.15);
         }
     }
+
+    .fge-ctrl-help:not(:disabled) {
+        color: rgb(100, 180, 220);
+        border-color: rgb(100, 180, 220);
+        font-weight: 700;
+
+        &:hover {
+            background: rgba(100, 180, 220, 0.2);
+        }
+    }
 }
 
 @keyframes breakpoint-pulse {

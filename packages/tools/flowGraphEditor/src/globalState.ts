@@ -24,6 +24,7 @@ import type { SceneContext } from "./sceneContext";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import type { IFlowGraphValidationResult } from "core/FlowGraph/flowGraphValidator";
 import { ValidateFlowGraphWithBlockList } from "core/FlowGraph/flowGraphValidator";
+import type { HelpTopicId } from "./components/help/helpContent";
 
 /**
  * Class used to hold the global state of the flow graph editor
@@ -63,6 +64,8 @@ export class GlobalState {
     onGetNodeFromBlock: (block: FlowGraphBlock) => GraphNode;
     /** Observable triggered when a drop event is received */
     onDropEventReceivedObservable = new Observable<DragEvent>();
+    /** Observable triggered when help dialog is requested. Payload is an optional topic id. */
+    onHelpRequested = new Observable<HelpTopicId | undefined>();
     /** Whether the pointer is over the canvas */
     pointerOverCanvas: boolean = false;
     /** Lock object for property grid */

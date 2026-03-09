@@ -29,6 +29,8 @@ import type { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import type { IFlowGraphValidationResult } from "core/FlowGraph/flowGraphValidator";
 import { FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 import { AnalyzeSmartGroup, ApplySmartGroupExposure } from "./graphSystem/smartGroup";
+import { HelpDialogComponent } from "./components/help/helpDialogComponent";
+import type { HelpTopicId } from "./components/help/helpContent";
 
 /**
  * Pre-populate string (and other primitive) config fields for blocks whose constructors
@@ -43,6 +45,7 @@ interface IGraphEditorProps {
 interface IGraphEditorState {
     message: string;
     isError: boolean;
+    helpTopicId: HelpTopicId | undefined | null;
 }
 
 /**
@@ -129,6 +132,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         this.build();
         this.props.globalState.onClearUndoStack.notifyObservers();
+
+        this.props.globalState.onHelpRequested.add((topicId) => {
+            this.setState({ helpTopicId: topicId ?? undefined });
+        });
     }
 
     /** @internal */
@@ -161,6 +168,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.state = {
             message: "",
             isError: true,
+            helpTopicId: null,
         };
 
         this._graphCanvasRef = React.createRef();
@@ -742,6 +750,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     </SplitContainer>
                 </SplitContainer>
                 <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
+                {this.state.helpTopicId !== null && (
+                    <HelpDialogComponent initialTopicId={this.state.helpTopicId ?? undefined} onClose={() => this.setState({ helpTopicId: null })} />
+                )}
                 <div className="blocker">Flow Graph Editor needs a horizontal resolution of at least 900px</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>

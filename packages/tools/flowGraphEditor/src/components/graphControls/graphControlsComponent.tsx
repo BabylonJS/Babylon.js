@@ -310,6 +310,16 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
                     ⚡
                 </button>
                 {this._renderValidationSummary()}
+                <span className="fge-ctrl-separator" />
+                <button
+                    className="fge-ctrl-btn fge-ctrl-help"
+                    title="Help"
+                    onClick={() => {
+                        this.props.globalState.onHelpRequested.notifyObservers(undefined);
+                    }}
+                >
+                    ?
+                </button>
             </div>
         );
     }
