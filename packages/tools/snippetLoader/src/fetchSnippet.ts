@@ -1,4 +1,4 @@
-import type { SnippetServerResponse } from "./types";
+import type { ISnippetServerResponse } from "./types";
 
 /** Default snippet server endpoint. */
 export const DEFAULT_SNIPPET_URL = "https://snippet.babylonjs.com";
@@ -11,7 +11,7 @@ export const DEFAULT_SNIPPET_URL = "https://snippet.babylonjs.com";
  * @param snippetUrl - Base URL of the snippet server (defaults to `https://snippet.babylonjs.com`).
  * @returns The parsed server response envelope.
  */
-export async function fetchSnippet(snippetId: string, snippetUrl: string = DEFAULT_SNIPPET_URL): Promise<SnippetServerResponse> {
+export async function fetchSnippet(snippetId: string, snippetUrl: string = DEFAULT_SNIPPET_URL): Promise<ISnippetServerResponse> {
     // Normalise "ID#revision" → "ID/revision", and ensure a revision exists.
     let path = snippetId.replace(/#/g, "/");
     if (!path.includes("/")) {
@@ -24,5 +24,5 @@ export async function fetchSnippet(snippetId: string, snippetUrl: string = DEFAU
         throw new Error(`Failed to fetch snippet "${snippetId}": ${response.status} ${response.statusText}`);
     }
 
-    return (await response.json()) as SnippetServerResponse;
+    return (await response.json()) as ISnippetServerResponse;
 }
