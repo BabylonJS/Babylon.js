@@ -18,6 +18,8 @@ import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interface
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
+import { ParseFlowGraph } from "core/FlowGraph/flowGraphParser";
+import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
@@ -60,6 +62,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
     private _historyStack: HistoryStack;
+    private _blockClassRegistry = new Map<string, typeof FlowGraphBlock>();
 
     /** @internal */
     appendBlock(dataToAppend: FlowGraphBlock | INodeData, recursion = true) {
@@ -78,19 +81,32 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     /** @internal */
     prepareHistoryStack() {
         const globalState = this.props.globalState;
-        const flowGraph = this.props.globalState.flowGraph;
 
         const dataProvider = () => {
-            SerializationTools.UpdateLocations(flowGraph, globalState);
+            const fg = globalState.flowGraph;
+            SerializationTools.UpdateLocations(fg, globalState);
             const serializationObject: any = {};
-            flowGraph.serialize(serializationObject);
+            fg.serialize(serializationObject);
+            // Include editor layout so positions are restored on undo/redo
+            serializationObject.editorData = (fg as any)._editorData;
+            // Cache block class constructors for synchronous parsing in applyUpdate
+            fg.visitAllBlocks((block) => {
+                this._blockClassRegistry.set(block.getClassName(), block.constructor as typeof FlowGraphBlock);
+            });
             return serializationObject;
         };
 
-        const applyUpdate = (_data: any) => {
+        const applyUpdate = (data: any) => {
             globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-            // Re-parse the flow graph from serialized data
-            // For now, notify a reset so the graph reloads
+            // Resolve block classes synchronously from the session-wide registry
+            const resolvedClasses = (data.allBlocks || []).map((b: any) => this._blockClassRegistry.get(b.className)!);
+            // Parse the snapshot into a new FlowGraph synchronously
+            const coordinator = new FlowGraphCoordinator({ scene: globalState.scene });
+            const parsedGraph = ParseFlowGraph(data, { coordinator }, resolvedClasses);
+            if (data.editorData) {
+                (parsedGraph as any)._editorData = data.editorData;
+            }
+            globalState.flowGraph = parsedGraph;
             globalState.onResetRequiredObservable.notifyObservers(false);
         };
 

@@ -6,6 +6,10 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 ## Critical (blocks productive work)
 
+- [ ] **Undo/redo does not restore historical state** — `applyUpdate` in `graphEditor.tsx` ignores the captured snapshot (`_data`) and only triggers a rebuild of the current graph. The NodeEditor's equivalent calls `material.parseSerializedObject(data)` before resetting; the flow graph editor skips this entirely. Ctrl/Cmd+Z and redo are non-functional. **Root cause:** `applyUpdate` drops the serialized data and fires `onResetRequiredObservable` without deserializing the snapshot first.
+
+- [ ] **Unreachable blocks lost on save/load/rebuild** — `visitAllBlocks()` walks only blocks reachable from event blocks. Both `serialize()` and `loadGraph()` rely on this traversal, so any orphaned block is silently dropped during round-trips. `UpdateLocations` in `serializationTools.ts` has the same blind spot. This is data loss in an editor that explicitly validates unreachable nodes. **Root cause:** `flowGraph.ts` `visitAllBlocks()` starts from `_eventBlocks` only; serialization and editor load both use it exclusively.
+
 - [x] **No Copy/Paste or Duplicate** — Can't duplicate blocks or groups of blocks. The keyboard handler has a placeholder that returns `null`. Users end up rebuilding identical subgraphs manually. _(Implemented — Ctrl+C/V clones blocks with config and default values; Ctrl+G creates smart groups with auto-exposed ports)_
 
 - [x] **No runtime data inspection / value probes** — When the graph is running in the preview, there's no way to see what values are flowing through connections. Debug support is explicitly disabled (`RegisterDebugSupport` returns false). _(Implemented)_
@@ -13,6 +17,8 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 - [x] **No graph validation before execution** — No check for unconnected required inputs, type mismatches, or unreachable blocks. The graph just fails silently at runtime. _(Implemented)_
 
 ## High (significantly impacts experience)
+
+- [ ] **Delete removes visual node but not underlying flow-graph block** — The removal callback passed to `handleKeyDownAsync` is a no-op. While `GraphNode.dispose()` severs connections (making non-event blocks unreachable), deleting an **event block** leaves it in `FlowGraph._eventBlocks` — it keeps executing and reappears on the next rebuild. **Root cause:** the `onRemove` callback in `graphEditor.tsx` does not call any FlowGraph API to unregister the block.
 
 - [x] **No breakpoints or step-through execution** — You can Start/Pause/Stop the graph, but can't set a breakpoint on a block to pause there. Step-through execution would be invaluable for understanding complex control flow (ForLoop, Switch, MultiGate). _(Implemented)_
 
@@ -46,6 +52,8 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 ## Medium (quality-of-life improvements)
 
+- [ ] **Reset hangs indefinitely if snippet reload fails** — `_onResetAsync` creates a promise that resolves only when `onSceneContextChanged` fires with a truthy context. If snippet loading fails, the error is handled locally in `scenePreviewComponent.tsx` without firing the observable, so the await never completes. **Root cause:** no timeout, rejection, or failure-notification path for the snippet reload promise in `graphControlsComponent.tsx`.
+
 - [x] **No inline editing of numeric values on the canvas** — Other Babylon.js editors (NME, NGE, NPE) allow editing numeric defaults directly on the node via inline widgets. The flow graph editor required using the property panel for all value edits. _(Implemented — `ConnectionPointPortData.directValueDefinition` now exposes Number and Integer input ports for inline editing via the shared `BuildFloatUI` widget.)_
 
 - [ ] **No floating comment/note annotations** — Block-level comments exist, but free-floating sticky notes can't be placed on the canvas to document sections of the graph.
@@ -59,6 +67,8 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 - [ ] **No export/import of subgraphs** — Frame export exists, but there's no library/template system to save reusable subgraphs and import them into other flow graphs.
 
 ## Low (nice to have)
+
+- [ ] **Canvas reset may leak link observers (likely false positive)** — `GraphCanvas.reset()` clears the `_links` array without explicit `dispose()` on each link. However, `reset()` disposes all nodes first, and `GraphNode.dispose()` cascades into `NodeLink.dispose()` for every attached link. The only theoretical leak is a link in the canvas array not referenced by any node, which is not a normal state. Low priority unless strange selection behavior is observed after many rebuilds.
 
 - [ ] **No zoom slider or zoom-level indicator** — Users can scroll to zoom, but there's no visible zoom percentage or slider control.
 
