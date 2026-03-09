@@ -15,11 +15,6 @@ export function getBabylonServerTestsList() {
             testMatch: "**/*webgl2.test.ts",
             use: getUseDefinition("WebGL2"),
         },
-        {
-            name: "webgl2-largeWorld",
-            testMatch: "**/*webgl2-largeWorld.test.ts",
-            use: getUseDefinition("WebGL2"),
-        },
         // {
         //     name: "webgl1",
         //     testMatch: "**/*webgl1.test.ts",
@@ -47,11 +42,6 @@ export function getBabylonServerTestsList() {
         {
             name: "webgpu",
             testMatch: "**/*webgpu.test.ts",
-            use: getUseDefinition("WebGPU", "Chrome", false, true),
-        },
-        {
-            name: "webgpu-largeWorld",
-            testMatch: "**/*webgpu-largeWorld.test.ts",
             use: getUseDefinition("WebGPU", "Chrome", false, true),
         },
         {
@@ -93,6 +83,20 @@ export function getBabylonServerTestsList() {
             name: "audioV2",
             testMatch: "**/audioV2/*.test.ts",
             use: getUseDefinition("AudioV2"),
+        },
+        // Back-compatibility: these projects existed when large-world tests ran as separate suites.
+        // Engine options like useLargeWorldRendering are now configured per-test, so these projects
+        // have no matching test files. Kept so that any CI config or script referencing them by name
+        // continues to work (Playwright silently runs zero tests for an empty match).
+        {
+            name: "webgl2-largeWorld",
+            testMatch: "**/_no-match_",
+            use: getUseDefinition("WebGL2"),
+        },
+        {
+            name: "webgpu-largeWorld",
+            testMatch: "**/_no-match_",
+            use: getUseDefinition("WebGPU", "Chrome", false, true),
         },
     ];
 }

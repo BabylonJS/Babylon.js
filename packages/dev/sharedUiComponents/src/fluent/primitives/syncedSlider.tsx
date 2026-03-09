@@ -142,6 +142,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                     value={value}
                     onChange={handleInputChange}
                     step={props.step}
+                    disabled={props.disabled}
                     disableDragButton
                 />
             </div>
