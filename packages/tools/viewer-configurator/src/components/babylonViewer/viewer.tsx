@@ -69,7 +69,7 @@ export const Viewer: FunctionComponent<{
 
     return (
         <configured-babylon-viewer
-            className={classes.viewerElement}
+            class={classes.viewerElement}
             ref={(element: ViewerElement | null) => {
                 if (element) {
                     element.addEventListener("viewerready", () => {
