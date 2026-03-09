@@ -170,7 +170,7 @@ export class ExtrudeGeometryBlock extends NodeGeometryBlock {
             }
 
             // Collect boundary edges with winding info
-            const boundaryEdges: { a: number; b: number; orderedAB: boolean }[] = [];
+            const boundaryEdges: { a: number; b: number; orderedAb: boolean }[] = [];
             for (const [key, value] of edgeCount) {
                 if (value.count === 1) {
                     const parts = key.split("_");
@@ -189,7 +189,7 @@ export class ExtrudeGeometryBlock extends NodeGeometryBlock {
                         inOrder = true;
                     }
 
-                    boundaryEdges.push({ a: minV, b: maxV, orderedAB: inOrder });
+                    boundaryEdges.push({ a: minV, b: maxV, orderedAb: inOrder });
                 }
             }
 
@@ -201,7 +201,7 @@ export class ExtrudeGeometryBlock extends NodeGeometryBlock {
                 const aTop = a + vertexCount;
                 const bTop = b + vertexCount;
 
-                if (edge.orderedAB) {
+                if (edge.orderedAb) {
                     // Edge appears as (a, b) in triangle — outward normals
                     sideIndices.push(a, b, bTop);
                     sideIndices.push(a, bTop, aTop);
