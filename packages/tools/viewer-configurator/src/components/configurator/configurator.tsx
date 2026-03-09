@@ -1339,11 +1339,11 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             </LineContainer>
                         </AccordionSection>
                         <AccordionSection title="Environment">
-                            <MessageBar
-                                message="The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each."
-                                intent="info"
-                            />
-                            <PropertyLine label="Sync Lighting & Skybox" uniqueId="sync-env">
+                            <PropertyLine
+                                label="Sync Lighting & Skybox"
+                                uniqueId="sync-env"
+                                description="The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each."
+                            >
                                 <Switch value={syncEnvironment} onChange={onSyncEnvironmentChanged} />
                             </PropertyLine>
                             <LineContainer uniqueId="lighting-url">
@@ -1679,13 +1679,13 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             </AccordionSection>
                         )}
                         <AccordionSection title="Hot Spots">
-                            <MessageBar
-                                message="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the
+                            <PropertyLine
+                                label="Hot Spot Type"
+                                uniqueId="hotspot-type"
+                                description="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the
                                     model to choose the surface point. After the hotspot point has been selected, optionally orbit the camera to the desired pose and then click the
                                     camera button. Annotations are optional child html elements that track a hotspot, and samples are included in the html snippet."
-                                intent="info"
-                            />
-                            <PropertyLine label="Hot Spot Type" uniqueId="hotspot-type">
+                            >
                                 <div className={classes.propertyContent}>
                                     <Dropdown className={classes.fillControl} options={HotSpotTypeOptions} value="surface" onChange={() => {}} />
                                     <Button title="Add Hot Spot" appearance="transparent" icon={AddSquareRegular} onClick={onAddHotspotClick} />
