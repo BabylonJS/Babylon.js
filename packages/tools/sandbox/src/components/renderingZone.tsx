@@ -222,39 +222,39 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         const { worldMin, worldMax } = this._getSceneExtents();
         const center = Vector3.Center(worldMin, worldMax);
         const radius = Math.max(Vector3.Distance(worldMin, worldMax) * 1.5, 1);
+        const defaultPos = this.props.globalState.cameraPosition ?? new Vector3(center.x, center.y, worldMin.z - radius);
+        const nearPlane = radius * 0.001;
+        const farPlane = radius * 100;
 
         switch (type) {
             case "FirstPerson": {
-                const pos = this.props.globalState.cameraPosition ?? new Vector3(center.x, center.y, worldMin.z - radius);
-                const camera = new UniversalCamera("default camera", pos, scene);
+                const camera = new UniversalCamera("default camera", defaultPos, scene);
                 scene.activeCamera = camera;
                 camera.setTarget(center);
                 camera.speed = radius * 0.1;
-                camera.minZ = radius * 0.001;
-                camera.maxZ = radius * 100;
+                camera.minZ = nearPlane;
+                camera.maxZ = farPlane;
                 return camera;
             }
             case "ThirdPerson": {
-                const pos = this.props.globalState.cameraPosition ?? new Vector3(center.x, center.y, worldMin.z - radius);
-                const camera = new FollowCamera("default camera", pos, scene);
+                const camera = new FollowCamera("default camera", defaultPos, scene);
                 scene.activeCamera = camera;
                 camera.radius = radius * 0.5;
                 camera.heightOffset = radius * 0.3;
                 camera.rotationOffset = 0;
-                camera.minZ = radius * 0.001;
-                camera.maxZ = radius * 100;
+                camera.minZ = nearPlane;
+                camera.maxZ = farPlane;
                 if (scene.meshes.length) {
                     camera.lockedTarget = scene.meshes[0];
                 }
                 return camera;
             }
             case "Target": {
-                const pos = this.props.globalState.cameraPosition ?? new Vector3(center.x, center.y, worldMin.z - radius);
-                const camera = new TargetCamera("default camera", pos, scene);
+                const camera = new TargetCamera("default camera", defaultPos, scene);
                 scene.activeCamera = camera;
                 camera.setTarget(center);
-                camera.minZ = radius * 0.001;
-                camera.maxZ = radius * 100;
+                camera.minZ = nearPlane;
+                camera.maxZ = farPlane;
                 return camera;
             }
             case "ArcRotate":

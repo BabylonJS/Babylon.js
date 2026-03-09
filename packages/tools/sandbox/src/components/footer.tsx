@@ -126,8 +126,9 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
         const hasCameras = this._cameraNames.length > 1;
         const sceneLoaded = !!this.props.globalState.currentScene;
 
-        // Determine footer class based on which controls are present
-        // Base size accounts for: Open + Environment + Inspector + CameraType (always shown when scene loaded)
+        // Determine footer class based on which controls are present.
+        // The right column always shows: Open + Environment + Inspector + CameraType.
+        // Additional width classes are added when scene-specific selectors (cameras, variants) are present.
         let footerClass = "footer";
         if (hasCameras && hasVariants) {
             footerClass += " longer";
