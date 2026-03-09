@@ -1,6 +1,7 @@
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
+import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 import type { Nullable } from "core/types";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
@@ -15,6 +16,18 @@ export type FlowGraphConnectionPoint = FlowGraphDataConnection<any> | FlowGraphS
 export class ConnectionPointPortData implements IPortData {
     private _connectedPort: Nullable<IPortData> = null;
     private _nodeContainer: INodeContainer;
+
+    /**
+     * Map of input type names to arrays of output type names they can additionally accept
+     * (beyond same-type and Any connections).
+     */
+    private static readonly _ACCEPTED_INPUT_TYPES: Record<string, string[]> = {
+        // Quaternion's typeTransformer can accept Vector4, Vector3, Matrix
+        [FlowGraphTypes.Quaternion]: [FlowGraphTypes.Vector4, FlowGraphTypes.Vector3, FlowGraphTypes.Matrix],
+        // Number and Integer are interchangeable
+        [FlowGraphTypes.Number]: [FlowGraphTypes.Integer],
+        [FlowGraphTypes.Integer]: [FlowGraphTypes.Number],
+    };
 
     /** The underlying flow graph connection point */
     public data: FlowGraphConnectionPoint;
@@ -185,13 +198,63 @@ export class ConnectionPointPortData implements IPortData {
     }
 
     /**
+     * Check if the data types of two data ports are compatible for connection.
+     * @param port - the other port to check against
+     * @returns true if types are compatible
+     */
+    private _areDataTypesCompatible(port: IPortData): boolean {
+        const otherPort = port as ConnectionPointPortData;
+
+        // Only check data connections
+        if (this.connectionKind !== "data" || otherPort.connectionKind !== "data") {
+            return true;
+        }
+
+        const thisData = this.data as FlowGraphDataConnection<any>;
+        const otherData = otherPort.data as FlowGraphDataConnection<any>;
+
+        const thisType = thisData.richType.typeName;
+        const otherType = otherData.richType.typeName;
+
+        // Any is compatible with everything
+        if (thisType === FlowGraphTypes.Any || otherType === FlowGraphTypes.Any) {
+            return true;
+        }
+
+        // Same type is always compatible
+        if (thisType === otherType) {
+            return true;
+        }
+
+        // Determine which is input and which is output
+        const inputPort = this.direction === PortDataDirection.Input ? this : otherPort;
+        const outputPort = this.direction === PortDataDirection.Output ? this : otherPort;
+        const inputData = inputPort.data as FlowGraphDataConnection<any>;
+        const outputData = outputPort.data as FlowGraphDataConnection<any>;
+
+        const inputType = inputData.richType.typeName;
+        const outputType = outputData.richType.typeName;
+
+        // Check if the input type can accept the output type via typeTransformer
+        const acceptedTypes = ConnectionPointPortData._ACCEPTED_INPUT_TYPES[inputType];
+        if (acceptedTypes && acceptedTypes.indexOf(outputType) !== -1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Check the compatibility state between this port and another.
      * @param port - the target port to check
-     * @returns 0 if compatible, 1 if incompatible
+     * @returns 0 if compatible, 1 if direction/kind incompatible, 2 if type mismatch
      */
     public checkCompatibilityState(port: IPortData) {
         if (!this.canConnectTo(port)) {
-            return 1; // incompatible
+            return 1; // incompatible direction or kind
+        }
+        if (!this._areDataTypesCompatible(port)) {
+            return 2; // data type mismatch
         }
         return 0; // compatible
     }
@@ -207,6 +270,11 @@ export class ConnectionPointPortData implements IPortData {
         switch (issue) {
             case 1:
                 return "Incompatible connection types";
+            case 2: {
+                const thisData = this.data as FlowGraphDataConnection<any>;
+                const otherData = _targetPort.data as FlowGraphDataConnection<any>;
+                return `Type mismatch: cannot connect ${thisData.richType.typeName} to ${otherData.richType.typeName}`;
+            }
             default:
                 return "";
         }

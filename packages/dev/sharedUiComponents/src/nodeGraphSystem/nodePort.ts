@@ -173,10 +173,19 @@ export class NodePort {
 
             if (!coords || rect.left > coords.x || rect.right < coords.x || rect.top > coords.y || rect.bottom < coords.y) {
                 this._element.classList.remove(localStyles["selected"]);
+                this._element.classList.remove(localStyles["incompatible"]);
                 return;
             }
 
-            this._element.classList.add(localStyles["selected"]);
+            // Check type compatibility with the source port being dragged
+            const sourcePortData = this._stateManager.candidateSourcePortData;
+            if (sourcePortData && sourcePortData.checkCompatibilityState(this.portData) !== 0) {
+                this._element.classList.add(localStyles["incompatible"]);
+                this._element.classList.remove(localStyles["selected"]);
+            } else {
+                this._element.classList.add(localStyles["selected"]);
+                this._element.classList.remove(localStyles["incompatible"]);
+            }
             this._stateManager.onCandidatePortSelectedObservable.notifyObservers(this);
         });
 

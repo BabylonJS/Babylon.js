@@ -1083,6 +1083,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     this._candidateLink = new NodeLink(this, portElement, portElement.node);
                 }
                 this._candidateLinkedHasMoved = false;
+                this.stateManager.candidateSourcePortData = this._candidateLink!.portA.portData;
             }
             return;
         }
@@ -1160,6 +1161,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._candidateLink.dispose();
             this._candidateLink = null;
             this._candidatePort = null;
+            this.stateManager.candidateSourcePortData = null;
         }
 
         if (this._selectionBox) {

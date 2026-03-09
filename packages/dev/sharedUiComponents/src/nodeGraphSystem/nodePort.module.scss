@@ -2,6 +2,11 @@
     filter: brightness(2);
 }
 
+.incompatible {
+    box-shadow: 0 0 8px 3px rgba(255, 60, 60, 0.8);
+    filter: brightness(0.7) saturate(0.3);
+}
+
 .pip {
     background: green;
     width: 6px;

@@ -159,6 +159,26 @@ Click the **Live Validation** toggle (⚡) to enable automatic validation whenev
 
 Validation issues include the block name, severity (error/warning), and a descriptive message.
 
+### Connection Type Compatibility
+
+The editor enforces data type compatibility when connecting ports. Each data port has a **rich type** (e.g., Number, Vector3, Boolean) shown by its color. When dragging a connection:
+
+- **Compatible ports** glow bright when hovered (brightness boost).
+- **Incompatible ports** glow red and appear dimmed when hovered, indicating the connection will be rejected.
+
+If you release the mouse on an incompatible port, an error dialog explains the type mismatch (e.g., "Type mismatch: cannot connect Vector3 to number").
+
+**Compatibility rules:**
+
+| Source type | Accepted by |
+|---|---|
+| Any | All types (wildcard) |
+| Same type | Always compatible |
+| Number ↔ Integer | Interchangeable |
+| Vector3, Vector4, Matrix → Quaternion | Accepted via type transformer |
+
+Signal ports (execution flow) have no type restrictions — any signal output can connect to any signal input.
+
 ---
 
 ## Keyboard Shortcuts
