@@ -7,7 +7,7 @@ import type { DropdownOption } from "shared-ui-components/fluent/primitives/drop
 import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { makeStyles, tokens, MessageBar, MessageBarBody, Textarea } from "@fluentui/react-components";
+import { makeStyles, tokens, Textarea } from "@fluentui/react-components";
 import {
     QuestionCircleRegular,
     TargetRegular,
@@ -25,6 +25,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FunctionCompone
 
 import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { AccordionSection, Accordion } from "shared-ui-components/fluent/primitives/accordion";
+import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { LineContainer, PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { ColorPickerPopup } from "shared-ui-components/fluent/primitives/colorPicker";
@@ -1288,11 +1289,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                     <PropertyLine label="Format" uniqueId="output-format">
                         <Dropdown options={OutputOptions} value={outputFormat} onChange={(value) => setOutputFormat(value as OutputFormat)} />
                     </PropertyLine>
-                    <MessageBar>
-                        <MessageBarBody>
-                            {outputFormat === "html" ? "The HTML snippet can be used directly in a web page." : "The JSON snippet can be used as the Viewer options."}
-                        </MessageBarBody>
-                    </MessageBar>
+                    <MessageBar
+                        message={outputFormat === "html" ? "The HTML snippet can be used directly in a web page." : "The JSON snippet can be used as the Viewer options."}
+                        intent="info"
+                    />
                     <Textarea
                         value={outputFormat === "html" ? htmlSnippet : jsonSnippet}
                         readOnly
@@ -1320,11 +1320,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             </LineContainer>
                         </AccordionSection>
                         <AccordionSection title="Environment">
-                            <MessageBar>
-                                <MessageBarBody>
-                                    The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each.
-                                </MessageBarBody>
-                            </MessageBar>
+                            <MessageBar
+                                message="The same environment can be used for both image based lighting (IBL) and the skybox, or different environments can be used for each."
+                                intent="info"
+                            />
                             <PropertyLine label="Sync Lighting & Skybox" uniqueId="sync-env">
                                 <Switch value={syncEnvironment} onChange={onSyncEnvironmentChanged} />
                             </PropertyLine>
@@ -1517,9 +1516,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             </PropertyLine>
                         </AccordionSection>
                         <AccordionSection title="Camera">
-                            <MessageBar>
-                                <MessageBarBody>Position the camera in the viewer, and then click the button below to add the camera pose to the html snippet.</MessageBarBody>
-                            </MessageBar>
+                            <MessageBar message="Position the camera in the viewer, and then click the button below to add the camera pose to the html snippet." intent="info" />
                             <LineContainer uniqueId="camera-pose">
                                 <div className={classes.propertyContent}>
                                     <Button style={{ flex: 1 }} label="Use Current Pose" onClick={cameraConfig.snapshot} />
@@ -1587,11 +1584,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                         </AccordionSection>
                         {hasAnimations && (
                             <AccordionSection title="Animation">
-                                <MessageBar>
-                                    <MessageBarBody>
-                                        Select the animation and animation speed in the viewer, and then click the button below to add those selections to the html snippet.
-                                    </MessageBarBody>
-                                </MessageBar>
+                                <MessageBar
+                                    message="Select the animation and animation speed in the viewer, and then click the button below to add those selections to the html snippet."
+                                    intent="info"
+                                />
                                 <LineContainer uniqueId="animation-state">
                                     <div className={classes.propertyContent}>
                                         <Button style={{ flex: 1 }} label="Use Current Selections" onClick={animationStateConfig.snapshot} disabled={!hasAnimations} />
@@ -1618,11 +1614,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                         )}
                         {hasMaterialVariants && (
                             <AccordionSection title="Material Variants">
-                                <MessageBar>
-                                    <MessageBarBody>
-                                        Select the material variant the viewer, and then click the button below to add that selection to the html snippet.
-                                    </MessageBarBody>
-                                </MessageBar>
+                                <MessageBar
+                                    message="Select the material variant the viewer, and then click the button below to add that selection to the html snippet."
+                                    intent="info"
+                                />
                                 <LineContainer uniqueId="material-variant-state">
                                     <div className={classes.propertyContent}>
                                         <Button
@@ -1650,13 +1645,12 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             </AccordionSection>
                         )}
                         <AccordionSection title="Hot Spots">
-                            <MessageBar>
-                                <MessageBarBody>
-                                    Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the
+                            <MessageBar
+                                message="Surface hot spots track a point on the surface of a mesh. After adding a surface hot spot, click the target button and then click a point on the
                                     model to choose the surface point. After the hotspot point has been selected, optionally orbit the camera to the desired pose and then click the
-                                    camera button. Annotations are optional child html elements that track a hotspot, and samples are included in the html snippet.
-                                </MessageBarBody>
-                            </MessageBar>
+                                    camera button. Annotations are optional child html elements that track a hotspot, and samples are included in the html snippet."
+                                intent="info"
+                            />
                             <PropertyLine label="Hot Spot Type" uniqueId="hotspot-type">
                                 <div className={classes.propertyContent}>
                                     <Dropdown style={{ flex: 1 }} options={HotSpotTypeOptions} value="surface" onChange={() => {}} />
