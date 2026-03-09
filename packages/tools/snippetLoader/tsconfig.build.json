@@ -3,13 +3,7 @@
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
-        "declarationDir": "./dist",
-        "paths": {
-            "@dev/core": ["../../dev/core/src"]
-        }
+        "declarationDir": "./dist"
     },
-    "include": ["./src/**/*"],
-    "references": [
-        { "path": "../../dev/core/tsconfig.build.json" }
-    ]
+    "include": ["./src/**/*"]
 }

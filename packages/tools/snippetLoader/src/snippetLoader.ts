@@ -1,4 +1,3 @@
-import { DecodeBase64ToBinary } from "@dev/core";
 import type {
     ISnippetServerResponse,
     SnippetContentType,
@@ -50,8 +49,7 @@ function DecodeBase64ToBinaryLegacy(base64Data: string): ArrayBuffer {
  * @returns The decoded JavaScript string.
  */
 function DecodeBase64ToString(base64Data: string): string {
-    const decode = DecodeBase64ToBinary ?? DecodeBase64ToBinaryLegacy;
-    const bytes = new Uint8Array(decode(base64Data));
+    const bytes = new Uint8Array(DecodeBase64ToBinaryLegacy(base64Data));
     return new TextDecoder("utf-8").decode(bytes);
 }
 
