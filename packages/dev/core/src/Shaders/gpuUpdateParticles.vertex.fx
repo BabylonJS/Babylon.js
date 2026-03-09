@@ -187,8 +187,9 @@ vec4 getRandomVec4(float offset) {
 }
 
 void main() {
-  float newAge = age + timeDelta;    
+  float newAge = age + timeDelta;
 
+#ifdef EMITRATECTRL
   // Check if this particle is in the emit range for this frame
   float particleIndex = float(gl_VertexID);
   float offsetFromEmitIndex = particleIndex - emitIndex;
@@ -196,6 +197,10 @@ void main() {
     offsetFromEmitIndex += currentCount; // wrap around circular buffer
   }
   bool shouldEmit = offsetFromEmitIndex < emitCount && stopFactor != 0.;
+#else
+  // Legacy mode: recycle dead particles immediately
+  bool shouldEmit = newAge >= life && stopFactor != 0.;
+#endif
 
   if (shouldEmit) {
     vec3 newPosition;
@@ -206,7 +211,11 @@ void main() {
 
     // Age and life
     outLife = lifeTime.x + (lifeTime.y - lifeTime.x) * randoms.r;
+#ifdef EMITRATECTRL
     outAge = 0.0;
+#else
+    outAge = newAge - life;
+#endif
 
     // Seed
     outSeed = seed;
