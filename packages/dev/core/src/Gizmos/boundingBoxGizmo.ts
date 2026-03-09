@@ -142,6 +142,8 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     private _tmpRotationMatrix = new Matrix();
     private _incrementalStartupValue = Vector3.Zero();
     private _incrementalAnchorStartupValue = Vector3.Zero();
+    private _isCenterScaleModeActive = false;
+    private _centerScaleKeyHandlers: Nullable<{ down: (e: KeyboardEvent) => void; up: (e: KeyboardEvent) => void }> = null;
 
     /**
      * If child meshes should be ignored when calculating the bounding box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
@@ -578,13 +580,14 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                             fullScale.addInPlace(this._incrementalStartupValue);
 
                             this.updateBoundingBox();
-                            if (this.scalePivot) {
+                            if (this._isCenterScaleModeActive || this.scalePivot) {
+                                const pivot = this._isCenterScaleModeActive ? new Vector3(0.5, 0.5, 0.5) : this.scalePivot!;
                                 this.attachedMesh.getWorldMatrix().getRotationMatrixToRef(this._tmpRotationMatrix);
                                 // Move anchor to desired pivot point (Bottom left corner + dimension/2)
                                 this._boundingDimensions.scaleToRef(0.5, this._tmpVector);
                                 Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpRotationMatrix, this._tmpVector);
                                 this._anchorMesh.position.subtractInPlace(this._tmpVector);
-                                this._boundingDimensions.multiplyToRef(this.scalePivot, this._tmpVector);
+                                this._boundingDimensions.multiplyToRef(pivot, this._tmpVector);
                                 Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpRotationMatrix, this._tmpVector);
                                 this._anchorMesh.position.addInPlace(this._tmpVector);
                             } else {
@@ -598,6 +601,8 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
 
                             this._anchorMesh.addChild(this.attachedMesh);
                             if (this.incrementalSnap) {
+                                // TODO: I don't understand incrementalSnap yet
+                                // i'm guessing it needs change too but not sure how to apply them
                                 fullScale.x /= Math.abs(this._incrementalStartupValue.x) < Epsilon ? 1 : this._incrementalStartupValue.x;
                                 fullScale.y /= Math.abs(this._incrementalStartupValue.y) < Epsilon ? 1 : this._incrementalStartupValue.y;
                                 fullScale.z /= Math.abs(this._incrementalStartupValue.z) < Epsilon ? 1 : this._incrementalStartupValue.z;
@@ -610,9 +615,21 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                                 this._anchorMesh.scaling.y += (fullScale.y - this._anchorMesh.scaling.y) * Math.abs(dragAxis.y);
                                 this._anchorMesh.scaling.z += (fullScale.z - this._anchorMesh.scaling.z) * Math.abs(dragAxis.z);
                             } else {
-                                this._anchorMesh.scaling.addInPlace(deltaScale);
-                                if (this._anchorMesh.scaling.x < 0 || this._anchorMesh.scaling.y < 0 || this._anchorMesh.scaling.z < 0) {
-                                    this._anchorMesh.scaling.subtractInPlace(deltaScale);
+                                // Compute absolute scale from total drag distance so modifier toggles mid-drag work retroactively
+                                const scaleMultiplier = this._isCenterScaleModeActive ? 2 : 1;
+                                const totalScale = totalRelativeDragDistance * this._scaleDragSpeed * scaleMultiplier;
+                                const newAnchorScale = this._incrementalAnchorStartupValue.clone();
+                                if (zeroAxisCount === 2) {
+                                    newAnchorScale.x += totalScale * Math.abs(dragAxis.x) * this._axisFactor.x;
+                                    newAnchorScale.y += totalScale * Math.abs(dragAxis.y) * this._axisFactor.y;
+                                    newAnchorScale.z += totalScale * Math.abs(dragAxis.z) * this._axisFactor.z;
+                                } else {
+                                    newAnchorScale.x += totalScale * this._axisFactor.x;
+                                    newAnchorScale.y += totalScale * this._axisFactor.y;
+                                    newAnchorScale.z += totalScale * this._axisFactor.z;
+                                }
+                                if (newAnchorScale.x > 0 && newAnchorScale.y > 0 && newAnchorScale.z > 0) {
+                                    this._anchorMesh.scaling.copyFrom(newAnchorScale);
                                 }
                             }
                             this._anchorMesh.removeChild(this.attachedMesh);
@@ -646,6 +663,21 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             }
         }
         this._rootMesh.addChild(this._scaleBoxesParent);
+
+        // Keyboard listeners for center-scale mode (Ctrl on Windows, Opt/Alt on Mac)
+        const onKeyDown = (evt: KeyboardEvent) => {
+            if (evt.ctrlKey || evt.altKey) {
+                this._isCenterScaleModeActive = true;
+            }
+        };
+        const onKeyUp = (evt: KeyboardEvent) => {
+            if (!evt.ctrlKey && !evt.altKey) {
+                this._isCenterScaleModeActive = false;
+            }
+        };
+        window.addEventListener("keydown", onKeyDown);
+        window.addEventListener("keyup", onKeyUp);
+        this._centerScaleKeyHandlers = { down: onKeyDown, up: onKeyUp };
 
         // Hover color change
         const pointerIds: AbstractMesh[] = [];
@@ -980,6 +1012,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     public override dispose() {
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
+        if (this._centerScaleKeyHandlers) {
+            window.removeEventListener("keydown", this._centerScaleKeyHandlers.down);
+            window.removeEventListener("keyup", this._centerScaleKeyHandlers.up);
+            this._centerScaleKeyHandlers = null;
+        }
         this._lineBoundingBox.dispose();
         this._rotateAnchorsParent.dispose();
         this._scaleBoxesParent.dispose();
