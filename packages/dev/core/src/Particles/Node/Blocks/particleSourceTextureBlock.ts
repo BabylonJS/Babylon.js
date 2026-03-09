@@ -101,6 +101,22 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the texture set on this block.
+     * This value will not be serialized.
+     */
+    public get texture(): Nullable<BaseTexture> {
+        return this.sourceTexture;
+    }
+
+    /**
+     * Sets the texture to be used by this block.
+     * This value will not be serialized.
+     */
+    public set texture(value: Nullable<BaseTexture>) {
+        this.sourceTexture = value;
+    }
+
+    /**
      * Create a new ParticleTextureSourceBlock
      * @param name defines the block name
      */
@@ -116,20 +132,6 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
      */
     public override getClassName() {
         return "ParticleTextureSourceBlock";
-    }
-
-    /**
-     * Gets the texture set on this block.
-     */
-    public get texture(): Nullable<BaseTexture> {
-        return this.sourceTexture;
-    }
-
-    /**
-     * Sets the texture to be used by this block.
-     */
-    public set texture(value: Nullable<BaseTexture>) {
-        this.sourceTexture = value;
     }
 
     /**
