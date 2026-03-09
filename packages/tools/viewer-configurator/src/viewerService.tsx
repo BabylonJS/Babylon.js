@@ -66,11 +66,11 @@ export const ViewerServiceDefinition: ServiceDefinition<[IViewerService], [IShel
 
             // Set up drag-and-drop model loading.
             dragOverHandler = (event: DragEvent) => event.preventDefault();
-            dropHandler = async (event: DragEvent) => {
+            dropHandler = (event: DragEvent) => {
                 const files = event.dataTransfer?.files;
                 if (files) {
                     event.preventDefault();
-                    await LoadModel(element, files);
+                    void LoadModel(element, files);
                 }
             };
             element.addEventListener("dragover", dragOverHandler);
@@ -157,4 +157,3 @@ export const ViewerServiceDefinition: ServiceDefinition<[IViewerService], [IShel
         } satisfies IViewerService & IDisposable;
     },
 };
-
