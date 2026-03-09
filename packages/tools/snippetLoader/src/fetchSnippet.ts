@@ -1,6 +1,7 @@
 import type { ISnippetServerResponse } from "./types";
 
 /** Default snippet server endpoint. */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const DEFAULT_SNIPPET_URL = "https://snippet.babylonjs.com";
 
 /**
@@ -11,7 +12,7 @@ export const DEFAULT_SNIPPET_URL = "https://snippet.babylonjs.com";
  * @param snippetUrl - Base URL of the snippet server (defaults to `https://snippet.babylonjs.com`).
  * @returns The parsed server response envelope.
  */
-export async function fetchSnippet(snippetId: string, snippetUrl: string = DEFAULT_SNIPPET_URL): Promise<ISnippetServerResponse> {
+export async function FetchSnippet(snippetId: string, snippetUrl: string = DEFAULT_SNIPPET_URL): Promise<ISnippetServerResponse> {
     // Normalise "ID#revision" → "ID/revision", and ensure a revision exists.
     let path = snippetId.replace(/#/g, "/");
     if (!path.includes("/")) {

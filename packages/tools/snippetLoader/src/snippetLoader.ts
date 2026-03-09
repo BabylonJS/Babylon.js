@@ -16,7 +16,7 @@ import type {
     IInitializeRuntimeOptions,
 } from "./types";
 import { DefaultRuntimeBaseUrl, RuntimeScriptPaths } from "./types";
-import { fetchSnippet, DEFAULT_SNIPPET_URL } from "./fetchSnippet";
+import { FetchSnippet, DEFAULT_SNIPPET_URL } from "./fetchSnippet";
 // Monaco bundles a browser-safe TypeScript (require = void 0) that avoids
 // Node.js builtins.  We only need the compiler API, not the editor.
 import { typescript as ts } from "monaco-editor/esm/vs/language/typescript/lib/typescriptServices";
@@ -1059,7 +1059,7 @@ export interface ILoadSnippetOptions {
  * ```
  */
 export async function LoadSnippet(snippetId: string, options?: ILoadSnippetOptions): Promise<SnippetResult> {
-    const serverResponse = await fetchSnippet(snippetId, options?.snippetUrl ?? DEFAULT_SNIPPET_URL);
+    const serverResponse = await FetchSnippet(snippetId, options?.snippetUrl ?? DEFAULT_SNIPPET_URL);
     return await ParseSnippetResponse(serverResponse, snippetId, options);
 }
 
