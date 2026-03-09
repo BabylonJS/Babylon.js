@@ -281,7 +281,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     );
 
     const contentBefore =
-        !props.disableDragButton && (isHovered || isDragging) && !isInputInvalid ? (
+        !props.disableDragButton && !props.disabled && (isHovered || isDragging) && !isInputInvalid ? (
             <ArrowBidirectionalUpDownFilled
                 className={classes.icon}
                 style={{ cursor: isDragging ? "ns-resize" : "pointer" }}
@@ -309,6 +309,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
                 className={mergedClassName}
                 input={{ className: inputSlotClassName }}
                 value={isEditing ? editText : formattedValue}
+                disabled={props.disabled}
                 onChange={handleInputChange}
                 onFocus={handleFocus}
                 onKeyDown={handleKeyDown}

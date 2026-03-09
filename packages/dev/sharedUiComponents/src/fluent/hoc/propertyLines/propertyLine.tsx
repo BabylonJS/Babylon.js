@@ -34,6 +34,7 @@ const usePropertyLineStyles = makeStyles({
         display: "flex",
         flex: "1 1 0", // grow=1, shrink =1, basis = 0 initial size before
         minWidth: CustomTokens.labelMinWidth,
+        overflow: "hidden",
         textAlign: "left",
     },
     rightContent: {
