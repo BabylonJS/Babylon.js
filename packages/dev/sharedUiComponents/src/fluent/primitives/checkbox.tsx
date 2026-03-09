@@ -30,5 +30,5 @@ export const Checkbox: FunctionComponent<PrimitiveProps<boolean>> = (props) => {
         setChecked(ev.target.checked);
     };
 
-    return <FluentCheckbox checked={checked} onChange={onChange} indicator={{ className: classes.indicator }} />;
+    return <FluentCheckbox checked={checked} onChange={onChange} disabled={props.disabled} indicator={{ className: classes.indicator }} />;
 };
