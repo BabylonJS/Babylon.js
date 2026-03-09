@@ -2,10 +2,11 @@ import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import type { Nullable } from "core/types";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
-import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import type { IPortData, IPortDirectValueDefinition } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import { PortDataDirection, PortDirectValueTypes } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 
 export type FlowGraphConnectionPoint = FlowGraphDataConnection<any> | FlowGraphSignalConnection;
@@ -16,6 +17,7 @@ export type FlowGraphConnectionPoint = FlowGraphDataConnection<any> | FlowGraphS
 export class ConnectionPointPortData implements IPortData {
     private _connectedPort: Nullable<IPortData> = null;
     private _nodeContainer: INodeContainer;
+    private _integerProxy: { value: number } | null = null;
 
     /**
      * Map of input type names to arrays of output type names they can additionally accept
@@ -70,6 +72,63 @@ export class ConnectionPointPortData implements IPortData {
     /** Whether this port has any connections */
     public get isConnected() {
         return this.data._connectedPoint && this.data._connectedPoint.length > 0;
+    }
+
+    /**
+     * For primitive data input ports, returns a definition that lets the shared
+     * GraphNode render an inline editor directly on the port.
+     */
+    public get directValueDefinition(): IPortDirectValueDefinition | undefined {
+        if (this.connectionKind !== "data" || this.direction !== PortDataDirection.Input) {
+            return undefined;
+        }
+
+        const conn = this.data as FlowGraphDataConnection<any>;
+        const typeName = conn.richType.typeName;
+
+        if (typeName === FlowGraphTypes.Number) {
+            return {
+                source: conn,
+                propertyName: "_defaultValue",
+                valueMin: undefined,
+                valueMax: undefined,
+                valueType: PortDirectValueTypes.Float,
+            };
+        }
+
+        if (typeName === FlowGraphTypes.Integer) {
+            if (!this._integerProxy) {
+                const c = conn;
+                this._integerProxy = {
+                    get value() {
+                        const def = (c as any)._defaultValue;
+                        return def instanceof FlowGraphInteger ? def.value : 0;
+                    },
+                    set value(v: number) {
+                        (c as any)._defaultValue = new FlowGraphInteger(v);
+                    },
+                };
+            }
+            return {
+                source: this._integerProxy,
+                propertyName: "value",
+                valueMin: undefined,
+                valueMax: undefined,
+                valueType: PortDirectValueTypes.Int,
+            };
+        }
+
+        if (typeName === FlowGraphTypes.String) {
+            return {
+                source: conn,
+                propertyName: "_defaultValue",
+                valueMin: undefined,
+                valueMax: undefined,
+                valueType: PortDirectValueTypes.String,
+            };
+        }
+
+        return undefined;
     }
 
     /** Whether this port is inactive */

@@ -11,6 +11,7 @@ export enum PortDataDirection {
 export enum PortDirectValueTypes {
     Float,
     Int,
+    String,
 }
 
 export interface IPortDirectValueDefinition {

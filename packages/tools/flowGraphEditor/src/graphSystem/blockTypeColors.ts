@@ -13,11 +13,11 @@ export const BlockTypeHeaderColor: Record<FlowGraphBlockType, string> = {
     data: "#3B7A3C", // forest green – pure data
 };
 
-/** Slightly muted body background per type. */
+/** Body background per type (header stays default black, matching other editors). */
 export const BlockTypeBodyColor: Record<FlowGraphBlockType, string> = {
-    event: "#5C3818",
-    execution: "#1E3A5F",
-    data: "#2A5A2A",
+    event: "#B85C1F",
+    execution: "#2B579A",
+    data: "#3B7A3C",
 };
 
 /**

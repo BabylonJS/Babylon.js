@@ -46,6 +46,8 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 ## Medium (quality-of-life improvements)
 
+- [x] **No inline editing of numeric values on the canvas** — Other Babylon.js editors (NME, NGE, NPE) allow editing numeric defaults directly on the node via inline widgets. The flow graph editor required using the property panel for all value edits. _(Implemented — `ConnectionPointPortData.directValueDefinition` now exposes Number and Integer input ports for inline editing via the shared `BuildFloatUI` widget.)_
+
 - [ ] **No floating comment/note annotations** — Block-level comments exist, but free-floating sticky notes can't be placed on the canvas to document sections of the graph.
 
 - [ ] **No nested frames** — Frames can group blocks, but can't be nested inside other frames for hierarchical organization of large graphs.
@@ -60,7 +62,7 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 - [ ] **No zoom slider or zoom-level indicator** — Users can scroll to zoom, but there's no visible zoom percentage or slider control.
 
-- [ ] **No keyboard shortcuts panel** — No discoverable list of hotkeys. Users have to guess or read code.
+- [x] **No keyboard shortcuts panel** — Keyboard shortcuts are now listed in the Help dialog under "Keyboard Shortcuts" (General + Graph Editing sections).
 
 - [ ] **No "recent" or "favorites" in the block palette** — Frequently-used blocks have no quick-access section; always requires search or drilling into categories.
 

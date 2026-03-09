@@ -1,11 +1,13 @@
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import { GetBlockType, BlockTypeHeaderColor, BlockTypeBodyColor } from "../blockTypeColors";
+import { GetBlockType, BlockTypeBodyColor } from "../blockTypeColors";
 
 /**
  * Default display manager for all flow graph blocks.
- * Colors the node header and body based on block type (event / execution / data).
+ * Colors the node body based on block type (event / execution / data).
+ * The header uses the default black from the shared graphNode CSS, matching the
+ * design of the Node Material Editor, Node Geometry Editor, and Node Particle Editor.
  */
 export class FlowGraphDefaultDisplayManager implements IDisplayManager {
     public getHeaderClass(_data: INodeData): string {
@@ -27,13 +29,5 @@ export class FlowGraphDefaultDisplayManager implements IDisplayManager {
 
     public updatePreviewContent(_data: INodeData, _contentArea: HTMLDivElement): void {
         // nothing
-    }
-
-    public updateFullVisualContent(data: INodeData, visualContent: { [key: string]: HTMLElement }): void {
-        const blockType = GetBlockType(data.getClassName(), data.data);
-        const headerContainer = visualContent.headerContainer as HTMLDivElement;
-        if (headerContainer) {
-            headerContainer.style.background = BlockTypeHeaderColor[blockType];
-        }
     }
 }

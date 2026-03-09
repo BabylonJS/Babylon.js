@@ -255,6 +255,19 @@ export class NodePort {
                         portData.directValueDefinition.valueMax
                     );
                     break;
+                case PortDirectValueTypes.String: {
+                    portUIcontainer.classList.add(localStyles.stringContainer);
+                    const textInput = root.ownerDocument.createElement("input");
+                    textInput.type = "text";
+                    textInput.value = source[propertyName] ?? "";
+                    textInput.placeholder = portData.name;
+                    textInput.onchange = () => {
+                        source[propertyName] = textInput.value;
+                        node._forceRebuild(source, propertyName);
+                    };
+                    portUIcontainer.appendChild(textInput);
+                    break;
+                }
             }
         }
 

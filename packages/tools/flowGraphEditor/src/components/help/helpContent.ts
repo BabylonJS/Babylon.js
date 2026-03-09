@@ -292,14 +292,25 @@ export const HelpTopics: IHelpTopic[] = [
         title: "Keyboard Shortcuts",
         sections: [
             {
+                heading: "General",
                 html: `<table>
 <tr><th>Key</th><th>Action</th></tr>
+<tr><td><b>Ctrl+Z</b> / <b>Cmd+Z</b></td><td>Undo</td></tr>
+<tr><td><b>Ctrl+Shift+Z</b> / <b>Cmd+Shift+Z</b></td><td>Redo</td></tr>
+<tr><td><b>Ctrl+Y</b> / <b>Cmd+Y</b></td><td>Redo (alternative)</td></tr>
 <tr><td><b>Ctrl+C</b> / <b>Cmd+C</b></td><td>Copy selected blocks (or frames)</td></tr>
 <tr><td><b>Ctrl+V</b> / <b>Cmd+V</b></td><td>Paste copied blocks at cursor position</td></tr>
+<tr><td><b>Delete</b> / <b>Backspace</b></td><td>Delete selected blocks or frame</td></tr>
+<tr><td><b>Space</b></td><td>Open block search box at cursor position</td></tr>
+</table>`,
+            },
+            {
+                heading: "Graph Editing",
+                html: `<table>
+<tr><th>Key</th><th>Action</th></tr>
 <tr><td><b>Ctrl+G</b> / <b>Cmd+G</b></td><td>Create a smart group from selected blocks</td></tr>
 <tr><td><b>F9</b></td><td>Toggle breakpoint on selected execution block</td></tr>
 <tr><td><b>Enter</b> (in scene preview input)</td><td>Load the Playground snippet</td></tr>
-<tr><td><b>Delete</b></td><td>Delete selected blocks or frame</td></tr>
 </table>`,
             },
         ],

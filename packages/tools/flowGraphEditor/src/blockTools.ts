@@ -14,26 +14,31 @@ export class BlockTools {
     public static GetColorFromConnectionType(type: string): string {
         switch (type) {
             case FlowGraphTypes.Number:
-                return "#84995c"; // green
-            case FlowGraphTypes.Boolean:
-                return "#a1124e"; // magenta
-            case FlowGraphTypes.String:
-                return "#47A7E4"; // blue
-            case FlowGraphTypes.Vector2:
-            case FlowGraphTypes.Vector3:
-            case FlowGraphTypes.Vector4:
-                return "#c0962d"; // gold
-            case FlowGraphTypes.Matrix:
-                return "#607d8b"; // blue-grey
-            case FlowGraphTypes.Color3:
-            case FlowGraphTypes.Color4:
-                return "#e91e63"; // pink
-            case FlowGraphTypes.Object:
-                return "#6e6e6e"; // grey
             case FlowGraphTypes.Integer:
-                return "#40916c"; // darker green
+                return "#cb9e27";
+            case FlowGraphTypes.Boolean:
+                return "#a1124e";
+            case FlowGraphTypes.String:
+                return "#47A7E4";
+            case FlowGraphTypes.Vector2:
+                return "#16bcb1";
+            case FlowGraphTypes.Vector3:
+                return "#b786cb";
+            case FlowGraphTypes.Vector4:
+            case FlowGraphTypes.Quaternion:
+                return "#be5126";
+            case FlowGraphTypes.Matrix:
+            case FlowGraphTypes.Matrix2D:
+            case FlowGraphTypes.Matrix3D:
+                return "#591990";
+            case FlowGraphTypes.Color3:
+                return "#b786cb";
+            case FlowGraphTypes.Color4:
+                return "#be5126";
+            case FlowGraphTypes.Object:
+                return "#6174FA";
             default:
-                return "#999"; // default grey
+                return "#999";
         }
     }
 

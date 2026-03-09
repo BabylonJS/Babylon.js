@@ -48,3 +48,35 @@
         margin-top: 2px;
     }
 }
+
+.stringContainer {
+    display: grid;
+    margin-top: 2px;
+    margin-bottom: 2px;
+
+    input[type="text"] {
+        grid-row: 1;
+        grid-column: 1;
+        margin-left: -1px;
+        margin-right: 5px;
+        border: 0px;
+        opacity: 0.9;
+        color: white;
+        border-radius: 2px;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 2px 5px;
+        font-size: 12px;
+        min-width: 60px;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        &:focus {
+            outline: 0px;
+            box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
+            background-color: rgba(0, 0, 0, 0.8);
+            opacity: 1;
+        }
+    }
+}
