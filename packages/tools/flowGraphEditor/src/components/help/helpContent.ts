@@ -4,6 +4,7 @@
 export type HelpTopicId =
     | "getting-started"
     | "graph-controls"
+    | "time-scale"
     | "connections-types"
     | "debug-mode"
     | "breakpoints"
@@ -78,7 +79,26 @@ export const HelpTopics: IHelpTopic[] = [
 <tr><td>⏹</td><td><b>Stop</b></td><td>Stops execution and resets execution state.</td></tr>
 <tr><td>↺</td><td><b>Reset</b></td><td>Stops execution and reloads the scene from its snippet (if one was loaded).</td></tr>
 </table>
-<p>The <b>state indicator</b> next to the controls shows the current graph state: <code>Stopped</code>, <code>Running</code>, <code>Paused</code>, or <code>Breakpoint</code>.</p>`,
+<parameter name="newString"><p>The <b>state indicator</b> next to the controls shows the current graph state: <code>Stopped</code>, <code>Running</code>, <code>Paused</code>, or <code>Breakpoint</code>.</p>`,
+            },
+        ],
+    },
+    {
+        id: "time-scale",
+        title: "Time Scale (Speed Control)",
+        sections: [
+            {
+                html: `<p>The <b>Speed</b> buttons in the toolbar let you slow down or speed up the entire scene execution:</p>
+<table>
+<tr><th>Button</th><th>Effect</th></tr>
+<tr><td><b>0.1×</b></td><td>10% speed — near frame-by-frame, useful for watching individual block executions</td></tr>
+<tr><td><b>0.25×</b></td><td>25% speed — slow motion</td></tr>
+<tr><td><b>0.5×</b></td><td>50% speed — half speed</td></tr>
+<tr><td><b>1×</b></td><td>Normal speed (default)</td></tr>
+<tr><td><b>2×</b></td><td>Double speed — fast forward</td></tr>
+</table>
+<p>The time scale affects <b>everything</b>: scene animations, FlowGraph delta time, interpolation blocks, async waits, timer-based logic, and render-loop code that reads engine delta time.</p>
+<p>The active speed button is highlighted in orange. The selected speed persists when the scene is reloaded via Reset.</p>`,
             },
         ],
     },

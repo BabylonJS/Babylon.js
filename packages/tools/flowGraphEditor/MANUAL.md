@@ -1,5 +1,7 @@
 # Flow Graph Editor — User Manual
 
+When updating the manual you **must** update the `HelpTopics` array in `helpContent.ts` to reflect the changes.
+
 ## Overview
 
 The Flow Graph Editor is a visual tool for building, debugging, and testing Babylon.js Flow Graphs. It provides a node-based interface where you wire together **execution blocks** (driven by signals) and **data blocks** (computing values) to define interactive behaviors.
@@ -39,6 +41,20 @@ The toolbar at the top provides execution controls:
 | ↺      | **Reset** | Stops execution and reloads the scene from its snippet (if one was loaded).   |
 
 The **state indicator** next to the controls shows the current graph state: `Stopped`, `Running`, `Paused`, or `Breakpoint`.
+
+### Time Scale (Speed Control)
+
+The **Speed** buttons in the toolbar let you slow down or speed up scene execution:
+
+| Button    | Effect                                                                           |
+| --------- | -------------------------------------------------------------------------------- |
+| **0.1×**  | 10% speed — near frame-by-frame, useful for watching individual block executions |
+| **0.25×** | 25% speed — slow motion                                                          |
+| **0.5×**  | 50% speed — half speed                                                           |
+| **1×**    | Normal speed (default)                                                           |
+| **2×**    | Double speed — fast forward                                                      |
+
+The time scale affects **everything**: scene animations, FlowGraph delta time, interpolation blocks, async waits, and timer-based logic. The active speed button is highlighted in orange. The selected speed persists when the scene is reloaded via Reset.
 
 ---
 

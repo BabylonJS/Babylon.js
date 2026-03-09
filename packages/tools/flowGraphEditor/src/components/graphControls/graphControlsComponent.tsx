@@ -20,6 +20,7 @@ interface IGraphControlsState {
     liveValidation: boolean;
     validationResult: Nullable<IFlowGraphValidationResult>;
     breakpointPaused: boolean;
+    timeScale: number;
 }
 
 /**
@@ -32,6 +33,7 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
     private _liveValidationObserver: Nullable<Observer<boolean>> = null;
     private _validationResultObserver: Nullable<Observer<Nullable<IFlowGraphValidationResult>>> = null;
     private _breakpointHitObserver: Nullable<Observer<IFlowGraphPendingActivation>> = null;
+    private _timeScaleObserver: Nullable<Observer<number>> = null;
 
     constructor(props: IGraphControlsProps) {
         super(props);
@@ -41,6 +43,7 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
             liveValidation: props.globalState.liveValidation,
             validationResult: props.globalState.validationResult,
             breakpointPaused: false,
+            timeScale: props.globalState.timeScale,
         };
     }
 
@@ -71,6 +74,10 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
                 new LogEntry(`Breakpoint hit: ${activation.block.getClassName()} (${activation.block.name ?? activation.block.uniqueId})`, false)
             );
         });
+
+        this._timeScaleObserver = this.props.globalState.onTimeScaleChanged.add((timeScale) => {
+            this.setState({ timeScale });
+        });
     }
 
     override componentWillUnmount() {
@@ -86,6 +93,8 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
         this._validationResultObserver = null;
         this._breakpointHitObserver?.remove();
         this._breakpointHitObserver = null;
+        this._timeScaleObserver?.remove();
+        this._timeScaleObserver = null;
     }
 
     /**
@@ -310,6 +319,22 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
                     ⚡
                 </button>
                 {this._renderValidationSummary()}
+                <span className="fge-ctrl-separator" />
+                <div className="fge-time-scale">
+                    <span className="fge-time-scale-label">Speed</span>
+                    {[0.1, 0.25, 0.5, 1].map((s) => (
+                        <button
+                            key={s}
+                            className={`fge-ctrl-btn fge-time-scale-btn ${this.state.timeScale === s ? "active" : ""}`}
+                            title={`${s}× speed`}
+                            onClick={() => {
+                                this.props.globalState.timeScale = s;
+                            }}
+                        >
+                            {s}×
+                        </button>
+                    ))}
+                </div>
                 <span className="fge-ctrl-separator" />
                 <button
                     className="fge-ctrl-btn fge-ctrl-help"

@@ -70,6 +70,70 @@ export class GlobalState {
     pointerOverCanvas: boolean = false;
     /** Lock object for property grid */
     lockObject = new LockObject();
+
+    // ── Time Scale ─────────────────────────────────────────────────────
+    /** Observable triggered when the time scale changes. */
+    onTimeScaleChanged = new Observable<number>();
+
+    private _timeScale: number = 1;
+
+    /** Gets the current time scale (1 = normal, 0.5 = half speed, etc.). */
+    public get timeScale(): number {
+        return this._timeScale;
+    }
+
+    /**
+     * Sets the time scale. Patches engine.getDeltaTime() on the preview
+     * engine so that ALL code reading delta time (FlowGraph, animations,
+     * render-loop code, physics, particles) gets the scaled value.
+     */
+    public set timeScale(value: number) {
+        this._timeScale = value;
+        this._applyEngineTimeScale();
+        this.onTimeScaleChanged.notifyObservers(value);
+    }
+
+    /** The original (un-patched) getDeltaTime bound to the preview engine. */
+    private _originalGetDeltaTime: (() => number) | null = null;
+
+    /**
+     * Patch (or re-patch) engine.getDeltaTime() on the current preview engine
+     * to return the raw delta time multiplied by `_timeScale`, AND throttle the
+     * actual render loop for scales below 1 so that tick-based logic (flow graph
+     * onTick, render-loop code that doesn't use deltaTime) also slows down.
+     */
+    private _applyEngineTimeScale(): void {
+        if (!this.sceneContext) {
+            return;
+        }
+        const engine = this.sceneContext.engine;
+        // Store original only once per engine instance
+        if (!this._originalGetDeltaTime) {
+            this._originalGetDeltaTime = engine.getDeltaTime.bind(engine);
+        }
+        const scale = this._timeScale;
+        const orig = this._originalGetDeltaTime!;
+        // Scale reported deltaTime so deltaTime-based code runs proportionally
+        engine.getDeltaTime = () => orig() * scale;
+
+        // Throttle the render loop frame rate for scales below 1.
+        // This ensures tick-count-based logic fires fewer times per second.
+        // The delay is derived from the native frame interval (1/refreshRate)
+        // divided by the scale, so it adapts to any monitor refresh rate.
+        if ("customAnimationFrameRequester" in engine) {
+            if (scale < 1) {
+                const nativeIntervalMs = 1000 / (engine.getFps() || 60);
+                const interval = nativeIntervalMs / scale;
+                (engine as any).customAnimationFrameRequester = {
+                    requestAnimationFrame: (callback: FrameRequestCallback) => window.setTimeout(callback, interval),
+                    cancelAnimationFrame: (id: number) => window.clearTimeout(id),
+                };
+            } else {
+                // At 1× or faster, use native requestAnimationFrame
+                (engine as any).customAnimationFrameRequester = null;
+            }
+        }
+    }
     /** The scene associated with this editor */
     scene: Scene;
 
@@ -506,6 +570,10 @@ export class GlobalState {
             const assetsContainer: IAssetContainer | undefined = ctx?.scene;
             this._applyAssetsContextToGraph(assetsContainer);
             if (ctx?.scene) {
+                // Patch the new engine's getDeltaTime to respect the current time scale
+                this._originalGetDeltaTime = null; // reset so _applyEngineTimeScale stores the new engine's original
+                this._applyEngineTimeScale();
+
                 // Remap GetAsset block references from old uniqueIds to new ones
                 // (uniqueId values change when a snippet is re-executed).
                 // Uses the cached id→name map built from the previous scene
@@ -515,7 +583,9 @@ export class GlobalState {
                 // Cache the NEW scene's id→name map for the next reload
                 this._cacheSceneIdToNameMap(ctx.scene);
 
-                flowGraph.setScene(ctx.scene);
+                if (typeof flowGraph.setScene === "function") {
+                    flowGraph.setScene(ctx.scene);
+                }
             }
         });
 

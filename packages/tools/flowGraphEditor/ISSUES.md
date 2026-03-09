@@ -24,7 +24,7 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 - [x] **Several constructor config fields not editable in the panel** — Some blocks (like `FlowGraphInterpolationBlock` with `keyFramesCount`, `duration`, `animationType`; custom events with `eventId`/`eventData`; `FlowGraphGetAssetBlock` with `useIndexAsUniqueId`) have config fields that aren't exposed in the CONSTRUCTION VARIABLES panel. _(Implemented — added constructor config entries for InterpolationBlock (keyFramesCount, animationType), custom event blocks (eventId), BitwiseXorBlock, DoNBlock (startIndex), GetPropertyBlock (resetToDefaultWhenUndefined), and ForLoopBlock (initialIndex). GetAssetBlock was already covered by its dedicated property panel.)_
 
-- [ ] **No time-scale control for scene execution** — No way to slow down (or speed up) the scene while debugging the flow graph. A time-scale slider would let users observe execution step by step in slow motion, making it much easier to follow fast-running logic like animations, loops, and event chains.
+- [x] **No time-scale control for scene execution** — No way to slow down (or speed up) the scene while debugging the flow graph. A time-scale slider would let users observe execution step by step in slow motion, making it much easier to follow fast-running logic like animations, loops, and event chains. _(Implemented — Speed preset buttons in the toolbar: 0.1×, 0.25×, 0.5×, 1×)_
 
 - [x] **Complex config fields need custom property panels** — Several blocks have constructor config fields with complex types that can't be edited with simple controls. _(Implemented — all phases completed via custom property panel components with in-place port mutation.)_
 

@@ -197,6 +197,39 @@
             background: rgba(100, 180, 220, 0.2);
         }
     }
+
+    .fge-time-scale {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .fge-time-scale-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-right: 2px;
+    }
+
+    .fge-time-scale-btn {
+        width: auto !important;
+        padding: 0 5px;
+        font-size: 11px !important;
+        font-weight: 600;
+        color: #aaa;
+
+        &.active {
+            color: rgb(243, 156, 18);
+            border-color: rgb(243, 156, 18);
+            background: rgba(243, 156, 18, 0.15);
+        }
+
+        &:not(.active):hover {
+            background: rgba(243, 156, 18, 0.1);
+        }
+    }
 }
 
 @keyframes breakpoint-pulse {
