@@ -84,10 +84,33 @@ const useStyles = makeStyles({
         flex: 1,
         minWidth: 0,
     },
+    fullWidth: {
+        width: "100%",
+    },
     buttonGroup: {
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
+    },
+    headerRow: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+    },
+    headerLogo: {
+        height: "32px",
+    },
+    headerTitle: {
+        flex: 1,
+        fontWeight: tokens.fontWeightBold,
+    },
+    snippetTextarea: {
+        fontFamily: "monospace",
+        whiteSpace: "pre",
+        minHeight: "160px",
+    },
+    pickingActive: {
+        color: "rgb(51, 122, 183)",
     },
     hotspotRow: {
         display: "flex",
@@ -95,6 +118,7 @@ const useStyles = makeStyles({
         alignItems: "center",
         gap: tokens.spacingHorizontalS,
         width: "100%",
+        margin: `${tokens.spacingVerticalXS} 0`,
     },
     hotspotNameInput: {
         flex: 1,
@@ -226,6 +250,7 @@ const HotSpotEntry: FunctionComponent<{
     setHotspots: React.Dispatch<React.SetStateAction<HotSpotInfo[]>>;
     viewerElement: ViewerElement;
 }> = ({ id, hotspots, setHotspots, viewerElement }) => {
+    const classes = useStyles();
     const index = useMemo(() => {
         return hotspots.findIndex((hotspot) => hotspot.id === id);
     }, [id, hotspots]);
@@ -376,24 +401,22 @@ const HotSpotEntry: FunctionComponent<{
     );
 
     return (
-        <div
-            ref={rootDivRef}
-            style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: tokens.spacingHorizontalS, width: "100%", ...dndStyle }}
-            {...dndAttributes}
-        >
+        <div ref={rootDivRef} className={classes.hotspotRow} style={dndStyle} {...dndAttributes}>
             <ReOrderDotsVerticalRegular title="Drag to reorder" {...dndListeners} />
-            <div style={{ flex: 1 }}>
-                <TextInput key={id} value={hotspot?.name ?? ""} onChange={onHotSpotNameChange} />
+            <div className={classes.fillControl}>
+                <TextInput className={classes.fullWidth} key={id} value={hotspot?.name ?? ""} onChange={onHotSpotNameChange} />
             </div>
-            <Button
-                title="Pick from model"
-                appearance="transparent"
-                icon={TargetRegular}
-                style={isPicking ? { color: "rgb(51, 122, 183)" } : undefined}
-                onClick={onHotspotPickClick}
-            />
-            <Button title="Snapshot current camera state" appearance="transparent" icon={CameraRegular} onClick={onCameraSnapshotClick} />
-            <Button title="Delete Hot Spot" appearance="transparent" icon={DeleteRegular} onClick={onHotspotDeleteClick} />
+            <div className={classes.buttonGroup}>
+                <Button
+                    title="Pick from model"
+                    appearance="transparent"
+                    icon={TargetRegular}
+                    className={isPicking ? classes.pickingActive : undefined}
+                    onClick={onHotspotPickClick}
+                />
+                <Button title="Snapshot current camera state" appearance="transparent" icon={CameraRegular} onClick={onCameraSnapshotClick} />
+                <Button title="Delete Hot Spot" appearance="transparent" icon={DeleteRegular} onClick={onHotspotDeleteClick} />
+            </div>
         </div>
     );
 };
@@ -1283,12 +1306,12 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
     const classes = useStyles();
 
     return (
-        <ToolContext.Provider value={{ toolName: "Viewer Configurator", size: "small", disableCopy: true, useFluent: true }}>
+        <ToolContext.Provider value={{ toolName: "Viewer Configurator", size: "medium", disableCopy: true, useFluent: true }}>
             <div className={classes.root}>
                 <div className={classes.snippetSection}>
-                    <div style={{ display: "flex", alignItems: "center", gap: tokens.spacingHorizontalS }}>
-                        <img style={{ height: "32px" }} src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                        <div style={{ flex: 1, fontWeight: "bold" }}>VIEWER CONFIGURATOR</div>
+                    <div className={classes.headerRow}>
+                        <img className={classes.headerLogo} src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
+                        <div className={classes.headerTitle}>VIEWER CONFIGURATOR</div>
                         <Button title="Documentation" appearance="transparent" icon={QuestionCircleRegular} onClick={openDocumentation} />
                     </div>
                     <PropertyLine label="Format" uniqueId="output-format">
@@ -1298,14 +1321,9 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                         message={outputFormat === "html" ? "The HTML snippet can be used directly in a web page." : "The JSON snippet can be used as the Viewer options."}
                         intent="info"
                     />
-                    <Textarea
-                        value={outputFormat === "html" ? htmlSnippet : jsonSnippet}
-                        readOnly
-                        resize="vertical"
-                        style={{ fontFamily: "monospace", whiteSpace: "pre", minHeight: "160px" }}
-                    />
+                    <Textarea value={outputFormat === "html" ? htmlSnippet : jsonSnippet} readOnly resize="vertical" className={classes.snippetTextarea} />
                     <div className={classes.snippetActions}>
-                        <Button style={{ flex: 1 }} label="Reset" onClick={resetAll} />
+                        <Button className={classes.fillControl} label="Reset" onClick={resetAll} />
                         <div className={classes.buttonGroup}>
                             <Button title="Revert all state to snippet" appearance="transparent" icon={ArrowResetRegular} onClick={revertAll} disabled={!canRevertAll} />
                             <Button title="Copy html to clipboard" appearance="transparent" icon={CopyRegular} onClick={copyToClipboard} />
@@ -1319,7 +1337,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             <LineContainer uniqueId="model-url">
                                 <div className={classes.propertyContent}>
                                     <div className={classes.fillControl}>
-                                        <TextInput style={{ width: "100%" }} value={modelUrl} onChange={onModelUrlChange} />
+                                        <TextInput className={classes.fullWidth} value={modelUrl} onChange={onModelUrlChange} />
                                     </div>
                                     <div className={classes.buttonGroup}>
                                         <Button title="Load from model url" appearance="transparent" icon={CheckmarkRegular} onClick={onModelUrlBlur} />
@@ -1340,7 +1358,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                 <div className={classes.propertyContent}>
                                     <div className={classes.fillControl}>
                                         <TextInput
-                                            style={{ width: "100%" }}
+                                            className={classes.fullWidth}
                                             key={syncEnvironment ? "env-url" : "light-url"}
                                             value={lightingUrlConfig.configuredState}
                                             onChange={onEnvironmentLightingUrlChange}
@@ -1368,7 +1386,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                 <LineContainer uniqueId="skybox-url">
                                     <div className={classes.propertyContent}>
                                         <div className={classes.fillControl}>
-                                            <TextInput style={{ width: "100%" }} value={skyboxUrlConfig.configuredState} onChange={onEnvironmentSkyboxUrlChange} />
+                                            <TextInput className={classes.fullWidth} value={skyboxUrlConfig.configuredState} onChange={onEnvironmentSkyboxUrlChange} />
                                         </div>
                                         <div className={classes.buttonGroup}>
                                             <Button title="Load skybox url" appearance="transparent" icon={CheckmarkRegular} onClick={onEnvironmentUrlSubmit} />
@@ -1386,14 +1404,9 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             {hasSkybox && (
                                 <PropertyLine label="Blur" uniqueId="skybox-blur">
                                     <div className={classes.propertyContent}>
-                                        <SyncedSliderInput
-                                            style={{ flex: 1 }}
-                                            value={skyboxBlurConfig.configuredState}
-                                            min={0}
-                                            max={1}
-                                            step={0.01}
-                                            onChange={skyboxBlurConfig.update}
-                                        />
+                                        <div className={classes.fillControl}>
+                                            <SyncedSliderInput value={skyboxBlurConfig.configuredState} min={0} max={1} step={0.01} onChange={skyboxBlurConfig.update} />
+                                        </div>
                                         <Button
                                             title="Reset skybox blur"
                                             appearance="transparent"
@@ -1406,14 +1419,15 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             )}
                             <PropertyLine label="Intensity" uniqueId="env-intensity">
                                 <div className={classes.propertyContent}>
-                                    <SyncedSliderInput
-                                        style={{ flex: 1 }}
-                                        value={environmentIntensityConfig.configuredState}
-                                        min={0}
-                                        max={5}
-                                        step={0.01}
-                                        onChange={environmentIntensityConfig.update}
-                                    />
+                                    <div className={classes.fillControl}>
+                                        <SyncedSliderInput
+                                            value={environmentIntensityConfig.configuredState}
+                                            min={0}
+                                            max={5}
+                                            step={0.01}
+                                            onChange={environmentIntensityConfig.update}
+                                        />
+                                    </div>
                                     <Button
                                         title="Reset skybox intensity"
                                         appearance="transparent"
@@ -1425,14 +1439,15 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             </PropertyLine>
                             <PropertyLine label="Rotation" uniqueId="env-rotation">
                                 <div className={classes.propertyContent}>
-                                    <SyncedSliderInput
-                                        style={{ flex: 1 }}
-                                        value={environmentRotationConfig.configuredState}
-                                        min={0}
-                                        max={2 * Math.PI}
-                                        step={0.01}
-                                        onChange={environmentRotationConfig.update}
-                                    />
+                                    <div className={classes.fillControl}>
+                                        <SyncedSliderInput
+                                            value={environmentRotationConfig.configuredState}
+                                            min={0}
+                                            max={2 * Math.PI}
+                                            step={0.01}
+                                            onChange={environmentRotationConfig.update}
+                                        />
+                                    </div>
                                     <Button
                                         title="Reset skybox rotation"
                                         appearance="transparent"
@@ -1444,7 +1459,9 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             </PropertyLine>
                             <PropertyLine label="Clear Color" uniqueId="clear-color">
                                 <div className={classes.propertyContent}>
-                                    <ColorPickerPopup style={{ flex: 1 }} value={clearColorConfig.configuredState} onChange={(color) => clearColorConfig.update(color as Color4)} />
+                                    <div className={classes.fillControl}>
+                                        <ColorPickerPopup value={clearColorConfig.configuredState} onChange={(color) => clearColorConfig.update(color as Color4)} />
+                                    </div>
                                     <Button
                                         title="Reset clear color"
                                         appearance="transparent"
@@ -1459,7 +1476,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             <PropertyLine label="Quality" uniqueId="shadow-quality">
                                 <div className={classes.propertyContent}>
                                     <Dropdown
-                                        style={{ flex: 1 }}
+                                        className={classes.fillControl}
                                         options={validShadowQualityOptions}
                                         value={shadowQualityConfig.configuredState}
                                         onChange={(value) => shadowQualityConfig.update(value as ShadowQuality)}
@@ -1478,7 +1495,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             <PropertyLine label="Tone Mapping" uniqueId="tone-mapping">
                                 <div className={classes.propertyContent}>
                                     <Dropdown
-                                        style={{ flex: 1 }}
+                                        className={classes.fillControl}
                                         options={ToneMappingOptions}
                                         value={toneMappingConfig.configuredState}
                                         onChange={(value) => toneMappingConfig.update(value as ToneMapping)}
@@ -1494,7 +1511,9 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             </PropertyLine>
                             <PropertyLine label="Contrast" uniqueId="contrast">
                                 <div className={classes.propertyContent}>
-                                    <SyncedSliderInput style={{ flex: 1 }} value={contrastConfig.configuredState} min={0} max={5} step={0.05} onChange={contrastConfig.update} />
+                                    <div className={classes.fillControl}>
+                                        <SyncedSliderInput value={contrastConfig.configuredState} min={0} max={5} step={0.05} onChange={contrastConfig.update} />
+                                    </div>
                                     <Button
                                         title="Reset contrast"
                                         appearance="transparent"
@@ -1506,7 +1525,9 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             </PropertyLine>
                             <PropertyLine label="Exposure" uniqueId="exposure">
                                 <div className={classes.propertyContent}>
-                                    <SyncedSliderInput style={{ flex: 1 }} value={exposureConfig.configuredState} min={0} max={5} step={0.05} onChange={exposureConfig.update} />
+                                    <div className={classes.fillControl}>
+                                        <SyncedSliderInput value={exposureConfig.configuredState} min={0} max={5} step={0.05} onChange={exposureConfig.update} />
+                                    </div>
                                     <Button
                                         title="Reset exposure"
                                         appearance="transparent"
@@ -1519,7 +1540,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             <PropertyLine label="SSAO (Ambient Occlusion)" uniqueId="ssao">
                                 <div className={classes.propertyContent}>
                                     <Dropdown
-                                        style={{ flex: 1 }}
+                                        className={classes.fillControl}
                                         options={validSSAOOptions}
                                         value={ssaoConfig.configuredState}
                                         onChange={(value) => ssaoConfig.update(value as SSAOOptions)}
@@ -1532,7 +1553,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             <MessageBar message="Position the camera in the viewer, and then click the button below to add the camera pose to the html snippet." intent="info" />
                             <LineContainer uniqueId="camera-pose">
                                 <div className={classes.propertyContent}>
-                                    <Button style={{ flex: 1 }} label="Use Current Pose" onClick={cameraConfig.snapshot} />
+                                    <Button className={classes.fillControl} label="Use Current Pose" onClick={cameraConfig.snapshot} />
                                     <div className={classes.buttonGroup}>
                                         <Button
                                             title="Revert camera pose to snippet"
@@ -1558,14 +1579,15 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                 <>
                                     <PropertyLine label="Speed" uniqueId="orbit-speed">
                                         <div className={classes.propertyContent}>
-                                            <SyncedSliderInput
-                                                style={{ flex: 1 }}
-                                                value={autoOrbitSpeedConfig.configuredState}
-                                                min={0}
-                                                max={0.524}
-                                                step={0.01}
-                                                onChange={autoOrbitSpeedConfig.update}
-                                            />
+                                            <div className={classes.fillControl}>
+                                                <SyncedSliderInput
+                                                    value={autoOrbitSpeedConfig.configuredState}
+                                                    min={0}
+                                                    max={0.524}
+                                                    step={0.01}
+                                                    onChange={autoOrbitSpeedConfig.update}
+                                                />
+                                            </div>
                                             <Button
                                                 title="Reset auto orbit speed"
                                                 appearance="transparent"
@@ -1577,14 +1599,15 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                     </PropertyLine>
                                     <PropertyLine label="Delay" uniqueId="orbit-delay">
                                         <div className={classes.propertyContent}>
-                                            <SyncedSliderInput
-                                                style={{ flex: 1 }}
-                                                value={autoOrbitDelayConfig.configuredState}
-                                                min={0}
-                                                max={5000}
-                                                step={1}
-                                                onChange={autoOrbitDelayConfig.update}
-                                            />
+                                            <div className={classes.fillControl}>
+                                                <SyncedSliderInput
+                                                    value={autoOrbitDelayConfig.configuredState}
+                                                    min={0}
+                                                    max={5000}
+                                                    step={1}
+                                                    onChange={autoOrbitDelayConfig.update}
+                                                />
+                                            </div>
                                             <Button
                                                 title="Reset auto orbit delay"
                                                 appearance="transparent"
@@ -1605,7 +1628,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                 />
                                 <LineContainer uniqueId="animation-state">
                                     <div className={classes.propertyContent}>
-                                        <Button style={{ flex: 1 }} label="Use Current Selections" onClick={animationStateConfig.snapshot} disabled={!hasAnimations} />
+                                        <Button className={classes.fillControl} label="Use Current Selections" onClick={animationStateConfig.snapshot} disabled={!hasAnimations} />
                                         <div className={classes.buttonGroup}>
                                             <Button
                                                 title="Revert animation state to snippet"
@@ -1638,7 +1661,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                                 <LineContainer uniqueId="material-variant-state">
                                     <div className={classes.propertyContent}>
                                         <Button
-                                            style={{ flex: 1 }}
+                                            className={classes.fillControl}
                                             label="Snapshot Current State"
                                             onClick={selectedMaterialVariantConfig.snapshot}
                                             disabled={!hasMaterialVariants}
@@ -1672,7 +1695,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                             />
                             <PropertyLine label="Hot Spot Type" uniqueId="hotspot-type">
                                 <div className={classes.propertyContent}>
-                                    <Dropdown style={{ flex: 1 }} options={HotSpotTypeOptions} value="surface" onChange={() => {}} />
+                                    <Dropdown className={classes.fillControl} options={HotSpotTypeOptions} value="surface" onChange={() => {}} />
                                     <Button title="Add Hot Spot" appearance="transparent" icon={AddSquareRegular} onClick={onAddHotspotClick} />
                                 </div>
                             </PropertyLine>
