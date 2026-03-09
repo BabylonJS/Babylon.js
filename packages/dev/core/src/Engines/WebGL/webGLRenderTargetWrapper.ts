@@ -76,7 +76,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
     }
 
     protected override _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper> {
-        let rtw: Nullable<RenderTargetWrapper> = null;
+        let rtw: Nullable<RenderTargetWrapper>;
 
         if (this._colorTextureArray && this._depthStencilTextureArray) {
             rtw = (this._engine as Engine).createMultiviewRenderTargetTexture(this.width, this.height);

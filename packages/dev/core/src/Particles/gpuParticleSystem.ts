@@ -1157,7 +1157,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             offset += 1;
             if (this.spriteRandomStartCell) {
                 renderVertexBuffers["cellStartOffset"] = renderBuffer.createVertexBuffer("cellStartOffset", offset, 1, this._attributesStrideSize, true);
-                offset += 1;
             }
         }
 

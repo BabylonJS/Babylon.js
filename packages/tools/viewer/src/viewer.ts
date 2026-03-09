@@ -2939,7 +2939,6 @@ export class Viewer implements IDisposable {
         targetY?: number,
         targetZ?: number
     ): void {
-        let goalRadius = 1;
         const goalTarget = Vector3.Zero();
         let goalAlpha = Math.PI / 2;
         let goalBeta = Math.PI / 2.4;
@@ -2953,7 +2952,7 @@ export class Viewer implements IDisposable {
 
         goalAlpha = alpha ?? goalAlpha;
         goalBeta = beta ?? goalBeta;
-        goalRadius = radius ?? sceneRadius;
+        const goalRadius = radius ?? sceneRadius;
         goalTarget.x = targetX ?? sceneTarget.x;
         goalTarget.y = targetY ?? sceneTarget.y;
         goalTarget.z = targetZ ?? sceneTarget.z;

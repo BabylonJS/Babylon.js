@@ -38,7 +38,7 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
 
                 return {
                     get name() {
-                        return spriteEntity.name;
+                        return spriteEntity.name || `Unnamed ${spriteEntity instanceof Sprite ? spriteEntity.getClassName() : "SpriteManager"}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {

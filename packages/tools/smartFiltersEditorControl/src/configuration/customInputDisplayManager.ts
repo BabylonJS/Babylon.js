@@ -17,7 +17,7 @@ export class CustomInputDisplayManager extends InputDisplayManager {
     public override updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
         super.updatePreviewContent(nodeData, contentArea);
 
-        let value = "";
+        let value: string;
         const inputBlock = nodeData.data as AnyInputBlock;
 
         if (inputBlock.type === ConnectionPointType.Texture && inputBlock.name === WebCamInputBlockName) {

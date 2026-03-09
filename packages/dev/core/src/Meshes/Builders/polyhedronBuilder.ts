@@ -486,8 +486,8 @@ export function CreatePolyhedronVertexData(options: {
     let index = 0;
     let faceIdx = 0; // face cursor in the array "indexes"
     const indexes: number[] = [];
-    let i = 0;
-    let f = 0;
+    let i: number;
+    let f: number;
     let u: number, v: number, ang: number, x: number, y: number, tmp: number;
 
     // default face colors and UV if undefined

@@ -87,7 +87,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string } {
-        let filename = "";
+        let filename: string;
         if (this.handedness === "left") {
             filename = WebXRMicrosoftMixedRealityController.MODEL_LEFT_FILENAME;
         } else {

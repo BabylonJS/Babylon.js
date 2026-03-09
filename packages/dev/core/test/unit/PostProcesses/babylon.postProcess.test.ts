@@ -41,7 +41,7 @@ describe("Babylon Scene Loader", function () {
                     new DefaultRenderingPipeline("default", true, scene, [camera]);
                     // wait for all shaders to be compiled if needed
                     setTimeout(() => {
-                        expect(createShaderProgramSpy).toBeCalledTimes(1); // Image process shader is compiled by default
+                        expect(createShaderProgramSpy).toHaveBeenCalledTimes(1); // Image process shader is compiled by default
                         createShaderProgramSpy.mockRestore();
                         caps.textureFloatRender = false;
                         res();
