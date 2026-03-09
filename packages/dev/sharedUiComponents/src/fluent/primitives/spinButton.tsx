@@ -61,9 +61,6 @@ const useStyles = makeStyles({
             color: tokens.colorBrandForeground1,
         },
     },
-    inputFill: {
-        width: "100%",
-    },
 });
 
 /**
@@ -260,7 +257,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     // (validateValue already handles NaN, so no separate isNaN check needed.)
     const isInputInvalid = !validateValue(isEditing ? EvaluateExpression(editText) : value);
 
-    const mergedClassName = mergeClasses(classes.inputFill, isInputInvalid ? inputClasses.invalid : "");
+    const mergedClassName = mergeClasses(inputClasses.inputFill, isInputInvalid ? inputClasses.invalid : "");
     const inputSlotClassName = mergeClasses(inputClasses.inputSlot, props.inputClassName);
 
     const formattedValue = formatValue(value);
@@ -296,7 +293,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
 
     const input = (
         <div
-            className={props.infoLabel ? undefined : mergeClasses(inputClasses.input, props.className)}
+            className={props.infoLabel ? undefined : props.className}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => {
                 if (!isDragging) {
@@ -323,7 +320,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     );
 
     return props.infoLabel ? (
-        <div className={mergeClasses(inputClasses.container, inputClasses.input, props.className)}>
+        <div className={mergeClasses(inputClasses.container, props.className)}>
             <InfoLabel {...props.infoLabel} htmlFor={id} />
             {input}
         </div>

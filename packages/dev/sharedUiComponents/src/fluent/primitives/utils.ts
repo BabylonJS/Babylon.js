@@ -34,7 +34,6 @@ export const CustomTokens = {
 
 export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.inputWidth, boxSizing: "border-box" };
 export const useInputStyles = makeStyles({
-    input: UniformWidthStyling,
     inputSlot: { textAlign: "right" },
     invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
     container: {
@@ -42,6 +41,9 @@ export const useInputStyles = makeStyles({
         flexDirection: "column",
         justifyContent: "center", // align items vertically
         minWidth: 0, // Allow shrinking
+    },
+    inputFill: {
+        width: "100%",
     },
 });
 
