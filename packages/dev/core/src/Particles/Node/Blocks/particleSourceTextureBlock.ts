@@ -119,6 +119,20 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the texture set on this block.
+     */
+    public get texture(): Nullable<BaseTexture> {
+        return this.sourceTexture;
+    }
+
+    /**
+     * Sets the texture to be used by this block.
+     */
+    public set texture(value: Nullable<BaseTexture>) {
+        this.sourceTexture = value;
+    }
+
+    /**
      * Gets the texture output component
      */
     public get textureOutput(): NodeParticleConnectionPoint {
