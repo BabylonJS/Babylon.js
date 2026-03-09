@@ -20,6 +20,8 @@ import type { LinesMesh } from "../Meshes/linesMesh";
 import { Epsilon } from "../Maths/math.constants";
 import type { IPointerEvent } from "../Events/deviceInputEvents";
 import { TransformNode } from "../Meshes/transformNode";
+import { KeyboardEventTypes } from "../Events/keyboardEvents";
+import type { KeyboardInfo } from "../Events/keyboardEvents";
 
 /**
  * Interface for bounding box gizmo
@@ -143,7 +145,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     private _incrementalStartupValue = Vector3.Zero();
     private _incrementalAnchorStartupValue = Vector3.Zero();
     private _isCenterScaleModeActive = false;
-    private _centerScaleKeyHandlers: Nullable<{ down: (e: KeyboardEvent) => void; up: (e: KeyboardEvent) => void }> = null;
+    private _centerScaleKeyObserver: Nullable<Observer<KeyboardInfo>> = null;
 
     /**
      * If child meshes should be ignored when calculating the bounding box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
@@ -664,20 +666,14 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         }
         this._rootMesh.addChild(this._scaleBoxesParent);
 
-        // Keyboard listeners for center-scale mode (Ctrl on Windows, Opt/Alt on Mac)
-        const onKeyDown = (evt: KeyboardEvent) => {
-            if (evt.ctrlKey || evt.altKey) {
+        // Keyboard observer for center-scale mode (Ctrl on Windows, Opt/Alt on Mac)
+        this._centerScaleKeyObserver = gizmoLayer.originalScene.onKeyboardObservable.add(({ type, event }) => {
+            if (type === KeyboardEventTypes.KEYDOWN && (event.ctrlKey || event.altKey)) {
                 this._isCenterScaleModeActive = true;
-            }
-        };
-        const onKeyUp = (evt: KeyboardEvent) => {
-            if (!evt.ctrlKey && !evt.altKey) {
+            } else if (type === KeyboardEventTypes.KEYUP && !event.ctrlKey && !event.altKey) {
                 this._isCenterScaleModeActive = false;
             }
-        };
-        window.addEventListener("keydown", onKeyDown);
-        window.addEventListener("keyup", onKeyUp);
-        this._centerScaleKeyHandlers = { down: onKeyDown, up: onKeyUp };
+        });
 
         // Hover color change
         const pointerIds: AbstractMesh[] = [];
@@ -1012,11 +1008,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     public override dispose() {
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
-        if (this._centerScaleKeyHandlers) {
-            window.removeEventListener("keydown", this._centerScaleKeyHandlers.down);
-            window.removeEventListener("keyup", this._centerScaleKeyHandlers.up);
-            this._centerScaleKeyHandlers = null;
-        }
+        this.gizmoLayer.originalScene.onKeyboardObservable.remove(this._centerScaleKeyObserver);
         this._lineBoundingBox.dispose();
         this._rotateAnchorsParent.dispose();
         this._scaleBoxesParent.dispose();
