@@ -844,8 +844,10 @@ export class ObjectRenderer {
 
         if (!currentRenderList) {
             // No custom render list provided, we prepare the rendering for the default list, but check
-            // first if we did not already performed the preparation (in this frame) before so as to avoid re-doing it several times
-            if (this._defaultRenderListPrepared && !winterIsComing) {
+            // first if we did not already performed the preparation (in this frame) before so as to avoid re-doing it several times.
+            // In WebGPU, instance data (visibleInstances) is stored per render pass ID. Each cascade/face (in CSM) uses a different
+            // render pass ID, so we must re-prepare for each pass to register instances in the correct per-pass storage.
+            if (this._defaultRenderListPrepared && !winterIsComing && !this._engine.isWebGPU) {
                 return defaultRenderList;
             }
             this._defaultRenderListPrepared = true;
