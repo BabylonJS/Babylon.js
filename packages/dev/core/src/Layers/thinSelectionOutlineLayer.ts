@@ -121,6 +121,15 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             ...options,
         };
 
+        // Fall back the mask texture type if the device doesn't support rendering to float framebuffers
+        // (e.g. EXT_color_buffer_float missing on some iOS versions)
+        if (this._options.mainTextureType === Constants.TEXTURETYPE_FLOAT && !this._engine.getCaps().textureFloatRender) {
+            this._options.mainTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
+        }
+        if (this._options.mainTextureType === Constants.TEXTURETYPE_HALF_FLOAT && !this._engine.getCaps().textureHalfFloatRender) {
+            this._options.mainTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        }
+
         // set clear color
         this.neutralColor = new Color4(0.0, this._options.storeCameraSpaceZ ? 0.0 : 1.0, 0.0, 1.0);
 
