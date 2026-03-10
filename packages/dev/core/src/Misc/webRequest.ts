@@ -143,7 +143,8 @@ export class WebRequest implements IWebRequest {
                                 status: request.status,
                                 statusText: request.statusText,
                                 headers: { get: (name: string) => request.getResponseHeader(name) },
-                                arrayBuffer: () => Promise.resolve(request.response as ArrayBuffer),
+                                // eslint-disable-next-line @typescript-eslint/naming-convention
+                                arrayBuffer: async () => await Promise.resolve(request.response as ArrayBuffer),
                             } as unknown as Response);
                         }
                     } else {
