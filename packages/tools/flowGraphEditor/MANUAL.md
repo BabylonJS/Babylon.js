@@ -357,7 +357,7 @@ Shows constructor configuration fields that control how the block is created. Th
 
 ### Input Values
 
-Editable default values for unconnected data-input ports. Primitive types (number, boolean, string, FlowGraphInteger) are shown automatically. Connected inputs are displayed as read-only.
+Editable default values for unconnected data-input ports. The following types are supported automatically: number, boolean, string, FlowGraphInteger, Vector2, Vector3, Vector4, Color3, Color4, and Matrix. Connected inputs are displayed as read-only.
 
 ### Properties
 

@@ -12,6 +12,7 @@ import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComp
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { MatrixLineComponent } from "shared-ui-components/lines/matrixLineComponent";
+import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
@@ -21,13 +22,19 @@ import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProp
 import { EDITABLE_INPUTS } from "./editableInputsRegistry";
 import { CONSTRUCTOR_CONFIG, FLOW_GRAPH_TYPE_OPTIONS } from "./constructorConfigRegistry";
 import { getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
+import { Vector2 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector";
+import { Vector4 } from "core/Maths/math.vector";
+import { Matrix } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
 import { FlowGraphBlockDisplayName } from "../blockDisplayUtils";
 
 /**
- * Concrete primitive type names whose data inputs can be edited directly in
+ * Type names whose data inputs can be edited directly in
  * the right-hand property panel without explicit registration.
  */
-const _PRIMITIVE_TYPE_NAMES: ReadonlySet<string> = new Set(["number", "boolean", "string", "FlowGraphInteger"]);
+const _EDITABLE_TYPE_NAMES: ReadonlySet<string> = new Set(["number", "boolean", "string", "FlowGraphInteger", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"]);
 
 /**
  * Returns true if the given connection should be shown as an editable field
@@ -35,10 +42,10 @@ const _PRIMITIVE_TYPE_NAMES: ReadonlySet<string> = new Set(["number", "boolean",
  *
  * A connection is editable if:
  * 1. It is explicitly listed in the EDITABLE_INPUTS registry, **or**
- * 2. Its richType.typeName is a concrete primitive type (number, boolean,
- *    string, FlowGraphInteger). This allows any block with typed primitive
- *    inputs — such as math blocks pinned to "number" — to expose those
- *    inputs automatically without requiring manual registration.
+ * 2. Its richType.typeName is a known editable type (number, boolean,
+ *    string, FlowGraphInteger, Vector2/3/4, Color3/4, Matrix). This
+ *    allows any block with typed inputs to expose those inputs
+ *    automatically without requiring manual registration.
  *
  * @param conn The data connection to test.
  * @param block The block that owns the connection.
@@ -48,7 +55,7 @@ function IsPrimitiveEditableInput(conn: FlowGraphDataConnection<any>, block: Flo
     if (EDITABLE_INPUTS.get(block.getClassName())?.has(conn.name)) {
         return true;
     }
-    return _PRIMITIVE_TYPE_NAMES.has(conn.richType.typeName);
+    return _EDITABLE_TYPE_NAMES.has(conn.richType.typeName);
 }
 
 /** Default property panel for any FlowGraph block. */
@@ -346,6 +353,96 @@ export class DataConnectionsPropertyTabComponent extends React.Component<IProper
                         const proxy = { v: typeof def === "number" ? def : 0 };
                         return (
                             <FloatLineComponent
+                                key={conn.name}
+                                label={label}
+                                lockObject={this.props.stateManager.lockObject}
+                                target={proxy}
+                                propertyName="v"
+                                onChange={(v) => this._setDefaultValue(conn, v)}
+                            />
+                        );
+                    }
+
+                    // Vector2
+                    if (typeName === "Vector2") {
+                        const proxy = { v: def instanceof Vector2 ? def.clone() : Vector2.Zero() };
+                        return (
+                            <Vector2LineComponent
+                                key={conn.name}
+                                label={label}
+                                lockObject={this.props.stateManager.lockObject}
+                                target={proxy}
+                                propertyName="v"
+                                onChange={(v) => this._setDefaultValue(conn, v)}
+                            />
+                        );
+                    }
+
+                    // Vector3
+                    if (typeName === "Vector3") {
+                        const proxy = { v: def instanceof Vector3 ? def.clone() : Vector3.Zero() };
+                        return (
+                            <Vector3LineComponent
+                                key={conn.name}
+                                label={label}
+                                lockObject={this.props.stateManager.lockObject}
+                                target={proxy}
+                                propertyName="v"
+                                onChange={(v) => this._setDefaultValue(conn, v)}
+                            />
+                        );
+                    }
+
+                    // Vector4
+                    if (typeName === "Vector4") {
+                        const proxy = { v: def instanceof Vector4 ? def.clone() : Vector4.Zero() };
+                        return (
+                            <Vector4LineComponent
+                                key={conn.name}
+                                label={label}
+                                lockObject={this.props.stateManager.lockObject}
+                                target={proxy}
+                                propertyName="v"
+                                onChange={(v) => this._setDefaultValue(conn, v)}
+                            />
+                        );
+                    }
+
+                    // Color3
+                    if (typeName === "Color3") {
+                        const proxy = { v: def instanceof Color3 ? def.clone() : new Color3(0, 0, 0) };
+                        return (
+                            <Color3LineComponent
+                                key={conn.name}
+                                label={label}
+                                lockObject={this.props.stateManager.lockObject}
+                                target={proxy}
+                                propertyName="v"
+                                onChange={() => this._setDefaultValue(conn, proxy.v)}
+                            />
+                        );
+                    }
+
+                    // Color4
+                    if (typeName === "Color4") {
+                        const proxy = { v: def instanceof Color4 ? def.clone() : new Color4(0, 0, 0, 1) };
+                        return (
+                            <Color4LineComponent
+                                key={conn.name}
+                                label={label}
+                                lockObject={this.props.stateManager.lockObject}
+                                target={proxy}
+                                propertyName="v"
+                                onChange={() => this._setDefaultValue(conn, proxy.v)}
+                            />
+                        );
+                    }
+
+                    // Matrix
+                    if (typeName === "Matrix") {
+                        const proxy = { v: def instanceof Matrix ? def.clone() : Matrix.Identity() };
+                        return (
+                            <MatrixLineComponent
                                 key={conn.name}
                                 label={label}
                                 lockObject={this.props.stateManager.lockObject}

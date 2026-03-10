@@ -62,7 +62,7 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 - [x] **No "find in graph" / block search** — _(Implemented — Ctrl+F opens a search bar in the top-right of the canvas. Type to filter nodes and frames by name or block type. Arrow keys or Enter/Shift+Enter navigate between matches. All matches are outlined in yellow; the current match is highlighted in blue and the viewport pans to it. Escape closes the search.)_
 
-- [ ] **No per-port default value editing for complex types** — The INPUT VALUES panel only handles primitives (number, boolean, string, FlowGraphInteger). Vector2/3/4, Color3/4, Matrix defaults can't be set inline without connected Constant blocks.
+- [x] **No per-port default value editing for complex types** — The INPUT VALUES panel now supports Vector2/3/4, Color3/4, and Matrix types directly. _(Implemented — expanded `_EDITABLE_TYPE_NAMES` set and added rendering branches using existing shared-ui line components with proxy objects.)_
 
 - [ ] **No export/import of subgraphs** — Frame export exists, but there's no library/template system to save reusable subgraphs and import them into other flow graphs.
 
