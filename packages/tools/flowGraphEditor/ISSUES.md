@@ -64,7 +64,7 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 - [x] **No per-port default value editing for complex types** — The INPUT VALUES panel now supports Vector2/3/4, Color3/4, and Matrix types directly. _(Implemented — expanded `_EDITABLE_TYPE_NAMES` set and added rendering branches using existing shared-ui line components with proxy objects.)_
 
-- [ ] **No export/import of subgraphs** — Frame export exists, but there's no library/template system to save reusable subgraphs and import them into other flow graphs.
+- [ ] **No export/import of subgraphs** — Frame export exists, but there's no library/template system to save reusable subgraphs and import them into other flow graphs. **Future work — not in scope for this phase.** Implementation would require: (1) partial serialization of a subset of blocks with internal/external connection classification, (2) ID remapping on import so pasted blocks get fresh uniqueIds, (3) position offset to avoid overlap. Storage options: JSON file download/upload (simplest), snippet server (shareable), localStorage library (quick-access). The natural unit is a frame selection; `AnalyzeSmartGroup` already identifies exposed boundary ports. Suggested format: `{ version, name, blocks[], connections[], exposedPorts[], editorData }`. UX: right-click frame → "Export Subgraph" / toolbar → "Import Subgraph".
 
 ## Low (nice to have)
 
