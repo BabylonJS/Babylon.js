@@ -121,30 +121,37 @@ export class WebRequest implements IWebRequest {
             return await fetch(resolvedUrl, { method, headers, body: options.body ?? undefined });
         }
 
-        // Fallback: use a WebRequest instance, which handles _CleanUrl, CustomRequestModifiers (via open()),
-        // and CustomRequestHeaders (via send()) internally — wrapping the response in a Promise<Response>.
+        // Fallback: use a WebRequest instance, which handles _CleanUrl, CustomRequestModifiers and
+        // CustomRequestHeaders (via open()) internally — wrapping the response in a Promise<Response>.
         return await new Promise<Response>((resolve, reject) => {
             const request = new WebRequest();
             request.responseType = "arraybuffer";
             request.addEventListener("readystatechange", () => {
                 if (request.readyState === 4) {
                     if (request.status >= 200 && request.status < 300) {
-                        const responseHeaders = new Headers();
+                        const responseHeaders = typeof Headers !== "undefined" ? new Headers() : undefined;
                         const contentType = request.getResponseHeader("Content-Type");
-                        if (contentType) {
+                        if (contentType && responseHeaders) {
                             responseHeaders.set("Content-Type", contentType);
                         }
-                        resolve(new Response(request.response as ArrayBuffer, { status: request.status, statusText: request.statusText, headers: responseHeaders }));
+                        if (typeof Response !== "undefined") {
+                            resolve(new Response(request.response as ArrayBuffer, { status: request.status, statusText: request.statusText, headers: responseHeaders }));
+                        } else {
+                            // Minimal Response-like object for environments lacking the Fetch API globals.
+                            resolve({
+                                ok: true,
+                                status: request.status,
+                                statusText: request.statusText,
+                                headers: { get: (name: string) => request.getResponseHeader(name) },
+                                arrayBuffer: () => Promise.resolve(request.response as ArrayBuffer),
+                            } as unknown as Response);
+                        }
                     } else {
                         reject(new Error(`HTTP ${request.status} loading '${request.requestURL}': ${request.statusText}`));
                     }
                 }
             });
-            request.open(method, url);
-            // Apply any caller-supplied headers on top of those injected by send().
-            for (const key in options.headers ?? {}) {
-                request.setRequestHeader(key, options.headers![key]);
-            }
+            request.open(method, url, options.headers);
             request.send((options.body as Document | XMLHttpRequestBodyInit | null | undefined) ?? null);
         });
     }
@@ -272,9 +279,10 @@ export class WebRequest implements IWebRequest {
      * Sets the request method, request URL
      * @param method defines the method to use (GET, POST, etc..)
      * @param url defines the url to connect with
+     * @param baseHeaders optional headers to include as a base before applying CustomRequestHeaders and modifiers
      */
-    public open(method: string, url: string): void {
-        const { url: modifiedUrl, headers } = WebRequest._CollectCustomizations(url);
+    public open(method: string, url: string, baseHeaders?: Record<string, string>): void {
+        const { url: modifiedUrl, headers } = WebRequest._CollectCustomizations(url, baseHeaders);
 
         this._requestURL = WebRequest._CleanUrl(modifiedUrl);
 
