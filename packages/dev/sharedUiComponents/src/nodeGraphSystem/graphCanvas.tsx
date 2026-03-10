@@ -21,10 +21,13 @@ import * as commonStyles from "./common.module.scss";
 import { TypeLedger } from "./typeLedger";
 import { RefreshNode } from "./tools";
 import { SearchBoxComponent } from "./searchBox";
+import { GraphMinimapComponent } from "./graphMinimap";
 
 export interface IGraphCanvasComponentProps {
     stateManager: StateManager;
     onEmitNewNode: (nodeData: INodeData) => GraphNode;
+    /** When true, a minimap overlay is shown during zoom/pan. Default false. */
+    enableMinimap?: boolean;
 }
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> implements INodeContainer {
@@ -1529,6 +1532,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     <div id="selection-container" className={styles["selection-container"]} ref={this._selectionContainerRef}></div>
                 </div>
                 <SearchBoxComponent stateManager={this.stateManager} />
+                {this.props.enableMinimap && <GraphMinimapComponent canvas={this} />}
             </div>
         );
     }

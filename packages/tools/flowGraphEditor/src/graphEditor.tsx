@@ -749,6 +749,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                             <GraphCanvasComponent
                                 ref={this._graphCanvasRef}
                                 stateManager={this.props.globalState.stateManager}
+                                enableMinimap={true}
                                 onEmitNewNode={(nodeData) => {
                                     return this.appendBlock(nodeData.data as FlowGraphBlock);
                                 }}

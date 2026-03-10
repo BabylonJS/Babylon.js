@@ -22,7 +22,7 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 - [x] **No breakpoints or step-through execution** — You can Start/Pause/Stop the graph, but can't set a breakpoint on a block to pause there. Step-through execution would be invaluable for understanding complex control flow (ForLoop, Switch, MultiGate). _(Implemented)_
 
-- [ ] **No minimap** — For large graphs, there's no spatial overview. Zoom-to-fit and reorganize exist, but no persistent minimap showing current position in the graph.
+- [x] **No minimap** — _(Implemented — `GraphMinimapComponent` in `sharedUiComponents` renders a canvas-based overview of all nodes, frames, and the current viewport. Appears automatically when zooming or panning and auto-hides after 1.5 seconds. Click/drag on the minimap to navigate. Available to all editors that use `GraphCanvasComponent`.)_
 
 - [x] **No connection type-mismatch feedback at design time** — Port compatibility only checks data-vs-signal and direction, not the actual data type. Connecting a `Vector3` output to a `number` input doesn't warn — it just fails at runtime. _(Implemented — `checkCompatibilityState` now validates data types via `richType.typeName`. Incompatible connections are blocked with a descriptive error dialog. Ports glow red during drag when hovering over an incompatible target. Compatible type pairs: same type, Any↔anything, Number↔Integer, Quaternion←Vector3/Vector4/Matrix via typeTransformer.)_
 

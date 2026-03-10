@@ -265,6 +265,7 @@ Select the frame and press **Ctrl+C** / **Cmd+C**, then **Ctrl+V** / **Cmd+V** t
 - **Step through unfamiliar graphs** — set a breakpoint on the first block and use Step to trace the execution path.
 - **Watch the flow animation** — in debug mode, the animated dots show you the actual order of execution, which can reveal unexpected paths.
 - **Reset vs. Stop** — use Reset when you've modified the scene's state and need a clean slate; use Stop when you just want to halt execution.
+- **Minimap** — when you zoom or pan, a minimap appears in the bottom-right corner showing all nodes, frames, and your current viewport. Click or drag on the minimap to navigate directly to that area. It auto-hides after 1.5 seconds of inactivity.
 
 ---
 

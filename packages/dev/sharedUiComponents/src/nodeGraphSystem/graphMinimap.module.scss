@@ -1,0 +1,30 @@
+.minimap-container {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 200px;
+    height: 140px;
+    background: rgba(30, 30, 30, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    overflow: hidden;
+    pointer-events: auto;
+    z-index: 20;
+    transition: opacity 0.3s ease-in-out;
+    cursor: crosshair;
+}
+
+.minimap-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.minimap-visible {
+    opacity: 1;
+}
+
+.minimap-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
