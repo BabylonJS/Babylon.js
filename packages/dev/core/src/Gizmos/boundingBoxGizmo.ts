@@ -545,9 +545,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     scaleBoxesDragBehavior.moveAttached = false;
                     let totalRelativeDragDistance = 0;
                     let previousScale = 0;
-                    let initialAnchorCenter = new Vector3();
-                    let initialBoxPosition = new Vector3();
-                    let initialMeshAbsolutePosition = new Vector3();
+                    const initialAnchorCenter = new Vector3();
+                    const initialBoxPosition = new Vector3();
+                    const initialMeshAbsolutePosition = new Vector3();
                     box.addBehavior(scaleBoxesDragBehavior);
                     scaleBoxesDragBehavior.onDragObservable.add((event) => {
                         this.onScaleBoxDragObservable.notifyObservers({ dragOperation: DragOperation.Scaling, dragAxis: new Vector3(i - 1, j - 1, k - 1) });
