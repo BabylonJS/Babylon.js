@@ -200,6 +200,7 @@ type ShadowState = {
         renderTimer?: Nullable<ReturnType<typeof setTimeout>>;
         shouldRender: boolean;
         readonly resizeObserver: Observer<Engine>;
+        voxelizationInProgress?: boolean;
     };
 };
 
@@ -2860,6 +2861,22 @@ export class Viewer implements IDisposable {
                     if (this.isAnimationPlaying) {
                         this.onAnimationProgressChanged.notifyObservers();
                         this._autoRotationBehavior.resetLastInteractionTime();
+
+                        // Update IBL shadows while an animation is playing. Only start a new voxelization
+                        // when the previous one has completed to avoid stacking voxelization requests and
+                        // resetting accumulation every frame (which would prevent shadows from converging).
+                        if (this._shadowState.high && !this._shadowState.high.voxelizationInProgress) {
+                            this._shadowState.high.voxelizationInProgress = true;
+                            this._shadowState.high.pipeline.updateSceneBounds();
+                            this._shadowState.high.pipeline.updateVoxelization();
+                            this._shadowState.high.pipeline.onVoxelizationCompleteObservable.addOnce(() => {
+                                if (this._shadowState.high) {
+                                    this._shadowState.high.voxelizationInProgress = false;
+                                    this._shadowState.high.pipeline.resetAccumulation();
+                                }
+                                this._startIblShadowsRenderTime();
+                            });
+                        }
                     }
                 } else {
                     this._camera.update();
