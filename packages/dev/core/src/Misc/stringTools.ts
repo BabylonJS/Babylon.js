@@ -43,12 +43,66 @@ export const Decode = (buffer: Uint8Array | Uint16Array): string => {
     return result;
 };
 
+declare global {
+    interface Uint8Array<TArrayBuffer extends ArrayBufferLike = ArrayBufferLike> {
+        /**
+         * Converts the `Uint8Array` to a base64-encoded string.
+         * @param options If provided, sets the alphabet and padding behavior used.
+         * @returns A base64-encoded string.
+         */
+        toBase64(options?: { alphabet?: "base64" | "base64url" | undefined; omitPadding?: boolean | undefined }): string;
+    }
+
+    interface Uint8ArrayConstructor {
+        /**
+         * Creates a new `Uint8Array` from a base64-encoded string.
+         * @param string The base64-encoded string.
+         * @param options If provided, specifies the alphabet and handling of the last chunk.
+         * @returns A new `Uint8Array` instance.
+         * @throws {SyntaxError} If the input string contains characters outside the specified alphabet, or if the last
+         * chunk is inconsistent with the `lastChunkHandling` option.
+         */
+        fromBase64(
+            string: string,
+            options?: {
+                alphabet?: "base64" | "base64url" | undefined;
+                lastChunkHandling?: "loose" | "strict" | "stop-before-partial" | undefined;
+            }
+        ): Uint8Array<ArrayBuffer>;
+    }
+}
+
 /**
- * Encode a buffer to a base64 string
- * @param buffer defines the buffer to encode
- * @returns the encoded string
+ * Checks if the native Uint8Array base64 API is available and spec-compliant,
+ * rejecting known polyfills (core-js, es-shims).
+ * @returns true if the native base64 API is available and trustworthy
  */
-export const EncodeArrayBufferToBase64 = (buffer: ArrayBuffer | ArrayBufferView): string => {
+function HasNativeBase64(): boolean {
+    if (!Uint8Array.prototype.toBase64 || !Uint8Array.fromBase64) {
+        return false;
+    }
+    try {
+        Uint8Array.prototype.toBase64.call(null);
+        // spec here: https://tc39.es/ecma262/multipage/indexed-collections.html#sec-validateuint8array
+        return false; // must throw, or not spec compliant
+    } catch (e: unknown) {
+        // e must be TypeError
+        // chrome: Method Uint8Array.prototype.toBase64 called on incompatible receiver null
+        // firefox: toBase64 method called on incompatible null
+        // webkit: Uint8Array.prototype.toBase64 requires that |this| be a Uint8Array
+        // core-js: Argument is not an Uint8Array
+        // es-shims: `this` value must be a Uint8Array'
+        const message = (e as Error).message;
+        return message !== "Argument is not an Uint8Array" && message !== "`this` value must be a Uint8Array'";
+    }
+}
+
+function NativeEncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string {
+    const bytes = ArrayBuffer.isView(buffer) ? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength) : new Uint8Array(buffer);
+    return bytes.toBase64();
+}
+
+function JsEncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string {
     const keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
     let output = "";
     let chr1, chr2, chr3, enc1, enc2, enc3, enc4;
@@ -74,6 +128,42 @@ export const EncodeArrayBufferToBase64 = (buffer: ArrayBuffer | ArrayBufferView)
     }
 
     return output;
+}
+
+function NativeDecodeBase64ToBinary(base64Data: string): ArrayBuffer {
+    return Uint8Array.fromBase64(base64Data).buffer;
+}
+
+function JsDecodeBase64ToBinary(base64Data: string): ArrayBuffer {
+    const decodedString = atob(base64Data);
+    const bufferLength = decodedString.length;
+    const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
+
+    for (let i = 0; i < bufferLength; i++) {
+        bufferView[i] = decodedString.charCodeAt(i);
+    }
+
+    return bufferView.buffer;
+}
+
+let ImplEncodeArrayBufferToBase64: (buffer: ArrayBuffer | ArrayBufferView) => string;
+let ImplDecodeBase64ToBinary: (base64Data: string) => ArrayBuffer;
+
+if (HasNativeBase64()) {
+    ImplEncodeArrayBufferToBase64 = NativeEncodeArrayBufferToBase64;
+    ImplDecodeBase64ToBinary = NativeDecodeBase64ToBinary;
+} else {
+    ImplEncodeArrayBufferToBase64 = JsEncodeArrayBufferToBase64;
+    ImplDecodeBase64ToBinary = JsDecodeBase64ToBinary;
+}
+
+/**
+ * Encode a buffer to a base64 string
+ * @param buffer defines the buffer to encode
+ * @returns the encoded string
+ */
+export const EncodeArrayBufferToBase64 = (buffer: ArrayBuffer | ArrayBufferView): string => {
+    return ImplEncodeArrayBufferToBase64(buffer);
 };
 
 /**
@@ -91,15 +181,7 @@ export const DecodeBase64ToString = (base64Data: string): string => {
  * @returns ArrayBuffer of byte data
  */
 export const DecodeBase64ToBinary = (base64Data: string): ArrayBuffer => {
-    const decodedString = DecodeBase64ToString(base64Data);
-    const bufferLength = decodedString.length;
-    const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
-
-    for (let i = 0; i < bufferLength; i++) {
-        bufferView[i] = decodedString.charCodeAt(i);
-    }
-
-    return bufferView.buffer;
+    return ImplDecodeBase64ToBinary(base64Data);
 };
 
 /**
