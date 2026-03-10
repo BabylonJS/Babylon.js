@@ -147,11 +147,7 @@ export class SelectionOutlineLayer extends EffectLayer {
         if (this._options.mainTextureType === Constants.TEXTURETYPE_FLOAT && !this._engine.getCaps().textureFloatRender) {
             this._options.mainTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
         }
-        if (
-            this._options.mainTextureType === Constants.TEXTURETYPE_HALF_FLOAT &&
-            !this._engine.getCaps().textureHalfFloatRender &&
-            !this._options.storeCameraSpaceZ
-        ) {
+        if (this._options.mainTextureType === Constants.TEXTURETYPE_HALF_FLOAT && !this._engine.getCaps().textureHalfFloatRender && !this._options.storeCameraSpaceZ) {
             this._options.mainTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         }
 
