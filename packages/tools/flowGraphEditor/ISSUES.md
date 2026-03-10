@@ -52,7 +52,7 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 ## Medium (quality-of-life improvements)
 
-- [ ] **Reset hangs indefinitely if snippet reload fails** — `_onResetAsync` creates a promise that resolves only when `onSceneContextChanged` fires with a truthy context. If snippet loading fails, the error is handled locally in `scenePreviewComponent.tsx` without firing the observable, so the await never completes. **Root cause:** no timeout, rejection, or failure-notification path for the snippet reload promise in `graphControlsComponent.tsx`.
+- [x] **Reset hangs indefinitely if snippet reload fails** — _(Fixed — `loadSnippetAsync` now notifies `onSceneContextChanged` with `null` on failure, and `_onResetAsync` rejects on null context. A 30-second safety timeout prevents indefinite hangs in edge cases. The error is logged to the console panel.)_
 
 - [x] **No inline editing of numeric values on the canvas** — Other Babylon.js editors (NME, NGE, NPE) allow editing numeric defaults directly on the node via inline widgets. The flow graph editor required using the property panel for all value edits. _(Implemented — `ConnectionPointPortData.directValueDefinition` now exposes Number and Integer input ports for inline editing via the shared `BuildFloatUI` widget.)_
 

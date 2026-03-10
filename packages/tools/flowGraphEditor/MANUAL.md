@@ -33,12 +33,12 @@ The loaded scene's objects (meshes, lights, cameras, etc.) become available as r
 
 The toolbar at the top provides execution controls:
 
-| Button | Label     | Description                                                                   |
-| ------ | --------- | ----------------------------------------------------------------------------- |
-| ▶     | **Start** | Starts executing the flow graph. Enabled when the graph is stopped or paused. |
-| ⏸     | **Pause** | Pauses execution. The graph can be resumed with Start.                        |
-| ⏹     | **Stop**  | Stops execution and resets execution state.                                   |
-| ↺      | **Reset** | Stops execution and reloads the scene from its snippet (if one was loaded).   |
+| Button | Label     | Description                                                                                                                                                     |
+| ------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ▶     | **Start** | Starts executing the flow graph. Enabled when the graph is stopped or paused.                                                                                   |
+| ⏸     | **Pause** | Pauses execution. The graph can be resumed with Start.                                                                                                          |
+| ⏹     | **Stop**  | Stops execution and resets execution state.                                                                                                                     |
+| ↺      | **Reset** | Stops execution and reloads the scene from its snippet (if one was loaded). If the reload fails, an error is logged and the graph returns to the Stopped state. |
 
 The **state indicator** next to the controls shows the current graph state: `Stopped`, `Running`, `Paused`, or `Breakpoint`.
 

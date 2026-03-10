@@ -306,6 +306,9 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             });
 
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Failed to load snippet: ${err.message}`, true));
+
+            // Notify listeners that the reload failed so waiting promises (e.g. _onResetAsync) don't hang
+            this.props.globalState.onSceneContextChanged.notifyObservers(null);
         }
     }
 

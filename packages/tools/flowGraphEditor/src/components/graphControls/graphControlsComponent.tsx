@@ -186,13 +186,21 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
                 this._log("Reloading scene snippet...");
 
                 // Wait for the scene context to be rebuilt after the snippet reloads
-                const sceneContextReady = new Promise<void>((resolve) => {
+                const sceneContextReady = new Promise<void>((resolve, reject) => {
                     const observer = this.props.globalState.onSceneContextChanged.add((ctx) => {
+                        this.props.globalState.onSceneContextChanged.remove(observer);
                         if (ctx) {
-                            this.props.globalState.onSceneContextChanged.remove(observer);
                             resolve();
+                        } else {
+                            reject(new Error("Snippet reload failed"));
                         }
                     });
+
+                    // Safety timeout so the reset never hangs indefinitely
+                    setTimeout(() => {
+                        this.props.globalState.onSceneContextChanged.remove(observer);
+                        reject(new Error("Snippet reload timed out"));
+                    }, 30_000);
                 });
 
                 // Request the snippet reload
