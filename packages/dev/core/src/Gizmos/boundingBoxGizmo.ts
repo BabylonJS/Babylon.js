@@ -545,6 +545,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     scaleBoxesDragBehavior.moveAttached = false;
                     let totalRelativeDragDistance = 0;
                     let previousScale = 0;
+                    let initialAnchorCenter = new Vector3();
+                    let initialBoxPosition = new Vector3();
+                    let initialMeshAbsolutePosition = new Vector3();
                     box.addBehavior(scaleBoxesDragBehavior);
                     scaleBoxesDragBehavior.onDragObservable.add((event) => {
                         this.onScaleBoxDragObservable.notifyObservers({ dragOperation: DragOperation.Scaling, dragAxis: new Vector3(i - 1, j - 1, k - 1) });
@@ -582,25 +585,35 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                             fullScale.addInPlace(this._incrementalStartupValue);
 
                             this.updateBoundingBox();
-                            if (this._isCenterScaleModeActive || this.scalePivot) {
-                                const pivot = this._isCenterScaleModeActive ? new Vector3(0.5, 0.5, 0.5) : this.scalePivot!;
+                            if (this._isCenterScaleModeActive) {
+                                // Use the original bounding box center captured at drag start so the pivot
+                                // stays fixed when the modifier is toggled mid-drag
+                                this._anchorMesh.position.copyFrom(initialAnchorCenter);
+                            } else if (this.scalePivot) {
                                 this.attachedMesh.getWorldMatrix().getRotationMatrixToRef(this._tmpRotationMatrix);
                                 // Move anchor to desired pivot point (Bottom left corner + dimension/2)
                                 this._boundingDimensions.scaleToRef(0.5, this._tmpVector);
                                 Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpRotationMatrix, this._tmpVector);
                                 this._anchorMesh.position.subtractInPlace(this._tmpVector);
-                                this._boundingDimensions.multiplyToRef(pivot, this._tmpVector);
+                                this._boundingDimensions.multiplyToRef(this.scalePivot, this._tmpVector);
                                 Vector3.TransformCoordinatesToRef(this._tmpVector, this._tmpRotationMatrix, this._tmpVector);
                                 this._anchorMesh.position.addInPlace(this._tmpVector);
                             } else {
-                                // Scale from the position of the opposite corner
-                                box.absolutePosition.subtractToRef(this._anchorMesh.position, this._tmpVector);
-                                this._anchorMesh.position.subtractInPlace(this._tmpVector);
+                                // Scale from the original opposite corner (2*initialCenter - initialBoxPos)
+                                // so toggling modes mid-drag always references the same fixed point
+                                initialAnchorCenter.scaleToRef(2, this._tmpVector);
+                                this._tmpVector.subtractInPlace(initialBoxPosition);
+                                this._anchorMesh.position.copyFrom(this._tmpVector);
                                 if (this.attachedMesh.isUsingPivotMatrix()) {
                                     this._anchorMesh.position.subtractInPlace(this.attachedMesh.getPivotPoint());
                                 }
                             }
 
+                            // Reset mesh and anchor to drag-start state each frame so the pivot-scale
+                            // computation is non-iterative; mid-drag mode toggles won't cause jumps
+                            this.attachedMesh.setAbsolutePosition(initialMeshAbsolutePosition);
+                            this.attachedMesh.scaling.copyFrom(this._incrementalStartupValue);
+                            this._anchorMesh.scaling.copyFrom(this._incrementalAnchorStartupValue);
                             this._anchorMesh.addChild(this.attachedMesh);
                             if (this.incrementalSnap) {
                                 fullScale.x /= Math.abs(this._incrementalStartupValue.x) < Epsilon ? 1 : this._incrementalStartupValue.x;
@@ -654,6 +667,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         previousScale = 0;
                         this._incrementalStartupValue.copyFrom(this.attachedMesh!.scaling);
                         this._incrementalAnchorStartupValue.copyFrom(this._anchorMesh.scaling);
+                        initialAnchorCenter.copyFrom(this._anchorMesh.position);
+                        initialBoxPosition.copyFrom(box.absolutePosition);
+                        initialMeshAbsolutePosition.copyFrom(this.attachedMesh!.getAbsolutePosition());
                     });
                     scaleBoxesDragBehavior.onDragEndObservable.add((event) => {
                         this.onScaleBoxDragEndObservable.notifyObservers({ dragOperation: DragOperation.Scaling, dragAxis: new Vector3(i - 1, j - 1, k - 1) });
