@@ -25,7 +25,7 @@ function useMaxCellCount(sprite: Sprite) {
     const texture = useProperty(manager, "texture");
     const textureSize = texture.getSize();
 
-    let maxCellCount = 0;
+    let maxCellCount: number;
     if (!textureSize.width || !textureSize.height) {
         maxCellCount = Math.max(sprite.fromIndex, sprite.toIndex);
     } else {

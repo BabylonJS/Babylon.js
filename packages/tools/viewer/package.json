@@ -34,7 +34,6 @@
         "@rollup/plugin-terser": "^0.4.4",
         "@rollup/plugin-typescript": "^11.1.6",
         "chalk": "^5.3.0",
-        "commondir": "^1.0.1",
         "cross-env": "^7.0.3",
         "nyc": "^17.0.0",
         "open": "^10.1.0",

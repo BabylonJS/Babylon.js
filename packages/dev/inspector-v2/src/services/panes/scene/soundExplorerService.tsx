@@ -63,7 +63,7 @@ export const SoundExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplor
 
                 return {
                     get name() {
-                        return sound.name;
+                        return sound.name || `Unnamed ${sound.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {

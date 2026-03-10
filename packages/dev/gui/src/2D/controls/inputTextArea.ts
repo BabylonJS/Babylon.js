@@ -348,8 +348,8 @@ export class InputTextArea extends InputText {
                     const currentLine = this._lines[this._cursorInfo.currentLineIndex];
                     const upperLine = this._lines[this._cursorInfo.currentLineIndex - 1];
 
-                    let tmpIndex = 0;
-                    let relativeIndex = 0;
+                    let tmpIndex: number;
+                    let relativeIndex: number;
                     if (!this._isTextHighlightOn || this._cursorInfo.currentLineIndex < this._highlightCursorInfo.initialLineIndex) {
                         tmpIndex = this._cursorInfo.globalStartIndex;
                         relativeIndex = this._cursorInfo.relativeStartIndex;
@@ -420,8 +420,8 @@ export class InputTextArea extends InputText {
                     const currentLine = this._lines[this._cursorInfo.currentLineIndex];
                     const underLine = this._lines[this._cursorInfo.currentLineIndex + 1];
 
-                    let tmpIndex = 0;
-                    let relativeIndex = 0;
+                    let tmpIndex: number;
+                    let relativeIndex: number;
                     if (!this._isTextHighlightOn || this._cursorInfo.currentLineIndex < this._highlightCursorInfo.initialLineIndex) {
                         tmpIndex = this._cursorInfo.globalStartIndex;
                         relativeIndex = this._cursorInfo.relativeStartIndex;
@@ -754,7 +754,7 @@ export class InputTextArea extends InputText {
      * @internal
      */
     protected override _onPasteText(ev: ClipboardEvent): void {
-        let data: string = "";
+        let data: string;
         if (ev.clipboardData && ev.clipboardData.types.indexOf("text/plain") !== -1) {
             data = ev.clipboardData.getData("text/plain");
         } else {

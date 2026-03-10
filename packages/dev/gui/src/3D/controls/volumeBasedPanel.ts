@@ -103,8 +103,8 @@ export abstract class VolumeBasedPanel extends Container3D {
     protected override _arrangeChildren() {
         this._cellWidth = 0;
         this._cellHeight = 0;
-        let rows = 0;
-        let columns = 0;
+        let rows: number;
+        let columns: number;
         let controlCount = 0;
         // Measure
         for (const child of this._children) {

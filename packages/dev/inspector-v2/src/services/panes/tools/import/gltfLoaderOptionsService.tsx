@@ -1,82 +1,50 @@
-import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
+import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";
 import type { GLTFFileLoader, IGLTFLoaderExtension } from "loaders/glTF/glTFFileLoader";
 import type { ServiceDefinition } from "../../../../modularity/serviceDefinition";
 import type { IToolsService } from "../../toolsService";
 
 import { SceneLoader } from "core/Loading/sceneLoader";
-import { GLTFLoaderDefaultOptions } from "loaders/glTF/glTFFileLoader";
+import { registeredGLTFExtensions } from "loaders/glTF/2.0/glTFLoaderExtensionRegistry";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { GLTFExtensionOptionsTool, GLTFLoaderOptionsTool } from "../../../../components/tools/import/gltfLoaderOptionsTool";
 import { ToolsServiceIdentity } from "../../toolsService";
+import { ExtensionOptionDefaults, LoaderOptionDefaults } from "./gltfLoaderOptionsDefaults";
+import type { GLTFExtensionOptionsType, GLTFLoaderOptionsType } from "./gltfLoaderOptionsDefaults";
 
 export const GLTFLoaderServiceIdentity = Symbol("GLTFLoaderService");
-
-// Options exposed in Inspector includes all the properties from the default loader options (GLTFLoaderDefaultOptions)
-// plus some options that only exist directly on the GLTFFileLoader class itself.
-const CurrentLoaderOptions = Object.assign(
-    {
-        capturePerformanceCounters: false,
-        loggingEnabled: false,
-    } satisfies Pick<GLTFFileLoader, "capturePerformanceCounters" | "loggingEnabled">,
-    GLTFLoaderDefaultOptions
-);
-
-export type GLTFLoaderOptionsType = typeof CurrentLoaderOptions;
-
-const CurrentExtensionOptions = {
-    /* eslint-disable @typescript-eslint/naming-convention */
-    EXT_lights_image_based: { enabled: true },
-    EXT_mesh_gpu_instancing: { enabled: true },
-    EXT_texture_webp: { enabled: true },
-    EXT_texture_avif: { enabled: true },
-    KHR_draco_mesh_compression: { enabled: true },
-    KHR_materials_pbrSpecularGlossiness: { enabled: true },
-    KHR_materials_clearcoat: { enabled: true },
-    KHR_materials_iridescence: { enabled: true },
-    KHR_materials_anisotropy: { enabled: true },
-    KHR_materials_emissive_strength: { enabled: true },
-    KHR_materials_ior: { enabled: true },
-    KHR_materials_sheen: { enabled: true },
-    KHR_materials_specular: { enabled: true },
-    KHR_materials_unlit: { enabled: true },
-    KHR_materials_variants: { enabled: true },
-    KHR_materials_transmission: { enabled: true },
-    KHR_materials_diffuse_transmission: { enabled: true },
-    KHR_materials_volume: { enabled: true },
-    KHR_materials_dispersion: { enabled: true },
-    KHR_materials_diffuse_roughness: { enabled: true },
-    KHR_mesh_quantization: { enabled: true },
-    KHR_lights_punctual: { enabled: true },
-    EXT_lights_area: { enabled: true },
-    KHR_texture_basisu: { enabled: true },
-    KHR_texture_transform: { enabled: true },
-    KHR_xmp_json_ld: { enabled: true },
-    MSFT_lod: { enabled: true, maxLODsToLoad: 10 },
-    MSFT_minecraftMesh: { enabled: true },
-    MSFT_sRGBFactors: { enabled: true },
-    MSFT_audio_emitter: { enabled: true },
-} satisfies SceneLoaderPluginOptions["gltf"]["extensionOptions"];
-
-export type GLTFExtensionOptionsType = typeof CurrentExtensionOptions;
 
 export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
     friendlyName: "GLTF Loader Options",
     consumes: [ToolsServiceIdentity],
     factory: (toolsService) => {
+        // Current loader options with nullable properties (null means "don't override the options coming in with load calls")
+        const currentLoaderOptions: GLTFLoaderOptionsType = Object.fromEntries(Object.keys(LoaderOptionDefaults).map((key) => [key, null])) as GLTFLoaderOptionsType;
+
+        // Build extension options dynamically from the registered extensions.
+        // Every extension gets an 'enabled' toggle; extensions in ExtensionOptionDefaults also get their extra properties.
+        const currentExtensionOptions: GLTFExtensionOptionsType = {};
+        for (const extName of registeredGLTFExtensions.keys()) {
+            const defaults = (ExtensionOptionDefaults as Record<string, Record<string, unknown>>)[extName];
+            const extraNulls = defaults ? Object.fromEntries(Object.keys(defaults).map((key) => [key, null])) : {};
+            currentExtensionOptions[extName] = { enabled: null, ...extraNulls };
+        }
+
         // Subscribe to plugin activation
         const pluginObserver = SceneLoader.OnPluginActivatedObservable.add((plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync) => {
             if (plugin.name === "gltf") {
                 const loader = plugin as GLTFFileLoader;
 
-                // Apply loader settings
-                Object.assign(loader, CurrentLoaderOptions);
+                // Apply loader settings (filter out null values to not override options coming in with load calls)
+                const nonNullLoaderOptions = Object.fromEntries(Object.entries(currentLoaderOptions).filter(([_, v]) => v !== null));
+                Object.assign(loader, nonNullLoaderOptions);
 
                 // Subscribe to extension loading
                 loader.onExtensionLoadedObservable.add((extension: IGLTFLoaderExtension) => {
-                    const extensionOptions = CurrentExtensionOptions[extension.name as keyof GLTFExtensionOptionsType];
+                    const extensionOptions = currentExtensionOptions[extension.name];
                     if (extensionOptions) {
-                        // Apply extension settings
-                        Object.assign(extension, extensionOptions);
+                        // Apply extension settings (filter out null values to not override options coming in with load calls)
+                        const nonNullExtOptions = Object.fromEntries(Object.entries(extensionOptions).filter(([_, v]) => v !== null));
+                        Object.assign(extension, nonNullExtOptions);
                     }
                 });
             }
@@ -90,8 +58,8 @@ export const GLTFLoaderOptionsServiceDefinition: ServiceDefinition<[], [IToolsSe
                 return (
                     <>
                         <MessageBar intent="info" message="Reload the file for changes to take effect" />
-                        <GLTFLoaderOptionsTool loaderOptions={CurrentLoaderOptions} />
-                        <GLTFExtensionOptionsTool extensionOptions={CurrentExtensionOptions} />
+                        <GLTFLoaderOptionsTool loaderOptions={currentLoaderOptions} />
+                        <GLTFExtensionOptionsTool extensionOptions={currentExtensionOptions} />
                     </>
                 );
             },

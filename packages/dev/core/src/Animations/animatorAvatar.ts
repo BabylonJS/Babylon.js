@@ -189,7 +189,7 @@ export class AnimatorAvatar {
         const isName = !this._isTransformNode(nameOrTransformNode);
         const iterator = this.skeletons.keys();
 
-        let bone: Nullable<Bone> = null;
+        let bone: Nullable<Bone>;
 
         for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
             const skeleton = key.value;
@@ -772,7 +772,7 @@ export class AnimatorAvatar {
             return null;
         }
 
-        let targetGroundReferenceTransformNodeOrBone: Nullable<TransformNode | Bone> = null;
+        let targetGroundReferenceTransformNodeOrBone: Nullable<TransformNode | Bone>;
 
         if (targetRootTransformNodeOrBone instanceof TransformNode) {
             targetGroundReferenceTransformNodeOrBone = this.findBoneByTransformNode(remappedGroundReferenceNodeName)?._linkedTransformNode!;

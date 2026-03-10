@@ -2253,7 +2253,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         const previousEffect = subMesh.effect;
         const lightDisposed = defines._areLightsDisposed;
-        let effect = this._prepareEffect(mesh, subMesh.getRenderingMesh(), defines, this.onCompiled, this.onError, useInstances, null);
+        const effect = this._prepareEffect(mesh, subMesh.getRenderingMesh(), defines, this.onCompiled, this.onError, useInstances, null);
 
         let forceWasNotReadyPreviously = false;
 
@@ -2266,7 +2266,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
             // Use previous effect while new one is compiling
             if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
-                effect = previousEffect;
                 defines.markAsUnprocessed();
 
                 forceWasNotReadyPreviously = this.isFrozen;
@@ -2399,11 +2398,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         // Bones
         BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
 
-        let radianceTexture: Nullable<BaseTexture> = null;
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);
-            radianceTexture = this._getRadianceTexture();
+            const radianceTexture: Nullable<BaseTexture> = this._getRadianceTexture();
 
             if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || subMesh._drawWrapper._forceRebindOnNextCall) {
                 // Texture uniforms
@@ -2763,7 +2761,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             fallbacks.addFallback(fallbackRank++, "TANGENT");
         }
 
-        fallbackRank = HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights, fallbackRank++);
+        fallbackRank = HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights, fallbackRank);
 
         if (defines.SPECULARTERM) {
             fallbacks.addFallback(fallbackRank++, "SPECULARTERM");

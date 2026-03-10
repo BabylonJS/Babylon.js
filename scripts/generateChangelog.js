@@ -166,11 +166,34 @@ async function generateChangelog(nextVersion) {
     const finalChangelog = { ...changelog, ...config.changelog };
     // write the changelog
     fs.writeFileSync(path.resolve(__dirname, "..", "./.build/changelog.json"), JSON.stringify({ fromTag: newFromTag || config.fromTag, changelog: finalChangelog }, null, 4));
-    fs.writeFileSync(path.resolve(__dirname, "..", "./CHANGELOG.md"), generateMarkdown(finalChangelog));
+    const { fullMarkdown, latestVersionMarkdown } = generateMarkdown(finalChangelog);
+    fs.writeFileSync(path.resolve(__dirname, "..", "./CHANGELOG.md"), fullMarkdown);
+    return latestVersionMarkdown;
+}
+
+function generateVersionMarkdown(versionPackages) {
+    let markdown = "";
+    const sortedPackages = Object.keys(versionPackages).sort();
+    sortedPackages.forEach((pck) => {
+        const prettyPackage = friendlyNames[pck];
+        markdown += `\n### ${prettyPackage}\n\n`;
+        versionPackages[pck].forEach((pr) => {
+            if (pr.tags && pr.tags.indexOf(skipChangelogTag) !== -1) {
+                return;
+            }
+            const tag = pr.tags.find((tag) => {
+                return tagNames[tag];
+            });
+            markdown += `- ${pr.title} - ${tag ? `[_${tagNames[tag]}_] ` : ""}by [${pr.author.name}](${pr.author.url}) ([#${
+                pr.pr
+            }](https://github.com/BabylonJS/Babylon.js/pull/${pr.pr}))\n`;
+        });
+    });
+    return markdown;
 }
 
 function generateMarkdown(finalChangelog) {
-    let markdown = "# Changelog\n";
+    let fullMarkdown = "# Changelog\n";
     // Sort versions
     const versions = Object.keys(finalChangelog)
         .sort((a, b) => {
@@ -187,7 +210,6 @@ function generateMarkdown(finalChangelog) {
     const versionChangelog = {};
     versions.forEach((version) => {
         versionChangelog[version] = {};
-        // markdown += `## ${version}\n`;
         finalChangelog[version].forEach((pr) => {
             // what package was influenced by that change?
             const packageInfluenced = pr.files
@@ -205,26 +227,15 @@ function generateMarkdown(finalChangelog) {
             });
         });
     });
-    Object.keys(versionChangelog).forEach((version) => {
-        markdown += `\n## ${version}\n`;
-        const sortedPackages = Object.keys(versionChangelog[version]).sort();
-        sortedPackages.forEach((pck) => {
-            const prettyPackage = friendlyNames[pck];
-            markdown += `\n### ${prettyPackage}\n\n`;
-            versionChangelog[version][pck].forEach((pr) => {
-                if (pr.tags && pr.tags.indexOf(skipChangelogTag) !== -1) {
-                    return;
-                }
-                const tag = pr.tags.find((tag) => {
-                    return tagNames[tag];
-                });
-                markdown += `- ${pr.title} - ${tag ? `[_${tagNames[tag]}_] ` : ""}by [${pr.author.name}](${pr.author.url}) ([#${
-                    pr.pr
-                }](https://github.com/BabylonJS/Babylon.js/pull/${pr.pr}))\n`;
-            });
-        });
+    let latestVersionMarkdown = "";
+    versions.forEach((version, index) => {
+        const sectionMarkdown = generateVersionMarkdown(versionChangelog[version]);
+        fullMarkdown += `\n## ${version}\n` + sectionMarkdown;
+        if (index === 0) {
+            latestVersionMarkdown = sectionMarkdown;
+        }
     });
-    return markdown;
+    return { fullMarkdown, latestVersionMarkdown };
 }
 
 module.exports = generateChangelog;

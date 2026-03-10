@@ -112,6 +112,9 @@ const useStyles = makeStyles({
         width: "100%",
         maxWidth: "none",
     },
+    sectionBlockEmpty: {
+        display: "none",
+    },
 });
 
 /**
@@ -182,13 +185,19 @@ export type AccordionSectionBlockProps = {
 const AccordionSectionBlock: FunctionComponent<PropsWithChildren<AccordionSectionBlockProps>> = (props) => {
     AccordionSectionBlock.displayName = "AccordionSectionBlock";
     const { children, sectionId } = props;
+    const classes = useStyles();
     const accordionCtx = useContext(AccordionContext);
     const { context: sectionContext, isEmpty } = useAccordionSectionBlockContext(props);
 
     if (accordionCtx) {
         return (
             <AccordionSectionBlockContext.Provider value={sectionContext}>
-                {!isEmpty && <AccordionItem value={sectionId}>{children}</AccordionItem>}
+                {/* Always render children so items stay registered in registeredItemIds;
+                    hiding via CSS prevents the oscillation that occurs when unmounting
+                    causes items to unregister, making the section appear non-empty again. */}
+                <AccordionItem value={sectionId} className={isEmpty ? classes.sectionBlockEmpty : undefined}>
+                    {children}
+                </AccordionItem>
             </AccordionSectionBlockContext.Provider>
         );
     }

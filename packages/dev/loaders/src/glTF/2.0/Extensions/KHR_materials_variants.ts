@@ -296,7 +296,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                         // Replace the target when original mesh is cloned
                                         babylonMesh.onClonedObservable.add((newOne: Node) => {
                                             const newMesh = newOne as Mesh;
-                                            let metadata: Nullable<IExtensionMetadata> = null;
+                                            let metadata: Nullable<IExtensionMetadata>;
                                             let newRoot: Nullable<Node> = newMesh;
 
                                             // Find root to get medata

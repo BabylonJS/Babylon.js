@@ -209,12 +209,11 @@ export class SceneTreeItemComponent extends React.Component<
 
                         const p0p1 = TmpVectors.Vector3[0];
                         const p1p2 = TmpVectors.Vector3[1];
-                        let normal = TmpVectors.Vector3[2];
 
                         p1.subtractToRef(p0, p0p1);
                         p2.subtractToRef(p1, p1p2);
 
-                        normal = Vector3.Cross(p0p1, p1p2);
+                        const normal = Vector3.Cross(p0p1, p1p2);
 
                         return Vector3.Dot(normal, ray.direction) < 0;
                     }
