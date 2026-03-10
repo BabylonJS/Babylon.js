@@ -503,7 +503,7 @@ export class Tools {
      * When set, unversioned CDN URLs will be rewritten to include this version prefix.
      * @internal
      */
-    public static _CdnVersion = "";
+    public static _CdnVersion = "8.54.2";
 
     /**
      * @internal
@@ -523,7 +523,7 @@ export class Tools {
 
         if (Tools.AssetBaseUrl && url.startsWith(Tools._DefaultAssetsUrl)) {
             // normalize the baseUrl
-            const baseUrl = Tools.AssetBaseUrl[Tools.AssetBaseUrl.length - 1] === "/" ? Tools.AssetBaseUrl.substring(0, Tools.AssetBaseUrl.length - 1) : Tools.AssetBaseUrl;
+            const baseUrl = Tools.AssetBaseUrl.endsWith("/") ? Tools.AssetBaseUrl.slice(0, -1) : Tools.AssetBaseUrl;
             return url.replace(Tools._DefaultAssetsUrl, baseUrl);
         }
 
@@ -545,12 +545,11 @@ export class Tools {
                 // if the base URL was set, and the script Url is an absolute path change the default path
                 // change the default host, which is https://cdn.babylonjs.com with the one defined
                 // make sure no trailing slash is present
-                const baseUrl =
-                    Tools.ScriptBaseUrl[Tools.ScriptBaseUrl.length - 1] === "/" ? Tools.ScriptBaseUrl.substring(0, Tools.ScriptBaseUrl.length - 1) : Tools.ScriptBaseUrl;
+                const baseUrl = Tools.ScriptBaseUrl.endsWith("/") ? Tools.ScriptBaseUrl.slice(0, -1) : Tools.ScriptBaseUrl;
                 scriptUrl = scriptUrl.replace(Tools._DefaultCdnUrl, baseUrl);
             } else if (Tools._CdnVersion) {
                 // If a CDN version is set (injected at build time), rewrite unversioned CDN URLs to versioned ones
-                const versionedBase = Tools._DefaultCdnUrl + "/v" + Tools._CdnVersion;
+                const versionedBase = `${Tools._DefaultCdnUrl}/v${Tools._CdnVersion}`;
                 scriptUrl = scriptUrl.replace(Tools._DefaultCdnUrl, versionedBase);
             }
         }

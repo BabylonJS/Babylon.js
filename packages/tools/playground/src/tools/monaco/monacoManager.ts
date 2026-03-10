@@ -4,7 +4,7 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import type { GlobalState } from "../../globalState";
 import { Utilities } from "../utilities";
 import { Logger, Observable } from "@dev/core";
-import { debounce } from "ts-debounce";
+import { debounce } from "../debounce";
 import { v5 as uuidv5 } from "uuid";
 
 import { EditorHost } from "./editor/editorHost";
