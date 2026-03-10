@@ -210,18 +210,18 @@ describe("DeviceSourceManager", () => {
         const deviceSourceManager3 = new DeviceSourceManager(engine!);
 
         expect(internalDeviceSourceManager._refCount).toBe(3);
-        expect(registerSpy).toBeCalledTimes(3);
+        expect(registerSpy).toHaveBeenCalledTimes(3);
 
         // Dispose of one DSM and verify that our IDSM still remains
         deviceSourceManager.dispose();
-        expect(unregisterSpy).toBeCalledTimes(1);
-        expect(disposeSpy).toBeCalledTimes(0);
+        expect(unregisterSpy).toHaveBeenCalledTimes(1);
+        expect(disposeSpy).toHaveBeenCalledTimes(0);
 
         // Dispose of all the rest and verify that IDSM is disposed of
         deviceSourceManager2.dispose();
         deviceSourceManager3.dispose();
-        expect(unregisterSpy).toBeCalledTimes(3);
-        expect(disposeSpy).toBeCalledTimes(1);
+        expect(unregisterSpy).toHaveBeenCalledTimes(3);
+        expect(disposeSpy).toHaveBeenCalledTimes(1);
     });
 
     it ("DeviceEventFactory can create proper pointer events", () => {

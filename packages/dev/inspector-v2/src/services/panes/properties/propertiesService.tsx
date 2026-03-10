@@ -17,6 +17,9 @@ import { ObservableCollection } from "../../../misc/observableCollection";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { ShellServiceIdentity } from "../../shellService";
 
+/**
+ * The unique identity symbol for the properties service.
+ */
 export const PropertiesServiceIdentity = Symbol("PropertiesService");
 
 type PropertiesSectionContent<EntityT> = {

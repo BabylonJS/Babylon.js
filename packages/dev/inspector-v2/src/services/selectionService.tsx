@@ -14,7 +14,10 @@ import { SceneContextIdentity } from "./sceneContext";
 import { SettingsStoreIdentity } from "./settingsStore";
 import { ShellServiceIdentity } from "./shellService";
 
-export const SelectionServiceIdentity = Symbol("PropertiesService");
+/**
+ * The unique identity symbol for the selection service.
+ */
+export const SelectionServiceIdentity = Symbol("SelectionService");
 
 /**
  * Tracks the currently selected entity.

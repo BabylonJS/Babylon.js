@@ -565,7 +565,7 @@ export class MonacoManager {
         ];
 
         // snapshot/version/local overrides
-        let snapshot = "";
+        let snapshot: string;
         if (window.location.search.indexOf("snapshot=") !== -1) {
             snapshot = window.location.search.split("snapshot=")[1].split("&")[0];
             for (let i = 0; i < declarations.length; i++) {
@@ -573,7 +573,7 @@ export class MonacoManager {
             }
         }
 
-        let version = "";
+        let version: string;
         if (window.location.search.indexOf("version=") !== -1) {
             version = window.location.search.split("version=")[1].split("&")[0];
             for (let i = 0; i < declarations.length; i++) {

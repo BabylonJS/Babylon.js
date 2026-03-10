@@ -584,11 +584,9 @@ export class SmartFilterOptimizer {
         this._processVariables(block, renameWork, "const", shaderProgram.fragment.constPerInstance, false);
 
         // Processes the uniform inputs to make them unique. Also extract the list of samplers
-        let samplerList: string[] = [];
-        samplerList = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniform, false);
+        const samplerList = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniform, false);
 
-        let additionalSamplers = [];
-        additionalSamplers = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniformSingle, true);
+        const additionalSamplers = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniformSingle, true);
 
         samplerList.push(...additionalSamplers);
 

@@ -282,7 +282,7 @@ export class ThinEngine extends AbstractEngine {
             return;
         }
 
-        let canvas: Nullable<HTMLCanvasElement> = null;
+        let canvas: Nullable<HTMLCanvasElement>;
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
 
@@ -396,7 +396,7 @@ export class ThinEngine extends AbstractEngine {
                 try {
                     this._gl = <WebGL2RenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
                 } catch (e) {
-                    throw new Error("WebGL not supported");
+                    throw new Error("WebGL not supported", { cause: e });
                 }
             }
 
@@ -841,7 +841,6 @@ export class ThinEngine extends AbstractEngine {
             supportSpriteInstancing: true,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
-            _collectUbosUpdatedInFrame: false,
         };
     }
 
@@ -1834,7 +1833,6 @@ export class ThinEngine extends AbstractEngine {
             this._currentInstanceBuffers.splice(index, 1);
 
             shouldClean = true;
-            index = this._currentInstanceLocations.indexOf(attributeLocation);
         }
 
         if (shouldClean) {
@@ -2943,7 +2941,7 @@ export class ThinEngine extends AbstractEngine {
         delayGPUTextureCreation = true,
         source = InternalTextureSource.Unknown
     ): InternalTexture {
-        let generateMipMaps = false;
+        let generateMipMaps: boolean;
         let createMipMaps = false;
         let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
@@ -3059,7 +3057,7 @@ export class ThinEngine extends AbstractEngine {
         this._internalTexturesCache.push(texture);
 
         if (createMSAATexture) {
-            let renderBuffer: Nullable<WebGLRenderbuffer> = null;
+            let renderBuffer: Nullable<WebGLRenderbuffer>;
 
             if (IsDepthTexture(texture.format)) {
                 renderBuffer = this._setupFramebufferDepthAttachments(

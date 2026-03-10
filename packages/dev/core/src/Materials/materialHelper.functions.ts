@@ -585,7 +585,7 @@ export function HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbac
             }
         }
     }
-    return lightFallbackRank++;
+    return lightFallbackRank;
 }
 
 /**

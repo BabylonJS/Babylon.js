@@ -89,7 +89,7 @@ export interface IRetargetOptions {
     mapNodeNames?: Map<string, string>;
 }
 
-type TransformNodeNameToNode = Map<string, { node: TransformNode; initialTransformations: { position: Vector3; scaling: Vector3; quaternion: Quaternion } }>;
+type TransformNodeNameToNode = Map<string, { node: TransformNode; initialTransformations: { position: Vector3; scaling: Vector3; quaternion?: Quaternion; rotation: Vector3 } }>;
 
 /**
  * Represents an animator avatar that manages meshes, skeletons and morph target managers for a hierarchical transform node and mesh structure.
@@ -158,16 +158,11 @@ export class AnimatorAvatar {
             this._collectMesh(rootNode);
         }
 
-        rootNode
-            .getChildMeshes(false, (node) => {
-                const mesh = node as AbstractMesh;
-                return mesh.getTotalVertices() > 0;
-            })
-            .forEach((mesh) => {
+        rootNode.getChildMeshes(false).forEach((mesh) => {
+            if (mesh.getTotalVertices() > 0) {
                 this._collectMesh(mesh);
-            });
-
-        this._computeBoneWorldMatrices();
+            }
+        });
     }
 
     private _collectMesh(mesh: AbstractMesh) {
@@ -194,7 +189,7 @@ export class AnimatorAvatar {
         const isName = !this._isTransformNode(nameOrTransformNode);
         const iterator = this.skeletons.keys();
 
-        let bone: Nullable<Bone> = null;
+        let bone: Nullable<Bone>;
 
         for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
             const skeleton = key.value;
@@ -271,19 +266,20 @@ export class AnimatorAvatar {
 
                 lstSourceTransformNodes.add(tn);
 
-                if (!tn.rotationQuaternion) {
-                    tn.rotationQuaternion = Quaternion.FromEulerAngles(tn.rotation.x, tn.rotation.y, tn.rotation.z);
-                    tn.rotation.setAll(0);
-                }
-
                 sourceTransformNodeNameToNode.set(mapNodeNames.get(tn.name) ?? tn.name, {
                     node: tn,
                     initialTransformations: {
                         position: tn.position.clone(),
                         scaling: tn.scaling.clone(),
-                        quaternion: tn.rotationQuaternion.clone(),
+                        quaternion: tn.rotationQuaternion?.clone(),
+                        rotation: tn.rotation.clone(),
                     },
                 });
+
+                if (!tn.rotationQuaternion) {
+                    tn.rotationQuaternion = Quaternion.FromEulerAngles(tn.rotation.x, tn.rotation.y, tn.rotation.z);
+                    tn.rotation.setAll(0);
+                }
             }
         }
 
@@ -339,9 +335,9 @@ export class AnimatorAvatar {
                             Logger.Warn(
                                 `RetargetAnimationGroup - Avatar '${this.name}', AnimationGroup '${animationGroup.name}': "${sourceTransformNodeName}" bone not found in any skeleton of avatar: animation removed.`
                             );
-                            animationGroup.targetedAnimations.splice(i, 1);
-                            i--;
                         }
+                        animationGroup.targetedAnimations.splice(i, 1);
+                        i--;
                         break;
                     }
 
@@ -465,6 +461,7 @@ export class AnimatorAvatar {
 
     private _computeBoneWorldMatrices() {
         this.skeletons.forEach((skeleton) => {
+            skeleton.returnToRest();
             skeleton.prepare(true);
 
             skeleton.bones.forEach((bone) => {
@@ -775,7 +772,7 @@ export class AnimatorAvatar {
             return null;
         }
 
-        let targetGroundReferenceTransformNodeOrBone: Nullable<TransformNode | Bone> = null;
+        let targetGroundReferenceTransformNodeOrBone: Nullable<TransformNode | Bone>;
 
         if (targetRootTransformNodeOrBone instanceof TransformNode) {
             targetGroundReferenceTransformNodeOrBone = this.findBoneByTransformNode(remappedGroundReferenceNodeName)?._linkedTransformNode!;
@@ -842,9 +839,13 @@ export class AnimatorAvatar {
 
         sourceTransformNodeNameToNode.forEach((data) => {
             const { node, initialTransformations } = data;
-            node.position = initialTransformations.position;
-            node.scaling = initialTransformations.scaling;
-            node.rotationQuaternion = initialTransformations.quaternion;
+            node.position.copyFrom(initialTransformations.position);
+            node.scaling.copyFrom(initialTransformations.scaling);
+            if (initialTransformations.quaternion) {
+                node.rotationQuaternion!.copyFrom(initialTransformations.quaternion);
+            } else {
+                node.rotation.copyFrom(initialTransformations.rotation);
+            }
             node.computeWorldMatrix(true);
         });
     }

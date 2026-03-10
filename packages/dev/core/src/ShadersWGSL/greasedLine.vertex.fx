@@ -38,21 +38,21 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     #include<instancesVertex>
 
-    vertexOutputs.grlColorPointer = input.grl_colorPointers;
+    vertexOutputs.grlColorPointer = vertexInputs.grl_colorPointers;
     let grlMatrix: mat4x4f = scene.viewProjection * mesh.world ;
 
     #ifdef GREASED_LINE_CAMERA_FACING
         let grlBaseWidth: f32 = uniforms.grlWidth;
 
-        let grlPrevious: vec3f = input.grl_previousAndSide.xyz;
-        let grlSide: f32 = input.grl_previousAndSide.w;
+        let grlPrevious: vec3f = vertexInputs.grl_previousAndSide.xyz;
+        let grlSide: f32 = vertexInputs.grl_previousAndSide.w;
 
-        let grlNext: vec3f = input.grl_nextAndCounters.xyz;
-        vertexOutputs.grlCounters = input.grl_nextAndCounters.w;
-        let grlWidth:f32 = grlBaseWidth * input.grl_widths;
+        let grlNext: vec3f = vertexInputs.grl_nextAndCounters.xyz;
+        vertexOutputs.grlCounters = vertexInputs.grl_nextAndCounters.w;
+        let grlWidth:f32 = grlBaseWidth * vertexInputs.grl_widths;
 
         #ifdef GREASED_LINE_USE_OFFSETS
-            var grlPositionOffset: vec3f = input.grl_offsets;
+            var grlPositionOffset: vec3f = vertexInputs.grl_offsets;
         #else
             var grlPositionOffset = vec3f(0.);
         #endif
@@ -89,8 +89,13 @@ fn main(input : VertexInputs) -> FragmentInputs {
         }
         vertexOutputs.position = vec4f(grlFinalPosition.xy + grlNormal.xy * grlSide, grlFinalPosition.z, grlFinalPosition.w);
     #else
-        vertexOutputs.grlCounters = input.grl_counters;
-        vertexOutputs.position = grlMatrix * vec4f((vertexInputs.position + input.grl_offsets) + input.grl_slopes * input.grl_widths, 1.0) ;
+        vertexOutputs.grlCounters = vertexInputs.grl_counters;
+        #ifdef GREASED_LINE_USE_OFFSETS
+            let grlPositionOffset: vec3f = vertexInputs.grl_offsets;
+        #else
+            let grlPositionOffset: vec3f = vec3f(0.0);
+        #endif
+        vertexOutputs.position = grlMatrix * vec4f(vertexInputs.position + grlPositionOffset + vertexInputs.grl_slopes * vertexInputs.grl_widths, 1.0);
     #endif
 
     #define CUSTOM_VERTEX_MAIN_END

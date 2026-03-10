@@ -205,7 +205,7 @@ ThinEngine.prototype.endTimeQuery = function (token: _TimeToken): int {
     }
 
     if (available && !disjoint) {
-        let result = 0;
+        let result: number;
         if (caps.canUseTimestampForTimerQuery) {
             if (!token._startTimeQuery || !token._endTimeQuery) {
                 return -1;

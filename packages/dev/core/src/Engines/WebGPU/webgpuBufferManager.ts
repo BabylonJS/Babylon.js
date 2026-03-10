@@ -195,7 +195,7 @@ export class WebGPUBufferManager {
                         }
                         const data2 = new Uint8Array(data.buffer);
                         let offset = bytesPerRow,
-                            offset2 = 0;
+                            offset2: number;
                         for (let y = 1; y < height; ++y) {
                             offset2 = y * bytesPerRowAligned;
                             for (let x = 0; x < bytesPerRow; ++x) {

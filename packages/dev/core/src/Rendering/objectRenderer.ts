@@ -764,16 +764,21 @@ export class ObjectRenderer {
 
         const numPasses = this.options.numPasses;
         for (let passIndex = 0; passIndex < numPasses && returnValue; passIndex++) {
-            let currentRenderList: Nullable<Array<AbstractMesh>> = null;
             const defaultRenderList = this.renderList ? this.renderList : scene.frameGraph ? scene.meshes : scene.getActiveMeshes().data;
-            const defaultRenderListLength = this.renderList ? this.renderList.length : scene.frameGraph ? scene.meshes.length : scene.getActiveMeshes().length;
+            const defaultRenderListLength = this.renderList || scene.frameGraph ? defaultRenderList.length : scene.getActiveMeshes().length;
 
             this._engine.currentRenderPassId = this._renderPassIds[passIndex];
 
             this.onBeforeRenderObservable.notifyObservers(passIndex);
 
+            let currentRenderList: Nullable<Array<AbstractMesh>> = null;
+            let currentRenderListLength = defaultRenderListLength;
+
             if (this.getCustomRenderList) {
                 currentRenderList = this.getCustomRenderList(passIndex, defaultRenderList, defaultRenderListLength);
+                if (currentRenderList) {
+                    currentRenderListLength = currentRenderList.length;
+                }
             }
 
             if (!currentRenderList) {
@@ -784,7 +789,7 @@ export class ObjectRenderer {
                 scene.updateTransformMatrix(true);
             }
 
-            for (let i = 0; i < currentRenderList.length && returnValue; ++i) {
+            for (let i = 0; i < currentRenderListLength && returnValue; ++i) {
                 const mesh = currentRenderList[i];
 
                 if (!mesh.isEnabled() || mesh.isBlocked || !mesh.isVisible || !mesh.subMeshes) {
@@ -827,11 +832,11 @@ export class ObjectRenderer {
 
         // Get the list of meshes to dispatch to the rendering manager
         let currentRenderList: Nullable<Array<AbstractMesh>> = null;
-        let currentRenderListLength = 0;
-        let checkLayerMask = false;
+        let currentRenderListLength: number;
+        let checkLayerMask: boolean;
 
         const defaultRenderList = this.renderList ? this.renderList : scene.frameGraph ? scene.meshes : scene.getActiveMeshes().data;
-        const defaultRenderListLength = this.renderList ? this.renderList.length : scene.frameGraph ? scene.meshes.length : scene.getActiveMeshes().length;
+        const defaultRenderListLength = this.renderList || scene.frameGraph ? defaultRenderList.length : scene.getActiveMeshes().length;
 
         if (this.getCustomRenderList) {
             currentRenderList = this.getCustomRenderList(passIndex, defaultRenderList, defaultRenderListLength);
@@ -839,8 +844,10 @@ export class ObjectRenderer {
 
         if (!currentRenderList) {
             // No custom render list provided, we prepare the rendering for the default list, but check
-            // first if we did not already performed the preparation (in this frame) before so as to avoid re-doing it several times
-            if (this._defaultRenderListPrepared && !winterIsComing) {
+            // first if we did not already performed the preparation (in this frame) before so as to avoid re-doing it several times.
+            // In WebGPU, instance data (visibleInstances) is stored per render pass ID. Each cascade/face (in CSM) uses a different
+            // render pass ID, so we must re-prepare for each pass to register instances in the correct per-pass storage.
+            if (this._defaultRenderListPrepared && !winterIsComing && !this._engine.isWebGPU) {
                 return defaultRenderList;
             }
             this._defaultRenderListPrepared = true;
@@ -899,7 +906,7 @@ export class ObjectRenderer {
                         continue;
                     }
 
-                    let meshToRender: Nullable<AbstractMesh> = null;
+                    let meshToRender: Nullable<AbstractMesh>;
 
                     if (cameraForLOD) {
                         const meshToRenderAndFrameId = mesh._internalAbstractMeshDataInfo._currentLOD.get(cameraForLOD);

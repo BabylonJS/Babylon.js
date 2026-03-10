@@ -1,7 +1,7 @@
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import { Vector3, Quaternion } from "core/Maths";
-import { AbstractMesh } from "core/Meshes";
+import { Mesh } from "core/Meshes";
 import { Scene } from "core/scene";
 
 /**
@@ -41,8 +41,8 @@ describe("Babylon position and rotation", () => {
         it("handles parenting", () => {
             // Parent child positions
             const scene = new Scene(subject);
-            const child = new AbstractMesh("", scene);
-            const parent = new AbstractMesh("", scene);
+            const child = new Mesh("", scene);
+            const parent = new Mesh("", scene);
             parent.position.set(0, 0, 1);
             child.position.set(0, 0, -1);
             child.parent = parent;
