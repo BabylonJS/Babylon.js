@@ -130,6 +130,12 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             this._options.mainTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         }
 
+        // When using an 8-bit render target, we cannot reliably store camera-space Z in the mask texture:
+        // depth would be clamped/quantized, breaking occlusion comparisons. In that case, force-disable
+        // storeCameraSpaceZ so the layer falls back to the supported behavior.
+        if (this._options.storeCameraSpaceZ && this._options.mainTextureType === Constants.TEXTURETYPE_UNSIGNED_BYTE) {
+            this._options.storeCameraSpaceZ = false;
+        }
         // set clear color
         this.neutralColor = new Color4(0.0, this._options.storeCameraSpaceZ ? 0.0 : 1.0, 0.0, 1.0);
 
