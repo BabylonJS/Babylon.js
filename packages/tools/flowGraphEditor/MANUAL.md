@@ -208,6 +208,7 @@ Signal ports (execution flow) have no type restrictions — any signal output ca
 | **Ctrl+G** / **Cmd+G**             | Create a smart group from selected blocks     |
 | **F9**                             | Toggle breakpoint on selected execution block |
 | **Ctrl+M** / **Cmd+M**             | Create a sticky note at cursor position       |
+| **Ctrl+F** / **Cmd+F**             | Find in graph (search nodes/frames)           |
 | **Enter** (in scene preview input) | Load the Playground snippet                   |
 
 ---
@@ -285,6 +286,37 @@ Click a note to select it. Selected notes have a highlighted border. Press **Del
 ### Persistence
 
 Sticky notes are saved with the graph and restored on load. They also appear as yellow rectangles on the minimap.
+
+---
+
+## Find in Graph (Ctrl+F)
+
+Search for nodes and frames in the current graph by name or block type.
+
+### Opening the Search
+
+Press **Ctrl+F** (or **Cmd+F** on macOS) to open the search bar in the top-right corner of the canvas.
+
+### Searching
+
+Type a query to filter. Matches include:
+
+- **Node display name** (e.g., "Branch", "GetVariable")
+- **Block class name** (e.g., "FlowGraphBranchBlock")
+- **Frame name**
+
+All matching items are outlined in yellow. The current match is highlighted in blue and the viewport pans to center on it.
+
+### Navigating Results
+
+- **Enter** or **Down Arrow** — go to the next match
+- **Shift+Enter** or **Up Arrow** — go to the previous match
+- Use the **up/down buttons** in the search bar
+- Results wrap around (last → first and vice versa)
+
+### Closing
+
+Press **Escape** or click the **X** button to close the search bar. All highlights are removed.
 
 ---
 

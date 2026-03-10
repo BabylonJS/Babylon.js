@@ -58,9 +58,9 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 - [x] **No floating comment/note annotations** — _(Implemented — Ctrl+M creates a sticky note at the cursor position. Notes have an editable title (double-click) and body (always editable). Drag to reposition, resize via corner handle. Notes are serialized with the graph, participate in selection/deletion, and appear on the minimap as yellow rectangles.)_
 
-- [ ] **No nested frames** — Frames can group blocks, but can't be nested inside other frames for hierarchical organization of large graphs.
+<!-- - [ ] **No nested frames** — Frames can group blocks, but can't be nested inside other frames for hierarchical organization of large graphs. -->
 
-- [ ] **No "find in graph" / block search** — The block palette has search, but there's no way to search within the current graph to find a specific block by name or type (e.g., "find all GetVariable blocks").
+- [x] **No "find in graph" / block search** — _(Implemented — Ctrl+F opens a search bar in the top-right of the canvas. Type to filter nodes and frames by name or block type. Arrow keys or Enter/Shift+Enter navigate between matches. All matches are outlined in yellow; the current match is highlighted in blue and the viewport pans to it. Escape closes the search.)_
 
 - [ ] **No per-port default value editing for complex types** — The INPUT VALUES panel only handles primitives (number, boolean, string, FlowGraphInteger). Vector2/3/4, Color3/4, Matrix defaults can't be set inline without connected Constant blocks.
 

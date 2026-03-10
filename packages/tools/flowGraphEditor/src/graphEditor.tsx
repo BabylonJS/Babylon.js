@@ -281,6 +281,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 return;
             }
 
+            // Ctrl+F — Find in graph
+            if ((evt.ctrlKey || evt.metaKey) && (evt.key === "f" || evt.key === "F")) {
+                evt.preventDefault();
+                this._graphCanvas.showSearch();
+                return;
+            }
+
             void this._graphCanvas.handleKeyDownAsync(
                 evt,
                 (nodeData) => {
@@ -762,6 +769,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                                 stateManager={this.props.globalState.stateManager}
                                 enableMinimap={true}
                                 enableStickyNotes={true}
+                                enableFindInGraph={true}
                                 onEmitNewNode={(nodeData) => {
                                     return this.appendBlock(nodeData.data as FlowGraphBlock);
                                 }}

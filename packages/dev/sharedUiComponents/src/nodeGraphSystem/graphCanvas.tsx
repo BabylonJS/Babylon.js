@@ -23,6 +23,7 @@ import { TypeLedger } from "./typeLedger";
 import { RefreshNode } from "./tools";
 import { SearchBoxComponent } from "./searchBox";
 import { GraphMinimapComponent } from "./graphMinimap";
+import { GraphSearchComponent } from "./graphSearch";
 
 export interface IGraphCanvasComponentProps {
     stateManager: StateManager;
@@ -31,6 +32,8 @@ export interface IGraphCanvasComponentProps {
     enableMinimap?: boolean;
     /** When true, sticky note annotations can be created and managed on the canvas. Default false. */
     enableStickyNotes?: boolean;
+    /** When true, Ctrl+F opens a find-in-graph search bar. Default false. */
+    enableFindInGraph?: boolean;
 }
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> implements INodeContainer {
@@ -90,6 +93,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _isCopyingOrPasting: boolean = false;
     private _copiedNodes: GraphNode[] = [];
     private _copiedFrames: GraphFrame[] = [];
+    private _searchRef = React.createRef<GraphSearchComponent>();
 
     public get gridSize() {
         return this._gridSize;
@@ -1611,6 +1615,15 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return note;
     }
 
+    /**
+     * Open the find-in-graph search bar, if enabled.
+     */
+    showSearch() {
+        if (this.props.enableFindInGraph) {
+            this._searchRef.current?.show();
+        }
+    }
+
     override render() {
         return (
             <div
@@ -1630,6 +1643,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 </div>
                 <SearchBoxComponent stateManager={this.stateManager} />
                 {this.props.enableMinimap && <GraphMinimapComponent canvas={this} />}
+                {this.props.enableFindInGraph && <GraphSearchComponent ref={this._searchRef} canvas={this} />}
             </div>
         );
     }
