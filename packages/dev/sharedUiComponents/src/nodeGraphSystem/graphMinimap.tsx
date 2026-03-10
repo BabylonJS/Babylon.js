@@ -129,8 +129,9 @@ export class GraphMinimapComponent extends React.Component<IGraphMinimapComponen
         const canvas = this.props.canvas;
         const nodes = canvas.nodes;
         const frames = canvas.frames;
+        const stickyNotes = canvas.stickyNotes;
 
-        if (nodes.length === 0 && frames.length === 0) {
+        if (nodes.length === 0 && frames.length === 0 && stickyNotes.length === 0) {
             return { minX: 0, minY: 0, maxX: 1000, maxY: 700 };
         }
 
@@ -174,6 +175,25 @@ export class GraphMinimapComponent extends React.Component<IGraphMinimapComponen
             }
             if (fy + fh > maxY) {
                 maxY = fy + fh;
+            }
+        }
+
+        for (const note of stickyNotes) {
+            const sx = note.x;
+            const sy = note.y;
+            const sw = note.width || 180;
+            const sh = note.height || 120;
+            if (sx < minX) {
+                minX = sx;
+            }
+            if (sy < minY) {
+                minY = sy;
+            }
+            if (sx + sw > maxX) {
+                maxX = sx + sw;
+            }
+            if (sy + sh > maxY) {
+                maxY = sy + sh;
             }
         }
 
@@ -258,6 +278,16 @@ export class GraphMinimapComponent extends React.Component<IGraphMinimapComponen
             const nh = Math.max((node.height || 40) * scale, 1.5);
             ctx.fillStyle = selectedSet.has(node) ? "#5da0e0" : "#888";
             ctx.fillRect(nx, ny, nw, nh);
+        }
+
+        // Draw sticky notes
+        for (const note of canvas.stickyNotes) {
+            const snx = toMiniX(note.x);
+            const sny = toMiniY(note.y);
+            const snw = (note.width || 180) * scale;
+            const snh = (note.height || 120) * scale;
+            ctx.fillStyle = "rgba(255, 235, 130, 0.5)";
+            ctx.fillRect(snx, sny, snw, snh);
         }
 
         // Draw viewport rectangle

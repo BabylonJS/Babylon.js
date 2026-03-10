@@ -7,6 +7,7 @@ import { NodePort } from "./nodePort";
 import { Vector2 } from "core/Maths/math.vector";
 import { DataStorage } from "core/Misc/dataStorage";
 import { GraphFrame } from "./graphFrame";
+import { GraphStickyNote } from "./graphStickyNote";
 import type { IEditorData, IFrameData } from "./interfaces/nodeLocationInfo";
 import { FrameNodePort } from "./frameNodePort";
 import type { StateManager } from "./stateManager";
@@ -28,6 +29,8 @@ export interface IGraphCanvasComponentProps {
     onEmitNewNode: (nodeData: INodeData) => GraphNode;
     /** When true, a minimap overlay is shown during zoom/pan. Default false. */
     enableMinimap?: boolean;
+    /** When true, sticky note annotations can be created and managed on the canvas. Default false. */
+    enableStickyNotes?: boolean;
 }
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> implements INodeContainer {
@@ -71,6 +74,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _selectedFrames: GraphFrame[] = [];
     private _frameCandidate: Nullable<HTMLDivElement> = null;
     private _frames: GraphFrame[] = [];
+    private _stickyNotes: GraphStickyNote[] = [];
+    private _selectedStickyNotes: GraphStickyNote[] = [];
     private _nodeDataContentList = new Array<any>();
 
     private _altKeyIsPressed = false;
@@ -157,6 +162,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._selectedFrames;
     }
 
+    public get stickyNotes() {
+        return this._stickyNotes;
+    }
+
+    public get selectedStickyNotes() {
+        return this._selectedStickyNotes;
+    }
+
     public get selectedPort() {
         return this._selectedPort;
     }
@@ -193,6 +206,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return false;
     }
 
+    private _deselectAllStickyNotes() {
+        for (const note of this._selectedStickyNotes) {
+            note.setIsSelected(false);
+        }
+        this._selectedStickyNotes = [];
+    }
+
     constructor(props: IGraphCanvasComponentProps) {
         super(props);
 
@@ -203,22 +223,42 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 this._selectedLink = null;
                 this._selectedFrames = [];
                 this._selectedPort = null;
+                for (const note of this._selectedStickyNotes) {
+                    note.setIsSelected(false);
+                }
+                this._selectedStickyNotes = [];
             } else {
                 if (selection instanceof NodeLink) {
                     this._selectedNodes = [];
                     this._selectedFrames = [];
                     this._selectedLink = selection;
                     this._selectedPort = null;
+                    this._deselectAllStickyNotes();
                 } else if (selection instanceof NodePort) {
                     this._selectedNodes = [];
                     this._selectedFrames = [];
                     this._selectedLink = null;
                     this._selectedPort = selection;
+                    this._deselectAllStickyNotes();
                 } else if (selection instanceof FrameNodePort) {
                     this._selectedNodes = [];
                     this._selectedFrames = [];
                     this._selectedLink = null;
                     this._selectedPort = selection;
+                    this._deselectAllStickyNotes();
+                } else if (this.props.enableStickyNotes && selection instanceof GraphStickyNote) {
+                    if (this._multiKeyIsPressed || this._shiftKeyIsPressed || forceKeepSelection) {
+                        if (!this._selectedStickyNotes.includes(selection)) {
+                            this._selectedStickyNotes.push(selection);
+                        }
+                    } else {
+                        this._selectedNodes = [];
+                        this._selectedFrames = [];
+                        this._selectedStickyNotes = [selection];
+                        this._selectedLink = null;
+                        this._selectedPort = null;
+                    }
+                    selection.setIsSelected(true);
                 } else if (selection instanceof GraphNode || selection instanceof GraphFrame) {
                     // If in marquee selection mode, always prioritize selecting nodes. Otherwise, always prioritize selecting the type of
                     // the selected element
@@ -250,6 +290,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                                 this._selectedNodes = [];
                                 this._selectedLink = null;
                                 this._selectedPort = null;
+                                this._deselectAllStickyNotes();
                             }
                         } else if (selection instanceof GraphNode) {
                             if (this._multiKeyIsPressed || this._shiftKeyIsPressed || forceKeepSelection) {
@@ -261,6 +302,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                                 this._selectedNodes = [selection];
                                 this._selectedLink = null;
                                 this._selectedPort = null;
+                                this._deselectAllStickyNotes();
                             }
                         }
                     }
@@ -307,6 +349,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 editorData.zoom = this.zoom;
                 for (const frame of this._frames) {
                     editorData.frames.push(frame.serialize(true));
+                }
+                if (this.props.enableStickyNotes) {
+                    editorData.stickyNotes = [];
+                    for (const note of this._stickyNotes) {
+                        editorData.stickyNotes.push(note.serialize());
+                    }
                 }
             }
         };
@@ -440,6 +488,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 }
                 frame.dispose();
             }
+        }
+
+        if (this.props.enableStickyNotes && this._selectedStickyNotes.length) {
+            needRebuild = true;
+            for (const note of this._selectedStickyNotes) {
+                note.dispose();
+            }
+            this._selectedStickyNotes = [];
         }
 
         if (!needRebuild) {
@@ -782,8 +838,16 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         for (const frame of frames) {
             frame.dispose();
         }
+
+        const notes = this._stickyNotes.splice(0);
+        for (const note of notes) {
+            note.element.parentElement?.removeChild(note.element);
+        }
+
         this._nodes = [];
         this._frames = [];
+        this._stickyNotes = [];
+        this._selectedStickyNotes = [];
         this._links = [];
         this._graphCanvas.innerHTML = "";
         this._svgCanvas.innerHTML = "";
@@ -1463,7 +1527,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             frame.dispose();
         }
 
+        const notes = this._stickyNotes.splice(0);
+        for (const note of notes) {
+            note.element.parentElement?.removeChild(note.element);
+        }
+
         this._frames = [];
+        this._stickyNotes = [];
+        this._selectedStickyNotes = [];
         this.x = editorData.x || 0;
         this.y = editorData.y || 0;
         this.zoom = editorData.zoom || 1;
@@ -1473,6 +1544,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             for (const frameData of editorData.frames) {
                 const frame = GraphFrame.Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
+            }
+        }
+
+        // Sticky notes
+        if (this.props.enableStickyNotes && editorData.stickyNotes) {
+            for (const noteData of editorData.stickyNotes) {
+                const note = GraphStickyNote.Parse(noteData, this);
+                this._stickyNotes.push(note);
             }
         }
     }
@@ -1512,6 +1591,24 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         const frame = GraphFrame.Parse(frameData, this, this.props.stateManager.getEditorDataMap());
         this._frames.push(frame);
         this.stateManager.onSelectionChangedObservable.notifyObservers({ selection: frame });
+    }
+
+    /**
+     * Create a new sticky note at the given canvas-space position.
+     * @param x - x position in canvas space
+     * @param y - y position in canvas space
+     * @returns the created sticky note
+     */
+    addStickyNote(x: number, y: number): GraphStickyNote | null {
+        if (!this.props.enableStickyNotes) {
+            return null;
+        }
+        const note = new GraphStickyNote(this);
+        note.x = x;
+        note.y = y;
+        this._stickyNotes.push(note);
+        this.stateManager.onSelectionChangedObservable.notifyObservers({ selection: note });
+        return note;
     }
 
     override render() {

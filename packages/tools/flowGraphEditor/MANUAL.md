@@ -207,6 +207,7 @@ Signal ports (execution flow) have no type restrictions — any signal output ca
 | **Ctrl+V** / **Cmd+V**             | Paste copied blocks at cursor position        |
 | **Ctrl+G** / **Cmd+G**             | Create a smart group from selected blocks     |
 | **F9**                             | Toggle breakpoint on selected execution block |
+| **Ctrl+M** / **Cmd+M**             | Create a sticky note at cursor position       |
 | **Enter** (in scene preview input) | Load the Playground snippet                   |
 
 ---
@@ -256,6 +257,34 @@ Deleting a frame (selecting the frame and pressing **Delete**) removes **only th
 ### Copying a Smart Group
 
 Select the frame and press **Ctrl+C** / **Cmd+C**, then **Ctrl+V** / **Cmd+V** to paste a copy. The copy includes all blocks, their internal connections, and the frame's collapse/port exposure state.
+
+---
+
+## Sticky Notes (Ctrl+M)
+
+Sticky notes are free-floating annotations you can place anywhere on the canvas to document sections of your graph.
+
+### Creating a Sticky Note
+
+Press **Ctrl+M** (or **Cmd+M** on macOS) to create a new sticky note at the current cursor position.
+
+### Editing
+
+- **Title:** Double-click the title bar to edit.
+- **Body:** Click the body area and type — it is always editable.
+
+### Moving and Resizing
+
+- **Drag** the title bar to reposition the note.
+- **Resize** by dragging the handle at the bottom-right corner.
+
+### Selection and Deletion
+
+Click a note to select it. Selected notes have a highlighted border. Press **Delete** or **Backspace** to remove selected notes. Multi-select with Ctrl+click or Shift+click.
+
+### Persistence
+
+Sticky notes are saved with the graph and restored on load. They also appear as yellow rectangles on the minimap.
 
 ---
 

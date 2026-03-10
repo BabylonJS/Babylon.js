@@ -56,7 +56,7 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 - [x] **No inline editing of numeric values on the canvas** — Other Babylon.js editors (NME, NGE, NPE) allow editing numeric defaults directly on the node via inline widgets. The flow graph editor required using the property panel for all value edits. _(Implemented — `ConnectionPointPortData.directValueDefinition` now exposes Number and Integer input ports for inline editing via the shared `BuildFloatUI` widget.)_
 
-- [ ] **No floating comment/note annotations** — Block-level comments exist, but free-floating sticky notes can't be placed on the canvas to document sections of the graph.
+- [x] **No floating comment/note annotations** — _(Implemented — Ctrl+M creates a sticky note at the cursor position. Notes have an editable title (double-click) and body (always editable). Drag to reposition, resize via corner handle. Notes are serialized with the graph, participate in selection/deletion, and appear on the minimap as yellow rectangles.)_
 
 - [ ] **No nested frames** — Frames can group blocks, but can't be nested inside other frames for hierarchical organization of large graphs.
 

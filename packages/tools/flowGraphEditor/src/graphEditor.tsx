@@ -270,6 +270,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 return;
             }
 
+            // Ctrl+M — Add a sticky note at the current mouse position
+            if ((evt.ctrlKey || evt.metaKey) && (evt.key === "m" || evt.key === "M")) {
+                evt.preventDefault();
+                const zoomLevel = this._graphCanvas.zoom;
+                const container = this.props.globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement;
+                const x = (this._mouseLocationX - (container?.offsetLeft ?? 0) - this._graphCanvas.x) / zoomLevel;
+                const y = (this._mouseLocationY - (container?.offsetTop ?? 0) - this._graphCanvas.y) / zoomLevel;
+                this._graphCanvas.addStickyNote(x, y);
+                return;
+            }
+
             void this._graphCanvas.handleKeyDownAsync(
                 evt,
                 (nodeData) => {
@@ -750,6 +761,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                                 ref={this._graphCanvasRef}
                                 stateManager={this.props.globalState.stateManager}
                                 enableMinimap={true}
+                                enableStickyNotes={true}
                                 onEmitNewNode={(nodeData) => {
                                     return this.appendBlock(nodeData.data as FlowGraphBlock);
                                 }}
