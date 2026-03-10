@@ -171,7 +171,7 @@ export class ExtrudeGeometryBlock extends NodeGeometryBlock {
 
             // Collect boundary edges with winding info
             const boundaryEdges: { a: number; b: number; orderedAb: boolean }[] = [];
-            for (const [key, value] of edgeCount) {
+            for (const [key, value] of Array.from(edgeCount)) {
                 if (value.count === 1) {
                     const parts = key.split("_");
                     const minV = parseInt(parts[0]);
