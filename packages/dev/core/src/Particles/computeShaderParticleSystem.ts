@@ -93,6 +93,8 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         this._simParamsComputeShader.addUniform("randomTextureSize", 1);
         this._simParamsComputeShader.addUniform("lifeTime", 2);
         this._simParamsComputeShader.addUniform("emitPower", 2);
+        this._simParamsComputeShader.addUniform("emitIndex", 1);
+        this._simParamsComputeShader.addUniform("emitCount", 1);
         if (!this._parent._colorGradientsTexture) {
             this._simParamsComputeShader.addUniform("color1", 4);
             this._simParamsComputeShader.addUniform("color2", 4);
