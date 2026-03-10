@@ -3442,6 +3442,12 @@
             "renderCount": 2
         },
         {
+            "title": "OpenPBR Subsurface Transmission Blending - Analytic Lights",
+            "playgroundId": "#GRQHVV#299",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 2
+        },
+        {
             "title": "OpenPBR Subsurface Transmission Blending Zero Depth - IBL",
             "playgroundId": "#GRQHVV#235",
             "excludedEngines": ["webgl1"],
@@ -3462,6 +3468,18 @@
         {
             "title": "OpenPBR Subsurface Dense Scattering - IBL",
             "playgroundId": "#GRQHVV#295",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Subsurface Dense Scattering - Analytic Lights",
+            "playgroundId": "#GRQHVV#300",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 5
+        },
+        {
+            "title": "OpenPBR Subsurface Dense Scattering - Realtime IBL",
+            "playgroundId": "#GRQHVV#301",
             "excludedEngines": ["webgl1"],
             "renderCount": 5
         },
