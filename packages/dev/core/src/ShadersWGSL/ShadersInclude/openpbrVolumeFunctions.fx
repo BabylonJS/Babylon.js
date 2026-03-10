@@ -77,6 +77,9 @@ fn computeOpenPBRSubsurfaceVolume(
     if (minCoeff < 0.0f) {
         volumeParams.absorption_coeff -= vec3f(minCoeff);
     }
+    // For the subsurface slab, we'll reduce the absorption to compensate for the anisotropy and retain
+    // the same overall colour.
+    volumeParams.absorption_coeff *= max(1.0 - anisotropy, 0.0);
     // Set extinction coefficient after shifting the absorption to be non-negative.
     volumeParams.extinction_coeff = volumeParams.absorption_coeff + volumeParams.scatter_coeff;
 

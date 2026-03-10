@@ -1215,7 +1215,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             } else {
                 // The material is volumetric and we have surface tinting, so we need to move that tinting to the coat layer to preserve it.
                 // TODO: If we already have a coat slab, we'll have to merge the two.
-                if (this._material.coatWeight == 0) {
+                if (this._material.coatWeight == 0 && (!this.baseColor.equals(Color3.White()) || this.baseColorTexture)) {
                     this._material.coatWeight = this.subsurfaceWeight;
                     this._material.coatWeightTexture = this.subsurfaceWeightTexture;
                     this._material.coatColor = this._diffuseTransmissionTint;
@@ -1233,7 +1233,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 // If the material is thin-walled or has no attenuation depth, we can use the base color as the transmission color directly.
                 this._material.transmissionColor = this._material.baseColor;
                 this._material.transmissionColorTexture = this._material.baseColorTexture;
-            } else if (this._material.coatWeight == 0) {
+            } else if (this._material.coatWeight == 0 && (!this.baseColor.equals(Color3.White()) || this.baseColorTexture !== null)) {
                 // Otherwise, we have volumetric attenuation so we need to use the coat layer to preserve the base color tinting of glTF.
                 // TODO: If we already have a coat slab, we'll have to merge the two.
                 this._material.coatWeight = this.transmissionWeight;
