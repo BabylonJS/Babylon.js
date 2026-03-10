@@ -8,7 +8,7 @@ import { VertexData } from "../mesh.vertexData";
 import { Matrix, TmpVectors, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Quaternion } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
-import { GaussianSplattingMaterial, GaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { GaussianSplattingMaterial, GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 import "core/Meshes/thinInstanceMesh";
@@ -2234,8 +2234,9 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns a placeholder mesh that can be used to manipulate the part transform
      */
     public addPart(other: GaussianSplattingMesh, disposeOther: boolean = true): Mesh {
-        if (this.partCount >= GaussianSplattingMaxPartCount) {
-            throw new Error(`Cannot add part, as the maximum part count (${GaussianSplattingMaxPartCount}) has been reached`);
+        const maxPartCount = GetGaussianSplattingMaxPartCount(this._scene.getEngine());
+        if (this.partCount >= maxPartCount) {
+            throw new Error(`Cannot add part, as the maximum part count (${maxPartCount}) has been reached`);
         }
 
         const splatCountA = this._vertexCount;
