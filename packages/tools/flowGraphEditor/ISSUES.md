@@ -18,7 +18,7 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 ## High (significantly impacts experience)
 
-- [ ] **Delete removes visual node but not underlying flow-graph block** — The removal callback passed to `handleKeyDownAsync` is a no-op. While `GraphNode.dispose()` severs connections (making non-event blocks unreachable), deleting an **event block** leaves it in `FlowGraph._eventBlocks` — it keeps executing and reappears on the next rebuild. **Root cause:** the `onRemove` callback in `graphEditor.tsx` does not call any FlowGraph API to unregister the block.
+- [x] **Delete removes visual node but not underlying flow-graph block** — _(Fixed — the `onRemove` callback in `graphEditor.tsx` calls `flowGraph.removeBlock(block)`, which removes the block from `_allBlocks` and `_eventBlocks`, cancels any pending async tasks in all active execution contexts, and disconnects all ports. Deleted event blocks no longer keep executing or reappear on rebuild.)_
 
 - [x] **No breakpoints or step-through execution** — You can Start/Pause/Stop the graph, but can't set a breakpoint on a block to pause there. Step-through execution would be invaluable for understanding complex control flow (ForLoop, Switch, MultiGate). _(Implemented)_
 

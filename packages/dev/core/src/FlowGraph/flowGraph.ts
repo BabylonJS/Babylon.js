@@ -6,6 +6,7 @@ import type { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphContext } from "./flowGraphContext";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
+import { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import type { IObjectAccessor } from "./typeDefinitions";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
@@ -257,6 +258,15 @@ export class FlowGraph {
                 if (eIdx !== -1) {
                     list.splice(eIdx, 1);
                 }
+            }
+        }
+        // If the block has pending async tasks (e.g. event subscriptions),
+        // cancel them in all active execution contexts so deletion takes
+        // effect immediately even while the graph is running.
+        if (block instanceof FlowGraphAsyncExecutionBlock) {
+            for (const context of this._executionContexts) {
+                block._cancelPendingTasks(context);
+                block._resetAfterCanceled(context);
             }
         }
         // Disconnect all ports

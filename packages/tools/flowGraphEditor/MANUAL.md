@@ -201,6 +201,8 @@ Signal ports (execution flow) have no type restrictions — any signal output ca
 
 | Key                                | Action                                        |
 | ---------------------------------- | --------------------------------------------- |
+| **Delete** / **Backspace**         | Delete selected blocks (removes from graph)   |
+| **Alt+Delete** / **Alt+Backspace** | Delete and auto-reconnect surrounding nodes   |
 | **Ctrl+C** / **Cmd+C**             | Copy selected blocks (or frames)              |
 | **Ctrl+V** / **Cmd+V**             | Paste copied blocks at cursor position        |
 | **Ctrl+G** / **Cmd+G**             | Create a smart group from selected blocks     |
