@@ -52,6 +52,14 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
             tryCommitValue(event.currentTarget.value);
         }
     };
+    const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+        HandleKeyDown(event);
+        // When validateOnlyOnBlur is set, also commit on Enter for better UX
+        if (event.key === "Enter" && props.validateOnlyOnBlur) {
+            tryCommitValue(event.currentTarget.value);
+        }
+    };
+
     const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
         HandleOnBlur(event);
         if (props.validateOnlyOnBlur) {
@@ -73,7 +81,7 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
                 value={value}
                 onChange={handleChange}
                 onKeyUp={handleKeyUp}
-                onKeyDown={HandleKeyDown}
+                onKeyDown={handleKeyDown}
                 onBlur={handleBlur}
                 className={mergedClassName}
             />
