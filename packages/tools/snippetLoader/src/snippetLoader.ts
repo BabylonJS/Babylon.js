@@ -16,9 +16,28 @@ import type {
 } from "./types";
 import { DefaultRuntimeBaseUrl, RuntimeScriptPaths } from "./types";
 import { FetchSnippet, DEFAULT_SNIPPET_URL } from "./fetchSnippet";
-// Monaco bundles a browser-safe TypeScript (require = void 0) that avoids
-// Node.js builtins.  We only need the compiler API, not the editor.
-import { typescript as ts } from "monaco-editor/esm/vs/language/typescript/lib/typescriptServices";
+
+// -----------------------------------------------------------------------
+// Lazy-loaded TypeScript compiler (Monaco's browser-safe bundle)
+// -----------------------------------------------------------------------
+
+/**
+ * Cached promise for the Monaco-bundled TypeScript compiler.
+ * Loaded on demand the first time a TS snippet needs transpiling
+ * and no custom `transpile` function was provided.
+ */
+let CachedTsPromise: Promise<typeof import("typescript")> | null = null;
+
+async function GetTypeScript(): Promise<typeof import("typescript")> {
+    if (!CachedTsPromise) {
+        CachedTsPromise = import(
+            /* webpackChunkName: "typescript" */
+            "monaco-editor/esm/vs/language/typescript/lib/typescriptServices"
+            // eslint-disable-next-line github/no-then
+        ).then((m) => m.typescript);
+    }
+    return await CachedTsPromise;
+}
 
 // -----------------------------------------------------------------------
 // Base-64 / Unicode helpers
@@ -63,11 +82,11 @@ function DecodeBase64ToString(base64Data: string): string {
  *
  * @param source - The TypeScript source code to transpile.
  * @param fileName - The file name for diagnostics (e.g. `"index.ts"`).
- * @param moduleFormat - Target module format. `"esm"` uses ESNext modules;
- *                       `"script"` uses `ModuleKind.None` (no imports/exports).
  * @returns The transpiled JavaScript string.
  */
-function BuiltInTranspile(source: string, fileName: string, _moduleFormat: ModuleFormat = "esm"): string {
+async function BuiltInTranspile(source: string, fileName: string): Promise<string> {
+    // Lazy-load Monaco's TypeScript compiler on first use.
+    const ts = await GetTypeScript();
     // Always emit ESNext modules so that import/export statements are
     // preserved in the JS output.  For script mode the downstream
     // TransformModuleSyntaxToCjs pass converts them to CJS-like code.
@@ -95,10 +114,9 @@ function BuiltInTranspile(source: string, fileName: string, _moduleFormat: Modul
  *
  * @param tsInstance - TypeScript namespace (must expose `transpileModule`,
  *                     `ScriptTarget`, `ModuleKind`, `JsxEmit`).
- * @param moduleFormat - Target module format (default: `"esm"`).
  * @returns A transpile function that converts TS source to JS.
  */
-export function CreateTypeScriptTranspiler(tsInstance: any, _moduleFormat: ModuleFormat = "esm"): TranspileFn {
+export function CreateTypeScriptTranspiler(tsInstance: any): TranspileFn {
     // Always emit ESNext modules — script mode conversion is handled
     // downstream by TransformModuleSyntaxToCjs.
     return (source: string, fileName: string): string => {
@@ -1306,7 +1324,7 @@ export async function ParseSnippetResponse(response: ISnippetServerResponse, sni
             const hasTs = Object.keys(parsed.files).some((p) => /\.tsx?$/i.test(p));
             let jsFiles: Record<string, string>;
             if (hasTs) {
-                const transpile = options?.transpile ?? ((src: string, fn: string) => BuiltInTranspile(src, fn, moduleFormat));
+                const transpile = options?.transpile ?? (async (src: string, fn: string) => await BuiltInTranspile(src, fn));
                 jsFiles = await TranspileFiles(parsed.files, transpile);
             } else {
                 jsFiles = { ...parsed.files };
