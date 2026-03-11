@@ -6,9 +6,9 @@ import { createEngine } from "./createEngine";
 
 let engine;
 let scene;
-// Track whether current engine is WebGPU so we can detect context-type switches.
+// Track whether the current canvas context type is WebGPU.
 // null means no engine has been created yet.
-let wasWebGPU = null;
+let currentIsWebGPU = null;
 const resize = () => {
     engine && engine.resize();
 };
@@ -23,6 +23,10 @@ const runScene = async () => {
         await Recast();
     } catch (e) {}
     const playgroundId = GetPlaygroundId();
+
+    // Preserve the previous context type before disposing the engine.
+    const previousIsWebGPU = engine ? !!engine.isWebGPU : currentIsWebGPU;
+
     if (engine) {
         engine.dispose();
         engine = undefined;
@@ -33,16 +37,28 @@ const runScene = async () => {
         // during module evaluation (ESM blob).
         window.canvas = canvas;
         const snippet = await LoadPlaygroundAsync(playgroundId);
-        // The snippet provides createEngine and createScene.
-        engine = await snippet.createEngine(canvas);
-        const nowWebGPU = !!engine.isWebGPU;
-        // A canvas context (WebGL ↔ WebGPU) can't be switched once created.
-        // Reload the page so a fresh canvas is used.
-        if (wasWebGPU !== null && wasWebGPU !== nowWebGPU) {
+
+        // When the snippet explicitly targets a different engine type,
+        // reload before creating the next engine so a fresh canvas is used.
+        const requestedIsWebGPU = snippet.engineType === "WebGPU";
+        if (previousIsWebGPU !== null && requestedIsWebGPU !== previousIsWebGPU) {
             location.reload();
             return;
         }
-        wasWebGPU = nowWebGPU;
+
+        // The snippet provides createEngine and createScene.
+        engine = await snippet.createEngine(canvas);
+        const nowWebGPU = !!engine.isWebGPU;
+
+        // A canvas context (WebGL ↔ WebGPU) can't be switched once created.
+        // If a custom snippet createEngine changed context unexpectedly,
+        // reload so a fresh canvas is used.
+        if (previousIsWebGPU !== null && previousIsWebGPU !== nowWebGPU) {
+            location.reload();
+            return;
+        }
+        currentIsWebGPU = nowWebGPU;
+
         // Expose engine as a global for legacy snippet compatibility.
         window.engine = engine;
         // Initialize runtime globals (Havok, Recast, Ammo) that the
@@ -57,6 +73,7 @@ const runScene = async () => {
         } else {
             engine = createdEngine;
         }
+        currentIsWebGPU = !!engine.isWebGPU;
         const createdScene = createScene(engine, canvas); //Call the createScene function
         if (createdScene.then) {
             scene = await createdScene;

@@ -874,6 +874,34 @@ interface IDetectedFunctions {
     createEngineFn: ((...args: any[]) => any) | null;
 }
 
+function DetectFunctionMetadataFromSource(source: string): Pick<IDetectedFunctions, "sceneFunctionName" | "createEngineFn"> & { createEngineSource: CreateEngineSource } {
+    let sceneFunctionName = "";
+
+    if (/\bexport\s+default\s+class\s+Playground\b/.test(source)) {
+        sceneFunctionName = "default.CreateScene";
+    } else if (/\bexport\s+(const|let|var|function)\s+delayCreateScene\b/.test(source)) {
+        sceneFunctionName = "delayCreateScene";
+    } else if (/\bexport\s+(const|let|var|function)\s+delayLoadScene\b/.test(source)) {
+        sceneFunctionName = "delayLoadScene";
+    } else if (/\bexport\s+(const|let|var|function)\s+createScene\b/.test(source)) {
+        sceneFunctionName = "createScene";
+    } else if (/\bexport\s+(const|let|var|function)\s+CreateScene\b/.test(source)) {
+        sceneFunctionName = "CreateScene";
+    } else if (/\bexport\s+(const|let|var|function)\s+createscene\b/.test(source)) {
+        sceneFunctionName = "createscene";
+    } else if (/\bexport\s+default\b/.test(source)) {
+        sceneFunctionName = "default";
+    }
+
+    const hasCreateEngine = /\bexport\s+(const|let|var|function)\s+createEngine\b/.test(source) || /\bexport\s*\{[^}]*\bcreateEngine\b[^}]*\}\s*;?/.test(source);
+
+    return {
+        sceneFunctionName,
+        createEngineFn: hasCreateEngine ? (_: any) => undefined : null,
+        createEngineSource: hasCreateEngine ? "snippet" : "default",
+    };
+}
+
 function DetectFunctions(mod: Record<string, any>): IDetectedFunctions {
     let createSceneFn: any = null;
     let sceneFunctionName = "";
@@ -1073,6 +1101,8 @@ function BuildFunctions(
     // are first called, so the result object can be inspected synchronously.
     let mod: Record<string, any> | null = null;
     let detected: IDetectedFunctions | null;
+    const entrySource = jsFiles[entryName] ?? "";
+    const staticMeta = DetectFunctionMetadataFromSource(entrySource);
 
     const ensureLoadedAsync = async (): Promise<IDetectedFunctions> => {
         if (!detected) {
@@ -1089,8 +1119,8 @@ function BuildFunctions(
         return detected;
     };
 
-    let createEngineSource: CreateEngineSource = "default";
-    let sceneFunctionName = "";
+    let createEngineSource: CreateEngineSource = staticMeta.createEngineSource;
+    let sceneFunctionName = staticMeta.sceneFunctionName;
 
     // eslint-disable-next-line no-restricted-syntax
     const createEngine: IPlaygroundSnippetResult["createEngine"] = async (canvas, options) => {
@@ -1161,7 +1191,9 @@ function BuildFunctions(
         getCreateEngineSource: () => createEngineSource,
         getSceneFunctionName: () => sceneFunctionName,
         initializeMetadataAsync: async () => {
-            await ensureLoadedAsync();
+            if (moduleFormat === "script") {
+                await ensureLoadedAsync();
+            }
         },
     };
 }

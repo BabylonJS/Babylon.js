@@ -124,4 +124,28 @@ describe("snippetLoader", () => {
         const scene = await result.createScene(engine, canvas);
         expect(scene).toEqual({ engine, canvas, ok: true, marker: "loaded" });
     });
+
+    it("does not eagerly execute ESM modules while parsing", async () => {
+        const response = makeResponse({
+            code: "export const createScene = function () { return { ok: true }; };",
+        });
+
+        const createObjectURLSpy = jest.spyOn(URL, "createObjectURL").mockImplementation(() => {
+            throw new Error("should not execute during parse");
+        });
+
+        const result = await ParseSnippetResponse(response, "TEST#3", { moduleFormat: "esm" });
+
+        expect(result.type).toBe("playground");
+        if (result.type !== "playground") {
+            createObjectURLSpy.mockRestore();
+            return;
+        }
+
+        expect(result.sceneFunctionName).toBe("createScene");
+        expect(result.createEngineSource).toBe("default");
+
+        expect(createObjectURLSpy).not.toHaveBeenCalled();
+        createObjectURLSpy.mockRestore();
+    });
 });
