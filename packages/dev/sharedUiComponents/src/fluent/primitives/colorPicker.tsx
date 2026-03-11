@@ -82,13 +82,13 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
         setColor(value); // Ensures the trigger color updates when props.value changes
     }, [value]);
 
-    const ispropertyLinear = isLinearMode ?? false;
+    const isPropertyLinear = isLinearMode ?? false;
 
     /** Color in gamma space — used for visual elements (picker, preview, trigger) */
-    const gammaColor = useMemo(() => (ispropertyLinear ? color.toGammaSpace() : color), [color, ispropertyLinear]);
+    const gammaColor = useMemo(() => (isPropertyLinear ? color.toGammaSpace() : color), [color, isPropertyLinear]);
 
     /** Color in the user-selected display space — used for numeric inputs (RGB, HSV, Hex) */
-    const displayColor = useMemo(() => (isLinear === ispropertyLinear ? color : isLinear ? color.toLinearSpace() : color.toGammaSpace()), [color, isLinear, ispropertyLinear]);
+    const displayColor = useMemo(() => (isLinear === isPropertyLinear ? color : isLinear ? color.toLinearSpace() : color.toGammaSpace()), [color, isLinear, isPropertyLinear]);
 
     const handleColorPickerChange: FluentColorPickerProps["onColorChange"] = (_, data) => {
         // The visual picker always operates in gamma space, convert back to property space
@@ -96,7 +96,7 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
         if (value instanceof Color4) {
             gammaResult = Color4.FromColor3(gammaResult, data.color.a ?? 1);
         }
-        handleChange(ispropertyLinear ? gammaResult.toLinearSpace() : gammaResult);
+        handleChange(isPropertyLinear ? gammaResult.toLinearSpace() : gammaResult);
     };
 
     const handleChange = (newColor: Color3 | Color4) => {
@@ -105,7 +105,7 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
     };
 
     const handleDisplayChange = (newDisplayColor: Color3 | Color4) => {
-        const propertyColor = isLinear === ispropertyLinear ? newDisplayColor : isLinear ? newDisplayColor.toGammaSpace() : newDisplayColor.toLinearSpace();
+        const propertyColor = isLinear === isPropertyLinear ? newDisplayColor : isLinear ? newDisplayColor.toGammaSpace() : newDisplayColor.toLinearSpace();
         handleChange(propertyColor);
     };
 
@@ -140,7 +140,7 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
                             info: (
                                 <Body1>
                                     Choose which color space to display numeric values in. This property stores its color in{" "}
-                                    <Body1Strong>{ispropertyLinear ? "linear" : "gamma"}</Body1Strong> space. The visual picker always shows gamma (screen-accurate) colors.
+                                    <Body1Strong>{isPropertyLinear ? "linear" : "gamma"}</Body1Strong> space. The visual picker always shows gamma (screen-accurate) colors.
                                 </Body1>
                             ),
                         }}
@@ -187,7 +187,7 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
                 </div>
 
                 <div className={classes.inputRow}>
-                    <InputHexField title="Hexadecimal" value={displayColor} isLinear={isLinear} ispropertyLinear={ispropertyLinear} onChange={handleDisplayChange} />
+                    <InputHexField title="Hexadecimal" value={displayColor} isLinear={isLinear} ispropertyLinear={isPropertyLinear} onChange={handleDisplayChange} />
                 </div>
             </div>
         </Popover>
@@ -349,12 +349,12 @@ function getHsvDisplayParams(hsvKey: HsvKey, isFloat: boolean) {
     if (isFloat) {
         // All channels displayed as 0-1
         const internalMax = hsvKey === "h" ? 360 : 1;
-        return { max: 1, toDisplay: (v: number) => v / internalMax, toInternal: (v: number) => v * internalMax, step: 0.01, forceInt: false, precision: 4 as number | undefined };
+        return { max: 1, toDisplay: (v: number) => v / internalMax, toInternal: (v: number) => v * internalMax, step: 0.01, forceInt: false, precision: 4 };
     }
     // Int mode
     const scale = hsvKey === "h" ? 1 : 100;
     const max = hsvKey === "h" ? 360 : 100;
-    return { max, toDisplay: (v: number) => Math.round(v * scale), toInternal: (v: number) => v / scale, step: 1, forceInt: true, precision: undefined as number | undefined };
+    return { max, toDisplay: (v: number) => Math.round(v * scale), toInternal: (v: number) => v / scale, step: 1, forceInt: true, precision: undefined };
 }
 
 /**
