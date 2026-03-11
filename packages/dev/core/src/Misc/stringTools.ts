@@ -43,31 +43,35 @@ export const Decode = (buffer: Uint8Array | Uint16Array): string => {
     return result;
 };
 
-interface Uint8ArrayBase64 {
-    /**
-     * Converts the `Uint8Array` to a base64-encoded string.
-     * @param options If provided, sets the alphabet and padding behavior used.
-     * @returns A base64-encoded string.
-     */
-    toBase64(options?: { alphabet?: "base64" | "base64url" | undefined; omitPadding?: boolean | undefined }): string;
-}
+// TODO: these interfaces will not be needed in the future
+//  (once the version of typescript we are using has that as part of the standard declaration)
+declare global {
+    interface Uint8Array<TArrayBuffer extends ArrayBufferLike = ArrayBufferLike> {
+        /**
+         * Converts the `Uint8Array` to a base64-encoded string.
+         * @param options If provided, sets the alphabet and padding behavior used.
+         * @returns A base64-encoded string.
+         */
+        toBase64?(options?: { alphabet?: "base64" | "base64url" | undefined; omitPadding?: boolean | undefined }): string;
+    }
 
-interface Uint8ArrayConstructorBase64 {
-    /**
-     * Creates a new `Uint8Array` from a base64-encoded string.
-     * @param string The base64-encoded string.
-     * @param options If provided, specifies the alphabet and handling of the last chunk.
-     * @returns A new `Uint8Array` instance.
-     * @throws {SyntaxError} If the input string contains characters outside the specified alphabet, or if the last
-     * chunk is inconsistent with the `lastChunkHandling` option.
-     */
-    fromBase64(
-        string: string,
-        options?: {
-            alphabet?: "base64" | "base64url" | undefined;
-            lastChunkHandling?: "loose" | "strict" | "stop-before-partial" | undefined;
-        }
-    ): Uint8Array<ArrayBuffer>;
+    interface Uint8ArrayConstructor {
+        /**
+         * Creates a new `Uint8Array` from a base64-encoded string.
+         * @param string The base64-encoded string.
+         * @param options If provided, specifies the alphabet and handling of the last chunk.
+         * @returns A new `Uint8Array` instance.
+         * @throws {SyntaxError} If the input string contains characters outside the specified alphabet, or if the last
+         * chunk is inconsistent with the `lastChunkHandling` option.
+         */
+        fromBase64?(
+            string: string,
+            options?: {
+                alphabet?: "base64" | "base64url" | undefined;
+                lastChunkHandling?: "loose" | "strict" | "stop-before-partial" | undefined;
+            }
+        ): Uint8Array<ArrayBuffer>;
+    }
 }
 
 /**
@@ -76,11 +80,11 @@ interface Uint8ArrayConstructorBase64 {
  * @returns true if the native base64 API is available and trustworthy
  */
 function HasNativeBase64(): boolean {
-    if (!(Uint8Array.prototype as unknown as Uint8ArrayBase64).toBase64 || !(Uint8Array as unknown as Uint8ArrayConstructorBase64).fromBase64) {
+    if (!Uint8Array.prototype.toBase64 || !Uint8Array.fromBase64) {
         return false;
     }
     try {
-        (Uint8Array.prototype as unknown as Uint8ArrayBase64).toBase64.call(null);
+        Uint8Array.prototype.toBase64.call(null);
         // spec here: https://tc39.es/ecma262/multipage/indexed-collections.html#sec-validateuint8array
         return false; // must throw, or not spec compliant
     } catch (e: unknown) {
@@ -97,7 +101,7 @@ function HasNativeBase64(): boolean {
 
 function NativeEncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string {
     const bytes = ArrayBuffer.isView(buffer) ? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength) : new Uint8Array(buffer);
-    return (bytes as unknown as Uint8ArrayBase64).toBase64();
+    return bytes.toBase64!();
 }
 
 function JsEncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string {
@@ -129,7 +133,7 @@ function JsEncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): str
 }
 
 function NativeDecodeBase64ToBinary(base64Data: string): ArrayBuffer {
-    return (Uint8Array as unknown as Uint8ArrayConstructorBase64).fromBase64(base64Data).buffer;
+    return Uint8Array.fromBase64!(base64Data).buffer;
 }
 
 function JsDecodeBase64ToBinary(base64Data: string): ArrayBuffer {
