@@ -15,6 +15,10 @@ switch (ExpQsp) {
         ImportPromise = import("./lottie/main");
         break;
     }
+    case "bodytracking": {
+        ImportPromise = import("./bodyTracking/main");
+        break;
+    }
     case "testscene":
     default: {
         ImportPromise = import("./testScene/main");
