@@ -68,7 +68,7 @@ When done with an issue, update the MANUAL.md to reflect the new feature or fix,
 
 ## Low (nice to have)
 
-- [ ] **Canvas reset may leak link observers (likely false positive)** — `GraphCanvas.reset()` clears the `_links` array without explicit `dispose()` on each link. However, `reset()` disposes all nodes first, and `GraphNode.dispose()` cascades into `NodeLink.dispose()` for every attached link. The only theoretical leak is a link in the canvas array not referenced by any node, which is not a normal state. Low priority unless strange selection behavior is observed after many rebuilds.
+- [x] **Canvas reset may leak link observers (likely false positive)** — Confirmed false positive. `GraphCanvas.reset()` disposes all nodes first; `GraphNode.dispose()` clones its `_links` array and calls `link.dispose()` on each; `NodeLink.dispose()` removes the `_onSelectionChangedObserver`. Every link in `_graphCanvas._links` is always referenced by both `nodeA.links` and `nodeB.links` (added in `connectPorts`), so the node-disposal cascade reaches every link. The only theoretical edge case is `_candidateLink` existing during a mid-drag reset, but `svgCanvas.innerHTML = ""` handles DOM cleanup and the scenario is near-impossible in practice. No leak.
 
 - [ ] **No zoom slider or zoom-level indicator** — Users can scroll to zoom, but there's no visible zoom percentage or slider control.
 
