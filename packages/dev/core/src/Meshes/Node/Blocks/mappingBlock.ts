@@ -127,8 +127,7 @@ export class MappingBlock extends NodeGeometryBlock {
                     const absZ = Math.abs(normal.z);
                     const maxDim = Math.max(Math.abs(position.x), Math.abs(position.y), Math.abs(position.z));
 
-                    let u = 0,
-                        v = 0;
+                    let u: number, v: number;
 
                     if (absX >= absY && absX >= absZ) {
                         u = position.y / maxDim - center.y;

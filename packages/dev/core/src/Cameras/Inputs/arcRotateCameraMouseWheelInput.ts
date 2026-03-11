@@ -65,7 +65,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     private _globalOffset: Vector3 = new Vector3(0, 0, 0);
 
     protected _computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
-        let delta = 0;
+        let delta: number;
         const wheelDelta = mouseWheelDelta * 0.01 * this.wheelDeltaPercentage * radius;
         if (mouseWheelDelta > 0) {
             delta = wheelDelta / (1.0 + this.wheelDeltaPercentage);
@@ -87,7 +87,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                 return;
             }
             const event = <IWheelEvent>p.event;
-            let delta = 0;
+            let delta: number;
             const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? FfMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
 
             const wheelDelta = -(event.deltaY * platformScale);

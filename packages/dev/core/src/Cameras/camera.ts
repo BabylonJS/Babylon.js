@@ -158,8 +158,8 @@ export class Camera extends Node {
      * The screen area in scene units squared
      */
     public get screenArea(): number {
-        let x = 0;
-        let y = 0;
+        let x: number;
+        let y: number;
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
             if (this.fovMode === Camera.FOVMODE_VERTICAL_FIXED) {
                 y = this.minZ * 2 * Math.tan(this.fov / 2);

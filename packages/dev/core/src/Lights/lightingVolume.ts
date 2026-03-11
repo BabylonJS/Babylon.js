@@ -608,7 +608,7 @@ export class LightingVolume {
             Vector3.TransformCoordinatesToRef(TmpVec3, invViewMatrix, TmpVec3);
             this._positions[vIndex++] = TmpVec3.x;
             this._positions[vIndex++] = TmpVec3.y;
-            this._positions[vIndex++] = TmpVec3.z;
+            this._positions[vIndex] = TmpVec3.z;
         }
 
         this._mesh.setVerticesData("position", this._positions);

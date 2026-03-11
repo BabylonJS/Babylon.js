@@ -939,7 +939,7 @@ export class VertexData implements IVertexDataLike {
 
         if (mergeMaterialIds) {
             // Merge material infos
-            let materialIndex = 0;
+            let materialIndex: number;
             let indexOffset = 0;
             let vertexOffset = 0;
             const materialInfos: VertexDataMaterialInfo[] = [];
@@ -2054,26 +2054,26 @@ export class VertexData implements IVertexDataLike {
         }
     ): void {
         // temporary scalar variables
-        let index = 0; // facet index
-        let p1p2x = 0.0; // p1p2 vector x coordinate
-        let p1p2y = 0.0; // p1p2 vector y coordinate
-        let p1p2z = 0.0; // p1p2 vector z coordinate
-        let p3p2x = 0.0; // p3p2 vector x coordinate
-        let p3p2y = 0.0; // p3p2 vector y coordinate
-        let p3p2z = 0.0; // p3p2 vector z coordinate
-        let faceNormalx = 0.0; // facet normal x coordinate
-        let faceNormaly = 0.0; // facet normal y coordinate
-        let faceNormalz = 0.0; // facet normal z coordinate
-        let length = 0.0; // facet normal length before normalization
-        let v1x = 0; // vector1 x index in the positions array
-        let v1y = 0; // vector1 y index in the positions array
-        let v1z = 0; // vector1 z index in the positions array
-        let v2x = 0; // vector2 x index in the positions array
-        let v2y = 0; // vector2 y index in the positions array
-        let v2z = 0; // vector2 z index in the positions array
-        let v3x = 0; // vector3 x index in the positions array
-        let v3y = 0; // vector3 y index in the positions array
-        let v3z = 0; // vector3 z index in the positions array
+        let index: number; // facet index
+        let p1p2x: number; // p1p2 vector x coordinate
+        let p1p2y: number; // p1p2 vector y coordinate
+        let p1p2z: number; // p1p2 vector z coordinate
+        let p3p2x: number; // p3p2 vector x coordinate
+        let p3p2y: number; // p3p2 vector y coordinate
+        let p3p2z: number; // p3p2 vector z coordinate
+        let faceNormalx: number; // facet normal x coordinate
+        let faceNormaly: number; // facet normal y coordinate
+        let faceNormalz: number; // facet normal z coordinate
+        let length: number; // facet normal length before normalization
+        let v1x: number; // vector1 x index in the positions array
+        let v1y: number; // vector1 y index in the positions array
+        let v1z: number; // vector1 z index in the positions array
+        let v2x: number; // vector2 x index in the positions array
+        let v2y: number; // vector2 y index in the positions array
+        let v2z: number; // vector2 z index in the positions array
+        let v3x: number; // vector3 x index in the positions array
+        let v3y: number; // vector3 y index in the positions array
+        let v3z: number; // vector3 z index in the positions array
         let computeFacetNormals = false;
         let computeFacetPositions = false;
         let computeFacetPartitioning = false;
@@ -2292,7 +2292,7 @@ export class VertexData implements IVertexDataLike {
 
                 // uvs
                 const lu: number = uvs.length;
-                let u: number = 0;
+                let u: number;
                 for (u = 0; u < lu; u++) {
                     uvs[u + lu] = uvs[u];
                 }

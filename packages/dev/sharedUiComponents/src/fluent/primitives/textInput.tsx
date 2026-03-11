@@ -59,11 +59,11 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
         }
     };
 
-    const mergedClassName = mergeClasses(classes.input, !validateValue(value) ? classes.invalid : "", props.className);
+    const mergedClassName = mergeClasses(classes.inputFill, !validateValue(value) ? classes.invalid : "");
 
     const id = useId("input-button");
     return (
-        <div className={classes.container}>
+        <div className={mergeClasses(classes.container, props.className)}>
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
             <FluentInput
                 {...props}

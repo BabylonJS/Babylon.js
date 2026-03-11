@@ -42,7 +42,6 @@ export function CreateBoxVertexData(options: {
         1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
     ];
     const uvs = [];
-    let positions = [];
     const width = options.width || options.size || 1;
     const height = options.height || options.size || 1;
     const depth = options.depth || options.size || 1;
@@ -95,7 +94,7 @@ export function CreateBoxVertexData(options: {
         indices.push(bottomFaceOrder[0], bottomFaceOrder[2], bottomFaceOrder[3], bottomFaceOrder[0], bottomFaceOrder[1], bottomFaceOrder[2]);
     }
     const scaleArray = [width / 2, height / 2, depth / 2];
-    positions = basePositions.reduce((accumulator: Array<number>, currentValue, currentIndex) => accumulator.concat(currentValue * scaleArray[currentIndex % 3]), []);
+    const positions = basePositions.reduce((accumulator: Array<number>, currentValue, currentIndex) => accumulator.concat(currentValue * scaleArray[currentIndex % 3]), []);
 
     const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 

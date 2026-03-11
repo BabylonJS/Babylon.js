@@ -706,7 +706,6 @@ export class GeometryBufferRenderer {
                     const pbrMaterial = material as OpenPBRMaterial;
 
                     defines.push("#define METALLICWORKFLOW");
-                    metallicWorkflow = true;
                     defines.push("#define METALLIC");
                     defines.push("#define ROUGHNESS");
                     if (pbrMaterial._useRoughnessFromMetallicTextureGreen && pbrMaterial.baseMetalnessTexture) {

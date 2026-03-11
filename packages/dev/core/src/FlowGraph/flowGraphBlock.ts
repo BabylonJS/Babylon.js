@@ -18,6 +18,7 @@ export interface IFlowGraphBlockParseOptions {
      * A function that parses a value from a serialization object.
      * @param key the key of the property
      * @param serializationObject the serialization object where the property is located
+     * @param assetsContainer the assets container
      * @param scene the scene that the block is being parsed in
      * @returns the parsed value
      */

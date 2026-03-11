@@ -299,7 +299,7 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         let onAfterBlurPass: FrameGraphPass<FrameGraphContext> | undefined;
 
         if (this._blurType !== FrameGraphBaseLayerBlurType.None) {
-            let blurTextureType = 0;
+            let blurTextureType: number;
             if (this._engine.getCaps().textureHalfFloatRender) {
                 blurTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
             } else {

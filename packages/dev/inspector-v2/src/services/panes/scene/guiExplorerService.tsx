@@ -87,9 +87,9 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
                 return {
                     get name() {
                         if (IsAdvancedDynamicTexture(entity)) {
-                            return entity.name;
+                            return entity.name || `Unnamed ${entity.getClassName()}`;
                         } else {
-                            return `${entity.name ?? "No name"} [${entity.getClassName()}]`;
+                            return `${entity.name || "Unnamed"} [${entity.getClassName()}]`;
                         }
                     },
                     onChange: onChangeObservable,

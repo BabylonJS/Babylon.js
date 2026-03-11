@@ -254,7 +254,6 @@ export function CreateDecal(
         }
 
         for (let index = 0; index < vertices.length; index += 3) {
-            let total = 0;
             let nV1: Nullable<DecalVertex> = null;
             let nV2: Nullable<DecalVertex> = null;
             let nV3: Nullable<DecalVertex> = null;
@@ -268,7 +267,7 @@ export function CreateDecal(
             const v2Out = d2 > 0;
             const v3Out = d3 > 0;
 
-            total = (v1Out ? 1 : 0) + (v2Out ? 1 : 0) + (v3Out ? 1 : 0);
+            const total = (v1Out ? 1 : 0) + (v2Out ? 1 : 0) + (v3Out ? 1 : 0);
 
             switch (total) {
                 case 0:

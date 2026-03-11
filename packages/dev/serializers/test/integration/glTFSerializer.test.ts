@@ -581,6 +581,54 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.scenes).toHaveLength(1);
             expect(assertionData.scenes[0].nodes).toHaveLength(2);
         });
+        it("should export node animations targeting a meshless root node in a right-handed scene", async () => {
+            const assertionData = await page.evaluate(async () => {
+                window.scene!.useRightHandedSystem = true;
+                const node = new BABYLON.TransformNode("animTarget", window.scene!);
+
+                const animation = new BABYLON.Animation("posAnim", "position", 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                animation.setKeys([
+                    { frame: 0, value: new BABYLON.Vector3(0, 0, 0) },
+                    { frame: 30, value: new BABYLON.Vector3(1, 1, 1) },
+                ]);
+                node.animations.push(animation);
+
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test");
+                const jsonString = glTFData.files["test.gltf"] as string;
+                return JSON.parse(jsonString);
+            });
+            expect(assertionData.nodes).toHaveLength(1);
+            expect(assertionData.nodes[0].name).toEqual("animTarget");
+            expect(assertionData.animations).toHaveLength(1);
+            expect(assertionData.animations[0].channels).toHaveLength(1);
+            expect(assertionData.animations[0].channels[0].target.node).toEqual(0);
+            expect(assertionData.animations[0].channels[0].target.path).toEqual("translation");
+        });
+        it("should export animation group targeting a meshless root node in a right-handed scene", async () => {
+            const assertionData = await page.evaluate(async () => {
+                window.scene!.useRightHandedSystem = true;
+                const node = new BABYLON.TransformNode("animTarget", window.scene!);
+
+                const animation = new BABYLON.Animation("posAnim", "position", 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                animation.setKeys([
+                    { frame: 0, value: new BABYLON.Vector3(0, 0, 0) },
+                    { frame: 30, value: new BABYLON.Vector3(1, 1, 1) },
+                ]);
+
+                const animGroup = new BABYLON.AnimationGroup("testGroup", window.scene!);
+                animGroup.addTargetedAnimation(animation, node);
+
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test");
+                const jsonString = glTFData.files["test.gltf"] as string;
+                return JSON.parse(jsonString);
+            });
+            expect(assertionData.nodes).toHaveLength(1);
+            expect(assertionData.nodes[0].name).toEqual("animTarget");
+            expect(assertionData.animations).toHaveLength(1);
+            expect(assertionData.animations[0].channels).toHaveLength(1);
+            expect(assertionData.animations[0].channels[0].target.node).toEqual(0);
+            expect(assertionData.animations[0].channels[0].target.path).toEqual("translation");
+        });
         it("should not duplicate a shared texture between materials", async () => {
             const assertionData = await page.evaluate(async () => {
                 const texture = new BABYLON.Texture("https://assets.babylonjs.com/environments/backgroundGround.png", window.scene!);

@@ -1177,7 +1177,7 @@ export class AssetContainer extends AbstractAssetContainer {
         const _targetConverter = targetConverter
             ? targetConverter
             : (target: any) => {
-                  let node = null;
+                  let node: any;
 
                   const targetProperty = target.animations.length ? target.animations[0].targetProperty : "";
                   /*

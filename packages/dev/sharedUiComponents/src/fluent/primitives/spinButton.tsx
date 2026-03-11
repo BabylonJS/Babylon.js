@@ -257,7 +257,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     // (validateValue already handles NaN, so no separate isNaN check needed.)
     const isInputInvalid = !validateValue(isEditing ? EvaluateExpression(editText) : value);
 
-    const mergedClassName = mergeClasses(inputClasses.input, isInputInvalid ? inputClasses.invalid : "", props.className);
+    const mergedClassName = mergeClasses(inputClasses.inputFill, isInputInvalid ? inputClasses.invalid : "");
     const inputSlotClassName = mergeClasses(inputClasses.inputSlot, props.inputClassName);
 
     const formattedValue = formatValue(value);
@@ -281,7 +281,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     );
 
     const contentBefore =
-        !props.disableDragButton && (isHovered || isDragging) && !isInputInvalid ? (
+        !props.disableDragButton && !props.disabled && (isHovered || isDragging) && !isInputInvalid ? (
             <ArrowBidirectionalUpDownFilled
                 className={classes.icon}
                 style={{ cursor: isDragging ? "ns-resize" : "pointer" }}
@@ -293,8 +293,9 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
 
     const input = (
         <div
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => {
+            className={props.infoLabel ? undefined : props.className}
+            onPointerEnter={(e) => e.pointerType === "mouse" && setIsHovered(true)}
+            onPointerLeave={() => {
                 if (!isDragging) {
                     setIsHovered(false);
                 }
@@ -308,6 +309,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
                 className={mergedClassName}
                 input={{ className: inputSlotClassName }}
                 value={isEditing ? editText : formattedValue}
+                disabled={props.disabled}
                 onChange={handleInputChange}
                 onFocus={handleFocus}
                 onKeyDown={handleKeyDown}
@@ -319,7 +321,7 @@ export const SpinButton = forwardRef<HTMLInputElement, SpinButtonProps>((props, 
     );
 
     return props.infoLabel ? (
-        <div className={inputClasses.container}>
+        <div className={mergeClasses(inputClasses.container, props.className)}>
             <InfoLabel {...props.infoLabel} htmlFor={id} />
             {input}
         </div>

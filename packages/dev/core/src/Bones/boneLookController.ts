@@ -550,7 +550,7 @@ export class BoneLookController {
         ang2 %= 2 * Math.PI;
         ang2 = ang2 < 0 ? ang2 + 2 * Math.PI : ang2;
 
-        let ab = 0;
+        let ab: number;
 
         if (ang1 < ang2) {
             ab = ang2 - ang1;
