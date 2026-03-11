@@ -322,7 +322,7 @@ function DetectContentType(parsedPayload: Record<string, unknown>): SnippetConte
  */
 type PlaygroundParseResult = Omit<
     IPlaygroundSnippetResult,
-    "createEngine" | "createScene" | "createEngineSource" | "sceneFunctionName" | "jsFiles" | "moduleFormat" | "runtimeFeatures" | "initializeRuntimeAsync"
+    "createEngine" | "createScene" | "createEngineSource" | "sceneFunctionName" | "jsFiles" | "executedCode" | "moduleFormat" | "runtimeFeatures" | "initializeRuntimeAsync"
 >;
 
 function ParsePlaygroundPayload(parsedPayload: Record<string, unknown>, snippetId: string, metadata: SnippetResult["metadata"]): PlaygroundParseResult {
@@ -1342,6 +1342,7 @@ export async function ParseSnippetResponse(response: ISnippetServerResponse, sni
             const result: IPlaygroundSnippetResult = {
                 ...parsed,
                 jsFiles,
+                executedCode: jsFiles[entryName] ?? "",
                 moduleFormat,
                 createEngine: fns.createEngine,
                 createScene: fns.createScene,

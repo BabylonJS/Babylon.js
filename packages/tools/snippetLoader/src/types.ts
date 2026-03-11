@@ -192,6 +192,12 @@ export interface IPlaygroundSnippetResult extends ISnippetResultBase {
      * All files transpiled to JavaScript in the requested {@link ModuleFormat}.
      */
     jsFiles: Record<string, string>;
+    /**
+     * The transpiled JavaScript source of the entry file that is actually
+     * executed (i.e. the file that contains `createScene`).
+     * This is a convenience shorthand for `jsFiles[entryFileName]`.
+     */
+    executedCode: string;
 
     // ── Module format ──────────────────────────────────────────────────
 
