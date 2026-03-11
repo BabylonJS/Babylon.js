@@ -67,11 +67,14 @@ function DecodeBase64ToString(base64Data: string): string {
  *                       `"script"` uses `ModuleKind.None` (no imports/exports).
  * @returns The transpiled JavaScript string.
  */
-function BuiltInTranspile(source: string, fileName: string, moduleFormat: ModuleFormat = "esm"): string {
+function BuiltInTranspile(source: string, fileName: string, _moduleFormat: ModuleFormat = "esm"): string {
+    // Always emit ESNext modules so that import/export statements are
+    // preserved in the JS output.  For script mode the downstream
+    // TransformModuleSyntaxToCjs pass converts them to CJS-like code.
     const result = ts.transpileModule(source, {
         compilerOptions: {
             target: ts.ScriptTarget.ESNext,
-            module: moduleFormat === "esm" ? ts.ModuleKind.ESNext : ts.ModuleKind.None,
+            module: ts.ModuleKind.ESNext,
             jsx: fileName.endsWith(".tsx") ? ts.JsxEmit.ReactJSX : undefined,
             esModuleInterop: false,
             allowJs: true,
@@ -95,12 +98,14 @@ function BuiltInTranspile(source: string, fileName: string, moduleFormat: Module
  * @param moduleFormat - Target module format (default: `"esm"`).
  * @returns A transpile function that converts TS source to JS.
  */
-export function CreateTypeScriptTranspiler(tsInstance: any, moduleFormat: ModuleFormat = "esm"): TranspileFn {
+export function CreateTypeScriptTranspiler(tsInstance: any, _moduleFormat: ModuleFormat = "esm"): TranspileFn {
+    // Always emit ESNext modules — script mode conversion is handled
+    // downstream by TransformModuleSyntaxToCjs.
     return (source: string, fileName: string): string => {
         const result = tsInstance.transpileModule(source, {
             compilerOptions: {
                 target: tsInstance.ScriptTarget.ESNext,
-                module: moduleFormat === "esm" ? tsInstance.ModuleKind.ESNext : tsInstance.ModuleKind.None,
+                module: tsInstance.ModuleKind.ESNext,
                 jsx: fileName.endsWith(".tsx") ? tsInstance.JsxEmit.ReactJSX : undefined,
                 esModuleInterop: false,
                 allowJs: true,
@@ -576,6 +581,10 @@ async function LoadModuleEsm(jsFiles: Record<string, string>, entryName: string,
     function processFile(fileName: string): string {
         if (finalUrls[fileName]) {
             return finalUrls[fileName];
+        }
+
+        if (!(fileName in jsFiles)) {
+            throw new Error(`Snippet file "${fileName}" not found in the file map. Check that the manifest entry and import specifiers reference existing files.`);
         }
 
         // Non-JS asset — wrap as a text-exporting ES module.

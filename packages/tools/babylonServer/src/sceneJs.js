@@ -18,10 +18,6 @@ const openInspector = (e) => {
     }
 };
 const runScene = async () => {
-    try {
-        // eslint-disable-next-line no-undef
-        await Recast();
-    } catch (e) {}
     const playgroundId = GetPlaygroundId();
 
     // Preserve the previous context type before disposing the engine.
