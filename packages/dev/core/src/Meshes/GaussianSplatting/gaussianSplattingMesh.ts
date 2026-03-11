@@ -22,6 +22,7 @@ import type { Camera } from "core/Cameras/camera";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
 import type { INative } from "core/Engines/Native/nativeInterfaces";
 import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh";
+import { DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
@@ -297,6 +298,56 @@ export interface PLYHeader {
 }
 
 /**
+ * Run-Length Encoding (RLE) compression for serialization
+ * Compressed Uint32Array can be parsed using {@link ParsePartIndices}
+ * Some notes for devs: We do not expect Uint8Array larger than 4GB,
+ * so it should be safe to use Uint32Array.
+ * @param partIndices A view of partIndices from GaussianSplattingMesh
+ * @returns A compressed Uint32Array of [count, value, ...]
+ */
+function CompressPartIndices(partIndices: Uint8Array): Uint32Array {
+    const runs: number[] = [];
+    const length = partIndices.length;
+    let i = 0;
+    while (i < length) {
+        const value = partIndices[i];
+        let count = 1;
+        while (i + count < length && partIndices[i + count] === value) {
+            count++;
+        }
+        runs.push(count, value);
+        i += count;
+    }
+    return new Uint32Array(runs);
+}
+
+/**
+ * Parse partIndices compressed by {@link CompressPartIndices} to runtime array
+ * @param compressed The compressed partIndices of [count, value, ...]
+ * @returns runtime Uint8Array for GaussianSplattingMesh
+ */
+function ParsePartIndices(compressed: Uint32Array | number[]): Uint8Array {
+    // First pass: compute total vertex count
+    let totalCount = 0;
+    const length = compressed.length;
+    for (let i = 0; i < length; i += 2) {
+        totalCount += compressed[i];
+    }
+
+    // Second pass: expand runs
+    const partIndices = new Uint8Array(totalCount);
+    let offset = 0;
+    for (let i = 0; i < length; i += 2) {
+        const count = compressed[i];
+        const value = compressed[i + 1];
+        partIndices.fill(value, offset, offset + count);
+        offset += count;
+    }
+
+    return partIndices;
+}
+
+/**
  * Class used to render a gaussian splatting mesh
  */
 export class GaussianSplattingMesh extends Mesh {
@@ -329,6 +380,10 @@ export class GaussianSplattingMesh extends Mesh {
 
     private _tmpCovariances = [0, 0, 0, 0, 0, 0];
     private _sortIsDirty = false;
+    /**
+     * The flipY option from last call to {@link _updateData}
+     */
+    private _flipY = false;
 
     private static _RowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // Vector3 position, Vector3 scale, 1 u8 quaternion, 1 color with alpha
     private static _SH_C0 = 0.28209479177387814;
@@ -555,6 +610,8 @@ export class GaussianSplattingMesh extends Mesh {
         }
         const gaussianSplattingMaterial = new GaussianSplattingMaterial(this.name + "_material", this._scene);
         gaussianSplattingMaterial.setSourceMesh(this);
+        // No need to serialize this material created in constructor.
+        gaussianSplattingMaterial.doNotSerialize = true;
         this._material = gaussianSplattingMaterial;
 
         // delete meshes created for cameras on camera removal
@@ -663,6 +720,7 @@ export class GaussianSplattingMesh extends Mesh {
                 cameraMesh.reservedDataStore = { hidden: true };
                 cameraMesh.setEnabled(false);
                 cameraMesh.material = this.material;
+                cameraMesh.doNotSerialize = true;
                 GaussianSplattingMesh._MakeSplatGeometryForMesh(cameraMesh);
 
                 const newViewInfos: ICameraViewInfo = {
@@ -1836,6 +1894,7 @@ export class GaussianSplattingMesh extends Mesh {
         if (!this._covariancesATexture) {
             this._readyToDisplay = false;
         }
+        this._flipY = options.flipY ?? false;
 
         // Parse the data
         const uBuffer = new Uint8Array(data);
@@ -2520,4 +2579,128 @@ export class GaussianSplattingMesh extends Mesh {
 
         return this;
     }
+
+    /**
+     * Serialize current GaussianSplattingMesh
+     * @param serializationObject defines the object which will receive the serialization data
+     * @param encoding the encoding of binary data, defaults to base64 for json serialize,
+     * kept for future internal use like cloning where base64 encoding wastes cycles and memory
+     * @returns the serialized object
+     */
+    override serialize(serializationObject: any = {}, encoding: string = "base64"): any {
+        serializationObject = super.serialize(serializationObject);
+        // GaussianSplattingMesh would need one and only subMesh created in constructor
+        // so no need to keep this
+        serializationObject.subMeshes = [];
+        // Geometry is created at runtime, no need to serialize
+        serializationObject.geometryUniqueId = undefined;
+        serializationObject.geometryId = undefined;
+        // Material is created in constructor, no need to serialize
+        serializationObject.materialUniqueId = undefined;
+        serializationObject.materialId = undefined;
+        serializationObject.instances = [];
+        serializationObject.actions = undefined;
+        serializationObject.type = this.getClassName();
+        serializationObject.keepInRam = this._keepInRam;
+        serializationObject.disableDepthSort = this._disableDepthSort;
+        serializationObject.viewUpdateThreshold = this.viewUpdateThreshold;
+        serializationObject._flipY = this._flipY;
+        if (this._splatsData) {
+            serializationObject.splatsData =
+                encoding === "base64"
+                    ? // Make it JSON-serializable
+                      EncodeArrayBufferToBase64(this._splatsData)
+                    : this._splatsData;
+        }
+        if (this._shData) {
+            serializationObject.shData =
+                encoding === "base64"
+                    ? // Make it JSON-serializable
+                      this._shData.map(EncodeArrayBufferToBase64)
+                    : this._shData;
+        }
+        // Compress _partIndices via RLE: [count, value, count, value, ...]
+        if (this._partIndices) {
+            const compressedIndices = CompressPartIndices(this._partIndices.subarray(0, this._vertexCount));
+            serializationObject.partIndices =
+                encoding === "base64"
+                    ? // Make it JSON-serializable
+                      EncodeArrayBufferToBase64(compressedIndices)
+                    : compressedIndices;
+        }
+        if (this._partProxies) {
+            // partIndex is serialized in GaussianSplattingPartProxyMesh
+            // so no need to keep it again here
+            const serializedParts: any[] = [];
+            this._partProxies.forEach((proxy) => {
+                // TODO: GaussianSplattingPartProxyMesh.doNotSerialize
+                // not fully sure if skipping a part is safe
+                serializedParts.push(proxy.serialize());
+            });
+            serializationObject.partProxies = serializedParts;
+        }
+        return serializationObject;
+    }
+
+    /**
+     * Parses a serialized GaussianSplattingMesh
+     * @param parsedMesh the serialized mesh
+     * @param scene the scene to create the GaussianSplattingMesh in
+     * @returns the created GaussianSplattingMesh
+     */
+    public static override Parse(parsedMesh: any, scene: Scene): GaussianSplattingMesh {
+        const mesh = new GaussianSplattingMesh(parsedMesh.name, null, scene, parsedMesh.keepInRam);
+
+        mesh.disableDepthSort = parsedMesh.disableDepthSort;
+        mesh.viewUpdateThreshold = parsedMesh.viewUpdateThreshold;
+        let splatsData: ArrayBuffer | string | undefined = parsedMesh.splatsData;
+        if (typeof splatsData === "string") {
+            splatsData = DecodeBase64ToBinary(splatsData);
+        }
+        const shData: string[] | Uint8Array[] | undefined = parsedMesh.shData;
+        let parsedShData: Uint8Array[] | undefined;
+        if (Array.isArray(shData) && shData.length) {
+            const newData: Uint8Array[] = [];
+            for (let i = 0, length = shData.length; i < length; i++) {
+                const data = shData[i];
+                if (typeof data === "string") {
+                    newData[i] = new Uint8Array(DecodeBase64ToBinary(data));
+                } else {
+                    newData[i] = data;
+                }
+            }
+            parsedShData = newData;
+        } else {
+            parsedShData = undefined;
+        }
+        let partIndices: string | Uint32Array | undefined = parsedMesh.partIndices;
+        let parsedPartIndices: Uint8Array | undefined;
+        if (typeof partIndices === "string") {
+            partIndices = new Uint32Array(DecodeBase64ToBinary(partIndices));
+        }
+        if (partIndices) {
+            parsedPartIndices = ParsePartIndices(partIndices);
+        }
+        if (splatsData) {
+            const flipY = parsedMesh._flipY ?? false;
+            mesh.updateData(splatsData, parsedShData, { flipY }, parsedPartIndices);
+        }
+
+        if (parsedMesh.partProxies) {
+            for (const serializedPart of parsedMesh.partProxies) {
+                // Shallow copy to avoid changing the original serializedPart
+                const part = Object.assign({}, serializedPart);
+                part.compoundSplatMesh = mesh;
+                // No rootUrl needed to parse a part
+                const proxyMesh = Mesh.Parse(part, scene, "") as GaussianSplattingPartProxyMesh;
+                const newPartIndex = proxyMesh.partIndex;
+
+                // Store the proxy in the map
+                mesh._partProxies.set(newPartIndex, proxyMesh);
+            }
+        }
+        return mesh;
+    }
 }
+
+Mesh._GaussianSplattingMeshParser = GaussianSplattingMesh.Parse;
