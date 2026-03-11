@@ -16,16 +16,14 @@ import type {
     ShadowLight,
     SmartArray,
     SubMesh,
-    ClusteredLightContainer,
+    RenderingGroup,
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTaskMultiRenderTarget } from "../../frameGraphTaskMultiRenderTarget";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
 import { Constants } from "../../../Engines/constants";
 import { ThinDepthPeelingRenderer } from "../../../Rendering/thinDepthPeelingRenderer";
-import { RenderingManager } from "../../../Rendering/renderingManager";
 import { FrameGraphRenderTarget } from "../../frameGraphRenderTarget";
-import { LightConstants } from "../../../Lights/lightConstants";
 
 /**
  * Task used to render objects to a texture.
@@ -395,14 +393,6 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
-
-        this.onBeforeTaskExecute.add(() => {
-            /**
-             * When clustered lights are used, we need to disable the debug markers because there's a flushFramebuffer call
-             * done by the clustered light container during the frame rendering that breaks the debug groups.
-             */
-            this._disableDebugMarkers = this._engine._enableGPUDebugMarkers && this._sceneHasClusteredLights();
-        });
     }
 
     public override isReady() {
@@ -628,33 +618,17 @@ export class FrameGraphObjectRendererTask extends FrameGraphTaskMultiRenderTarge
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected _renderTransparentMeshesWithOIT(transparentSubMeshes: SmartArray<SubMesh>): void {
-        const renderingGroups = this._renderer.renderingManager.renderingGroups;
+    protected _renderTransparentMeshesWithOIT(transparentSubMeshes: SmartArray<SubMesh>, renderingGroup: RenderingGroup): void {
         const saveOIT = this._scene._useOrderIndependentTransparency;
 
         this._scene._useOrderIndependentTransparency = true;
 
-        for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
-            const renderingGroup = renderingGroups[index];
-            if (!renderingGroup || renderingGroup._empty) {
-                continue;
-            }
-            const excludedMeshes = this._oitRenderer.render(transparentSubMeshes);
-            if (excludedMeshes.length) {
-                // Render leftover meshes that could not be processed by depth peeling
-                renderingGroup._renderTransparent(excludedMeshes);
-            }
+        const excludedMeshes = this._oitRenderer.render(transparentSubMeshes);
+        if (excludedMeshes.length) {
+            // Render leftover meshes that could not be processed by depth peeling
+            renderingGroup._renderTransparent(excludedMeshes);
         }
 
         this._scene._useOrderIndependentTransparency = saveOIT;
-    }
-
-    protected _sceneHasClusteredLights() {
-        for (const light of this._scene.lights) {
-            if (light.getTypeID() === LightConstants.LIGHTTYPEID_CLUSTERED_CONTAINER && (light as ClusteredLightContainer).isSupported) {
-                return true;
-            }
-        }
-        return false;
     }
 }

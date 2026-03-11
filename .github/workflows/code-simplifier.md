@@ -2,6 +2,7 @@
 on:
   schedule: daily
   skip-if-match: is:pr is:open in:title "[code-simplifier]"
+if: github.repository == 'BabylonJS/Babylon.js'
 permissions:
   contents: read
   issues: read

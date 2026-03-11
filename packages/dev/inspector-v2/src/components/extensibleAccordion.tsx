@@ -12,6 +12,9 @@ function AsReadonlyArray<T>(array: T[]): readonly T[] {
     return array;
 }
 
+/**
+ * Describes a section within a dynamic accordion that can be added at runtime.
+ */
 export type DynamicAccordionSection = Readonly<{
     /**
      * A unique identity for the section, which can be referenced by section content.
@@ -31,6 +34,9 @@ export type DynamicAccordionSection = Readonly<{
     collapseByDefault?: boolean;
 }>;
 
+/**
+ * Describes content that belongs to a section within a dynamic accordion.
+ */
 export type DynamicAccordionSectionContent<ContextT> = Readonly<{
     /**
      * A unique key for the the content.
@@ -63,10 +69,23 @@ const useStyles = makeStyles({
     },
 });
 
+/**
+ * Imperative handle for controlling section highlights on the extensible accordion.
+ */
 export type SectionsImperativeRef = {
+    /**
+     * Highlights the specified sections, collapsing all others until the context changes.
+     * @param sections The identity strings of the sections to highlight.
+     */
     highlightSections: (sections: readonly string[]) => void;
 };
 
+/**
+ * An accordion component that supports dynamically adding sections and section content at runtime.
+ * Combines statically defined children sections with dynamically registered sections and content.
+ * @param props The accordion props including sections, section content, context, and an optional imperative ref.
+ * @returns The extensible accordion component.
+ */
 export function ExtensibleAccordion<ContextT = unknown>(
     props: PropsWithChildren<
         {

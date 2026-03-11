@@ -27,7 +27,7 @@ export const ThemeSelectorServiceDefinition: ServiceDefinition<[], [IShellServic
             key: "ThemeSelector",
             horizontalLocation: "right",
             verticalLocation: "top",
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             order: -300,
             component: () => {
                 const classes = useStyles();

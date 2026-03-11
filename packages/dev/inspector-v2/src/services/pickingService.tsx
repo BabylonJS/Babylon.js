@@ -62,7 +62,7 @@ export const PickingServiceDefinition: ServiceDefinition<[], [ISceneContext, ISh
             key: "Picking Service",
             verticalLocation: "top",
             horizontalLocation: "left",
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             component: () => {
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
                 const selectEntity = useCallback((entity: Nullable<object>) => (selectionService.selectedEntity = entity), []);

@@ -11,6 +11,9 @@ import { ToolsPane } from "../../components/tools/toolsPane";
 import { SceneContextIdentity } from "../sceneContext";
 import type { ISceneContext } from "../sceneContext";
 
+/**
+ * The unique identity symbol for the tools service.
+ */
 export const ToolsServiceIdentity = Symbol("ToolsService");
 
 /**
@@ -56,7 +59,7 @@ export const ToolsServiceDefinition: ServiceDefinition<[IToolsService], [IShellS
                     horizontalLocation: "right",
                     verticalLocation: "top",
                     order: 400,
-                    suppressTeachingMoment: true,
+                    teachingMoment: false,
                     content: () => {
                         const sections = useOrderedObservableCollection(sectionsCollection);
                         const sectionContent = useObservableCollection(sectionContentCollection);

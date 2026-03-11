@@ -874,8 +874,28 @@ export class GLTFExporter {
         const rootNodesLH = new Array<Node>();
         const rootNoopNodesRH = new Array<Node>();
 
+        // Collect root nodes targeted by animation groups so we preserve them during noop removal.
+        let animGroupTargets: Set<Node> | undefined;
+        if (this._options.removeNoopRootNodes && !this._options.includeCoordinateSystemConversionNodes) {
+            for (const animationGroup of this._babylonScene.animationGroups) {
+                for (const targetedAnimation of animationGroup.targetedAnimations) {
+                    const target = targetedAnimation.target;
+                    if (target instanceof TransformNode && !target.parent) {
+                        (animGroupTargets ??= new Set()).add(target);
+                    }
+                }
+            }
+        }
+
         for (const rootNode of this._babylonScene.rootNodes) {
-            if (this._options.removeNoopRootNodes && !this._options.includeCoordinateSystemConversionNodes && IsNoopNode(rootNode, this._babylonScene.useRightHandedSystem)) {
+            const animations = rootNode.animations;
+            const hasAnimations = (!!animations && animations.length > 0) || animGroupTargets?.has(rootNode);
+            if (
+                this._options.removeNoopRootNodes &&
+                !this._options.includeCoordinateSystemConversionNodes &&
+                IsNoopNode(rootNode, this._babylonScene.useRightHandedSystem) &&
+                !hasAnimations
+            ) {
                 rootNoopNodesRH.push(...rootNode.getChildren());
             } else if (this._babylonScene.useRightHandedSystem) {
                 rootNodesRH.push(rootNode);

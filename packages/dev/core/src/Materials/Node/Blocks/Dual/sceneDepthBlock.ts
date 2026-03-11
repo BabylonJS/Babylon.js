@@ -14,6 +14,8 @@ import type { NodeMaterial } from "../../nodeMaterial";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "core/Engines/constants";
 
+import "../../../../Rendering/depthRendererSceneComponent";
+
 /**
  * Block used to retrieve the depth (zbuffer) of the scene
  * @since 5.0.0

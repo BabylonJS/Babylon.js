@@ -1,21 +1,23 @@
 import type { Bone } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
+import type { IWatcherService } from "../../watcherService";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
+import { tokens } from "@fluentui/react-components";
 import { DataLineRegular, PersonWalkingRegular } from "@fluentui/react-icons";
 
 import { Skeleton } from "core/Bones/skeleton";
 import { Observable } from "core/Misc/observable";
-import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { WatcherServiceIdentity } from "../../watcherService";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IWatcherService]> = {
     friendlyName: "Skeleton Explorer",
-    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
-    factory: (sceneExplorerService, sceneContext) => {
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity, WatcherServiceIdentity],
+    factory: (sceneExplorerService, sceneContext, watcherService) => {
         const scene = sceneContext.currentScene;
         if (!scene) {
             return undefined;
@@ -31,22 +33,14 @@ export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
             getEntityDisplayInfo: (skeletonOrBone) => {
                 const onChangeObservable = new Observable<void>();
 
-                const nameHookToken = InterceptProperty(skeletonOrBone, "name", {
-                    afterSet: () => onChangeObservable.notifyObservers(),
-                });
+                const nameHookToken = watcherService.watchProperty(skeletonOrBone, "name", () => onChangeObservable.notifyObservers());
 
                 const parentHookToken =
-                    skeletonOrBone instanceof Skeleton
-                        ? null
-                        : InterceptProperty(skeletonOrBone, "parent", {
-                              afterSet: () => {
-                                  boneMovedObservable.notifyObservers(skeletonOrBone);
-                              },
-                          });
+                    skeletonOrBone instanceof Skeleton ? null : watcherService.watchProperty(skeletonOrBone, "parent", () => boneMovedObservable.notifyObservers(skeletonOrBone));
 
                 return {
                     get name() {
-                        return skeletonOrBone.name;
+                        return skeletonOrBone.name || `Unnamed ${skeletonOrBone.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -56,7 +50,12 @@ export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
                     },
                 };
             },
-            entityIcon: ({ entity: skeletonOrBone }) => (skeletonOrBone instanceof Skeleton ? <PersonWalkingRegular /> : <DataLineRegular />),
+            entityIcon: ({ entity: skeletonOrBone }) =>
+                skeletonOrBone instanceof Skeleton ? (
+                    <PersonWalkingRegular color={tokens.colorPaletteAnchorForeground2} />
+                ) : (
+                    <DataLineRegular color={tokens.colorPaletteBeigeForeground2} />
+                ),
             getEntityAddedObservables: () => [scene.onNewSkeletonAddedObservable],
             getEntityRemovedObservables: () => [scene.onSkeletonRemovedObservable],
             getEntityMovedObservables: () => [boneMovedObservable],

@@ -10,12 +10,12 @@ export const CompactModeSettingDescriptor: SettingDescriptor<boolean> = {
 
 export const UseDegreesSettingDescriptor: SettingDescriptor<boolean> = {
     key: "UseDegrees",
-    defaultValue: false,
+    defaultValue: true,
 };
 
 export const UseEulerSettingDescriptor: SettingDescriptor<boolean> = {
     key: "UseEuler",
-    defaultValue: false,
+    defaultValue: true,
 };
 
 export const DisableCopySettingDescriptor: SettingDescriptor<boolean> = {

@@ -1752,6 +1752,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** @internal */
     public _pendingData = [] as any[];
     private _isDisposed = false;
+    private _isReadyChecks: { isReady(): boolean }[] = [];
 
     /**
      * Gets or sets a boolean indicating that all submeshes of active meshes must be rendered
@@ -2511,6 +2512,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
+        // isReady() checks for externally specified objects.
+        for (const check of this._isReadyChecks) {
+            if (!check.isReady()) {
+                isReady = false;
+            }
+        }
+
         // Effects
         if (!engine.areAllEffectsReady()) {
             isReady = false;
@@ -2625,6 +2633,28 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      */
     public get isLoading(): boolean {
         return this._pendingData.length > 0;
+    }
+
+    /**
+     * Registers an object whose {@link isReady} method will be checked during {@link Scene.isReady}.
+     * Call {@link removeIsReadyCheck} to remove the object.
+     * @param isReadyCheck defines the object to add.
+     */
+    public addIsReadyCheck(isReadyCheck: { isReady(): boolean }): void {
+        if (this._isReadyChecks.indexOf(isReadyCheck) === -1) {
+            this._isReadyChecks.push(isReadyCheck);
+        }
+    }
+
+    /**
+     * Removes an object previously registered with {@link addIsReadyCheck}.
+     * @param isReadyCheck defines the object to remove.
+     */
+    public removeIsReadyCheck(isReadyCheck: { isReady(): boolean }): void {
+        const index = this._isReadyChecks.indexOf(isReadyCheck);
+        if (index !== -1) {
+            this._isReadyChecks.splice(index, 1);
+        }
     }
 
     /**
@@ -4960,6 +4990,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.onBeforeCameraRenderObservable.notifyObservers(this.activeCamera);
 
+        // Set the render pass id before evaluating active meshes so that instance registration in WebGPU (which is per render pass id) uses the correct pass id
+        this._engine.currentRenderPassId = camera.outputRenderTarget?.renderPassId ?? camera.renderPassId ?? Constants.RENDERPASS_MAIN;
+
         // Meshes
         this._evaluateActiveMeshes();
 
@@ -5052,8 +5085,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             this._intermediateRendering = false;
         }
-
-        this._engine.currentRenderPassId = camera.outputRenderTarget?.renderPassId ?? camera.renderPassId ?? Constants.RENDERPASS_MAIN;
 
         // Restore framebuffer after rendering to targets
         if (needRebind && !this.prePass) {
@@ -5309,8 +5340,33 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.onBeforeRenderObservable.notifyObservers(this);
 
+        // Customs render targets
+        this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
+
+        this._renderTargets.reset();
+
+        const currentActiveCamera = this._frameGraph?.findMainCamera() ?? null;
+        if (this.renderTargetsEnabled) {
+            if (this.environmentTexture && this.environmentTexture.isRenderTarget) {
+                this._renderTargets.pushNoDuplicate(this.environmentTexture as RenderTargetTexture);
+            }
+
+            this._renderTargets.concatWithNoDuplicate(this.customRenderTargets);
+
+            Tools.StartPerformanceCounter("Custom render targets", this._renderTargets.length > 0);
+            for (let customIndex = 0; customIndex < this._renderTargets.length; customIndex++) {
+                const renderTarget = this._renderTargets.data[customIndex];
+                const activeCamera = renderTarget.activeCamera || currentActiveCamera;
+
+                this._renderRenderTarget(renderTarget, activeCamera, true, this.dumpNextRenderTargets);
+            }
+            Tools.EndPerformanceCounter("Custom render targets", this._renderTargets.length > 0);
+            this._renderId++;
+        }
+
+        this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
+
         // We must keep these steps because the procedural texture component relies on them.
-        // TODO: move the procedural texture component to the frame graph.
         for (const step of this._beforeClearStage) {
             step.action();
         }
@@ -5654,6 +5710,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._pointerMoveStage.clear();
         this._pointerDownStage.clear();
         this._pointerUpStage.clear();
+        this._isReadyChecks.length = 0;
 
         this.importedMeshesFiles = [] as string[];
 

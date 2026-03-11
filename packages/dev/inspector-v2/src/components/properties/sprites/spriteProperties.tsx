@@ -25,7 +25,7 @@ function useMaxCellCount(sprite: Sprite) {
     const texture = useProperty(manager, "texture");
     const textureSize = texture.getSize();
 
-    let maxCellCount = 0;
+    let maxCellCount: number;
     if (!textureSize.width || !textureSize.height) {
         maxCellCount = Math.max(sprite.fromIndex, sprite.toIndex);
     } else {
@@ -68,13 +68,12 @@ export const SpriteTransformProperties: FunctionComponent<{ sprite: Sprite }> = 
         <>
             <BoundProperty component={Vector3PropertyLine} label="Position" target={sprite} propertyKey="position" />
             <BoundProperty
-                component={SyncedSliderPropertyLine}
+                component={NumberInputPropertyLine}
                 key="Angle"
                 label="Angle"
                 description={`Rotation angle of the sprite in ${useDegrees ? "degrees" : "radians"}`}
-                min={0}
-                max={toDisplayAngle(Math.PI * 2)}
                 step={toDisplayAngle(0.01)}
+                unit={useDegrees ? "°" : "rad"}
                 target={sprite}
                 propertyKey="angle"
                 convertTo={toDisplayAngle}

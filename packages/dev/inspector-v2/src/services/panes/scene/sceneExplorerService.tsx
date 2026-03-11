@@ -15,6 +15,9 @@ import { SceneContextIdentity } from "../../sceneContext";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { ShellServiceIdentity } from "../../shellService";
 
+/**
+ * The unique identity symbol for the scene explorer service.
+ */
 export const SceneExplorerServiceIdentity = Symbol("SceneExplorer");
 
 /**
@@ -58,7 +61,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
             icon: CubeTreeRegular,
             horizontalLocation: "left",
             verticalLocation: "top",
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             keepMounted: true,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);

@@ -1,11 +1,17 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "8.52.0",
-    "type": "module",
+    "version": "8.54.3",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "esnext": "lib/index.js",
     "types": "lib/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./lib/index.d.ts",
+            "default": "./lib/index.js"
+        },
+        "./package.json": "./package.json"
+    },
     "files": [
         "lib/**/*.js",
         "lib/**/*.d.ts",
@@ -28,7 +34,7 @@
         "@babylonjs/loaders": "^8.0.0",
         "@babylonjs/materials": "^8.0.0",
         "@babylonjs/serializers": "^8.0.0",
-        "@fluentui-contrib/react-virtualizer": "^0.5.3",
+        "@fluentui-contrib/react-virtualizer": "^1.0.0",
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",
         "react": ">=16.14.0 <20.0.0",
@@ -43,7 +49,7 @@
         "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-typescript": "^11.1.6",
         "chalk": "^5.3.0",
-        "rollup": "^4.18.0",
+        "rollup": "^4.59.0",
         "rollup-plugin-dts": "^6.1.1"
     },
     "keywords": [

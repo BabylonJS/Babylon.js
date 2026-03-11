@@ -1,7 +1,7 @@
 {
     "name": "@babylonjs/test-tools",
     "private": true,
-    "version": "8.52.0",
+    "version": "8.54.3",
     "main": "dist/index.js",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -16,16 +16,12 @@
         "compile": "tsc -b tsconfig.build.json --verbose"
     },
     "devDependencies": {
-        "puppeteer": "^22.1.0",
         "@alex_neo/jest-expect-message": "~1.0.5"
     },
     "dependencies": {
-        "jest": "^29.7.0",
-        "jest-puppeteer": "^10.0.1"
+        "jest": "^30.2.0"
     },
-    "peerDependencies": {
-        "puppeteer": ">20.0.0"
-    },
+    "peerDependencies": {},
     "optionalDependencies": {
         "@alex_neo/jest-expect-message": "~1.0.5"
     },

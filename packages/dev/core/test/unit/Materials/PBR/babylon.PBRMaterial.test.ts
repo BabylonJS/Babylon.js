@@ -293,19 +293,19 @@ describe("PBRMaterial", () => {
         });
 
         describe("textures disposal", () => {
-            let albedoTextureDisposeSpy: jest.SpyInstance<void, []>;
-            let ambientTextureDisposeSpy: jest.SpyInstance<void, []>;
-            let opacityTextureDisposeSpy: jest.SpyInstance<void, []>;
-            let reflectionTextureDisposeSpy: jest.SpyInstance<void, []>;
-            let emissiveTextureDisposeSpy: jest.SpyInstance<void, []>;
-            let reflectivityTextureDisposeSpy: jest.SpyInstance<void, []>;
-            let metallicTextureDisposeSpy: jest.SpyInstance<void, []>;
-            let metallicReflectanceTextureDisposeSpy: jest.SpyInstance<void, []>;
-            let reflectanceTextureDisposeSpy: jest.SpyInstance<void, []>;
-            let microSurfaceTextureDisposeSpy: jest.SpyInstance<void, []>;
-            let bumpTextureDisposeSpy: jest.SpyInstance<void, []>;
-            let lightmapTextureDisposeSpy: jest.SpyInstance<void, []>;
-            let refractionTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let albedoTextureDisposeSpy: jest.MockInstance<void, []>;
+            let ambientTextureDisposeSpy: jest.MockInstance<void, []>;
+            let opacityTextureDisposeSpy: jest.MockInstance<void, []>;
+            let reflectionTextureDisposeSpy: jest.MockInstance<void, []>;
+            let emissiveTextureDisposeSpy: jest.MockInstance<void, []>;
+            let reflectivityTextureDisposeSpy: jest.MockInstance<void, []>;
+            let metallicTextureDisposeSpy: jest.MockInstance<void, []>;
+            let metallicReflectanceTextureDisposeSpy: jest.MockInstance<void, []>;
+            let reflectanceTextureDisposeSpy: jest.MockInstance<void, []>;
+            let microSurfaceTextureDisposeSpy: jest.MockInstance<void, []>;
+            let bumpTextureDisposeSpy: jest.MockInstance<void, []>;
+            let lightmapTextureDisposeSpy: jest.MockInstance<void, []>;
+            let refractionTextureDisposeSpy: jest.MockInstance<void, []>;
 
             beforeEach(() => {
                 material.albedoTexture = new Texture("texture.jpg", scene);
@@ -351,37 +351,37 @@ describe("PBRMaterial", () => {
             it("should dispose all textures", () => {
                 material.dispose(true, true);
 
-                expect(albedoTextureDisposeSpy).toBeCalledTimes(1);
-                expect(ambientTextureDisposeSpy).toBeCalledTimes(1);
-                expect(opacityTextureDisposeSpy).toBeCalledTimes(1);
-                expect(reflectionTextureDisposeSpy).toBeCalledTimes(1);
-                expect(emissiveTextureDisposeSpy).toBeCalledTimes(1);
-                expect(reflectivityTextureDisposeSpy).toBeCalledTimes(1);
-                expect(metallicTextureDisposeSpy).toBeCalledTimes(1);
-                expect(metallicReflectanceTextureDisposeSpy).toBeCalledTimes(1);
-                expect(reflectanceTextureDisposeSpy).toBeCalledTimes(1);
-                expect(microSurfaceTextureDisposeSpy).toBeCalledTimes(1);
-                expect(bumpTextureDisposeSpy).toBeCalledTimes(1);
-                expect(lightmapTextureDisposeSpy).toBeCalledTimes(1);
-                expect(refractionTextureDisposeSpy).toBeCalledTimes(1);
+                expect(albedoTextureDisposeSpy).toHaveBeenCalledTimes(1);
+                expect(ambientTextureDisposeSpy).toHaveBeenCalledTimes(1);
+                expect(opacityTextureDisposeSpy).toHaveBeenCalledTimes(1);
+                expect(reflectionTextureDisposeSpy).toHaveBeenCalledTimes(1);
+                expect(emissiveTextureDisposeSpy).toHaveBeenCalledTimes(1);
+                expect(reflectivityTextureDisposeSpy).toHaveBeenCalledTimes(1);
+                expect(metallicTextureDisposeSpy).toHaveBeenCalledTimes(1);
+                expect(metallicReflectanceTextureDisposeSpy).toHaveBeenCalledTimes(1);
+                expect(reflectanceTextureDisposeSpy).toHaveBeenCalledTimes(1);
+                expect(microSurfaceTextureDisposeSpy).toHaveBeenCalledTimes(1);
+                expect(bumpTextureDisposeSpy).toHaveBeenCalledTimes(1);
+                expect(lightmapTextureDisposeSpy).toHaveBeenCalledTimes(1);
+                expect(refractionTextureDisposeSpy).toHaveBeenCalledTimes(1);
             });
 
             it("should not dispose textures when forceDisposeTextures is false", () => {
                 material.dispose(true, false);
 
-                expect(albedoTextureDisposeSpy).toBeCalledTimes(0);
-                expect(ambientTextureDisposeSpy).toBeCalledTimes(0);
-                expect(opacityTextureDisposeSpy).toBeCalledTimes(0);
-                expect(reflectionTextureDisposeSpy).toBeCalledTimes(0);
-                expect(emissiveTextureDisposeSpy).toBeCalledTimes(0);
-                expect(reflectivityTextureDisposeSpy).toBeCalledTimes(0);
-                expect(metallicTextureDisposeSpy).toBeCalledTimes(0);
-                expect(metallicReflectanceTextureDisposeSpy).toBeCalledTimes(0);
-                expect(reflectanceTextureDisposeSpy).toBeCalledTimes(0);
-                expect(microSurfaceTextureDisposeSpy).toBeCalledTimes(0);
-                expect(bumpTextureDisposeSpy).toBeCalledTimes(0);
-                expect(lightmapTextureDisposeSpy).toBeCalledTimes(0);
-                expect(refractionTextureDisposeSpy).toBeCalledTimes(0);
+                expect(albedoTextureDisposeSpy).toHaveBeenCalledTimes(0);
+                expect(ambientTextureDisposeSpy).toHaveBeenCalledTimes(0);
+                expect(opacityTextureDisposeSpy).toHaveBeenCalledTimes(0);
+                expect(reflectionTextureDisposeSpy).toHaveBeenCalledTimes(0);
+                expect(emissiveTextureDisposeSpy).toHaveBeenCalledTimes(0);
+                expect(reflectivityTextureDisposeSpy).toHaveBeenCalledTimes(0);
+                expect(metallicTextureDisposeSpy).toHaveBeenCalledTimes(0);
+                expect(metallicReflectanceTextureDisposeSpy).toHaveBeenCalledTimes(0);
+                expect(reflectanceTextureDisposeSpy).toHaveBeenCalledTimes(0);
+                expect(microSurfaceTextureDisposeSpy).toHaveBeenCalledTimes(0);
+                expect(bumpTextureDisposeSpy).toHaveBeenCalledTimes(0);
+                expect(lightmapTextureDisposeSpy).toHaveBeenCalledTimes(0);
+                expect(refractionTextureDisposeSpy).toHaveBeenCalledTimes(0);
             });
         });
 
@@ -396,8 +396,8 @@ describe("PBRMaterial", () => {
 
             material.dispose(true, true);
 
-            expect(environmentTextureDisposeSpy).toBeCalledTimes(0);
-            expect(textureDisposeSpy).toBeCalledTimes(0);
+            expect(environmentTextureDisposeSpy).toHaveBeenCalledTimes(0);
+            expect(textureDisposeSpy).toHaveBeenCalledTimes(0);
         });
 
         it("should dispose environment BRDF texture if it not used as environment texture in the scene", () => {
@@ -410,8 +410,8 @@ describe("PBRMaterial", () => {
 
             material.dispose(true, true);
 
-            expect(environmentTextureDisposeSpy).toBeCalledTimes(1);
-            expect(textureDisposeSpy).toBeCalledTimes(1);
+            expect(environmentTextureDisposeSpy).toHaveBeenCalledTimes(1);
+            expect(textureDisposeSpy).toHaveBeenCalledTimes(1);
         });
 
         it("should not dispose environment BRDF texture if it used as environment texture in the scene and forceDisposeTextures is false", () => {
@@ -425,8 +425,8 @@ describe("PBRMaterial", () => {
 
             material.dispose(true, false);
 
-            expect(environmentTextureDisposeSpy).toBeCalledTimes(0);
-            expect(textureDisposeSpy).toBeCalledTimes(0);
+            expect(environmentTextureDisposeSpy).toHaveBeenCalledTimes(0);
+            expect(textureDisposeSpy).toHaveBeenCalledTimes(0);
         });
 
         it("should dispose render targets", () => {
@@ -449,7 +449,7 @@ describe("PBRMaterial", () => {
 
             material.dispose();
 
-            expect(imageProcessingRemoveSpy).toBeCalledTimes(1);
+            expect(imageProcessingRemoveSpy).toHaveBeenCalledTimes(1);
         });
     });
 });

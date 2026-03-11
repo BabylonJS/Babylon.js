@@ -61,7 +61,7 @@ async function ZeroTimeoutAsync(): Promise<void> {
 describe("Sound with no scene", () => {
     it("constructor does not set scene if no scene is given", () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = new Sound(expect.getState().currentTestName, audioSample.arrayBuffer);
+        const sound = new Sound(expect.getState().currentTestName!, audioSample.arrayBuffer);
 
         expect((sound as any)._scene).toBeUndefined();
     });
@@ -96,7 +96,7 @@ describe("Sound", () => {
 
     it("constructor initializes AudioSceneComponent", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer);
+        await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer);
 
         expect(scene!._getComponent("Audio")).not.toBeNull();
     });
@@ -104,14 +104,14 @@ describe("Sound", () => {
     it("constructor sets given readyToPlayCallback", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
         const readyToPlayCallback = jest.fn();
-        await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer, scene, readyToPlayCallback);
+        await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer, scene, readyToPlayCallback);
 
         expect(readyToPlayCallback).toHaveBeenCalled();
     });
 
     it("constructor sets up a linear custom attenuation function by default", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = (await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer)) as any;
+        const sound = (await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer)) as any;
 
         expect(sound._customAttenuationFunction(1, 0, 100, 0, 0)).toBeCloseTo(1);
         expect(sound._customAttenuationFunction(1, 10, 100, 0, 0)).toBeCloseTo(0.9);
@@ -128,7 +128,7 @@ describe("Sound", () => {
 
     it("constructor sets state correctly when given no options", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = (await CreateSoundAsync(expect.getState().currentTestName, audioSample.audioBuffer)) as any;
+        const sound = (await CreateSoundAsync(expect.getState().currentTestName!, audioSample.audioBuffer)) as any;
 
         expect(sound.autoplay).toBe(false);
         expect(sound.currentTime).toBe(0);
@@ -140,7 +140,7 @@ describe("Sound", () => {
         expect(sound.loop).toBe(false);
         expect(sound.maxDistance).toBe(100);
         expect(sound.metadata).toBe(null);
-        expect(sound.name).toBe(expect.getState().currentTestName);
+        expect(sound.name).toBe(expect.getState().currentTestName!);
         expect(sound.refDistance).toBe(1);
         expect(sound.rolloffFactor).toBe(1);
         expect(sound.soundTrackId).toBe(-1); // Set by main SoundTrack when added to it.
@@ -155,7 +155,7 @@ describe("Sound", () => {
 
     it("constructor sets boolean options correctly when given false", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = (await CreateSoundAsync(expect.getState().currentTestName, audioSample.audioBuffer, null, null, {
+        const sound = (await CreateSoundAsync(expect.getState().currentTestName!, audioSample.audioBuffer, null, null, {
             autoplay: false,
             loop: false,
             spatialSound: false,
@@ -171,7 +171,7 @@ describe("Sound", () => {
     });
 
     it("constructor sets boolean options correctly when given true", async () => {
-        const sound = (await CreateSoundAsync(expect.getState().currentTestName, "https://example.com/any.mp3", null, null, {
+        const sound = (await CreateSoundAsync(expect.getState().currentTestName!, "https://example.com/any.mp3", null, null, {
             autoplay: true,
             loop: true,
             skipCodecCheck: true,
@@ -189,7 +189,7 @@ describe("Sound", () => {
 
     it("constructor sets number options correctly", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = (await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer, null, null, {
+        const sound = (await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer, null, null, {
             length: 1,
             maxDistance: 2,
             offset: 3,
@@ -210,9 +210,9 @@ describe("Sound", () => {
 
     it("constructor sets string options correctly", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound1 = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer, null, null, { distanceModel: "linear" });
-        const sound2 = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer, null, null, { distanceModel: "inverse" });
-        const sound3 = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer, null, null, { distanceModel: "exponential" });
+        const sound1 = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer, null, null, { distanceModel: "linear" });
+        const sound2 = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer, null, null, { distanceModel: "inverse" });
+        const sound3 = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer, null, null, { distanceModel: "exponential" });
 
         expect(sound1.distanceModel).toBe("linear");
         expect(sound2.distanceModel).toBe("inverse");
@@ -220,7 +220,7 @@ describe("Sound", () => {
     });
 
     it("sets isPlaying to true when play is called", async () => {
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"));
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"));
 
         sound.play();
 
@@ -228,7 +228,7 @@ describe("Sound", () => {
     });
 
     it("updates currentTime when play is called and audio context time advances", async () => {
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz").audioBuffer);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz").audioBuffer);
         mock.audioContext.currentTime = 0.1;
 
         sound.play();
@@ -242,7 +242,7 @@ describe("Sound", () => {
         const options = {
             offset: 0.1,
         };
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer, null, null, options);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer, null, null, options);
 
         sound.play();
 
@@ -255,7 +255,7 @@ describe("Sound", () => {
         const options = {
             offset: 0.1,
         };
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.audioBuffer, null, null, options);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.audioBuffer, null, null, options);
         mock.audioContext.currentTime = 0.1;
 
         sound.play();
@@ -270,7 +270,7 @@ describe("Sound", () => {
 
     it("restarts the buffer source at the given positive offset when play, stop, play, pause, and play are called", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer);
         mock.audioContext.currentTime = 0.1;
 
         sound.play();
@@ -288,7 +288,7 @@ describe("Sound", () => {
 
     it("restarts the buffer source at the given zero offset when play, stop, play, pause, and play are called", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.audioBuffer);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.audioBuffer);
         mock.audioContext.currentTime = 0.1;
 
         sound.play();
@@ -309,7 +309,7 @@ describe("Sound", () => {
         const options = {
             offset: 0.1,
         };
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.audioBuffer, null, null, options);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.audioBuffer, null, null, options);
         mock.audioContext.currentTime = 0.1;
 
         sound.play();
@@ -323,7 +323,7 @@ describe("Sound", () => {
 
     it("resets current time to zero when stopped while playing", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer);
         mock.audioContext.currentTime = 0.1;
 
         sound.play();
@@ -335,7 +335,7 @@ describe("Sound", () => {
 
     it("resets current time to zero when stopped while paused", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer);
         mock.audioContext.currentTime = 0.1;
 
         sound.play();
@@ -348,7 +348,7 @@ describe("Sound", () => {
 
     it("sets current time to time it was paused at", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.audioBuffer);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.audioBuffer);
         mock.audioContext.currentTime = 0.1;
 
         sound.play();
@@ -360,7 +360,7 @@ describe("Sound", () => {
 
     it("calls onended when stopped", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer);
         mock.audioContext.currentTime = 0.1;
         const onended = jest.fn().mockName("onended");
         sound.onended = onended;
@@ -374,7 +374,7 @@ describe("Sound", () => {
 
     it("calls onended when sound buffer reaches end", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.arrayBuffer);
         mock.audioContext.currentTime = 0.1;
         const onended = jest.fn().mockName("onended");
         sound.onended = onended;
@@ -387,7 +387,7 @@ describe("Sound", () => {
 
     it("does not call onended when paused", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.audioBuffer);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, audioSample.audioBuffer);
         mock.audioContext.currentTime = 0.1;
         const onended = jest.fn().mockName("onended");
         sound.onended = onended;
@@ -403,7 +403,7 @@ describe("Sound", () => {
     // option set, even if the audio context state is suspended.
     it("sets isPlaying to true when constructed with autoplay option set while audio context is suspended", async () => {
         mock.audioContext.state = "suspended";
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             autoplay: true,
         });
 
@@ -412,7 +412,7 @@ describe("Sound", () => {
 
     it("sets isPlaying to false when stopped while audio context is suspended", async () => {
         mock.audioContext.state = "suspended";
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             autoplay: true,
         });
 
@@ -423,7 +423,7 @@ describe("Sound", () => {
 
     it("does not autoplay after 500 ms when stopped before audio context is resumed", async () => {
         mock.audioContext.state = "suspended";
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             autoplay: true,
         });
 
@@ -436,7 +436,7 @@ describe("Sound", () => {
 
     it("does not autoplay when stopped before audio engine is unlocked", async () => {
         mock.audioContext.state = "suspended";
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             autoplay: true,
         });
 
@@ -451,7 +451,7 @@ describe("Sound", () => {
 
     it("does not autoplay when played and stopped before audio engine is unlocked", async () => {
         mock.audioContext.state = "suspended";
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             autoplay: true,
         });
 
@@ -466,7 +466,7 @@ describe("Sound", () => {
     });
 
     it("connects to gain node when not spatialized via constructor", async () => {
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             spatialSound: false,
         });
 
@@ -476,7 +476,7 @@ describe("Sound", () => {
     });
 
     it("connects to panner node when spatialized via constructor", async () => {
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             spatialSound: true,
         });
 
@@ -486,7 +486,7 @@ describe("Sound", () => {
     });
 
     it("connects to panner node when spatialized via property", async () => {
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             spatialSound: false,
         });
 
@@ -499,7 +499,7 @@ describe("Sound", () => {
     });
 
     it("connects to panner node when spatialized via updateOptions", async () => {
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             spatialSound: false,
         });
 
@@ -512,7 +512,7 @@ describe("Sound", () => {
     });
 
     it("connects to gain node when unspatialized via property", async () => {
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             spatialSound: true,
         });
 
@@ -525,7 +525,7 @@ describe("Sound", () => {
     });
 
     it("connects to gain node when unspatialized via updateOptions", async () => {
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             spatialSound: true,
         });
 
@@ -538,7 +538,7 @@ describe("Sound", () => {
     });
 
     it("connects to panner node when playing and spatialSound property is set to false before being set to true", async () => {
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
+        const sound = await CreateSoundAsync(expect.getState().currentTestName!, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             spatialSound: true,
         });
 
@@ -551,5 +551,36 @@ describe("Sound", () => {
         await ZeroTimeoutAsync();
 
         expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(true);
+    });
+
+    it("calling stop() on a streaming sound instance triggers onended exactly once and does not re-enter dispose()/stop()", async () => {
+        const sound = (await CreateSoundAsync(expect.getState().currentTestName!, "https://example.com/any.mp3", null, null, {
+            skipCodecCheck: true,
+            streaming: true,
+        })) as any;
+
+        const onended = jest.fn().mockName("onended");
+        sound.onended = onended;
+
+        // Play creates the instance; wait for the async canplaythrough event to fire.
+        sound.play();
+        await ZeroTimeoutAsync();
+
+        const soundV2 = sound._soundV2 as StreamingSound;
+        const instance = (soundV2 as any)._getNewestInstance();
+        expect(instance).not.toBeNull();
+
+        // Spy on dispose to count calls.
+        const disposeSpy = jest.spyOn(instance, "dispose");
+
+        sound.stop();
+
+        // onended should be triggered exactly once.
+        expect(onended).toHaveBeenCalledTimes(1);
+
+        // dispose should be called exactly once (from _onInstanceEnded), not re-entered.
+        expect(disposeSpy).toHaveBeenCalledTimes(1);
+
+        disposeSpy.mockRestore();
     });
 });

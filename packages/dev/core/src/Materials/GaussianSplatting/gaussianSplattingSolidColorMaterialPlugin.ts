@@ -4,11 +4,12 @@ import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { SubMesh } from "../../Meshes/subMesh";
 import type { UniformBuffer } from "../uniformBuffer";
 import type { MaterialDefines } from "../materialDefines";
+import { serialize, expandToProperty } from "../../Misc/decorators";
 import { Color3 } from "../../Maths/math.color";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { ShaderLanguage } from "../shaderLanguage";
 import { RegisterClass } from "../../Misc/typeStore";
-import { GaussianSplattingMaxPartCount } from "./gaussianSplattingMaterial";
+import { GetGaussianSplattingMaxPartCount } from "./gaussianSplattingMaterial";
 import type { GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
 
 /**
@@ -19,6 +20,21 @@ import type { GaussianSplattingMaterial } from "./gaussianSplattingMaterial";
 export class GaussianSplattingSolidColorMaterialPlugin extends MaterialPluginBase {
     private _partColors: Color3[];
     private _maxPartCount: number;
+    private _isEnabled = true;
+    /**
+     * Whether the solid-color override is active. When false, splats
+     * render with their original per-splat colors.
+     * Toggled via a shader uniform so no recompilation is required.
+     */
+    @serialize()
+    @expandToProperty("_onIsEnabledChanged")
+    public isEnabled = true;
+
+    /** @internal */
+    public _onIsEnabledChanged(): void {
+        // Intentional no-op: isEnabled is applied via a uniform in
+        // bindForSubMesh, so no dirty-marking or recompilation is needed.
+    }
 
     /**
      * Creates a new GaussianSplatSolidColorPlugin.
@@ -26,11 +42,11 @@ export class GaussianSplattingSolidColorMaterialPlugin extends MaterialPluginBas
      * @param partColors A map from part index to the solid Color3 for that part.
      * @param maxPartCount The maximum number of parts supported. This determines the size of the uniform array.
      */
-    constructor(material: GaussianSplattingMaterial, partColors: Color3[], maxPartCount = GaussianSplattingMaxPartCount) {
+    constructor(material: GaussianSplattingMaterial, partColors: Color3[], maxPartCount?: number) {
         super(material, "GaussianSplatSolidColor", 200);
 
         this._partColors = partColors;
-        this._maxPartCount = maxPartCount;
+        this._maxPartCount = maxPartCount ?? GetGaussianSplattingMaxPartCount(material.getScene().getEngine());
         this._enable(true);
     }
 
@@ -86,7 +102,7 @@ export class GaussianSplattingSolidColorMaterialPlugin extends MaterialPluginBas
      * @returns null or a map of injection point names to code strings
      */
     public override getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
-        const maxPartCount = this._maxPartCount ?? GaussianSplattingMaxPartCount;
+        const maxPartCount = this._maxPartCount;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
             return this._getCustomCodeWGSL(shaderType, maxPartCount);
@@ -110,11 +126,14 @@ export class GaussianSplattingSolidColorMaterialPlugin extends MaterialPluginBas
             return {
                 CUSTOM_FRAGMENT_DEFINITIONS: `
 varying float vPartIndex;
+uniform float solidColorEnabled;
 uniform vec3 partColors[${maxPartCount}];
                 `,
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
-int partIdx = int(vPartIndex + 0.5);
-finalColor = vec4(partColors[partIdx], finalColor.w);
+if (solidColorEnabled > 0.5) {
+    int partIdx = int(vPartIndex + 0.5);
+    finalColor = vec4(partColors[partIdx], finalColor.w);
+}
                 `,
             };
         }
@@ -137,11 +156,14 @@ finalColor = vec4(partColors[partIdx], finalColor.w);
             return {
                 CUSTOM_FRAGMENT_DEFINITIONS: `
 varying vPartIndex: f32;
+uniform solidColorEnabled: f32;
 uniform partColors: array<vec3f, ${maxPartCount}>;
                 `,
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
-var partIdx: i32 = i32(fragmentInputs.vPartIndex + 0.5);
-finalColor = vec4f(uniforms.partColors[partIdx], finalColor.w);
+if (uniforms.solidColorEnabled > 0.5) {
+    var partIdx: i32 = i32(fragmentInputs.vPartIndex + 0.5);
+    finalColor = vec4f(uniforms.partColors[partIdx], finalColor.w);
+}
                 `,
             };
         }
@@ -149,8 +171,8 @@ finalColor = vec4f(uniforms.partColors[partIdx], finalColor.w);
     }
 
     /**
-     * Registers the `partColors` uniform with the engine so that
-     * the Effect can resolve its location.
+     * Registers the plugin uniforms with the engine so that
+     * the Effect can resolve their locations.
      * @returns uniform descriptions
      */
     public override getUniforms(): {
@@ -160,12 +182,12 @@ finalColor = vec4f(uniforms.partColors[partIdx], finalColor.w);
         externalUniforms?: string[];
     } {
         return {
-            externalUniforms: ["partColors"],
+            externalUniforms: ["partColors", "solidColorEnabled"],
         };
     }
 
     /**
-     * Binds the `partColors` uniform array each frame.
+     * Binds the plugin uniforms each frame.
      * @param _uniformBuffer the uniform buffer (unused — we bind directly on the effect)
      * @param _scene the current scene
      * @param _engine the current engine
@@ -176,6 +198,8 @@ finalColor = vec4f(uniforms.partColors[partIdx], finalColor.w);
         if (!effect) {
             return;
         }
+
+        effect.setFloat("solidColorEnabled", this._isEnabled ? 1.0 : 0.0);
 
         const colorArray: number[] = [];
         for (let i = 0; i < this._maxPartCount; i++) {

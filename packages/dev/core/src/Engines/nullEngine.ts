@@ -207,7 +207,6 @@ export class NullEngine extends Engine {
             supportSpriteInstancing: false,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
-            _collectUbosUpdatedInFrame: false,
         };
 
         if (options.renderingCanvas) {
@@ -722,6 +721,10 @@ export class NullEngine extends Engine {
         texture.height = this._options.textureSize;
         if (format) {
             texture.format = format;
+        }
+        // Store buffer to support export/serialization and other operations.
+        if (buffer) {
+            texture._buffer = buffer;
         }
 
         texture.isReady = true;

@@ -16,6 +16,9 @@ import { CompactModeSettingDescriptor, DisableCopySettingDescriptor, UseDegreesS
 import { SceneContextIdentity } from "../sceneContext";
 import { ShellServiceIdentity } from "../shellService";
 
+/**
+ * The unique identity symbol for the settings service.
+ */
 export const SettingsServiceIdentity = Symbol("SettingsService");
 
 /**
@@ -50,7 +53,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsService], [I
             horizontalLocation: "right",
             verticalLocation: "top",
             order: 500,
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);

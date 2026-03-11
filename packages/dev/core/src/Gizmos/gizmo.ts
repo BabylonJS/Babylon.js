@@ -45,7 +45,7 @@ export interface GizmoAxisCache {
 export const enum GizmoAnchorPoint {
     /** The origin of the attached node */
     Origin,
-    /** The pivot point of the attached node*/
+    /** The pivot point of the attached node */
     Pivot,
 }
 
@@ -103,7 +103,7 @@ export interface IGizmo extends IDisposable {
      */
     updateScale: boolean;
     /**
-     * posture that the gizmo will be display
+     * Orientation that the gizmo will be displayed with.
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
     customRotationQuaternion: Nullable<Quaternion>;
@@ -143,7 +143,7 @@ export class Gizmo implements IGizmo {
     protected _isHovered = false;
 
     /**
-     * When enabled, any gizmo operation will perserve scaling sign. Default is off.
+     * When enabled, any gizmo operation will preserve scaling sign. Default is off.
      * Only valid for TransformNode derived classes (Mesh, AbstractMesh, ...)
      */
     public static PreserveScaling = false;
@@ -323,7 +323,7 @@ export class Gizmo implements IGizmo {
     }
 
     /**
-     * posture that the gizmo will be display
+     * Orientation that the gizmo will be displayed with.
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
     public get customRotationQuaternion(): Nullable<Quaternion> {
@@ -341,7 +341,7 @@ export class Gizmo implements IGizmo {
         if (this.attachedNode) {
             let effectiveNode = this.attachedNode;
             if (this.attachedMesh) {
-                effectiveNode = this.attachedMesh || this.attachedNode;
+                effectiveNode = this.attachedMesh;
             }
 
             // Position
@@ -378,7 +378,8 @@ export class Gizmo implements IGizmo {
             if (this.updateScale) {
                 const activeCamera = this.gizmoLayer.utilityLayerScene.activeCamera!;
                 const cameraPosition = activeCamera.globalPosition;
-                this._rootMesh.position.subtractToRef(cameraPosition, TmpVectors.Vector3[0]);
+                const offsetToCamera = TmpVectors.Vector3[0];
+                this._rootMesh.absolutePosition.subtractToRef(cameraPosition, offsetToCamera);
                 let scale = this.scaleRatio;
                 if (activeCamera.mode == Camera.ORTHOGRAPHIC_CAMERA) {
                     if (activeCamera.orthoTop && activeCamera.orthoBottom) {
@@ -388,7 +389,12 @@ export class Gizmo implements IGizmo {
                 } else {
                     const camForward = activeCamera.getScene().useRightHandedSystem ? Vector3.RightHandedForwardReadOnly : Vector3.LeftHandedForwardReadOnly;
                     const direction = activeCamera.getDirection(camForward);
-                    scale *= Vector3.Dot(TmpVectors.Vector3[0], direction);
+                    scale *= Vector3.Dot(offsetToCamera, direction);
+                }
+                if (this.additionalTransformNode) {
+                    this.additionalTransformNode.getWorldMatrix().decompose(TmpVectors.Vector3[1]);
+                    const maxScale = Math.max(Math.abs(TmpVectors.Vector3[1].x), Math.abs(TmpVectors.Vector3[1].y), Math.abs(TmpVectors.Vector3[1].z));
+                    scale *= 1 / maxScale;
                 }
                 this._rootMesh.scaling.setAll(scale);
 
@@ -505,7 +511,7 @@ export class Gizmo implements IGizmo {
                     const scaleMatrix = TmpVectors.Matrix[2];
                     Matrix.ScalingToRef(transform.scaling.x, transform.scaling.y, transform.scaling.z, scaleMatrix);
 
-                    const rotationMatrix = TmpVectors.Matrix[2];
+                    const rotationMatrix = TmpVectors.Matrix[7];
                     r.toRotationMatrix(rotationMatrix);
 
                     const pivotMatrix = transform.getPivotMatrix();

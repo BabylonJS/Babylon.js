@@ -14,6 +14,7 @@ import { LegacyInspectableObjectPropertiesServiceDefinition } from "./legacy/ins
 import { MakeModularTool } from "./modularTool";
 import { GizmoServiceDefinition } from "./services/gizmoService";
 import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
+import { HighlightServiceDefinition } from "./services/highlightService";
 import { MiniStatsServiceDefinition } from "./services/miniStatsService";
 import { DebugServiceDefinition } from "./services/panes/debugService";
 import { AnimationGroupPropertiesServiceDefinition } from "./services/panes/properties/animationGroupPropertiesService";
@@ -62,7 +63,6 @@ import { GLTFAnimationImportServiceDefinition } from "./services/panes/tools/imp
 import { GLTFLoaderOptionsServiceDefinition } from "./services/panes/tools/import/gltfLoaderOptionsService";
 import { GLTFValidationServiceDefinition } from "./services/panes/tools/import/gltfValidationService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
-import { HighlightServiceDefinition } from "./services/highlightService";
 import { PickingServiceDefinition } from "./services/pickingService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
@@ -70,16 +70,41 @@ import { ShellServiceIdentity } from "./services/shellService";
 import { ShellSettingsServiceDefinition } from "./services/shellSettingsService";
 import { TextureEditorServiceDefinition } from "./services/textureEditor/textureEditorService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
+import { WatcherRefreshToolbarServiceDefinition, WatcherSettingsServiceDefinition } from "./services/watcherService";
 
 type LayoutMode = "inline" | "overlay";
 
-export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & {
+/**
+ * Options for configuring the inspector.
+ */
+export type InspectorOptions = Omit<ModularToolOptions, "namespace" | "toolbarMode"> & {
+    /**
+     * Whether to automatically resize the engine when the inspector layout changes. Defaults to true.
+     */
     autoResizeEngine?: boolean;
+
+    /**
+     * The layout mode for the inspector.
+     * - "inline": The inspector is embedded within the same container as the rendering canvas, and re-hosts the canvas.
+     * - "overlay": The inspector is rendered as an overlay on top of the rendering canvas.
+     * Defaults to "overlay".
+     */
     layoutMode?: LayoutMode;
 };
 
+/**
+ * A token returned by {@link ShowInspector} that can be used to dispose the inspector
+ * and observe its disposal.
+ */
 export type InspectorToken = IDisposable & {
+    /**
+     * Whether the inspector has been disposed.
+     */
     readonly isDisposed: boolean;
+
+    /**
+     * An observable that fires when the inspector is disposed.
+     */
     readonly onDisposed: IReadonlyObservable<void>;
 };
 
@@ -92,6 +117,12 @@ const InspectorTokens = new WeakMap<Scene, IDisposable>();
 // This is needed because each time Inspector is shown or hidden, it is potentially mutating the same DOM element.
 const InspectorLock = new AsyncLock();
 
+/**
+ * Shows the inspector for the specified scene.
+ * @param scene The scene to inspect.
+ * @param options Optional configuration for the inspector.
+ * @returns An {@link InspectorToken} that can be disposed to hide the inspector.
+ */
 export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> = {}): InspectorToken {
     // Dispose of any existing inspector for this scene.
     InspectorTokens.get(scene)?.dispose();
@@ -340,7 +371,11 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
 
             // Settings pane tab and related services.
             SettingsServiceDefinition,
+            WatcherSettingsServiceDefinition,
             ShellSettingsServiceDefinition,
+
+            // Adds a button to refresh all properties manually (when watcher is in "manual" mode).
+            WatcherRefreshToolbarServiceDefinition,
 
             // Tracks entity selection state (e.g. which Mesh or Material or other entity is currently selected in scene explorer and bound to the properties pane, etc.).
             SelectionServiceDefinition,

@@ -23,11 +23,11 @@ import { BoundingBoxGizmo } from "./boundingBoxGizmo";
 import type { TransformNode } from "../Meshes/transformNode";
 
 /**
- * Helps setup gizmo's in the scene to rotate/scale/position nodes
+ * Helps set up gizmos in the scene to rotate/scale/position nodes
  */
 export class GizmoManager implements IDisposable {
     /**
-     * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
+     * Gizmos created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
      */
     public gizmos: {
         positionGizmo: Nullable<IPositionGizmo>;

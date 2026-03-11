@@ -3,7 +3,7 @@ import type { Scene } from "core/scene";
 import type { Matrix, Vector2 } from "core/Maths/math.vector";
 import type { Effect } from "core/Materials/effect";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
-import { GaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingMesh } from "./gaussianSplattingMesh";
 import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -419,8 +419,8 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
         const assignedPartIndices: number[] = [];
         let dstOffset = splatCountA;
         for (const other of others) {
-            if (nextPartIndex >= GaussianSplattingMaxPartCount) {
-                throw new Error(`Cannot add part, as the maximum part count (${GaussianSplattingMaxPartCount}) has been reached`);
+            if (nextPartIndex >= GetGaussianSplattingMaxPartCount(this._scene.getEngine())) {
+                throw new Error(`Cannot add part, as the maximum part count (${GetGaussianSplattingMaxPartCount(this._scene.getEngine())}) has been reached`);
             }
             const newPartIndex = nextPartIndex++;
             assignedPartIndices.push(newPartIndex);

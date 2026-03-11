@@ -704,5 +704,28 @@ export default tseslint.config(
         rules: {
             "babylonjs/no-directory-barrel-imports": "error",
         },
+    },
+
+    // ===========================================
+    // UMD ES5 downlevel iteration guard
+    // These dev packages are compiled into UMD bundles targeting ES5
+    // without --downlevelIteration. for...of and spread on non-array
+    // iterables (Set, Map, generators, etc.) silently produce broken
+    // code. This rule catches those patterns at lint time.
+    // ===========================================
+    {
+        files: [
+            "packages/dev/core/src/**/*.ts",
+            "packages/dev/gui/src/**/*.ts",
+            "packages/dev/loaders/src/**/*.ts",
+            "packages/dev/materials/src/**/*.ts",
+            "packages/dev/serializers/src/**/*.ts",
+            "packages/dev/postProcesses/src/**/*.ts",
+            "packages/dev/proceduralTextures/src/**/*.ts",
+            "packages/dev/addons/src/**/*.ts",
+        ],
+        rules: {
+            "babylonjs/no-downlevel-iteration": "error",
+        },
     }
 );

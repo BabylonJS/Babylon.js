@@ -266,14 +266,14 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
 
                 node.extensions = node.extensions || {};
 
-                let coatWeightTexture: Nullable<BaseTexture> = null;
+                let coatWeightTexture: Nullable<BaseTexture>;
                 let coatTextureInfo;
                 if (babylonMaterial.coatWeightTexture) {
                     coatWeightTexture = this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId];
                     coatTextureInfo = this._exporter._materialExporter.getTextureInfo(coatWeightTexture);
                 }
 
-                let coatRoughnessTexture: Nullable<BaseTexture> = null;
+                let coatRoughnessTexture: Nullable<BaseTexture>;
                 let coatRoughnessTextureInfo;
                 if (babylonMaterial.coatRoughnessTexture) {
                     coatRoughnessTexture = this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId];

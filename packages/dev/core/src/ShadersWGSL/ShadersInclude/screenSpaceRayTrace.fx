@@ -202,12 +202,16 @@ fn traceScreenSpaceRay1(
          (stepCount <= selfCollisionNumSkip) ||
          ((pqk.x * stepDirection) <= end &&
          stepCount < maxSteps &&
-         !hit &&
-         sceneZMax != 0.0);
+         !hit);
          pqk += dPQK 
         )
     {
         *hitPixel = select(pqk.xy, pqk.yx, permute);
+
+    #ifndef SSRAYTRACE_CLIP_TO_FRUSTUM
+        if ((*hitPixel).x < 0.0 || (*hitPixel).x >= csZBufferSize.x ||
+            (*hitPixel).y < 0.0 || (*hitPixel).y >= csZBufferSize.y) { break; }
+    #endif
 
         // The depth range that the ray covers within this loop
         // iteration.  Assume that the ray is moving in increasing z
@@ -220,6 +224,11 @@ fn traceScreenSpaceRay1(
 		rayZMax = (dPQK.z * 0.5 + pqk.z) / (dPQK.w * 0.5 + pqk.w);
         rayZMax = clamp(rayZMax, zMin, zMax);
         prevZMaxEstimate = rayZMax;
+    #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
+        if (prevZMaxEstimate < -farPlaneZ) { break; }
+    #else
+        if (prevZMaxEstimate > farPlaneZ) { break; }
+    #endif
         if (rayZMin > rayZMax) { 
            var t: f32 = rayZMin; rayZMin = rayZMax; rayZMax = t;
         }
@@ -249,7 +258,7 @@ fn traceScreenSpaceRay1(
                 sceneBackZ = linearizeDepth(sceneBackZ, nearPlaneZ, farPlaneZ);
             #endif
             if (sceneBackZ == 0.0) { sceneBackZ = 1e8; }
-            hit = (rayZMin <= sceneBackZ + csZThickness) && (rayZMax >= sceneZMax) && (sceneZMax != 0.0);
+            hit = (rayZMin <= sceneBackZ + csZThickness) && (rayZMax >= sceneZMax);
         #else
             hit = (rayZMin <= sceneZMax + csZThickness) && (rayZMax >= sceneZMax);
         #endif
@@ -262,7 +271,7 @@ fn traceScreenSpaceRay1(
     pqk -= dPQK;
     stepCount -= 1.0;
 
-    if (((pqk.x + dPQK.x) * stepDirection) > end || (stepCount + 1.0) >= maxSteps || sceneZMax == 0.0) {
+    if (((pqk.x + dPQK.x) * stepDirection) > end || (stepCount + 1.0) >= maxSteps) {
         hit = false;
     }
 
@@ -296,7 +305,7 @@ fn traceScreenSpaceRay1(
         for (;
             refinementStepCount <= 1.0 ||
             ((refinementStepCount <= stride * 1.4) &&
-            (rayZMax < sceneZMax) && (sceneZMax != 0.0));
+            (rayZMax < sceneZMax));
             pqk += dPQK)
         {
             rayZMin = prevZMaxEstimate;
@@ -313,6 +322,7 @@ fn traceScreenSpaceRay1(
             #ifdef SSRAYTRACE_SCREENSPACE_DEPTH
                 sceneZMax = linearizeDepth(sceneZMax, nearPlaneZ, farPlaneZ);
             #endif
+            if (sceneZMax == 0.0) { sceneZMax = 1e8; }
 
             refinementStepCount += 1.0;
         }
@@ -340,8 +350,8 @@ fn traceScreenSpaceRay1(
     } else if ((stepCount + 1.0) >= maxSteps) {
         // Ran out of steps -> red
         *debugColor =  vec3f(1,0,0);
-    } else if (sceneZMax == 0.0) {
-        // Went off screen -> yellow
+    } else if (!hit) {
+        // Went off screen or beyond far plane -> yellow
         *debugColor =  vec3f(1,1,0);
     } else {
         // Encountered a valid hit -> green

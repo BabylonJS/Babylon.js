@@ -24,6 +24,7 @@ import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
 import { NodeRenderGraphOutputBlock } from "core/FrameGraph/Node/Blocks/outputBlock";
 import type { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
+import type { NodeRenderGraphValueType } from "core/FrameGraph/Node/Blocks/inputBlock";
 import { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 import { Constants } from "core/Engines/constants";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
@@ -103,8 +104,23 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         };
 
         const applyUpdate = (data: any) => {
+            // Preserve external input values set by the host app (they aren't in the serialized data)
+            const savedExternalValues = new Map<string, Nullable<NodeRenderGraphValueType>>();
+            for (const input of renderGraph.getInputBlocks()) {
+                if (input.isExternal) {
+                    savedExternalValues.set(input.name, input.value);
+                }
+            }
+
             globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
             renderGraph.parseSerializedObject(data);
+
+            // Restore external input values after the new blocks are created
+            for (const input of renderGraph.getInputBlocks()) {
+                if (input.isExternal && savedExternalValues.has(input.name)) {
+                    input.value = savedExternalValues.get(input.name)!;
+                }
+            }
 
             globalState.onResetRequiredObservable.notifyObservers(false);
         };

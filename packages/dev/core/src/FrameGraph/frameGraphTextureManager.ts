@@ -1173,10 +1173,10 @@ export class FrameGraphTextureManager {
                     case Constants.TEXTUREFORMAT_R_INTEGER:
                     case Constants.TEXTUREFORMAT_ALPHA:
                     case Constants.TEXTUREFORMAT_LUMINANCE:
-                    case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
                         return { width: 1, height: 1, length: 1 };
                     case Constants.TEXTUREFORMAT_RG:
                     case Constants.TEXTUREFORMAT_RG_INTEGER:
+                    case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
                         return { width: 1, height: 1, length: 2 };
                     case Constants.TEXTUREFORMAT_RGB:
                     case Constants.TEXTUREFORMAT_RGB_INTEGER:

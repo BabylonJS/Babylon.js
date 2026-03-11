@@ -9,6 +9,11 @@ import { useSettingsStore } from "../contexts/settingsContext";
 import { UseDegreesSettingDescriptor } from "../services/globalSettings";
 import { useObservableState } from "./observableHooks";
 
+/**
+ * Hook that reads and writes a setting from the settings store.
+ * @param descriptor The setting descriptor that identifies the setting and its default value.
+ * @returns A tuple of [currentValue, setValue, resetValue] similar to React's useState.
+ */
 export function useSetting<T>(descriptor: SettingDescriptor<T>): [T, Dispatch<SetStateAction<T>>, () => void] {
     const settingsStore = useSettingsStore();
 

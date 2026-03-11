@@ -198,7 +198,7 @@ export type ComputePathResult = {
          */
         type?: ComputePathErrorType;
         /**
-         * Statusring describing the error.
+         * Status describing the error.
          */
         status?: number;
     };

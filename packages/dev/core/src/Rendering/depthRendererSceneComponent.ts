@@ -59,7 +59,7 @@ Scene.prototype.enableDepthRenderer = function (
     }
     if (!this._depthRenderer[camera.id]) {
         const supportFullfloat = !!this.getEngine().getCaps().textureFloatRender;
-        let textureType = 0;
+        let textureType: number;
         if (this.getEngine().getCaps().textureHalfFloatRender && (!force32bitsFloat || !supportFullfloat)) {
             textureType = Constants.TEXTURETYPE_HALF_FLOAT;
         } else if (supportFullfloat) {

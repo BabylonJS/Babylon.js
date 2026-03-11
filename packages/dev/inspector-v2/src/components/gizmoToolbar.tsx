@@ -67,7 +67,7 @@ export const GizmoToolbar: FunctionComponent<{ gizmoService: IGizmoService; scen
             const value = data.checkedItems[0];
             gizmoService.gizmoCamera = value === "-1" ? null : (cameras.find((camera) => camera.uniqueId.toString() === value) ?? null);
         },
-        [gizmoService]
+        [gizmoService, cameras]
     );
 
     return (
@@ -109,7 +109,7 @@ export const GizmoToolbar: FunctionComponent<{ gizmoService: IGizmoService; scen
                     </MenuPopover>
                 </Menu>
             </Collapse>
-            <Collapse visible={!!gizmoMode} orientation="horizontal">
+            <Collapse visible={!!gizmoMode && !!cameras && cameras.length > 1} orientation="horizontal">
                 <Menu positioning="below-end" checkedValues={{ cameraGizmo: [cameraGizmo?.uniqueId.toString() ?? "-1"] }} onCheckedValueChange={onCameraGizmoChange}>
                     <MenuTrigger disableButtonEnhancement={true}>
                         {(triggerProps: MenuButtonProps) => (
@@ -131,12 +131,11 @@ export const GizmoToolbar: FunctionComponent<{ gizmoService: IGizmoService; scen
                             <MenuItemRadio name="cameraGizmo" value={"-1"}>
                                 Automatic
                             </MenuItemRadio>
-                            {sceneContext.currentScene &&
-                                sceneContext.currentScene.activeCameras?.map((camera, index) => (
-                                    <MenuItemRadio key={camera.uniqueId} name="cameraGizmo" value={camera.uniqueId.toString()}>
-                                        {camera.name}
-                                    </MenuItemRadio>
-                                ))}
+                            {cameras?.map((camera) => (
+                                <MenuItemRadio key={camera.uniqueId} name="cameraGizmo" value={camera.uniqueId.toString()}>
+                                    {camera.name}
+                                </MenuItemRadio>
+                            ))}
                         </MenuList>
                     </MenuPopover>
                 </Menu>

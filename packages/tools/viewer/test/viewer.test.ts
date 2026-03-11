@@ -7,6 +7,45 @@ const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : ""
 const viewerUrl =
     (process.env.VIEWER_BASE_URL || getGlobalConfig().baseUrl.replace(":1337", process.env.VIEWER_PORT || ":1342")) + "/packages/tools/viewer/test/apps/web/test.html" + snapshot;
 
+let pageErrors: Error[];
+let consoleErrors: string[];
+
+test.beforeEach(({ page }) => {
+    pageErrors = [];
+    consoleErrors = [];
+
+    page.on("pageerror", (error) => {
+        pageErrors.push(error);
+    });
+
+    page.on("console", (message) => {
+        console.log(`[browser] ${message.text()}`);
+        if (message.type() === "error" || message.type() === "warning") {
+            const text = message.text();
+            // Only capture messages from Babylon.js (prefixed with "BJS -").
+            if (text.includes("BJS -")) {
+                consoleErrors.push(text);
+            }
+        }
+    });
+});
+
+test.afterEach(async ({ page }) => {
+    // Wait until at least 50 frames have been rendered to allow async errors (e.g. WebGPU validation) to surface.
+    const minFrameCount = 50;
+    const frameIdHandle = await page.waitForFunction((minFrameCount) => {
+        const viewer = document.querySelector("babylon-viewer") as ViewerElement;
+        const engine = viewer.viewerDetails?.scene.getEngine();
+        return engine && engine.frameId >= minFrameCount ? engine.frameId : null;
+    }, minFrameCount);
+
+    const actualFrameCount = await frameIdHandle.jsonValue();
+    console.log(`${actualFrameCount} of minimum ${minFrameCount} frames rendered.`);
+    expect(actualFrameCount).toBeGreaterThanOrEqual(minFrameCount);
+    expect(pageErrors, "Unhandled page errors").toEqual([]);
+    expect(consoleErrors, "Console errors").toEqual([]);
+});
+
 async function attachViewerElement(page: Page, viewerHtml: string) {
     await page.goto(viewerUrl, {
         waitUntil: "load",
@@ -20,14 +59,22 @@ async function attachViewerElement(page: Page, viewerHtml: string) {
 
     const viewerElementLocator = page.locator("babylon-viewer");
     await viewerElementLocator.waitFor();
-    return await viewerElementLocator.elementHandle();
+    const viewerElementHandle = await viewerElementLocator.elementHandle();
+
+    // Wait for viewerDetails to be available and loading to finish.
+    await page.waitForFunction((viewerElement) => {
+        const details = (viewerElement as ViewerElement).viewerDetails;
+        return details && details.viewer.loadingProgress === false;
+    }, viewerElementHandle);
+
+    return viewerElementHandle;
 }
 
 test("viewerDetails available", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer>
+        <babylon-viewer render-when-idle>
         </babylon-viewer>
         `
     );
@@ -38,14 +85,14 @@ test("viewerDetails available", async ({ page }) => {
     }, viewerElementHandle);
 
     expect(viewerDetails).toBeDefined();
-    expect(viewerDetails.getProperty("scene")).toBeDefined();
+    expect(await viewerDetails.getProperty("scene")).toBeDefined();
 });
 
 test("animation-auto-play", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             source="https://assets.babylonjs.com/meshes/ufo.glb"
             animation-auto-play
         >
@@ -65,7 +112,7 @@ test('selected-animation="n"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             source="https://assets.babylonjs.com/meshes/ufo.glb"
             selected-animation="1"
         >
@@ -88,7 +135,7 @@ test('camera-orbit="a b r"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             camera-orbit=" 1 2 0.1 "
         >
@@ -111,7 +158,7 @@ test('camera-target="x y z"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             camera-target=" 1 2 3 "
         >
@@ -134,7 +181,7 @@ test('tone-mapping="none"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             source="https://assets.babylonjs.com/meshes/boombox.glb"
             tone-mapping="none"
         >
@@ -157,7 +204,7 @@ test('material-variant="name"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             source="https://assets.babylonjs.com/meshes/shoe_variants.glb"
             material-variant="street"
         >
@@ -180,7 +227,7 @@ test('environment="auto"', async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
         `
-        <babylon-viewer
+        <babylon-viewer render-when-idle
             environment="auto"
         >
         </babylon-viewer>
@@ -199,4 +246,23 @@ test('environment="auto"', async ({ page }) => {
     }, viewerElementHandle);
 
     expect(isEnvironmentLoaded).toBeTruthy();
+});
+
+test('shadow-quality="high"', async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer render-when-idle
+            source="https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb"
+            shadow-quality="high"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    // Wait for the viewerDetails property to become defined
+    await page.waitForFunction((viewerElement) => {
+        // For now, we'll just rely on the common per-test validation that there are no unhandled page errors or console errors.
+        return (viewerElement as ViewerElement).viewerDetails;
+    }, viewerElementHandle);
 });

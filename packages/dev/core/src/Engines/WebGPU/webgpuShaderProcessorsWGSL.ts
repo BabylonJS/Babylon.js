@@ -461,7 +461,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             } else {
                 fragmentOutputs += "  @location(0) color : vec4<f32>,\n";
             }
-            indexLocation++;
+            // indexLocation++; // if you need this variable after this block, uncomment this
         }
 
         // FragDepth

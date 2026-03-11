@@ -1,5 +1,5 @@
 import type { IInspectorContextMenuItem, IInspectorContextMenuType, IInspectorOptions as InspectorV1Options, Nullable, Scene } from "core/index";
-import type { InspectorOptions as InspectorV2Options, InspectorToken } from "../inspector";
+import type { InspectorToken, InspectorOptions as InspectorV2Options } from "../inspector";
 import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IGizmoService } from "../services/gizmoService";
@@ -7,6 +7,7 @@ import type { IPropertiesService } from "../services/panes/properties/properties
 import type { ISceneExplorerService } from "../services/panes/scene/sceneExplorerService";
 import type { ISelectionService } from "../services/selectionService";
 import type { IShellService } from "../services/shellService";
+import type { IWatcherService } from "../services/watcherService";
 
 import { BranchRegular } from "@fluentui/react-icons";
 
@@ -14,12 +15,12 @@ import { DebugLayerTab } from "core/Debug/debugLayer";
 import { EngineStore } from "core/Engines/engineStore";
 import { Observable } from "core/Misc/observable";
 import { ShowInspector } from "../inspector";
-import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 import { GizmoServiceIdentity } from "../services/gizmoService";
 import { PropertiesServiceIdentity } from "../services/panes/properties/propertiesService";
 import { SceneExplorerServiceIdentity } from "../services/panes/scene/sceneExplorerService";
 import { SelectionServiceIdentity } from "../services/selectionService";
 import { ShellServiceIdentity } from "../services/shellService";
+import { WatcherServiceIdentity } from "../services/watcherService";
 import { LegacyPropertiesSectionMapping } from "./propertiesSectionMapping";
 
 type PropertyChangedEvent = {
@@ -103,10 +104,10 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
 
     if (v1Options.additionalNodes && v1Options.additionalNodes.length > 0) {
         const { additionalNodes } = v1Options;
-        const additionalNodesServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
+        const additionalNodesServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, IWatcherService]> = {
             friendlyName: "Additional Nodes (Backward Compatibility)",
-            consumes: [SceneExplorerServiceIdentity],
-            factory: (sceneExplorerService) => {
+            consumes: [SceneExplorerServiceIdentity, WatcherServiceIdentity],
+            factory: (sceneExplorerService, watcherService) => {
                 const sceneExplorerSectionRegistrations = additionalNodes.map((node) =>
                     sceneExplorerService.addSection({
                         displayName: node.name,
@@ -115,11 +116,7 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
                         getEntityDisplayInfo: (entity) => {
                             const onChangeObservable = new Observable<void>();
 
-                            const nameHookToken = InterceptProperty(entity, "name", {
-                                afterSet: () => {
-                                    onChangeObservable.notifyObservers();
-                                },
-                            });
+                            const nameHookToken = watcherService.watchProperty(entity, "name", () => onChangeObservable.notifyObservers());
 
                             return {
                                 get name() {
@@ -270,7 +267,6 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
 export class Inspector {
     private static _CurrentInstance: Nullable<{ scene: Scene; options: Partial<InspectorV2Options>; disposeToken: InspectorToken }> = null;
     private static _PopupToggler: Nullable<(side: "left" | "right") => void> = null;
-    private static _SectionHighlighter: Nullable<(sectionIds: readonly string[]) => void> = null;
     private static _SidePaneOpenCounter: Nullable<() => number> = null;
 
     // @ts-expect-error TS6133: This is private, but used by debugLayer (same as Inspector v1).
@@ -280,13 +276,14 @@ export class Inspector {
 
     public static readonly OnSelectionChangeObservable = new Observable<any>();
     public static readonly OnPropertyChangedObservable = new Observable<PropertyChangedEvent>();
+    private static readonly _OnMarkLineContainerObservable = new Observable<string[]>(undefined, true);
 
     public static MarkLineContainerTitleForHighlighting(title: string) {
         this.MarkMultipleLineContainerTitlesForHighlighting([title]);
     }
 
     public static MarkMultipleLineContainerTitlesForHighlighting(titles: string[]) {
-        this._SectionHighlighter?.(titles);
+        this._OnMarkLineContainerObservable.notifyObservers(titles);
     }
 
     public static PopupEmbed() {
@@ -317,6 +314,14 @@ export class Inspector {
         if (!scene || scene.isDisposed) {
             return;
         }
+
+        // Inspector setup is async, so we need to cache pending selection requests.
+        // Additionally, we manually track this (rather than relying on the observable's notifyIfTriggered property)
+        // for behavior backward compatibility.
+        let pendingSelection: any = null;
+        const pendingSelectionObserver = this.OnSelectionChangeObservable.add((entity) => {
+            pendingSelection = entity;
+        });
 
         let options = ConvertOptions(userOptions);
         const serviceDefinitions: WeaklyTypedServiceDefinition[] = [];
@@ -355,6 +360,15 @@ export class Inspector {
                     selectionService.selectedEntity = entity;
                 });
 
+                // If a selection was requested before async setup completed, apply it now.
+                if (pendingSelection) {
+                    selectionService.selectedEntity = pendingSelection;
+                    pendingSelection = null;
+                }
+
+                // Now the service is alive so we don't need to track pending selection requests.
+                pendingSelectionObserver.remove();
+
                 return {
                     dispose: () => {
                         selectionServiceObserver.remove();
@@ -391,13 +405,19 @@ export class Inspector {
             friendlyName: "Section Highlighter Service (Backward Compatibility)",
             consumes: [PropertiesServiceIdentity],
             factory: (propertiesService) => {
-                this._SectionHighlighter = (sectionIds: readonly string[]) => {
-                    propertiesService.highlightSections(sectionIds.map((id) => (LegacyPropertiesSectionMapping as Record<string, string>)[id] ?? id));
-                };
+                const markLineContainerObserver = this._OnMarkLineContainerObservable.add((sections) => {
+                    propertiesService.highlightSections(sections.map((id) => (LegacyPropertiesSectionMapping as Record<string, string>)[id] ?? id));
+                });
+
+                // Now the service is alive so we don't need to track pending highlight requests.
+                this._OnMarkLineContainerObservable.notifyIfTriggered = false;
+                this._OnMarkLineContainerObservable.cleanLastNotifiedState();
 
                 return {
                     dispose: () => {
-                        this._SectionHighlighter = null;
+                        // Service is being torn down, so start caching pending highlight requests again.
+                        markLineContainerObserver.remove();
+                        this._OnMarkLineContainerObservable.notifyIfTriggered = true;
                     },
                 };
             },

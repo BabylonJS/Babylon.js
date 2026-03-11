@@ -1,5 +1,8 @@
 import type { IDisposable } from "core/index";
 
+/**
+ * Hooks that can be registered on a function to intercept its execution.
+ */
 export type FunctionHooks<Args extends unknown[] = unknown[]> = {
     /**
      * This function will be called after the hooked function is called.

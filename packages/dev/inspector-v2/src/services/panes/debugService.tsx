@@ -13,6 +13,9 @@ import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { ShellServiceIdentity } from "../shellService";
 
+/**
+ * The unique identity symbol for the debug service.
+ */
 export const DebugServiceIdentity = Symbol("DebugService");
 
 /**
@@ -47,7 +50,7 @@ export const DebugServiceDefinition: ServiceDefinition<[IDebugService], [IShellS
             horizontalLocation: "right",
             verticalLocation: "top",
             order: 200,
-            suppressTeachingMoment: true,
+            teachingMoment: false,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);

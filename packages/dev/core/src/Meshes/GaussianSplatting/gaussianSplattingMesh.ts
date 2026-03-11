@@ -19,7 +19,7 @@ import type { Effect } from "core/Materials/effect";
 import { Scalar } from "core/Maths/math.scalar";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
 import { EngineStore } from "core/Engines/engineStore";
-import { Camera } from "core/Cameras/camera";
+import type { Camera } from "core/Cameras/camera";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
 import type { INative } from "core/Engines/Native/nativeInterfaces";
 
@@ -305,7 +305,6 @@ export class GaussianSplattingMesh extends Mesh {
     public _vertexCount = 0;
     protected _worker: Nullable<Worker> = null;
     private _modelViewProjectionMatrix = Matrix.Identity();
-    private _viewProjectionMatrix = Matrix.Identity();
     private _depthMix: BigInt64Array;
     protected _canPostToWorker = true;
     private _readyToDisplay = false;
@@ -596,11 +595,11 @@ export class GaussianSplattingMesh extends Mesh {
         const cameraProjectionMatrix = camera.getProjectionMatrix();
         const cameraViewProjectionMatrix = TmpVectors.Matrix[0];
         cameraViewMatrix.multiplyToRef(cameraProjectionMatrix, cameraViewProjectionMatrix);
-        this._viewProjectionMatrix.copyFrom(cameraViewProjectionMatrix);
 
+        const modelMatrix = this.getWorldMatrix();
         const modelViewMatrix = TmpVectors.Matrix[1];
-        this.getWorldMatrix().multiplyToRef(cameraViewMatrix, modelViewMatrix);
-        modelViewMatrix.multiplyToRef(cameraProjectionMatrix, this._modelViewProjectionMatrix);
+        modelMatrix.multiplyToRef(cameraViewMatrix, modelViewMatrix);
+        modelMatrix.multiplyToRef(cameraViewProjectionMatrix, this._modelViewProjectionMatrix);
 
         // return vector used to compute distance to camera
         const localDirection = TmpVectors.Vector3[1];
@@ -642,6 +641,15 @@ export class GaussianSplattingMesh extends Mesh {
                 cameraMesh.reservedDataStore = { hidden: true };
                 cameraMesh.setEnabled(false);
                 cameraMesh.material = this.material;
+                if (cameraMesh.material && cameraMesh.material instanceof GaussianSplattingMaterial) {
+                    const gsMaterial = cameraMesh.material as GaussianSplattingMaterial;
+                    // GaussianSplattingMaterial source mesh may not have been set yet.
+                    // This happens for cloned resources from asset containers for instance,
+                    // where material is cloned before mesh.
+                    if (!gsMaterial.getSourceMesh()) {
+                        gsMaterial.setSourceMesh(this);
+                    }
+                }
                 GaussianSplattingMesh._MakeSplatGeometryForMesh(cameraMesh);
 
                 const newViewInfos: ICameraViewInfo = {
@@ -672,13 +680,14 @@ export class GaussianSplattingMesh extends Mesh {
                     cameraViewInfos.frameIdLastUpdate = frameId;
                     this._canPostToWorker = false;
                     if (this._worker) {
+                        const cameraViewMatrix = camera.getViewMatrix();
                         this._worker.postMessage(
                             {
-                                modelViewProjection: this._modelViewProjectionMatrix.m,
-                                viewProjection: this._viewProjectionMatrix.m,
+                                worldMatrix: this.getWorldMatrix().m,
+                                cameraForward: [cameraViewMatrix.m[2], cameraViewMatrix.m[6], cameraViewMatrix.m[10]],
+                                cameraPosition: [camera.globalPosition.x, camera.globalPosition.y, camera.globalPosition.z],
                                 depthMix: this._depthMix,
                                 cameraId: camera.uniqueId,
-                                depthScale: camera.mode === Camera.ORTHOGRAPHIC_CAMERA ? (camera.maxZ - camera.minZ) / 2.0 : 1.0,
                             },
                             [this._depthMix.buffer]
                         );
@@ -1517,7 +1526,6 @@ export class GaussianSplattingMesh extends Mesh {
         newGS._vertexCount = this._vertexCount;
         newGS._copyTextures(this);
         newGS._modelViewProjectionMatrix = Matrix.Identity();
-        newGS._viewProjectionMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
         newGS._readyToDisplay = false;
         newGS._disableDepthSort = this._disableDepthSort;
@@ -1539,18 +1547,6 @@ export class GaussianSplattingMesh extends Mesh {
         let partIndices: Uint8Array;
         let partMatrices: Float32Array[];
 
-        function multiplyMatrices(matrix1: Float32Array, matrix2: Float32Array): Float32Array {
-            const result = new Float32Array(16);
-            for (let i = 0; i < 4; i++) {
-                for (let j = 0; j < 4; j++) {
-                    for (let k = 0; k < 4; k++) {
-                        result[j * 4 + i] += matrix1[k * 4 + i] * matrix2[j * 4 + k];
-                    }
-                }
-            }
-            return result;
-        }
-
         self.onmessage = (e: any) => {
             // updated on init
             if (e.data.positions) {
@@ -1567,13 +1563,14 @@ export class GaussianSplattingMesh extends Mesh {
             // update on view changed
             else {
                 const cameraId = e.data.cameraId;
-                const globalModelViewProjection = e.data.modelViewProjection;
-                const viewProjection = e.data.viewProjection;
+                const globalWorldMatrix = e.data.worldMatrix;
+                const cameraForward = e.data.cameraForward;
+                const cameraPosition = e.data.cameraPosition;
 
                 const vertexCountPadded = (positions.length / 4 + 15) & ~0xf;
-                if (!positions || !globalModelViewProjection) {
+                if (!positions || !cameraForward) {
                     // Sanity check, it shouldn't happen!
-                    throw new Error("positions or modelViewProjection matrix is not defined!");
+                    throw new Error("positions or camera info is not defined!");
                 }
 
                 depthMix = e.data.depthMix;
@@ -1585,30 +1582,39 @@ export class GaussianSplattingMesh extends Mesh {
                     indices[2 * j] = j;
                 }
 
-                const depthScale = e.data.depthScale;
+                // depth = dot(cameraForward, worldPos - cameraPos)
+                const camDot = cameraForward[0] * cameraPosition[0] + cameraForward[1] * cameraPosition[1] + cameraForward[2] * cameraPosition[2];
+
+                const computeDepthCoeffs = (m: Float32Array): number[] => {
+                    return [
+                        cameraForward[0] * m[0] + cameraForward[1] * m[1] + cameraForward[2] * m[2],
+                        cameraForward[0] * m[4] + cameraForward[1] * m[5] + cameraForward[2] * m[6],
+                        cameraForward[0] * m[8] + cameraForward[1] * m[9] + cameraForward[2] * m[10],
+                        cameraForward[0] * m[12] + cameraForward[1] * m[13] + cameraForward[2] * m[14] - camDot,
+                    ];
+                };
 
                 if (partMatrices && partIndices) {
-                    // If there are rig node matrices, we use them instead of the global model view proj
-
-                    // Precompute modelViewProj for each rig node
-                    const modelViewProjs = partMatrices.map((model) => multiplyMatrices(viewProjection, model));
+                    // Precompute depth coefficients for each rig node
+                    const depthCoeffs = partMatrices.map((m) => computeDepthCoeffs(m));
 
                     // NB: For performance reasons, we assume that part indices are valid
                     const length = partIndices.length;
-                    const matCount = modelViewProjs.length;
                     for (let j = 0; j < vertexCountPadded; j++) {
                         // NB: We need this 'min' because vertex array is padded, not partIndices
                         const partIndex = partIndices[Math.min(j, length - 1)];
-                        // Clamp to available matrices — protects against a sort firing mid-rebuild
-                        // before all partMatrices have been posted to the worker.
-                        const mvp = modelViewProjs[Math.min(partIndex, matCount - 1)];
-                        floatMix[2 * j + 1] = 10000 - (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) * depthScale;
+                        const coeff = depthCoeffs[partIndex];
+                        floatMix[2 * j + 1] = coeff[0] * positions[4 * j + 0] + coeff[1] * positions[4 * j + 1] + coeff[2] * positions[4 * j + 2] + coeff[3];
+                        // instead of using minus to sort back to front, we use bitwise not operator to invert the order of indices
+                        // might not be faster but a minus sign implies a reference value that may not be enough and will decrease floatting precision
+                        indices[2 * j + 1] = ~indices[2 * j + 1];
                     }
                 } else {
-                    // If there are no rig node matrices, we use the global model view proj
-                    const mvp = globalModelViewProjection;
+                    // Compute depth coefficients from global world matrix
+                    const [a, b, c, d] = computeDepthCoeffs(globalWorldMatrix);
                     for (let j = 0; j < vertexCountPadded; j++) {
-                        floatMix[2 * j + 1] = 10000 - (mvp[2] * positions[4 * j + 0] + mvp[6] * positions[4 * j + 1] + mvp[10] * positions[4 * j + 2] + mvp[14]) * depthScale;
+                        floatMix[2 * j + 1] = a * positions[4 * j + 0] + b * positions[4 * j + 1] + c * positions[4 * j + 2] + d;
+                        indices[2 * j + 1] = ~indices[2 * j + 1];
                     }
                 }
 

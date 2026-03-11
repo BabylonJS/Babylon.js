@@ -30,7 +30,7 @@ describe("Babylon Mesh Vertex Data", () => {
 
             expect(() => {
                 foo.merge(bar);
-            }).toThrowError(Error);
+            }).toThrow(Error);
         });
 
         it("should not be able to merge data with different attributes", () => {
@@ -43,7 +43,7 @@ describe("Babylon Mesh Vertex Data", () => {
 
             expect(() => {
                 foo.merge(bar);
-            }).toThrowError(Error);
+            }).toThrow(Error);
         });
     });
 });

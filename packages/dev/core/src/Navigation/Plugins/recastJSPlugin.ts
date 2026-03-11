@@ -96,7 +96,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
 
     /**
      * If delta time in navigation tick update is greater than the time step
-     * a number of sub iterations are done. If more iterations are need to reach deltatime
+     * a number of sub iterations are done. If more iterations are needed to reach deltatime
      * they will be discarded.
      * A value of 0 will set to no maximum and update will use as many substeps as needed
      * @param newStepCount the maximum number of iterations
@@ -137,9 +137,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters, completion?: (navmeshData: Uint8Array) => void): void {
         if (this._worker && !completion) {
-            Logger.Warn("A worker is avaible but no completion callback. Defaulting to blocking navmesh creation");
+            Logger.Warn("A worker is available but no completion callback. Defaulting to blocking navmesh creation");
         } else if (!this._worker && completion) {
-            Logger.Warn("A completion callback is avaible but no worker. Defaulting to blocking navmesh creation");
+            Logger.Warn("A completion callback is available but no worker. Defaulting to blocking navmesh creation");
         }
 
         this.navMesh = new this.bjsRECAST.NavMesh();
@@ -474,9 +474,18 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
     }
 
     /**
-     * Disposes
+     * Disposes of the plugin resources
      */
-    public dispose() {}
+    public dispose() {
+        if (this._worker) {
+            // Clear handlers and terminate the worker to avoid leaks
+            this._worker.onmessage = null;
+            // Clear other handlers if they were used
+            (this._worker as any).onerror = null;
+            this._worker.terminate();
+        }
+        this._worker = null;
+    }
 
     /**
      * Creates a cylinder obstacle and add it to the navigation

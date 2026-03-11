@@ -11,27 +11,23 @@ import { Matrix3d } from "./core/model/3mf";
 
 import { ST_Unit, type I3mfModel, type I3mfObject } from "./core/model/3mf.interfaces";
 import type { I3mfVertexData } from "./core/model/3mf.types";
-import { AbstractThreeMfSerializer, type IThreeMfSerializerOptions } from "./core/model/3mf.serializer";
+import { AbstractThreeMfSerializer, type IThreeMfSerializerBaseOptions } from "./core/model/3mf.serializer";
 import { ThreeMfSerializerGlobalConfiguration } from "./3mfSerializer.configuration";
 
 /**
- *
+ * Factory for generating sequential resource IDs for 3MF objects.
  */
 class IncrementalIdFactory {
-    /** */
-    _from: number;
-    /** */
-    _to: number;
-    /** */
-    _step: number;
-    /** */
-    _i: number;
+    private _from: number;
+    private _to: number;
+    private _step: number;
+    private _i: number;
 
     /**
-     *
-     * @param from
-     * @param to
-     * @param step
+     * Creates an ID factory with the specified range and increment.
+     * @param from - Starting ID value
+     * @param to - Minimum bound for ID generation (throws if exceeded)
+     * @param step - Increment value for each ID
      */
     public constructor(from: number = 0, to: number = Number.MIN_SAFE_INTEGER, step: number = 1) {
         this._from = from;
@@ -41,8 +37,9 @@ class IncrementalIdFactory {
     }
 
     /**
-     *
-     * @returns
+     * Generates the next ID in the sequence.
+     * @returns The next ID value
+     * @throws Error if ID generation exceeds the configured bounds
      */
     public next(): number {
         if (this._i < this._to) {
@@ -54,8 +51,8 @@ class IncrementalIdFactory {
     }
 
     /**
-     *
-     * @returns
+     * Resets the factory to start generating from the initial value again.
+     * @returns This factory instance for chaining
      */
     public reset(): IncrementalIdFactory {
         this._i = this._from;
@@ -70,7 +67,7 @@ class IncrementalIdFactory {
  * - These flags are kept generic here and are expected to be interpreted by the concrete serializer/model builder.
  * - Defaults are set in AbstractThreeMfSerializer.DEFAULT_3MF_EXPORTER_OPTIONS.
  */
-export interface IBjsThreeMfSerializerOptions extends IThreeMfSerializerOptions {
+export interface IThreeMfSerializerOptions extends IThreeMfSerializerBaseOptions {
     /**
      * If true, export mesh instances (multiple references to the same geometry) when supported.
      * If false, geometry may be duplicated depending on the concrete implementation.
@@ -90,11 +87,11 @@ export interface IBjsThreeMfSerializerOptions extends IThreeMfSerializerOptions 
  * - Submesh export is handled by extracting per-submesh vertex/index buffers so materials/colors can be preserved
  *   by downstream steps that attach per-object properties.
  */
-export class BjsThreeMfSerializer extends AbstractThreeMfSerializer<Mesh | InstancedMesh, IBjsThreeMfSerializerOptions> {
+export class ThreeMfSerializer extends AbstractThreeMfSerializer<Mesh | InstancedMesh, IThreeMfSerializerOptions> {
     /**
-     *
+     * Default serialization options: meter units, no instance export.
      */
-    static DefaultOptions: IBjsThreeMfSerializerOptions = { unit: ST_Unit.meter, exportInstances: false };
+    static DefaultOptions: IThreeMfSerializerOptions = { unit: ST_Unit.meter, exportInstances: false };
 
     /**
      * Babylon's vertex buffer semantic for positions.
@@ -111,8 +108,8 @@ export class BjsThreeMfSerializer extends AbstractThreeMfSerializer<Mesh | Insta
     /**
      * @param opts serializer options (merged with defaults in base class).
      */
-    public constructor(opts: Partial<IBjsThreeMfSerializerOptions> = {}) {
-        super({ ...BjsThreeMfSerializer.DefaultOptions, ...opts });
+    public constructor(opts: Partial<IThreeMfSerializerOptions> = {}) {
+        super({ ...ThreeMfSerializer.DefaultOptions, ...opts });
     }
 
     /**
@@ -166,7 +163,7 @@ export class BjsThreeMfSerializer extends AbstractThreeMfSerializer<Mesh | Insta
             // Convert Babylon world matrix to 3MF build transform (3x4).
             // This transform will be attached to the build item referencing the created object.
             const worldTransform = babylonMesh.getWorldMatrix();
-            const buildTransform = this._handleBjsTo3mfMatrixTransformToRef(worldTransform, Matrix3d.Zero());
+            const buildTransform = this._handleBabylonTo3mfMatrixTransformToRef(worldTransform, Matrix3d.Zero());
 
             // Submeshes can carry material/color boundaries in Babylon.
             // When exportSubmeshes is enabled, we export each submesh as its own 3MF object so
@@ -230,7 +227,7 @@ export class BjsThreeMfSerializer extends AbstractThreeMfSerializer<Mesh | Insta
                         const objectRef = index.get(subMesh);
 
                         if (objectRef) {
-                            modelBuilder.withBuild(objectRef.id, this._handleBjsTo3mfMatrixTransformToRef(worldTransform, Matrix3d.Zero()));
+                            modelBuilder.withBuild(objectRef.id, this._handleBabylonTo3mfMatrixTransformToRef(worldTransform, Matrix3d.Zero()));
                             continue;
                         }
                     }
@@ -291,7 +288,7 @@ export class BjsThreeMfSerializer extends AbstractThreeMfSerializer<Mesh | Insta
             return undefined;
         }
 
-        const allPos = mesh.getVerticesData(BjsThreeMfSerializer._PositionKind);
+        const allPos = mesh.getVerticesData(ThreeMfSerializer._PositionKind);
         if (!allPos) {
             return undefined;
         }
@@ -400,8 +397,8 @@ export class BjsThreeMfSerializer extends AbstractThreeMfSerializer<Mesh | Insta
      * @param ref Output 3MF 3x4 matrix container (ref.values assigned).
      * @returns ref, for chaining.
      */
-    private _handleBjsTo3mfMatrixTransformToRef(tBjs: Matrix, ref: Matrix3d): Matrix3d {
-        const tmp = tBjs.multiplyToRef(BjsThreeMfSerializer._R_BJS_TO_3MF, Matrix.Zero());
+    private _handleBabylonTo3mfMatrixTransformToRef(tBjs: Matrix, ref: Matrix3d): Matrix3d {
+        const tmp = tBjs.multiplyToRef(ThreeMfSerializer._R_BJS_TO_3MF, Matrix.Zero());
         const a = tmp.m;
 
         // a is Babylon row-major storage. Extract rows 0..3, cols 0..2 in 3MF order.

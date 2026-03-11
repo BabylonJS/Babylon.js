@@ -22,6 +22,7 @@ import { ThinSSRBlurPostProcess } from "core/PostProcesses/thinSSRBlurPostProces
 import { ThinSSRBlurCombinerPostProcess } from "core/PostProcesses/thinSSRBlurCombinerPostProcess";
 
 import "../postProcessRenderPipelineManagerSceneComponent";
+import "../../../Rendering/geometryBufferRendererSceneComponent";
 
 /**
  * Render pipeline to produce Screen Space Reflections (SSR) effect
@@ -531,6 +532,14 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     public set debug(value: boolean) {
         this._thinSSRRenderingPipeline.debug = value;
         this._buildPipeline();
+    }
+
+    /**
+     * Checks if all the post processes in the pipeline are ready.
+     * @returns True if all the post processes in the pipeline are ready
+     */
+    public isReady() {
+        return this._thinSSRRenderingPipeline.isReady();
     }
 
     /**

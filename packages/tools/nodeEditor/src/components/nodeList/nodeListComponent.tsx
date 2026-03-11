@@ -692,7 +692,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 }
             }
             NodeLedger.NameFormatter = (name) => {
-                let finalName = name;
+                let finalName: string;
                 // custom frame
                 if (name.endsWith("Custom")) {
                     const nameIndex = name.lastIndexOf("Custom");

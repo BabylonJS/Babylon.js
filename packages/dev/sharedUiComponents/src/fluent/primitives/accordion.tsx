@@ -76,6 +76,7 @@ const useStyles = makeStyles({
     },
     menuBar: {
         display: "flex",
+        padding: `0 ${tokens.spacingHorizontalM}`,
     },
     menuBarControls: {
         display: "flex",
@@ -109,6 +110,10 @@ const useStyles = makeStyles({
     },
     searchBox: {
         width: "100%",
+        maxWidth: "none",
+    },
+    sectionBlockEmpty: {
+        display: "none",
     },
 });
 
@@ -135,11 +140,11 @@ const AccordionMenuBar: FunctionComponent = () => {
             <div className={classes.menuBarControls}>
                 {features.hiding && editMode && (
                     <>
-                        <Button title="Show all" icon={EyeFilled} appearance="subtle" onClick={() => dispatch({ type: "SHOW_ALL" })} />
+                        <Button title="Show all" icon={EyeFilled} appearance="transparent" onClick={() => dispatch({ type: "SHOW_ALL" })} />
                         <Button
                             title="Hide all"
                             icon={EyeOffRegular}
-                            appearance="subtle"
+                            appearance="transparent"
                             onClick={() => {
                                 // Hide all visible (non-hidden) items using the registered item IDs
                                 const { registeredItemIds, state: currentState } = accordionCtx;
@@ -153,7 +158,7 @@ const AccordionMenuBar: FunctionComponent = () => {
                     <Button
                         title="Edit mode"
                         icon={editMode ? CheckmarkFilled : EditRegular}
-                        appearance={editMode ? "primary" : "subtle"}
+                        appearance={editMode ? "primary" : "transparent"}
                         onClick={() => dispatch({ type: "SET_EDIT_MODE", enabled: !editMode })}
                     />
                 )}
@@ -180,13 +185,19 @@ export type AccordionSectionBlockProps = {
 const AccordionSectionBlock: FunctionComponent<PropsWithChildren<AccordionSectionBlockProps>> = (props) => {
     AccordionSectionBlock.displayName = "AccordionSectionBlock";
     const { children, sectionId } = props;
+    const classes = useStyles();
     const accordionCtx = useContext(AccordionContext);
     const { context: sectionContext, isEmpty } = useAccordionSectionBlockContext(props);
 
     if (accordionCtx) {
         return (
             <AccordionSectionBlockContext.Provider value={sectionContext}>
-                {!isEmpty && <AccordionItem value={sectionId}>{children}</AccordionItem>}
+                {/* Always render children so items stay registered in registeredItemIds;
+                    hiding via CSS prevents the oscillation that occurs when unmounting
+                    causes items to unregister, making the section appear non-empty again. */}
+                <AccordionItem value={sectionId} className={isEmpty ? classes.sectionBlockEmpty : undefined}>
+                    {children}
+                </AccordionItem>
             </AccordionSectionBlockContext.Provider>
         );
     }
@@ -377,7 +388,8 @@ const StringAccordion = FluentAccordion as ForwardRefExoticComponent<FluentAccor
 
 export const Accordion = forwardRef<HTMLDivElement, PropsWithChildren<AccordionProps>>((props, ref) => {
     Accordion.displayName = "Accordion";
-    const { children, highlightSections, ...rest } = props;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { children, highlightSections, uniqueId, enablePinnedItems, enableHiddenItems, enableSearchItems, ...rest } = props;
     const classes = useStyles();
     const { size } = useContext(ToolContext);
     const accordionCtx = useAccordionContext(props);

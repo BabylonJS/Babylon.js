@@ -13,6 +13,8 @@ import { PhysicsAggregate } from "../../Physics/v2/physicsAggregate";
 import type { PhysicsBody } from "../../Physics/v2/physicsBody";
 import { PhysicsMotionType, PhysicsShapeType } from "../../Physics/v2/IPhysicsEnginePlugin";
 
+import "../../Physics/joinedPhysicsEngineComponent";
+
 /**
  * Options for the controller physics feature
  */
@@ -143,7 +145,6 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
                         );
 
                         aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
-                        aggregate.body.disableSync = true;
 
                         const controllerMesh = xrController.grip || xrController.pointer;
                         this._controllers[xrController.uniqueId] = {
@@ -239,7 +240,6 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         );
 
         aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
-        aggregate.body.disableSync = true;
 
         this._controllers[xrController.uniqueId] = {
             xrController,

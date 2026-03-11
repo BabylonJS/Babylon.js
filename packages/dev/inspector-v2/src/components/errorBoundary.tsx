@@ -50,6 +50,9 @@ const useStyles = makeStyles({
     },
 });
 
+/**
+ * Props for the {@link ErrorBoundary} component.
+ */
 type ErrorBoundaryProps = {
     /** Child components to render */
     children: ReactNode;

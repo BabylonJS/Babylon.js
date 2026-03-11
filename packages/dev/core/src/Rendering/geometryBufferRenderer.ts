@@ -706,7 +706,6 @@ export class GeometryBufferRenderer {
                     const pbrMaterial = material as OpenPBRMaterial;
 
                     defines.push("#define METALLICWORKFLOW");
-                    metallicWorkflow = true;
                     defines.push("#define METALLIC");
                     defines.push("#define ROUGHNESS");
                     if (pbrMaterial._useRoughnessFromMetallicTextureGreen && pbrMaterial.baseMetalnessTexture) {
@@ -915,6 +914,9 @@ export class GeometryBufferRenderer {
             const engine = this._scene.getEngine();
             engine.onResizeObservable.remove(this._resizeObserver);
             this._resizeObserver = null;
+        }
+        if (this._multiRenderTarget?.renderTarget && this.scene.getEngine()._currentRenderTarget === this._multiRenderTarget.renderTarget) {
+            this.scene.getEngine().unBindFramebuffer(this._multiRenderTarget?.renderTarget);
         }
         this.getGBuffer().dispose();
     }

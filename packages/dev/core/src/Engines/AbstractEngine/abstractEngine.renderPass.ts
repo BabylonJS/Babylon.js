@@ -52,6 +52,7 @@ AbstractEngine.prototype.releaseRenderPassId = function (id: number): void {
         const scene = this.scenes[s];
         for (let m = 0; m < scene.meshes.length; ++m) {
             const mesh = scene.meshes[m];
+            mesh._releaseRenderPassId(id);
             if (mesh.subMeshes) {
                 for (let b = 0; b < mesh.subMeshes.length; ++b) {
                     const subMesh = mesh.subMeshes[b];

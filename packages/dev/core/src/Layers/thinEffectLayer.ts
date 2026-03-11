@@ -906,7 +906,6 @@ export class ThinEffectLayer {
         }
 
         const reverse = sideOrientation === Material.ClockWiseSideOrientation;
-        engine.setState(material.backFaceCulling, material.zOffset, undefined, reverse, material.cullBackFaces, undefined, material.zOffsetUnits);
 
         // Managing instances
         const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
@@ -944,6 +943,25 @@ export class ThinEffectLayer {
             const effect = drawWrapper.effect!;
 
             engine.enableEffect(drawWrapper);
+            engine.setState(material.backFaceCulling, material.zOffset, undefined, reverse, material.cullBackFaces, material.stencil, material.zOffsetUnits);
+
+            const currentDepthWrite = engine.getDepthWrite();
+            const currentColorWrite = engine.getColorWrite();
+            const currentDepthFunction = engine.getDepthFunction() || 0;
+
+            if (material.disableDepthWrite) {
+                engine.setDepthWrite(false);
+            } else if (material.forceDepthWrite) {
+                engine.setDepthWrite(true);
+            }
+            if (material.disableColorWrite) {
+                engine.setColorWrite(false);
+            }
+
+            if (material.depthFunction !== 0) {
+                engine.setDepthFunction(material.depthFunction);
+            }
+
             if (!hardwareInstancedRendering) {
                 renderingMesh._bind(subMesh, effect, material.fillMode);
             }
@@ -1025,6 +1043,16 @@ export class ThinEffectLayer {
             renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
                 effect.setMatrix("world", world)
             );
+
+            if (material.disableDepthWrite || material.forceDepthWrite) {
+                engine.setDepthWrite(currentDepthWrite);
+            }
+            if (material.disableColorWrite) {
+                engine.setColorWrite(currentColorWrite);
+            }
+            if (material.depthFunction !== 0) {
+                engine.setDepthFunction(currentDepthFunction);
+            }
         } else {
             // Need to reset refresh rate of the main map
             this._objectRenderer.resetRefreshCounter();

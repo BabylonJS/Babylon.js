@@ -36,6 +36,9 @@ import { GetIndividualParser, Parse } from "./babylonFileParser.function";
 import { Observable } from "../../Misc/observable";
 import type { MorphTarget } from "../../Morph/morphTarget";
 
+import "../../Physics/joinedPhysicsEngineComponent";
+import "../../Helpers/sceneHelpers";
+
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
 export var _BabylonLoaderRegistered = true;
@@ -173,8 +176,36 @@ export function LoadAssetContainerFromSerializedScene(scene: Scene, serializedSc
 const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     const container = new AssetContainer(scene);
 
+    // When loading into a container (not directly into the scene), suppress entity-added
+    // observables to prevent scene events during loading. Entities still get added to scene
+    // arrays (so the linking code can find them), but no events fire.
+    // They are removed from the scene at the end via container.removeAllFromScene().
+    let savedObservables: Record<string, Observable<any>> | undefined;
     if (!addToScene) {
-        scene._blockEntityCollection = true;
+        savedObservables = {
+            mesh: scene.onNewMeshAddedObservable,
+            transformNode: scene.onNewTransformNodeAddedObservable,
+            light: scene.onNewLightAddedObservable,
+            camera: scene.onNewCameraAddedObservable,
+            material: scene.onNewMaterialAddedObservable,
+            multiMaterial: scene.onNewMultiMaterialAddedObservable,
+            texture: scene.onNewTextureAddedObservable,
+            skeleton: scene.onNewSkeletonAddedObservable,
+            geometry: scene.onNewGeometryAddedObservable,
+            animationGroup: scene.onNewAnimationGroupAddedObservable,
+            particleSystem: scene.onNewParticleSystemAddedObservable,
+        };
+        scene.onNewMeshAddedObservable = new Observable();
+        scene.onNewTransformNodeAddedObservable = new Observable();
+        scene.onNewLightAddedObservable = new Observable();
+        scene.onNewCameraAddedObservable = new Observable();
+        scene.onNewMaterialAddedObservable = new Observable();
+        scene.onNewMultiMaterialAddedObservable = new Observable();
+        scene.onNewTextureAddedObservable = new Observable();
+        scene.onNewSkeletonAddedObservable = new Observable();
+        scene.onNewGeometryAddedObservable = new Observable();
+        scene.onNewAnimationGroupAddedObservable = new Observable();
+        scene.onNewParticleSystemAddedObservable = new Observable();
     }
 
     // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
@@ -396,19 +427,7 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
                 for (index = 0, cache = vertexData.length; index < cache; index++) {
                     const parsedVertexData = vertexData[index];
 
-                    // Geometies are found by loadedUniqueId when imported
-                    // So we need to temporarily unblock the entity collection to add them to the scene
-                    scene._blockEntityCollection = false;
-                    // Temporarily replace the onNewGeometryAddedObservable to avoid multiple notifications
-                    const onNewGeometryAddedObservable = scene.onNewGeometryAddedObservable;
-                    scene.onNewGeometryAddedObservable = new Observable<Geometry>();
-
                     addedGeometry.push(Geometry.Parse(parsedVertexData, scene, rootUrl));
-
-                    // Restore the onNewGeometryAddedObservable
-                    scene.onNewGeometryAddedObservable = onNewGeometryAddedObservable;
-                    // Restore the previous state of entity collection blocking
-                    scene._blockEntityCollection = !addToScene;
                 }
             }
 
@@ -748,10 +767,22 @@ const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string
         TempSkeletonIndexContainer = {};
 
         if (!addToScene) {
-            // Removes any breadcrumb left during the loading like geometries
+            // Restore observables before removing from scene
+            if (savedObservables) {
+                scene.onNewMeshAddedObservable = savedObservables.mesh;
+                scene.onNewTransformNodeAddedObservable = savedObservables.transformNode;
+                scene.onNewLightAddedObservable = savedObservables.light;
+                scene.onNewCameraAddedObservable = savedObservables.camera;
+                scene.onNewMaterialAddedObservable = savedObservables.material;
+                scene.onNewMultiMaterialAddedObservable = savedObservables.multiMaterial;
+                scene.onNewTextureAddedObservable = savedObservables.texture;
+                scene.onNewSkeletonAddedObservable = savedObservables.skeleton;
+                scene.onNewGeometryAddedObservable = savedObservables.geometry;
+                scene.onNewAnimationGroupAddedObservable = savedObservables.animationGroup;
+                scene.onNewParticleSystemAddedObservable = savedObservables.particleSystem;
+            }
+            // Removes entities from scene arrays and moves them to the container
             container.removeAllFromScene();
-            // Unblock entity collection
-            scene._blockEntityCollection = false;
         }
         if (log !== null && SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_NO_LOGGING) {
             Logger.Log(

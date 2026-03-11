@@ -380,8 +380,8 @@ export class TextRenderer implements IDisposable {
         }
 
         let shaderLanguage = ShaderLanguage.GLSL;
-        let vertex: string = "";
-        let fragment: string = "";
+        let vertex: string;
+        let fragment: string;
         if (engine.isWebGPU) {
             shaderLanguage = ShaderLanguage.WGSL;
             vertex = (await import("./shadersWGSL/msdf.vertex")).msdfVertexShaderWGSL.shader;
