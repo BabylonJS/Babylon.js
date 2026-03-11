@@ -447,7 +447,7 @@ function ResolveRelative(fromPath: string, rel: string): string {
  * @returns The matching file key, or `undefined`.
  */
 function FindFileForSpec(resolved: string, jsFiles: Record<string, string>): string | undefined {
-    const candidates = [resolved, `./${resolved}`, `${resolved}.js`, `./${resolved}.js`];
+    const candidates = [resolved, `./${resolved}`, `${resolved}.js`, `./${resolved}.js`, `${resolved}/index.js`, `./${resolved}/index.js`];
     for (const c of candidates) {
         if (c in jsFiles) {
             return c;
@@ -655,58 +655,213 @@ async function LoadModuleEsm(jsFiles: Record<string, string>, entryName: string,
 }
 
 // -----------------------------------------------------------------------
-// Playground runner — Script strategy (new Function, no module syntax)
+// Playground runner — Script strategy (module graph + CJS-like runtime)
 // -----------------------------------------------------------------------
 
-/**
- * Strips remaining import/export/require statements from script-mode code.
- * After TypeScript transpiles with `ModuleKind.None`, there should be very
- * few left, but we clean up any remnants.
- *
- * @param code - The JavaScript code to clean up.
- * @returns The code with module syntax removed.
- */
-function StripModuleSyntax(code: string): string {
-    return code
-        .replace(/^\s*import\s+.*?;?\s*$/gm, "")
-        .replace(/^\s*export\s+(default\s+)?/gm, "")
-        .replace(/^\s*exports\.\w+\s*=.*?;?\s*$/gm, "")
-        .replace(/\brequire\s*\(\s*["'][^"']+["']\s*\)/g, "undefined");
+function TransformModuleSyntaxToCjs(code: string): string {
+    let result = code;
+    let importCounter = 0;
+    const exportedBindings: string[] = [];
+
+    const convertNamedImportBindings = (named: string): string => {
+        return named
+            .split(",")
+            .map((part) => part.trim())
+            .filter(Boolean)
+            .map((part) => {
+                const m = /^(\w+)\s+as\s+(\w+)$/.exec(part);
+                return m ? `${m[1]}: ${m[2]}` : part;
+            })
+            .join(", ");
+    };
+
+    const convertImportClause = (clause: string, spec: string): string => {
+        const specLit = JSON.stringify(spec);
+        const trimmed = clause.trim();
+
+        if (trimmed.startsWith("{")) {
+            const named = trimmed.slice(1, -1);
+            const bindings = convertNamedImportBindings(named);
+            return `const { ${bindings} } = require(${specLit});`;
+        }
+
+        const starMatch = /^\*\s+as\s+(\w+)$/.exec(trimmed);
+        if (starMatch) {
+            return `const ${starMatch[1]} = require(${specLit});`;
+        }
+
+        if (trimmed.includes(",")) {
+            const [defaultPart, restPart] = trimmed.split(/,(.+)/).map((s) => s.trim());
+            const tmp = `__mod_${importCounter++}`;
+            const statements = [
+                `const ${tmp} = require(${specLit});`,
+                `const ${defaultPart} = (${tmp} && Object.prototype.hasOwnProperty.call(${tmp}, "default")) ? ${tmp}.default : ${tmp};`,
+            ];
+            if (restPart?.startsWith("{")) {
+                const named = restPart.slice(1, -1);
+                const bindings = convertNamedImportBindings(named);
+                statements.push(`const { ${bindings} } = ${tmp};`);
+            } else {
+                const restStarMatch = /^\*\s+as\s+(\w+)$/.exec(restPart ?? "");
+                if (restStarMatch) {
+                    statements.push(`const ${restStarMatch[1]} = ${tmp};`);
+                }
+            }
+            return statements.join("\n");
+        }
+
+        const tmp = `__mod_${importCounter++}`;
+        return `const ${tmp} = require(${specLit});\nconst ${trimmed} = (${tmp} && Object.prototype.hasOwnProperty.call(${tmp}, "default")) ? ${tmp}.default : ${tmp};`;
+    };
+
+    result = result.replace(/^\s*import\s+([^"'\n;]+?)\s+from\s+["']([^"']+)["']\s*;?\s*$/gm, (_m, clause: string, spec: string) => {
+        return convertImportClause(clause, spec);
+    });
+
+    result = result.replace(/^\s*import\s+["']([^"']+)["']\s*;?\s*$/gm, (_m, spec: string) => `require(${JSON.stringify(spec)});`);
+
+    result = result.replace(/^\s*export\s+\*\s+from\s+["']([^"']+)["']\s*;?\s*$/gm, (_m, spec: string) => `Object.assign(exports, require(${JSON.stringify(spec)}));`);
+
+    result = result.replace(/^\s*export\s*\{([^}]+)\}\s*from\s*["']([^"']+)["']\s*;?\s*$/gm, (_m, names: string, spec: string) => {
+        const tmp = `__reexp_${importCounter++}`;
+        const lines = [`const ${tmp} = require(${JSON.stringify(spec)});`];
+        for (const rawPart of names.split(",")) {
+            const part = rawPart.trim();
+            if (!part) {
+                continue;
+            }
+            const m = /^(\w+)\s+as\s+(\w+)$/.exec(part);
+            const fromName = m ? m[1] : part;
+            const toName = m ? m[2] : part;
+            lines.push(`exports.${toName} = ${tmp}.${fromName};`);
+        }
+        return lines.join("\n");
+    });
+
+    result = result.replace(/^\s*export\s*\{([^}]+)\}\s*;?\s*$/gm, (_m, names: string) => {
+        const lines: string[] = [];
+        for (const rawPart of names.split(",")) {
+            const part = rawPart.trim();
+            if (!part) {
+                continue;
+            }
+            const m = /^(\w+)\s+as\s+(\w+)$/.exec(part);
+            const fromName = m ? m[1] : part;
+            const toName = m ? m[2] : part;
+            if (toName === "default") {
+                lines.push(`exports.default = ${fromName};`);
+            } else {
+                lines.push(`exports.${toName} = ${fromName};`);
+            }
+        }
+        return lines.join("\n");
+    });
+
+    result = result.replace(/\bimport\s*\(\s*(["'][^"']+["'])\s*\)/g, "Promise.resolve(require($1))");
+
+    result = result.replace(/^\s*export\s+default\s+/gm, "exports.default = ");
+
+    result = result.replace(/^\s*export\s+(async\s+)?function\s+(\w+)/gm, (_m, asyncPrefix: string | undefined, name: string) => {
+        exportedBindings.push(name);
+        return `${asyncPrefix ?? ""}function ${name}`;
+    });
+
+    result = result.replace(/^\s*export\s+class\s+(\w+)/gm, (_m, name: string) => {
+        exportedBindings.push(name);
+        return `class ${name}`;
+    });
+
+    result = result.replace(/^\s*export\s+(const|let|var)\s+(\w+)/gm, (_m, kind: string, name: string) => {
+        exportedBindings.push(name);
+        return `${kind} ${name}`;
+    });
+
+    if (exportedBindings.length) {
+        const unique = [...new Set(exportedBindings)];
+        result += `\n${unique.map((name) => `exports.${name} = ${name};`).join("\n")}\n`;
+    }
+
+    return result;
 }
 
 /**
- * Loads a snippet's JS files in script mode: concatenates all files,
- * strips module syntax, wraps in a function, and extracts exports.
+ * Loads a snippet's JS files in script mode by transforming each file
+ * to CJS-like code and executing through an in-memory module graph.
  *
  * @param jsFiles - Map of file names to their JS source code.
  * @param entryName - The entry file name.
+ * @param externalImports - Optional map of external import specifiers.
  * @returns A dictionary of top-level function/class declarations found
  *          in the code (e.g. `createScene`, `createEngine`, `Playground`, etc.).
  */
-function LoadModuleScript(jsFiles: Record<string, string>, entryName: string): Record<string, any> {
-    // Concatenate only JS files: entry file last so it can reference helpers.
-    // Non-JS assets (shaders, JSON, etc.) are skipped — they cannot be
-    // concatenated as script code.
-    const orderedFiles = Object.entries(jsFiles)
-        .filter(([name]) => /\.m?jsx?$/i.test(name))
-        .sort(([a], [b]) => {
-            if (a === entryName) {
-                return 1;
-            }
-            if (b === entryName) {
-                return -1;
-            }
-            return 0;
-        });
-    let combined = orderedFiles.map(([, code]) => StripModuleSyntax(code)).join("\n;\n");
+function LoadModuleScript(jsFiles: Record<string, string>, entryName: string, externalImports?: Record<string, string>): Record<string, any> {
+    const jsModuleFiles = Object.keys(jsFiles).filter((name) => /\.m?jsx?$/i.test(name));
+    const transformedModules: Record<string, string> = {};
+    const moduleCache: Record<string, any> = {};
 
-    // Build a return object that captures known function names.
+    for (const name of jsModuleFiles) {
+        transformedModules[name] = TransformModuleSyntaxToCjs(jsFiles[name]);
+    }
+
+    const executeModule = (fileName: string): any => {
+        if (moduleCache[fileName]) {
+            return moduleCache[fileName].exports;
+        }
+
+        if (!/\.m?jsx?$/i.test(fileName)) {
+            moduleCache[fileName] = { exports: jsFiles[fileName] };
+            return jsFiles[fileName];
+        }
+
+        const module = { exports: {} as Record<string, any> };
+        moduleCache[fileName] = module;
+
+        const localRequire = (specifier: string): any => {
+            if (specifier.startsWith(".") || specifier.startsWith("/")) {
+                const resolved = ResolveRelative(fileName, specifier);
+                const target = FindFileForSpec(resolved, jsFiles);
+                if (target) {
+                    return executeModule(target);
+                }
+                throw new Error(`Unable to resolve script-mode module "${specifier}" from "${fileName}"`);
+            }
+
+            if (specifier.startsWith("@babylonjs/")) {
+                return (globalThis as any).BABYLON ?? {};
+            }
+
+            if (externalImports && specifier in externalImports) {
+                throw new Error(
+                    `Script mode cannot execute external import "${specifier}" (${externalImports[specifier]}). ` + 'Use moduleFormat: "esm" or pre-bundle dependencies.'
+                );
+            }
+
+            return (globalThis as any)[specifier];
+        };
+
+        const factory = new Function("require", "exports", "module", transformedModules[fileName]);
+        factory(localRequire, module.exports, module);
+        return module.exports;
+    };
+
+    const entry = executeModule(entryName);
+
+    // Keep parity with previous behavior where all script files executed.
+    for (const fileName of jsModuleFiles) {
+        if (!(fileName in moduleCache)) {
+            executeModule(fileName);
+        }
+    }
+
+    const mod: Record<string, any> = { ...(entry ?? {}) };
     const knownNames = ["createScene", "CreateScene", "createscene", "delayCreateScene", "delayLoadScene", "DelayCreateScene", "createEngine", "Playground"];
-    const returnExpr = knownNames.map((n) => `${n}: typeof ${n} !== 'undefined' ? ${n} : undefined`).join(", ");
-    combined += `\n; return { ${returnExpr} };`;
+    for (const n of knownNames) {
+        if (mod[n] === undefined && typeof (globalThis as any)[n] !== "undefined") {
+            mod[n] = (globalThis as any)[n];
+        }
+    }
 
-    const factory = new Function(combined);
-    return factory() ?? {};
+    return mod;
 }
 
 // -----------------------------------------------------------------------
@@ -760,8 +915,9 @@ function DetectFunctions(mod: Record<string, any>): IDetectedFunctions {
 interface IBuildResult {
     createEngine: IPlaygroundSnippetResult["createEngine"];
     createScene: IPlaygroundSnippetResult["createScene"];
-    createEngineSource: CreateEngineSource;
-    sceneFunctionName: string;
+    getCreateEngineSource: () => CreateEngineSource;
+    getSceneFunctionName: () => string;
+    initializeMetadataAsync: () => Promise<void>;
 }
 
 /**
@@ -923,10 +1079,12 @@ function BuildFunctions(
             if (moduleFormat === "esm") {
                 mod = await LoadModuleEsm(jsFiles, entryName, externalImports);
             } else {
-                mod = LoadModuleScript(jsFiles, entryName);
+                mod = LoadModuleScript(jsFiles, entryName, externalImports);
             }
             // eslint-disable-next-line require-atomic-updates
             detected = DetectFunctions(mod!);
+            createEngineSource = detected.createEngineFn ? "snippet" : "default";
+            sceneFunctionName = detected.sceneFunctionName;
         }
         return detected;
     };
@@ -938,17 +1096,14 @@ function BuildFunctions(
     const createEngine: IPlaygroundSnippetResult["createEngine"] = async (canvas, options) => {
         const { createEngineFn } = await ensureLoadedAsync();
         if (createEngineFn) {
-            createEngineSource = "snippet";
             return await createEngineFn(canvas, options);
         }
-        createEngineSource = "default";
         return await DefaultCreateEngine(engineType)(canvas, options);
     };
 
     // eslint-disable-next-line no-restricted-syntax
     const createScene: IPlaygroundSnippetResult["createScene"] = async (engine, canvas) => {
-        const { createSceneFn, sceneFunctionName: name } = await ensureLoadedAsync();
-        sceneFunctionName = name;
+        const { createSceneFn } = await ensureLoadedAsync();
         if (!createSceneFn) {
             throw new Error("No createScene export found in snippet " + "(tried: default.CreateScene, Playground.CreateScene, createScene, delayCreateScene, default).");
         }
@@ -994,13 +1149,21 @@ function BuildFunctions(
     // We eagerly load in script mode since it's synchronous, so we can
     // populate metadata fields immediately.
     if (moduleFormat === "script") {
-        mod = LoadModuleScript(jsFiles, entryName);
+        mod = LoadModuleScript(jsFiles, entryName, externalImports);
         detected = DetectFunctions(mod);
         sceneFunctionName = detected.sceneFunctionName;
         createEngineSource = detected.createEngineFn ? "snippet" : "default";
     }
 
-    return { createEngine, createScene, createEngineSource, sceneFunctionName };
+    return {
+        createEngine,
+        createScene,
+        getCreateEngineSource: () => createEngineSource,
+        getSceneFunctionName: () => sceneFunctionName,
+        initializeMetadataAsync: async () => {
+            await ensureLoadedAsync();
+        },
+    };
 }
 
 // -----------------------------------------------------------------------
@@ -1108,15 +1271,11 @@ export async function ParseSnippetResponse(response: ISnippetServerResponse, sni
                 jsFiles = { ...parsed.files };
             }
 
-            // For script mode, strip module syntax from JS files.
-            if (moduleFormat === "script") {
-                for (const [path, code] of Object.entries(jsFiles)) {
-                    jsFiles[path] = StripModuleSyntax(code);
-                }
-            }
-
             // Build the executable functions.
             const fns = BuildFunctions(jsFiles, entryName, moduleFormat, parsed.engineType, parsed.manifest?.imports);
+
+            // Ensure metadata fields are computed before returning the result object.
+            await fns.initializeMetadataAsync();
 
             // Detect runtime dependencies from the original source (pre-transpile).
             const runtimeFeatures = DetectRuntimeFeatures(parsed.files);
@@ -1127,8 +1286,8 @@ export async function ParseSnippetResponse(response: ISnippetServerResponse, sni
                 moduleFormat,
                 createEngine: fns.createEngine,
                 createScene: fns.createScene,
-                createEngineSource: fns.createEngineSource,
-                sceneFunctionName: fns.sceneFunctionName,
+                createEngineSource: fns.getCreateEngineSource(),
+                sceneFunctionName: fns.getSceneFunctionName(),
                 runtimeFeatures,
                 initializeRuntimeAsync: async (opts?: IInitializeRuntimeOptions) => await InitializeRuntimeAsync(runtimeFeatures, opts),
             };

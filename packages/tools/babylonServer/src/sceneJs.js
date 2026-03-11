@@ -46,9 +46,8 @@ const runScene = async () => {
         // Expose engine as a global for legacy snippet compatibility.
         window.engine = engine;
         // Initialize runtime globals (Havok, Recast, Ammo) that the
-        // snippet code references. This only calls factory functions that
-        // are already on window — the <script> tags in index.html are
-        // responsible for loading them.
+        // snippet code references. Missing scripts will be injected from
+        // CDN automatically when not already present on the page.
         await snippet.initializeRuntimeAsync({ loadScripts: true });
         scene = await snippet.createScene(engine, canvas);
     } else {
