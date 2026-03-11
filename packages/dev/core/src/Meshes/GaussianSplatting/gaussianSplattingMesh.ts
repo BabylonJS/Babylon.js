@@ -1606,14 +1606,14 @@ export class GaussianSplattingMesh extends Mesh {
                 // depth = dot(cameraForward, worldPos - cameraPos)
                 const camDot = cameraForward[0] * cameraPosition[0] + cameraForward[1] * cameraPosition[1] + cameraForward[2] * cameraPosition[2];
 
-                function computeDepthCoeffs(m: Float32Array): number[] {
+                const computeDepthCoeffs = (m: Float32Array): number[] => {
                     return [
                         cameraForward[0] * m[0] + cameraForward[1] * m[1] + cameraForward[2] * m[2],
                         cameraForward[0] * m[4] + cameraForward[1] * m[5] + cameraForward[2] * m[6],
                         cameraForward[0] * m[8] + cameraForward[1] * m[9] + cameraForward[2] * m[10],
                         cameraForward[0] * m[12] + cameraForward[1] * m[13] + cameraForward[2] * m[14] - camDot,
                     ];
-                }
+                };
 
                 if (partMatrices && partIndices) {
                     // Precompute depth coefficients for each rig node
