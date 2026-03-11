@@ -5,7 +5,7 @@ float subsurface_weight = vSubsurfaceWeight;
 vec3 subsurface_color = vSubsurfaceColor.rgb;
 float subsurface_radius = vSubsurfaceRadius;
 vec3 subsurface_radius_scale = vSubsurfaceRadiusScale;
-float subsurface_scatter_anisotropy = clamp(vSubsurfaceScatterAnisotropy, -0.999, 0.999);
+float subsurface_scatter_anisotropy = clamp(vSubsurfaceScatterAnisotropy, -0.9999, 0.9999);
 
 // Sample Subsurface Layer properties from textures
 #ifdef SUBSURFACE_WEIGHT

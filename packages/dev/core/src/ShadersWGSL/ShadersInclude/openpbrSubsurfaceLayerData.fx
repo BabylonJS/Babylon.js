@@ -5,7 +5,7 @@ var subsurface_weight: f32 = uniforms.vSubsurfaceWeight;
 var subsurface_color: vec3f = uniforms.vSubsurfaceColor.rgb;
 var subsurface_radius: f32 = uniforms.vSubsurfaceRadius;
 var subsurface_radius_scale: vec3f = uniforms.vSubsurfaceRadiusScale;
-var subsurface_scatter_anisotropy: f32 = clamp(uniforms.vSubsurfaceScatterAnisotropy, -0.999f, 0.999f);
+var subsurface_scatter_anisotropy: f32 = clamp(uniforms.vSubsurfaceScatterAnisotropy, -0.9999f, 0.9999f);
 // Sample Subsurface Layer properties from textures
 #ifdef SUBSURFACE_WEIGHT
     let subsurfaceWeightFromTexture: vec4f = textureSample(subsurfaceWeightSampler, subsurfaceWeightSamplerSampler, fragmentInputs.vSubsurfaceWeightUV + uvOffset);
