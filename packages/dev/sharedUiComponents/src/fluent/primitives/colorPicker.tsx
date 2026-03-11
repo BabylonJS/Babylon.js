@@ -130,7 +130,7 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
                     <ColorSlider aria-label="Hue" />
                     {color instanceof Color4 && <AlphaSlider aria-label="Alpha" />}
                 </FluentColorPicker>
-                {/* Top Row: Preview, Gamma Hex, Linear Hex */}
+                {/* Top Row: Preview, Color Space, Data Type */}
                 <div className={classes.row}>
                     <div className={classes.previewColor} style={{ backgroundColor: gammaColor.toHexString() }} />
                     <NumberDropdown
@@ -200,17 +200,34 @@ export type InputHexProps = PrimitiveProps<Color3 | Color4> & {
 };
 
 /**
- * Converts a hex string to the same Color type as the original, preserving alpha for Color4.
- * @param hex - The hexadecimal color string to convert (e.g., "#RRGGBB" or "#RRGGBBAA").
- * @param original - The original Color3 or Color4 instance to determine the return type and preserve alpha if applicable.
- * @returns A new Color3 or Color4 instance representing the color defined by the hex string, with alpha preserved if the original was a Color4.
+ * Converts a hex string to the same Color type as the original.
+ * Supports "#RGB", "#RRGGBB", and "#RRGGBBAA" formats.
+ * For Color4, honors alpha from "#RRGGBBAA" input or preserves the original alpha otherwise.
+ * @param hex - The hex string to convert, in one of the supported formats.
+ * @param original - The original color, used to determine whether to return a Color3 or Color4 and to preserve alpha if not specified in hex.
+ * @returns A new Color3 or Color4 instance representing the hex color
  */
 function colorFromHex(hex: string, original: Color3 | Color4): Color3 | Color4 {
-    const c3 = Color3.FromHexString(hex);
-    if (original instanceof Color4) {
-        return Color4.FromColor3(c3, original.a);
+    const digits = hex.startsWith("#") ? hex.slice(1) : hex;
+
+    // Normalize short hex (RGB => RRGGBB)
+    if (digits.length === 3) {
+        hex = `#${digits[0]}${digits[0]}${digits[1]}${digits[1]}${digits[2]}${digits[2]}`;
     }
-    return c3;
+
+    // 8 hex digits = RRGGBBAA — use Color4.FromHexString which natively handles this
+    if (digits.length === 8) {
+        if (original instanceof Color4) {
+            return Color4.FromHexString(hex);
+        }
+        return Color3.FromHexString(hex.slice(0, 7));
+    }
+
+    // 6 hex digits = RRGGBB (or normalized from 3)
+    if (original instanceof Color4) {
+        return Color4.FromColor3(Color3.FromHexString(hex), original.a);
+    }
+    return Color3.FromHexString(hex);
 }
 
 /**
@@ -299,6 +316,7 @@ const InputRgbField: FunctionComponent<InputRgbFieldProps> = (props) => {
 
     return (
         <SpinButton
+            key={`${rgbKey}-${isFloat ? "float" : "int"}`} // ensures remount when swapping between int/float, preserving min/max validation
             infoLabel={title ? { label: title } : undefined}
             className={classes.inputField}
             min={0}
@@ -366,6 +384,7 @@ export const InputHsvField: FunctionComponent<InputHsvFieldProps> = (props) => {
 
     return (
         <SpinButton
+            key={`${hsvKey}-${isFloat ? "float" : "int"}`} // ensures remount when swapping between int/float, preserving min/max validation
             infoLabel={title ? { label: title } : undefined}
             className={classes.inputField}
             min={0}
