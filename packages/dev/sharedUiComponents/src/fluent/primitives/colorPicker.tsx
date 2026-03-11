@@ -82,21 +82,21 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
         setColor(value); // Ensures the trigger color updates when props.value changes
     }, [value]);
 
-    const isEntityLinear = isLinearMode ?? false;
+    const ispropertyLinear = isLinearMode ?? false;
 
     /** Color in gamma space — used for visual elements (picker, preview, trigger) */
-    const gammaColor = useMemo(() => (isEntityLinear ? color.toGammaSpace() : color), [color, isEntityLinear]);
+    const gammaColor = useMemo(() => (ispropertyLinear ? color.toGammaSpace() : color), [color, ispropertyLinear]);
 
     /** Color in the user-selected display space — used for numeric inputs (RGB, HSV, Hex) */
-    const displayColor = useMemo(() => (isLinear === isEntityLinear ? color : isLinear ? color.toLinearSpace() : color.toGammaSpace()), [color, isLinear, isEntityLinear]);
+    const displayColor = useMemo(() => (isLinear === ispropertyLinear ? color : isLinear ? color.toLinearSpace() : color.toGammaSpace()), [color, isLinear, ispropertyLinear]);
 
     const handleColorPickerChange: FluentColorPickerProps["onColorChange"] = (_, data) => {
-        // The visual picker always operates in gamma space, convert back to entity space
+        // The visual picker always operates in gamma space, convert back to property space
         let gammaResult: Color3 | Color4 = Color3.FromHSV(data.color.h, data.color.s, data.color.v);
         if (value instanceof Color4) {
             gammaResult = Color4.FromColor3(gammaResult, data.color.a ?? 1);
         }
-        handleChange(isEntityLinear ? gammaResult.toLinearSpace() : gammaResult);
+        handleChange(ispropertyLinear ? gammaResult.toLinearSpace() : gammaResult);
     };
 
     const handleChange = (newColor: Color3 | Color4) => {
@@ -105,8 +105,8 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
     };
 
     const handleDisplayChange = (newDisplayColor: Color3 | Color4) => {
-        const entityColor = isLinear === isEntityLinear ? newDisplayColor : isLinear ? newDisplayColor.toGammaSpace() : newDisplayColor.toLinearSpace();
-        handleChange(entityColor);
+        const propertyColor = isLinear === ispropertyLinear ? newDisplayColor : isLinear ? newDisplayColor.toGammaSpace() : newDisplayColor.toLinearSpace();
+        handleChange(propertyColor);
     };
 
     return (
@@ -139,8 +139,8 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
                             label: "Color Space",
                             info: (
                                 <Body1>
-                                    Choose which color space to display numeric values in. This entity stores its color in{" "}
-                                    <Body1Strong>{isEntityLinear ? "linear" : "gamma"}</Body1Strong> space. The visual picker always shows gamma (screen-accurate) colors.
+                                    Choose which color space to display numeric values in. This property stores its color in{" "}
+                                    <Body1Strong>{ispropertyLinear ? "linear" : "gamma"}</Body1Strong> space. The visual picker always shows gamma (screen-accurate) colors.
                                 </Body1>
                             ),
                         }}
@@ -187,7 +187,7 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
                 </div>
 
                 <div className={classes.inputRow}>
-                    <InputHexField title="Hexadecimal" value={displayColor} isLinear={isLinear} isEntityLinear={isEntityLinear} onChange={handleDisplayChange} />
+                    <InputHexField title="Hexadecimal" value={displayColor} isLinear={isLinear} ispropertyLinear={ispropertyLinear} onChange={handleDisplayChange} />
                 </div>
             </div>
         </Popover>
@@ -196,7 +196,7 @@ export const ColorPickerPopup = forwardRef<HTMLButtonElement, ColorPickerProps<C
 
 export type InputHexProps = PrimitiveProps<Color3 | Color4> & {
     isLinear?: boolean;
-    isEntityLinear?: boolean;
+    ispropertyLinear?: boolean;
 };
 
 /**
@@ -238,11 +238,11 @@ function colorFromHex(hex: string, original: Color3 | Color4): Color3 | Color4 {
  */
 export const InputHexField: FunctionComponent<InputHexProps> = (props) => {
     const classes = useColorPickerStyles();
-    const { title, value, onChange, isLinear, isEntityLinear } = props;
+    const { title, value, onChange, isLinear, ispropertyLinear } = props;
 
-    const displayMismatchesEntity = (isLinear ?? false) !== (isEntityLinear ?? false);
+    const displayMismatchesproperty = (isLinear ?? false) !== (ispropertyLinear ?? false);
     const displaySpace = isLinear ? "linear" : "gamma";
-    const entitySpace = isEntityLinear ? "linear" : "gamma";
+    const propertySpace = ispropertyLinear ? "linear" : "gamma";
     const isColor4 = value instanceof Color4;
     const colorClass = isColor4 ? "Color4" : "Color3";
 
@@ -260,9 +260,9 @@ export const InputHexField: FunctionComponent<InputHexProps> = (props) => {
                           info: (
                               <Body1>
                                   This hex value is in <Body1Strong>{displaySpace}</Body1Strong> space
-                                  {displayMismatchesEntity ? (
+                                  {displayMismatchesproperty ? (
                                       <Body1>
-                                          , but the entity stores its color in <Body1Strong>{entitySpace}</Body1Strong> space.
+                                          , but the property stores its color in <Body1Strong>{propertySpace}</Body1Strong> space.
                                           <br />
                                           <br />
                                           The color picker converts automatically, but if you copy this hex into code you will need to convert it:
@@ -273,7 +273,7 @@ export const InputHexField: FunctionComponent<InputHexProps> = (props) => {
                                       </Body1>
                                   ) : (
                                       <Body1>
-                                          , which matches the entity's stored color space.
+                                          , which matches the property's stored color space.
                                           <br />
                                           <br />
                                           To copy this hex into code, use
@@ -443,8 +443,8 @@ const InputAlphaField: FunctionComponent<InputAlphaProps> = (props) => {
                 info:
                     color instanceof Color3 ? (
                         <Body1>
-                            Because this color picker is representing a Color3, we do not permit modifying alpha from the color picker. You can however modify the entity's alpha
-                            property directly, either in code via entity.alpha OR via inspector's transparency section.
+                            Because this color picker is representing a Color3, we do not permit modifying alpha from the color picker. You can however modify the property's alpha
+                            property directly, either in code via property.alpha OR via inspector's transparency section.
                         </Body1>
                     ) : undefined,
             }}

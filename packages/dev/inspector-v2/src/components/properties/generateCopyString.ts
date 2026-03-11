@@ -47,14 +47,14 @@ export function GenerateCopyString(value: unknown): string {
                 return `new ${babylonNamespace}Quaternion(${obj.x}, ${obj.y}, ${obj.z}, ${obj.w})`;
             }
 
-            // Color3, Color4 — HEX is a direct 0-1→0-255 conversion of the stored values (entity-space)
+            // Color3, Color4 — HEX is a direct 0-1→0-255 conversion of the stored values (property-space)
             if (className === "Color3") {
                 const hexString = ColorToHex(obj.r as number, obj.g as number, obj.b as number, 1);
-                return `new ${babylonNamespace}Color3(${obj.r}, ${obj.g}, ${obj.b}) // (Entity-Space HEX: ${hexString})`;
+                return `new ${babylonNamespace}Color3(${obj.r}, ${obj.g}, ${obj.b}) // HEX: ${hexString})`;
             }
             if (className === "Color4") {
                 const hexString = ColorToHex(obj.r as number, obj.g as number, obj.b as number, obj.a as number);
-                return `new ${babylonNamespace}Color4(${obj.r}, ${obj.g}, ${obj.b}, ${obj.a}) // (Entity-Space HEX: ${hexString})`;
+                return `new ${babylonNamespace}Color4(${obj.r}, ${obj.g}, ${obj.b}, ${obj.a}) // HEX: ${hexString})`;
             }
 
             // Matrix - output as array
@@ -86,7 +86,7 @@ export function GenerateCopyString(value: unknown): string {
 
 /**
  * Converts color component values (0-1) directly to a hex string.
- * No gamma correction is applied — the hex represents the entity's stored color space.
+ * No gamma correction is applied — the hex represents the property's stored color space.
  * @param r - Red component (0-1)
  * @param g - Green component (0-1)
  * @param b - Blue component (0-1)
