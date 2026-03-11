@@ -50,11 +50,11 @@ export function GenerateCopyString(value: unknown): string {
             // Color3, Color4 — HEX is a direct 0-1→0-255 conversion of the stored values (property-space)
             if (className === "Color3") {
                 const hexString = ColorToHex(obj.r as number, obj.g as number, obj.b as number, 1);
-                return `new ${babylonNamespace}Color3(${obj.r}, ${obj.g}, ${obj.b}) // HEX: ${hexString})`;
+                return `new ${babylonNamespace}Color3(${obj.r}, ${obj.g}, ${obj.b}) // (HEX: ${hexString})`;
             }
             if (className === "Color4") {
                 const hexString = ColorToHex(obj.r as number, obj.g as number, obj.b as number, obj.a as number);
-                return `new ${babylonNamespace}Color4(${obj.r}, ${obj.g}, ${obj.b}, ${obj.a}) // HEX: ${hexString})`;
+                return `new ${babylonNamespace}Color4(${obj.r}, ${obj.g}, ${obj.b}, ${obj.a}) // (HEX: ${hexString})`;
             }
 
             // Matrix - output as array
