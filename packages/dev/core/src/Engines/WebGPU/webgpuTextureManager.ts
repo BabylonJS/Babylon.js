@@ -1187,7 +1187,16 @@ export class WebGPUTextureManager {
             label: `BabylonWebGPUDevice${this._engine.uniqueId}_resolveMSAADepthTexture${msaaTexture.label ? "_" + msaaTexture.label : ""}`,
             colorAttachments: [
                 {
-                    view: outputTexture,
+                    // Note: the WebGPU spec allows passing a GPUTexture directly as the view, but Safari rejects it (non-compliant).
+                    // We explicitly create a GPUTextureView to work around this Safari bug.
+                    view: outputTexture.createView({
+                        format,
+                        dimension: WebGPUConstants.TextureViewDimension.E2d,
+                        baseMipLevel: 0,
+                        mipLevelCount: 1,
+                        arrayLayerCount: 1,
+                        baseArrayLayer: 0,
+                    }),
                     loadOp: WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
                 },

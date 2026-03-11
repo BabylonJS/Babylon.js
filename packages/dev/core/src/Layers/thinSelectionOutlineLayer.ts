@@ -121,6 +121,24 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
             ...options,
         };
 
+        // Fall back to a supported mask texture type if the device doesn't support rendering to float framebuffers
+        // or linear filtering of float textures (e.g. OES_texture_float_linear missing on some iOS versions)
+        if (this._options.mainTextureType === Constants.TEXTURETYPE_FLOAT && !(this._engine.getCaps().textureFloatRender && this._engine.getCaps().textureFloatLinearFiltering)) {
+            this._options.mainTextureType = Constants.TEXTURETYPE_HALF_FLOAT;
+        }
+        if (
+            this._options.mainTextureType === Constants.TEXTURETYPE_HALF_FLOAT &&
+            !(this._engine.getCaps().textureHalfFloatRender && this._engine.getCaps().textureHalfFloatLinearFiltering)
+        ) {
+            this._options.mainTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        }
+
+        // When using an 8-bit render target, we cannot reliably store camera-space Z in the mask texture:
+        // depth would be clamped/quantized, breaking occlusion comparisons. In that case, force-disable
+        // storeCameraSpaceZ so the layer falls back to the supported behavior.
+        if (this._options.storeCameraSpaceZ && this._options.mainTextureType === Constants.TEXTURETYPE_UNSIGNED_BYTE) {
+            this._options.storeCameraSpaceZ = false;
+        }
         // set clear color
         this.neutralColor = new Color4(0.0, this._options.storeCameraSpaceZ ? 0.0 : 1.0, 0.0, 1.0);
 

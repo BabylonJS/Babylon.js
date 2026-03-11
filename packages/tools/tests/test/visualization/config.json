@@ -1660,8 +1660,9 @@
         },
         {
             "title": "Shadows CSM and LODs",
-            "playgroundId": "#24HWT9#15",
+            "playgroundId": "#24HWT9#20",
             "referenceImage": "shadowscsmandlod.png",
+            "renderCount": 2,
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3770,6 +3771,38 @@
             "playgroundId": "#PPC2EI#5",
             "renderCount": 120,
             "referenceImage": "particles-flowmaps-2.png"
+        },
+        {
+            "title": "Depth Renderer and RTT - debug markers",
+            "playgroundId": "#7E73LI#21",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "Clustered lights - debug markers",
+            "playgroundId": "#1QCA2M#47",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "CSM  FrameGraph - debug markers",
+            "playgroundId": "#JWKDME#216",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "Reflection Probes - debug markers",
+            "playgroundId": "#KA93U#1723",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "Unbalanced push pop - debug markers",
+            "playgroundId": "#T26WTI#2",
+            "renderCount": 10,
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "Pending pop - debug markers",
+            "playgroundId": "#24HWT9#25",
+            "renderCount": 10,
+            "excludedEngines": ["webgl1", "webgl2"]
         }
     ]
 }
