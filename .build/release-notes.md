@@ -1,25 +1,21 @@
 
 ### Core
 
-- Fix incorrect CDN url for draco wasm js (and possibly other CDN resources) - by [ryantrem](https://github.com/ryantrem) ([#18068](https://github.com/BabylonJS/Babylon.js/pull/18068))
-- Simplify URL normalization logic in CDN utilities - by [github-actions[bot]](https://github.com/apps/github-actions) ([#18062](https://github.com/BabylonJS/Babylon.js/pull/18062))
-
-### GUI Editor
-
-- Drop and replace unused npm dependencies - by [RaananW](https://github.com/RaananW) ([#18064](https://github.com/BabylonJS/Babylon.js/pull/18064))
+- Fix source mesh for cloned GaussianSplattingMaterial - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18075](https://github.com/BabylonJS/Babylon.js/pull/18075))
+- GS fixes - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18054](https://github.com/BabylonJS/Babylon.js/pull/18054))
+- Selection outline layer: Fix texture type based on capabilities - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18067](https://github.com/BabylonJS/Babylon.js/pull/18067))
+- WebGPU: Fix volumetric lighting in WebGPU not working on iPhones - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18071](https://github.com/BabylonJS/Babylon.js/pull/18071))
+- Extrude Node V1 - [_New Feature_] by [PirateJC](https://github.com/PirateJC) ([#18061](https://github.com/BabylonJS/Babylon.js/pull/18061))
+- Integrate WebRequest with Web Audio Engine v2 - by [RaananW](https://github.com/RaananW) ([#18003](https://github.com/BabylonJS/Babylon.js/pull/18003))
 
 ### Inspector
 
-- Drop and replace unused npm dependencies - by [RaananW](https://github.com/RaananW) ([#18064](https://github.com/BabylonJS/Babylon.js/pull/18064))
+- ColorPicker bug fixes (fix alpha / hex , add dropdown functionality) - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#18074](https://github.com/BabylonJS/Babylon.js/pull/18074))
 
-### Node Editor
+### Node Geometry Editor
 
-- Drop and replace unused npm dependencies - by [RaananW](https://github.com/RaananW) ([#18064](https://github.com/BabylonJS/Babylon.js/pull/18064))
+- Extrude Node V1 - [_New Feature_] by [PirateJC](https://github.com/PirateJC) ([#18061](https://github.com/BabylonJS/Babylon.js/pull/18061))
 
-### Playground
+### Serializers
 
-- Drop and replace unused npm dependencies - by [RaananW](https://github.com/RaananW) ([#18064](https://github.com/BabylonJS/Babylon.js/pull/18064))
-
-### Viewer
-
-- Drop and replace unused npm dependencies - by [RaananW](https://github.com/RaananW) ([#18064](https://github.com/BabylonJS/Babylon.js/pull/18064))
+- Improve JSDoc documentation in 3MF serializer - by [github-actions[bot]](https://github.com/apps/github-actions) ([#18073](https://github.com/BabylonJS/Babylon.js/pull/18073))
