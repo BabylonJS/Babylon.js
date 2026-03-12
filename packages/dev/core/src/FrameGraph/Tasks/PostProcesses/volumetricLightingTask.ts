@@ -1,4 +1,4 @@
-import type { Camera, DirectionalLight, FrameGraph, FrameGraphObjectList, FrameGraphTextureHandle } from "core/index";
+import type { AbstractEngine, Camera, DirectionalLight, FrameGraph, FrameGraphObjectList, FrameGraphTextureHandle } from "core/index";
 import { FrameGraphVolumetricLightingBlendVolumeTask } from "./volumetricLightingBlendVolumeTask";
 import { Matrix, TmpVectors, Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
@@ -16,6 +16,16 @@ const InvViewProjectionMatrix = new Matrix();
  */
 export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
     /**
+     * Returns whether volumetric lighting is supported by the engine.
+     * @param engine The engine to check for volumetric lighting support.
+     * @param enableExtinction Whether the extinction/dual-source blending path will be used.
+     * @returns True if volumetric lighting is supported, false otherwise.
+     */
+    public static IsSupported(engine: AbstractEngine, enableExtinction: boolean = false) {
+        return !enableExtinction || engine.getCaps().dualSourceBlending;
+    }
+
+    /**
      * The target texture to which the volumetric lighting will be applied.
      */
     public targetTexture: FrameGraphTextureHandle;
@@ -31,10 +41,22 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
      */
     public depthTexture: FrameGraphTextureHandle;
 
+    private _camera: Camera;
     /**
      * The camera used for volumetric lighting calculations.
      */
-    public camera: Camera;
+    public get camera() {
+        return this._camera;
+    }
+
+    public set camera(value: Camera) {
+        if (this._camera === value) {
+            return;
+        }
+        this._camera = value;
+        this._renderLightingVolumeTask.camera = value;
+        this._blendLightingVolumeTask.camera = value;
+    }
 
     /**
      * The mesh representing the lighting volume.

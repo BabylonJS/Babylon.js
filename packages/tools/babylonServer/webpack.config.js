@@ -125,6 +125,7 @@ module.exports = (env) => {
                 "gui-editor": path.resolve(basePathForTools, "guiEditor", outputDirectoryForAliases),
                 accessibility: path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
                 addons: path.resolve(basePathForSources, "addons", outputDirectoryForAliases),
+                "@tools/snippet-loader": path.resolve(basePathForTools, "snippetLoader", outputDirectoryForAliases),
             },
             symlinks: false,
             // modules: [path.resolve(__dirname, "../../dev/"), 'node_modules'],

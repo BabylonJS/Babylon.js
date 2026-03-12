@@ -257,12 +257,64 @@ export class MockedAudioObjects {
         document.body.appendChild = jest.fn().mockName("appendChild");
         document.body.removeChild = jest.fn().mockName("removeChild");
 
+        // Mock XMLHttpRequest so that WebRequest-based audio loading (used by static sound URL loading)
+        // works in the test environment without making real network requests.
+        global.XMLHttpRequest = jest
+            .fn()
+            .mockName("XMLHttpRequest")
+            .mockImplementation(() => {
+                let readystateChangeListener: (() => void) | null = null;
+                const xhr = {
+                    open: jest.fn().mockName("open"),
+                    send: jest
+                        .fn()
+                        .mockName("send")
+                        .mockImplementation(() => {
+                            realSetTimeout(() => {
+                                xhr.readyState = 4;
+                                xhr.status = 200;
+                                xhr.statusText = "OK";
+                                xhr.response = new ArrayBuffer(8);
+                                if (readystateChangeListener) {
+                                    readystateChangeListener();
+                                }
+                            }, 0);
+                        }),
+                    setRequestHeader: jest.fn().mockName("setRequestHeader"),
+                    getResponseHeader: jest.fn().mockName("getResponseHeader").mockReturnValue("audio/mpeg"),
+                    addEventListener: jest
+                        .fn()
+                        .mockName("addEventListener")
+                        .mockImplementation((type: string, listener: () => void) => {
+                            if (type === "readystatechange") {
+                                readystateChangeListener = listener;
+                            }
+                        }),
+                    removeEventListener: jest.fn().mockName("removeEventListener"),
+                    abort: jest.fn().mockName("abort"),
+                    readyState: 0,
+                    status: 0,
+                    statusText: "",
+                    response: null as any,
+                    responseText: "",
+                    responseType: "" as XMLHttpRequestResponseType,
+                    responseURL: "",
+                    timeout: 0,
+                    onprogress: null,
+                };
+                return xhr;
+            }) as any;
+
         global.fetch = jest
             .fn()
             .mockName("fetch")
             .mockResolvedValue({
+                ok: true,
+                status: 200,
+                statusText: "OK",
                 arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
-            } as Response);
+                headers: { get: (_name: string) => null },
+            } as unknown as Response);
 
         global.Audio = jest
             .fn()

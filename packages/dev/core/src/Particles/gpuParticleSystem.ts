@@ -69,6 +69,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _maxActiveParticleCount: number;
     private _currentActiveCount: number;
     private _accumulatedCount = 0;
+    private _writePointer = 0;
+    private _emitIndex = 0;
+    private _emitCount = 0;
+    private _emitRateControl: boolean;
     private _updateBuffer: UniformBufferEffectCommonAccessor;
 
     private _buffer0: Buffer;
@@ -150,6 +154,18 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public getCapacity(): number {
         return this._capacity;
+    }
+
+    /**
+     * Gets whether emit rate control is enabled.
+     * When true, the GPU particle system limits the number of active particles
+     * to approximately emitRate * maxLifeTime (matching CPU particle behavior)
+     * and uses a circular buffer to recycle particle slots.
+     * When false (default), all dead particles are recycled immediately,
+     * which is the legacy GPU particle behavior.
+     */
+    public get emitRateControl(): boolean {
+        return this._emitRateControl;
     }
 
     /**
@@ -464,6 +480,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._platform.releaseVertexBuffers();
         this._currentActiveCount = 0;
         this._targetIndex = 0;
+        this._writePointer = 0;
+        this._emitIndex = 0;
+        this._emitCount = 0;
+        this._accumulatedCount = 0;
     }
 
     /**
@@ -974,6 +994,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         options: Partial<{
             capacity: number;
             randomTextureSize: number;
+            emitRateControl: boolean;
         }>,
         sceneOrEngine: Scene | AbstractEngine,
         customEffect: Nullable<Effect> = null,
@@ -1037,6 +1058,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._maxActiveParticleCount = fullOptions.capacity;
         this._currentActiveCount = 0;
         this._isAnimationSheetEnabled = isAnimationSheetEnabled;
+        this._emitRateControl = !!options.emitRateControl;
 
         this.particleEmitterType = new BoxParticleEmitter();
 
@@ -1157,7 +1179,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             offset += 1;
             if (this.spriteRandomStartCell) {
                 renderVertexBuffers["cellStartOffset"] = renderBuffer.createVertexBuffer("cellStartOffset", offset, 1, this._attributesStrideSize, true);
-                offset += 1;
             }
         }
 
@@ -1425,6 +1446,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines += "\n#define LOCAL";
         }
 
+        if (this._emitRateControl) {
+            defines += "\n#define EMITRATECTRL";
+        }
+
         if (this._platform.isUpdateBufferCreated() && this._cachedUpdateDefines === defines) {
             return this._platform.isUpdateBufferReady();
         }
@@ -1572,6 +1597,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (this.isAnimationSheetEnabled) {
             defines.push("#define ANIMATESHEET");
+        }
+
+        if (this._emitRateControl) {
+            defines.push("#define EMITRATECTRL");
         }
 
         if (fillImageProcessing && this._imageProcessingConfiguration) {
@@ -1803,6 +1832,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._updateBuffer.setFloat("currentCount", this._currentActiveCount);
         this._updateBuffer.setFloat("timeDelta", this._timeDelta);
         this._updateBuffer.setFloat("stopFactor", this._stopped ? 0 : 1);
+        this._updateBuffer.setFloat("emitIndex", this._emitIndex);
+        this._updateBuffer.setFloat("emitCount", this._emitCount);
         this._updateBuffer.setInt("randomTextureSize", this._randomTextureSize);
         this._updateBuffer.setFloat2("lifeTime", this.minLifeTime, this.maxLifeTime);
         this._updateBuffer.setFloat2("emitPower", this.minEmitPower, this.maxEmitPower);
@@ -1893,19 +1924,72 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         // Get everything ready to render
         this._initialize();
 
-        if (this.manualEmitCount > -1) {
-            this._accumulatedCount += this.manualEmitCount;
-            this.manualEmitCount = 0;
-        } else {
-            this._accumulatedCount += this.emitRate * this._timeDelta;
-        }
-        if (this._accumulatedCount >= 1) {
-            const intPart = this._accumulatedCount | 0;
-            this._accumulatedCount -= intPart;
-            this._currentActiveCount += intPart;
-        }
+        if (this._emitRateControl) {
+            // Emit-rate-controlled mode: limits active particles to ~emitRate * maxLifeTime,
+            // matching CPU particle behavior with circular buffer recycling.
 
-        this._currentActiveCount = Math.min(this._maxActiveParticleCount, this._currentActiveCount);
+            // Accumulate fractional particles over time. Manual emit bypasses the rate.
+            if (this.manualEmitCount > -1) {
+                this._accumulatedCount += this.manualEmitCount;
+                this.manualEmitCount = 0;
+            } else if (!this._stopped) {
+                this._accumulatedCount += this.emitRate * this._timeDelta;
+            }
+
+            // Convert accumulated fractional count into whole particles to emit this frame.
+            // The fractional remainder carries over to the next frame.
+            let newParticles = 0;
+            if (this._accumulatedCount >= 1) {
+                newParticles = this._accumulatedCount | 0;
+                this._accumulatedCount -= newParticles;
+            }
+
+            // The maximum number of particles that can be alive at once is bounded by
+            // emitRate * maxLifeTime (e.g. 1000 emit/s * 0.3s = 300 particles).
+            // This matches CPU particle system behavior and avoids filling the entire capacity.
+            // When emitRate is 0 but manualEmitCount is used, the rate-based steady state
+            // would be 0, blocking buffer growth. Use newParticles as a floor so manual
+            // emissions can always allocate slots.
+            const steadyStateCount = Math.min(Math.max(Math.ceil(this.emitRate * this.maxLifeTime), newParticles), this._maxActiveParticleCount);
+
+            // During ramp-up, grow the active buffer size by adding new slots.
+            // Once _currentActiveCount reaches steadyStateCount, no new slots are added —
+            // existing slots are recycled instead (handled by _emitIndex below).
+            if (this._currentActiveCount < steadyStateCount && newParticles > 0) {
+                const growth = Math.min(newParticles, steadyStateCount - this._currentActiveCount);
+                this._currentActiveCount += growth;
+            }
+
+            // Tell the update shader which particle slots to (re)initialize this frame.
+            // _emitIndex is where the circular write pointer starts in the buffer,
+            // _emitCount is how many consecutive slots to reinitialize (with wrapping).
+            // The shader checks each particle's index against this range to decide
+            // whether to recycle it (emit branch) or advance its simulation (update branch).
+            if (this._currentActiveCount > 0 && newParticles > 0) {
+                this._emitCount = Math.min(newParticles, this._currentActiveCount);
+                this._emitIndex = this._writePointer % this._currentActiveCount;
+                this._writePointer += this._emitCount;
+            } else {
+                this._emitCount = 0;
+            }
+        } else {
+            // Legacy mode: dead particles recycle immediately, filling up to capacity.
+            if (this.manualEmitCount > -1) {
+                this._accumulatedCount += this.manualEmitCount;
+                this.manualEmitCount = 0;
+            } else {
+                this._accumulatedCount += this.emitRate * this._timeDelta;
+            }
+            if (this._accumulatedCount >= 1) {
+                const intPart = this._accumulatedCount | 0;
+                this._accumulatedCount -= intPart;
+                this._currentActiveCount += intPart;
+            }
+
+            this._currentActiveCount = Math.min(this._maxActiveParticleCount, this._currentActiveCount);
+            this._emitIndex = 0;
+            this._emitCount = 0;
+        }
 
         if (!this._currentActiveCount) {
             return 0;
@@ -2131,6 +2215,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         serializationObject.activeParticleCount = this.activeParticleCount;
         serializationObject.randomTextureSize = this._randomTextureSize;
+        serializationObject.emitRateControl = this._emitRateControl;
         serializationObject.customShader = this.customShader;
 
         serializationObject.preventAutoStart = this.preventAutoStart;
@@ -2166,7 +2251,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         const particleSystem = new GPUParticleSystem(
             name,
-            { capacity: capacity || parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize },
+            {
+                capacity: capacity || parsedParticleSystem.capacity,
+                randomTextureSize: parsedParticleSystem.randomTextureSize,
+                emitRateControl: parsedParticleSystem.emitRateControl,
+            },
             sceneOrEngine,
             null,
             parsedParticleSystem.isAnimationSheetEnabled

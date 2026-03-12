@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const path = require("path");
 const fs = require("fs");
 const exec = require("child_process").exec;
@@ -16,19 +17,35 @@ function runCommand(command) {
     });
 }
 
+// Maps package directory names (under packages/dev/ or packages/tools/) to changelog
+// section headers. Multiple directories can map to the same friendly name and will be
+// grouped into a single section. Directories not listed here are excluded from the changelog.
 const friendlyNames = {
+    // packages/dev (published to npm)
     core: "Core",
     gui: "GUI",
     loaders: "Loaders",
     serializers: "Serializers",
     materials: "Materials",
-    postProcess: "Post-Process",
+    postProcesses: "Post Processes",
     proceduralTextures: "Procedural Textures",
-    inspector: "Inspector",
+    "inspector-v2": "Inspector",
+    addons: "Addons",
+    smartFilters: "Smart Filters",
+    smartFilterBlocks: "Smart Filters",
+    lottiePlayer: "Lottie Player",
+    // packages/tools (published to npm or deployed as public web apps)
     nodeEditor: "Node Editor",
-    guiEditor: "GUI Editor",
+    nodeGeometryEditor: "Node Geometry Editor",
+    nodeParticleEditor: "Node Particle Editor",
+    nodeRenderGraphEditor: "Node Render Graph Editor",
+    guiEditor: "GUI",
     playground: "Playground",
+    sandbox: "Sandbox",
     viewer: "Viewer",
+    "viewer-configurator": "Viewer",
+    smartFiltersEditor: "Smart Filters",
+    smartFiltersEditorControl: "Smart Filters",
 };
 
 const tagNames = {
@@ -166,11 +183,33 @@ async function generateChangelog(nextVersion) {
     const finalChangelog = { ...changelog, ...config.changelog };
     // write the changelog
     fs.writeFileSync(path.resolve(__dirname, "..", "./.build/changelog.json"), JSON.stringify({ fromTag: newFromTag || config.fromTag, changelog: finalChangelog }, null, 4));
-    fs.writeFileSync(path.resolve(__dirname, "..", "./CHANGELOG.md"), generateMarkdown(finalChangelog));
+    const { fullMarkdown, latestVersionMarkdown } = generateMarkdown(finalChangelog);
+    fs.writeFileSync(path.resolve(__dirname, "..", "./CHANGELOG.md"), fullMarkdown);
+    return latestVersionMarkdown;
+}
+
+function generateVersionMarkdown(versionPackages) {
+    let markdown = "";
+    const sortedPackages = Object.keys(versionPackages).sort();
+    sortedPackages.forEach((prettyPackage) => {
+        markdown += `\n### ${prettyPackage}\n\n`;
+        versionPackages[prettyPackage].forEach((pr) => {
+            if (pr.tags && pr.tags.indexOf(skipChangelogTag) !== -1) {
+                return;
+            }
+            const tag = pr.tags.find((tag) => {
+                return tagNames[tag];
+            });
+            markdown += `- ${pr.title} - ${tag ? `[_${tagNames[tag]}_] ` : ""}by [${pr.author.name}](${pr.author.url}) ([#${
+                pr.pr
+            }](https://github.com/BabylonJS/Babylon.js/pull/${pr.pr}))\n`;
+        });
+    });
+    return markdown;
 }
 
 function generateMarkdown(finalChangelog) {
-    let markdown = "# Changelog\n";
+    let fullMarkdown = "# Changelog\n";
     // Sort versions
     const versions = Object.keys(finalChangelog)
         .sort((a, b) => {
@@ -187,17 +226,19 @@ function generateMarkdown(finalChangelog) {
     const versionChangelog = {};
     versions.forEach((version) => {
         versionChangelog[version] = {};
-        // markdown += `## ${version}\n`;
         finalChangelog[version].forEach((pr) => {
-            // what package was influenced by that change?
+            // Categorize the PR by which packages its changed files belong to.
+            // File paths from the GitHub API look like "packages/{dev|tools}/<package>/...",
+            // so parts[2] extracts the package directory name (e.g. "core", "viewer").
+            // Map to friendly names so that multiple directories sharing the same
+            // friendly name (e.g. smartFilters + smartFilterBlocks → "Smart Filters")
+            // are grouped into a single changelog section.
             const packageInfluenced = pr.files
                 .map((file) => {
                     const parts = file.split("/");
-                    return parts[2];
+                    return friendlyNames[parts[2]];
                 })
-                .filter((pck) => {
-                    return friendlyNames[pck];
-                });
+                .filter(Boolean);
             const packagesSet = new Set(packageInfluenced);
             packagesSet.forEach((pck) => {
                 versionChangelog[version][pck] = versionChangelog[version][pck] || [];
@@ -205,26 +246,15 @@ function generateMarkdown(finalChangelog) {
             });
         });
     });
-    Object.keys(versionChangelog).forEach((version) => {
-        markdown += `\n## ${version}\n`;
-        const sortedPackages = Object.keys(versionChangelog[version]).sort();
-        sortedPackages.forEach((pck) => {
-            const prettyPackage = friendlyNames[pck];
-            markdown += `\n### ${prettyPackage}\n\n`;
-            versionChangelog[version][pck].forEach((pr) => {
-                if (pr.tags && pr.tags.indexOf(skipChangelogTag) !== -1) {
-                    return;
-                }
-                const tag = pr.tags.find((tag) => {
-                    return tagNames[tag];
-                });
-                markdown += `- ${pr.title} - ${tag ? `[_${tagNames[tag]}_] ` : ""}by [${pr.author.name}](${pr.author.url}) ([#${
-                    pr.pr
-                }](https://github.com/BabylonJS/Babylon.js/pull/${pr.pr}))\n`;
-            });
-        });
+    let latestVersionMarkdown = "";
+    versions.forEach((version, index) => {
+        const sectionMarkdown = generateVersionMarkdown(versionChangelog[version]);
+        fullMarkdown += `\n## ${version}\n` + sectionMarkdown;
+        if (index === 0) {
+            latestVersionMarkdown = sectionMarkdown;
+        }
     });
-    return markdown;
+    return { fullMarkdown, latestVersionMarkdown };
 }
 
 module.exports = generateChangelog;

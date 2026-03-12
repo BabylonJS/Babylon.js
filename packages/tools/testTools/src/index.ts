@@ -8,7 +8,7 @@ import { checkArgs, populateEnvironment } from "@dev/build-tools";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: string; usesDevHost: boolean } = { usesDevHost: false }) => {
     populateEnvironment();
-    let baseUrl = undefined;
+    let baseUrl: string | undefined;
     if (overrideConfig.usesDevHost) {
         baseUrl = (checkArgs(["--enable-https"], true) ? "https" : "http") + "://localhost:1338";
     } else {

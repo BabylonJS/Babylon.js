@@ -225,8 +225,8 @@ const LoadAnimations = (gltfRuntime: IGLTFRuntime) => {
                 continue;
             }
 
-            let inputData: Nullable<string> = null;
-            let outputData: Nullable<string> = null;
+            let inputData: Nullable<string>;
+            let outputData: Nullable<string>;
 
             if (animation.parameters) {
                 inputData = animation.parameters[sampler.input];
@@ -292,7 +292,7 @@ const LoadAnimations = (gltfRuntime: IGLTFRuntime) => {
 
             // For each frame
             for (let j = 0; j < bufferInput.length; j++) {
-                let value: any = null;
+                let value: any;
 
                 if (targetPath === "rotationQuaternion") {
                     // VEC4
@@ -359,7 +359,7 @@ const LoadAnimations = (gltfRuntime: IGLTFRuntime) => {
  * @param node
  */
 const ConfigureBoneTransformation = (node: IGLTFNode): Matrix => {
-    let mat: Nullable<Matrix> = null;
+    let mat: Nullable<Matrix>;
 
     if (node.translation || node.rotation || node.scale) {
         const scale = Vector3.FromArray(node.scale || [1, 1, 1]);
@@ -580,7 +580,7 @@ const ImportSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
         }
 
         // Search for parent bone
-        let foundBone = false;
+        let foundBone: boolean;
         let parentBone: Nullable<Bone> = null;
 
         for (let j = 0; j < i; j++) {
@@ -711,8 +711,8 @@ const ImportMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
             }
 
             const attributes = primitive.attributes;
-            let accessor: Nullable<IGLTFAccessor> = null;
-            let buffer: any = null;
+            let accessor: Nullable<IGLTFAccessor>;
+            let buffer: any;
 
             // Set positions, normal and uvs
             for (const semantic in attributes) {

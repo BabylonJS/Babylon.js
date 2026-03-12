@@ -71,6 +71,8 @@
             "@lts/serializers/*": ["lts/serializers/src/*"],
             "@lts/inspector-legacy/*": ["lts/inspector/src/*"],
             "@lts/shared-ui-components/*": ["lts/sharedUiComponents/src/*"],
+            "@tools/snippet-loader": ["tools/snippetLoader/src"],
+            "@tools/snippet-loader/*": ["tools/snippetLoader/src/*"],
             "smart-filters": ["dev/smartFilters/src"],
             "smart-filters-blocks": ["dev/smartFilterBlocks/src"],
             "smart-filters-blocks/*": ["dev/smartFilterBlocks/src/*"],

@@ -1,13 +1,25 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-console */
-import type { Page } from "puppeteer";
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { StacktracedObject } from "./window";
 
+// Minimal Page-like interface to avoid depending on the puppeteer package.
+interface Page {
+    evaluate: (...args: any[]) => Promise<any>;
+    evaluateHandle: (...args: any[]) => Promise<any>;
+    queryObjects: (...args: any[]) => Promise<any>;
+    goto: (...args: any[]) => Promise<any>;
+    waitForSelector: (...args: any[]) => Promise<any>;
+    waitForNetworkIdle: (...args: any[]) => Promise<any>;
+    on: (event: string, handler: (...args: any[]) => void) => Page;
+}
+
+declare const page: Page;
+declare const jestPuppeteer: { debug: () => Promise<void>; resetBrowser: () => Promise<void> };
 declare const BABYLON: typeof window.BABYLON;
 
 const ClassesToCheck = ["BABYLON.Camera", "BABYLON.TransformNode", "BABYLON.Scene", "BABYLON.Vector3", "BABYLON.BaseTexture", "BABYLON.Material"];
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface CountValues {
     numberOfObjects: number;
     usedJSHeapSize: number;
@@ -17,7 +29,7 @@ export interface CountValues {
     eventsRegistered: typeof window.eventsRegistered;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax
 export const countCurrentObjects = async (initialValues: CountValues, classes = ClassesToCheck, checkGlobalObjects?: boolean, flip?: boolean) => {
     const current = await countObjects(page, classes);
     // check that all events are cleared and all objects are gone:
@@ -61,7 +73,7 @@ export const countCurrentObjects = async (initialValues: CountValues, classes = 
     }
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax
 export const evaluateInitEngine = async (engineName: string, baseUrl: string, parallelCompilation: boolean = true) => {
     // run garbage collection
     window.gc && window.gc();
@@ -95,7 +107,7 @@ export const evaluateInitEngine = async (engineName: string, baseUrl: string, pa
     return !!window.engine;
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax
 export const evaluateEventListenerAugmentation = async () => {
     const realAddEventListener = EventTarget.prototype.addEventListener;
     const realRemoveEventListener = EventTarget.prototype.removeEventListener;
@@ -174,7 +186,7 @@ export const evaluateEventListenerAugmentation = async () => {
     };
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax
 export const evaluateCreateScene = async () => {
     if (window.engine && !window.scene) {
         window.scene = new BABYLON.Scene(window.engine);
@@ -183,7 +195,7 @@ export const evaluateCreateScene = async () => {
     return !!window.scene;
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax
 export const evaluateRenderScene = async (renderCount = 1) => {
     if (window.scene && window.engine) {
         const now = performance.now();
@@ -196,7 +208,7 @@ export const evaluateRenderScene = async (renderCount = 1) => {
     }
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax
 export const evaluateDisposeScene = async () => {
     if (window.scene) {
         window.scene.dispose();
@@ -205,7 +217,7 @@ export const evaluateDisposeScene = async () => {
     }
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax
 export const evaluateDisposeEngine = async () => {
     if (window.engine) {
         window.engine.dispose();
@@ -214,7 +226,7 @@ export const evaluateDisposeEngine = async () => {
     }
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax
 export const evaluateDefaultScene = async () => {
     if (!window.scene) {
         window.scene = new BABYLON.Scene(window.engine!);
@@ -244,7 +256,7 @@ export const evaluateDefaultScene = async () => {
     BABYLON.MeshBuilder.CreateGround("ground", { width: 6, height: 6 }, window.scene);
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax
 export const prepareLeakDetection = async (classes: string[] = ClassesToCheck) => {
     window.classesConstructed = window.classesConstructed || {};
     const setStackStrace = (target: any) => {
@@ -313,7 +325,7 @@ export const prepareLeakDetection = async (classes: string[] = ClassesToCheck) =
     });
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax
 export const countObjects = async (page: Page, classes = ClassesToCheck) => {
     await page.waitForNetworkIdle({
         idleTime: 300,
@@ -323,7 +335,7 @@ export const countObjects = async (page: Page, classes = ClassesToCheck) => {
 
     const prototypeHandle = await page.evaluateHandle(() => Object.prototype);
     const objectsHandle = await page.queryObjects(prototypeHandle);
-    const numberOfObjects = await page.evaluate((instances) => instances.length, objectsHandle);
+    const numberOfObjects = await page.evaluate((instances: any[]) => instances.length, objectsHandle);
     const usedJSHeapSize = await page.evaluate(() => {
         return ((window.performance as any).memory && (window.performance as any).memory.usedJSHeapSize) || 0;
     });
@@ -337,10 +349,10 @@ export const countObjects = async (page: Page, classes = ClassesToCheck) => {
     for (const classToCheck of classes) {
         const prototype = classToCheck + ".prototype";
         // tslint:disable-next-line: no-eval
-        const prototypeHandle = await page.evaluateHandle((p) => eval(p), prototype);
+        const prototypeHandle = await page.evaluateHandle((p: string) => eval(p), prototype);
         const objectsHandle = await page.queryObjects(prototypeHandle);
         const array = await page.evaluate(
-            (objects) =>
+            (objects: any[]) =>
                 objects.map((object: any) => {
                     if (!object.__id) {
                         object.__id = Math.random().toString(36).substring(2, 15);
@@ -364,7 +376,7 @@ export const countObjects = async (page: Page, classes = ClassesToCheck) => {
 
 export type PerformanceTestType = "dev" | "preview" | "stable";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax
 export const checkPerformanceOfScene = async (
     page: Page,
     baseUrl: string,
@@ -403,7 +415,7 @@ export const checkPerformanceOfScene = async (
     return time.reduce((partialSum, a) => partialSum + a, 0) / (numberOfPasses - 2);
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, no-restricted-syntax
+// eslint-disable-next-line no-restricted-syntax
 export const logPageErrors = async (page: Page, debug?: boolean) => {
     page.on("console", async (msg) => {
         // serialize my args the way I want
@@ -429,5 +441,7 @@ export const logPageErrors = async (page: Page, debug?: boolean) => {
             console.log(`${msg.type().substring(0, 3).toUpperCase()} ${msg.text()}`);
         }
     });
-    page.on("pageerror", ({ message }) => console.log(message)).on("requestfailed", (request) => console.log(`${request.failure()?.errorText} ${request.url()}`));
+    page.on("pageerror", ({ message }: { message: string }) => console.log(message)).on("requestfailed", (request: any) =>
+        console.log(`${request.failure()?.errorText} ${request.url()}`)
+    );
 };

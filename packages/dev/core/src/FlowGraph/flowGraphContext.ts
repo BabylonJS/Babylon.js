@@ -56,6 +56,7 @@ export interface IFlowGraphContextParseOptions {
      * A function that parses a value from a serialization object.
      * @param key the key of the value
      * @param serializationObject the object containing the value
+     * @param assetsContainer the assets container
      * @param scene the current scene
      * @returns
      */

@@ -1000,8 +1000,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         const cols = Math.ceil(count / rows);
         const width = 1.0 / cols;
         const height = 1.0 / rows;
-        let x = 0;
-        let y = 0;
+        let x: number = 0;
+        let y: number = 0;
         if (this.gbufferDebugEnabled) {
             this._gBufferDebugSizeParams.set(x, y, cols, rows);
             x -= width;
@@ -1045,11 +1045,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
         if (this.accumulationPassDebugEnabled) {
             this._accumulationPass.setDebugDisplayParams(x, y, cols, rows);
-            x -= width;
-            if (x <= -1) {
-                x = 0;
-                y -= height;
-            }
         }
     }
 

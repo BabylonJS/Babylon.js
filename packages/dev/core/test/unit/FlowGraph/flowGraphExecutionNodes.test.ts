@@ -42,7 +42,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
         flowGraph = flowGraphCoordinator.createGraph();
         flowGraphContext = flowGraph.createContext();
-        const cam = new ArcRotateCamera("cam", 0, 0, 0, new Vector3(0, 0, 0), scene);
+        new ArcRotateCamera("cam", 0, 0, 0, new Vector3(0, 0, 0), scene);
     });
 
     it("Branch Block", () => {

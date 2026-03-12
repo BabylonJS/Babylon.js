@@ -226,7 +226,7 @@ export function workerFunction(): void {
                     dst[dstI++] = c[m & 0x3];
                     dst[dstI++] = c[(m >> 2) & 0x3];
                     dst[dstI++] = c[(m >> 4) & 0x3];
-                    dst[dstI++] = c[(m >> 6) & 0x3];
+                    dst[dstI] = c[(m >> 6) & 0x3];
                 }
             }
         }

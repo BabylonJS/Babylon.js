@@ -256,7 +256,7 @@ export class CubeTexture extends BaseTexture {
         this._textureMatrix = Matrix.Identity();
         this.coordinatesMode = Texture.CUBIC_MODE;
 
-        let extensions: Nullable<string[]> = null;
+        let extensions: Nullable<string[]>;
         let buffer: Nullable<ArrayBufferView> = null;
 
         if (extensionsOrOptions !== null && !Array.isArray(extensionsOrOptions)) {

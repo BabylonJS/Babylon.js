@@ -207,8 +207,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         // Procedural Code Generator Options (build from procedural.json)
         const isJavaScript = this.props.globalState.language === "JS" || this.props.globalState.language === "JavaScript";
 
-        let proceduralOptions: any[] = [];
-        proceduralOptions = this._procedural.map((item) => {
+        const proceduralOptions = this._procedural.map((item) => {
             const obj: any = {
                 ...item,
                 onClick: () => {},

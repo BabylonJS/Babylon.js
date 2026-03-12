@@ -576,7 +576,7 @@ export class _GLTFAnimation {
              */
             if (morphAnimationChannels) {
                 let index = 0;
-                let currentInput: number = 0;
+                let currentInput: number;
                 const newInputs: number[] = [];
                 while (animationData.inputs.length > 0) {
                     currentInput = animationData.inputs.shift()!;
@@ -700,16 +700,15 @@ export class _GLTFAnimation {
         let previousTime: Nullable<number> = null;
         let time: number;
         let maxUsedFrame: Nullable<number> = null;
-        let currKeyFrame: Nullable<IAnimationKey> = null;
-        let nextKeyFrame: Nullable<IAnimationKey> = null;
-        let prevKeyFrame: Nullable<IAnimationKey> = null;
-        let endFrame: Nullable<number> = null;
+        let currKeyFrame: Nullable<IAnimationKey>;
+        let nextKeyFrame: Nullable<IAnimationKey>;
+        let prevKeyFrame: Nullable<IAnimationKey>;
+        let endFrame: Nullable<number>;
         minMaxFrames.min = Tools.FloatRound(minFrame / fps);
 
         const keyFrames = animation.getKeys();
 
         for (let i = 0, length = keyFrames.length; i < length; ++i) {
-            endFrame = null;
             currKeyFrame = keyFrames[i];
 
             if (i + 1 < length) {

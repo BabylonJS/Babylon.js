@@ -1,9 +1,7 @@
-import type { Config } from "@jest/types";
+import type { Config } from "jest";
 import * as fs from "fs";
 import * as path from "path";
 import { JestConfigWithTsJest, pathsToModuleNameMapper } from "ts-jest";
-
-// const t = Object.assign(ts_preset, puppeteer_preset);
 
 const compilerOptions = JSON.parse(fs.readFileSync(path.resolve(__dirname, "./tsconfig.json"), "utf8")).compilerOptions;
 
@@ -29,19 +27,18 @@ const createProject = (type: string) => {
             color: "yellow",
         },
         testRegex: [`/test/${type}/.*test\\.[tj]sx?$`],
+        testPathIgnorePatterns: ["/node_modules/", "/packages/.*/src/"],
         moduleNameMapper: {
             ...stripAnyJsExtensionFound(pathsToModuleNameMapper(compilerOptions.paths, { prefix: "<rootDir>/packages/" })),
             // Remove .js from imports (for packages that include .js in the import paths)
             "^(.+)\\.js$": "$1",
         },
-        roots: [path.resolve(".")],
+        roots: ["<rootDir>/packages"],
         setupFilesAfterEnv: ["@alex_neo/jest-expect-message"],
         transform: {
             "^.+\\.tsx?$": [
                 "ts-jest",
                 {
-                    isolatedModules: true,
-                    useESM: true,
                     tsconfig: fs.existsSync(tsTestConfigPath) ? tsTestConfigPath : fs.existsSync(tsConfigPath) ? tsConfigPath : path.resolve(__dirname, "tsconfig.json"),
                 },
             ],
@@ -53,36 +50,11 @@ const createProject = (type: string) => {
     if (setupFilesAfterEnv) {
         returnValue.setupFilesAfterEnv?.push(...setupFilesAfterEnv);
     }
-    if (type === "unit") {
+    if (type === "unit" || type === "integration" || type === "performance" || type === "interactions") {
         return {
             ...returnValue,
-            preset: "ts-jest/presets/default-esm", // if puppeteer is needed: "./" + path.relative(__dirname, path.resolve(__dirname, "./scripts/tsPuppeteer.js")),
+            preset: "ts-jest/presets/default",
             testEnvironment: "node",
-            extensionsToTreatAsEsm: [".ts"],
-        };
-    } else if (type === "visualization") {
-        return {
-            ...returnValue,
-            preset: "./" + path.relative(__dirname, path.resolve(__dirname, "./scripts/tsPuppeteer.js")),
-            extensionsToTreatAsEsm: [".ts"],
-        };
-    } else if (type === "integration" || type === "performance") {
-        // not yet used
-        return {
-            ...returnValue,
-            // preset: "./" + path.relative(__dirname, path.resolve(__dirname, "./scripts/tsPuppeteer.js")),
-            globalSetup: "jest-environment-puppeteer/setup",
-            globalTeardown: "jest-environment-puppeteer/teardown",
-            testEnvironment: "jest-environment-puppeteer",
-            preset: "jest-puppeteer",
-            extensionsToTreatAsEsm: [".ts"],
-        };
-    } else if (type === "interactions") {
-        return {
-            ...returnValue,
-            preset: "ts-jest/presets/default-esm",
-            testEnvironment: "node",
-            extensionsToTreatAsEsm: [".ts"],
         };
     } else {
         return {};
@@ -90,8 +62,8 @@ const createProject = (type: string) => {
 };
 
 // Sync object
-const config: Config.InitialOptions = {
-    projects: [createProject("unit"), createProject("visualization"), createProject("integration"), createProject("performance"), createProject("interactions")],
+const config: Config = {
+    projects: [createProject("unit"), createProject("integration"), createProject("performance"), createProject("interactions")],
     reporters: ["default", "./scripts/jest-imagediff-reporter", "jest-junit"],
 };
 export default config;

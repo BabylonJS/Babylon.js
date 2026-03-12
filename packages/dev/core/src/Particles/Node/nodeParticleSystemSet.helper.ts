@@ -512,7 +512,7 @@ function _UpdateParticleColorBlockGroup(
     colorGradients: Nullable<Array<ColorGradient>>,
     context: RuntimeConversionContext
 ): NodeParticleConnectionPoint {
-    let colorCalculation: NodeParticleConnectionPoint | undefined = undefined;
+    let colorCalculation: NodeParticleConnectionPoint | undefined;
     if (colorGradients && colorGradients.length > 0) {
         if (context.colorGradientValue0Output === undefined) {
             throw new Error("Initial color gradient values not found in context.");
@@ -779,7 +779,7 @@ function _UpdateParticleFlowMapBlockGroup(inputParticle: NodeParticleConnectionP
     const flowMapTextureBlock = new ParticleTextureSourceBlock("Flow Map Texture");
     flowMapTextureBlock.serializedCachedData = true;
     flowMapTextureBlock.textureDataUrl = GenerateBase64StringFromPixelData(flowMap.data, { width: flowMap.width, height: flowMap.height }, true) ?? "";
-    flowMapTextureBlock.texture.connectTo(updateFlowMapBlock.flowMap);
+    flowMapTextureBlock.textureOutput.connectTo(updateFlowMapBlock.flowMap);
 
     _CreateAndConnectInput("Flow Map Strength", flowMapStrength, updateFlowMapBlock.strength);
 
@@ -1207,5 +1207,5 @@ function _CreateTextureBlock(texture: Nullable<BaseTexture>): NodeParticleConnec
     // Texture - always use sourceTexture to preserve all texture options
     const textureBlock = new ParticleTextureSourceBlock("Texture");
     textureBlock.sourceTexture = texture;
-    return textureBlock.texture;
+    return textureBlock.textureOutput;
 }

@@ -37,7 +37,7 @@ export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISc
 
                 return {
                     get name() {
-                        return namedEntity.name;
+                        return namedEntity.name || "Unnamed AnimationGroup";
                     },
                     onChange: onChangeObservable,
                     dispose: () => {

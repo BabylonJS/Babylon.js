@@ -669,8 +669,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 continue;
             }
 
-            let x = 0;
-            let y = 0;
+            let x: number;
+            let y: number;
             if (originalNode) {
                 x = currentX + node.x - originalNode.x;
                 y = currentY + node.y - originalNode.y;
