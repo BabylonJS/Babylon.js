@@ -26,8 +26,10 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
     }, [props.value]);
 
     const validateValue = (val: string): boolean => {
-        const failsValidator = props.validator && !props.validator(val);
-        return !failsValidator;
+        if (!props.validator) {
+            return true;
+        }
+        return props.validator(val);
     };
 
     const tryCommitValue = (currVal: string) => {
