@@ -34,6 +34,10 @@ export interface IGraphCanvasComponentProps {
     enableStickyNotes?: boolean;
     /** When true, Ctrl+F opens a find-in-graph search bar. Default false. */
     enableFindInGraph?: boolean;
+    /** When true, ports glow red during drag when hovering over an incompatible target. Default false. */
+    enablePortCompatibilityHighlight?: boolean;
+    /** When true, nodes can display validation and breakpoint badge overlays. Default false. */
+    enableNodeBadges?: boolean;
 }
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> implements INodeContainer {
@@ -219,6 +223,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     constructor(props: IGraphCanvasComponentProps) {
         super(props);
+
+        props.stateManager.enablePortCompatibilityHighlight = !!props.enablePortCompatibilityHighlight;
+        props.stateManager.enableNodeBadges = !!props.enableNodeBadges;
 
         props.stateManager.onSelectionChangedObservable.add((options) => {
             const { selection, forceKeepSelection, marqueeSelection = false } = options || {};
@@ -1154,7 +1161,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     this._candidateLink = new NodeLink(this, portElement, portElement.node);
                 }
                 this._candidateLinkedHasMoved = false;
-                this.stateManager.candidateSourcePortData = this._candidateLink!.portA.portData;
+                if (this.stateManager.enablePortCompatibilityHighlight) {
+                    this.stateManager.candidateSourcePortData = this._candidateLink!.portA.portData;
+                }
             }
             return;
         }

@@ -859,17 +859,21 @@ export class GraphNode {
 
         this._visual.appendChild(this._executionTime);
 
-        // Validation badge
-        this._validationBadge = root.ownerDocument.createElement("div");
-        this._validationBadge.classList.add(localStyles.validationBadge);
-        this._validationBadge.style.display = "none";
-        this._headerContainer.appendChild(this._validationBadge);
+        // Validation badge (opt-in)
+        if (this._stateManager.enableNodeBadges) {
+            this._validationBadge = root.ownerDocument.createElement("div");
+            this._validationBadge.classList.add(localStyles.validationBadge);
+            this._validationBadge.style.display = "none";
+            this._headerContainer.appendChild(this._validationBadge);
+        }
 
-        // Breakpoint badge
-        this._breakpointBadge = root.ownerDocument.createElement("div");
-        this._breakpointBadge.classList.add(localStyles.breakpointBadge);
-        this._breakpointBadge.style.display = "none";
-        this._headerContainer.appendChild(this._breakpointBadge);
+        // Breakpoint badge (opt-in)
+        if (this._stateManager.enableNodeBadges) {
+            this._breakpointBadge = root.ownerDocument.createElement("div");
+            this._breakpointBadge.classList.add(localStyles.breakpointBadge);
+            this._breakpointBadge.style.display = "none";
+            this._headerContainer.appendChild(this._breakpointBadge);
+        }
 
         // Options
         const propStore: IPropertyDescriptionForEdition[] = this.content.data._propStore;

@@ -770,6 +770,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                                 enableMinimap={true}
                                 enableStickyNotes={true}
                                 enableFindInGraph={true}
+                                enablePortCompatibilityHighlight={true}
+                                enableNodeBadges={true}
                                 onEmitNewNode={(nodeData) => {
                                     return this.appendBlock(nodeData.data as FlowGraphBlock);
                                 }}
