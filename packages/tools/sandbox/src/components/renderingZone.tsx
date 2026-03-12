@@ -234,6 +234,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 camera.speed = radius * 0.1;
                 camera.minZ = nearPlane;
                 camera.maxZ = farPlane;
+                camera.inputs.addMouseWheel();
                 return camera;
             }
             case "ThirdPerson": {
@@ -244,6 +245,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 camera.rotationOffset = 0;
                 camera.minZ = nearPlane;
                 camera.maxZ = farPlane;
+                camera.inputs.addMouseWheel();
                 if (scene.meshes.length) {
                     camera.lockedTarget = scene.meshes[0];
                 }
@@ -393,6 +395,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         this.props.globalState.onSceneLoaded.notifyObservers({ scene: this._scene, filename: filename });
 
         const camera = this.prepareCamera();
+
         this.prepareLighting();
         this.handleErrors();
 
