@@ -1,0 +1,260 @@
+# =============================================================================
+# CD-Tools Pipeline (Definition ID: 16)
+# Converted from Azure DevOps Classic Pipeline
+#
+# Builds and deploys all tools (Playground, Sandbox, NME, NGE, NRGE,
+# GUI Editor, NPE) to production storage after a successful publish.
+#
+# Triggers:
+#   - Schedule: midnight PST on Tue/Wed/Fri/Sat (daysToBuild: 22)
+#   - Build completion from Publish pipeline (ID: 15)
+#
+# Secret variables (configure in pipeline UI):
+#   - BASIC_AUTH
+#   - DEPLOYMENT_SERVER
+# =============================================================================
+
+trigger: none
+pr: none
+
+schedules:
+    # Midnight PST = 08:00 UTC
+    # daysToBuild 22 = binary 10110 = Tue,Wed,Fri,Sat
+    # (Azure classic uses bit flags: Mon=1,Tue=2,Wed=4,Thu=8,Fri=16,Sat=32,Sun=64)
+    # 22 = 2+4+16 = Tue,Wed,Fri
+    - cron: "0 8 * * 2,3,5"
+      displayName: Scheduled tools deployment
+      branches:
+          include:
+              - master
+      always: false
+
+resources:
+    pipelines:
+        - pipeline: publishPipeline
+          source: "Publish pipeline" # Update with actual pipeline name
+          trigger:
+              branches:
+                  include:
+                      - master
+
+pool:
+    vmImage: ubuntu-latest
+
+jobs:
+    - job: BuildTools
+      displayName: "Build tools"
+      steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 1
+            fetchTags: true
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            inputs:
+                versionSpec: "22.4.1"
+
+          - task: Npm@1
+            displayName: "npm install"
+            retryCountOnTaskFailure: 2
+            inputs:
+                command: install
+
+          # DISABLED in classic pipeline:
+          # - task: Npm@1
+          #   displayName: 'npm update-version (for smart filters)'
+          #   inputs:
+          #     command: custom
+          #     customCommand: 'run update-version -w @dev/smart-filters'
+
+          - task: Npm@1
+            displayName: "build dev"
+            inputs:
+                command: custom
+                customCommand: "run build:dev"
+
+          # DISABLED in classic pipeline:
+          # - task: Npm@1
+          #   displayName: 'build smart filters core'
+          #   inputs:
+          #     command: custom
+          #     customCommand: 'run build:source:smart-filters'
+
+          - task: Npm@1
+            displayName: "build playground"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/playground"
+
+          - task: Npm@1
+            displayName: "build sandbox"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/sandbox"
+
+          - task: Npm@1
+            displayName: "build gui editor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/gui-editor"
+
+          - task: Npm@1
+            displayName: "build node editor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/node-editor"
+
+          - task: Npm@1
+            displayName: "build node geometry editor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/node-geometry-editor"
+
+          - task: Npm@1
+            displayName: "build node graph editor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/node-render-graph-editor"
+
+          - task: Npm@1
+            displayName: "build node particle editor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/node-particle-editor"
+
+          # DISABLED in classic pipeline:
+          # - task: Npm@1
+          #   displayName: 'build smart filters editor'
+          #   inputs:
+          #     command: custom
+          #     customCommand: 'run build:deployment -w @tools/smart-filters-editor'
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/sandbox"
+                deployPath: "sandbox"
+                storageAccount: "babylontools"
+                displayName: "Sandbox deployment"
+                purgeEndpoint: "babylonjssandbox"
+                purgeProfile: "babylonjssandbox"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/playground"
+                deployPath: "playground"
+                storageAccount: "babylontools"
+                displayName: "Playground deployment"
+                purgeEndpoint: "babylonjsplayground"
+                purgeProfile: "babylonjsplayground"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeEditor"
+                deployPath: "nodeEditor"
+                storageAccount: "babylontools"
+                displayName: "NME deployment"
+                purgeEndpoint: "babylonjsnodeeditor"
+                purgeProfile: "babylonjstools"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeGeometryEditor"
+                deployPath: "nodeGeometryEditor"
+                storageAccount: "babylontools"
+                displayName: "NGE deployment"
+                purgeEndpoint: "node-geometry-editor"
+                purgeProfile: "babylonjstools"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeRenderGraphEditor"
+                deployPath: "nodeRenderGraphEditor"
+                storageAccount: "babylontools"
+                displayName: "NRGE deployment"
+                purgeEndpoint: "node-render-graph-editor"
+                purgeProfile: "babylonjstools"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/guiEditor"
+                deployPath: "guiEditor"
+                storageAccount: "babylontools"
+                displayName: "GUI Editor deployment"
+                purgeEndpoint: "babylonjsguieditor"
+                purgeProfile: "babylonjstools"
+
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeParticleEditor"
+                deployPath: "nodeParticleEditor"
+                storageAccount: "babylontools"
+                displayName: "NPE deployment"
+                purgeEndpoint: "node-particle-editor"
+                purgeProfile: "babylonjstools"
+
+          # DISABLED in classic pipeline:
+          # - script: |
+          #     # sfe
+          #     cd packages/tools/smartFiltersEditor/dist
+          #     zip -r ../../../../dist.zip *
+          #     cd ..
+          #     cd public
+          #     zip -r ../../../../public.zip *
+          #     cd ../../../..
+          #
+          #     curl $(DEPLOYMENT_SERVER)/upload -i -X POST \
+          #       -H "Content-Type: multipart/form-data" \
+          #       -H "Authorization: $(BASIC_AUTH)" \
+          #       -F "path=smartFiltersEditor" \
+          #       -F "storageAccount=babylontools" \
+          #       -F "zip=@dist.zip"
+          #     curl $(DEPLOYMENT_SERVER)/upload -i -X POST \
+          #       -H "Content-Type: multipart/form-data" \
+          #       -H "Authorization: $(BASIC_AUTH)" \
+          #       -F "path=smartFiltersEditor" \
+          #       -F "storageAccount=babylontools" \
+          #       -F "zip=@public.zip"
+          #
+          #     curl "$(DEPLOYMENT_SERVER)/purgeTest?endpoint=smart-filters-editor&profileName=babylonjstools&wait=true" -i -H "Authorization: $(BASIC_AUTH)"
+          #   displayName: 'SFE deployment'
+
+          # DISABLED in classic pipeline - Azure CLI upload and purge steps:
+          # - task: AzureCLI@2
+          #   displayName: 'Upload tools to storage'
+          #   inputs:
+          #     azureSubscription: 'de3af4a1-32cc-400a-9c3f-3482bc46da6f'
+          #     scriptType: bash
+          #     scriptLocation: inlineScript
+          #     inlineScript: |
+          #       az storage blob upload-batch --auth-mode login --destination "\$web/sandbox" --account-name "babylontools" --source "./packages/tools/sandbox/dist" --overwrite true
+          #       az storage blob upload-batch --auth-mode login --destination "\$web/sandbox" --account-name "babylontools" --source "./packages/tools/sandbox/public" --overwrite true
+          #       az storage blob upload-batch --auth-mode login --destination "\$web/playground" --account-name "babylontools" --source "./packages/tools/playground/dist" --overwrite true
+          #       az storage blob upload-batch --auth-mode login --destination "\$web/playground" --account-name "babylontools" --source "./packages/tools/playground/public" --overwrite true
+          #       az storage blob upload-batch --auth-mode login --destination "\$web/nodeEditor" --account-name "babylontools" --source "./packages/tools/nodeEditor/dist" --overwrite true
+          #       az storage blob upload-batch --auth-mode login --destination "\$web/nodeEditor" --account-name "babylontools" --source "./packages/tools/nodeEditor/public" --overwrite true
+          #       az storage blob upload-batch --auth-mode login --destination "\$web/guiEditor" --account-name "babylontools" --source "./packages/tools/guiEditor/dist" --overwrite true
+          #       az storage blob upload-batch --auth-mode login --destination "\$web/guiEditor" --account-name "babylontools" --source "./packages/tools/guiEditor/public" --overwrite true
+          #       az storage blob upload-batch --auth-mode login --destination "\$web/nodeGeometryEditor" --account-name "babylontools" --source "./packages/tools/nodeGeometryEditor/dist" --overwrite true
+          #       az storage blob upload-batch --auth-mode login --destination "\$web/nodeGeometryEditor" --account-name "babylontools" --source "./packages/tools/nodeGeometryEditor/public" --overwrite true
+
+          # - task: AzureCLI@2
+          #   displayName: 'Purge cache'
+          #   inputs:
+          #     azureSubscription: 'de3af4a1-32cc-400a-9c3f-3482bc46da6f'
+          #     scriptType: bash
+          #     scriptLocation: inlineScript
+          #     inlineScript: |
+          #       az afd endpoint purge -g babylonMsTools --endpoint-name babylonjsnodeeditor --profile-name babylonjstools --content-paths "/*"
+          #       az afd endpoint purge -g babylonMsTools --endpoint-name babylonjsguieditor --profile-name babylonjstools --content-paths "/*"
+          #       az afd endpoint purge -g babylonMsTools --endpoint-name babylonjsplayground --profile-name babylonjsplayground --content-paths "/*"
+
+          # - task: AzureCLI@2
+          #   displayName: 'Purge cache part 2'
+          #   inputs:
+          #     azureSubscription: 'de3af4a1-32cc-400a-9c3f-3482bc46da6f'
+          #     scriptType: bash
+          #     scriptLocation: inlineScript
+          #     inlineScript: |
+          #       az afd endpoint purge -g babylonMsTools --endpoint-name babylonjssandbox --profile-name babylonjssandbox --content-paths "/*"
+          #       az afd endpoint purge -g babylonMsTools --endpoint-name node-geometry-editor --profile-name babylonjstools --content-paths "/*"
