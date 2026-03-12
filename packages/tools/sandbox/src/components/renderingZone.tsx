@@ -286,6 +286,13 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     arcCamera.useAutoRotationBehavior = true;
                 }
 
+                // Apply the saved position before computing radius-dependent properties so that
+                // pinchPrecision and upperRadiusLimit are based on the correct final radius.
+                if (this.props.globalState.cameraPosition) {
+                    arcCamera.lowerRadiusLimit = null;
+                    arcCamera.setPosition(this.props.globalState.cameraPosition);
+                }
+
                 arcCamera.pinchPrecision = 200 / arcCamera.radius;
                 arcCamera.upperRadiusLimit = 5 * arcCamera.radius;
 
@@ -293,8 +300,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 arcCamera.pinchDeltaPercentage = 0.01;
 
                 if (this.props.globalState.cameraPosition) {
-                    arcCamera.lowerRadiusLimit = null;
-                    arcCamera.setPosition(this.props.globalState.cameraPosition);
                     arcCamera.lowerRadiusLimit = arcCamera.radius;
                 }
 
@@ -309,16 +314,15 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         }
 
         const prevCamera = this._scene.activeCamera;
-        let prevPosition: Vector3 | undefined;
 
         if (prevCamera) {
-            prevPosition = prevCamera.position.clone();
+            // Clone position before disposal so we can transfer it to the new camera.
+            const prevPosition = prevCamera.position.clone();
             prevCamera.detachControl();
             prevCamera.dispose();
-        }
-
-        const savedCameraPosition = this.props.globalState.cameraPosition;
-        if (prevPosition) {
+            // Persist the position so _createCameraByType places the new camera here
+            // and so that subsequent operations (including scene reloads) start from
+            // the user's current viewpoint rather than from a stale or default position.
             this.props.globalState.cameraPosition = prevPosition;
         }
 
@@ -326,8 +330,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         const camera = this._createCameraByType(type);
         this._scene.activeCamera = camera;
         camera.attachControl();
-
-        this.props.globalState.cameraPosition = savedCameraPosition;
     }
 
     handleErrors() {
