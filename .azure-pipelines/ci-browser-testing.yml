@@ -1,0 +1,166 @@
+# =============================================================================
+# Browser Testing Pipeline (Definition ID: 27)
+# Converted from Azure DevOps Classic Pipeline
+#
+# Scheduled nightly pipeline that runs WebGL2 visualization tests on
+# Webkit, Firefox, and compiles with Google Closure Compiler.
+#
+# Schedule: 1:00 AM PST daily (09:00 UTC)
+#
+# Secret variables (configure in pipeline UI):
+#   - ACCESS_KEY (BrowserStack)
+#   - USERNAME (BrowserStack)
+# =============================================================================
+
+trigger: none
+pr: none
+
+schedules:
+    # 1:00 AM PST = 09:00 UTC, all days (daysToBuild: 31)
+    - cron: "0 9 * * *"
+      displayName: Nightly browser testing
+      branches:
+          include:
+              - master
+      always: false
+
+variables:
+    system.debug: false
+
+pool:
+    vmImage: ubuntu-latest
+
+jobs:
+    # ============================================================================
+    # WEBKIT WEBGL2 TESTS
+    # ============================================================================
+    - job: WebkitWebGL2
+      displayName: "Webkit WebGL2 tests"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            inputs:
+                versionSpec: "22.4.1"
+
+          - script: npm install
+            displayName: "NPM install"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - script: npm run test:playwright -w @tools/tests -- --project=webgl2
+            displayName: "Run tests (Webkit)"
+            env:
+                CDN_BASE_URL: "https://cdn.babylonjs.com"
+                CI: "true"
+                BROWSER: "BrowserStack"
+                TIMEOUT: "20000"
+                BROWSERSTACK_USERNAME: $(USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(ACCESS_KEY)
+                BROWSERSTACK_BROWSER: "playwright-webkit@latest:OSX Sonoma"
+                EXCLUDE_REGEX_ARRAY: "Picking Visual Test,GUI Input Test,Export GLTF Extension KHR_texture_transform,PBR refraction,Procedural textures playground,GLTF Serializer Morph Target Animation,GLTF Serializer KHR materials clearcoat,Motion Blur"
+                SCREENSHOT_MAX_PIXEL: "6"
+                SCREENSHOT_THRESHOLD: "0.05"
+
+          - task: PublishTestResults@2
+            displayName: "Publish Test Results"
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./packages/tools/tests/junit.xml"
+
+    # ============================================================================
+    # FIREFOX WEBGL2 TESTS
+    # ============================================================================
+    - job: FirefoxWebGL2
+      displayName: "Firefox WebGL2 tests"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            inputs:
+                versionSpec: "22.4.1"
+
+          - script: npm install
+            displayName: "NPM install"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - script: npm run test:playwright -w @tools/tests -- --project=webgl2
+            displayName: "Run tests (Firefox)"
+            env:
+                CDN_BASE_URL: "https://cdn.babylonjs.com"
+                CI: "true"
+                BROWSER: "BrowserStack"
+                TIMEOUT: "20000"
+                BROWSERSTACK_USERNAME: $(USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(ACCESS_KEY)
+                BROWSERSTACK_BROWSER: "playwright-firefox@latest:OSX Sonoma"
+                EXCLUDE_REGEX_ARRAY: "Procedural textures playground,Normed 16 bits texture formats"
+                SCREENSHOT_THRESHOLD: "0.05"
+                SCREENSHOT_MAX_PIXEL: "5"
+
+          - task: PublishTestResults@2
+            displayName: "Publish Test Results"
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./packages/tools/tests/junit.xml"
+
+    # ============================================================================
+    # COMPILE WITH CLOSURE
+    # Builds UMD with ES2020 target and validates with Google Closure Compiler
+    # ============================================================================
+    - job: ClosureCompile
+      displayName: "Compile with closure"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            inputs:
+                versionSpec: "22.4.1"
+
+          - task: JavaToolInstaller@0
+            displayName: "Use Java 21"
+            inputs:
+                versionSpec: "21"
+                jdkArchitectureOption: x64
+                jdkSourceOption: PreInstalled
+
+          - script: |
+                npm install
+                npm i google-closure-compiler
+            displayName: "NPM install"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - script: |
+                sed -i 's/ES5/ES2020/g' ./packages/public/umd/babylonjs/tsconfig.build.json
+                sed -i 's/ES5/ES2020/g' ./packages/public/umd/babylonjs-loaders/tsconfig.build.json
+                sed -i 's/ES5/ES2020/g' ./packages/public/umd/babylonjs-serializers/tsconfig.build.json
+            displayName: "change to ES2020"
+
+          - task: Npm@1
+            displayName: "build"
+            inputs:
+                command: custom
+                customCommand: "run build:umd"
+
+          - script: npx google-closure-compiler --js ./packages/public/umd/babylonjs/babylon.max.js --js_output_file file.out.js
+            displayName: "Test core"
+
+          - script: npx google-closure-compiler --js ./packages/public/umd/babylonjs-loaders/babylonjs.loaders.js --js_output_file loaders.out.js
+            displayName: "Test loaders"
+
+          - script: npx google-closure-compiler --js ./packages/public/umd/babylonjs-serializers/babylonjs.serializers.js --js_output_file serializers.out.js
+            displayName: "Test serializers"
