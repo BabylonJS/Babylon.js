@@ -1,25 +1,10 @@
 
 ### Core
 
-- Fix incorrect CDN url for draco wasm js (and possibly other CDN resources) - by [ryantrem](https://github.com/ryantrem) ([#18068](https://github.com/BabylonJS/Babylon.js/pull/18068))
-- Simplify URL normalization logic in CDN utilities - by [github-actions[bot]](https://github.com/apps/github-actions) ([#18062](https://github.com/BabylonJS/Babylon.js/pull/18062))
+- WebGPU: Fix dual source blending detection - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18082](https://github.com/BabylonJS/Babylon.js/pull/18082))
+- WebGPU: Fix wrong selected meshes in the selection outline layer - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18080](https://github.com/BabylonJS/Babylon.js/pull/18080))
+- Clustered lights: Limit batch size for mobile devices - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18081](https://github.com/BabylonJS/Babylon.js/pull/18081))
 
-### GUI Editor
+### Node Particle Editor
 
-- Drop and replace unused npm dependencies - by [RaananW](https://github.com/RaananW) ([#18064](https://github.com/BabylonJS/Babylon.js/pull/18064))
-
-### Inspector
-
-- Drop and replace unused npm dependencies - by [RaananW](https://github.com/RaananW) ([#18064](https://github.com/BabylonJS/Babylon.js/pull/18064))
-
-### Node Editor
-
-- Drop and replace unused npm dependencies - by [RaananW](https://github.com/RaananW) ([#18064](https://github.com/BabylonJS/Babylon.js/pull/18064))
-
-### Playground
-
-- Drop and replace unused npm dependencies - by [RaananW](https://github.com/RaananW) ([#18064](https://github.com/BabylonJS/Babylon.js/pull/18064))
-
-### Viewer
-
-- Drop and replace unused npm dependencies - by [RaananW](https://github.com/RaananW) ([#18064](https://github.com/BabylonJS/Babylon.js/pull/18064))
+- Removing auto movement of camera because of framing - by [VicenteCartas](https://github.com/VicenteCartas) ([#18077](https://github.com/BabylonJS/Babylon.js/pull/18077))
