@@ -6,6 +6,9 @@ import { ReadLastLocal } from "./localSession";
 import type { SnippetData, SnippetPayload } from "./snippet";
 import { ManifestVersion, type V2Manifest } from "./snippet";
 
+const PlaygroundLoadTimeoutMs = 15000;
+const HydrationObserverTimeoutMs = 10000;
+
 const DecodeBase64ToString = (base64Data: string): string => {
     return atob(base64Data);
 };
@@ -47,12 +50,43 @@ export class LoadManager {
             const json = await this._pickJsonFileAsync();
             if (json) {
                 location.hash = "";
-                // eslint-disable-next-line
-                this._processJsonPayloadAsync(json);
+                this._processJsonPayload(json);
             } else {
                 globalState.onDisplayWaitRingObservable.notifyObservers(false);
             }
         });
+    }
+
+    private _notifyLoadFailure(message: string) {
+        Logger.Error(message);
+        this.globalState.loadingCodeInProgress = false;
+        this.globalState.onCodeLoaded.notifyObservers("");
+        this.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+        this.globalState.onErrorObservable.notifyObservers({ message });
+    }
+
+    private _processJsonPayload(data: string) {
+        // eslint-disable-next-line github/no-then
+        void this._processJsonPayloadAsync(data).catch((error) => {
+            const message = error instanceof Error ? error.message : "Failed to process the playground snippet.";
+            this._notifyLoadFailure(message);
+        });
+    }
+
+    private async _waitForHydrationObserverAsync() {
+        const startTime = Date.now();
+
+        while (!this.globalState.onV2HydrateRequiredObservable.hasObservers()) {
+            if (Date.now() - startTime >= HydrationObserverTimeoutMs) {
+                this._notifyLoadFailure("The playground editor timed out while preparing the loaded snippet.");
+                return false;
+            }
+
+            // eslint-disable-next-line
+            await new Promise((res) => setTimeout(res, 10));
+        }
+
+        return true;
     }
 
     private async _pickJsonFileAsync() {
@@ -215,9 +249,9 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
                 // The execution flow reaches this block before MonacoManager has been instantiated
                 // And the observable attached. Instead of refactoring the instantiation flow
                 // We can handle this one-off case here
-                while (!this.globalState.onV2HydrateRequiredObservable.hasObservers()) {
-                    // eslint-disable-next-line
-                    await new Promise((res) => setTimeout(res, 10));
+                const hasHydrationObserver = await this._waitForHydrationObserverAsync();
+                if (!hasHydrationObserver) {
+                    return;
                 }
                 this.globalState.onV2HydrateRequiredObservable.notifyObservers({
                     v: ManifestVersion,
@@ -278,20 +312,29 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
             if (this.globalState.currentSnippetRevision === "local") {
                 const localRevision = ReadLastLocal(this.globalState);
                 if (localRevision) {
-                    // eslint-disable-next-line
-                    this._processJsonPayloadAsync(localRevision);
+                    this._processJsonPayload(localRevision);
                     return;
                 }
             }
 
             const xmlHttp = new XMLHttpRequest();
-            xmlHttp.onreadystatechange = () => {
-                if (xmlHttp.readyState === 4) {
-                    if (xmlHttp.status === 200) {
-                        // eslint-disable-next-line
-                        this._processJsonPayloadAsync(xmlHttp.responseText);
-                    }
+            xmlHttp.timeout = PlaygroundLoadTimeoutMs;
+            xmlHttp.onload = () => {
+                if (xmlHttp.status === 200) {
+                    this._processJsonPayload(xmlHttp.responseText);
+                    return;
                 }
+
+                this._notifyLoadFailure(`Failed to load playground ${id} (HTTP ${xmlHttp.status}).`);
+            };
+            xmlHttp.onerror = () => {
+                this._notifyLoadFailure(`Failed to load playground ${id} due to a network error.`);
+            };
+            xmlHttp.ontimeout = () => {
+                this._notifyLoadFailure(`Timed out while loading playground ${id}.`);
+            };
+            xmlHttp.onabort = () => {
+                this._notifyLoadFailure(`Loading playground ${id} was aborted.`);
             };
 
             // defensive-handling a safari issue
@@ -299,10 +342,9 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
 
             xmlHttp.open("GET", this.globalState.SnippetServerUrl + "/" + id.replace(/#/g, "/"));
             xmlHttp.send();
-        } catch {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            this.globalState.loadingCodeInProgress = false;
-            this.globalState.onCodeLoaded.notifyObservers("");
+        } catch (error) {
+            const message = error instanceof Error ? error.message : `Failed to start loading playground ${id}.`;
+            this._notifyLoadFailure(message);
         }
     }
     private _guessLanguageFromCode(code: string): "TS" | "JS" {

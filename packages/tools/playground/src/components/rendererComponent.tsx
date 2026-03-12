@@ -15,6 +15,9 @@ import "../scss/rendering.scss";
 
 type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 
+const RunnableCreationTimeoutMs = 15000;
+const SceneRunTimeoutMs = 30000;
+
 interface IRenderingComponentProps {
     globalState: GlobalState;
 }
@@ -55,8 +58,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         };
 
         this.props.globalState.onRunRequiredObservable.add(() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this._compileAndRunAsync();
+            this._requestRun();
         });
 
         this._downloadManager = new DownloadManager(this.props.globalState);
@@ -151,10 +153,38 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this.props.globalState.onErrorObservable.notifyObservers({
             message: message,
         });
-        this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+        this._finishRun();
+    }
+
+    private _failRun(error: unknown, fallbackMessage: string) {
+        const normalizedError = error instanceof Error ? error : new Error(fallbackMessage);
+        (window as any).handleException(normalizedError);
+        this._finishRun();
+    }
+
+    private async _withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string) {
+        // eslint-disable-next-line @typescript-eslint/return-await
+        return new Promise<T>((resolve, reject) => {
+            const timeoutHandle = window.setTimeout(() => {
+                reject(new Error(timeoutMessage));
+            }, timeoutMs);
+
+            promise.then(
+                (value) => {
+                    window.clearTimeout(timeoutHandle);
+                    resolve(value);
+                },
+                (error) => {
+                    window.clearTimeout(timeoutHandle);
+                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                    reject(error);
+                }
+            );
+        });
     }
 
     private _preventReentrancy = false;
+    private _queuedRunRequested = false;
 
     private _lastEngineKind: "webgpu" | "webgl2" | "webgl" | null = null;
 
@@ -171,8 +201,32 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         (window as any).canvas = fresh;
     };
 
+    private _requestRun() {
+        if (this._preventReentrancy) {
+            this._queuedRunRequested = true;
+            return;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._compileAndRunAsync();
+    }
+
+    private _finishRun() {
+        this._preventReentrancy = false;
+
+        if (this._queuedRunRequested) {
+            this._queuedRunRequested = false;
+            queueMicrotask(() => this._requestRun());
+            return false;
+        }
+
+        this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+        return true;
+    }
+
     private async _compileAndRunAsync() {
         if (this._preventReentrancy) {
+            this._queuedRunRequested = true;
             return;
         }
         this._preventReentrancy = true;
@@ -287,15 +341,13 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             // The architecture for runnables changed from text block source code in PG_V1 to a full module in PG_V2.
             let runner;
             try {
-                runner = await this.props.globalState.getRunnable!();
+                runner = await this._withTimeout(this.props.globalState.getRunnable!(), RunnableCreationTimeoutMs, "The playground timed out while preparing the runnable.");
                 if (runner) {
                     // Local file revision storage for #{snippetId}#local support
                     AddFileRevision(this.props.globalState, runner!.getPackSnapshot().manifest);
                 }
             } catch (e) {
-                (window as any).handleException(e as Error);
-                this._preventReentrancy = false;
-                this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+                this._failRun(e, "The playground timed out while preparing the runnable.");
                 return;
             }
 
@@ -332,16 +384,17 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             let sceneResult: Scene | null = null;
             let createdEngine: ThinEngine | null = null;
             try {
-                [sceneResult, createdEngine] = await runner.run(createEngineAsync, canvas);
+                [sceneResult, createdEngine] = await this._withTimeout(
+                    runner.run(createEngineAsync, canvas),
+                    SceneRunTimeoutMs,
+                    "The playground timed out while running the scene."
+                );
                 this._engine = createdEngine as Engine;
             } catch (err) {
-                (window as any).handleException(err as Error);
-                this._preventReentrancy = false;
-                this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+                this._failRun(err, "The playground timed out while running the scene.");
                 return;
             }
             if (!sceneResult) {
-                this._preventReentrancy = false;
                 return this._notifyError("createScene export not found or returned null.");
             }
 
@@ -353,17 +406,15 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 this.props.globalState.onRunExecutedObservable.notifyObservers();
             });
 
-            this._preventReentrancy = false;
-            this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+            const isFinalRun = this._finishRun();
 
             // Rehydrate inspector
-            if (this.state.preferInspector && displayInspector) {
+            if (isFinalRun && this.state.preferInspector && displayInspector) {
                 this.props.globalState.onInspectorRequiredObservable.notifyObservers();
             }
             return;
         } catch (e) {
-            (window as any).handleException(e as Error);
-            this._preventReentrancy = false;
+            this._failRun(e, "The playground failed to run.");
         }
     }
 
