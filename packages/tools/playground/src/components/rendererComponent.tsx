@@ -8,7 +8,7 @@ import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { AddFileRevision } from "../tools/localSession";
 
-import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger } from "@dev/core";
+import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger, Tools } from "@dev/core";
 import type { IDisposable, Nullable, Scene, ThinEngine } from "@dev/core";
 
 import "../scss/rendering.scss";
@@ -27,6 +27,9 @@ interface IRenderingComponentState {
  *
  */
 export class RenderingComponent extends React.Component<IRenderingComponentProps, IRenderingComponentState> {
+    private static readonly _assetRequestTimeoutMs = 30000;
+    private static readonly _sceneCreationTimeoutMs = 45000;
+
     /** Engine instance for current run */
     private _engine!: Nullable<Engine>;
     /** Active scene */
@@ -300,7 +303,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             (window as any).engine = this._engine;
+            if (Tools.RequestTimeout === 0) {
+                Tools.RequestTimeout = RenderingComponent._assetRequestTimeoutMs;
+            }
 
+            let pendingCreatedEngine: Engine | null = null;
             const createEngineAsync = async () => {
                 const desiredKind: "webgpu" | "webgl2" | "webgl" = useWebGPU ? "webgpu" : forceWebGL1 ? "webgl" : "webgl2";
 
@@ -325,20 +332,42 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                         stencil: true,
                     });
                 }
+                pendingCreatedEngine = engine;
                 return engine;
             };
             (window as any).canvas = canvas;
 
             let sceneResult: Scene | null = null;
             let createdEngine: ThinEngine | null = null;
+            let sceneCreationTimeoutHandle: ReturnType<typeof setTimeout> | null = null;
+            const runPromise = runner.run(createEngineAsync, canvas);
+            runPromise.catch(() => undefined);
             try {
-                [sceneResult, createdEngine] = await runner.run(createEngineAsync, canvas);
+                [sceneResult, createdEngine] = await Promise.race([
+                    runPromise,
+                    new Promise<never>((_, reject) => {
+                        sceneCreationTimeoutHandle = setTimeout(() => {
+                            pendingCreatedEngine?.dispose();
+                            pendingCreatedEngine = null;
+                            reject(
+                                new Error(
+                                    `Scene creation timed out after ${RenderingComponent._sceneCreationTimeoutMs / 1000} seconds. One or more asset requests may have stalled.`
+                                )
+                            );
+                        }, RenderingComponent._sceneCreationTimeoutMs);
+                    }),
+                ]);
+                pendingCreatedEngine = null;
                 this._engine = createdEngine as Engine;
             } catch (err) {
                 (window as any).handleException(err as Error);
                 this._preventReentrancy = false;
                 this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
                 return;
+            } finally {
+                if (sceneCreationTimeoutHandle !== null) {
+                    clearTimeout(sceneCreationTimeoutHandle);
+                }
             }
             if (!sceneResult) {
                 this._preventReentrancy = false;

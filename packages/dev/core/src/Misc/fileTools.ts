@@ -93,6 +93,7 @@ const CleanUrl = (url: string): string => {
  */
 export const FileToolsOptions: {
     DefaultRetryStrategy: (url: string, request: WebRequest, retryIndex: number) => number;
+    RequestTimeout: number;
     BaseUrl: string;
     CorsBehavior: string | ((url: string | string[]) => string);
     PreprocessUrl: (url: string) => string;
@@ -106,6 +107,12 @@ export const FileToolsOptions: {
      * stop retrying and error out.
      */
     DefaultRetryStrategy: RetryStrategy.ExponentialBackoff(),
+
+    /**
+     * Gets or sets the timeout in milliseconds to apply to asset requests.
+     * Set to 0 to disable request timeouts.
+     */
+    RequestTimeout: 0,
 
     /**
      * Gets or sets the base URL to use to load assets
@@ -589,6 +596,8 @@ export const RequestFile = (
         let request: Nullable<WebRequest> = new WebRequest();
         let retryHandle: Nullable<ReturnType<typeof setTimeout>> = null;
         let onReadyStateChange: Nullable<() => void>;
+        let onRequestError: Nullable<() => void>;
+        let onTimeout: Nullable<() => void>;
 
         const unbindEvents = () => {
             if (!request) {
@@ -601,6 +610,12 @@ export const RequestFile = (
             if (onReadyStateChange) {
                 request.removeEventListener("readystatechange", onReadyStateChange);
             }
+            if (onRequestError) {
+                request.removeEventListener("error", onRequestError);
+            }
+            if (onTimeout) {
+                request.removeEventListener("timeout", onTimeout);
+            }
             request.removeEventListener("loadend", onLoadEnd!);
         };
 
@@ -612,6 +627,8 @@ export const RequestFile = (
 
             onProgress = undefined;
             onReadyStateChange = null;
+            onRequestError = null;
+            onTimeout = null;
             onLoadEnd = null;
             onError = undefined;
             onOpened = undefined;
@@ -650,6 +667,8 @@ export const RequestFile = (
             if (!request) {
                 return;
             }
+
+            let requestHandled = false;
             request.open("GET", loadUrl);
 
             if (onOpened) {
@@ -665,6 +684,10 @@ export const RequestFile = (
                 request.responseType = "arraybuffer";
             }
 
+            if (FileToolsOptions.RequestTimeout > 0) {
+                request.timeout = FileToolsOptions.RequestTimeout;
+            }
+
             if (onProgress) {
                 request.addEventListener("progress", onProgress);
             }
@@ -672,6 +695,32 @@ export const RequestFile = (
             if (onLoadEnd) {
                 request.addEventListener("loadend", onLoadEnd);
             }
+
+            const handleRequestFailure = (message: string) => {
+                if (aborted || !request || requestHandled) {
+                    return;
+                }
+
+                requestHandled = true;
+                const failedRequest = request;
+                const retryStrategy = FileToolsOptions.DefaultRetryStrategy;
+                if (retryStrategy) {
+                    const waitTime = retryStrategy(loadUrl, failedRequest, retryIndex);
+                    if (waitTime !== -1) {
+                        // Prevent the request from completing for retry.
+                        unbindEvents();
+
+                        request = new WebRequest();
+                        retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
+                        return;
+                    }
+                }
+
+                const error = new RequestFileError(message, failedRequest);
+                if (onError) {
+                    onError(error);
+                }
+            };
 
             onReadyStateChange = () => {
                 if (aborted || !request) {
@@ -693,6 +742,7 @@ export const RequestFile = (
                         const data = useArrayBuffer ? request.response : request.responseText;
                         if (data !== null) {
                             try {
+                                requestHandled = true;
                                 if (onSuccess) {
                                     onSuccess(data, request);
                                 }
@@ -703,27 +753,23 @@ export const RequestFile = (
                         }
                     }
 
-                    const retryStrategy = FileToolsOptions.DefaultRetryStrategy;
-                    if (retryStrategy) {
-                        const waitTime = retryStrategy(loadUrl, request, retryIndex);
-                        if (waitTime !== -1) {
-                            // Prevent the request from completing for retry.
-                            unbindEvents();
-
-                            request = new WebRequest();
-                            retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
-                            return;
-                        }
-                    }
-
-                    const error = new RequestFileError("Error status: " + request.status + " " + request.statusText + " - Unable to load " + loadUrl, request);
-                    if (onError) {
-                        onError(error);
-                    }
+                    handleRequestFailure("Error status: " + request.status + " " + request.statusText + " - Unable to load " + loadUrl);
                 }
             };
 
             request.addEventListener("readystatechange", onReadyStateChange);
+
+            onRequestError = () => {
+                handleRequestFailure("Network error - Unable to load " + loadUrl);
+            };
+
+            onTimeout = () => {
+                const timeout = request?.timeout || FileToolsOptions.RequestTimeout;
+                handleRequestFailure(`Request timed out after ${timeout} ms - Unable to load ${loadUrl}`);
+            };
+
+            request.addEventListener("error", onRequestError);
+            request.addEventListener("timeout", onTimeout);
 
             request.send();
         };
@@ -891,6 +937,7 @@ export let FileTools: {
     DecodeBase64UrlToBinary: (uri: string) => ArrayBuffer;
     DecodeBase64UrlToString: (uri: string) => string;
     DefaultRetryStrategy: any;
+    RequestTimeout: any;
     BaseUrl: any;
     CorsBehavior: any;
     PreprocessUrl: any;
@@ -937,7 +984,7 @@ export let FileTools: {
 export const _injectLTSFileTools = (
     DecodeBase64UrlToBinary: (uri: string) => ArrayBuffer,
     DecodeBase64UrlToString: (uri: string) => string,
-    FileToolsOptions: { DefaultRetryStrategy: any; BaseUrl: any; CorsBehavior: any; PreprocessUrl: any; CleanUrl: any },
+    FileToolsOptions: { DefaultRetryStrategy: any; RequestTimeout: any; BaseUrl: any; CorsBehavior: any; PreprocessUrl: any; CleanUrl: any },
     IsBase64DataUrl: (uri: string) => boolean,
     IsFileURL: () => boolean,
     LoadFile: (
@@ -984,6 +1031,7 @@ export const _injectLTSFileTools = (
         DecodeBase64UrlToBinary,
         DecodeBase64UrlToString,
         DefaultRetryStrategy: FileToolsOptions.DefaultRetryStrategy,
+        RequestTimeout: FileToolsOptions.RequestTimeout,
         BaseUrl: FileToolsOptions.BaseUrl,
         CorsBehavior: FileToolsOptions.CorsBehavior,
         PreprocessUrl: FileToolsOptions.PreprocessUrl,
@@ -1002,6 +1050,15 @@ export const _injectLTSFileTools = (
         },
         set: function (this: null, value: (url: string, request: WebRequest, retryIndex: number) => number) {
             FileToolsOptions.DefaultRetryStrategy = value;
+        },
+    });
+
+    Object.defineProperty(FileTools, "RequestTimeout", {
+        get: function (this: null) {
+            return FileToolsOptions.RequestTimeout;
+        },
+        set: function (this: null, value: number) {
+            FileToolsOptions.RequestTimeout = value;
         },
     });
 

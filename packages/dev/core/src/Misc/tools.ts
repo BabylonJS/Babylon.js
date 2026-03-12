@@ -173,6 +173,18 @@ export class Tools {
     }
 
     /**
+     * Gets or sets the timeout in milliseconds applied to asset requests.
+     * Set to 0 to disable request timeouts.
+     */
+    public static get RequestTimeout() {
+        return FileToolsOptions.RequestTimeout;
+    }
+
+    public static set RequestTimeout(value: number) {
+        FileToolsOptions.RequestTimeout = value;
+    }
+
+    /**
      * Default behavior for cors in the application.
      * It can be a string if the expected behavior is identical in the entire app.
      * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
