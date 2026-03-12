@@ -18,10 +18,11 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
     /**
      * Returns whether volumetric lighting is supported by the engine.
      * @param engine The engine to check for volumetric lighting support.
+     * @param enableExtinction Whether the extinction/dual-source blending path will be used.
      * @returns True if volumetric lighting is supported, false otherwise.
      */
-    public static IsSupported(engine: AbstractEngine) {
-        return engine.getCaps().dualSourceBlending;
+    public static IsSupported(engine: AbstractEngine, enableExtinction: boolean = false) {
+        return !enableExtinction || engine.getCaps().dualSourceBlending;
     }
 
     /**
