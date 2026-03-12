@@ -92,11 +92,16 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
                 className,
             };
         } else {
-            // only if it is not an object
-            if (typeof value !== "object") {
+            if (typeof value !== "object" || value === null) {
                 serializationObject[key] = value;
             } else {
-                throw new Error(`Could not serialize value ${value}`);
+                // Plain object (e.g. parsed event config) — store it if JSON-safe,
+                // otherwise skip (e.g. objects containing functions like pathConverter).
+                try {
+                    serializationObject[key] = JSON.parse(JSON.stringify(value));
+                } catch {
+                    // Not serializable — skip silently
+                }
             }
         }
     }

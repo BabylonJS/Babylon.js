@@ -137,17 +137,22 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const globalState = this.props.globalState;
 
         const dataProvider = () => {
-            const fg = globalState.flowGraph;
-            SerializationTools.UpdateLocations(fg, globalState);
-            const serializationObject: any = {};
-            fg.serialize(serializationObject);
-            // Include editor layout so positions are restored on undo/redo
-            serializationObject.editorData = (fg as any)._editorData;
-            // Cache block class constructors for synchronous parsing in applyUpdate
-            for (const block of fg.getAllBlocks()) {
-                this._blockClassRegistry.set(block.getClassName(), block.constructor as typeof FlowGraphBlock);
+            try {
+                const fg = globalState.flowGraph;
+                SerializationTools.UpdateLocations(fg, globalState);
+                const serializationObject: any = {};
+                fg.serialize(serializationObject);
+                // Include editor layout so positions are restored on undo/redo
+                serializationObject.editorData = (fg as any)._editorData;
+                // Cache block class constructors for synchronous parsing in applyUpdate
+                for (const block of fg.getAllBlocks()) {
+                    this._blockClassRegistry.set(block.getClassName(), block.constructor as typeof FlowGraphBlock);
+                }
+                return serializationObject;
+            } catch (e) {
+                console.warn("Flow Graph Editor: failed to serialize graph for undo/redo snapshot", e);
+                return null;
             }
-            return serializationObject;
         };
 
         const applyUpdate = (data: any) => {
