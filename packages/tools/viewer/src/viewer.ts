@@ -1502,6 +1502,7 @@ export class Viewer implements IDisposable {
             this.onAnimationProgressChanged.notifyObservers();
             this._autoRotationBehavior.resetLastInteractionTime();
             this._markSceneMutated();
+            this._triggerIblShadowsVoxelization();
         }
     }
 
@@ -2427,6 +2428,10 @@ export class Viewer implements IDisposable {
      */
     public playAnimation() {
         this._activeAnimation?.play(true);
+        // Hide stale IBL shadows while the animation is playing.
+        if (this._shadowState.high) {
+            this._shadowState.high.ground.setEnabled(false);
+        }
     }
 
     /**
@@ -2434,6 +2439,28 @@ export class Viewer implements IDisposable {
      */
     public async pauseAnimation() {
         this._activeAnimation?.pause();
+        this._triggerIblShadowsVoxelization();
+    }
+
+    /**
+     * Triggers a single IBL shadows voxelization pass.
+     * Hides the shadow ground while recomputing and shows it once the new voxelization is ready.
+     */
+    private _triggerIblShadowsVoxelization() {
+        if (this._shadowState.high && !this._shadowState.high.voxelizationInProgress) {
+            this._shadowState.high.ground.setEnabled(false);
+            this._shadowState.high.voxelizationInProgress = true;
+            this._shadowState.high.pipeline.updateSceneBounds();
+            this._shadowState.high.pipeline.updateVoxelization();
+            this._shadowState.high.pipeline.onVoxelizationCompleteObservable.addOnce(() => {
+                if (this._shadowState.high) {
+                    this._shadowState.high.voxelizationInProgress = false;
+                    this._shadowState.high.pipeline.resetAccumulation();
+                    this._shadowState.high.ground.setEnabled(true);
+                }
+                this._startIblShadowsRenderTime();
+            });
+        }
     }
 
     /**
@@ -2861,22 +2888,6 @@ export class Viewer implements IDisposable {
                     if (this.isAnimationPlaying) {
                         this.onAnimationProgressChanged.notifyObservers();
                         this._autoRotationBehavior.resetLastInteractionTime();
-
-                        // Update IBL shadows while an animation is playing. Only start a new voxelization
-                        // when the previous one has completed to avoid stacking voxelization requests and
-                        // resetting accumulation every frame (which would prevent shadows from converging).
-                        if (this._shadowState.high && !this._shadowState.high.voxelizationInProgress) {
-                            this._shadowState.high.voxelizationInProgress = true;
-                            this._shadowState.high.pipeline.updateSceneBounds();
-                            this._shadowState.high.pipeline.updateVoxelization();
-                            this._shadowState.high.pipeline.onVoxelizationCompleteObservable.addOnce(() => {
-                                if (this._shadowState.high) {
-                                    this._shadowState.high.voxelizationInProgress = false;
-                                    this._shadowState.high.pipeline.resetAccumulation();
-                                }
-                                this._startIblShadowsRenderTime();
-                            });
-                        }
                     }
                 } else {
                     this._camera.update();
