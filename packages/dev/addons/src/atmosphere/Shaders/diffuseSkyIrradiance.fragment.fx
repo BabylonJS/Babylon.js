@@ -55,9 +55,9 @@ void main() {
         vec3(1.));
 
     // Apply desaturation factor.
-    float averageIrradiance = getLuminance(irradiance);
+    float averageIrradiance = getLuminanceUnclamped(irradiance);
     vec3 newIrradiance = mix(irradiance, vec3(averageIrradiance), diffuseSkyIrradianceDesaturationFactor);
-    float newIrradianceScale = getLuminance(newIrradiance);
+    float newIrradianceScale = getLuminanceUnclamped(newIrradiance);
     float rescaling = averageIrradiance / max(0.000001, newIrradianceScale);
     irradiance = newIrradiance * rescaling;
 

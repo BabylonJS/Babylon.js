@@ -142,18 +142,18 @@ aggShadow = aggShadow / numLights;
 #ifdef ALPHABLEND
     var luminanceOverAlpha: f32 = 0.0;
     #if	defined(REFLECTION) && defined(RADIANCEOVERALPHA)
-        luminanceOverAlpha += getLuminance(finalRadianceScaled);
+        luminanceOverAlpha += getLuminanceUnclamped(finalRadianceScaled);
         #if defined(CLEARCOAT)
-            luminanceOverAlpha += getLuminance(clearcoatOut.finalClearCoatRadianceScaled);
+            luminanceOverAlpha += getLuminanceUnclamped(clearcoatOut.finalClearCoatRadianceScaled);
         #endif
     #endif
 
     #if defined(SPECULARTERM) && defined(SPECULAROVERALPHA)
-        luminanceOverAlpha += getLuminance(finalSpecularScaled);
+        luminanceOverAlpha += getLuminanceUnclamped(finalSpecularScaled);
     #endif
 
     #if defined(CLEARCOAT) && defined(CLEARCOATOVERALPHA)
-        luminanceOverAlpha += getLuminance(finalClearCoatScaled);
+        luminanceOverAlpha += getLuminanceUnclamped(finalClearCoatScaled);
     #endif
 
     #if defined(RADIANCEOVERALPHA) || defined(SPECULAROVERALPHA) || defined(CLEARCOATOVERALPHA)

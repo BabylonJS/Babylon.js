@@ -167,7 +167,12 @@ fn double_refract(I: vec3f, N: vec3f, eta: f32) -> vec3f {
 // Returns the saturated luminance. Assumes input color is linear encoded, not gamma-corrected.
 fn getLuminance(color: vec3f) -> f32
 {
-    return saturate(dot(color, LuminanceEncodeApprox));
+    return saturate(getLuminanceUnclamped(color));
+}
+
+fn getLuminanceUnclamped(color: vec3f) -> f32
+{
+    return dot(color, LuminanceEncodeApprox);
 }
 
 // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
