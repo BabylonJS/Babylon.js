@@ -366,6 +366,15 @@ export class GaussianSplattingMaterial extends PushMaterial {
     public setSourceMesh(mesh: GaussianSplattingMesh) {
         this._sourceMesh = mesh;
     }
+
+    /**
+     * Gets the source mesh of this material, which is the Gaussian Splatting mesh that provides the data for rendering
+     * @returns The Gaussian Splatting mesh that provides the data for rendering, or null if not set
+     */
+    public getSourceMesh(): GaussianSplattingMesh | null {
+        return this._sourceMesh;
+    }
+
     /**
      * Bind material effect for a specific Gaussian Splatting mesh
      * @param mesh Gaussian splatting mesh

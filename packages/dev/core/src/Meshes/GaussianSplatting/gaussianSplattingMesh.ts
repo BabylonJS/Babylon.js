@@ -663,6 +663,15 @@ export class GaussianSplattingMesh extends Mesh {
                 cameraMesh.reservedDataStore = { hidden: true };
                 cameraMesh.setEnabled(false);
                 cameraMesh.material = this.material;
+                if (cameraMesh.material && cameraMesh.material instanceof GaussianSplattingMaterial) {
+                    const gsMaterial = cameraMesh.material as GaussianSplattingMaterial;
+                    // GaussianSplattingMaterial source mesh may not have been set yet.
+                    // This happens for cloned resources from asset containers for instance,
+                    // where material is cloned before mesh.
+                    if (!gsMaterial.getSourceMesh()) {
+                        gsMaterial.setSourceMesh(this);
+                    }
+                }
                 GaussianSplattingMesh._MakeSplatGeometryForMesh(cameraMesh);
 
                 const newViewInfos: ICameraViewInfo = {
