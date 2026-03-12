@@ -79,7 +79,7 @@ export const HelpTopics: IHelpTopic[] = [
 <tr><td>⏹</td><td><b>Stop</b></td><td>Stops execution and resets execution state.</td></tr>
 <tr><td>↺</td><td><b>Reset</b></td><td>Stops execution and reloads the scene from its snippet (if one was loaded).</td></tr>
 </table>
-<parameter name="newString"><p>The <b>state indicator</b> next to the controls shows the current graph state: <code>Stopped</code>, <code>Running</code>, <code>Paused</code>, or <code>Breakpoint</code>.</p>`,
+<p>The <b>state indicator</b> next to the controls shows the current graph state: <code>Stopped</code>, <code>Running</code>, <code>Paused</code>, or <code>Breakpoint</code>.</p>`,
             },
         ],
     },

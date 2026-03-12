@@ -142,9 +142,16 @@ export class FlowGraph {
     }
 
     private _attachEventObserver() {
+        if (this._eventObserver) {
+            return;
+        }
         this._eventObserver = this._sceneEventCoordinator.onEventTriggeredObservable.add((event) => {
             if (event.type === FlowGraphEventType.SceneDispose) {
                 this.dispose();
+                return;
+            }
+
+            if (this.state !== FlowGraphState.Started) {
                 return;
             }
 
@@ -342,6 +349,7 @@ export class FlowGraph {
         if (this.state !== FlowGraphState.Started) {
             return;
         }
+        this._detachEventObserver();
         this.state = FlowGraphState.Paused;
         for (const context of this._executionContexts) {
             context._clearPendingBlocks();

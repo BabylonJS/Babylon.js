@@ -24,7 +24,7 @@ export class DebugDisplayManager implements IDisplayManager {
         const debugBlock = nodeData.data as FlowGraphDebugBlock;
         const lastEntry = debugBlock.log.length > 0 ? debugBlock.log[debugBlock.log.length - 1] : null;
         if (lastEntry) {
-            contentArea.innerHTML = lastEntry[0];
+            contentArea.textContent = lastEntry[0];
             contentArea.title = lastEntry[1];
         }
     }
@@ -39,7 +39,7 @@ export class DebugDisplayManager implements IDisplayManager {
         visual.classList.add(styles.debugBlock);
         headerContainer.classList.add(styles.hidden);
         content.classList.add(styles.debugContent);
-        content.innerHTML = "?";
+        content.textContent = "?";
         connections.classList.add(styles.translatedConnections);
         selectionBorder.classList.add(styles.roundSelectionBorder);
     }

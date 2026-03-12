@@ -47,6 +47,10 @@ export class GraphSearchComponent extends React.Component<IGraphSearchComponentP
 
     /** Show the search bar and focus the input. */
     show() {
+        if (this._escHandler) {
+            this.props.canvas.stateManager.hostDocument.removeEventListener("keydown", this._escHandler);
+            this._escHandler = null;
+        }
         this.setState({ visible: true, query: "", currentIndex: 0, results: [] }, () => {
             this._inputRef.current?.focus();
         });
@@ -203,6 +207,7 @@ export class GraphSearchComponent extends React.Component<IGraphSearchComponentP
         this._clearHighlights(this.state.results);
         if (this._escHandler) {
             this.props.canvas.stateManager.hostDocument.removeEventListener("keydown", this._escHandler);
+            this._escHandler = null;
         }
     }
 

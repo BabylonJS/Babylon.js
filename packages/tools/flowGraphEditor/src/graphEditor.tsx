@@ -64,6 +64,60 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _historyStack: HistoryStack;
     private _blockClassRegistry = new Map<string, typeof FlowGraphBlock>();
 
+    private _onDocumentKeyDown = (evt: KeyboardEvent) => {
+        if (this._historyStack && this._historyStack.processKeyEvent(evt)) {
+            return;
+        }
+
+        // F9 — Toggle breakpoint on the selected node
+        if (evt.key === "F9") {
+            evt.preventDefault();
+            this._toggleBreakpointOnSelection();
+            return;
+        }
+
+        // Ctrl+G — Create smart group from selected nodes
+        if ((evt.ctrlKey || evt.metaKey) && (evt.key === "g" || evt.key === "G")) {
+            evt.preventDefault();
+            this._createSmartGroup();
+            return;
+        }
+
+        // Ctrl+M — Add a sticky note at the current mouse position
+        if ((evt.ctrlKey || evt.metaKey) && (evt.key === "m" || evt.key === "M")) {
+            evt.preventDefault();
+            const zoomLevel = this._graphCanvas.zoom;
+            const container = this.props.globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement;
+            const x = (this._mouseLocationX - (container?.offsetLeft ?? 0) - this._graphCanvas.x) / zoomLevel;
+            const y = (this._mouseLocationY - (container?.offsetTop ?? 0) - this._graphCanvas.y) / zoomLevel;
+            this._graphCanvas.addStickyNote(x, y);
+            return;
+        }
+
+        // Ctrl+F — Find in graph
+        if ((evt.ctrlKey || evt.metaKey) && (evt.key === "f" || evt.key === "F")) {
+            evt.preventDefault();
+            this._graphCanvas.showSearch();
+            return;
+        }
+
+        void this._graphCanvas.handleKeyDownAsync(
+            evt,
+            (nodeData) => {
+                const block = nodeData.data as FlowGraphBlock;
+                if (block) {
+                    this.props.globalState.flowGraph.removeBlock(block);
+                }
+            },
+            this._mouseLocationX,
+            this._mouseLocationY,
+            async (nodeData) => {
+                return this._cloneBlockAsync(nodeData);
+            },
+            this.props.globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement
+        );
+    };
+
     /** @internal */
     appendBlock(dataToAppend: FlowGraphBlock | INodeData, recursion = true) {
         return this._graphCanvas.createNodeFromObject(
@@ -161,6 +215,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const globalState = this.props.globalState;
 
         if (globalState.hostDocument) {
+            globalState.hostDocument.removeEventListener("keydown", this._onDocumentKeyDown, false);
+            globalState.hostDocument.addEventListener("keydown", this._onDocumentKeyDown, false);
             globalState.hostDocument.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
         }
 
@@ -251,59 +307,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return this._graphCanvas.findNodeFromData(block);
         };
 
-        this.props.globalState.hostDocument.addEventListener("keydown", (evt) => {
-            if (this._historyStack && this._historyStack.processKeyEvent(evt)) {
-                return;
-            }
-
-            // F9 — Toggle breakpoint on the selected node
-            if (evt.key === "F9") {
-                evt.preventDefault();
-                this._toggleBreakpointOnSelection();
-                return;
-            }
-
-            // Ctrl+G — Create smart group from selected nodes
-            if ((evt.ctrlKey || evt.metaKey) && (evt.key === "g" || evt.key === "G")) {
-                evt.preventDefault();
-                this._createSmartGroup();
-                return;
-            }
-
-            // Ctrl+M — Add a sticky note at the current mouse position
-            if ((evt.ctrlKey || evt.metaKey) && (evt.key === "m" || evt.key === "M")) {
-                evt.preventDefault();
-                const zoomLevel = this._graphCanvas.zoom;
-                const container = this.props.globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement;
-                const x = (this._mouseLocationX - (container?.offsetLeft ?? 0) - this._graphCanvas.x) / zoomLevel;
-                const y = (this._mouseLocationY - (container?.offsetTop ?? 0) - this._graphCanvas.y) / zoomLevel;
-                this._graphCanvas.addStickyNote(x, y);
-                return;
-            }
-
-            // Ctrl+F — Find in graph
-            if ((evt.ctrlKey || evt.metaKey) && (evt.key === "f" || evt.key === "F")) {
-                evt.preventDefault();
-                this._graphCanvas.showSearch();
-                return;
-            }
-
-            void this._graphCanvas.handleKeyDownAsync(
-                evt,
-                (nodeData) => {
-                    const block = nodeData.data as FlowGraphBlock;
-                    if (block) {
-                        this.props.globalState.flowGraph.removeBlock(block);
-                    }
-                },
-                this._mouseLocationX,
-                this._mouseLocationY,
-                async (nodeData) => {
-                    return this._cloneBlockAsync(nodeData);
-                },
-                this.props.globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement
-            );
-        });
+        this.props.globalState.hostDocument.removeEventListener("keydown", this._onDocumentKeyDown, false);
+        this.props.globalState.hostDocument.addEventListener("keydown", this._onDocumentKeyDown, false);
 
         this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.add((message: string) => {
             this.setState({ message: message, isError: true });

@@ -13,7 +13,7 @@ module.exports = (env) => {
             },
             {
                 static: ["public"],
-                port: process.env.FGE_PORT || 1347,
+                port: process.env.FGE_PORT || 1343,
             }
         ),
         resolve: {

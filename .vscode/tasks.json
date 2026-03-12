@@ -510,7 +510,10 @@
                 "instanceLimit": 1
             },
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "FGE_PORT": "1343"
+                }
             },
             "args": ["run", "serve", "-w", "@tools/flow-graph-editor"],
             "isBackground": true,
@@ -528,7 +531,10 @@
                 "instanceLimit": 1
             },
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "FGE_PORT": "1343"
+                }
             },
             "args": ["run", "serve", "-w", "@tools/flow-graph-editor"],
             "isBackground": true,
