@@ -18,6 +18,7 @@ interface IPlayAnimationPropertyState {
  */
 export class PlayAnimationPropertyComponent extends React.Component<IPropertyComponentProps, IPlayAnimationPropertyState> {
     private _sceneContextObserver: Observer<SceneContext | null> | null = null;
+    private _contextRefreshObserver: Observer<SceneContext> | null = null;
 
     constructor(props: IPropertyComponentProps) {
         super(props);
@@ -28,8 +29,14 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
     override componentDidMount() {
         const globalState = this.props.stateManager.data as GlobalState;
         this._sceneContextObserver = globalState.onSceneContextChanged.add((ctx) => {
+            this._contextRefreshObserver?.remove();
+            this._contextRefreshObserver = ctx?.onContextRefreshed.add(() => this.forceUpdate()) ?? null;
             this.setState({ sceneContext: ctx });
         });
+        // Subscribe to the current context if it already exists
+        if (globalState.sceneContext) {
+            this._contextRefreshObserver = globalState.sceneContext.onContextRefreshed.add(() => this.forceUpdate());
+        }
     }
 
     override componentWillUnmount() {
@@ -38,6 +45,8 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
             globalState.onSceneContextChanged.remove(this._sceneContextObserver);
             this._sceneContextObserver = null;
         }
+        this._contextRefreshObserver?.remove();
+        this._contextRefreshObserver = null;
     }
 
     private _getBlock(): FlowGraphBlock {
@@ -60,6 +69,26 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
         (block.config as any).animationGroup = ag;
         (block.config as any)._animationGroupName = ag?.name;
         (agInput as any)._defaultValue = ag;
+
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+        this.forceUpdate();
+    }
+
+    private _onAnimationChange(uniqueId: number) {
+        const block = this._getBlock();
+        const animInput = block.getDataInput("animation");
+        if (!animInput) return;
+
+        const { sceneContext } = this.state;
+        if (!sceneContext) return;
+
+        const anim = uniqueId === -1 ? undefined : sceneContext.animations.find((a) => a.uniqueId === uniqueId);
+
+        if (!block.config) {
+            (block as any).config = {};
+        }
+        (block.config as any)._animationName = anim?.name;
+        (animInput as any)._defaultValue = anim;
 
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
         this.forceUpdate();
@@ -96,11 +125,39 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
         return -1;
     }
 
+    /**
+     * Resolve the current animation uniqueId, rebinding by saved name
+     * when the stored reference is stale (e.g. after a scene reset).
+     */
+    private _resolveCurrentAnimId(sceneContext: SceneContext | null): number {
+        const block = this._getBlock();
+        const animInput = block.getDataInput("animation");
+        const currentAnim = animInput ? (animInput as any)._defaultValue : undefined;
+        if (!currentAnim || !sceneContext) return currentAnim?.uniqueId ?? -1;
+
+        const uid = currentAnim.uniqueId;
+        if (sceneContext.animations.some((a) => a.uniqueId === uid)) {
+            return uid;
+        }
+
+        const savedName: string | undefined = (block.config as any)?._animationName ?? currentAnim.name;
+        if (savedName) {
+            const match = sceneContext.animations.find((a) => a.name === savedName);
+            if (match) {
+                (animInput as any)._defaultValue = match;
+                return match.uniqueId;
+            }
+        }
+
+        return -1;
+    }
+
     override render() {
         const { stateManager, nodeData } = this.props;
         const { sceneContext } = this.state;
         const block = this._getBlock();
-        const currentUniqueId = this._resolveCurrentAgId(sceneContext);
+        const currentAgId = this._resolveCurrentAgId(sceneContext);
+        const currentAnimId = this._resolveCurrentAnimId(sceneContext);
 
         return (
             <>
@@ -122,7 +179,7 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
                                 target={{}}
                                 propertyName="_unused"
                                 noDirectUpdate={true}
-                                extractValue={() => currentUniqueId}
+                                extractValue={() => currentAgId}
                                 onSelect={(value) => this._onAnimationGroupChange(value as number)}
                             />
                             {sceneContext.animationGroups.length === 0 && (
@@ -130,7 +187,33 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
                             )}
                         </>
                     ) : (
-                        <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>Load a scene snippet in the Preview panel to pick animation groups.</div>
+                        <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>Load a scene snippet in the Preview panel to pick an animation.</div>
+                    )}
+                </LineContainerComponent>
+
+                <LineContainerComponent title="ANIMATION">
+                    {sceneContext ? (
+                        <>
+                            <OptionsLine
+                                key={`anim-${block.uniqueId}-${sceneContext?.scene?.uid ?? "no-scene"}`}
+                                label="Animation"
+                                options={[
+                                    { label: "(none)", value: -1 },
+                                    ...sceneContext.animations.map((a) => ({
+                                        label: a.name || `(id ${a.uniqueId})`,
+                                        value: a.uniqueId,
+                                    })),
+                                ]}
+                                target={{}}
+                                propertyName="_unused"
+                                noDirectUpdate={true}
+                                extractValue={() => currentAnimId}
+                                onSelect={(value) => this._onAnimationChange(value as number)}
+                            />
+                            {sceneContext.animations.length === 0 && <div style={{ padding: "4px 8px", color: "#aaa", fontSize: "11px" }}>No animations found in the scene.</div>}
+                        </>
+                    ) : (
+                        <div style={{ padding: "4px 8px", color: "#888", fontSize: "11px" }}>Load a scene snippet in the Preview panel to pick an animation.</div>
                     )}
                 </LineContainerComponent>
 

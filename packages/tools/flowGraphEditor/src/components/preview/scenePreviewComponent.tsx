@@ -4,10 +4,10 @@ import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { SceneContext } from "../../sceneContext";
 import { LogEntry } from "../log/logComponent";
+import { loadSnippet } from "@tools/snippet-loader";
+import type { PlaygroundSnippetResult } from "@tools/snippet-loader";
 
 import "./scenePreview.scss";
-
-const SnippetUrl = "https://snippet.babylonjs.com";
 
 interface IScenePreviewComponentProps {
     globalState: GlobalState;
@@ -93,12 +93,13 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
     }
 
     /**
-     * Parse a snippet identifier from various input formats.
-     * Accepts: raw ID, "ID#version", full PG URL, or hash fragment.
+     * Extract a snippet ID from user input that may be a full playground URL.
+     * The snippet loader accepts "ID" and "ID#version" directly, so we only
+     * need to strip the URL prefix when present.
      * @param input - the raw user input string
-     * @returns the cleaned snippet path (e.g. "ABC123/4")
+     * @returns the cleaned snippet ID (e.g. "ABC123#4")
      */
-    private _parseSnippetId(input: string): string {
+    private _extractSnippetId(input: string): string {
         let cleaned = input.trim();
 
         // Full URL: https://playground.babylonjs.com/#ABC123#4
@@ -114,111 +115,7 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             cleaned = cleaned.substring(1);
         }
 
-        // Replace # separator between ID and version with /
-        return cleaned.replace("#", "/");
-    }
-
-    /**
-     * Fetch snippet code from the snippet server.
-     * Handles both legacy snippets (flat code string) and v2 manifest format
-     * (JSON with files/entry fields).
-     * @param snippetPath - the snippet path (e.g. "ABC123/4")
-     * @returns the playground code string ready for eval
-     */
-    private async _fetchSnippetCodeAsync(snippetPath: string): Promise<string> {
-        const response = await fetch(`${SnippetUrl}/${snippetPath}`);
-        if (!response.ok) {
-            throw new Error(`Snippet not found (${response.status})`);
-        }
-        const data = await response.json();
-        const payloadStr = data.jsonPayload || data.payload;
-        if (!payloadStr) {
-            throw new Error("Snippet has no code payload");
-        }
-        const payload = JSON.parse(payloadStr);
-        let code: string = typeof payload.code === "string" ? payload.code : typeof payload === "string" ? payload : JSON.stringify(payload);
-
-        // Check if code is a v2 manifest (JSON with files/entry)
-        code = this._extractCodeFromManifest(code);
-
-        // Strip ES module export keywords so eval() works (eval runs in script context)
-        code = code.replace(/^\s*export\s+(default\s+)?/gm, "");
-
-        return code;
-    }
-
-    /**
-     * If the code string is a JSON v2 manifest, extract the entry file's source.
-     * Otherwise return the code as-is.
-     * @param code - raw code string that might be a v2 manifest JSON
-     * @returns the extracted source code
-     */
-    private _extractCodeFromManifest(code: string): string {
-        try {
-            const manifest = JSON.parse(code);
-            if (manifest && manifest.files && typeof manifest.files === "object") {
-                const entry = manifest.entry || (manifest.language === "JS" ? "index.js" : "index.ts");
-                const entryCode = manifest.files[entry];
-                if (!entryCode) {
-                    throw new Error(`Manifest entry "${entry}" not found in snippet files`);
-                }
-                if (/\.tsx?$/.test(entry)) {
-                    throw new Error("TypeScript snippets are not yet supported — please use a JavaScript snippet");
-                }
-                return entryCode;
-            }
-        } catch (err: any) {
-            // If it's our own error (TS not supported, entry not found), rethrow
-            if (err.message && !err.message.includes("JSON")) {
-                throw err;
-            }
-            // Otherwise it wasn't valid JSON — treat as raw code
-        }
-        return code;
-    }
-
-    /**
-     * Execute playground code with the given engine and canvas set as globals.
-     * The code is expected to define a `createScene` function.
-     * @param code - the playground JS source code
-     * @param previewEngine - the engine instance to expose as a global
-     * @param previewCanvas - the canvas element to expose as a global
-     * @returns the scene produced by executing the code
-     */
-    private async _executePlaygroundCodeAsync(code: string, previewEngine: any, previewCanvas: HTMLCanvasElement): Promise<any> {
-        // Playground snippets expect `engine` and `canvas` to exist as globals.
-        const win = window as any;
-        const prevEngine = win.engine;
-        const prevCanvas = win.canvas;
-        win.engine = previewEngine;
-        win.canvas = previewCanvas;
-
-        try {
-            // Playground code typically defines `var createScene = function() { ... }`
-            // We eval the code then call createScene.
-            const createSceneFn = eval(code + "; typeof createScene !== 'undefined' ? createScene : null");
-            if (!createSceneFn) {
-                throw new Error("Snippet does not define a 'createScene' function");
-            }
-
-            const sceneOrPromise = createSceneFn();
-            let scene;
-            try {
-                scene = await Promise.resolve(sceneOrPromise);
-            } catch {
-                scene = sceneOrPromise;
-            }
-
-            if (!scene || !scene.render) {
-                throw new Error("createScene() did not return a valid Scene");
-            }
-
-            return scene;
-        } finally {
-            // Restore previous globals
-            win.engine = prevEngine;
-            win.canvas = prevCanvas;
-        }
+        return cleaned;
     }
 
     /**
@@ -233,8 +130,14 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
         this.setState({ isLoading: true, error: "" });
 
         try {
-            const snippetPath = this._parseSnippetId(snippetId);
-            const code = await this._fetchSnippetCodeAsync(snippetPath);
+            const cleanId = this._extractSnippetId(snippetId);
+            const result = await loadSnippet(cleanId, { moduleFormat: "script", assetBaseUrl: "https://playground.babylonjs.com/" });
+
+            if (result.type !== "playground") {
+                throw new Error(`Only playground snippets are supported (got "${result.type}")`);
+            }
+
+            const pgResult = result as PlaygroundSnippetResult;
 
             // Dispose old preview context if any
             const oldCtx = this.props.globalState.sceneContext;
@@ -245,31 +148,44 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
                 oldCtx.dispose();
             }
 
-            // Create the preview engine targeting our canvas
             const canvas = this._canvasRef.current;
             if (!canvas) {
                 throw new Error("Preview canvas not available");
             }
 
-            // Use BABYLON from global (loaded via CDN in standalone, or available in embedded mode)
-            const babylonGlobal = (window as any).BABYLON;
-            if (!babylonGlobal || !babylonGlobal.Engine) {
-                throw new Error("BABYLON engine not available");
+            // Initialize runtime dependencies (Havok, Ammo, Recast) if the snippet uses them
+            await pgResult.initializeRuntimeAsync({ loadScripts: true });
+
+            // Create engine and scene using the snippet loader's ready-to-call functions
+            const engine = await pgResult.createEngine(canvas, {
+                engineOptions: { preserveDrawingBuffer: true, stencil: true },
+            });
+
+            const scene = await pgResult.createScene(engine, canvas);
+
+            if (!scene || !scene.render) {
+                throw new Error("createScene() did not return a valid Scene");
             }
 
-            const engine = new babylonGlobal.Engine(canvas, true, {
-                preserveDrawingBuffer: true,
-                stencil: true,
-            });
+            // Catch unhandled promise rejections from async operations started
+            // by the snippet (e.g. SceneLoader.Append that fires after
+            // createScene returns).  Mirror the Playground's approach of
+            // surfacing these errors in the log rather than crashing.
+            const rejectionHandler = (e: PromiseRejectionEvent) => {
+                e.preventDefault();
+                const msg = e.reason?.message || String(e.reason);
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Snippet error: ${msg}`, true));
+            };
+            window.addEventListener("unhandledrejection", rejectionHandler);
 
-            const scene = await this._executePlaygroundCodeAsync(code, engine, canvas);
-
-            // Start the render loop
+            // Start the render loop (guard for snippets that set up the
+            // camera asynchronously, e.g. delayCreateScene / delayLoadScene).
             engine.runRenderLoop(() => {
-                scene.render();
+                if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
+                    scene.render();
+                }
             });
 
-            // Ensure the engine matches the actual canvas layout size on first frame
             engine.resize();
 
             // Handle window resize and canvas container resize
@@ -283,9 +199,15 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
             }
 
             scene.onDisposeObservable.addOnce(() => {
+                window.removeEventListener("unhandledrejection", rejectionHandler);
                 window.removeEventListener("resize", resizeHandler);
                 resizeObserver?.disconnect();
             });
+
+            // Wait for the scene to finish loading all pending data (e.g.
+            // async SceneLoader.Append / ImportMesh calls inside the snippet)
+            // before cataloguing objects.
+            await new Promise<void>((resolve) => scene.executeWhenReady(() => resolve()));
 
             // Build the scene context
             const sceneContext = new SceneContext(scene);
@@ -298,7 +220,8 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
                 sceneObjectCount: sceneContext.entries.length,
             });
 
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Loaded snippet with ${sceneContext.entries.length} scene objects`, false));
+            const langTag = pgResult.language === "TS" ? " [TypeScript]" : "";
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Loaded snippet${langTag} with ${sceneContext.entries.length} scene objects`, false));
         } catch (err: any) {
             this.setState({
                 isLoading: false,

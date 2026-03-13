@@ -204,6 +204,12 @@ export class FlowGraph {
         // Rebuild with the new scene
         this._scene = scene;
         this._sceneEventCoordinator = new FlowGraphSceneEventCoordinator(this._scene);
+        // Pre-attach the event observer so that events from the new
+        // coordinator are routed to the graph immediately.  The handler
+        // guards against processing events while the graph is stopped,
+        // but having the observer in place ensures no events are lost
+        // when start() is called shortly after.
+        this._attachEventObserver();
     }
 
     /**
@@ -371,9 +377,25 @@ export class FlowGraph {
         this._attachEventObserver();
         this.state = FlowGraphState.Started;
         this._startPendingEvents();
-        // On a fresh start (not resume), fire the SceneReady event if the scene is already ready.
-        if (!resumingFromPause && this._scene.isReady(true)) {
-            this._sceneEventCoordinator.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
+        // On a fresh start (not resume), fire the SceneReady event.
+        // The coordinator's own scene-ready observer may have already
+        // fired (and been lost) while the graph was stopped, so reset
+        // the flag and handle the ready state ourselves.
+        if (!resumingFromPause) {
+            this._sceneEventCoordinator.sceneReadyTriggered = false;
+            if (this._scene.isReady(true)) {
+                this._sceneEventCoordinator.sceneReadyTriggered = true;
+                this._sceneEventCoordinator.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
+            } else {
+                // Scene isn't ready yet (e.g. pending shader compilations after
+                // a scene swap).  Watch for it and fire SceneReady then.
+                this._scene.onReadyObservable.addOnce(() => {
+                    if (this.state === FlowGraphState.Started && !this._sceneEventCoordinator.sceneReadyTriggered) {
+                        this._sceneEventCoordinator.sceneReadyTriggered = true;
+                        this._sceneEventCoordinator.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
+                    }
+                });
+            }
         }
     }
 

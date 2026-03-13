@@ -38,6 +38,8 @@ function GetSceneListForType(ctx: SceneContext, assetType: string): Array<{ uniq
             return ctx.cameras;
         case "Material":
             return ctx.materials;
+        case "Animation":
+            return ctx.animations;
         case "AnimationGroup":
             return ctx.animationGroups;
         default:
@@ -70,6 +72,7 @@ interface IGetAssetPropertyState {
  */
 export class GetAssetPropertyComponent extends React.Component<IPropertyComponentProps, IGetAssetPropertyState> {
     private _sceneContextObserver: Observer<SceneContext | null> | null = null;
+    private _contextRefreshObserver: Observer<SceneContext> | null = null;
 
     constructor(props: IPropertyComponentProps) {
         super(props);
@@ -80,8 +83,14 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
     override componentDidMount() {
         const globalState = this.props.stateManager.data as GlobalState;
         this._sceneContextObserver = globalState.onSceneContextChanged.add((ctx) => {
+            this._contextRefreshObserver?.remove();
+            this._contextRefreshObserver = ctx?.onContextRefreshed.add(() => this.forceUpdate()) ?? null;
             this.setState({ sceneContext: ctx });
         });
+        // Subscribe to the current context if it already exists
+        if (globalState.sceneContext) {
+            this._contextRefreshObserver = globalState.sceneContext.onContextRefreshed.add(() => this.forceUpdate());
+        }
         // If no type has been set yet, initialise to "Mesh" so the DataConnection
         // default value is never undefined when the graph runs.
         const config = this._getConfig();
@@ -96,6 +105,8 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
             globalState.onSceneContextChanged.remove(this._sceneContextObserver);
             this._sceneContextObserver = null;
         }
+        this._contextRefreshObserver?.remove();
+        this._contextRefreshObserver = null;
     }
 
     private _getBlock(): FlowGraphGetAssetBlock<any> {

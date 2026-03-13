@@ -4,10 +4,12 @@ import type { Light } from "core/Lights/light";
 import type { Camera } from "core/Cameras/camera";
 import type { Material } from "core/Materials/material";
 import type { TransformNode } from "core/Meshes/transformNode";
+import type { Animation } from "core/Animations/animation";
 import type { AnimationGroup } from "core/Animations/animationGroup";
 import type { Skeleton } from "core/Bones/skeleton";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import { Observable } from "core/Misc/observable";
+import type { Observer } from "core/Misc/observable";
 
 /**
  * Represents a single scene object entry that can be referenced by flow graph blocks.
@@ -32,6 +34,7 @@ export enum SceneContextCategory {
     Camera = "Camera",
     Material = "Material",
     TransformNode = "TransformNode",
+    Animation = "Animation",
     AnimationGroup = "AnimationGroup",
     Skeleton = "Skeleton",
     ParticleSystem = "ParticleSystem",
@@ -82,6 +85,10 @@ export class SceneContext {
     public get transformNodes(): TransformNode[] {
         return this.entries.filter((e) => e.category === SceneContextCategory.TransformNode).map((e) => e.object as TransformNode);
     }
+    /** Gets all animations in the scene context */
+    public get animations(): Animation[] {
+        return this.entries.filter((e) => e.category === SceneContextCategory.Animation).map((e) => e.object as Animation);
+    }
     /** Gets all animation groups in the scene context */
     public get animationGroups(): AnimationGroup[] {
         return this.entries.filter((e) => e.category === SceneContextCategory.AnimationGroup).map((e) => e.object as AnimationGroup);
@@ -95,6 +102,9 @@ export class SceneContext {
         return this.entries.filter((e) => e.category === SceneContextCategory.ParticleSystem).map((e) => e.object as IParticleSystem);
     }
 
+    private _sceneObservers: Observer<any>[] = [];
+    private _refreshTimer: ReturnType<typeof setTimeout> | null = null;
+
     /**
      * Creates a new SceneContext.
      * @param scene - the scene to catalogue
@@ -102,6 +112,7 @@ export class SceneContext {
     constructor(scene: Scene) {
         this.scene = scene;
         this._catalogScene();
+        this._subscribeToSceneChanges();
     }
 
     /**
@@ -136,8 +147,54 @@ export class SceneContext {
      * Dispose the context and scene.
      */
     public dispose(): void {
+        this._unsubscribeFromSceneChanges();
         this.onContextRefreshed.clear();
         this.entries.length = 0;
+    }
+
+    /**
+     * Subscribe to scene observables so the catalogue auto-refreshes
+     * when objects are added or removed (e.g. by async SceneLoader operations).
+     */
+    private _subscribeToSceneChanges(): void {
+        const scene = this.scene;
+        const debouncedRefresh = () => {
+            if (this._refreshTimer !== null) {
+                clearTimeout(this._refreshTimer);
+            }
+            this._refreshTimer = setTimeout(() => {
+                this._refreshTimer = null;
+                this.refresh();
+            }, 100);
+        };
+
+        this._sceneObservers.push(
+            scene.onNewMeshAddedObservable.add(debouncedRefresh)!,
+            scene.onMeshRemovedObservable.add(debouncedRefresh)!,
+            scene.onNewLightAddedObservable.add(debouncedRefresh)!,
+            scene.onLightRemovedObservable.add(debouncedRefresh)!,
+            scene.onNewCameraAddedObservable.add(debouncedRefresh)!,
+            scene.onCameraRemovedObservable.add(debouncedRefresh)!,
+            scene.onNewMaterialAddedObservable.add(debouncedRefresh)!,
+            scene.onMaterialRemovedObservable.add(debouncedRefresh)!,
+            scene.onNewTransformNodeAddedObservable.add(debouncedRefresh)!,
+            scene.onTransformNodeRemovedObservable.add(debouncedRefresh)!,
+            scene.onNewAnimationGroupAddedObservable.add(debouncedRefresh)!,
+            scene.onAnimationGroupRemovedObservable.add(debouncedRefresh)!,
+            scene.onNewSkeletonAddedObservable.add(debouncedRefresh)!,
+            scene.onNewParticleSystemAddedObservable.add(debouncedRefresh)!
+        );
+    }
+
+    private _unsubscribeFromSceneChanges(): void {
+        if (this._refreshTimer !== null) {
+            clearTimeout(this._refreshTimer);
+            this._refreshTimer = null;
+        }
+        for (const obs of this._sceneObservers) {
+            obs.remove();
+        }
+        this._sceneObservers.length = 0;
     }
 
     private _catalogScene(): void {
@@ -161,6 +218,21 @@ export class SceneContext {
 
         for (const tn of scene.transformNodes) {
             this.entries.push({ name: tn.name, uniqueId: tn.uniqueId, object: tn, category: SceneContextCategory.TransformNode });
+        }
+
+        // Collect individual animations from all nodes and the scene itself
+        const seenAnimationIds = new Set<number>();
+        const addAnimations = (anims: Animation[]) => {
+            for (const anim of anims) {
+                if (!seenAnimationIds.has(anim.uniqueId)) {
+                    seenAnimationIds.add(anim.uniqueId);
+                    this.entries.push({ name: anim.name, uniqueId: anim.uniqueId, object: anim, category: SceneContextCategory.Animation });
+                }
+            }
+        };
+        addAnimations(scene.animations);
+        for (const node of scene.getNodes()) {
+            addAnimations(node.animations);
         }
 
         for (const ag of scene.animationGroups) {

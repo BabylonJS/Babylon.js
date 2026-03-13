@@ -200,7 +200,13 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     private _stopAnimationGroup(context: FlowGraphContext, animationGroup: AnimationGroup) {
         // stop, while skipping the on AnimationEndObservable to avoid the "done" signal
         animationGroup.stop(true);
-        animationGroup.dispose();
+        // Only dispose animation groups that were internally created by this block
+        // (i.e. built from individual animations). Scene-provided animation groups
+        // must not be disposed as that removes them from the scene catalog and
+        // breaks the editor dropdown / re-use on replay.
+        if (animationGroup.name.startsWith("flowGraphAnimationGroup-")) {
+            animationGroup.dispose();
+        }
         this._removeFromCurrentlyRunning(context, animationGroup);
     }
 

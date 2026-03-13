@@ -364,11 +364,21 @@ export class GlobalState {
                 if (graphNode) {
                     graphNode.refresh();
 
-                    // Build lookup of this block's input connections (data + signal)
-                    const inputSet = new Set<unknown>(block.dataInputs);
+                    // Build lookup of this block's CONNECTED input connections (data + signal).
+                    // For signal inputs, only include those that were recently activated so we
+                    // highlight the signal that actually triggered this execution rather than
+                    // every signal input on the block.
+                    const inputSet = new Set<unknown>();
+                    for (const dataIn of block.dataInputs) {
+                        if (dataIn.isConnected()) {
+                            inputSet.add(dataIn);
+                        }
+                    }
                     if (block instanceof FlowGraphExecutionBlock) {
                         for (const sig of block.signalInputs) {
-                            inputSet.add(sig);
+                            if (sig.isConnected() && now - (sig as FlowGraphSignalConnection)._lastActivationTime < GlobalState._HIGHLIGHT_THROTTLE_MS) {
+                                inputSet.add(sig);
+                            }
                         }
                     }
 
@@ -379,11 +389,11 @@ export class GlobalState {
                         }
                     }
 
-                    // Pulse output signal ports that actually fired (recently)
+                    // Pulse output signal ports that actually fired (recently) and are connected
                     const firedOutputs = new Set<unknown>();
                     if (block instanceof FlowGraphExecutionBlock) {
                         for (const sig of block.signalOutputs) {
-                            if (now - (sig as FlowGraphSignalConnection)._lastActivationTime < GlobalState._HIGHLIGHT_THROTTLE_MS) {
+                            if (sig.isConnected() && now - (sig as FlowGraphSignalConnection)._lastActivationTime < GlobalState._HIGHLIGHT_THROTTLE_MS) {
                                 firedOutputs.add(sig);
                             }
                         }
@@ -639,63 +649,165 @@ export class GlobalState {
      * @param newScene - the newly loaded scene
      */
     private _remapAssetReferences(newScene: Scene): void {
-        if (!this._flowGraph || !this._cachedOldIdToName) {
+        if (!this._flowGraph) {
             return;
         }
 
         // Build a name → newUniqueId lookup per asset type from the new scene
-        const nameLookup = new Map<string, Map<string, number>>([
-            ["Mesh", new Map(newScene.meshes.map((m) => [m.name, m.uniqueId]))],
-            ["Light", new Map(newScene.lights.map((l) => [l.name, l.uniqueId]))],
-            ["Camera", new Map(newScene.cameras.map((c) => [c.name, c.uniqueId]))],
-            ["Material", new Map(newScene.materials.map((m) => [m.name, m.uniqueId]))],
-            ["AnimationGroup", new Map(newScene.animationGroups.map((ag) => [ag.name, ag.uniqueId]))],
-            ["Animation", new Map(newScene.animations.map((a) => [a.name, a.uniqueId]))],
-        ]);
+        // (only needed for GetAsset block remapping)
+        const hasOldIdCache = !!this._cachedOldIdToName;
+        const nameLookup = hasOldIdCache
+            ? new Map<string, Map<string, number>>([
+                  ["Mesh", new Map(newScene.meshes.map((m) => [m.name, m.uniqueId]))],
+                  ["Light", new Map(newScene.lights.map((l) => [l.name, l.uniqueId]))],
+                  ["Camera", new Map(newScene.cameras.map((c) => [c.name, c.uniqueId]))],
+                  ["Material", new Map(newScene.materials.map((m) => [m.name, m.uniqueId]))],
+                  ["AnimationGroup", new Map(newScene.animationGroups.map((ag) => [ag.name, ag.uniqueId]))],
+                  ["Animation", new Map(newScene.animations.map((a) => [a.name, a.uniqueId]))],
+              ])
+            : null;
 
         const oldIdToName = this._cachedOldIdToName;
 
         this._flowGraph.visitAllBlocks((block: FlowGraphBlock) => {
-            if (block.getClassName() !== "FlowGraphGetAssetBlock") {
+            const className = block.getClassName();
+
+            // --- GetAsset blocks: remap index by uniqueId ---
+            if (className === "FlowGraphGetAssetBlock") {
+                if (!oldIdToName || !nameLookup) {
+                    return;
+                }
+                const config = (block as any).config;
+                if (!config || !config.useIndexAsUniqueId) {
+                    return;
+                }
+
+                const assetType: string | undefined = config.type;
+                const rawIdx = config.index ?? -1;
+                const oldIndex = rawIdx instanceof FlowGraphInteger ? rawIdx.value : typeof rawIdx === "number" ? rawIdx : -1;
+                if (!assetType || oldIndex < 0) {
+                    return;
+                }
+
+                const oldMap = oldIdToName.get(assetType);
+                const newMap = nameLookup.get(assetType);
+                if (!oldMap || !newMap) {
+                    return;
+                }
+
+                const name = oldMap.get(oldIndex);
+                if (name === undefined) {
+                    return;
+                }
+
+                const newId = newMap.get(name);
+                if (newId === undefined) {
+                    return;
+                }
+
+                config.index = new FlowGraphInteger(newId);
+                const indexDC = (block as any).index;
+                if (indexDC && "_defaultValue" in indexDC) {
+                    indexDC._defaultValue = new FlowGraphInteger(newId);
+                }
                 return;
             }
 
-            const config = (block as any).config;
-            if (!config || !config.useIndexAsUniqueId) {
-                return;
-            }
+            // --- Blocks with direct targetMesh references (MeshPick, PointerDown/Up/Move/Over/Out) ---
+            this._rebindMeshReference(block, newScene);
 
-            const assetType: string | undefined = config.type;
-            const rawIdx = config.index ?? -1;
-            const oldIndex = rawIdx instanceof FlowGraphInteger ? rawIdx.value : typeof rawIdx === "number" ? rawIdx : -1;
-            if (!assetType || oldIndex < 0) {
-                return;
-            }
-
-            // Find the name of the old asset
-            const oldMap = oldIdToName.get(assetType);
-            const newMap = nameLookup.get(assetType);
-            if (!oldMap || !newMap) {
-                return;
-            }
-
-            const name = oldMap.get(oldIndex);
-            if (name === undefined) {
-                return;
-            }
-
-            const newId = newMap.get(name);
-            if (newId === undefined) {
-                return;
-            }
-
-            // Update config and DataConnection default value
-            config.index = new FlowGraphInteger(newId);
-            const indexDC = (block as any).index;
-            if (indexDC && "_defaultValue" in indexDC) {
-                indexDC._defaultValue = new FlowGraphInteger(newId);
-            }
+            // --- PlayAnimation: rebind animationGroup and animation ---
+            this._rebindAnimationGroupReference(block, newScene);
+            this._rebindAnimationReference(block, newScene);
         });
+    }
+
+    /**
+     * Rebind a block's targetMesh / asset config + _defaultValue by name.
+     * Covers MeshPickEventBlock and all pointer event blocks.
+     */
+    private _rebindMeshReference(block: FlowGraphBlock, newScene: Scene): void {
+        const meshInput = block.getDataInput("targetMesh") ?? block.getDataInput("asset");
+        if (!meshInput) {
+            return;
+        }
+        const currentMesh = (meshInput as any)._defaultValue;
+        if (!currentMesh || typeof currentMesh !== "object") {
+            return;
+        }
+        // Already pointing at a mesh in the new scene?
+        if (newScene.meshes.some((m) => m === currentMesh)) {
+            return;
+        }
+        const savedName: string | undefined = (block.config as any)?._meshName ?? currentMesh.name;
+        if (!savedName) {
+            return;
+        }
+        const match = newScene.meshes.find((m) => m.name === savedName);
+        if (match) {
+            if (!block.config) {
+                (block as any).config = {};
+            }
+            (block.config as any).targetMesh = match;
+            (meshInput as any)._defaultValue = match;
+        }
+    }
+
+    /**
+     * Rebind a block's animationGroup config + _defaultValue by name.
+     */
+    private _rebindAnimationGroupReference(block: FlowGraphBlock, newScene: Scene): void {
+        const agInput = block.getDataInput("animationGroup");
+        if (!agInput) {
+            return;
+        }
+        const currentAg = (agInput as any)._defaultValue;
+        if (!currentAg || typeof currentAg !== "object") {
+            return;
+        }
+        if (newScene.animationGroups.some((ag) => ag === currentAg)) {
+            return;
+        }
+        const savedName: string | undefined = (block.config as any)?._animationGroupName ?? currentAg.name;
+        if (!savedName) {
+            return;
+        }
+        const match = newScene.animationGroups.find((ag) => ag.name === savedName);
+        if (match) {
+            if (!block.config) {
+                (block as any).config = {};
+            }
+            (block.config as any).animationGroup = match;
+            (agInput as any)._defaultValue = match;
+        }
+    }
+
+    /**
+     * Rebind a block's animation config + _defaultValue by name.
+     */
+    private _rebindAnimationReference(block: FlowGraphBlock, newScene: Scene): void {
+        const animInput = block.getDataInput("animation");
+        if (!animInput) {
+            return;
+        }
+        const currentAnim = (animInput as any)._defaultValue;
+        if (!currentAnim || typeof currentAnim !== "object") {
+            return;
+        }
+        if (newScene.animations.some((a) => a === currentAnim)) {
+            return;
+        }
+        const savedName: string | undefined = (block.config as any)?._animationName ?? currentAnim.name;
+        if (!savedName) {
+            return;
+        }
+        const match = newScene.animations.find((a) => a.name === savedName);
+        if (match) {
+            if (!block.config) {
+                (block as any).config = {};
+            }
+            (animInput as any)._defaultValue = match;
+        }
     }
 
     /**

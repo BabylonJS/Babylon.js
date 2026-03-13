@@ -20,6 +20,7 @@ module.exports = (env) => {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
+                "@tools/snippet-loader": path.resolve("../snippetLoader/src"),
             },
         },
         externals: [

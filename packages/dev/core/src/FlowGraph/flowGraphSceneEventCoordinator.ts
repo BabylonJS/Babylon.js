@@ -60,7 +60,7 @@ export class FlowGraphSceneEventCoordinator {
     }
 
     private _initialize() {
-        this._sceneReadyObserver = this._scene.onReadyObservable.add(() => {
+        this._sceneReadyObserver = this._scene.onReadyObservable.addOnce(() => {
             if (!this.sceneReadyTriggered) {
                 this.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
                 this.sceneReadyTriggered = true;

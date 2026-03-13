@@ -30,8 +30,17 @@ let loadScriptAsync = function (url, instantResolve) {
 };
 
 const Versions = {
-    dist: ["https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(), "https://preview.babylonjs.com/babylon.js"],
-    local: [`//${window.location.hostname}:1337/babylon.js`],
+    dist: [
+        "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(),
+        "https://preview.babylonjs.com/babylon.js",
+        "https://preview.babylonjs.com/gui/babylon.gui.min.js",
+        "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
+    ],
+    local: [
+        `//${window.location.hostname}:1337/babylon.js`,
+        `//${window.location.hostname}:1337/gui/babylon.gui.min.js`,
+        `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`,
+    ],
 };
 
 let loadInSequence = async function (versions, index, resolve) {
