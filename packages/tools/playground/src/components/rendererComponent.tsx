@@ -163,6 +163,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this._finishRun();
     }
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
     private _withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string) {
         return new Promise<T>((resolve, reject) => {
             const timeoutHandle = window.setTimeout(() => {
@@ -256,12 +257,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         }
         this._preventReentrancy = true;
 
-            this.props.globalState.onErrorObservable.notifyObservers(null);
+        this.props.globalState.onErrorObservable.notifyObservers(null);
 
-            const displayInspector = this._inspectorV2Token || this._scene?.debugLayer.isVisible();
+        const displayInspector = this._inspectorV2Token || this._scene?.debugLayer.isVisible();
 
-            const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
-            const webGPUSupported = await webgpuPromise;
+        const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
+        const webGPUSupported = await webgpuPromise;
 
         this._inspectorV2Token?.dispose();
         this._inspectorV2Token = null;
