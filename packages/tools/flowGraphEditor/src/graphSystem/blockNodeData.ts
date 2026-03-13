@@ -149,10 +149,16 @@ export class BlockNodeData implements INodeData {
      * @param data - the underlying flow graph block
      * @param nodeContainer - the node container for resolving connections
      */
+    /**
+     * The node container for resolving connections.
+     */
+    public nodeContainer: INodeContainer;
+
     public constructor(
         public data: FlowGraphBlock,
         nodeContainer: INodeContainer
     ) {
+        this.nodeContainer = nodeContainer;
         this._numericId = this._hashString(data.uniqueId);
 
         // Add signal inputs (execution flow)

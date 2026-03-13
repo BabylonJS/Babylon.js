@@ -314,6 +314,14 @@ export class GraphNode {
         content.onInputRemoved = (index: number) => {
             this._removeInputPort(index);
         };
+
+        content.onOutputCountChanged = () => {
+            this._buildOutputPorts(true);
+        };
+
+        content.onOutputRemoved = (index: number) => {
+            this._removeOutputPort(index);
+        };
     }
 
     public isOverlappingFrame(frame: GraphFrame) {
@@ -765,6 +773,24 @@ export class GraphNode {
         const port = this._inputPorts[index];
         port.remove();
         this._inputPorts.splice(index, 1);
+    }
+
+    private _buildOutputPorts(addOnly = false) {
+        for (const output of this.content.outputs) {
+            if (addOnly) {
+                const existingPort = this._outputPorts.find((p) => p.portData === output);
+                if (existingPort) {
+                    continue;
+                }
+            }
+            this._outputPorts.push(NodePort.CreatePortElement(output, this, this._outputsContainer, this._displayManager, this._stateManager));
+        }
+    }
+
+    private _removeOutputPort(index: number) {
+        const port = this._outputPorts[index];
+        port.remove();
+        this._outputPorts.splice(index, 1);
     }
 
     public appendVisual(root: HTMLDivElement, owner: GraphCanvasComponent) {

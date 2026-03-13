@@ -15,6 +15,8 @@ import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
 import { removeDataInput, removeDataOutput } from "./blockMutationHelper";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
+import { ConnectionPointPortData } from "../connectionPointPortData";
+import type { BlockNodeData } from "../blockNodeData";
 
 interface ICustomEventPropertyState {
     newKeyName: string;
@@ -62,16 +64,24 @@ export class CustomEventPropertyComponent extends React.Component<IPropertyCompo
         eventData[name] = { type: richType };
         config.eventData = eventData;
 
-        // Register the port on the block
+        // Register the port on the block and update nodeData so the visual node picks it up
+        const blockNodeData = this.props.nodeData as BlockNodeData;
+        const nodeData = this.props.nodeData;
         if (this._isReceiveBlock()) {
-            block.registerDataOutput(name, richType);
+            const newPort = block.registerDataOutput(name, richType);
+            nodeData.outputs.push(new ConnectionPointPortData(newPort, blockNodeData.nodeContainer, "data"));
         } else {
-            block.registerDataInput(name, richType);
+            const newPort = block.registerDataInput(name, richType);
+            nodeData.inputs.push(new ConnectionPointPortData(newPort, blockNodeData.nodeContainer, "data"));
         }
 
         this.setState({ newKeyName: "" });
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
-        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+        if (this._isReceiveBlock()) {
+            nodeData.onOutputCountChanged?.();
+        } else {
+            nodeData.onInputCountChanged?.();
+        }
     }
 
     private _removeEntry(key: string) {
@@ -82,14 +92,24 @@ export class CustomEventPropertyComponent extends React.Component<IPropertyCompo
 
         delete eventData[key];
 
+        const nodeData = this.props.nodeData;
         if (this._isReceiveBlock()) {
+            const portIndex = nodeData.outputs.findIndex((p) => p.name === key);
             removeDataOutput(block, key);
+            if (portIndex !== -1) {
+                nodeData.outputs.splice(portIndex, 1);
+                nodeData.onOutputRemoved?.(portIndex);
+            }
         } else {
+            const portIndex = nodeData.inputs.findIndex((p) => p.name === key);
             removeDataInput(block, key);
+            if (portIndex !== -1) {
+                nodeData.inputs.splice(portIndex, 1);
+                nodeData.onInputRemoved?.(portIndex);
+            }
         }
 
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
-        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
         this.forceUpdate();
     }
 
