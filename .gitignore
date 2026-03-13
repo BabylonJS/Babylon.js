@@ -34,6 +34,8 @@ packages/tools/playground/public/temp
 test-results
 playwright-report
 playwright/.cache/
+.playwright
+.playwright-cli
 .nx
 .DS_Store
 
