@@ -173,6 +173,7 @@ float getLuminance(vec3 color)
     return saturate(getLuminanceUnclamped(color));
 }
 
+// Assumes input color is linear encoded, not gamma-corrected.
 float getLuminanceUnclamped(vec3 color)
 {
     return dot(color, LuminanceEncodeApprox);

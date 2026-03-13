@@ -170,6 +170,7 @@ fn getLuminance(color: vec3f) -> f32
     return saturate(getLuminanceUnclamped(color));
 }
 
+// Assumes input color is linear encoded, not gamma-corrected.
 fn getLuminanceUnclamped(color: vec3f) -> f32
 {
     return dot(color, LuminanceEncodeApprox);
