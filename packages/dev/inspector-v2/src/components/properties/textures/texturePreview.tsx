@@ -2,8 +2,8 @@ import type { CSSProperties, FunctionComponent, Ref } from "react";
 
 import type { BaseTexture } from "core/index";
 
-import { Button, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { Button, Dropdown, Option, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
+import { useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 
 import { WhenTextureReadyAsync } from "core/Misc/textureTools";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
@@ -67,17 +67,30 @@ export type TexturePreviewProps = {
     offsetY?: number;
     width?: number;
     height?: number;
+    depth?: number;
     imperativeRef?: Ref<TexturePreviewImperativeRef>;
 };
 
 export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) => {
-    const { texture, disableToolbar = false, maxWidth = "100%", maxHeight = "384px", offsetX = 0, offsetY = 0, width, height, imperativeRef } = props;
+    const { texture, disableToolbar = false, maxWidth = "100%", maxHeight = "384px", offsetX = 0, offsetY = 0, width, height, depth, imperativeRef } = props;
     const classes = useStyles();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [channels, setChannels] = useState<(typeof TextureChannelStates)[keyof typeof TextureChannelStates]>(TextureChannelStates.ALL);
     const [face, setFace] = useState(0);
+    const [layer, setLayer] = useState(0);
     const [canvasStyle, setCanvasStyle] = useState<CSSProperties>();
     const internalTexture = useProperty(texture, "_texture");
+
+    const effectiveLayer = depth ?? layer;
+    const showLayerDropdown = texture.is2DArray && depth === undefined;
+
+    const layerOptions = useMemo(() => {
+        if (!texture.is2DArray || !internalTexture) {
+            return [];
+        }
+        const count = internalTexture.depth;
+        return Array.from({ length: count }, (_, i) => i);
+    }, [texture.is2DArray, internalTexture, internalTexture?.depth]);
 
     const { size } = useContext(ToolContext);
 
@@ -105,7 +118,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
             setCanvasStyle({ width: imageWidth });
 
             // Fetch texture data BEFORE clearing the canvas to avoid flicker
-            const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, face, channels);
+            const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, face, channels, 0, effectiveLayer);
 
             // Now set canvas dimensions (this clears the canvas) and draw immediately
             canvas.width = canvasWidth;
@@ -121,7 +134,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
         } catch {
             // If we fail, leave the canvas empty
         }
-    }, [texture, face, channels, offsetX, offsetY, width, height, internalTexture]);
+    }, [texture, face, channels, offsetX, offsetY, width, height, internalTexture, effectiveLayer]);
 
     useImperativeHandle(imperativeRef, () => ({ refresh: updatePreviewAsync }), [updatePreviewAsync]);
 
@@ -158,6 +171,22 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
                             </ToolbarButton>
                         ))}
                     </Toolbar>
+                )}
+                {!disableToolbar && showLayerDropdown && layerOptions.length > 0 && (
+                    <Dropdown
+                        size="small"
+                        value={`Layer ${effectiveLayer}`}
+                        selectedOptions={[String(effectiveLayer)]}
+                        onOptionSelect={(_, data) => setLayer(Number(data.optionValue))}
+                        positioning="below"
+                        inlinePopup
+                    >
+                        {layerOptions.map((i) => (
+                            <Option key={i} value={String(i)}>
+                                {`Layer ${i}`}
+                            </Option>
+                        ))}
+                    </Dropdown>
                 )}
                 <div className={classes.previewContainer}>
                     <canvas ref={canvasRef} className={classes.preview} style={canvasStyle} />

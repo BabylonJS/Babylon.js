@@ -32,6 +32,7 @@ export type TextureChannelsToDisplay = {
  * @param face if the texture has multiple faces, the face index to use for the source
  * @param channels a filter for which of the RGBA channels to return in the result
  * @param lod if the texture has multiple LODs, the lod index to use for the source
+ * @param layer if the texture is a 2D array, the layer index to use for the source
  * @returns the 8-bit texture data
  */
 export async function ApplyChannelsToTextureDataAsync(
@@ -40,10 +41,13 @@ export async function ApplyChannelsToTextureDataAsync(
     height: number,
     face: number,
     channels: TextureChannelsToDisplay,
-    lod: number = 0
+    lod: number = 0,
+    layer: number = 0
 ): Promise<Uint8Array> {
     // For cube maps, force RTT path to ensure correct face orientation and gamma correction
-    const data = await GetTextureDataAsync(texture, width, height, face, lod, texture.isCube);
+    // For 2D array textures, pass the layer as the face index for direct pixel readback
+    const effectiveFace = texture.is2DArray ? layer : face;
+    const data = await GetTextureDataAsync(texture, width, height, effectiveFace, lod, texture.isCube);
 
     if (!channels.R || !channels.G || !channels.B || !channels.A) {
         for (let i = 0; i < width * height * 4; i += 4) {
