@@ -67,6 +67,9 @@ export class FlowGraphPointerMoveEventBlock extends FlowGraphEventBlock {
         this.pointerId = this.registerDataOutput("pointerId", RichTypeNumber);
         this.meshUnderPointer = this.registerDataOutput("meshUnderPointer", RichTypeAny);
         this.pickedPoint = this.registerDataOutput("pickedPoint", RichTypeVector3);
+        if (config && config.targetMesh) {
+            config.targetMesh.isPickable = true; // ensure the target mesh is pickable if set via config
+        }
     }
 
     /** @internal */

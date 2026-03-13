@@ -102,14 +102,16 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
         const block = this._getBlock();
         const agInput = block.getDataInput("animationGroup");
         const currentAg = agInput ? (agInput as any)._defaultValue : undefined;
-        if (!currentAg || !sceneContext) return currentAg?.uniqueId ?? -1;
+        if (!sceneContext) return currentAg?.uniqueId ?? -1;
 
-        const uid = currentAg.uniqueId;
-        if (sceneContext.animationGroups.some((a) => a.uniqueId === uid)) {
-            return uid;
+        if (currentAg && typeof currentAg === "object") {
+            const uid = currentAg.uniqueId;
+            if (sceneContext.animationGroups.some((a) => a.uniqueId === uid)) {
+                return uid;
+            }
         }
 
-        const savedName: string | undefined = (block.config as any)?._animationGroupName ?? currentAg.name;
+        const savedName: string | undefined = (block.config as any)?._animationGroupName ?? (currentAg && typeof currentAg === "object" ? currentAg.name : undefined);
         if (savedName) {
             const match = sceneContext.animationGroups.find((a) => a.name === savedName);
             if (match) {
@@ -133,14 +135,16 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
         const block = this._getBlock();
         const animInput = block.getDataInput("animation");
         const currentAnim = animInput ? (animInput as any)._defaultValue : undefined;
-        if (!currentAnim || !sceneContext) return currentAnim?.uniqueId ?? -1;
+        if (!sceneContext) return currentAnim?.uniqueId ?? -1;
 
-        const uid = currentAnim.uniqueId;
-        if (sceneContext.animations.some((a) => a.uniqueId === uid)) {
-            return uid;
+        if (currentAnim && typeof currentAnim === "object") {
+            const uid = currentAnim.uniqueId;
+            if (sceneContext.animations.some((a) => a.uniqueId === uid)) {
+                return uid;
+            }
         }
 
-        const savedName: string | undefined = (block.config as any)?._animationName ?? currentAnim.name;
+        const savedName: string | undefined = (block.config as any)?._animationName ?? (currentAnim && typeof currentAnim === "object" ? currentAnim.name : undefined);
         if (savedName) {
             const match = sceneContext.animations.find((a) => a.name === savedName);
             if (match) {

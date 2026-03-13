@@ -84,17 +84,19 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
     private _resolveCurrentMeshId(sceneContext: SceneContext | null): number {
         const meshInput = this._getTargetMeshInput();
         const currentMesh = meshInput ? (meshInput as any)._defaultValue : undefined;
-        if (!currentMesh || !sceneContext) return currentMesh?.uniqueId ?? -1;
+        if (!sceneContext) return currentMesh?.uniqueId ?? -1;
 
-        const uid = currentMesh.uniqueId;
-        // If the stored uniqueId still matches a mesh in the scene, use it
-        if (sceneContext.meshes.some((m) => m.uniqueId === uid)) {
-            return uid;
+        if (currentMesh && typeof currentMesh === "object") {
+            const uid = currentMesh.uniqueId;
+            // If the stored uniqueId still matches a mesh in the scene, use it
+            if (sceneContext.meshes.some((m) => m.uniqueId === uid)) {
+                return uid;
+            }
         }
 
-        // Stale reference — try to rebind by the saved name
+        // Stale or missing reference — try to rebind by the saved name
         const block = this._getBlock();
-        const savedName: string | undefined = (block.config as any)?._meshName ?? currentMesh.name;
+        const savedName: string | undefined = (block.config as any)?._meshName ?? (currentMesh && typeof currentMesh === "object" ? currentMesh.name : undefined);
         if (savedName) {
             const match = sceneContext.meshes.find((m) => m.name === savedName);
             if (match) {

@@ -130,6 +130,18 @@ export class GraphControlsComponent extends React.Component<IGraphControlsProps,
 
     private _onStart() {
         try {
+            // Stop all auto-playing animation groups on the scene so the flow
+            // graph has exclusive control over which animations run.  Without
+            // this, the glTF auto-started animation keeps running and masks
+            // whatever the PlayAnimation block tries to start.
+            const scene = this.props.globalState.sceneContext?.scene;
+            if (scene) {
+                for (const ag of scene.animationGroups) {
+                    if (ag.isPlaying) {
+                        ag.stop();
+                    }
+                }
+            }
             this.props.globalState.flowGraph.start();
             this._log("Flow graph started.");
         } catch (err) {

@@ -162,6 +162,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             // Parse the snapshot into a new FlowGraph synchronously
             const coordinator = new FlowGraphCoordinator({ scene: globalState.scene });
             const parsedGraph = ParseFlowGraph(data, { coordinator }, resolvedClasses);
+            SerializationTools.PreserveUnresolvedNames(parsedGraph, data);
             if (data.editorData) {
                 (parsedGraph as any)._editorData = data.editorData;
             }

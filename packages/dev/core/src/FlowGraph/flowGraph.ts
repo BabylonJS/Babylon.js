@@ -203,6 +203,7 @@ export class FlowGraph {
         this._sceneEventCoordinator.dispose();
         // Rebuild with the new scene
         this._scene = scene;
+        this._scene.constantlyUpdateMeshUnderPointer = true; // ensure pointer info is always up to date for event blocks that need it
         this._sceneEventCoordinator = new FlowGraphSceneEventCoordinator(this._scene);
         // Pre-attach the event observer so that events from the new
         // coordinator are routed to the graph immediately.  The handler

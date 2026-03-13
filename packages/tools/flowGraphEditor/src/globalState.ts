@@ -613,6 +613,14 @@ export class GlobalState {
         // If a scene context is already loaded, apply it immediately
         if (this.sceneContext) {
             this._applyAssetsContextToGraph(this.sceneContext.scene);
+            // Remap asset references (animation groups, meshes, etc.) that
+            // couldn't be resolved during parsing because the graph was parsed
+            // against the editor's host scene, not the preview scene.
+            this._remapAssetReferences(this.sceneContext.scene);
+            this._cacheSceneIdToNameMap(this.sceneContext.scene);
+            if (typeof flowGraph.setScene === "function") {
+                flowGraph.setScene(this.sceneContext.scene);
+            }
         }
 
         // Re-subscribe debug observers if debug mode is active
@@ -732,14 +740,11 @@ export class GlobalState {
             return;
         }
         const currentMesh = (meshInput as any)._defaultValue;
-        if (!currentMesh || typeof currentMesh !== "object") {
-            return;
-        }
         // Already pointing at a mesh in the new scene?
-        if (newScene.meshes.some((m) => m === currentMesh)) {
+        if (currentMesh && typeof currentMesh === "object" && newScene.meshes.some((m) => m === currentMesh)) {
             return;
         }
-        const savedName: string | undefined = (block.config as any)?._meshName ?? currentMesh.name;
+        const savedName: string | undefined = (block.config as any)?._meshName ?? (currentMesh && typeof currentMesh === "object" ? currentMesh.name : undefined);
         if (!savedName) {
             return;
         }
@@ -762,13 +767,11 @@ export class GlobalState {
             return;
         }
         const currentAg = (agInput as any)._defaultValue;
-        if (!currentAg || typeof currentAg !== "object") {
+        // Already pointing at an animation group in the new scene?
+        if (currentAg && typeof currentAg === "object" && newScene.animationGroups.some((ag) => ag === currentAg)) {
             return;
         }
-        if (newScene.animationGroups.some((ag) => ag === currentAg)) {
-            return;
-        }
-        const savedName: string | undefined = (block.config as any)?._animationGroupName ?? currentAg.name;
+        const savedName: string | undefined = (block.config as any)?._animationGroupName ?? (currentAg && typeof currentAg === "object" ? currentAg.name : undefined);
         if (!savedName) {
             return;
         }
@@ -791,13 +794,11 @@ export class GlobalState {
             return;
         }
         const currentAnim = (animInput as any)._defaultValue;
-        if (!currentAnim || typeof currentAnim !== "object") {
+        // Already pointing at an animation in the new scene?
+        if (currentAnim && typeof currentAnim === "object" && newScene.animations.some((a) => a === currentAnim)) {
             return;
         }
-        if (newScene.animations.some((a) => a === currentAnim)) {
-            return;
-        }
-        const savedName: string | undefined = (block.config as any)?._animationName ?? currentAnim.name;
+        const savedName: string | undefined = (block.config as any)?._animationName ?? (currentAnim && typeof currentAnim === "object" ? currentAnim.name : undefined);
         if (!savedName) {
             return;
         }

@@ -88,6 +88,12 @@ export class SerializationTools {
             const coordinator = new FlowGraphCoordinator({ scene: globalState.scene });
             const parsedGraph = await ParseFlowGraphAsync(serializationObject, { coordinator });
 
+            // The graph was parsed against the editor's host scene which may not
+            // contain scene objects (meshes, animation groups, animations) that
+            // only exist in the preview scene loaded from a snippet.  Stash the
+            // serialized names so _rebind*Reference can find them later.
+            SerializationTools.PreserveUnresolvedNames(parsedGraph, serializationObject);
+
             // Restore editor layout data (block positions, frames, zoom)
             if (serializationObject.editorData) {
                 (parsedGraph as any)._editorData = serializationObject.editorData;
@@ -109,6 +115,50 @@ export class SerializationTools {
             }
         } finally {
             globalState.onIsLoadingChanged.notifyObservers(false);
+        }
+    }
+
+    /**
+     * After parsing a flow graph, some config values (AnimationGroup, Animation,
+     * Mesh references) may be undefined because parsing ran against a scene that
+     * doesn't contain the referenced objects.  This method walks the serialized
+     * block configs and stashes the *name* from the serialization object on
+     * the parsed block's config so that the editor's rebind logic can resolve
+     * them later when the correct scene is loaded.
+     * @param parsedGraph - the parsed flow graph
+     * @param serializationObject - the original serialization data
+     */
+    public static PreserveUnresolvedNames(parsedGraph: FlowGraph, serializationObject: any): void {
+        const serializedBlocks: any[] = serializationObject.allBlocks;
+        if (!serializedBlocks) {
+            return;
+        }
+
+        const allBlocks = parsedGraph.getAllBlocks();
+
+        // Map of config keys → the private name key stashed on block.config
+        const nameKeys: Record<string, string> = {
+            animationGroup: "_animationGroupName",
+            animation: "_animationName",
+            targetMesh: "_meshName",
+        };
+
+        for (let i = 0; i < serializedBlocks.length && i < allBlocks.length; i++) {
+            const serialized = serializedBlocks[i];
+            const block = allBlocks[i];
+            if (!serialized.config || !block.config) {
+                continue;
+            }
+            for (const key of Object.keys(nameKeys)) {
+                const nameKey = nameKeys[key];
+                const serializedValue = serialized.config[key];
+                const parsedValue = (block.config as any)[key];
+                // The serialized value had a {name, className} descriptor but
+                // parsing failed to resolve it (parsedValue is undefined/null).
+                if (serializedValue && typeof serializedValue === "object" && serializedValue.name && !parsedValue) {
+                    (block.config as any)[nameKey] = serializedValue.name;
+                }
+            }
         }
     }
 }
