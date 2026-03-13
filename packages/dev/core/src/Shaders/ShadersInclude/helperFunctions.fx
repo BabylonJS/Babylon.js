@@ -167,16 +167,16 @@ vec3 double_refract(vec3 I, vec3 N, float eta) {
   return refract(Tfront, -Nback, eta);
 }
 
-// Returns the saturated luminance. Assumes input color is linear encoded, not gamma-corrected.
-float getLuminance(vec3 color)
-{
-    return saturate(getLuminanceUnclamped(color));
-}
-
 // Assumes input color is linear encoded, not gamma-corrected.
 float getLuminanceUnclamped(vec3 color)
 {
     return dot(color, LuminanceEncodeApprox);
+}
+
+// Returns the saturated luminance. Assumes input color is linear encoded, not gamma-corrected.
+float getLuminance(vec3 color)
+{
+    return saturate(getLuminanceUnclamped(color));
 }
 
 // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
