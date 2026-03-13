@@ -233,4 +233,22 @@ export function registerBuiltInGLTFExtensions() {
         const { KHR_node_selectability } = await import("./KHR_node_selectability");
         return new KHR_node_selectability(loader);
     });
+
+    unregisterGLTFExtension("KHR_materials_coat");
+    registerGLTFExtension("KHR_materials_coat", true, async (loader) => {
+        const { KHR_materials_coat } = await import("./KHR_materials_coat");
+        return new KHR_materials_coat(loader);
+    });
+
+    unregisterGLTFExtension("KHR_materials_fuzz");
+    registerGLTFExtension("KHR_materials_fuzz", true, async (loader) => {
+        const { KHR_materials_fuzz } = await import("./KHR_materials_fuzz");
+        return new KHR_materials_fuzz(loader);
+    });
+
+    unregisterGLTFExtension("KHR_materials_volume_scatter");
+    registerGLTFExtension("KHR_materials_volume_scatter", true, async (loader) => {
+        const { KHR_materials_volume_scatter } = await import("./KHR_materials_volume_scatter");
+        return new KHR_materials_volume_scatter(loader);
+    });
 }
