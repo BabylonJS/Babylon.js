@@ -2,15 +2,16 @@ import type { CSSProperties, FunctionComponent, Ref } from "react";
 
 import type { BaseTexture } from "core/index";
 
-import { Button, Dropdown, Option, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
-import { useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { Button, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
+import { useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 
 import { WhenTextureReadyAsync } from "core/Misc/textureTools";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { AccordionContext } from "shared-ui-components/fluent/primitives/accordion.contexts";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { ApplyChannelsToTextureDataAsync } from "../../../misc/textureTools";
-import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
-import { AccordionContext } from "shared-ui-components/fluent/primitives/accordion.contexts";
 
 const useStyles = makeStyles({
     root: {
@@ -20,6 +21,7 @@ const useStyles = makeStyles({
     controls: {
         display: "flex",
         gap: tokens.spacingHorizontalXS,
+        padding: 0,
     },
     controlButton: {
         minWidth: "auto",
@@ -40,7 +42,7 @@ const useStyles = makeStyles({
         display: "flex",
         justifyContent: "center",
         marginTop: tokens.spacingVerticalXS,
-        marginBottom: tokens.spacingVerticalS,
+        marginBottom: tokens.spacingVerticalXS,
         width: "100%",
     },
 });
@@ -82,13 +84,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
 
     const showLayerDropdown = texture.is2DArray;
 
-    const layerOptions = useMemo(() => {
-        if (!texture.is2DArray || !internalTexture) {
-            return [];
-        }
-        const count = internalTexture.depth;
-        return Array.from({ length: count }, (_, i) => i);
-    }, [texture.is2DArray, internalTexture, internalTexture?.depth]);
+    const layerCount = texture.is2DArray && internalTexture ? internalTexture.depth : 0;
 
     const { size } = useContext(ToolContext);
 
@@ -170,25 +166,12 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
                         ))}
                     </Toolbar>
                 )}
-                {!disableToolbar && showLayerDropdown && layerOptions.length > 0 && (
-                    <Dropdown
-                        size="small"
-                        value={`Layer ${layer}`}
-                        selectedOptions={[String(layer)]}
-                        onOptionSelect={(_, data) => setLayer(Number(data.optionValue))}
-                        positioning="below"
-                        inlinePopup
-                    >
-                        {layerOptions.map((i) => (
-                            <Option key={i} value={String(i)}>
-                                {`Layer ${i}`}
-                            </Option>
-                        ))}
-                    </Dropdown>
-                )}
                 <div className={classes.previewContainer}>
                     <canvas ref={canvasRef} className={classes.preview} style={canvasStyle} />
                 </div>
+                {!disableToolbar && showLayerDropdown && layerCount > 0 && (
+                    <SyncedSliderPropertyLine label="Layer" value={layer} onChange={setLayer} min={0} max={layerCount - 1} step={1} />
+                )}
                 {texture.isRenderTarget && (
                     <Button
                         appearance="outline"
