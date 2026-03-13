@@ -118,7 +118,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
             setCanvasStyle({ width: imageWidth });
 
             // Fetch texture data BEFORE clearing the canvas to avoid flicker
-            const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, face, channels, 0, effectiveLayer);
+            const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, texture.is2DArray ? effectiveLayer : face, channels);
 
             // Now set canvas dimensions (this clears the canvas) and draw immediately
             canvas.width = canvasWidth;
