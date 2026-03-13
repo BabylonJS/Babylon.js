@@ -1,5 +1,8 @@
 import type { GlobalState } from "../globalState";
 
+// One-shot session flag for user-initiated engine reloads.
+const ManualEngineSwitchReloadStorageKey = "playground-manual-engine-switch-reload";
+
 export class Utilities {
     /**
      * Gets the error message to display when the playground might lose the current code
@@ -59,6 +62,17 @@ export class Utilities {
 
     public static StoreBoolToStore(key: string, value: boolean): void {
         localStorage.setItem(key, value ? "true" : "false");
+    }
+
+    public static MarkManualEngineSwitchReload(): void {
+        this.StoreStringToStore(ManualEngineSwitchReloadStorageKey, "true", true);
+    }
+
+    // Read and clear so the suppression only applies once.
+    public static ConsumeManualEngineSwitchReload(): boolean {
+        const shouldSuppressDialog = sessionStorage.getItem(ManualEngineSwitchReloadStorageKey) === "true";
+        sessionStorage.removeItem(ManualEngineSwitchReloadStorageKey);
+        return shouldSuppressDialog;
     }
 
     public static CheckSafeMode(message: string) {

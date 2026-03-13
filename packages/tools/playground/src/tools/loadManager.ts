@@ -38,7 +38,8 @@ export class LoadManager {
             location.hash = id;
 
             if (location.hash === prevHash) {
-                this._loadPlayground(id);
+                // Setting the same hash does not fire hashchange, so load it directly here.
+                this._loadPlayground(id, false);
             }
         });
 
@@ -127,6 +128,9 @@ export class LoadManager {
                 }
             }
         }
+        // Manual engine switches trigger a full reload.
+        // Consume the one-shot flag here so only the next hash-based load can suppress the dialog.
+        const suppressEngineSwitchDialog = Utilities.ConsumeManualEngineSwitchReload();
         if (pgHash) {
             const match = pgHash.match(/^(#[A-Za-z\d]*)(%23)([\d]+)$/);
             if (match) {
@@ -134,7 +138,7 @@ export class LoadManager {
                 parent.location.hash = pgHash;
             }
             this._previousHash = pgHash;
-            this._loadPlayground(pgHash.substring(1));
+            this._loadPlayground(pgHash.substring(1), suppressEngineSwitchDialog);
         }
     }
 
@@ -149,7 +153,7 @@ export class LoadManager {
         // Engine
         "createEngine",
     ];
-    private async _processJsonPayloadAsync(data: string) {
+    private async _processJsonPayloadAsync(data: string, suppressEngineSwitchDialog = false) {
         const snippet = JSON.parse(data) as SnippetData;
         // Check if title / descr / tags are already set
         if (snippet.name != null && snippet.name != "") {
@@ -190,7 +194,7 @@ export class LoadManager {
             const engineInURL = url.searchParams.get("engine") || url.search.includes("webgpu");
             // get the current engine
             const currentEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
-            if (!engineInURL && currentEngine !== targetEngine) {
+            if (!engineInURL && currentEngine !== targetEngine && !suppressEngineSwitchDialog) {
                 if (
                     await this.globalState.showEngineSwitchDialogAsync({
                         currentEngine,
@@ -264,7 +268,7 @@ export class LoadManager {
         this.globalState.onMetadataUpdatedObservable.notifyObservers();
     }
 
-    private _loadPlayground(id: string) {
+    private _loadPlayground(id: string, suppressEngineSwitchDialog = false) {
         this.globalState.loadingCodeInProgress = true;
         try {
             if (id[0] === "#") {
@@ -280,7 +284,7 @@ export class LoadManager {
                 const localRevision = ReadLastLocal(this.globalState);
                 if (localRevision) {
                     // eslint-disable-next-line
-                    this._processJsonPayloadAsync(localRevision);
+                    this._processJsonPayloadAsync(localRevision, suppressEngineSwitchDialog);
                     return;
                 }
             }
@@ -290,7 +294,7 @@ export class LoadManager {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
                         // eslint-disable-next-line
-                        this._processJsonPayloadAsync(xmlHttp.responseText);
+                        this._processJsonPayloadAsync(xmlHttp.responseText, suppressEngineSwitchDialog);
                     }
                 }
             };
