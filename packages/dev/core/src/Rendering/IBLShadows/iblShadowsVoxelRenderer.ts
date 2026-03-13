@@ -9,6 +9,7 @@ import { Color4 } from "../../Maths/math.color";
 import { Matrix, Vector3, Vector4 } from "../../Maths/math.vector";
 import type { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
+import type { Camera } from "../../Cameras/camera";
 import { Texture } from "../../Materials/Textures/texture";
 import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
@@ -61,6 +62,28 @@ export class _IblShadowsVoxelRenderer {
         } else {
             return this._voxelGridZaxis;
         }
+    }
+
+    /**
+     * Return the voxel render target used during voxelization.
+     * @returns The voxel render target.
+     */
+    public getRT(): ProceduralTexture | RenderTargetTexture {
+        if (this._engine.isWebGPU) {
+            return this._voxelGridRT;
+        } else if (this._triPlanarVoxelization) {
+            return this._combinedVoxelGridPT;
+        } else {
+            return this._voxelGridZaxis;
+        }
+    }
+
+    /**
+     * Returns the slab debug render target texture.
+     * @returns The slab debug render target texture when debug is enabled.
+     */
+    public getVoxelSlabDebugTexture(): RenderTargetTexture | undefined {
+        return this._voxelSlabDebugRT;
     }
 
     /**
@@ -170,8 +193,24 @@ export class _IblShadowsVoxelRenderer {
         return this._voxelDebugAxis;
     }
     private _voxelDebugAxis: number = -1;
+    private _debugCamera?: Camera;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     private _includedMeshes: Mesh[] = [];
+
+    /**
+     * Camera used by the slab debug material.
+     * Falls back to scene.activeCamera when not set.
+     */
+    public set debugCamera(camera: Camera | undefined) {
+        this._debugCamera = camera;
+    }
+
+    /**
+     * Camera used by the slab debug material.
+     */
+    public get debugCamera(): Camera | undefined {
+        return this._debugCamera;
+    }
 
     /**
      * Sets params that control the position and scaling of the debug display on the screen.
@@ -584,8 +623,13 @@ export class _IblShadowsVoxelRenderer {
     }
 
     private _setDebugBindings() {
-        this._voxelSlabDebugMaterial.setMatrix("projection", this._scene.activeCamera!.getProjectionMatrix());
-        this._voxelSlabDebugMaterial.setMatrix("cameraViewMatrix", this._scene.activeCamera!.getViewMatrix());
+        const camera = this._debugCamera ?? this._scene.activeCamera;
+        if (!camera) {
+            return;
+        }
+
+        this._voxelSlabDebugMaterial.setMatrix("projection", camera.getProjectionMatrix());
+        this._voxelSlabDebugMaterial.setMatrix("cameraViewMatrix", camera.getViewMatrix());
     }
 
     /**
