@@ -35,7 +35,8 @@ export class SubMesh implements ICullable {
      * Gets material defines used by the effect associated to the sub mesh
      */
     public get materialDefines(): Nullable<MaterialDefines> {
-        return this._mainDrawWrapperOverride ? (this._mainDrawWrapperOverride.defines as MaterialDefines) : (this._getDrawWrapper()?.defines as Nullable<MaterialDefines>);
+        const defines = this._mainDrawWrapperOverride ? this._mainDrawWrapperOverride.defines : this._getDrawWrapper()?.defines;
+        return typeof defines === "string" ? null : (defines as Nullable<MaterialDefines>);
     }
 
     /**
