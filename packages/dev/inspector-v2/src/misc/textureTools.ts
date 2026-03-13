@@ -1,4 +1,5 @@
 import type { BaseTexture, Texture } from "core/index";
+import { Constants } from "core/Engines/constants";
 import { GetTextureDataAsync } from "core/Misc/textureTools";
 
 /**
@@ -32,6 +33,7 @@ export type TextureChannelsToDisplay = {
  * @param faceOrLayer if the texture has multiple faces, the face index to use for the source. For 2D array textures, this is the layer index.
  * @param channels a filter for which of the RGBA channels to return in the result
  * @param lod if the texture has multiple LODs, the lod index to use for the source
+ * @param slice if the texture is 3D, the depth slice index to use for the source
  * @returns the 8-bit texture data
  */
 export async function ApplyChannelsToTextureDataAsync(
@@ -40,11 +42,23 @@ export async function ApplyChannelsToTextureDataAsync(
     height: number,
     faceOrLayer: number,
     channels: TextureChannelsToDisplay,
-    lod: number = 0
+    lod: number = 0,
+    slice: number = 0
 ): Promise<Uint8Array> {
+    const internalTexture = texture.getInternalTexture();
+    const is3DTexture = texture.is3D || !!internalTexture?.is3D;
+    const textureFormat = internalTexture?.format ?? texture.textureFormat;
+
     // For cube maps, force RTT path to ensure correct face orientation and gamma correction
-    // For 2D array textures, face is reinterpreted as the layer index for direct pixel readback
-    const data = await GetTextureDataAsync(texture, width, height, faceOrLayer, lod, texture.isCube);
+    // For 2D array textures, face is reinterpreted as the layer index for direct pixel readback    
+    const data = await GetTextureDataAsync(texture, width, height, faceOrLayer, lod, texture.isCube || is3DTexture, slice);
+
+    const forceOpaqueAlpha = is3DTexture || _TextureFormatHasNoAlpha(textureFormat);
+    if (forceOpaqueAlpha) {
+        for (let i = 3; i < width * height * 4; i += 4) {
+            data[i] = 255;
+        }
+    }
 
     if (!channels.R || !channels.G || !channels.B || !channels.A) {
         for (let i = 0; i < width * height * 4; i += 4) {
@@ -116,4 +130,25 @@ export async function ApplyChannelsToTextureDataAsync(
         }
     }
     return data;
+}
+
+function _TextureFormatHasNoAlpha(format: number): boolean {
+    switch (format) {
+        case Constants.TEXTUREFORMAT_R:
+        case Constants.TEXTUREFORMAT_RG:
+        case Constants.TEXTUREFORMAT_RGB:
+        case Constants.TEXTUREFORMAT_RED_INTEGER:
+        case Constants.TEXTUREFORMAT_RG_INTEGER:
+        case Constants.TEXTUREFORMAT_RGB_INTEGER:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
+            return true;
+        default:
+            return false;
+    }
 }

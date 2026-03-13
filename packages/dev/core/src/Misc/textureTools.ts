@@ -302,18 +302,24 @@ export async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void>
  * This is convienent to get 8-bit RGBA values for a texture in a GPU compressed format, which cannot be read using readPixels.
  * @internal
  */
-async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: number, face: number, lod: number): Promise<Uint8Array> {
+async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: number, face: number, lod: number, slice: number = 0): Promise<Uint8Array> {
     const scene = texture.getScene()!;
     const engine = scene.getEngine();
+    const sourceInternalTexture = texture.getInternalTexture();
+    const is3DTexture = texture.is3D || !!sourceInternalTexture?.is3D;
 
     if (!engine.isWebGPU) {
-        if (texture.isCube) {
+        if (is3DTexture) {
+            await import("../Shaders/lod3D.fragment");
+        } else if (texture.isCube) {
             await import("../Shaders/lodCube.fragment");
         } else {
             await import("../Shaders/lod.fragment");
         }
     } else {
-        if (texture.isCube) {
+        if (is3DTexture) {
+            await import("../ShadersWGSL/lod3D.fragment");
+        } else if (texture.isCube) {
             await import("../ShadersWGSL/lodCube.fragment");
         } else {
             await import("../ShadersWGSL/lod.fragment");
@@ -322,7 +328,14 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
 
     let lodPostProcess: PostProcess;
 
-    if (!texture.isCube) {
+    if (is3DTexture) {
+        lodPostProcess = new PostProcess("lod3D", "lod3D", {
+            uniforms: ["lod", "gamma", "slice"],
+            samplingMode: Texture.NEAREST_NEAREST_MIPNEAREST,
+            engine,
+            shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+        });
+    } else if (!texture.isCube) {
         lodPostProcess = new PostProcess("lod", "lod", {
             uniforms: ["lod", "gamma"],
             samplingMode: Texture.NEAREST_NEAREST_MIPNEAREST,
@@ -340,10 +353,20 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
         });
     }
 
-    await new Promise((resolve) => {
-        lodPostProcess.onEffectCreatedObservable.addOnce((e) => {
-            e.executeWhenCompiled(() => {
-                resolve(0);
+    await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            reject(new Error(`Timed out while compiling preview shader for texture ${texture.name}.`));
+        }, 5000);
+
+        lodPostProcess.onEffectCreatedObservable.addOnce((effect) => {
+            effect.onErrorObservable.addOnce((erroredEffect) => {
+                clearTimeout(timeout);
+                reject(new Error(`Failed to compile preview shader for texture ${texture.name}: ${erroredEffect.getCompilationError()}`));
+            });
+
+            effect.executeWhenCompiled(() => {
+                clearTimeout(timeout);
+                resolve();
             });
         });
     });
@@ -354,13 +377,14 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
         effect.setTexture("textureSampler", texture);
         effect.setFloat("lod", lod);
         effect.setInt("gamma", texture.gammaSpace ? 1 : 0);
+        if (is3DTexture) {
+            effect.setFloat("slice", slice);
+        }
     };
 
-    const internalTexture = texture.getInternalTexture();
-
     try {
-        if (rtt.renderTarget && internalTexture) {
-            const samplingMode = internalTexture.samplingMode;
+        if (rtt.renderTarget && sourceInternalTexture) {
+            const samplingMode = sourceInternalTexture.samplingMode;
             if (lod !== 0) {
                 texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
             } else {
@@ -397,6 +421,7 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
  * @param face if the texture has multiple faces, the face index to use for the source
  * @param lod if the texture has multiple LODs, the lod index to use for the source
  * @param forceRTT if true, forces the use of the RTT path for reading pixels (useful for cube maps to ensure correct orientation and gamma)
+ * @param slice if the texture is 3D, the depth slice index to use for the source
  * @returns the 8-bit texture data
  */
 export async function GetTextureDataAsync(
@@ -405,9 +430,12 @@ export async function GetTextureDataAsync(
     height?: number,
     face: number = 0,
     lod: number = 0,
-    forceRTT: boolean = false
+    forceRTT: boolean = false,
+    slice: number = 0
 ): Promise<Uint8Array> {
     await WhenTextureReadyAsync(texture);
+    const internalTexture = texture.getInternalTexture();
+    const is3DTexture = texture.is3D || !!internalTexture?.is3D;
 
     const { width: textureWidth, height: textureHeight } = texture.getSize();
     const targetWidth = width ?? textureWidth;
@@ -416,11 +444,11 @@ export async function GetTextureDataAsync(
     // If the internal texture format is compressed, we cannot read the pixels directly.
     // If we're resizing the texture, we need to use a render target texture.
     // forceRTT can be used to ensure correct orientation and gamma for cube maps.
-    if (forceRTT || IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
+    if (forceRTT || is3DTexture || IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
         if (texture.is2DArray || texture.is3D) {
             throw new Error(`Reading pixels from 2D array or 3D textures with ${forceRTT ? "RTT" : "compression"} is not supported.`);
         }
-        return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod);
+        return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod, slice);
     }
 
     let data = (await texture.readPixels(face, lod)) as Nullable<Uint8Array | Float32Array>;
