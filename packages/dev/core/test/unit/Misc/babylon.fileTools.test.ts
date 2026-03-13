@@ -32,6 +32,7 @@ class FakeXMLHttpRequest {
                 this.readyState = FakeXMLHttpRequest.DONE;
                 this.status = 0;
                 this.statusText = "Request Timeout";
+                this._emit("readystatechange");
                 this._emit("timeout");
                 this._emit("loadend");
             }, this.timeout);
@@ -128,7 +129,7 @@ describe("RequestFile", () => {
 
         const error = onError.mock.calls[0][0];
         expect(error).toBeInstanceOf(RequestFileError);
-        expect(error.message).toBe("Request timed out after 100 ms - Unable to load https://example.com/stalled.glb");
+        expect(error.message).toBe("Error status: 0 Request Timeout - Unable to load https://example.com/stalled.glb");
     });
 
     it("preserves the existing successful request flow when request timeouts are disabled", () => {
@@ -211,6 +212,6 @@ describe("RequestFile", () => {
 
         expect(FakeXMLHttpRequest.Instances).toHaveLength(2);
         expect(onError).toHaveBeenCalledTimes(1);
-        expect(onError.mock.calls[0][0].message).toBe("Request timed out after 100 ms - Unable to load https://example.com/retry.glb");
+        expect(onError.mock.calls[0][0].message).toBe("Error status: 0 Request Timeout - Unable to load https://example.com/retry.glb");
     });
 });

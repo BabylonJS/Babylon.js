@@ -596,8 +596,6 @@ export const RequestFile = (
         let request: Nullable<WebRequest> = new WebRequest();
         let retryHandle: Nullable<ReturnType<typeof setTimeout>> = null;
         let onReadyStateChange: Nullable<() => void>;
-        let onRequestError: Nullable<() => void>;
-        let onTimeout: Nullable<() => void>;
 
         const unbindEvents = () => {
             if (!request) {
@@ -610,12 +608,6 @@ export const RequestFile = (
             if (onReadyStateChange) {
                 request.removeEventListener("readystatechange", onReadyStateChange);
             }
-            if (onRequestError) {
-                request.removeEventListener("error", onRequestError);
-            }
-            if (onTimeout) {
-                request.removeEventListener("timeout", onTimeout);
-            }
             request.removeEventListener("loadend", onLoadEnd!);
         };
 
@@ -627,8 +619,6 @@ export const RequestFile = (
 
             onProgress = undefined;
             onReadyStateChange = null;
-            onRequestError = null;
-            onTimeout = null;
             onLoadEnd = null;
             onError = undefined;
             onOpened = undefined;
@@ -668,7 +658,6 @@ export const RequestFile = (
                 return;
             }
 
-            let requestHandled = false;
             request.open("GET", loadUrl);
 
             if (onOpened) {
@@ -696,32 +685,6 @@ export const RequestFile = (
                 request.addEventListener("loadend", onLoadEnd);
             }
 
-            const handleRequestFailure = (message: string) => {
-                if (aborted || !request || requestHandled) {
-                    return;
-                }
-
-                requestHandled = true;
-                const failedRequest = request;
-                const retryStrategy = FileToolsOptions.DefaultRetryStrategy;
-                if (retryStrategy) {
-                    const waitTime = retryStrategy(loadUrl, failedRequest, retryIndex);
-                    if (waitTime !== -1) {
-                        // Prevent the request from completing for retry.
-                        unbindEvents();
-
-                        request = new WebRequest();
-                        retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
-                        return;
-                    }
-                }
-
-                const error = new RequestFileError(message, failedRequest);
-                if (onError) {
-                    onError(error);
-                }
-            };
-
             onReadyStateChange = () => {
                 if (aborted || !request) {
                     return;
@@ -742,7 +705,6 @@ export const RequestFile = (
                         const data = useArrayBuffer ? request.response : request.responseText;
                         if (data !== null) {
                             try {
-                                requestHandled = true;
                                 if (onSuccess) {
                                     onSuccess(data, request);
                                 }
@@ -753,23 +715,27 @@ export const RequestFile = (
                         }
                     }
 
-                    handleRequestFailure("Error status: " + request.status + " " + request.statusText + " - Unable to load " + loadUrl);
+                    const retryStrategy = FileToolsOptions.DefaultRetryStrategy;
+                    if (retryStrategy) {
+                        const waitTime = retryStrategy(loadUrl, request, retryIndex);
+                        if (waitTime !== -1) {
+                            // Prevent the request from completing for retry.
+                            unbindEvents();
+
+                            request = new WebRequest();
+                            retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
+                            return;
+                        }
+                    }
+
+                    const error = new RequestFileError("Error status: " + request.status + " " + request.statusText + " - Unable to load " + loadUrl, request);
+                    if (onError) {
+                        onError(error);
+                    }
                 }
             };
 
             request.addEventListener("readystatechange", onReadyStateChange);
-
-            onRequestError = () => {
-                handleRequestFailure("Network error - Unable to load " + loadUrl);
-            };
-
-            onTimeout = () => {
-                const timeout = request?.timeout || FileToolsOptions.RequestTimeout;
-                handleRequestFailure(`Request timed out after ${timeout} ms - Unable to load ${loadUrl}`);
-            };
-
-            request.addEventListener("error", onRequestError);
-            request.addEventListener("timeout", onTimeout);
 
             request.send();
         };
