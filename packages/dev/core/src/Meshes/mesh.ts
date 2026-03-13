@@ -2596,6 +2596,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             delete this._instanceDataStorage.renderPasses[id];
         }
         if (this._userInstancedBuffersStorage?.renderPasses) {
+            const passVBOs = this._userInstancedBuffersStorage.renderPasses[id];
+            if (passVBOs) {
+                for (const kind in passVBOs) {
+                    passVBOs[kind]?.dispose();
+                }
+            }
             delete this._userInstancedBuffersStorage.renderPasses[id];
         }
     }
