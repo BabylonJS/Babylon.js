@@ -67,12 +67,11 @@ export type TexturePreviewProps = {
     offsetY?: number;
     width?: number;
     height?: number;
-    depth?: number;
     imperativeRef?: Ref<TexturePreviewImperativeRef>;
 };
 
 export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) => {
-    const { texture, disableToolbar = false, maxWidth = "100%", maxHeight = "384px", offsetX = 0, offsetY = 0, width, height, depth, imperativeRef } = props;
+    const { texture, disableToolbar = false, maxWidth = "100%", maxHeight = "384px", offsetX = 0, offsetY = 0, width, height, imperativeRef } = props;
     const classes = useStyles();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [channels, setChannels] = useState<(typeof TextureChannelStates)[keyof typeof TextureChannelStates]>(TextureChannelStates.ALL);
@@ -81,8 +80,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
     const [canvasStyle, setCanvasStyle] = useState<CSSProperties>();
     const internalTexture = useProperty(texture, "_texture");
 
-    const effectiveLayer = depth ?? layer;
-    const showLayerDropdown = texture.is2DArray && depth === undefined;
+    const showLayerDropdown = texture.is2DArray;
 
     const layerOptions = useMemo(() => {
         if (!texture.is2DArray || !internalTexture) {
@@ -118,7 +116,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
             setCanvasStyle({ width: imageWidth });
 
             // Fetch texture data BEFORE clearing the canvas to avoid flicker
-            const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, texture.is2DArray ? effectiveLayer : face, channels);
+            const data = await ApplyChannelsToTextureDataAsync(texture, textureWidth, textureHeight, texture.is2DArray ? layer : face, channels);
 
             // Now set canvas dimensions (this clears the canvas) and draw immediately
             canvas.width = canvasWidth;
@@ -134,7 +132,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
         } catch {
             // If we fail, leave the canvas empty
         }
-    }, [texture, face, channels, offsetX, offsetY, width, height, internalTexture, effectiveLayer]);
+    }, [texture, face, channels, offsetX, offsetY, width, height, internalTexture, layer]);
 
     useImperativeHandle(imperativeRef, () => ({ refresh: updatePreviewAsync }), [updatePreviewAsync]);
 
@@ -175,8 +173,8 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
                 {!disableToolbar && showLayerDropdown && layerOptions.length > 0 && (
                     <Dropdown
                         size="small"
-                        value={`Layer ${effectiveLayer}`}
-                        selectedOptions={[String(effectiveLayer)]}
+                        value={`Layer ${layer}`}
+                        selectedOptions={[String(layer)]}
                         onOptionSelect={(_, data) => setLayer(Number(data.optionValue))}
                         positioning="below"
                         inlinePopup
