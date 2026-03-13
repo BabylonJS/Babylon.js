@@ -66,9 +66,9 @@ export class LoadManager {
         this.globalState.onErrorObservable.notifyObservers({ message });
     }
 
-    private _processJsonPayload(data: string) {
+    private _processJsonPayload(data: string, suppressEngineSwitchDialog = false) {
         // eslint-disable-next-line github/no-then
-        void this._processJsonPayloadAsync(data).catch((error) => {
+        void this._processJsonPayloadAsync(data, suppressEngineSwitchDialog).catch((error) => {
             const message = error instanceof Error ? error.message : "Failed to process the playground snippet.";
             this._notifyLoadFailure(message);
         });
@@ -326,7 +326,7 @@ export class LoadManager {
             xmlHttp.timeout = PlaygroundLoadTimeoutMs;
             xmlHttp.onload = () => {
                 if (xmlHttp.status === 200) {
-                    this._processJsonPayload(xmlHttp.responseText);
+                    this._processJsonPayload(xmlHttp.responseText, suppressEngineSwitchDialog);
                     return;
                 }
 

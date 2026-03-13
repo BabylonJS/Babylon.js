@@ -40,9 +40,6 @@ export const EngineSwitchDialog: React.FC<IEngineSwitchDialogProps> = ({ globalS
             if (event.key === "Escape") {
                 event.preventDefault();
                 onCancel();
-            } else if (event.key === "Enter") {
-                event.preventDefault();
-                onConfirm();
             }
         };
 
