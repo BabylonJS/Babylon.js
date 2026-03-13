@@ -159,11 +159,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _failRun(error: unknown, fallbackMessage: string) {
         const normalizedError = error instanceof Error ? error : new Error(fallbackMessage);
         (window as any).handleException(normalizedError);
+        this._disposeTransientResources();
         this._finishRun();
     }
 
-    private async _withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string) {
-        // eslint-disable-next-line @typescript-eslint/return-await
+    private _withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string) {
         return new Promise<T>((resolve, reject) => {
             const timeoutHandle = window.setTimeout(() => {
                 reject(new Error(timeoutMessage));
@@ -216,12 +216,37 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         if (this._queuedRunRequested) {
             this._queuedRunRequested = false;
+            // Schedule the replay after the current stack unwinds so observers finish
+            // handling the completed run before we start the queued one.
             queueMicrotask(() => this._requestRun());
             return false;
         }
 
         this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
         return true;
+    }
+
+    private _disposeTransientResources() {
+        try {
+            this._scene = null;
+            this._engine = null;
+
+            const globalObject = window as any;
+            delete globalObject.engine;
+            delete globalObject.scene;
+            delete globalObject.initFunction;
+
+            while (EngineStore.Instances.length) {
+                EngineStore.Instances[0].dispose();
+            }
+
+            let audioEngine;
+            while ((audioEngine = LastCreatedAudioEngine())) {
+                audioEngine.dispose();
+            }
+        } catch {
+            // Best effort cleanup after a failed or timed-out run.
+        }
     }
 
     private async _compileAndRunAsync() {
@@ -231,12 +256,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         }
         this._preventReentrancy = true;
 
-        this.props.globalState.onErrorObservable.notifyObservers(null);
+            this.props.globalState.onErrorObservable.notifyObservers(null);
 
-        const displayInspector = this._inspectorV2Token || this._scene?.debugLayer.isVisible();
+            const displayInspector = this._inspectorV2Token || this._scene?.debugLayer.isVisible();
 
-        const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
-        const webGPUSupported = await webgpuPromise;
+            const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
+            const webGPUSupported = await webgpuPromise;
 
         this._inspectorV2Token?.dispose();
         this._inspectorV2Token = null;
@@ -337,8 +362,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     });
                 };
             }
-            // Build the runnable (always V2)
-            // The architecture for runnables changed from text block source code in PG_V1 to a full module in PG_V2.
+            // Bound startup waits so a hung module import / engine init cannot leave the
+            // playground permanently stuck behind the loading overlay.
             let runner;
             try {
                 runner = await this._withTimeout(this.props.globalState.getRunnable!(), RunnableCreationTimeoutMs, "The playground timed out while preparing the runnable.");
