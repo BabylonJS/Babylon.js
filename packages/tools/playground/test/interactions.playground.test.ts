@@ -17,6 +17,7 @@ test("Playground is loaded (Desktop)", async ({ page }) => {
     await expect(page.locator("#canvasZone")).toBeVisible();
     await expect(page.locator("#monacoHost")).toBeVisible();
     await expect(page.locator("#pg-header")).toBeVisible();
+    await expect(page.locator("#wait-ring")).toBeHidden({ timeout: 30000 });
 });
 
 test("Playground is loaded (Mobile)", async ({ page }) => {
