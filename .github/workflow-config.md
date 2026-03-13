@@ -16,8 +16,6 @@ Within that `<feature-name>` directory should be a directory named `.temp/` with
 do not need to be kept after feature development is complete, such as `mocks.html`, `mocks.context.md`,
 and `implementation_plan/`.
 
-Skills should
-
 ## Quality commands
 
 Run these commands to verify code quality. All must pass before committing.
@@ -30,9 +28,9 @@ Run these commands to verify code quality. All must pass before committing.
 
 This is not a product, but a platform which contains an API that's published via NPM and
 several supporting tools. The platform is called Babylon.js, and the tools include several
-deployed web based tools, such as the playground, sandbox, and editors: Node Material
+deployed web-based tools, such as the playground, sandbox, and editors: Node Material
 Editor (NME), GUI Editor, Node Geometry Editor (NGE), Node Render Graph Editor (NRGE),
-Smart Filters Editor (SFE), and the Viewer.
+Smart Filters Editor (SFE), Node Particle Editor (NPE), and the Viewer.
 
 When creating HTML mocks, match the look and feel of the tool's existing UI. Don't guess at
 what the tool looks like — read the UI code and create a close approximation.
@@ -41,7 +39,7 @@ what the tool looks like — read the UI code and create a close approximation.
 
 ### Unit tests
 
-Place unit tests alongside in a `test` folder alongside the `src` folder of the code to test.
+Place unit tests in a `test` folder alongside the `src` folder of the code to test.
 
 ## Related skills
 
