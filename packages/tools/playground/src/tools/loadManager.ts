@@ -41,7 +41,8 @@ export class LoadManager {
             location.hash = id;
 
             if (location.hash === prevHash) {
-                this._loadPlayground(id);
+                // Setting the same hash does not fire hashchange, so load it directly here.
+                this._loadPlayground(id, false);
             }
         });
 
@@ -65,9 +66,9 @@ export class LoadManager {
         this.globalState.onErrorObservable.notifyObservers({ message });
     }
 
-    private _processJsonPayload(data: string) {
+    private _processJsonPayload(data: string, suppressEngineSwitchDialog = false) {
         // eslint-disable-next-line github/no-then
-        void this._processJsonPayloadAsync(data).catch((error) => {
+        void this._processJsonPayloadAsync(data, suppressEngineSwitchDialog).catch((error) => {
             const message = error instanceof Error ? error.message : "Failed to process the playground snippet.";
             this._notifyLoadFailure(message);
         });
@@ -161,6 +162,9 @@ export class LoadManager {
                 }
             }
         }
+        // Manual engine switches trigger a full reload.
+        // Consume the one-shot flag here so only the next hash-based load can suppress the dialog.
+        const suppressEngineSwitchDialog = Utilities.ConsumeManualEngineSwitchReload();
         if (pgHash) {
             const match = pgHash.match(/^(#[A-Za-z\d]*)(%23)([\d]+)$/);
             if (match) {
@@ -168,7 +172,7 @@ export class LoadManager {
                 parent.location.hash = pgHash;
             }
             this._previousHash = pgHash;
-            this._loadPlayground(pgHash.substring(1));
+            this._loadPlayground(pgHash.substring(1), suppressEngineSwitchDialog);
         }
     }
 
@@ -183,7 +187,7 @@ export class LoadManager {
         // Engine
         "createEngine",
     ];
-    private async _processJsonPayloadAsync(data: string) {
+    private async _processJsonPayloadAsync(data: string, suppressEngineSwitchDialog = false) {
         const snippet = JSON.parse(data) as SnippetData;
         // Check if title / descr / tags are already set
         if (snippet.name != null && snippet.name != "") {
@@ -218,20 +222,21 @@ export class LoadManager {
 
         // check the engine
         if (payload.engine && ["WebGL1", "WebGL2", "WebGPU"].includes(payload.engine)) {
+            const targetEngine = payload.engine;
             // check if an engine is forced in the URL
             const url = new URL(window.location.href);
             const engineInURL = url.searchParams.get("engine") || url.search.includes("webgpu");
             // get the current engine
             const currentEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
-            if (!engineInURL && currentEngine !== payload.engine) {
+            if (!engineInURL && currentEngine !== targetEngine && !suppressEngineSwitchDialog) {
                 if (
-                    window.confirm(
-                        `The engine version in this playground (${payload.engine}) is different from the one you are currently using (${currentEngine}).
-Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
-                    )
+                    await this.globalState.showEngineSwitchDialogAsync({
+                        currentEngine,
+                        targetEngine,
+                    })
                 ) {
-                    Utilities.StoreStringToStore("engineVersion", payload.engine, true);
-                    this.globalState.onEngineChangedObservable.notifyObservers(payload.engine);
+                    Utilities.StoreStringToStore("engineVersion", targetEngine, true);
+                    this.globalState.onEngineChangedObservable.notifyObservers(targetEngine);
                 }
             }
         }
@@ -297,7 +302,7 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
         this.globalState.onMetadataUpdatedObservable.notifyObservers();
     }
 
-    private _loadPlayground(id: string) {
+    private _loadPlayground(id: string, suppressEngineSwitchDialog = false) {
         this.globalState.loadingCodeInProgress = true;
         try {
             if (id[0] === "#") {
@@ -312,7 +317,7 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
             if (this.globalState.currentSnippetRevision === "local") {
                 const localRevision = ReadLastLocal(this.globalState);
                 if (localRevision) {
-                    this._processJsonPayload(localRevision);
+                    this._processJsonPayload(localRevision, suppressEngineSwitchDialog);
                     return;
                 }
             }
@@ -321,7 +326,7 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
             xmlHttp.timeout = PlaygroundLoadTimeoutMs;
             xmlHttp.onload = () => {
                 if (xmlHttp.status === 200) {
-                    this._processJsonPayload(xmlHttp.responseText);
+                    this._processJsonPayload(xmlHttp.responseText, suppressEngineSwitchDialog);
                     return;
                 }
 
