@@ -56,8 +56,10 @@ export const EngineSwitchDialog: React.FC<IEngineSwitchDialogProps> = ({ globalS
 
     const { currentEngine, targetEngine } = request;
 
+    const overlayClassName = theme === "dark" ? "dialog-overlay dialog-theme-dark" : "dialog-overlay";
+
     return (
-        <div className={`dialog-overlay${theme === "dark" ? " dialog-theme-dark" : ""}`}>
+        <div className={overlayClassName}>
             <div
                 className="dialog dialog--small"
                 role="alertdialog"

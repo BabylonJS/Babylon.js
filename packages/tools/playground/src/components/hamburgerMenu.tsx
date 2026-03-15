@@ -144,13 +144,16 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                 },
             });
         }
+        const languageClass = this.props.globalState.language === "JS" ? "background-js" : "background-ts";
+        const menuClassName = `hambuger-menu ${languageClass}${this.state.isExpanded ? " expanded" : ""}`;
+
         return (
             <>
                 {this.state.isExpanded && <div className="click-blocker" onClick={() => this.setState({ isExpanded: false })}></div>}
-                <div className={"hamburger-button " + (this.props.globalState.language === "JS" ? "background-js" : "background-ts")} onClick={() => this.switch()}>
+                <div className={`hamburger-button ${languageClass}`} onClick={() => this.switch()}>
                     <HambugerButton />
                 </div>
-                <div className={"hambuger-menu " + (this.props.globalState.language === "JS" ? "background-js" : "background-ts") + (this.state.isExpanded ? " expanded" : "")}>
+                <div className={menuClassName}>
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Run" icon="play" isActive={true} onClick={() => this.onPlay()} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Save" icon="save" isActive={false} onClick={() => this.onSave()} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Inspector" icon="inspector" isActive={false} onClick={() => this.onInspector()} />

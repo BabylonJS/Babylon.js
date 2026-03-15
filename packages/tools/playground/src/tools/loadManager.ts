@@ -284,9 +284,15 @@ export class LoadManager {
         // Since that would not have run in the old playground
         // So we append to the end of the file to satisfy our module-based runner
         const fileName = guessed === "TS" ? "index.ts" : "index.js";
-        code += `\nexport default ${guessed === "TS" ? "Playground" : (this._jsFunctions.find((fn) => code.includes(fn)) ?? "createScene")}\n`;
-        if (guessed === "JS" && code.includes("createEngine")) {
-            code += `\nexport { createEngine }\n`;
+        
+        if (guessed === "TS") {
+            code += `\nexport default Playground\n`;
+        } else {
+            const jsFunction = this._jsFunctions.find((fn) => code.includes(fn)) ?? "createScene";
+            code += `\nexport default ${jsFunction}\n`;
+            if (code.includes("createEngine")) {
+                code += `\nexport { createEngine }\n`;
+            }
         }
         queueMicrotask(() => {
             this.globalState.onV2HydrateRequiredObservable.notifyObservers({

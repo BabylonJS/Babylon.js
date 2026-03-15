@@ -48,12 +48,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     private _reloadWithEngineVersion(engineVersion: "WebGL2" | "WebGL" | "WebGPU") {
         Utilities.MarkManualEngineSwitchReload();
         Utilities.StoreStringToStore("engineVersion", engineVersion, true);
-
-        if (engineVersion !== "WebGPU" && location.search.indexOf("webgpu") !== -1) {
-            location.search = location.search.replace("webgpu", "");
-            return;
-        }
-
         window.location.reload();
     }
 
@@ -309,8 +303,10 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             });
         }
 
+        const languageClass = this.props.globalState.language === "JS" ? "background-js" : "background-ts";
+
         return (
-            <div className={"commands " + (this.props.globalState.language === "JS" ? "background-js" : "background-ts")}>
+            <div className={`commands ${languageClass}`}>
                 <div className="commands-left">
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Run" icon="play" shortcut="Alt+Enter" isActive={true} onClick={() => this.onPlay()} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Save" icon="save" shortcut="Ctrl+S" isActive={false} onClick={() => this.onSave()} />
