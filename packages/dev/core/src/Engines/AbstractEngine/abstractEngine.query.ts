@@ -30,7 +30,7 @@ export class _OcclusionDataStorage {
     public forceRenderingWhenOccluded = false;
 
     /** @internal */
-    public forRenderPass = -1;
+    public occlusionForRenderPassId = -1;
 }
 
 declare module "../../Engines/abstractEngine" {
@@ -162,6 +162,12 @@ declare module "../../Meshes/abstractMesh" {
          * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
          */
         forceRenderingWhenOccluded: boolean;
+
+        /**
+         * This number indicates the render pass id used to run the occlusion query, this is useful to run the occlusion query only in specific render pass, the default value is -1 which means run the occlusion query in all render passes
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
+         */
+        occlusionForRenderPassId: number;
     }
 }
 Object.defineProperty(AbstractMesh.prototype, "isOcclusionQueryInProgress", {
@@ -236,6 +242,17 @@ Object.defineProperty(AbstractMesh.prototype, "forceRenderingWhenOccluded", {
     },
     set: function (this: AbstractMesh, value: boolean) {
         this._occlusionDataStorage.forceRenderingWhenOccluded = value;
+    },
+    enumerable: true,
+    configurable: true,
+});
+
+Object.defineProperty(AbstractMesh.prototype, "occlusionForRenderPassId", {
+    get: function (this: AbstractMesh) {
+        return this._occlusionDataStorage.occlusionForRenderPassId;
+    },
+    set: function (this: AbstractMesh, value: number) {
+        this._occlusionDataStorage.occlusionForRenderPassId = value;
     },
     enumerable: true,
     configurable: true,
