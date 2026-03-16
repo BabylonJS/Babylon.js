@@ -97,7 +97,7 @@
         "test:escheck": "nx run-many --outputStyle=static --target=test:escheck --parallel --maxParallel=6 --exclude=@babylonjs/root",
         "test:docs": "node ./scripts/typedoc-generator.mjs",
         "prepare": "ts-patch install -s && npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools",
-        "clean": "npx nx run-many --outputStyle=static --target=clean --all && npm run build:tools --exclude=@babylonjs/root",
+        "clean": "npx nx run-many --outputStyle=static --target=clean --all --exclude=@babylonjs/root && npm run build:tools",
         "format": "npm run format:check && npm run format:fix",
         "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
         "format:fix": "prettier --write \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
