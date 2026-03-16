@@ -28,6 +28,9 @@ export class _OcclusionDataStorage {
 
     /** @internal */
     public forceRenderingWhenOccluded = false;
+
+    /** @internal */
+    public forRenderPass = -1;
 }
 
 declare module "../../Engines/abstractEngine" {
