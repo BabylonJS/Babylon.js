@@ -78,4 +78,4 @@ New public APIs should have corresponding playground examples with documentation
 
 ## Tests
 
-New APIs should have Jest tests (1:1 mapping with source files) and visualization tests via Playwright when applicable. See `.github/instructions/tests.instructions.md`.
+New APIs should have Jest tests following the existing test structure and conventions, and visualization tests via Playwright when applicable. See `.github/instructions/tests.instructions.md`.

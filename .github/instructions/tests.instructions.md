@@ -8,7 +8,7 @@ Jest test types include unit, integration, performance, and interactions tests.
 
 [jest] in this context refers to one of these Jest test types.
 
-[jest] tests should exist in a test/[jest] folder the package source root. There should be a 1:1 mapping between source file and [jest] test file, and the [jest] test file should have the same name as the source file with .test.ts or .test.tsx as the extension. For example, a source file at packages/dev/core/src/scene.ts should have its unit test at packages/dev/core/test/unit/scene.test.ts.
+[jest] tests should exist in a test/[jest] folder at the package source root. There should be a 1:1 mapping between source file and [jest] test file, and the [jest] test file should have the same name as the source file with .test.ts or .test.tsx as the extension. For example, a source file at packages/dev/core/src/scene.ts should have its unit test at packages/dev/core/test/unit/scene.test.ts.
 
 When reviewing code, check if new APIs are being introduced without Jest tests. If they are missing and the APIs are well suited for Jest tests, try to add new tests yourself, otherwise at least flag missing tests in the review comments.
 
