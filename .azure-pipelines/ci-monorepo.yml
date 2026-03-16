@@ -1,0 +1,1115 @@
+# =============================================================================
+# CI-Monorepo Pipeline - Babylon.js
+# Converted from Azure DevOps Classic Pipeline (Definition ID: 14)
+#
+# IMPORTANT SETUP NOTES:
+# 1. Link the 'BabylonJS-CI-Infrastructure' variable group (see VARIABLE-GROUPS.md).
+#
+# 2. Secret variables must be configured in the Azure DevOps pipeline UI:
+#    - BASIC_AUTH
+#    - BROWSERSTACK_ACCESS_KEY
+#    - BROWSERSTACK_USERNAME
+#    - DEPLOYMENT_SERVER
+#
+# 3. Fork build settings (allow secrets, require comments for non-team members)
+#    must be configured in the Azure DevOps pipeline settings UI.
+#
+# 4. Authorize the GitHub service connection (GITHUB_SERVICE_CONNECTION)
+#    for this pipeline.
+#
+# 5. Update the 'resources.pipelines' source names to match your actual
+#    pipeline names in Azure DevOps.
+# =============================================================================
+
+trigger:
+    batch: true
+    branches:
+        include:
+            - master
+    paths:
+        exclude:
+            - .build/config.json
+            - CHANGELOG.md
+
+pr:
+    branches:
+        include:
+            - master
+
+schedules:
+    # Classic pipeline: midnight PST on Mon, Tue, Wed, Fri (daysToBuild: 23)
+    # Cron is in UTC: midnight PST = 08:00 UTC
+    - cron: "0 8 * * 1,2,3,5"
+      displayName: Scheduled build
+      branches:
+          include:
+              - master
+      always: false # Only run if there are changes
+
+resources:
+    pipelines:
+        # Build completion trigger - cd-publish pipeline (Definition 15)
+        - pipeline: buildCompletionTrigger
+          source: "<PUBLISH_PIPELINE_NAME>" # Replace with the YAML pipeline name once created
+          trigger:
+              branches:
+                  include:
+                      - master
+        # Native tests artifact source - pipeline ID 36
+        - pipeline: nativeTestsArtifact
+          source: "<NATIVE_TESTS_PIPELINE_NAME>" # Replace with the YAML pipeline name once created
+          project: ContinousIntegration
+
+variables:
+    - group: BabylonJS-CI-Infrastructure
+    - name: BuildName
+      value: $(Build.SourceBranch)
+    - name: BROWSERSTACK_BROWSER
+      value: "chrome@143:OSX Sonoma"
+    - name: system.debug
+      value: false
+
+pool:
+    vmImage: ubuntu-latest
+
+jobs:
+    # ============================================================================
+    # BUILD JOB
+    # Builds UMD packages, prepares and uploads snapshot, posts PR comments
+    # No dependencies - runs immediately
+    # ============================================================================
+    - job: Build
+      displayName: "Build job"
+      steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                versionSpec: "22.4.1"
+
+          - bash: |
+                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "what's new.md" && echo "##vso[task.setvariable variable=WhatsNewChanged]true"
+                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "package.json" && echo "##vso[task.setvariable variable=PackageJsonChanged]true"
+                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q ".build/config.json" && echo "##vso[task.setvariable variable=ConfigJsonChanged]true"
+                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "smartFilter" && echo "##vso[task.setvariable variable=SmartFiltersChanged]true"
+
+                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD)
+            displayName: "Check git changes"
+            continueOnError: true
+
+          - template: templates/check-snapshot-exists.yml
+            parameters:
+                snapshotPath: "$(BuildName)"
+
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)" -X POST -H "Authorization: $(BASIC_AUTH)"
+            displayName: "Clear snapshot"
+            condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'true'), not(eq(variables['Build.SourceBranchName'], 'master')))
+
+          - task: GitHubComment@0
+            displayName: "Tag your PR!"
+            continueOnError: true
+            condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'false'))
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    Please make sure to label your PR with "bug", "new feature" or "breaking change" label(s).
+                    To prevent this PR from going to the changelog marked it with the "skip changelog" label.
+
+          - task: GitHubComment@0
+            displayName: "What's new comment"
+            continueOnError: true
+            condition: and(succeeded(), eq(variables['WHATSNEWCHANGED'], 'true'))
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    There is no need to update the "what's new.md" file. A changelog will be generated using the PR and its tags.
+
+          - task: GitHubComment@0
+            displayName: "Did package.json changed?"
+            continueOnError: true
+            condition: and(succeeded(), eq(variables['PACKAGEJSONCHANGED'], 'true'))
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    Reviewer - this PR has made changes to one or more package.json files.
+
+          - task: GitHubComment@0
+            displayName: "Did build directory changed"
+            continueOnError: true
+            condition: and(succeeded(), eq(variables['CONFIGJSONCHANGED'], 'true'))
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    Reviewer - this PR has made changes to the build configuration file.
+
+                    *This build will release a new package on npm*
+
+                    If that was unintentional please make sure to revert those changes or close this PR.
+
+          - script: npm install
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - task: Npm@1
+            displayName: "npm build umd"
+            inputs:
+                command: custom
+                customCommand: "run build:umd"
+
+          - task: Npm@1
+            displayName: "npm build smart filters"
+            condition: and(succeeded(), eq(variables['SMARTFILTERSCHANGED'], 'true'))
+            inputs:
+                command: custom
+                customCommand: "run build:source:smart-filters"
+
+          - task: Npm@1
+            displayName: "npm build smart filters editor"
+            condition: and(succeeded(), eq(variables['SMARTFILTERSCHANGED'], 'true'))
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/smart-filters-editor"
+
+          - task: Npm@1
+            displayName: "Prepare snapshot"
+            inputs:
+                command: custom
+                customCommand: "run prepare-snapshot"
+
+          - task: Npm@1
+            displayName: "Test es version of UMD packages"
+            continueOnError: true
+            inputs:
+                command: custom
+                customCommand: "run test:escheck"
+
+          - task: Npm@1
+            displayName: "Test UMD build"
+            inputs:
+                command: custom
+                customCommand: "run build -w babylonjs-testproject"
+
+          - script: |
+                mkdir .snapshot/smartFiltersEditor
+                cp -r packages/tools/smartFiltersEditor/dist/* .snapshot/smartFiltersEditor
+            displayName: "Add Smart Filters Editor to snapshot"
+            condition: and(succeeded(), eq(variables['SMARTFILTERSCHANGED'], 'true'))
+
+          - script: |
+                cd .snapshot
+                zip -r ../snapshot.zip *
+                cd ..
+
+                curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                  -H "Content-Type: multipart/form-data" \
+                  -H "Authorization: $(BASIC_AUTH)" \
+                  -F "path=$(BuildName)" \
+                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
+                  -F "saveZip=true" \
+                  -F "zip=@snapshot.zip"
+            displayName: "Upload snapshot"
+
+          - task: GitHubComment@0
+            displayName: "Writing GitHub comment"
+            continueOnError: true
+            condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'false'))
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    Snapshot stored with reference name:
+                    $(BuildName)
+
+                    Test environment:
+                    $(SNAPSHOT_CDN_URL)/$(BuildName)/index.html
+
+                    To test a playground add it to the URL, for example:
+
+                    $(SNAPSHOT_CDN_URL)/$(BuildName)/index.html#WGZLGJ#4600
+
+                    Links to test your changes to core in the published versions of the Babylon tools (does not contain changes you made to the tools themselves):
+
+                    https://playground.babylonjs.com/?snapshot=$(BuildName)
+                    https://sandbox.babylonjs.com/?snapshot=$(BuildName)
+                    https://gui.babylonjs.com/?snapshot=$(BuildName)
+                    https://nme.babylonjs.com/?snapshot=$(BuildName)
+
+                    To test the snapshot in the playground with a playground ID add it after the snapshot query string:
+
+                    https://playground.babylonjs.com/?snapshot=$(BuildName)#BCU1XR#0
+
+                    *If you made changes to the sandbox or playground in this PR, additional comments will be generated soon containing links to the dev versions of those tools.*
+
+          - task: GitHubComment@0
+            displayName: "Writing SFE GitHub comment"
+            continueOnError: true
+            condition: and(succeeded(), eq(variables['SMARTFILTERSCHANGED'], 'true'))
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    Smart Filters Editor is available to test at:
+                    https://sfe.babylonjs.com/?snapshot=$(BuildName)
+
+    # ============================================================================
+    # ES6
+    # Builds ES6 modules and generates file size reports
+    # No dependencies - runs immediately
+    # ============================================================================
+    - job: ES6
+      displayName: "ES6"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                versionSpec: "22.4.1"
+
+          - script: npm install
+            displayName: "npm install"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - task: Npm@1
+            displayName: "npm build es6"
+            inputs:
+                command: custom
+                customCommand: "run build:es6"
+
+          - bash: |
+                npx nx run-many --target=prepublishOnly --all
+            displayName: "Make sure es6 packages are ready"
+            continueOnError: true
+
+          - task: Npm@1
+            displayName: "npm build modules size"
+            inputs:
+                command: custom
+                customCommand: "run build -w @tools/tests"
+
+          - task: Npm@1
+            displayName: "npm generate modules size"
+            inputs:
+                command: custom
+                customCommand: "run generate-file-size-report -w @tools/tests"
+
+          - script: |
+                cd packages/tools/tests/dist
+                zip ../../../../snapshot.zip fileSizes.json
+                cd ../../../..
+
+                curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                  -H "Content-Type: multipart/form-data" \
+                  -H "Authorization: $(BASIC_AUTH)" \
+                  -F "path=$(BuildName)" \
+                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
+                  -F "zip=@snapshot.zip"
+            displayName: "Upload file size results"
+
+    # ============================================================================
+    # FORMAT, LINT, AND MORE
+    # Checks formatting, linting, and circular dependencies
+    # No dependencies - runs immediately
+    # ============================================================================
+    - job: FormatLint
+      displayName: "Format, Lint, and more"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.17.1"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                versionSpec: "22.17.1"
+
+          - script: npm install
+            displayName: "npm install"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - script: npx prettier --list-different "./packages/**/src/**/*.{ts,tsx,js,scss}"
+            displayName: "Formatting"
+
+          - script: npx eslint "packages/dev/core/src/**/*.ts" --quiet --format azure-devops
+            displayName: "Linting core"
+            env:
+                NODE_OPTIONS: "--max-old-space-size=8192"
+
+          - script: npx eslint "packages/dev/**/src/**/*.{ts,tsx}" --quiet --ignore-pattern "packages/dev/core/*" --format azure-devops
+            displayName: "Linting dev"
+            env:
+                NODE_OPTIONS: "--max-old-space-size=8192"
+
+          - script: npx eslint "packages/tools/**/src/**/*.{ts,tsx}" --quiet --format azure-devops
+            displayName: "Linting tools"
+            env:
+                NODE_OPTIONS: "--max-old-space-size=8192"
+
+          # DISABLED in classic pipeline:
+          # - task: Npm@1
+          #   displayName: 'Linting'
+          #   inputs:
+          #     command: custom
+          #     customCommand: 'run lint:check -- --format azure-devops'
+
+          - script: npx --yes dpdm -T --no-tree ./packages/dev/core/src/**/*
+            displayName: "Circular dependencies"
+
+    # ============================================================================
+    # TYPEDOC CHECK
+    # Only runs on PRs (not on master branch)
+    # No dependencies - runs immediately
+    # ============================================================================
+    - job: TypeDocCheck
+      displayName: "TypeDoc check"
+      condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
+      steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                versionSpec: "22.4.1"
+
+          - script: npm install
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - script: |
+                git branch
+                git fetch origin "+refs/heads/*:refs/remotes/origin/*"
+                git checkout -B master origin/master
+                git branch
+
+                GIT_CHANGES_COMMAND="git diff $(Build.SourceVersion) --name-only --relative" npm run test:docs
+            displayName: "Run TypeDoc test"
+            continueOnError: true
+            env:
+                CI: "true"
+
+          - task: PublishTestResults@2
+            displayName: "Publish TypeDoc Results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./junit.xml"
+
+    # ============================================================================
+    # UNIT TESTS
+    # Depends on: Build
+    # ============================================================================
+    - job: UnitTests
+      displayName: "Unit tests"
+      dependsOn: Build
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                versionSpec: "22.4.1"
+
+          - task: Npm@1
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+            inputs:
+                command: install
+
+          - script: npm run test:unit
+            displayName: "unit tests"
+            retryCountOnTaskFailure: 2
+            env:
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                HEADLESS: "true"
+
+          - task: PublishTestResults@2
+            displayName: "Publish Unit Test Results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./junit.xml"
+
+          # DISABLED in classic pipeline - integration tests:
+          # - script: |
+          #     export DISPLAY=:99
+          #     Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          #     sleep 3
+          #     npm run test:integration
+          #   displayName: 'integration tests'
+          #   continueOnError: true
+          #   retryCountOnTaskFailure: 4
+          #   env:
+          #     CDN_BASE_URL: '$(SNAPSHOT_CDN_URL)/$(BuildName)'
+          #     HEADLESS: 'true'
+
+          # DISABLED in classic pipeline - interaction tests (moved to separate job):
+          # - script: |
+          #     npx playwright install --with-deps
+          #     export CDN_BASE_URL="$(SNAPSHOT_CDN_URL)/$(Build.SourceBranch)"
+          #     export BROWSERSTACK_USERNAME=$(BROWSERSTACK_USERNAME)
+          #     export BROWSERSTACK_ACCESS_KEY=$(BROWSERSTACK_ACCESS_KEY)
+          #     npm run test:interactions
+          #   displayName: 'interaction tests'
+          #   retryCountOnTaskFailure: 2
+          #   env:
+          #     CI: 'true'
+
+    # ============================================================================
+    # INTERACTION TESTS
+    # Depends on: Build
+    # ============================================================================
+    - job: InteractionTests
+      displayName: "Interaction tests"
+      dependsOn: Build
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                versionSpec: "22.4.1"
+
+          - template: templates/check-snapshot-exists.yml
+            parameters:
+                snapshotPath: "$(BuildName)/testResults/interactionplaywright"
+
+          - script: |
+                npm install
+                npx playwright install --with-deps
+            displayName: "npm install && playwright install"
+            retryCountOnTaskFailure: 1
+
+          - script: npm run test:interactions
+            displayName: "run interaction tests"
+            retryCountOnTaskFailure: 1
+            env:
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                CI: "true"
+
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/interactionplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
+            displayName: "Delete test results"
+            continueOnError: true
+            condition: eq(variables['SNAPSHOTEXISTS'], 'true')
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                reportDir: "packages/tools/tests/playwright-report"
+                fallbackReportDir: "playwright-report"
+                deployPath: "$(BuildName)/testResults/interactionplaywright"
+                continueOnError: true
+
+          - task: GitHubComment@0
+            displayName: "Writing GitHub comment"
+            continueOnError: true
+            condition: eq(variables['SNAPSHOTEXISTS'], 'false')
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    Interaction tests
+
+                    $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/interactionplaywright/index.html
+
+          - task: PublishTestResults@2
+            displayName: "Publish interaction test results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./packages/tools/tests/junit.xml"
+
+    # ============================================================================
+    # VISUALIZATION TESTS - WEBGL1
+    # Depends on: Build
+    # NOTE: All test steps are DISABLED in the classic pipeline.
+    # Only Node setup is enabled; the job is effectively a no-op.
+    # ============================================================================
+    - job: VisualizationWebGL1
+      displayName: "Visualization tests - WebGL1"
+      dependsOn: Build
+      timeoutInMinutes: 40
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                versionSpec: "22.4.1"
+
+          # ALL REMAINING STEPS DISABLED in classic pipeline:
+          # - script: npm install
+          #   displayName: 'npm install'
+          #   env:
+          #     PUPPETEER_PRODUCT: firefox
+
+          # - script: |
+          #     export DISPLAY=:99
+          #     Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          #     sleep 3
+          #     npx jest --selectProjects=visualization --runInBand -i "webgl1"
+          #   displayName: 'visualization tests (FF)'
+          #   continueOnError: true
+          #   env:
+          #     CDN_BASE_URL: '$(SNAPSHOT_CDN_URL)/$(BuildName)'
+          #     BROWSER: firefox
+          #     TEST_GPU: desktop
+          #     PUPPETEER_PRODUCT: firefox
+
+          # - script: |
+          #     curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl1" -X POST -H "Authorization: $(BASIC_AUTH)"
+          #   displayName: 'Delete test results'
+          #   condition: failed()
+
+          # - script: |
+          #     cd jest-screenshot-report
+          #     zip -r ../file.zip *
+          #     cd ..
+          #     curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+          #       -H "Content-Type: multipart/form-data" \
+          #       -H "Authorization: $(BASIC_AUTH)" \
+          #       -F "path=$(BuildName)/testResults/webgl1" \
+          #       -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
+          #       -F "zip=@file.zip"
+          #   displayName: 'Upload test results'
+          #   condition: failed()
+
+          # - task: GitHubComment@0
+          #   displayName: 'Writing GitHub comment'
+          #   condition: failed()
+          #   inputs:
+          #     gitHubConnection: '$(GITHUB_SERVICE_CONNECTION)'
+          #     repositoryName: '$(Build.Repository.Name)'
+          #     comment: |
+          #       Visualization tests for WebGL 1 have failed. If some tests failed because the snapshots do not match, the report can be found at
+          #
+          #       $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/webgl1/index.html
+          #
+          #       If tests were successful afterwards, this report might not be available anymore.
+
+    # ============================================================================
+    # VISUALIZATION TESTS - WEBGL 2
+    # Depends on: Build
+    # Runs on BrowserStack
+    # ============================================================================
+    - job: VisualizationWebGL2
+      displayName: "Visualization tests - WebGL 2"
+      dependsOn: Build
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                versionSpec: "22.4.1"
+
+          - template: templates/check-snapshot-exists.yml
+            parameters:
+                snapshotPath: "$(BuildName)/testResults/webgl2playwright"
+
+          - script: |
+                npm install
+                #npx playwright install
+                #npx playwright install --force chrome
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - script: npm run test:playwright -w @tools/tests -- --project=webgl2 --project=webgl2-largeWorld
+            displayName: "WebGL2 BStack"
+            env:
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                CI: "true"
+                EXCLUDE_REGEX_ARRAY: "Procedural textures playground"
+                BROWSER: "BrowserStack"
+                TIMEOUT: "27500"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl2playwright" -X POST -H "Authorization: $(BASIC_AUTH)"
+            displayName: "Delete test results"
+            continueOnError: true
+            condition: eq(variables['SNAPSHOTEXISTS'], 'true')
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                reportDir: "packages/tools/tests/playwright-report"
+                fallbackReportDir: "playwright-report"
+                deployPath: "$(BuildName)/testResults/webgl2playwright"
+                continueOnError: true
+
+          - task: GitHubComment@0
+            displayName: "GitHub WebGL2 comment"
+            condition: eq(variables['SNAPSHOTEXISTS'], 'false')
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    WebGL2 visualization test reporter:
+
+                    $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/webgl2playwright/index.html
+
+          - task: PublishTestResults@2
+            displayName: "Publish webgl2 test results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./packages/tools/tests/junit.xml"
+
+    # ============================================================================
+    # VISUALIZATION TESTS - WEBGPU
+    # Depends on: Build
+    # Runs on BrowserStack
+    # ============================================================================
+    - job: VisualizationWebGPU
+      displayName: "Visualization tests - WebGPU"
+      dependsOn: Build
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                versionSpec: "22.4.1"
+
+          - template: templates/check-snapshot-exists.yml
+            parameters:
+                snapshotPath: "$(BuildName)/testResults/webgpuplaywright"
+
+          - script: |
+                npm install
+                #npx playwright install --force chrome
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - script: npm run test:playwright -w @tools/tests -- --project=webgpu --project=webgpu-largeWorld
+            displayName: "WebGPU BStack"
+            retryCountOnTaskFailure: 1
+            env:
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                CI: "true"
+                EXCLUDE_REGEX_ARRAY: "Sample depth texture,Render to 3D RT,apply-all-post-processes"
+                BROWSER: "BrowserStack"
+                TIMEOUT: "27500"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgpuplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
+            displayName: "Delete test results"
+            continueOnError: true
+            condition: eq(variables['SNAPSHOTEXISTS'], 'true')
+
+          - template: templates/upload-test-results.yml
+            parameters:
+                reportDir: "packages/tools/tests/playwright-report"
+                fallbackReportDir: "playwright-report"
+                deployPath: "$(BuildName)/testResults/webgpuplaywright"
+                continueOnError: true
+
+          - task: GitHubComment@0
+            displayName: "Writing GitHub comment"
+            continueOnError: true
+            condition: eq(variables['SNAPSHOTEXISTS'], 'false')
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "$(Build.Repository.Name)"
+                comment: |
+                    Visualization tests for WebGPU
+
+                    $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/webgpuplaywright/index.html
+
+          - task: PublishTestResults@2
+            displayName: "Publish webgpu test results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./packages/tools/tests/junit.xml"
+
+    # ============================================================================
+    # NATIVE TESTS (EXPERIMENTAL)
+    # Depends on: Build
+    # Runs on Windows agent pool
+    # ============================================================================
+    - job: NativeTests
+      displayName: "Native tests (experimental)"
+      dependsOn: Build
+      timeoutInMinutes: 15
+      pool:
+          vmImage: windows-latest
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download Pipeline Artifact"
+            inputs:
+                source: specific
+                project: "$(DEVOPS_PROJECT_ID)"
+                pipeline: 36
+                runVersion: latest
+                runBranch: "refs/heads/master"
+                path: "$(Pipeline.Workspace)"
+
+          - script: |
+                for /f %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property instanceId') do (
+                  reg add HKCU\Software\Microsoft\VisualStudio\Debugger\JIT\{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}\%%i /f /v Disabled /t REG_DWORD /d 1
+                )
+
+                reg query HKCU\Software\Microsoft\VisualStudio\Debugger\JIT\{F200A7E7-DEA5-11D0-B854-00A0244A1DE2} /s
+            displayName: "Disable JIT Debugging for Script"
+
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$(BuildName)&fileTocheck=cdnSnapshot.zip" -o ./tmp.json -H "Authorization: $(BASIC_AUTH)"
+                findstr "true" .\tmp.json >nul 2>&1
+                if %errorlevel% equ 0 (
+                   echo snapshot exists
+                ) else (
+                    echo snapshot does not exist
+                )
+
+                curl "$(SNAPSHOT_CDN_URL)/$(BuildName)/cdnSnapshot.zip" -o snapshot.zip
+                if errorlevel 1 exit /b %errorlevel%
+
+                set destDir=..\BabylonNativeNightlyUnitTests\RelWithDebInfo\Assets
+                for /f %%i in ('dir /b %destDir%\babylon*') do (
+                  unzip -p snapshot.zip "**%%i" > %destDir%\%%i
+                  if errorlevel 1 exit /b !errorlevel!
+                )
+
+                set destDir=..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts
+                for /f %%i in ('dir /b %destDir%\babylon*') do (
+                  unzip -p snapshot.zip "**%%i" > %destDir%\%%i
+                  if errorlevel 1 exit /b !errorlevel!
+                )
+            displayName: "Update scripts from snapshot"
+            retryCountOnTaskFailure: 5
+
+          - script: |
+                cd
+                cd ..\BabylonNativeNightlyUnitTests\RelWithDebInfo
+                UnitTests.exe
+            displayName: "Run unit tests"
+            retryCountOnTaskFailure: 3
+
+          - script: |
+                cd
+                cd ..\BabylonNativeNightlyPlayground\RelWithDebInfo
+                Playground.exe app:///Scripts/validation_native.js
+            displayName: "Run visualization tests"
+            retryCountOnTaskFailure: 3
+
+    # ============================================================================
+    # PERFORMANCE TESTS (EXPERIMENTAL)
+    # Depends on: Build
+    # NOTE: The test step is DISABLED in the classic pipeline.
+    # ============================================================================
+    - job: PerformanceTests
+      displayName: "Performance tests (experimental)"
+      dependsOn: Build
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                versionSpec: "22.4.1"
+
+          - script: npm install
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          # DISABLED in classic pipeline:
+          # - script: npm run test:performance
+          #   displayName: 'Run tests'
+          #   continueOnError: true
+          #   env:
+          #     CDN_BASE_URL: '$(SNAPSHOT_CDN_URL)/$(BuildName)'
+          #     CI: 'true'
+          #     BROWSER: 'BrowserStack'
+          #     TIMEOUT: '100000'
+          #     BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+          #     BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
+    # ============================================================================
+    # VIEWER TESTS
+    # No dependencies - runs immediately
+    # ============================================================================
+    - job: ViewerTests
+      displayName: "Viewer tests"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - task: NodeTool@0
+            displayName: "Use Node 22.4.1"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                versionSpec: "22.4.1"
+
+          - task: Npm@1
+            displayName: "npm install"
+            retryCountOnTaskFailure: 1
+            inputs:
+                command: install
+
+          - task: Npm@1
+            displayName: "npm build"
+            retryCountOnTaskFailure: 1
+            inputs:
+                command: custom
+                customCommand: "run build:dev"
+
+          - script: |
+                (npm run serve -w @tools/viewer &)
+                npx playwright install --with-deps
+                npm run test:playwright -w @tools/tests -- --project=viewer
+            displayName: "run tests"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+                CI: "true"
+                BROWSER: "Chrome"
+
+    # ============================================================================
+    # VISUALIZATION TESTS - DEVHOST (EXPERIMENTAL)
+    # Depends on: Build, ES6
+    # NOTE: ALL STEPS are DISABLED in the classic pipeline.
+    # The job is kept as a placeholder since Deploy depends on it.
+    # ============================================================================
+    - job: VisualizationDevhost
+      displayName: "Visualization tests - Devhost (experimental)"
+      dependsOn:
+          - Build
+          - ES6
+      steps:
+          - script: echo "All steps in this job are disabled in the classic pipeline"
+            displayName: "Placeholder - all steps disabled"
+
+          # DISABLED in classic pipeline - full step list:
+          # - task: NodeTool@0
+          #   displayName: 'Use Node 22.4.1'
+          #   continueOnError: true
+          #   retryCountOnTaskFailure: 1
+          #   inputs:
+          #     versionSpec: '22.4.1'
+
+          # - script: |
+          #     curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$(BuildName)/testResults/devhostplaywright" -o ./tmp.json -H "Authorization: $(BASIC_AUTH)"
+          #     if grep "true" ./tmp.json
+          #     then
+          #        echo "##vso[task.setvariable variable=SnapshotExists]true"
+          #     else
+          #        echo "##vso[task.setvariable variable=SnapshotExists]false"
+          #     fi
+          #   displayName: 'Check if snapshot exists'
+
+          # - script: |
+          #     npm install
+          #     npx playwright install
+          #   displayName: 'npm install && playwright install'
+          #   retryCountOnTaskFailure: 1
+          #   env:
+          #     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: 'true'
+          #     PUPPETEER_SKIP_DOWNLOAD: 'true'
+
+          # - task: Npm@1
+          #   displayName: 'npm build dev'
+          #   inputs:
+          #     command: custom
+          #     customCommand: 'run build:dev'
+
+          # - script: npm run test:visualization:devhost
+          #   displayName: 'run visual tests'
+          #   continueOnError: true
+          #   retryCountOnTaskFailure: 1
+          #   env:
+          #     CDN_BASE_URL: '$(SNAPSHOT_CDN_URL)/$(BuildName)'
+          #     CI: 'true'
+          #     BROWSER: 'Chrome'
+          #     TIMEOUT: '27500'
+          #     BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+          #     BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+          #     CIWORKERS: '1'
+
+          # - script: |
+          #     curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/devhostplaywright" -X POST -H "Authorization: $(BASIC_AUTH)"
+          #   displayName: 'Delete test results'
+          #   continueOnError: true
+          #   condition: eq(variables['SNAPSHOTEXISTS'], 'true')
+
+          # - script: |
+          #     DIR="packages/tools/tests/playwright-report"
+          #     if test -d "$DIR"; then
+          #       cd packages/tools/tests/playwright-report
+          #       zip -r ../../../../file.zip *
+          #       cd ../../../..
+          #     else
+          #       cd playwright-report
+          #       zip -r ../file.zip *
+          #       cd ..
+          #     fi
+          #     curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+          #       -H "Content-Type: multipart/form-data" \
+          #       -H "Authorization: $(BASIC_AUTH)" \
+          #       -F "path=$(BuildName)/testResults/devhostplaywright" \
+          #       -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
+          #       -F "zip=@file.zip"
+          #   displayName: 'Upload test results'
+          #   continueOnError: true
+          #   condition: succeededOrFailed()
+
+          # - task: GitHubComment@0
+          #   displayName: 'Writing Devhost comment'
+          #   condition: eq(variables['SNAPSHOTEXISTS'], 'false')
+          #   inputs:
+          #     gitHubConnection: '$(GITHUB_SERVICE_CONNECTION)'
+          #     repositoryName: '$(Build.Repository.Name)'
+          #     comment: |
+          #       Devhost visualization test reporter:
+          #
+          #       $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/devhostplaywright/index.html
+
+          # - task: PublishTestResults@2
+          #   displayName: 'Publish Devhost test results'
+          #   condition: succeededOrFailed()
+          #   inputs:
+          #     testResultsFormat: JUnit
+          #     testResultsFiles: './packages/tools/tests/junit.xml'
+
+    # ============================================================================
+    # DEPLOY
+    # Depends on: Build, UnitTests, VisualizationWebGL2, ES6,
+    #             VisualizationWebGPU, InteractionTests, VisualizationDevhost
+    # Only runs on master/preview branch for Manual/ResourceTrigger/Schedule/
+    # BuildCompletion builds
+    # ============================================================================
+    - job: Deploy
+      displayName: "Deploy"
+      dependsOn:
+          - Build
+          - UnitTests
+          - VisualizationWebGL2
+          - ES6
+          - VisualizationWebGPU
+          - InteractionTests
+          - VisualizationDevhost
+      condition: >-
+          and(
+            succeeded(),
+            or(
+              eq(variables['Build.SourceBranchName'], 'master'),
+              eq(variables['Build.SourceBranchName'], 'preview')
+            ),
+            or(
+              eq(variables['Build.Reason'], 'Manual'),
+              eq(variables['Build.Reason'], 'ResourceTrigger'),
+              eq(variables['Build.Reason'], 'Schedule'),
+              eq(variables['Build.Reason'], 'BuildCompletion')
+            )
+          )
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+
+          - bash: mkdir download
+            displayName: "Prepare download directory"
+
+          - script: |
+                curl "$(SNAPSHOT_CDN_URL)/$(BuildName)/cdnSnapshot.zip" -o snapshot.zip
+
+                curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                  -H "Content-Type: multipart/form-data" \
+                  -H "Authorization: $(BASIC_AUTH)" \
+                  -F "path=cdn/$(Build.SourceBranchName)" \
+                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
+                  -F "zip=@snapshot.zip"
+
+                curl "$(SNAPSHOT_CDN_URL)/$(BuildName)/fileSizes.json" -o fileSizes.json
+
+                zip ./fileSize.zip fileSizes.json
+
+                curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                  -H "Content-Type: multipart/form-data" \
+                  -H "Authorization: $(BASIC_AUTH)" \
+                  -F "path=cdn/$(Build.SourceBranchName)" \
+                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
+                  -F "zip=@fileSize.zip"
+            displayName: "Update CDN"
+
+          - script: |
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=true" -i -H "Authorization: $(BASIC_AUTH)"
+
+                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=true" -i -H "Authorization: $(BASIC_AUTH)"
+            displayName: "Purge CDN"

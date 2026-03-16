@@ -100,7 +100,10 @@ export class EdgeDetectionPostProcess extends PostProcess {
             // Geometry buffer renderer is not supported. So, work as a passthrough.
             Logger.Error("Geometry Buffer Renderer support is required for this post-process.");
         } else {
-            const h1 = new RenderTargetTexture("h1", { width: this.width, height: this.height }, scene, {
+            // h1 is a blank texture used as a black background for renderMode 3 (outline only).
+            // It is never rendered into, so a 1x1 size is sufficient. We cannot use this.width/this.height
+            // here because they are still -1 at construction time (set later during activate()).
+            const h1 = new RenderTargetTexture("h1", { width: 1, height: 1 }, scene, {
                 samplingMode: Constants.TEXTURE_NEAREST_NEAREST,
                 generateMipMaps: false,
                 generateDepthBuffer: false,

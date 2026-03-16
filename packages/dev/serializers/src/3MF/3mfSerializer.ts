@@ -15,23 +15,19 @@ import { AbstractThreeMfSerializer, type IThreeMfSerializerBaseOptions } from ".
 import { ThreeMfSerializerGlobalConfiguration } from "./3mfSerializer.configuration";
 
 /**
- *
+ * Factory for generating sequential resource IDs for 3MF objects.
  */
 class IncrementalIdFactory {
-    /** */
-    _from: number;
-    /** */
-    _to: number;
-    /** */
-    _step: number;
-    /** */
-    _i: number;
+    private _from: number;
+    private _to: number;
+    private _step: number;
+    private _i: number;
 
     /**
-     *
-     * @param from
-     * @param to
-     * @param step
+     * Creates an ID factory with the specified range and increment.
+     * @param from - Starting ID value
+     * @param to - Minimum bound for ID generation (throws if exceeded)
+     * @param step - Increment value for each ID
      */
     public constructor(from: number = 0, to: number = Number.MIN_SAFE_INTEGER, step: number = 1) {
         this._from = from;
@@ -41,8 +37,9 @@ class IncrementalIdFactory {
     }
 
     /**
-     *
-     * @returns
+     * Generates the next ID in the sequence.
+     * @returns The next ID value
+     * @throws Error if ID generation exceeds the configured bounds
      */
     public next(): number {
         if (this._i < this._to) {
@@ -54,8 +51,8 @@ class IncrementalIdFactory {
     }
 
     /**
-     *
-     * @returns
+     * Resets the factory to start generating from the initial value again.
+     * @returns This factory instance for chaining
      */
     public reset(): IncrementalIdFactory {
         this._i = this._from;
@@ -92,7 +89,7 @@ export interface IThreeMfSerializerOptions extends IThreeMfSerializerBaseOptions
  */
 export class ThreeMfSerializer extends AbstractThreeMfSerializer<Mesh | InstancedMesh, IThreeMfSerializerOptions> {
     /**
-     *
+     * Default serialization options: meter units, no instance export.
      */
     static DefaultOptions: IThreeMfSerializerOptions = { unit: ST_Unit.meter, exportInstances: false };
 
