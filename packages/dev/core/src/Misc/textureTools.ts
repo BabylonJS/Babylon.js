@@ -417,6 +417,9 @@ export async function GetTextureDataAsync(
     // If we're resizing the texture, we need to use a render target texture.
     // forceRTT can be used to ensure correct orientation and gamma for cube maps.
     if (forceRTT || IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
+        if (texture.is2DArray || texture.is3D) {
+            throw new Error(`Reading pixels from 2D array or 3D textures with ${forceRTT ? "RTT" : "compression"} is not supported.`);
+        }
         return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod);
     }
 
