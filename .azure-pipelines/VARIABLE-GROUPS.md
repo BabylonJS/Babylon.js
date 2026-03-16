@@ -77,6 +77,19 @@ variable group) because they contain credentials:
 | `NPM_TOKEN`               | cd-publish                                                               | npm registry auth token for publishing                        |
 | `SEARCH_KEY`              | ci-documentation                                                         | Search API key for documentation builds                       |
 
+### Manual YAML Configuration
+
+These values must be edited directly in the YAML files because Azure DevOps
+`resources.pipelines.source` does not support runtime variable expansion.
+
+| Value                          | File            | Description                                                     |
+| ------------------------------ | --------------- | --------------------------------------------------------------- |
+| `<PUBLISH_PIPELINE_NAME>`      | ci-monorepo.yml | Name of the cd-publish YAML pipeline (build completion trigger) |
+| `<NATIVE_TESTS_PIPELINE_NAME>` | ci-monorepo.yml | Name of the native tests pipeline (artifact download source)    |
+
+Replace the `<...>` placeholders with the actual pipeline names after creating
+them in Azure DevOps.
+
 ## Linking the Variable Group
 
 Each pipeline YAML references the variable group via:

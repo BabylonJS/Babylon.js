@@ -48,16 +48,16 @@ schedules:
 
 resources:
     pipelines:
-        # Build completion trigger - pipeline ID 15
+        # Build completion trigger - cd-publish pipeline (Definition 15)
         - pipeline: buildCompletionTrigger
-          source: "TODO-Pipeline-15-Name" # Update with actual pipeline name
+          source: "<PUBLISH_PIPELINE_NAME>" # Replace with the YAML pipeline name once created
           trigger:
               branches:
                   include:
                       - master
         # Native tests artifact source - pipeline ID 36
         - pipeline: nativeTestsArtifact
-          source: "TODO-Pipeline-36-Name" # Update with actual pipeline name
+          source: "<NATIVE_TESTS_PIPELINE_NAME>" # Replace with the YAML pipeline name once created
           project: ContinousIntegration
 
 variables:

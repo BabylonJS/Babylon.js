@@ -49,9 +49,6 @@ jobs:
                 git config --global user.name "Babylon.js Platform"
                 git remote rm origin
                 git remote add origin https://$(GitHubPAT)@github.com/BabylonJS/Babylon.js.git
-                #echo "https://$(GitHubPAT):x-oauth-basic@github.com" >> "$(HOME)/.git-credentials"
-                #git config --global --add url."git@github.com:".insteadOf "https://github.com/"
-                git remote -v
                 git fetch origin
                 git checkout $(Build.SourceBranchName)
             displayName: "prepare git"
