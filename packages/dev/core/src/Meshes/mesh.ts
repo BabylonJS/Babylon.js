@@ -2705,11 +2705,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         const numActiveCameras = scene.activeCameras?.length ?? 0;
-        const canCheckOcclusionQuery =
-            ((numActiveCameras > 1 && scene.activeCamera === scene.activeCameras![0]) || numActiveCameras <= 1) &&
-            (this._occlusionDataStorage.occlusionForRenderPassId === -1 || this._occlusionDataStorage.occlusionForRenderPassId === engine.currentRenderPassId);
+        const canCheckOcclusionQuery = (numActiveCameras > 1 && scene.activeCamera === scene.activeCameras![0]) || numActiveCameras <= 1;
+        const occlusionCheckOnly = this._occlusionDataStorage.occlusionForRenderPassId !== -1 && this._occlusionDataStorage.occlusionForRenderPassId !== engine.currentRenderPassId;
 
-        if (canCheckOcclusionQuery && this._checkOcclusionQuery() && !this._occlusionDataStorage.forceRenderingWhenOccluded) {
+        if (canCheckOcclusionQuery && this._checkOcclusionQuery(occlusionCheckOnly) && !this._occlusionDataStorage.forceRenderingWhenOccluded) {
             return this;
         }
 

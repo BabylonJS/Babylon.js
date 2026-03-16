@@ -164,7 +164,7 @@ declare module "../../Meshes/abstractMesh" {
         forceRenderingWhenOccluded: boolean;
 
         /**
-         * This number indicates the render pass id used to run the occlusion query, this is useful to run the occlusion query only in specific render pass, the default value is -1 which means run the occlusion query in all render passes
+         * This number indicates the render pass id used to run the occlusion query. The default value is -1, which means run the occlusion query in all render passes.
          * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
          */
         occlusionForRenderPassId: number;
@@ -259,7 +259,7 @@ Object.defineProperty(AbstractMesh.prototype, "occlusionForRenderPassId", {
 });
 
 // We also need to update AbstractMesh as there is a portion of the code there
-AbstractMesh.prototype._checkOcclusionQuery = function () {
+AbstractMesh.prototype._checkOcclusionQuery = function (checkOnly: boolean) {
     const dataStorage = this._occlusionDataStorage;
 
     if (dataStorage.occlusionType === AbstractMesh.OCCLUSION_TYPE_NONE) {
@@ -302,6 +302,10 @@ AbstractMesh.prototype._checkOcclusionQuery = function () {
                 return dataStorage.occlusionType === AbstractMesh.OCCLUSION_TYPE_OPTIMISTIC ? false : dataStorage.isOccluded;
             }
         }
+    }
+
+    if (checkOnly) {
+        return dataStorage.isOccluded;
     }
 
     const scene = this.getScene();
