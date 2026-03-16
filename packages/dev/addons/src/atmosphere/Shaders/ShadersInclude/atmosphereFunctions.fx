@@ -479,7 +479,7 @@ float toAerialPerspectiveLayer(float distance, float aerialPerspectiveLutDistanc
 }
 
 vec4 applyAerialPerspectiveSaturation(vec4 aerialPerspective) {
-    float previousRadiance = getLuminance(aerialPerspective.rgb);
+    float previousRadiance = getLuminanceUnclamped(aerialPerspective.rgb);
     aerialPerspective.rgb = mix(vec3(previousRadiance), aerialPerspective.rgb, aerialPerspectiveSaturation);
     return aerialPerspective;
 }

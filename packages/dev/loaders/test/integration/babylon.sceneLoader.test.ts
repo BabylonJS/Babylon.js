@@ -1,6 +1,19 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { GLTFFileLoader } from "loaders/glTF";
-import { glbBase64, gltfBase64, gltfRaw, objBase64, objRaw, stlAsciiBase64, stlAsciiRaw, stlBinaryBase64, bvhBasicRaw, bvhSimpleRaw, bvhThreeBonesRaw } from "./testData";
+import {
+    glbBase64,
+    gltfBase64,
+    gltfRaw,
+    gltfWithEmbeddedImageBase64,
+    objBase64,
+    objRaw,
+    stlAsciiBase64,
+    stlAsciiRaw,
+    stlBinaryBase64,
+    bvhBasicRaw,
+    bvhSimpleRaw,
+    bvhThreeBonesRaw,
+} from "./testData";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
 
 declare const BABYLON: typeof import("core/index") & typeof import("loaders/index");
@@ -1250,6 +1263,21 @@ describe("Babylon Scene Loader", function () {
                 meshes: 2,
                 vertices: 3,
             });
+        });
+
+        it("should not leak base64 data URIs into texture url or name for glTF with embedded images", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${data}`, window.scene, undefined, ".gltf").then(() => {
+                    const textures = window.scene!.textures.filter((t) => t !== window.scene!.environmentBRDFTexture);
+                    return textures.map((t) => ({
+                        urlContainsBase64Payload: ((t as any).url || "").indexOf(";base64,") !== -1,
+                        nameContainsBase64Payload: t.name.indexOf(";base64,") !== -1,
+                    }));
+                });
+            }, gltfWithEmbeddedImageBase64);
+            expect(assertionData.length).toBe(1);
+            expect(assertionData[0].urlContainsBase64Payload).toBe(false);
+            expect(assertionData[0].nameContainsBase64Payload).toBe(false);
         });
 
         it("should direct load a base64 encoded glb with a valid mime type and no pluginExtension", async () => {
