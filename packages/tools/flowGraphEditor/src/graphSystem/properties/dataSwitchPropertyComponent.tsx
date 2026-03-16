@@ -12,7 +12,7 @@ import {
 import type { FlowGraphDataSwitchBlock } from "core/FlowGraph/Blocks/Data/flowGraphDataSwitchBlock";
 import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
-import { removeDataInput } from "./blockMutationHelper";
+import { RemoveDataInput } from "./blockMutationHelper";
 import { getNumericValue } from "core/FlowGraph/utils";
 
 interface IDataSwitchPropertyState {
@@ -47,10 +47,14 @@ export class DataSwitchPropertyComponent extends React.Component<IPropertyCompon
         // Check for duplicate
         const existing = block.config.cases.map((c: any) => {
             let v = getNumericValue(c);
-            if (block.config.treatCasesAsIntegers) v = v | 0;
+            if (block.config.treatCasesAsIntegers) {
+                v = v | 0;
+            }
             return v;
         });
-        if (existing.includes(value)) return;
+        if (existing.includes(value)) {
+            return;
+        }
 
         // Mutate the block in place: add to config.cases, register data input, update internal map
         block.config.cases.push(value);
@@ -70,11 +74,13 @@ export class DataSwitchPropertyComponent extends React.Component<IPropertyCompon
         }
 
         // Remove data input port, internal map entry, and config entry
-        removeDataInput(block as unknown as FlowGraphBlock, `in_${numVal}`);
+        RemoveDataInput(block as unknown as FlowGraphBlock, `in_${numVal}`);
         (block as any)._inputCases.delete(numVal);
         const idx = block.config.cases.findIndex((c: any) => {
             let v = getNumericValue(c);
-            if (block.config.treatCasesAsIntegers) v = v | 0;
+            if (block.config.treatCasesAsIntegers) {
+                v = v | 0;
+            }
             return v === numVal;
         });
         if (idx !== -1) {
@@ -99,7 +105,9 @@ export class DataSwitchPropertyComponent extends React.Component<IPropertyCompon
                 <LineContainerComponent title="CASES">
                     {cases.map((caseVal: any, idx: number) => {
                         let numVal = getNumericValue(caseVal);
-                        if (block.config.treatCasesAsIntegers) numVal = numVal | 0;
+                        if (block.config.treatCasesAsIntegers) {
+                            numVal = numVal | 0;
+                        }
                         return (
                             <div key={`case-${numVal}`} style={{ display: "flex", alignItems: "center", padding: "0 4px" }}>
                                 <span style={{ flex: 1, color: "#ccc", fontSize: "12px", paddingLeft: "8px" }}>Case: {numVal}</span>

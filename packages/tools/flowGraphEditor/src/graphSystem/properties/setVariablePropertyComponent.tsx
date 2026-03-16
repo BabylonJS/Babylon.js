@@ -13,7 +13,7 @@ import type { FlowGraphSetVariableBlock } from "core/FlowGraph/Blocks/Execution/
 import type { IFlowGraphSetVariableBlockConfiguration } from "core/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock";
 import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
-import { removeDataInput } from "./blockMutationHelper";
+import { RemoveDataInput } from "./blockMutationHelper";
 
 interface ISetVariablePropertyState {
     newVarName: string;
@@ -44,14 +44,20 @@ export class SetVariablePropertyComponent extends React.Component<IPropertyCompo
 
     private _addVariable() {
         const name = this.state.newVarName.trim();
-        if (!name) return;
+        if (!name) {
+            return;
+        }
 
         const block = this._getBlock();
         const config = this._getConfig();
-        if (!config.variables) return;
+        if (!config.variables) {
+            return;
+        }
 
         // Prevent duplicate
-        if (config.variables.includes(name)) return;
+        if (config.variables.includes(name)) {
+            return;
+        }
 
         config.variables.push(name);
         block.registerDataInput(name, RichTypeAny);
@@ -64,13 +70,17 @@ export class SetVariablePropertyComponent extends React.Component<IPropertyCompo
     private _removeVariable(name: string) {
         const block = this._getBlock();
         const config = this._getConfig();
-        if (!config.variables) return;
+        if (!config.variables) {
+            return;
+        }
 
         const idx = config.variables.indexOf(name);
-        if (idx === -1) return;
+        if (idx === -1) {
+            return;
+        }
 
         config.variables.splice(idx, 1);
-        removeDataInput(block as unknown as FlowGraphBlock, name);
+        RemoveDataInput(block as unknown as FlowGraphBlock, name);
 
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block as unknown as FlowGraphBlock);

@@ -301,8 +301,11 @@ export class NodeLink {
         stateManager.onSelectionChangedObservable.notifyObservers({ selection: this });
     }
 
-    /** Ensure the shared SVG glow filter exists, return its id */
-    private static _ensureGlowFilter(svg: Element): string {
+    /** Ensure the shared SVG glow filter exists, return its id
+     * @param svg the SVG element to check for the filter and add it to if not present
+     * @returns the id of the glow filter to use in this SVG
+     */
+    private static _EnsureGlowFilter(svg: Element): string {
         const filterId = "flowDotGlow";
         if (!svg.querySelector(`#${filterId}`)) {
             const ns = "http://www.w3.org/2000/svg";
@@ -355,7 +358,7 @@ export class NodeLink {
         const svg = this._path.parentElement;
         const ns = "http://www.w3.org/2000/svg";
         const doc = this._path.ownerDocument;
-        const filterId = NodeLink._ensureGlowFilter(svg);
+        const filterId = NodeLink._EnsureGlowFilter(svg);
 
         const dot = doc.createElementNS(ns, "circle");
         dot.setAttribute("r", "6");

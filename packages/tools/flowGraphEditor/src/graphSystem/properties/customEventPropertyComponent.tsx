@@ -13,7 +13,7 @@ import {
 import { FLOW_GRAPH_TYPE_OPTIONS } from "./constructorConfigRegistry";
 import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
-import { removeDataInput, removeDataOutput } from "./blockMutationHelper";
+import { RemoveDataInput, RemoveDataOutput } from "./blockMutationHelper";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { ConnectionPointPortData } from "../connectionPointPortData";
 import type { BlockNodeData } from "../blockNodeData";
@@ -51,14 +51,18 @@ export class CustomEventPropertyComponent extends React.Component<IPropertyCompo
 
     private _addEntry() {
         const name = this.state.newKeyName.trim();
-        if (!name) return;
+        if (!name) {
+            return;
+        }
 
         const block = this._getBlock();
         const config = block.config as any;
         const eventData = config.eventData || {};
 
         // Prevent duplicate keys
-        if (name in eventData) return;
+        if (name in eventData) {
+            return;
+        }
 
         const richType = getRichTypeByFlowGraphType(this.state.newKeyType);
         eventData[name] = { type: richType };
@@ -88,21 +92,23 @@ export class CustomEventPropertyComponent extends React.Component<IPropertyCompo
         const block = this._getBlock();
         const config = block.config as any;
         const eventData = config.eventData;
-        if (!eventData || !(key in eventData)) return;
+        if (!eventData || !(key in eventData)) {
+            return;
+        }
 
         delete eventData[key];
 
         const nodeData = this.props.nodeData;
         if (this._isReceiveBlock()) {
             const portIndex = nodeData.outputs.findIndex((p) => p.name === key);
-            removeDataOutput(block, key);
+            RemoveDataOutput(block, key);
             if (portIndex !== -1) {
                 nodeData.outputs.splice(portIndex, 1);
                 nodeData.onOutputRemoved?.(portIndex);
             }
         } else {
             const portIndex = nodeData.inputs.findIndex((p) => p.name === key);
-            removeDataInput(block, key);
+            RemoveDataInput(block, key);
             if (portIndex !== -1) {
                 nodeData.inputs.splice(portIndex, 1);
                 nodeData.onInputRemoved?.(portIndex);

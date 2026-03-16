@@ -49,7 +49,10 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
         return this.props.nodeData.data as FlowGraphBlock;
     }
 
-    /** MeshPickEventBlock registers the input as "asset"; pointer blocks use "targetMesh". */
+    /**
+     * MeshPickEventBlock registers the input as "asset"; pointer blocks use "targetMesh".
+     * @returns The data input for the target mesh, or null if not found.
+     */
     private _getTargetMeshInput() {
         const block = this._getBlock();
         return block.getDataInput("targetMesh") ?? block.getDataInput("asset");
@@ -58,10 +61,14 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
     private _onMeshChange(uniqueId: number) {
         const block = this._getBlock();
         const meshInput = this._getTargetMeshInput();
-        if (!meshInput) return;
+        if (!meshInput) {
+            return;
+        }
 
         const { sceneContext } = this.state;
-        if (!sceneContext) return;
+        if (!sceneContext) {
+            return;
+        }
 
         const mesh = uniqueId === -1 ? undefined : sceneContext.meshes.find((m) => m.uniqueId === uniqueId);
 
@@ -80,11 +87,15 @@ export class PointerEventPropertyComponent extends React.Component<IPropertyComp
      * Resolve the current mesh uniqueId, rebinding by saved name when the
      * stored reference is stale (e.g. after a scene reset that creates new
      * objects with different uniqueIds).
+     * @param sceneContext - The current scene context, or null if unavailable.
+     * @returns The uniqueId of the current mesh, or -1 if none.
      */
     private _resolveCurrentMeshId(sceneContext: SceneContext | null): number {
         const meshInput = this._getTargetMeshInput();
         const currentMesh = meshInput ? (meshInput as any)._defaultValue : undefined;
-        if (!sceneContext) return currentMesh?.uniqueId ?? -1;
+        if (!sceneContext) {
+            return currentMesh?.uniqueId ?? -1;
+        }
 
         if (currentMesh && typeof currentMesh === "object") {
             const uid = currentMesh.uniqueId;

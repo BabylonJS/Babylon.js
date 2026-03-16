@@ -17,7 +17,7 @@ import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { Vector2, Vector3, Vector4, Quaternion, Matrix } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 
-const VALUE_TYPE_OPTIONS = [
+const ValueTypeOptions = [
     { label: "Number", value: "number" },
     { label: "Integer", value: "FlowGraphInteger" },
     { label: "Boolean", value: "boolean" },
@@ -31,22 +31,44 @@ const VALUE_TYPE_OPTIONS = [
     { label: "Matrix", value: "Matrix" },
 ];
 
-function detectValueType(value: any): string {
-    if (value instanceof FlowGraphInteger) return "FlowGraphInteger";
-    if (typeof value === "number") return "number";
-    if (typeof value === "boolean") return "boolean";
-    if (typeof value === "string") return "string";
-    if (value instanceof Color4) return "Color4"; // check before Color3 since Color4 extends Color3
-    if (value instanceof Color3) return "Color3";
-    if (value instanceof Quaternion) return "Quaternion"; // check before Vector4
-    if (value instanceof Vector4) return "Vector4";
-    if (value instanceof Vector3) return "Vector3";
-    if (value instanceof Vector2) return "Vector2";
-    if (value instanceof Matrix) return "Matrix";
+function DetectValueType(value: any): string {
+    if (value instanceof FlowGraphInteger) {
+        return "FlowGraphInteger";
+    }
+    if (typeof value === "number") {
+        return "number";
+    }
+    if (typeof value === "boolean") {
+        return "boolean";
+    }
+    if (typeof value === "string") {
+        return "string";
+    }
+    if (value instanceof Color4) {
+        return "Color4";
+    } // check before Color3 since Color4 extends Color3
+    if (value instanceof Color3) {
+        return "Color3";
+    }
+    if (value instanceof Quaternion) {
+        return "Quaternion";
+    } // check before Vector4
+    if (value instanceof Vector4) {
+        return "Vector4";
+    }
+    if (value instanceof Vector3) {
+        return "Vector3";
+    }
+    if (value instanceof Vector2) {
+        return "Vector2";
+    }
+    if (value instanceof Matrix) {
+        return "Matrix";
+    }
     return "number";
 }
 
-function createDefaultValue(typeName: string): any {
+function CreateDefaultValue(typeName: string): any {
     switch (typeName) {
         case "number":
             return 0;
@@ -97,7 +119,7 @@ export class ConstantBlockPropertyComponent extends React.Component<IPropertyCom
 
     private _changeType(newTypeName: string) {
         const block = this._getBlock();
-        const newValue = createDefaultValue(newTypeName);
+        const newValue = CreateDefaultValue(newTypeName);
         block.config.value = newValue;
 
         // Update the output port's rich type so downstream connections see the new type.
@@ -177,14 +199,14 @@ export class ConstantBlockPropertyComponent extends React.Component<IPropertyCom
         }
 
         // Fallback: show the type name for uneditable types (Vector4, Quaternion)
-        return <div style={{ padding: "4px 8px", color: "#aaa", fontSize: "11px" }}>Cannot edit {detectValueType(value)} inline.</div>;
+        return <div style={{ padding: "4px 8px", color: "#aaa", fontSize: "11px" }}>Cannot edit {DetectValueType(value)} inline.</div>;
     }
 
     override render() {
         const { stateManager, nodeData } = this.props;
         const block = this._getBlock();
         const value = block.config.value;
-        const currentType = detectValueType(value);
+        const currentType = DetectValueType(value);
 
         return (
             <>
@@ -194,7 +216,7 @@ export class ConstantBlockPropertyComponent extends React.Component<IPropertyCom
                     <OptionsLine
                         key={`type-${block.uniqueId}`}
                         label="Type"
-                        options={VALUE_TYPE_OPTIONS}
+                        options={ValueTypeOptions}
                         target={{}}
                         propertyName="_unused"
                         valuesAreStrings={true}

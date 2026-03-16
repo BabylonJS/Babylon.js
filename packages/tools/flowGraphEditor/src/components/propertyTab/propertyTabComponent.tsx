@@ -127,7 +127,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const url = Constants.SnippetUrl + (snippetId ? "/" + snippetId : "");
 
         const xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = () => {
+        xmlHttp.onreadystatechange = async () => {
             if (xmlHttp.readyState !== 4) {
                 return;
             }
@@ -141,9 +141,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.forceUpdate();
 
                 if (navigator.clipboard) {
-                    navigator.clipboard.writeText(newId).catch(() => {
+                    try {
+                        await navigator.clipboard.writeText(newId);
+                    } catch {
                         /* clipboard may not be available in all contexts */
-                    });
+                    }
                 }
 
                 const windowAsAny = window as any;

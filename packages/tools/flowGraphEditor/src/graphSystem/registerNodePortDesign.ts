@@ -40,6 +40,8 @@ const _SvgSignal = btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="20" heig
 
 /**
  * Returns the appropriate port SVG (base64) for a data connection's rich type.
+ * @param typeName - The rich type name of the connection.
+ * @returns The base64-encoded SVG string for the port icon.
  */
 function _GetPortSvgForType(typeName: string): string {
     switch (typeName) {

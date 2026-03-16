@@ -161,6 +161,8 @@ export class GetAssetPropertyComponent extends React.Component<IPropertyComponen
     /**
      * Resolve the current asset uniqueId for the picker, rebinding by saved
      * name when the stored uniqueId is stale (e.g. after a scene reset).
+     * @param sceneAssets - The list of assets from the current scene context, or null.
+     * @returns The uniqueId of the current asset, or -1 if none is selected.
      */
     private _resolveCurrentAssetId(sceneAssets: Array<{ uniqueId: number; name: string }> | null): number {
         const config = this._getConfig();

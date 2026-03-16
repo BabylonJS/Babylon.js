@@ -6,7 +6,7 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import { GeneralPropertyTabComponent, DataConnectionsPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { FlowGraphSwitchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSwitchBlock";
 import type { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
-import { removeSignalOutput } from "./blockMutationHelper";
+import { RemoveSignalOutput } from "./blockMutationHelper";
 import { getNumericValue } from "core/FlowGraph/utils";
 
 interface ISwitchBlockPropertyState {
@@ -49,7 +49,8 @@ export class SwitchBlockPropertyComponent extends React.Component<IPropertyCompo
 
         // removeCase only cleans config.cases and _caseToOutputFlow — the signal output stays.
         // We must remove the signal output port explicitly first.
-        removeSignalOutput(block as unknown as FlowGraphBlock, `out_${caseValue}`);
+        RemoveSignalOutput(block as unknown as FlowGraphBlock, `out_${caseValue}`);
+
         block.removeCase(caseValue);
 
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();

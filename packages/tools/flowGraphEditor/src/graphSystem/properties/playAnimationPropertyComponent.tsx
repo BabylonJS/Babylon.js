@@ -56,10 +56,14 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
     private _onAnimationGroupChange(uniqueId: number) {
         const block = this._getBlock();
         const agInput = block.getDataInput("animationGroup");
-        if (!agInput) return;
+        if (!agInput) {
+            return;
+        }
 
         const { sceneContext } = this.state;
-        if (!sceneContext) return;
+        if (!sceneContext) {
+            return;
+        }
 
         const ag = uniqueId === -1 ? undefined : sceneContext.animationGroups.find((a) => a.uniqueId === uniqueId);
 
@@ -77,10 +81,14 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
     private _onAnimationChange(uniqueId: number) {
         const block = this._getBlock();
         const animInput = block.getDataInput("animation");
-        if (!animInput) return;
+        if (!animInput) {
+            return;
+        }
 
         const { sceneContext } = this.state;
-        if (!sceneContext) return;
+        if (!sceneContext) {
+            return;
+        }
 
         const anim = uniqueId === -1 ? undefined : sceneContext.animations.find((a) => a.uniqueId === uniqueId);
 
@@ -97,12 +105,16 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
     /**
      * Resolve the current animation group uniqueId, rebinding by saved name
      * when the stored reference is stale (e.g. after a scene reset).
+     * @param sceneContext - The current scene context, or null if unavailable.
+     * @returns The uniqueId of the current animation group, or -1 if none.
      */
     private _resolveCurrentAgId(sceneContext: SceneContext | null): number {
         const block = this._getBlock();
         const agInput = block.getDataInput("animationGroup");
         const currentAg = agInput ? (agInput as any)._defaultValue : undefined;
-        if (!sceneContext) return currentAg?.uniqueId ?? -1;
+        if (!sceneContext) {
+            return currentAg?.uniqueId ?? -1;
+        }
 
         if (currentAg && typeof currentAg === "object") {
             const uid = currentAg.uniqueId;
@@ -130,12 +142,16 @@ export class PlayAnimationPropertyComponent extends React.Component<IPropertyCom
     /**
      * Resolve the current animation uniqueId, rebinding by saved name
      * when the stored reference is stale (e.g. after a scene reset).
+     * @param sceneContext - The current scene context, or null if unavailable.
+     * @returns The uniqueId of the current animation, or -1 if none.
      */
     private _resolveCurrentAnimId(sceneContext: SceneContext | null): number {
         const block = this._getBlock();
         const animInput = block.getDataInput("animation");
         const currentAnim = animInput ? (animInput as any)._defaultValue : undefined;
-        if (!sceneContext) return currentAnim?.uniqueId ?? -1;
+        if (!sceneContext) {
+            return currentAnim?.uniqueId ?? -1;
+        }
 
         if (currentAnim && typeof currentAnim === "object") {
             const uid = currentAnim.uniqueId;

@@ -4,7 +4,7 @@ import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { FlowGraphTypes } from "./flowGraphRichTypes";
 import type { FlowGraphEventBlock } from "./flowGraphEventBlock";
-import { FlowGraphEventType } from "./flowGraphEventType";
+import type { FlowGraphEventType } from "./flowGraphEventType";
 
 /**
  * Severity level for a validation issue.
