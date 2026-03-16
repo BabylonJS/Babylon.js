@@ -120,3 +120,7 @@ import { AttachDebugLayer } from "./legacy/debugLayer";
 
 // Attach Inspector v2 to Scene.debugLayer as a side effect for back compat.
 AttachDebugLayer();
+
+export function NewInspectorApi() {
+    return 42;
+}
