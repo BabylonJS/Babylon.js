@@ -2,7 +2,7 @@
 applyTo: "packages/dev/**/*.ts"
 ---
 
-Entities refers to top level scene constructs like Meshes, Cameras, Textures, Materials, etc. Generally they are exposed by array properties on the Scene.
+"Entity" refers to top level scene constructs like Meshes, Cameras, Textures, Materials, etc. Generally they are exposed by array properties on the Scene.
 
 # Inspector
 
