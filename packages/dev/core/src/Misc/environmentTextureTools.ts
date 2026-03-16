@@ -201,7 +201,7 @@ export function GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureIn
 
     // Read json manifest - collect characters up to null terminator
     let manifestString = "";
-    let charCode = 0x00;
+    let charCode: number;
     while ((charCode = dataView.getUint8(pos++))) {
         manifestString += String.fromCharCode(charCode);
     }

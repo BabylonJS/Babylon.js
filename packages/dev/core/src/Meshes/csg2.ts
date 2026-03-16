@@ -318,7 +318,7 @@ export class CSG2 implements IDisposable {
         try {
             returnValue = new CSG2(new Manifold(manifoldMesh), numProp, structure);
         } catch (e) {
-            throw new Error("Error while creating the CSG: " + e.message);
+            throw new Error("Error while creating the CSG: " + e.message, { cause: e });
         }
 
         return returnValue;

@@ -88,7 +88,7 @@ export class ScrollBar extends BaseSlider {
     }
 
     protected override _getThumbThickness(): number {
-        let thumbThickness = 0;
+        let thumbThickness: number;
         if (this._thumbWidth.isPixel) {
             thumbThickness = this._thumbWidth.getValue(this._host);
         } else {
@@ -169,7 +169,7 @@ export class ScrollBar extends BaseSlider {
         }
 
         // Delta mode
-        let delta = 0;
+        let delta: number;
         if (this.isVertical) {
             delta = -((y - this._originY) / (this._currentMeasure.height - this._effectiveThumbThickness));
         } else {

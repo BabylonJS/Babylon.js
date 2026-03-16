@@ -2,7 +2,6 @@ import { evaluatePlaywrightVisTests } from "./visualizationPlaywright.utils";
 
 evaluatePlaywrightVisTests(
     "webgl2",
-    false,
     "webxr",
     false,
     false,

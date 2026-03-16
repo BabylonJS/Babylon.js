@@ -4,7 +4,7 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import type { GlobalState } from "../../globalState";
 import { Utilities } from "../utilities";
 import { Logger, Observable } from "@dev/core";
-import { debounce } from "ts-debounce";
+import { debounce } from "../debounce";
 import { v5 as uuidv5 } from "uuid";
 
 import { EditorHost } from "./editor/editorHost";
@@ -565,7 +565,7 @@ export class MonacoManager {
         ];
 
         // snapshot/version/local overrides
-        let snapshot = "";
+        let snapshot: string;
         if (window.location.search.indexOf("snapshot=") !== -1) {
             snapshot = window.location.search.split("snapshot=")[1].split("&")[0];
             for (let i = 0; i < declarations.length; i++) {
@@ -573,7 +573,7 @@ export class MonacoManager {
             }
         }
 
-        let version = "";
+        let version: string;
         if (window.location.search.indexOf("version=") !== -1) {
             version = window.location.search.split("version=")[1].split("&")[0];
             for (let i = 0; i < declarations.length; i++) {

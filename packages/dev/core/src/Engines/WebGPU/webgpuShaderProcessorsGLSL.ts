@@ -155,7 +155,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             let name = match[2];
 
             if (uniformType.indexOf("sampler") === 0 || uniformType.indexOf("sampler") === 1) {
-                let arraySize = 0; // 0 means the texture is not declared as an array
+                let arraySize: number; // 0 means the texture is not declared as an array
 
                 [name, uniformType, arraySize] = this._getArraySize(name, uniformType, preProcessors);
 

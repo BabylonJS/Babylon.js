@@ -27,8 +27,7 @@ export const RenderingPipelineExplorerServiceDefinition: ServiceDefinition<[], [
             getEntityDisplayInfo: (pipeline) => {
                 return {
                     get name() {
-                        const typeName = pipeline.getClassName();
-                        return `${pipeline.name} (${typeName})`;
+                        return `${pipeline.name || "Unnamed"} [${pipeline.getClassName()}]`;
                     },
                 };
             },

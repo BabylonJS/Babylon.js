@@ -132,7 +132,7 @@ export class XmlLoader {
         let columns;
         const rows = node.children;
         let cells;
-        let isPixel = false;
+        let isPixel: boolean;
         let cellNode;
         let rowNumber = -1;
         let columnNumber = -1;

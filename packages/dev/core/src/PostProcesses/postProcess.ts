@@ -1150,11 +1150,11 @@ export class PostProcess {
 
         this._disposeTextures();
 
-        let index;
         if (this._scene) {
-            index = this._scene.removePostProcess(this);
+            this._scene.removePostProcess(this);
         }
 
+        let index: number;
         if (this._parentContainer) {
             index = this._parentContainer.postProcesses.indexOf(this);
             if (index > -1) {

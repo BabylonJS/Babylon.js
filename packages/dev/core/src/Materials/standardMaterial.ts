@@ -1252,7 +1252,7 @@ export class StandardMaterial extends StandardMaterialBase {
             const join = defines.toString();
 
             const previousEffect = subMesh.effect;
-            let effect = scene.getEngine().createEffect(
+            const effect = scene.getEngine().createEffect(
                 shaderName,
                 <IEffectCreationOptions>{
                     attributes: attribs,
@@ -1293,7 +1293,6 @@ export class StandardMaterial extends StandardMaterialBase {
 
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
-                    effect = previousEffect;
                     defines.markAsUnprocessed();
 
                     forceWasNotReadyPreviously = this.isFrozen;

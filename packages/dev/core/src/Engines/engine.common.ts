@@ -161,8 +161,8 @@ export function GetFontOffset(font: string): { ascent: number; height: number; d
 
     document.body.appendChild(div);
 
-    let fontAscent = 0;
-    let fontHeight = 0;
+    let fontAscent: number;
+    let fontHeight: number;
     try {
         fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
         block.style.verticalAlign = "baseline";

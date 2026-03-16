@@ -1660,8 +1660,9 @@
         },
         {
             "title": "Shadows CSM and LODs",
-            "playgroundId": "#24HWT9#15",
+            "playgroundId": "#24HWT9#20",
             "referenceImage": "shadowscsmandlod.png",
+            "renderCount": 2,
             "excludedEngines": ["webgl1"]
         },
         {
@@ -3014,49 +3015,49 @@
         },
         {
             "title": "Atmosphere Day",
-            "playgroundId": "#VO1Z0C#34",
+            "playgroundId": "#VO1Z0C#39",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Day (Planet Origin)",
-            "playgroundId": "#VO1Z0C#35",
+            "playgroundId": "#VO1Z0C#40",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Day (Ray Marching)",
-            "playgroundId": "#VO1Z0C#38",
+            "playgroundId": "#VO1Z0C#41",
             "referenceImage": "atmosphere-day-ray-marching.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Sunset",
-            "playgroundId": "#VO1Z0C#36",
+            "playgroundId": "#VO1Z0C#42",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Sunset (Planet Origin)",
-            "playgroundId": "#VO1Z0C#31",
+            "playgroundId": "#VO1Z0C#43",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Night",
-            "playgroundId": "#VO1Z0C#13",
+            "playgroundId": "#VO1Z0C#45",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Night (Planet Origin)",
-            "playgroundId": "#VO1Z0C#32",
+            "playgroundId": "#VO1Z0C#46",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Atmosphere Space View",
-            "playgroundId": "#VO1Z0C#6",
+            "playgroundId": "#VO1Z0C#47",
             "referenceImage": "atmosphere-space-view.png",
             "excludedEngines": ["webgl1"]
         },
@@ -3770,6 +3771,42 @@
             "playgroundId": "#PPC2EI#5",
             "renderCount": 120,
             "referenceImage": "particles-flowmaps-2.png"
+        },
+        {
+            "title": "Depth Renderer and RTT - debug markers",
+            "playgroundId": "#7E73LI#21",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "Clustered lights - debug markers",
+            "playgroundId": "#1QCA2M#47",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "CSM  FrameGraph - debug markers",
+            "playgroundId": "#JWKDME#216",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "Reflection Probes - debug markers",
+            "playgroundId": "#KA93U#1723",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "Unbalanced push pop - debug markers",
+            "playgroundId": "#T26WTI#2",
+            "renderCount": 10,
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "Pending pop - debug markers",
+            "playgroundId": "#24HWT9#25",
+            "renderCount": 10,
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "Selection outline layer with instances",
+            "playgroundId": "#ADUC74#28"
         }
     ]
 }

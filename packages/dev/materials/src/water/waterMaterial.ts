@@ -838,7 +838,6 @@ export class WaterMaterial extends PushMaterial {
         if (index != -1) {
             this.getScene().customRenderTargets.splice(index, 1);
         }
-        index = -1;
         index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture>this._reflectionRTT);
         if (index != -1) {
             this.getScene().customRenderTargets.splice(index, 1);

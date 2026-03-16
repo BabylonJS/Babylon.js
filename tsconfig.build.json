@@ -55,6 +55,7 @@
             "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"],
             "vsm": ["tools/vsm/dist/*"],
             "smart-filters": ["dev/smartFilters/dist"],
+            "smart-filters/*": ["dev/smartFilters/dist/*"],
             "smart-filters-blocks": ["dev/smartFilterBlocks/dist"],
             "smart-filters-blocks/*": ["dev/smartFilterBlocks/dist/*"],
             "smart-filters-editor-control": ["tools/smartFiltersEditorControl/dist"]

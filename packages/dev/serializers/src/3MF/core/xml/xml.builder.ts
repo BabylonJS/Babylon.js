@@ -181,7 +181,7 @@ export class XmlBuilder implements IXmlBuilder {
      * @returns
      */
     public ele(ns: string | null, n: string): IXmlBuilder {
-        let ctx = this._peekContext();
+        const ctx = this._peekContext();
         if (ctx) {
             this._closeOpenTagIfNeeded(ctx);
         }
@@ -190,7 +190,7 @@ export class XmlBuilder implements IXmlBuilder {
             const p = this._lookupPrefix(ns) ?? ns;
             qns = `${p}:${n}`;
         }
-        ctx = this._pushContext(qns, ++this._d);
+        this._pushContext(qns, ++this._d);
         this._w.write(XmlSyntax.OpenTag, qns);
         return this;
     }
