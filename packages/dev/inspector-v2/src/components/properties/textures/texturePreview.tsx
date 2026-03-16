@@ -5,6 +5,7 @@ import type { BaseTexture } from "core/index";
 import { Button, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
 import { useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 
+import { Clamp } from "core/Maths/math.scalar.functions";
 import { WhenTextureReadyAsync } from "core/Misc/textureTools";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
@@ -85,6 +86,10 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
     const showLayerDropdown = texture.is2DArray;
 
     const layerCount = texture.is2DArray && internalTexture ? internalTexture.depth : 0;
+
+    useEffect(() => {
+        setLayer((layer) => Clamp(layer, 0, Math.max(0, layerCount - 1)));
+    }, [layerCount]);
 
     const { size } = useContext(ToolContext);
 
