@@ -206,8 +206,9 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
 
             // Wait for the scene to finish loading all pending data (e.g.
             // async SceneLoader.Append / ImportMesh calls inside the snippet)
-            // before cataloguing objects.
-            await new Promise<void>((resolve) => scene.executeWhenReady(() => resolve()));
+            // and for render targets to be ready (needed for pointer picking)
+            // before cataloguing objects and wiring the flow graph.
+            await scene.whenReadyAsync(true);
 
             // Build the scene context
             const sceneContext = new SceneContext(scene);

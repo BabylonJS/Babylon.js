@@ -560,6 +560,15 @@ export class GlobalState {
             this._originalCreateContext = null;
         }
 
+        // Stop the old graph to detach its event observer from the scene
+        // coordinator.  Without this, the old graph's SceneDispose handler
+        // could fire unexpectedly when the preview scene is reloaded.
+        if (this._flowGraph && this._flowGraph !== flowGraph) {
+            if (this._flowGraph.state !== FlowGraphState.Stopped) {
+                this._flowGraph.stop();
+            }
+        }
+
         this._flowGraph = flowGraph;
 
         if (!flowGraph) {
@@ -682,9 +691,6 @@ export class GlobalState {
 
             // --- GetAsset blocks: remap index by uniqueId ---
             if (className === "FlowGraphGetAssetBlock") {
-                if (!oldIdToName || !nameLookup) {
-                    return;
-                }
                 const config = (block as any).config;
                 if (!config || !config.useIndexAsUniqueId) {
                     return;
@@ -697,18 +703,33 @@ export class GlobalState {
                     return;
                 }
 
-                const oldMap = oldIdToName.get(assetType);
-                const newMap = nameLookup.get(assetType);
-                if (!oldMap || !newMap) {
-                    return;
+                let newId: number | undefined;
+
+                if (oldIdToName && nameLookup) {
+                    // Normal case: remap via the cached old-id→name→new-id lookup
+                    const oldMap = oldIdToName.get(assetType);
+                    const newMap = nameLookup.get(assetType);
+                    if (oldMap && newMap) {
+                        const name = oldMap.get(oldIndex);
+                        if (name !== undefined) {
+                            newId = newMap.get(name);
+                        }
+                    }
                 }
 
-                const name = oldMap.get(oldIndex);
-                if (name === undefined) {
-                    return;
+                // Fallback for first load (no old cache): use the saved _assetName
+                // to find the asset by name in the new scene.
+                if (newId === undefined) {
+                    const savedName: string | undefined = config._assetName;
+                    if (savedName) {
+                        const sceneList = this._getSceneListForAssetType(newScene, assetType);
+                        const match = sceneList.find((a) => a.name === savedName);
+                        if (match) {
+                            newId = match.uniqueId;
+                        }
+                    }
                 }
 
-                const newId = newMap.get(name);
                 if (newId === undefined) {
                     return;
                 }
@@ -731,8 +752,35 @@ export class GlobalState {
     }
 
     /**
+     * Returns scene objects for a given asset type string.
+     * @param scene - the scene to pull objects from
+     * @param assetType - the type of asset ("Mesh", "Light", etc.)
+     * @returns a list of objects in the scene matching the given type, with their uniqueId and name
+     */
+    private _getSceneListForAssetType(scene: Scene, assetType: string): Array<{ uniqueId: number; name: string }> {
+        switch (assetType) {
+            case "Mesh":
+                return scene.meshes;
+            case "Light":
+                return scene.lights;
+            case "Camera":
+                return scene.cameras;
+            case "Material":
+                return scene.materials;
+            case "AnimationGroup":
+                return scene.animationGroups;
+            case "Animation":
+                return scene.animations;
+            default:
+                return [];
+        }
+    }
+
+    /**
      * Rebind a block's targetMesh / asset config + _defaultValue by name.
      * Covers MeshPickEventBlock and all pointer event blocks.
+     * @param block - the block to rebind
+     * @param newScene - the newly loaded scene to rebind against
      */
     private _rebindMeshReference(block: FlowGraphBlock, newScene: Scene): void {
         const meshInput = block.getDataInput("targetMesh") ?? block.getDataInput("asset");
@@ -760,6 +808,8 @@ export class GlobalState {
 
     /**
      * Rebind a block's animationGroup config + _defaultValue by name.
+     * @param block - the block to rebind
+     * @param newScene - the newly loaded scene to rebind against
      */
     private _rebindAnimationGroupReference(block: FlowGraphBlock, newScene: Scene): void {
         const agInput = block.getDataInput("animationGroup");
@@ -787,6 +837,8 @@ export class GlobalState {
 
     /**
      * Rebind a block's animation config + _defaultValue by name.
+     * @param block - the block to rebind
+     * @param newScene - the newly loaded scene to rebind against
      */
     private _rebindAnimationReference(block: FlowGraphBlock, newScene: Scene): void {
         const animInput = block.getDataInput("animation");

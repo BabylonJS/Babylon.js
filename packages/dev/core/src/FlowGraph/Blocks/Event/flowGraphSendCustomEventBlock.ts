@@ -1,4 +1,5 @@
 import type { RichType } from "core/FlowGraph/flowGraphRichTypes";
+import { getRichTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { RegisterClass } from "../../../Misc/typeStore";
@@ -34,7 +35,13 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
     ) {
         super(config);
         for (const key in this.config.eventData) {
-            this.registerDataInput(key, this.config.eventData[key].type, this.config.eventData[key].value);
+            const entry = this.config.eventData[key];
+            // Handle deserialized config where type may be a string typeName, a plain object
+            // with a typeName property (from old JSON serialization), or a proper RichType instance.
+            const richType =
+                typeof entry.type?.serialize === "function" ? entry.type : getRichTypeByFlowGraphType(typeof entry.type === "string" ? entry.type : entry.type?.typeName);
+            entry.type = richType;
+            this.registerDataInput(key, richType, entry.value);
         }
     }
 
@@ -49,6 +56,20 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
         context.configuration.coordinator.notifyCustomEvent(eventId, eventData);
 
         this.out._activateSignal(context);
+    }
+
+    public override serialize(serializationObject: any = {}) {
+        super.serialize(serializationObject);
+        // Override the eventData in config to store typeName strings instead of RichType instances
+        const serializedEventData: any = {};
+        for (const key in this.config.eventData) {
+            const entry = this.config.eventData[key];
+            serializedEventData[key] = { type: entry.type.typeName };
+            if (entry.value !== undefined) {
+                serializedEventData[key].value = entry.value;
+            }
+        }
+        serializationObject.config.eventData = serializedEventData;
     }
 
     /**

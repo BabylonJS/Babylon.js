@@ -83,6 +83,49 @@ describe("Flow Graph Event Nodes", () => {
         expect(Logger.Log).toHaveBeenCalledWith(randomValue);
     });
 
+    it("SendCustomEvent serializes and deserializes eventData correctly", () => {
+        const eventId = "serializeTest";
+        const sendEvent = new FlowGraphSendCustomEventBlock({
+            eventId,
+            eventData: {
+                myNumber: { type: RichTypeNumber, value: 42 },
+            },
+        });
+
+        const serialized: any = {};
+        sendEvent.serialize(serialized);
+
+        // eventData should be stored with typeName strings, not RichType instances
+        expect(serialized.config.eventData.myNumber.type).toBe("number");
+        expect(serialized.config.eventData.myNumber.value).toBe(42);
+
+        // Reconstruct from serialized config — type is now a string
+        const deserialized = new FlowGraphSendCustomEventBlock(serialized.config);
+        const input = deserialized.getDataInput("myNumber");
+        expect(input).toBeDefined();
+        expect(input!.richType.typeName).toBe("number");
+    });
+
+    it("ReceiveCustomEvent serializes and deserializes eventData correctly", () => {
+        const eventId = "serializeTest";
+        const receiveEvent = new FlowGraphReceiveCustomEventBlock({
+            eventId,
+            eventData: {
+                myNumber: { type: RichTypeNumber },
+            },
+        });
+
+        const serialized: any = {};
+        receiveEvent.serialize(serialized);
+
+        expect(serialized.config.eventData.myNumber.type).toBe("number");
+
+        const deserialized = new FlowGraphReceiveCustomEventBlock(serialized.config);
+        const output = deserialized.getDataOutput("myNumber");
+        expect(output).toBeDefined();
+        expect(output!.richType.typeName).toBe("number");
+    });
+
     it("Mesh Pick Event Bubbling", () => {
         const graph = flowGraphCoordinator.createGraph();
         const context = graph.createContext();

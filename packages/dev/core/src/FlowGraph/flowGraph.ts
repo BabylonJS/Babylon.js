@@ -311,10 +311,8 @@ export class FlowGraph {
             this._scene.constantlyUpdateMeshUnderPointer = true;
         }
 
-        // don't add if NoTrigger, but still start the pending tasks
-        if (block.type !== FlowGraphEventType.NoTrigger) {
-            this._eventBlocks[block.type].push(block);
-        }
+        this._eventBlocks[block.type].push(block);
+
         // if already started, sort and add to the pending
         if (this.state === FlowGraphState.Started) {
             for (const context of this._executionContexts) {
@@ -389,13 +387,15 @@ export class FlowGraph {
                 this._sceneEventCoordinator.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
             } else {
                 // Scene isn't ready yet (e.g. pending shader compilations after
-                // a scene swap).  Watch for it and fire SceneReady then.
-                this._scene.onReadyObservable.addOnce(() => {
+                // a scene swap).  Use executeWhenReady(true) which restarts the
+                // readiness check loop — a plain addOnce on onReadyObservable
+                // may never fire if the check loop already completed.
+                this._scene.executeWhenReady(() => {
                     if (this.state === FlowGraphState.Started && !this._sceneEventCoordinator.sceneReadyTriggered) {
                         this._sceneEventCoordinator.sceneReadyTriggered = true;
                         this._sceneEventCoordinator.onEventTriggeredObservable.notifyObservers({ type: FlowGraphEventType.SceneReady });
                     }
-                });
+                }, true);
             }
         }
     }

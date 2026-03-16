@@ -305,8 +305,10 @@ function _GetEventBlocks(flowGraph: FlowGraph): FlowGraphEventBlock[] {
  * @returns true if it is an event block
  */
 function _IsEventBlock(block: FlowGraphBlock): boolean {
-    // Event blocks have an _executeEvent method along with the type property
-    return typeof (block as any)._executeEvent === "function" && (block as any).type !== FlowGraphEventType.NoTrigger;
+    // Event blocks have an _executeEvent method — this is the definitive marker.
+    // Note: we do NOT filter on the `type` property because custom event blocks
+    // (e.g. ReceiveCustomEvent) legitimately use NoTrigger.
+    return typeof (block as any)._executeEvent === "function";
 }
 
 /**

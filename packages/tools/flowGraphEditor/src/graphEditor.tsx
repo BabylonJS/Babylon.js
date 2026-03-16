@@ -26,7 +26,6 @@ import { ControlledSize, SplitDirection } from "shared-ui-components/split/split
 import { ScenePreviewComponent } from "./components/preview/scenePreviewComponent";
 import { GraphControlsComponent } from "./components/graphControls/graphControlsComponent";
 import { HistoryStack } from "shared-ui-components/historyStack";
-import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import type { FlowGraphEventBlock } from "core/FlowGraph/flowGraphEventBlock";
 import type { IFlowGraphValidationResult } from "core/FlowGraph/flowGraphValidator";
 import { FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
@@ -112,7 +111,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this._mouseLocationX,
             this._mouseLocationY,
             async (nodeData) => {
-                return this._cloneBlockAsync(nodeData);
+                return await this._cloneBlockAsync(nodeData);
             },
             this.props.globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement
         );
@@ -150,6 +149,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 }
                 return serializationObject;
             } catch (e) {
+                // eslint-disable-next-line no-console
                 console.warn("Flow Graph Editor: failed to serialize graph for undo/redo snapshot", e);
                 return null;
             }
@@ -599,6 +599,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
      * Clone a flow graph block from the given node data.
      * Serializes the block's config and default values, creates a new block of the same type
      * with a fresh uniqueId, registers event blocks with the flow graph, and returns a new GraphNode.
+     * @param nodeData the node data containing the block to clone
+     * @returns a promise that resolves to the new GraphNode, or null if cloning failed
      */
     private async _cloneBlockAsync(nodeData: INodeData): Promise<Nullable<GraphNode>> {
         const sourceBlock = nodeData.data as FlowGraphBlock;
@@ -667,7 +669,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
             // Register event blocks with the flow graph
             const maybeEvent = newBlock as unknown as FlowGraphEventBlock;
-            if (typeof maybeEvent._executeEvent === "function" && maybeEvent.type !== FlowGraphEventType.NoTrigger) {
+            if (typeof maybeEvent._executeEvent === "function") {
                 this.props.globalState.flowGraph.addEventBlock(maybeEvent);
             } else {
                 this.props.globalState.flowGraph.addBlock(newBlock);
@@ -705,7 +707,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             // rather than checking .type, because other blocks (e.g. GetAssetBlock) also
             // have a .type field with a different meaning (FlowGraphDataConnection).
             const maybeEvent = block as unknown as FlowGraphEventBlock;
-            if (typeof maybeEvent._executeEvent === "function" && maybeEvent.type !== FlowGraphEventType.NoTrigger) {
+            if (typeof maybeEvent._executeEvent === "function") {
                 this.props.globalState.flowGraph.addEventBlock(maybeEvent);
             } else {
                 this.props.globalState.flowGraph.addBlock(block);

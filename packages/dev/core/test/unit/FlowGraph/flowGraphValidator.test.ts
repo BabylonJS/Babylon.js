@@ -5,6 +5,7 @@ import {
     FlowGraphCoordinator,
     FlowGraphConsoleLogBlock,
     FlowGraphSceneReadyEventBlock,
+    FlowGraphReceiveCustomEventBlock,
     FlowGraphAddBlock,
     FlowGraphGetVariableBlock,
     ValidateFlowGraph,
@@ -115,6 +116,19 @@ describe("Flow Graph Validator", () => {
             // Event blocks should not have "no incoming signal" errors
             const eventSignalIssue = result.issues.find((i) => i.block === sceneReady && i.connectionName === "in");
             expect(eventSignalIssue).toBeUndefined();
+        });
+
+        it("should not error for ReceiveCustomEvent blocks (they are event entry points)", () => {
+            const receiveEvent = new FlowGraphReceiveCustomEventBlock({
+                name: "ReceiveEvent",
+                eventId: "testEvent",
+                eventData: {},
+            });
+            flowGraph.addEventBlock(receiveEvent);
+
+            const result = ValidateFlowGraph(flowGraph);
+            const signalIssue = result.issues.find((i) => i.block === receiveEvent && i.connectionName === "in");
+            expect(signalIssue).toBeUndefined();
         });
     });
 
