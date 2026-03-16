@@ -15,6 +15,7 @@ import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { HexPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 
 const OrientationOptions = [
     { label: "Clockwise", value: Material.ClockWiseSideOrientation },
@@ -142,6 +143,8 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
 
 export const MaterialTransparencyProperties: FunctionComponent<{ material: Material }> = (props) => {
     const { material } = props;
+    const usePBR = material instanceof PBRMaterial;
+    const useAlphaTest = useProperty(material, "transparencyMode") == Material.MATERIAL_ALPHATEST;
 
     return (
         <>
@@ -156,6 +159,10 @@ export const MaterialTransparencyProperties: FunctionComponent<{ material: Mater
                 nullable
                 defaultValue={Material.MATERIAL_OPAQUE}
             />
+            {usePBR && useAlphaTest && (
+                <BoundProperty component={SyncedSliderPropertyLine} label="alphaCutOff" target={material} propertyKey="alphaCutOff" min={0} max={1} step={0.01} />
+            )}
+
             <BoundProperty
                 component={NumberDropdownPropertyLine}
                 label="Alpha Mode"
