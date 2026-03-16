@@ -290,7 +290,6 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
 
         const tmpSnapEvent = { snapDistance: 0 };
         let currentSnapDragDistance = 0;
-        const tmpMatrix = new Matrix();
         const amountToRotate = new Quaternion();
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedNode) {
@@ -382,13 +381,6 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                     planeNormalTowardsCamera.z * quaternionCoefficient,
                     Math.cos(angle / 2)
                 );
-
-                // If the meshes local scale is inverted (eg. loaded gltf file parent with z scale of -1) the rotation needs to be inverted on the y axis
-                if (tmpMatrix.determinant() > 0) {
-                    const tmpVector = new Vector3();
-                    amountToRotate.toEulerAnglesToRef(tmpVector);
-                    Quaternion.RotationYawPitchRollToRef(tmpVector.y, -tmpVector.x, -tmpVector.z, amountToRotate);
-                }
 
                 if (this.updateGizmoRotationToMatchAttachedMesh) {
                     // Rotate selected mesh quaternion over fixed axis
