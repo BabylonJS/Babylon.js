@@ -7,6 +7,7 @@ import { useCallback } from "react";
 
 import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { ClusteredLightContainerSelectorPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/entitySelectorPropertyLine";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 
@@ -44,10 +45,6 @@ export const LightGeneralProperties: FunctionComponent<{ light: Light; selection
         afterRemoveLight
     );
 
-    if (!hasContainers || !ClusteredLightContainer.IsLightSupported(light)) {
-        return null;
-    }
-
     const onChange = (newContainer: ClusteredLightContainer | null) => {
         if (container) {
             container.removeLight(light);
@@ -58,13 +55,16 @@ export const LightGeneralProperties: FunctionComponent<{ light: Light; selection
     };
 
     return (
-        <ClusteredLightContainerSelectorPropertyLine
-            label="Cluster"
-            value={container}
-            onChange={onChange}
-            scene={scene}
-            defaultValue={null as unknown as ClusteredLightContainer}
-            onLink={(entity) => (selectionService.selectedEntity = entity)}
-        />
+        <Collapse visible={hasContainers && ClusteredLightContainer.IsLightSupported(light)}>
+            <ClusteredLightContainerSelectorPropertyLine
+                label="Cluster"
+                description="The Clustered Light Container that contains this light (if any)."
+                value={container}
+                onChange={onChange}
+                scene={scene}
+                defaultValue={null as unknown as ClusteredLightContainer}
+                onLink={(entity) => (selectionService.selectedEntity = entity)}
+            />
+        </Collapse>
     );
 };
