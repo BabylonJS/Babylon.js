@@ -1267,7 +1267,7 @@ describe("Babylon Scene Loader", function () {
 
         it("should not leak base64 data URIs into texture url or name for glTF with embedded images", async () => {
             const assertionData = await page.evaluate((data) => {
-                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${data}`, window.scene, undefined, ".gltf").then(() => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${data}`, window.scene, undefined, ".gltf").then(() => {
                     const textures = window.scene!.textures.filter((t) => t !== window.scene!.environmentBRDFTexture);
                     return textures.map((t) => ({
                         urlContainsBase64Payload: ((t as any).url || "").indexOf(";base64,") !== -1,
