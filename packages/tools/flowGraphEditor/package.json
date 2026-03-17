@@ -18,6 +18,8 @@
         "serve:prod": "webpack serve --env mode=production",
         "serve:https": "webpack serve --env mode=development --server-type https --host ::",
         "serve:dev": "webpack serve --env mode=development --env watch=all",
+        "test:e2e": "playwright test -c ../../../playwright.config.ts --project=flowGraphEditor",
+        "test:e2e:ui": "playwright test -c ../../../playwright.config.ts --project=flowGraphEditor --ui",
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g"
     },
     "dependencies": {

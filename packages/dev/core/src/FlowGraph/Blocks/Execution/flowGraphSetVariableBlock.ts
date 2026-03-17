@@ -27,10 +27,6 @@ export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlock
 export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOutSignal {
     constructor(config: IFlowGraphSetVariableBlockConfiguration) {
         super(config);
-        // check if the variable is defined
-        if (!config.variable && !config.variables) {
-            throw new Error("FlowGraphSetVariableBlock: variable/variables is not defined");
-        }
         // check if the variable is an array
         if (config.variables && config.variable) {
             throw new Error("FlowGraphSetVariableBlock: variable and variables are both defined");
