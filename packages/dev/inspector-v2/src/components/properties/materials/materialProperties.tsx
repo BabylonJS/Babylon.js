@@ -145,7 +145,7 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
 export const MaterialTransparencyProperties: FunctionComponent<{ material: Material }> = (props) => {
     const { material } = props;
     const hasAlphaCutOff = material instanceof PBRMaterial || material instanceof StandardMaterial;
-    const useAlphaTest = useProperty(material, "transparencyMode") == Material.MATERIAL_ALPHATEST;
+    const useAlphaTest = useProperty(material, "transparencyMode") === Material.MATERIAL_ALPHATEST;
 
     return (
         <>
@@ -160,10 +160,17 @@ export const MaterialTransparencyProperties: FunctionComponent<{ material: Mater
                 nullable
                 defaultValue={Material.MATERIAL_OPAQUE}
             />
-            {hasAlphaCutOff && useAlphaTest && (
-                <BoundProperty component={SyncedSliderPropertyLine} label="alphaCutOff" target={material} propertyKey="alphaCutOff" min={0} max={1} step={0.01} />
-            )}
-
+            <Collapse visible={hasAlphaCutOff && useAlphaTest}>
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="alphaCutOff"
+                    target={material as PBRMaterial | StandardMaterial}
+                    propertyKey="alphaCutOff"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                />
+            </Collapse>
             <BoundProperty
                 component={NumberDropdownPropertyLine}
                 label="Alpha Mode"
