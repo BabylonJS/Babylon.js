@@ -832,8 +832,8 @@ export class ObjectRenderer {
 
         // Get the list of meshes to dispatch to the rendering manager
         let currentRenderList: Nullable<Array<AbstractMesh>> = null;
-        let currentRenderListLength = 0;
-        let checkLayerMask = false;
+        let currentRenderListLength: number;
+        let checkLayerMask: boolean;
 
         const defaultRenderList = this.renderList ? this.renderList : scene.frameGraph ? scene.meshes : scene.getActiveMeshes().data;
         const defaultRenderListLength = this.renderList || scene.frameGraph ? defaultRenderList.length : scene.getActiveMeshes().length;
@@ -844,8 +844,10 @@ export class ObjectRenderer {
 
         if (!currentRenderList) {
             // No custom render list provided, we prepare the rendering for the default list, but check
-            // first if we did not already performed the preparation (in this frame) before so as to avoid re-doing it several times
-            if (this._defaultRenderListPrepared && !winterIsComing) {
+            // first if we did not already performed the preparation (in this frame) before so as to avoid re-doing it several times.
+            // In WebGPU, instance data (visibleInstances) is stored per render pass ID. Each cascade/face (in CSM) uses a different
+            // render pass ID, so we must re-prepare for each pass to register instances in the correct per-pass storage.
+            if (this._defaultRenderListPrepared && !winterIsComing && !this._engine.isWebGPU) {
                 return defaultRenderList;
             }
             this._defaultRenderListPrepared = true;
@@ -904,7 +906,7 @@ export class ObjectRenderer {
                         continue;
                     }
 
-                    let meshToRender: Nullable<AbstractMesh> = null;
+                    let meshToRender: Nullable<AbstractMesh>;
 
                     if (cameraForLOD) {
                         const meshToRenderAndFrameId = mesh._internalAbstractMeshDataInfo._currentLOD.get(cameraForLOD);

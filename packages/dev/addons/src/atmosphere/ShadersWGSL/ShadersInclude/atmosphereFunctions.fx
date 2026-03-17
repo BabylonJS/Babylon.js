@@ -447,7 +447,7 @@ fn toAerialPerspectiveLayer(distance: f32, aerialPerspectiveLutDistancePerSlice:
 }
 
 fn applyAerialPerspectiveSaturation(aerialPerspective: vec4f) -> vec4f {
-    let previousRadiance = getLuminance(aerialPerspective.rgb);
+    let previousRadiance = getLuminanceUnclamped(aerialPerspective.rgb);
     let mixed = mix(vec3f(previousRadiance), aerialPerspective.rgb, atmosphere.aerialPerspectiveSaturation);
     return vec4f(mixed, aerialPerspective.a);
 }

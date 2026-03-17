@@ -406,7 +406,7 @@ export class TextBlock extends Control {
             let newHeight = (this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * this._lines.length) | 0;
 
             if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
-                let lineSpacing = 0;
+                let lineSpacing: number;
                 if (this._lineSpacing.isPixel) {
                     lineSpacing = this._lineSpacing.getValue(this._host);
                 } else {
@@ -709,7 +709,7 @@ export class TextBlock extends Control {
         let newHeight = this._paddingTopInPixels + this._paddingBottomInPixels + this._fontOffset.height * lineCount;
 
         if (lineCount > 0 && this._lineSpacing.internalValue !== 0) {
-            let lineSpacing = 0;
+            let lineSpacing: number;
             if (this._lineSpacing.isPixel) {
                 lineSpacing = this._lineSpacing.getValue(this._host);
             } else {

@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/smart-filters",
-    "version": "8.54.1",
+    "version": "8.55.3",
     "description": "Babylon.js Smart Filter core",
     "keywords": [
         "video",
@@ -44,6 +44,7 @@
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
         "@dev/core": "^1.0.0",
+        "@dev/smart-filters": "^1.0.0",
         "@dev/shared-ui-components": "1.0.0"
     },
     "peerDependencies": {

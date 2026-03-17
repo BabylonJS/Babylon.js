@@ -1988,7 +1988,7 @@ export class GLTFLoader implements IGLTFLoader {
             try {
                 return new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
             } catch (e) {
-                throw new Error(`${context}: ${e.message}`);
+                throw new Error(`${context}: ${e.message}`, { cause: e });
             }
         });
     }
@@ -2577,10 +2577,12 @@ export class GLTFLoader implements IGLTFLoader {
         this._babylonScene._blockEntityCollection = false;
         promises.push(deferred.promise);
 
+        const nonBase64Uri = image.uri && !IsBase64DataUrl(image.uri) ? image.uri : undefined;
+        const imageId = nonBase64Uri ?? `${this._fileName}#image${image.index}`;
+
         promises.push(
             this.loadImageAsync(`/images/${image.index}`, image).then((data) => {
-                const name = image.uri || `${this._fileName}#image${image.index}`;
-                const dataUrl = `data:${this._uniqueRootUrl}${name}`;
+                const dataUrl = `data:${this._uniqueRootUrl}${imageId}`;
                 babylonTexture.updateURL(dataUrl, data);
 
                 // Set the internal texture label.
@@ -2596,7 +2598,8 @@ export class GLTFLoader implements IGLTFLoader {
         assign(babylonTexture);
 
         if (this._parent.useGltfTextureNames) {
-            babylonTexture.name = image.name || image.uri || `image${image.index}`;
+            const textureName = image.name || nonBase64Uri || `image${image.index}`;
+            babylonTexture.name = textureName;
         }
 
         return Promise.all(promises).then(() => {
@@ -2767,7 +2770,7 @@ export class GLTFLoader implements IGLTFLoader {
         try {
             return GetTypedArrayConstructor(componentType);
         } catch (e) {
-            throw new Error(`${context}: ${e.message}`);
+            throw new Error(`${context}: ${e.message}`, { cause: e });
         }
     }
 

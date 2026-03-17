@@ -382,13 +382,6 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                     Math.cos(angle / 2)
                 );
 
-                // If the meshes local scale is inverted (eg. loaded gltf file parent with z scale of -1) the rotation needs to be inverted on the y axis
-                if (this.attachedNode.getWorldMatrix().determinant() > 0) {
-                    const tmpVector = new Vector3();
-                    amountToRotate.toEulerAnglesToRef(tmpVector);
-                    Quaternion.RotationYawPitchRollToRef(tmpVector.y, -tmpVector.x, -tmpVector.z, amountToRotate);
-                }
-
                 if (this.updateGizmoRotationToMatchAttachedMesh) {
                     // Rotate selected mesh quaternion over fixed axis
                     nodeQuaternion.multiplyToRef(amountToRotate, nodeQuaternion);

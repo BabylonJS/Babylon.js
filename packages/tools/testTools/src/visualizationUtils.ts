@@ -98,7 +98,7 @@ export const evaluatePrepareScene = async (
             const snippet = await data.json();
 
             const payload = JSON.parse(snippet.jsonPayload);
-            let code = "";
+            let code: string;
             // Definitely v2 manifest
             if (Object.prototype.hasOwnProperty.call(payload, "version")) {
                 const v2Manifest = JSON.parse(payload.code);

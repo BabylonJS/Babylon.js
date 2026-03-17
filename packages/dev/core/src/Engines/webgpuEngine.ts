@@ -919,7 +919,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             disableMorphTargetTexture: false,
             textureNorm16: textureFormatsTier1,
             blendParametersPerTarget: true,
-            dualSourceBlending: true,
+            dualSourceBlending: this._deviceEnabledExtensions.includes(WebGPUConstants.FeatureName.DualSourceBlending),
         };
 
         this._features = {
@@ -1075,8 +1075,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this.beginFrame();
         this._startMainRenderPass(true, null, true, false);
         this._endCurrentRenderPass();
-        this.endFrame();
         this._frameId--; // We don't want to count the frame as a real frame, because it was only used to initialize the depth texture
+        this.endFrame();
     }
 
     /**
@@ -2713,7 +2713,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 return false;
             }
 
-            let internalTexture: Nullable<InternalTexture> = null;
+            let internalTexture: Nullable<InternalTexture>;
             if (depthStencilTexture) {
                 internalTexture = (<RenderTargetTexture>texture).depthStencilTexture!;
             } else if (texture.isReady()) {
@@ -2974,7 +2974,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._timestampIndex = 0;
         this._internalFrameCounter = 0;
 
-        this.flushFramebuffer();
+        this.flushFramebuffer(true);
 
         this._textureHelper.destroyDeferredTextures();
         this._bufferManager.destroyDeferredBuffers();
@@ -3001,18 +3001,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     /**
      * Force a WebGPU flush (ie. a flush of all waiting commands)
+     * @internal @param _fromEndFrame defines whether the flush is triggered from endFrame or not (default: false)
      */
-    public flushFramebuffer(): void {
+    public flushFramebuffer(_fromEndFrame = false): void {
         // we need to end the current render pass (main or rtt) if any as we are not allowed to submit the command buffers when being in a pass
         this._endCurrentRenderPass();
 
-        if (this._debugStackRenderEncoder.length !== 0) {
-            // We have pushed debug groups without popping them, we need to pop them before ending the render encoder to avoid WebGPU validation errors
-            // We will re-push them after creating the new render encoder
-            for (let i = 0; i < this._debugStackRenderEncoder.length; ++i) {
-                this._renderEncoder.popDebugGroup();
-            }
-        }
+        this._debugPopBeforeEndOfEncoder();
 
         this._commandBuffers[0] = this._uploadEncoder.finish();
         this._commandBuffers[1] = this._renderEncoder.finish();
@@ -3021,13 +3016,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         const frameCounter = this._internalFrameCounter++;
 
-        this._uploadEncoderDescriptor.label = `[${this.frameId}|${frameCounter}] - UploadEncoder`;
-        this._renderEncoderDescriptor.label = `[${this.frameId}|${frameCounter}] - RenderEncoder`;
+        // If flushFramebuffer is called from endFrame, it means the encoders are created for the next frame, but because frameId is not yet incremented at the time of the call, we use frameId + 1
+        this._uploadEncoderDescriptor.label = `[${_fromEndFrame ? this.frameId + 1 : this.frameId}|${frameCounter}] - UploadEncoder`;
+        this._renderEncoderDescriptor.label = `[${_fromEndFrame ? this.frameId + 1 : this.frameId}|${frameCounter}] - RenderEncoder`;
 
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
 
-        this._debugPushPendingGroups(false);
+        if (_fromEndFrame) {
+            this._debugMarkersEncoderGroups.length = 0;
+            this._debugMarkersPassGroups.length = 0;
+        } else {
+            this._debugPushAfterStartOfEncoder();
+        }
 
         this._timestampQuery.startFrame(this._uploadEncoder);
 
@@ -3211,7 +3212,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._timestampQuery.startPass(this._rttRenderPassWrapper.renderPassDescriptor, this._timestampIndex);
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._rttRenderPassWrapper.renderPassDescriptor);
 
-        this._debugPushPendingGroups(true);
+        this._debugPushAfterStartOfEncoder();
 
         this._resetRenderPassStates();
 
@@ -3265,7 +3266,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._timestampQuery.startPass(this._mainRenderPassWrapper.renderPassDescriptor!, this._timestampIndex);
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._mainRenderPassWrapper.renderPassDescriptor!);
 
-        this._debugPushPendingGroups(true);
+        this._debugPushAfterStartOfEncoder();
 
         this._setDepthTextureFormat(this._mainRenderPassWrapper);
         this._setColorFormat(this._mainRenderPassWrapper);

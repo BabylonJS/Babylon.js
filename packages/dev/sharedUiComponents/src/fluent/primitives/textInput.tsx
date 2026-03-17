@@ -26,8 +26,10 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
     }, [props.value]);
 
     const validateValue = (val: string): boolean => {
-        const failsValidator = props.validator && !props.validator(val);
-        return !failsValidator;
+        if (!props.validator) {
+            return true;
+        }
+        return props.validator(val);
     };
 
     const tryCommitValue = (currVal: string) => {
@@ -52,6 +54,14 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
             tryCommitValue(event.currentTarget.value);
         }
     };
+    const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+        HandleKeyDown(event);
+        // When validateOnlyOnBlur is set, also commit on Enter for better UX
+        if (event.key === "Enter" && props.validateOnlyOnBlur) {
+            tryCommitValue(event.currentTarget.value);
+        }
+    };
+
     const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
         HandleOnBlur(event);
         if (props.validateOnlyOnBlur) {
@@ -59,11 +69,11 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
         }
     };
 
-    const mergedClassName = mergeClasses(classes.input, !validateValue(value) ? classes.invalid : "", props.className);
+    const mergedClassName = mergeClasses(classes.inputFill, !validateValue(value) ? classes.invalid : "");
 
     const id = useId("input-button");
     return (
-        <div className={classes.container}>
+        <div className={mergeClasses(classes.container, props.className)}>
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
             <FluentInput
                 {...props}
@@ -73,7 +83,7 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
                 value={value}
                 onChange={handleChange}
                 onKeyUp={handleKeyUp}
-                onKeyDown={HandleKeyDown}
+                onKeyDown={handleKeyDown}
                 onBlur={handleBlur}
                 className={mergedClassName}
             />

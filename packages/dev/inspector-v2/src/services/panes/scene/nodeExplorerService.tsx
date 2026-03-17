@@ -101,7 +101,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
                 return {
                     get name() {
-                        return node.name;
+                        return node.name || `Unnamed ${node.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {

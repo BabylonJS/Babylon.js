@@ -318,7 +318,7 @@ export class CSG2 implements IDisposable {
         try {
             returnValue = new CSG2(new Manifold(manifoldMesh), numProp, structure);
         } catch (e) {
-            throw new Error("Error while creating the CSG: " + e.message);
+            throw new Error("Error while creating the CSG: " + e.message, { cause: e });
         }
 
         return returnValue;
@@ -476,7 +476,7 @@ export function IsCSG2Ready() {
  */
 export async function InitializeCSG2Async(options?: Partial<ICSG2Options>) {
     const localOptions = {
-        manifoldUrl: "https://unpkg.com/manifold-3d@3.3.0",
+        manifoldUrl: "https://unpkg.com/manifold-3d@3.4.0",
         ...options,
     };
 

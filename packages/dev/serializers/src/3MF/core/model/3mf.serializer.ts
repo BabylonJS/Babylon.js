@@ -16,7 +16,7 @@ import { type ByteSink, Utf8XmlWriterToBytes } from "../xml/xml.builder.bytes";
  * - These flags are kept generic here and are expected to be interpreted by the concrete serializer/model builder.
  * - Defaults are set in AbstractThreeMfSerializer.DEFAULT_3MF_EXPORTER_OPTIONS.
  */
-export interface IThreeMfSerializerOptions {
+export interface IThreeMfSerializerBaseOptions {
     /**
      * define the unit. Default is millimeter
      */
@@ -55,7 +55,7 @@ export interface I3mfSerializer<T> {
  * - Providing/initializing the zip implementation (ensureZipLibReadyAsync is abstract).
  * - Defining how meshes map to 3MF objects (toModel is abstract).
  */
-export abstract class AbstractThreeMfSerializer<T, O extends IThreeMfSerializerOptions> implements I3mfSerializer<T> {
+export abstract class AbstractThreeMfSerializer<T, O extends IThreeMfSerializerBaseOptions> implements I3mfSerializer<T> {
     private _o: O;
 
     /**

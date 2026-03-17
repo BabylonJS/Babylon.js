@@ -1,0 +1,194 @@
+# =============================================================================
+# Publish Pipeline (Definition ID: 15)
+# Converted from Azure DevOps Classic Pipeline
+#
+# Triggered when .build/config.json is changed on master.
+# Handles versioning, building, publishing to npm, creating GitHub releases,
+# and pushing tags.
+#
+# Secret variables (configure in pipeline UI):
+#   - BASIC_AUTH
+#   - DEPLOYMENT_SERVER
+#   - GitHubPAT
+#   - NPM_TOKEN
+# =============================================================================
+
+trigger:
+    batch: true
+    branches:
+        include:
+            - master
+    paths:
+        include:
+            - .build/config.json
+
+pr: none
+
+variables:
+    - group: BabylonJS-CI-Infrastructure
+
+pool:
+    vmImage: ubuntu-latest
+
+jobs:
+    - job: PublishToNpm
+      displayName: "Publish to npm"
+      steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+            fetchTags: true
+
+          - task: NodeTool@0
+            displayName: "Use Node 20.x"
+            inputs:
+                versionSpec: "20.x"
+
+          - bash: |
+                git config --global user.email "$(BOT_EMAIL)"
+                git config --global user.name "Babylon.js Platform"
+                git remote rm origin
+                git remote add origin https://$(GitHubPAT)@github.com/BabylonJS/Babylon.js.git
+                git fetch origin
+                git checkout $(Build.SourceBranchName)
+            displayName: "prepare git"
+
+          - bash: npm install
+            displayName: "npm install"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - bash: node ./scripts/updateVersion.js $(Build.SourceBranchName)
+            displayName: "run updater"
+            env:
+                GITHUBPAT: $(GitHubPAT)
+
+          - bash: npm install
+            displayName: "Update package-lock.json"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - bash: node ./scripts/tagVersion.js $(Build.SourceBranchName)
+            displayName: "Tag the version"
+            env:
+                GITHUBPAT: $(GitHubPAT)
+
+          - bash: npm run format:fix
+            displayName: "fix formatting"
+            env:
+                GITHUBPAT: $(GitHubPAT)
+
+          - bash: npm run test:unit
+            displayName: "unit tests"
+            retryCountOnTaskFailure: 2
+
+          - bash: npm run build:umd
+            displayName: "npm build umd"
+
+          - bash: npm run build:es6
+            displayName: "npm build es6"
+
+          - bash: echo "//registry.npmjs.org/:_authToken=$(NPM_TOKEN)" > ./.npmrc
+            displayName: "write npmrc"
+
+          - bash: npm publish -ws --access=public
+            displayName: "publish latest stable (master branch)"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+
+          - bash: npm publish -ws --tag preview
+            displayName: "publish preview (preview branch)"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'preview'))
+
+          - bash: git fetch origin
+            displayName: "fetch origin"
+
+          - bash: git merge origin/$(Build.SourceBranchName)
+            displayName: "pull master"
+
+          - bash: git push origin $(Build.SourceBranchName) --tags
+            displayName: "push to git"
+
+          - bash: |
+                npm run prepare-snapshot
+
+                zip -r $(Build.ArtifactStagingDirectory)/cdnSnapshot.zip .snapshot
+            displayName: "prepare snapshot"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+
+          - task: GitHubRelease@1
+            displayName: "GitHub release (create)"
+            continueOnError: true
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+            inputs:
+                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                repositoryName: "BabylonJS/Babylon.js"
+                action: create
+                target: master
+                tagSource: gitTag
+                assets: "$(Build.ArtifactStagingDirectory)/cdnSnapshot.zip"
+                isDraft: false
+                isPreRelease: false
+                addChangeLog: false
+                releaseNotesFilePath: ".build/release-notes.md"
+
+          - bash: |
+                pv=$(jq -r '.version' ./packages/public/umd/babylonjs/package.json)
+                echo "##vso[task.setvariable variable=PackageVersion]${pv}"
+            displayName: "Get version"
+            continueOnError: true
+
+          - script: |
+                cd .snapshot
+                zip -r ../snapshot.zip *
+                cd ..
+
+                curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                  -H "Content-Type: multipart/form-data" \
+                  -H "Authorization: $(BASIC_AUTH)" \
+                  -F "path=cdn/master/v$(PackageVersion)" \
+                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
+                  -F "saveZip=true" \
+                  -F "zip=@snapshot.zip"
+            displayName: "Update snapshot"
+
+          - task: Npm@1
+            displayName: "run build -w @tools/tests"
+            inputs:
+                command: custom
+                customCommand: "run build -w @tools/tests"
+
+          - task: Npm@1
+            displayName: "npm generate modules size"
+            inputs:
+                command: custom
+                customCommand: "run generate-file-size-report -w @tools/tests"
+
+          - script: |
+                # filesize
+                cd packages/tools/tests/dist
+                zip ../../../../fileSize.zip fileSizes.json
+                cd ../../../..
+
+                curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                  -H "Content-Type: multipart/form-data" \
+                  -H "Authorization: $(BASIC_AUTH)" \
+                  -F "path=cdn/master/v$(PackageVersion)" \
+                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
+                  -F "zip=@fileSize.zip"
+            displayName: "Update snapshot modules size"
+
+          # DISABLED in classic pipeline:
+          # - script: |
+          #     node ./packages/public/@babylonjs/inspector-v2/prepublish.cjs
+          #     node ./packages/public/umd/babylonjs-inspector-v2/prepublish.cjs
+          #   displayName: 'Run inspector v2 preview script'
+
+          # - script: npm install
+          #   displayName: 'npm install (for @babylonjs/inspector-v2 -> @babylonjs/inspector)'
+
+          # - script: |
+          #     npm publish -w @babylonjs/inspector --tag preview
+          #     npm publish -w babylonjs-inspector --tag preview
+          #   displayName: 'publish inspector v2 preview'

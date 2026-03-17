@@ -48,7 +48,7 @@ import { nativeOverride } from "../Misc/decorators";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 
 function ApplyMorph(data: FloatArray, kind: string, morphTargetManager: MorphTargetManager): void {
-    let getTargetData: Nullable<(target: MorphTarget) => Nullable<FloatArray>> = null;
+    let getTargetData: Nullable<(target: MorphTarget) => Nullable<FloatArray>>;
     switch (kind) {
         case VertexBuffer.PositionKind:
             getTargetData = (target) => target.getPositions();
@@ -2638,14 +2638,14 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      */
     public getClosestFacetAtLocalCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace: boolean = false, facing: boolean = true): Nullable<number> {
         let closest = null;
-        let tmpx = 0.0;
-        let tmpy = 0.0;
-        let tmpz = 0.0;
-        let d = 0.0; // tmp dot facet normal * facet position
-        let t0 = 0.0;
-        let projx = 0.0;
-        let projy = 0.0;
-        let projz = 0.0;
+        let tmpx: number;
+        let tmpy: number;
+        let tmpz: number;
+        let d: number; // tmp dot facet normal * facet position
+        let t0: number;
+        let projx: number;
+        let projy: number;
+        let projz: number;
         // Get all the facets in the same partitioning block than (x, y, z)
         const facetPositions = this.getFacetLocalPositions();
         const facetNormals = this.getFacetLocalNormals();
@@ -2655,7 +2655,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         }
         // Get the closest facet to (x, y, z)
         let shortest = Number.MAX_VALUE; // init distance vars
-        let tmpDistance = shortest;
+        let tmpDistance: number;
         let fib; // current facet in the block
         let norm; // current facet normal
         let p0; // current facet barycenter position
@@ -2797,7 +2797,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     }
 
     /** @internal */
-    public _checkOcclusionQuery(): boolean {
+    public _checkOcclusionQuery(_checkOnly = false): boolean {
         // Will be replaced by correct code if Occlusion queries are referenced
         return false;
     }

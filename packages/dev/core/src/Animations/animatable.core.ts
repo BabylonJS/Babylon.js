@@ -512,7 +512,7 @@ function ProcessLateAnimationBindingsForMatrices(holder: {
     const originalAnimation = holder.animations[0];
     const originalValue = holder.originalValue;
 
-    let scale = 1;
+    let scale: number;
     let skipOverride = false;
     if (holder.totalWeight < 1.0) {
         // We need to mix the original value in

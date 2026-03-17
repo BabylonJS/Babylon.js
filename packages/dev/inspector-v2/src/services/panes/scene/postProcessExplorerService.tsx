@@ -32,7 +32,7 @@ export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [IScene
 
                 return {
                     get name() {
-                        return postProcess.name;
+                        return postProcess.name || `Unnamed ${postProcess.getClassName()}`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
