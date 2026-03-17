@@ -398,21 +398,29 @@ export interface ISavePlaygroundManifestInput {
     engine?: string;
 }
 
+/** Content types that use the data snippet format (excludes playground and unknown). */
+export type DataSnippetType = Exclude<SnippetContentType, "playground" | "unknown">;
+
 /**
  * Input for saving a data snippet (NME, NGE, GUI, particles, etc.).
  *
- * `data` can be any JSON-serialisable value. It will be stored under
- * the key that matches the `type` (e.g. `{ nodeMaterial: data }`).
+ * This is a discriminated union on `type` — each snippet content type
+ * is a distinct member. `data` is typed as `unknown` because the
+ * serialisation schemas are owned by each tool's package, not by the
+ * snippet loader.  Callers with access to the concrete data types can
+ * narrow via the `type` discriminant.
  */
-export interface ISaveDataSnippetInput {
-    /** The snippet content type — any type except playground and unknown. */
-    type: Exclude<SnippetContentType, "playground" | "unknown">;
-    /** The data to save (JSON-serialisable). */
-    data: unknown;
-}
+export type SaveDataSnippetInput = {
+    [K in DataSnippetType]: {
+        /** The snippet content type. */
+        type: K;
+        /** The data to save (JSON-serialisable). */
+        data: unknown;
+    };
+}[DataSnippetType];
 
 /** Discriminated union of all save input shapes. */
-export type SaveSnippetInput = ISavePlaygroundCodeInput | ISavePlaygroundManifestInput | ISaveDataSnippetInput;
+export type SaveSnippetInput = ISavePlaygroundCodeInput | ISavePlaygroundManifestInput | SaveDataSnippetInput;
 
 /**
  * Options for the {@link SaveSnippet} function.

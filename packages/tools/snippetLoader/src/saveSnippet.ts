@@ -1,4 +1,4 @@
-import type { ISaveSnippetOptions, ISaveSnippetResult, ISavePlaygroundCodeInput, ISavePlaygroundManifestInput, ISaveDataSnippetInput, SaveSnippetInput } from "./types";
+import type { ISaveSnippetOptions, ISaveSnippetResult, ISavePlaygroundCodeInput, ISavePlaygroundManifestInput, SaveDataSnippetInput, SaveSnippetInput } from "./types";
 import { DEFAULT_SNIPPET_URL } from "./fetchSnippet";
 
 // -----------------------------------------------------------------------
@@ -87,7 +87,7 @@ function BuildPlaygroundManifestPayload(input: ISavePlaygroundManifestInput): st
  * @param input - The data snippet input.
  * @returns The stringified inner payload.
  */
-function BuildDataPayload(input: ISaveDataSnippetInput): string {
+function BuildDataPayload(input: SaveDataSnippetInput): string {
     const key = input.type === "animation" ? "animations" : (input.type as string);
     const value = typeof input.data === "string" ? input.data : JSON.stringify(input.data);
     return JSON.stringify({ [key]: value });
