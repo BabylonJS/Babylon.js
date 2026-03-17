@@ -62,7 +62,7 @@ export const LightGeneralProperties: FunctionComponent<{ light: Light; selection
                 value={container}
                 onChange={onChange}
                 scene={scene}
-                defaultValue={null as unknown as ClusteredLightContainer}
+                defaultValue={null}
                 onLink={(entity) => (selectionService.selectedEntity = entity)}
             />
         </Collapse>
