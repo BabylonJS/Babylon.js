@@ -9,6 +9,9 @@ import { DEFAULT_SNIPPET_URL } from "./fetchSnippet";
  * Encodes a string to Base64 via UTF-8, returning `undefined` when the
  * round-trip is lossless (i.e. the string contains only ASCII-safe chars
  * and Base64 encoding is unnecessary).
+ *
+ * @param source - The string to encode.
+ * @returns The Base64-encoded string, or `undefined` if encoding is unnecessary.
  */
 function EncodeUnicode(source: string): string | undefined {
     const encoder = new TextEncoder();
@@ -42,6 +45,9 @@ function BuildEnvelope(innerPayload: string, options?: ISaveSnippetOptions): str
 
 /**
  * Builds the inner payload for a playground snippet saved from raw code.
+ *
+ * @param input - The playground code input.
+ * @returns The stringified inner payload.
  */
 function BuildPlaygroundCodePayload(input: ISavePlaygroundCodeInput): string {
     const code = input.code;
@@ -56,6 +62,9 @@ function BuildPlaygroundCodePayload(input: ISavePlaygroundCodeInput): string {
 
 /**
  * Builds the inner payload for a playground snippet saved from a V2 manifest.
+ *
+ * @param input - The playground manifest input.
+ * @returns The stringified inner payload.
  */
 function BuildPlaygroundManifestPayload(input: ISavePlaygroundManifestInput): string {
     const manifestJson = JSON.stringify(input.manifest);
@@ -74,6 +83,9 @@ function BuildPlaygroundManifestPayload(input: ISavePlaygroundManifestInput): st
  * The value stored under the type key follows the same convention the
  * existing editors use: objects are JSON-stringified, strings are kept
  * as-is.
+ *
+ * @param input - The data snippet input.
+ * @returns The stringified inner payload.
  */
 function BuildDataPayload(input: ISaveDataSnippetInput): string {
     const key = input.type === "animation" ? "animations" : (input.type as string);
@@ -87,6 +99,9 @@ function BuildDataPayload(input: ISaveDataSnippetInput): string {
 
 /**
  * Type guard: input has a `manifest` property (playground V2).
+ *
+ * @param input - The save snippet input to check.
+ * @returns `true` when the input is a V2 manifest input.
  */
 function IsManifestInput(input: SaveSnippetInput): input is ISavePlaygroundManifestInput {
     return input.type === "playground" && "manifest" in input;
@@ -94,6 +109,9 @@ function IsManifestInput(input: SaveSnippetInput): input is ISavePlaygroundManif
 
 /**
  * Extracts the base snippet ID (without `#revision`) for the POST URL.
+ *
+ * @param snippetId - The full snippet ID (e.g. `"ABC123#2"`).
+ * @returns The base ID without revision (e.g. `"ABC123"`).
  */
 function BaseSnippetId(snippetId: string): string {
     const hash = snippetId.indexOf("#");
@@ -161,6 +179,7 @@ export async function SaveSnippet(input: SaveSnippetInput, options?: ISaveSnippe
 
     const response = await fetch(url, {
         method: "POST",
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         headers: { "Content-Type": "application/json" },
         body,
     });
