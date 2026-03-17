@@ -139,61 +139,43 @@ test.describe("Flow Graph Editor — Graph Construction", () => {
         await fge.goto();
         await fge.assertEditorReady();
 
-        // Add the two blocks
         await fge.addBlockFromPalette("SceneReadyEvent");
         await fge.addBlockFromPalette("ConsoleLog");
 
         expect(await fge.getNodeCount()).toBe(2);
 
-        // Connect the SceneReady "out" signal to ConsoleLog "in" signal
         await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphConsoleLogBlock", "in");
 
-        // Verify a link was created
         const linkCount = await fge.getLinkCount();
         expect(linkCount).toBeGreaterThanOrEqual(1);
     });
 
-    test("build a SceneReady → Branch graph", async ({ page }) => {
+    test("SceneReady → Branch with both true/false paths wired to ConsoleLog", async ({ page }) => {
         const fge = new FlowGraphEditorPage(page);
         await fge.goto();
         await fge.assertEditorReady();
 
         await fge.addBlockFromPalette("SceneReadyEvent");
         await fge.addBlockFromPalette("Branch");
-
-        expect(await fge.getNodeCount()).toBe(2);
-
-        // Connect execution flow: SceneReady.out → Branch.in
-        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphBranchBlock", "in");
-
-        const linkCount = await fge.getLinkCount();
-        expect(linkCount).toBeGreaterThanOrEqual(1);
-    });
-
-    test("build a SceneReady → Branch → two ConsoleLog graph", async ({ page }) => {
-        const fge = new FlowGraphEditorPage(page);
-        await fge.goto();
-        await fge.assertEditorReady();
-
-        // Add blocks
-        await fge.addBlockFromPalette("SceneReadyEvent");
-        await fge.addBlockFromPalette("Branch");
-        // Add two ConsoleLog blocks — they'll both have the same class,
-        // so we need a count-based approach
         await fge.addBlockFromPalette("ConsoleLog");
         await fge.addBlockFromPalette("ConsoleLog");
 
         expect(await fge.getNodeCount()).toBe(4);
 
-        // Connect SceneReady → Branch
+        // Wire: SceneReady.out → Branch.in
         await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphBranchBlock", "in");
+        // Wire: Branch.true → ConsoleLog[0].in
+        await fge.connectPorts("FlowGraphBranchBlock", "onTrue", "FlowGraphConsoleLogBlock", "in", { targetIndex: 0 });
+        // Wire: Branch.onFalse → ConsoleLog[1].in
+        await fge.connectPorts("FlowGraphBranchBlock", "onFalse", "FlowGraphConsoleLogBlock", "in", { targetIndex: 1 });
 
-        // Verify we have at least one connection
-        const linkCount = await fge.getLinkCount();
-        expect(linkCount).toBeGreaterThanOrEqual(1);
+        // Verify all 3 connections via serialization
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(3);
+        expect(topology.blocks).toHaveLength(4);
     });
 
-    test("build a ForLoop graph", async ({ page }) => {
+    test("SceneReady → ForLoop → ConsoleLog with completed path", async ({ page }) => {
         const fge = new FlowGraphEditorPage(page);
         await fge.goto();
         await fge.assertEditorReady();
@@ -201,14 +183,298 @@ test.describe("Flow Graph Editor — Graph Construction", () => {
         await fge.addBlockFromPalette("SceneReadyEvent");
         await fge.addBlockFromPalette("ForLoop");
         await fge.addBlockFromPalette("ConsoleLog");
+        await fge.addBlockFromPalette("ConsoleLog");
 
-        expect(await fge.getNodeCount()).toBe(3);
+        expect(await fge.getNodeCount()).toBe(4);
 
-        // Connect SceneReady → ForLoop
+        // SceneReady → ForLoop
         await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphForLoopBlock", "in");
+        // ForLoop.executionFlow → ConsoleLog[0] (loop body)
+        await fge.connectPorts("FlowGraphForLoopBlock", "executionFlow", "FlowGraphConsoleLogBlock", "in", { targetIndex: 0 });
+        // ForLoop.completed → ConsoleLog[1] (after loop)
+        await fge.connectPorts("FlowGraphForLoopBlock", "completed", "FlowGraphConsoleLogBlock", "in", { targetIndex: 1 });
 
-        const linkCount = await fge.getLinkCount();
-        expect(linkCount).toBeGreaterThanOrEqual(1);
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(3);
+    });
+
+    test("SceneReady → WhileLoop → ConsoleLog", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("WhileLoop");
+        await fge.addBlockFromPalette("ConsoleLog");
+
+        // SceneReady → WhileLoop
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphWhileLoopBlock", "in");
+        // WhileLoop.executionFlow → ConsoleLog (loop body)
+        await fge.connectPorts("FlowGraphWhileLoopBlock", "executionFlow", "FlowGraphConsoleLogBlock", "in");
+
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(2);
+    });
+
+    test("SceneReady → FlipFlop → two ConsoleLog blocks (onOn/onOff)", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("FlipFlop");
+        await fge.addBlockFromPalette("ConsoleLog");
+        await fge.addBlockFromPalette("ConsoleLog");
+
+        expect(await fge.getNodeCount()).toBe(4);
+
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphFlipFlopBlock", "in");
+        await fge.connectPorts("FlowGraphFlipFlopBlock", "onOn", "FlowGraphConsoleLogBlock", "in", { targetIndex: 0 });
+        await fge.connectPorts("FlowGraphFlipFlopBlock", "onOff", "FlowGraphConsoleLogBlock", "in", { targetIndex: 1 });
+
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(3);
+    });
+
+    test("SceneReady → DoN → ConsoleLog with data output", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("DoN");
+        await fge.addBlockFromPalette("ConsoleLog");
+
+        // SceneReady → DoN
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphDoNBlock", "in");
+        // DoN.out → ConsoleLog
+        await fge.connectPorts("FlowGraphDoNBlock", "out", "FlowGraphConsoleLogBlock", "in");
+
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(2);
+        expect(topology.blocks.map((b) => b.className)).toContain("FlowGraphDoNBlock");
+    });
+
+    test("SceneReady → Sequence(out_0) → ConsoleLog", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("Sequence");
+        await fge.addBlockFromPalette("ConsoleLog");
+
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphSequenceBlock", "in");
+        await fge.connectPorts("FlowGraphSequenceBlock", "out_0", "FlowGraphConsoleLogBlock", "in");
+
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(2);
+    });
+
+    test("PointerDown → Throttle → ConsoleLog", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("PointerDownEvent");
+        await fge.addBlockFromPalette("Throttle");
+        await fge.addBlockFromPalette("ConsoleLog");
+
+        await fge.connectPorts("FlowGraphPointerDownEventBlock", "out", "FlowGraphThrottleBlock", "in");
+        await fge.connectPorts("FlowGraphThrottleBlock", "out", "FlowGraphConsoleLogBlock", "in");
+
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(2);
+    });
+
+    test("PointerDown → Debounce → ConsoleLog", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("PointerDownEvent");
+        await fge.addBlockFromPalette("Debounce");
+        await fge.addBlockFromPalette("ConsoleLog");
+
+        await fge.connectPorts("FlowGraphPointerDownEventBlock", "out", "FlowGraphDebounceBlock", "in");
+        await fge.connectPorts("FlowGraphDebounceBlock", "out", "FlowGraphConsoleLogBlock", "in");
+
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(2);
+    });
+
+    test("SceneReady → SetDelay → ConsoleLog chain", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("SetDelay");
+        await fge.addBlockFromPalette("ConsoleLog");
+
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphSetDelayBlock", "in");
+        await fge.connectPorts("FlowGraphSetDelayBlock", "out", "FlowGraphConsoleLogBlock", "in");
+
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(2);
+    });
+
+    test("SceneReady → PlayAnimation → StopAnimation on done", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("PlayAnimation");
+        await fge.addBlockFromPalette("StopAnimation");
+
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphPlayAnimationBlock", "in");
+        // When animation is done, stop it
+        await fge.connectPorts("FlowGraphPlayAnimationBlock", "done", "FlowGraphStopAnimationBlock", "in");
+
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(2);
+    });
+
+    test("SceneReady → SetVariable → GetVariable → SetProperty chain", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("SetVariable");
+        await fge.addBlockFromPalette("SetProperty");
+
+        // Signal chain: SceneReady → SetVariable → SetProperty
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphSetVariableBlock", "in");
+        await fge.connectPorts("FlowGraphSetVariableBlock", "out", "FlowGraphSetPropertyBlock", "in");
+
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(2);
+    });
+
+    test("MeshPick → Branch → SetProperty / ConsoleLog (data + execution wiring)", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("MeshPickEvent");
+        await fge.addBlockFromPalette("Branch");
+        await fge.addBlockFromPalette("SetProperty");
+        await fge.addBlockFromPalette("ConsoleLog");
+
+        expect(await fge.getNodeCount()).toBe(4);
+
+        // MeshPick → Branch
+        await fge.connectPorts("FlowGraphMeshPickEventBlock", "out", "FlowGraphBranchBlock", "in");
+        // Branch.true → SetProperty
+        await fge.connectPorts("FlowGraphBranchBlock", "onTrue", "FlowGraphSetPropertyBlock", "in");
+        // Branch.onFalse → ConsoleLog
+        await fge.connectPorts("FlowGraphBranchBlock", "onFalse", "FlowGraphConsoleLogBlock", "in");
+
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(3);
+    });
+
+    test("delete a connection by deleting the target block", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("ConsoleLog");
+
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphConsoleLogBlock", "in");
+        expect(await fge.getLinkCount()).toBe(1);
+
+        // Delete ConsoleLog — should also remove the link
+        await fge.selectNode("FlowGraphConsoleLogBlock");
+        await fge.deleteSelectedNodes();
+
+        expect(await fge.getNodeCount()).toBe(1);
+        expect(await fge.getLinkCount()).toBe(0);
+    });
+});
+
+test.describe("Flow Graph Editor — Custom Events", () => {
+    test("SendCustomEvent and ReceiveCustomEvent can be created and connected", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        const pageErrors: string[] = [];
+        page.on("pageerror", (err) => pageErrors.push(err.message));
+
+        await fge.addBlockFromPalette("SendCustomEvent");
+        await fge.addBlockFromPalette("ReceiveCustomEvent");
+
+        expect(pageErrors).toHaveLength(0);
+        expect(await fge.getNodeCount()).toBe(2);
+
+        const blockNames = await fge.getBlockClassNamesOnCanvas();
+        expect(blockNames).toContain("FlowGraphSendCustomEventBlock");
+        expect(blockNames).toContain("FlowGraphReceiveCustomEventBlock");
+    });
+
+    test("SceneReady → SendCustomEvent and ReceiveCustomEvent → ConsoleLog graph", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        const pageErrors: string[] = [];
+        page.on("pageerror", (err) => pageErrors.push(err.message));
+
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await fge.addBlockFromPalette("SendCustomEvent");
+        await fge.addBlockFromPalette("ReceiveCustomEvent");
+        await fge.addBlockFromPalette("ConsoleLog");
+
+        expect(await fge.getNodeCount()).toBe(4);
+        expect(pageErrors).toHaveLength(0);
+
+        // Wire: SceneReady.out → SendCustomEvent.in
+        await fge.connectPorts("FlowGraphSceneReadyEventBlock", "out", "FlowGraphSendCustomEventBlock", "in");
+        // Wire: ReceiveCustomEvent.out → ConsoleLog.in
+        await fge.connectPorts("FlowGraphReceiveCustomEventBlock", "out", "FlowGraphConsoleLogBlock", "in");
+
+        const topology = await fge.getGraphTopology();
+        expect(topology.totalConnections).toBe(2);
+        expect(topology.blocks).toHaveLength(4);
+
+        // Verify each specific block is in the serialized output
+        const classNames = topology.blocks.map((b) => b.className);
+        expect(classNames).toContain("FlowGraphSceneReadyEventBlock");
+        expect(classNames).toContain("FlowGraphSendCustomEventBlock");
+        expect(classNames).toContain("FlowGraphReceiveCustomEventBlock");
+        expect(classNames).toContain("FlowGraphConsoleLogBlock");
+    });
+
+    test("ReceiveCustomEvent has expected ports", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("ReceiveCustomEvent");
+
+        const node = fge.nodeOnCanvas("FlowGraphReceiveCustomEventBlock");
+        // Event blocks should have "out" and "done" (async) output ports
+        await expect(node.locator("[class*='port-label']:text-is('out')")).toBeVisible();
+        await expect(node.locator("[class*='port-label']:text-is('done')")).toBeVisible();
+        await expect(node.locator("[class*='port-label']:text-is('error')")).toBeVisible();
+    });
+
+    test("SendCustomEvent has expected ports", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        await fge.addBlockFromPalette("SendCustomEvent");
+
+        const node = fge.nodeOnCanvas("FlowGraphSendCustomEventBlock");
+        // Execution block with out signal: should have "in", "out", "error"
+        await expect(node.locator("[class*='port-label']:text-is('in')")).toBeVisible();
+        await expect(node.locator("[class*='port-label']:text-is('out')")).toBeVisible();
+        await expect(node.locator("[class*='port-label']:text-is('error')")).toBeVisible();
     });
 });
 
@@ -450,8 +716,8 @@ test.describe("Flow Graph Editor — Control Flow Blocks", () => {
         await fge.addBlockFromPalette("Branch");
 
         const node = fge.nodeOnCanvas("FlowGraphBranchBlock");
-        await expect(node.locator("[class*='port-label']", { hasText: "true" })).toBeVisible();
-        await expect(node.locator("[class*='port-label']", { hasText: "false" })).toBeVisible();
+        await expect(node.locator("[class*='port-label']", { hasText: "onTrue" })).toBeVisible();
+        await expect(node.locator("[class*='port-label']", { hasText: "onFalse" })).toBeVisible();
         await expect(node.locator("[class*='port-label']", { hasText: "condition" })).toBeVisible();
     });
 

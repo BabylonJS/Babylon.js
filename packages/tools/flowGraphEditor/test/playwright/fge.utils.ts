@@ -105,6 +105,14 @@ export class FlowGraphEditorPage {
     }
 
     /**
+     * Locate the nth instance (0-based) of a block on the canvas.
+     * Useful when multiple blocks of the same type exist.
+     */
+    nthNodeOnCanvas(blockClassName: string, index: number): Locator {
+        return this.graphCanvasContainer.locator(`.${blockClassName}`).nth(index);
+    }
+
+    /**
      * Locate a draggable block item in the node list palette by its display text.
      * The palette strips "FlowGraph" prefix and "Block" suffix.
      * Uses exact text matching to avoid substring collisions (e.g., "LessThan" vs "LessThanOrEqual").
@@ -205,14 +213,20 @@ export class FlowGraphEditorPage {
      * @param sourcePortName - Name of the output port on the source (e.g., "out")
      * @param targetBlockClass - CSS class of the target node (e.g., "FlowGraphConsoleLogBlock")
      * @param targetPortName - Name of the input port on the target (e.g., "in")
+     * @param options - Optional: sourceIndex/targetIndex for disambiguating duplicate block types
      */
-    async connectPorts(sourceBlockClass: string, sourcePortName: string, targetBlockClass: string, targetPortName: string): Promise<void> {
-        const sourcePort = await this._findPortIcon(sourceBlockClass, sourcePortName, "output");
-        const targetPort = await this._findPortIcon(targetBlockClass, targetPortName, "input");
+    async connectPorts(
+        sourceBlockClass: string,
+        sourcePortName: string,
+        targetBlockClass: string,
+        targetPortName: string,
+        options?: { sourceIndex?: number; targetIndex?: number }
+    ): Promise<void> {
+        const sourceNode = options?.sourceIndex !== undefined ? this.nthNodeOnCanvas(sourceBlockClass, options.sourceIndex) : this.nodeOnCanvas(sourceBlockClass);
+        const targetNode = options?.targetIndex !== undefined ? this.nthNodeOnCanvas(targetBlockClass, options.targetIndex) : this.nodeOnCanvas(targetBlockClass);
 
-        if (!sourcePort || !targetPort) {
-            throw new Error(`Could not find ports: ${sourceBlockClass}.${sourcePortName} → ${targetBlockClass}.${targetPortName}`);
-        }
+        const sourcePort = this._findPortIconOnNode(sourceNode, sourcePortName, "output");
+        const targetPort = this._findPortIconOnNode(targetNode, targetPortName, "input");
 
         await expect(sourcePort).toBeVisible({ timeout: 3000 });
         await expect(targetPort).toBeVisible({ timeout: 3000 });
@@ -230,9 +244,13 @@ export class FlowGraphEditorPage {
      */
     private async _findPortIcon(blockClass: string, portName: string, direction: "input" | "output"): Promise<Locator> {
         const node = this.nodeOnCanvas(blockClass);
-        // Port labels have the port-label CSS module class and innerHTML = portName.
-        // The port icon is a sibling within the same portLine container.
-        // We need to find the port-label with matching text, then get its sibling port icon.
+        return this._findPortIconOnNode(node, portName, direction);
+    }
+
+    /**
+     * Find a port icon on a specific node locator.
+     */
+    private _findPortIconOnNode(node: Locator, portName: string, direction: "input" | "output"): Locator {
         const containerSelector = direction === "input" ? "[class*='inputsContainer']" : "[class*='outputsContainer']";
         const portsContainer = node.locator(containerSelector);
 
@@ -334,5 +352,31 @@ export class FlowGraphEditorPage {
         const filterInput = this.nodeList.locator("input[type='text']").first();
         await filterInput.fill("");
         await this.page.waitForTimeout(200);
+    }
+
+    /**
+     * Serialize the graph and return a structured summary of blocks and their connections.
+     * Useful for verifying that multi-block graphs are wired correctly.
+     */
+    async getGraphTopology(): Promise<{
+        blocks: { className: string; signalOuts: { name: string; connectedIds: string[] }[]; signalIns: { name: string; connectedIds: string[] }[] }[];
+        totalConnections: number;
+    }> {
+        const serialized = await this.serializeGraph();
+        const parsed = JSON.parse(serialized);
+        let totalConnections = 0;
+        const blocks = (parsed.allBlocks || []).map((b: any) => {
+            const signalOuts = (b.signalOutputs || []).map((p: any) => {
+                const ids = p.connectedPointIds || [];
+                totalConnections += ids.length;
+                return { name: p.name, connectedIds: ids };
+            });
+            const signalIns = (b.signalInputs || []).map((p: any) => {
+                const ids = p.connectedPointIds || [];
+                return { name: p.name, connectedIds: ids };
+            });
+            return { className: b.className, signalOuts, signalIns };
+        });
+        return { blocks, totalConnections };
     }
 }
