@@ -937,6 +937,7 @@ export class Viewer implements IDisposable {
 
     private _shadowQuality: ShadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
     private readonly _shadowState: ShadowState = {};
+    private _iblShadowsAnimationObserver: Nullable<Observer<Scene>> = null;
 
     public constructor(
         private readonly _engine: AbstractEngine,
@@ -2023,6 +2024,11 @@ export class Viewer implements IDisposable {
 
         this._shadowState.high = high;
 
+        // Start the per-frame update loop if an animation is already playing.
+        if (this.isAnimationPlaying) {
+            this._startIblShadowsAnimationUpdate();
+        }
+
         this._snapshotHelper?.enableSnapshotRendering();
         this._markSceneMutated();
     }
@@ -2179,6 +2185,7 @@ export class Viewer implements IDisposable {
     }
 
     private _disposeShadows() {
+        this._stopIblShadowsAnimationUpdate();
         this._snapshotHelper?.disableSnapshotRendering();
 
         if (!this._shadowState) {
@@ -2428,10 +2435,7 @@ export class Viewer implements IDisposable {
      */
     public playAnimation() {
         this._activeAnimation?.play(true);
-        // Hide stale IBL shadows while the animation is playing.
-        if (this._shadowState.high) {
-            this._shadowState.high.ground.setEnabled(false);
-        }
+        this._startIblShadowsAnimationUpdate();
     }
 
     /**
@@ -2439,16 +2443,15 @@ export class Viewer implements IDisposable {
      */
     public async pauseAnimation() {
         this._activeAnimation?.pause();
+        this._stopIblShadowsAnimationUpdate();
         this._triggerIblShadowsVoxelization();
     }
 
     /**
      * Triggers a single IBL shadows voxelization pass.
-     * Hides the shadow ground while recomputing and shows it once the new voxelization is ready.
      */
     private _triggerIblShadowsVoxelization() {
         if (this._shadowState.high && !this._shadowState.high.voxelizationInProgress) {
-            this._shadowState.high.ground.setEnabled(false);
             this._shadowState.high.voxelizationInProgress = true;
             this._shadowState.high.pipeline.updateSceneBounds();
             this._shadowState.high.pipeline.updateVoxelization();
@@ -2456,10 +2459,32 @@ export class Viewer implements IDisposable {
                 if (this._shadowState.high) {
                     this._shadowState.high.voxelizationInProgress = false;
                     this._shadowState.high.pipeline.resetAccumulation();
-                    this._shadowState.high.ground.setEnabled(true);
                 }
                 this._startIblShadowsRenderTime();
             });
+        }
+    }
+
+    /**
+     * Starts the per-frame update loop for IBL shadows while an animation is playing.
+     */
+    private _startIblShadowsAnimationUpdate() {
+        if (this._shadowState.high && !this._iblShadowsAnimationObserver) {
+            let frame = 0;
+            this._iblShadowsAnimationObserver = this._scene.onAfterAnimationsObservable.add(() => {
+                if (frame++ % 2 === 0 && this._shadowState.high) {
+                    this._shadowState.high.pipeline.updateVoxelization();
+                    this._shadowState.high.pipeline.resetAccumulation();
+                    this._startIblShadowsRenderTime();
+                }
+            });
+        }
+    }
+
+    private _stopIblShadowsAnimationUpdate() {
+        if (this._iblShadowsAnimationObserver) {
+            this._scene.onAfterAnimationsObservable.remove(this._iblShadowsAnimationObserver);
+            this._iblShadowsAnimationObserver = null;
         }
     }
 
