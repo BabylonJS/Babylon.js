@@ -243,8 +243,12 @@ export class TransmittanceLut {
 
         this._isDirty = false;
 
-        // eslint-disable-next-line github/no-then
-        void this.renderTarget.readPixels(0, 0, undefined, undefined, UseHalfFloat /* noDataConversion */)?.then((value: ArrayBufferView) => {
+        // Defer readPixels to the end of the frame.
+        this._atmosphere.scene.onAfterRenderObservable.addOnce(async () => {
+            if (this._isDisposed) {
+                return;
+            }
+            const value = await this.renderTarget.readPixels(0, 0, undefined, undefined, UseHalfFloat /* noDataConversion */);
             if (this._isDisposed) {
                 return;
             }
