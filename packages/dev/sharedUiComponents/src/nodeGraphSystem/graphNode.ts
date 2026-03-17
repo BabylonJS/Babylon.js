@@ -410,7 +410,9 @@ export class GraphNode {
 
     public refresh() {
         if (this._displayManager) {
-            this._header.innerHTML = this._displayManager.getHeaderText(this.content);
+            const headerText = this._displayManager.getHeaderText(this.content);
+            this._header.innerHTML = headerText;
+            this._header.title = headerText;
             this._displayManager.updatePreviewContent(this.content, this._content);
             const backgroundColor = this._displayManager.getBackgroundColor(this.content);
             if (backgroundColor) {
@@ -439,6 +441,7 @@ export class GraphNode {
             }
         } else {
             this._header.innerHTML = this.content.name;
+            this._header.title = this.content.name;
         }
 
         for (const refresh of this._visualPropertiesRefresh) {

@@ -104,6 +104,42 @@ test.describe("Flow Graph Editor — Node Operations", () => {
         expect(afterParsed).toHaveLength(2);
         expect(beforeParsed[0]).toBeGreaterThan(afterParsed[0]);
     });
+
+    test("block header and port labels do not overflow the node bounds", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+
+        // Use blocks with long names that are most likely to overflow
+        await fge.addBlockFromPalette("PlayAnimation");
+        await fge.addBlockFromPalette("ReceiveCustomEvent");
+        await fge.addBlockFromPalette("QuaternionFromDirections");
+
+        const blocksToCheck = ["FlowGraphPlayAnimationBlock", "FlowGraphReceiveCustomEventBlock", "FlowGraphQuaternionFromDirectionsBlock"];
+
+        for (const blockClass of blocksToCheck) {
+            const node = fge.nodeOnCanvas(blockClass);
+            const nodeBox = await node.boundingBox();
+            expect(nodeBox).not.toBeNull();
+
+            // Check header text doesn't overflow
+            const header = node.locator("[class*='header']").first();
+            const headerBox = await header.boundingBox();
+            if (headerBox && nodeBox) {
+                expect(headerBox.x + headerBox.width).toBeLessThanOrEqual(nodeBox.x + nodeBox.width + 1);
+            }
+
+            // Check all port labels don't overflow the node width
+            const portLabels = node.locator("[class*='port-label']");
+            const count = await portLabels.count();
+            for (let i = 0; i < count; i++) {
+                const labelBox = await portLabels.nth(i).boundingBox();
+                if (labelBox && nodeBox) {
+                    expect(labelBox.x + labelBox.width).toBeLessThanOrEqual(nodeBox.x + nodeBox.width + 1);
+                }
+            }
+        }
+    });
 });
 
 test.describe("Flow Graph Editor — Node List Filter", () => {

@@ -54,6 +54,7 @@ export class NodePort {
     public refreshLabel() {
         if (this._portLabelElement) {
             this._portLabelElement.innerHTML = this.portData.name;
+            (this._portLabelElement as HTMLElement).title = this.portData.name;
         }
     }
 
@@ -225,6 +226,7 @@ export class NodePort {
             const portLabel = root.ownerDocument.createElement("div");
             portLabel.classList.add(commonStyles["port-label"]);
             portLabel.innerHTML = portData.name;
+            portLabel.title = portData.name;
             portContainer.appendChild(portLabel);
         }
 

@@ -133,15 +133,20 @@
     }
 
     .fge-ctrl-debug {
-        color: #aaa;
+        color: #666;
+        border-color: #555;
+        opacity: 0.6;
 
         &.active {
             color: rgb(180, 130, 255);
             border-color: rgb(180, 130, 255);
             background: rgba(180, 130, 255, 0.15);
+            opacity: 1;
+            box-shadow: 0 2px 0 0 rgb(180, 130, 255);
         }
 
         &:not(.active):hover {
+            opacity: 0.85;
             background: rgba(180, 130, 255, 0.1);
         }
     }
@@ -156,15 +161,20 @@
     }
 
     .fge-ctrl-live-validate {
-        color: #aaa;
+        color: #666;
+        border-color: #555;
+        opacity: 0.6;
 
         &.active {
             color: rgb(243, 156, 18);
             border-color: rgb(243, 156, 18);
             background: rgba(243, 156, 18, 0.15);
+            opacity: 1;
+            box-shadow: 0 2px 0 0 rgb(243, 156, 18);
         }
 
         &:not(.active):hover {
+            opacity: 0.85;
             background: rgba(243, 156, 18, 0.1);
         }
     }
@@ -218,15 +228,19 @@
         padding: 0 5px;
         font-size: 11px !important;
         font-weight: 600;
-        color: #aaa;
+        color: #666;
+        opacity: 0.6;
 
         &.active {
             color: rgb(243, 156, 18);
             border-color: rgb(243, 156, 18);
             background: rgba(243, 156, 18, 0.15);
+            opacity: 1;
+            box-shadow: 0 2px 0 0 rgb(243, 156, 18);
         }
 
         &:not(.active):hover {
+            opacity: 0.85;
             background: rgba(243, 156, 18, 0.1);
         }
     }
