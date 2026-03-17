@@ -2577,7 +2577,8 @@ export class GLTFLoader implements IGLTFLoader {
         this._babylonScene._blockEntityCollection = false;
         promises.push(deferred.promise);
 
-        const imageId = image.uri && !IsBase64DataUrl(image.uri) ? image.uri : `${this._fileName}#image${image.index}`;
+        const nonBase64Uri = image.uri && !IsBase64DataUrl(image.uri) ? image.uri : undefined;
+        const imageId = nonBase64Uri ?? `${this._fileName}#image${image.index}`;
 
         promises.push(
             this.loadImageAsync(`/images/${image.index}`, image).then((data) => {
@@ -2597,7 +2598,7 @@ export class GLTFLoader implements IGLTFLoader {
         assign(babylonTexture);
 
         if (this._parent.useGltfTextureNames) {
-            const textureName = image.name || (image.uri && !IsBase64DataUrl(image.uri) ? image.uri : `image${image.index}`);
+            const textureName = image.name || nonBase64Uri || `image${image.index}`;
             babylonTexture.name = textureName;
         }
 
