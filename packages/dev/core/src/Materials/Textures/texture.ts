@@ -1103,7 +1103,11 @@ export class Texture extends BaseTexture {
                         };
 
                         // use the base64 string as the texture name for caching; the actual payload comes from options.buffer
-                        texture = Texture.CreateFromBase64String("", parsedTexture.base64String, scene, options);
+                        const noPrefixBase64String = (parsedTexture.base64String as string).startsWith("data:")
+                            ? (parsedTexture.base64String as string).substring(5)
+                            : (parsedTexture.base64String as string);
+
+                        texture = Texture.CreateFromBase64String("", noPrefixBase64String, scene, options);
 
                         // prettier name to fit with the loaded data
                         texture.name = parsedTexture.name;
