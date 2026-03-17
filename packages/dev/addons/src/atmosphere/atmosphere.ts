@@ -935,6 +935,10 @@ export class Atmosphere implements IDisposable {
             );
         }
 
+        // Read back LUT data from the GPU if a readback is pending (deferred from a previous render call).
+        void this._transmittanceLut?.readPixelsAsync();
+        void this._diffuseSkyIrradianceLut?.readPixelsAsync();
+
         this.renderGlobalLuts(); // Start rendering of global LUTs during readiness polling.
 
         if (!this._transmittanceLut?.hasLutData || (this._isDiffuseSkyIrradianceLutEnabled && !this._diffuseSkyIrradianceLut?.hasLutData)) {
