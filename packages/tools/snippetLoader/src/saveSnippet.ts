@@ -139,22 +139,22 @@ function BaseSnippetId(snippetId: string): string {
  *
  * @example
  * ```ts
- * import { saveSnippet } from "@tools/snippet-loader";
+ * import { SaveSnippet } from "@tools/snippet-loader";
  *
  * // Save a playground snippet
- * const result = await saveSnippet(
+ * const result = await SaveSnippet(
  *   { type: "playground", code: "var createScene = function(engine, canvas) { ... }" },
  *   { metadata: { name: "My snippet", description: "Demo", tags: "test" } }
  * );
  * console.log(result.snippetId); // "ABC123"
  *
  * // Save a node material
- * const nmeResult = await saveSnippet(
+ * const nmeResult = await SaveSnippet(
  *   { type: "nodeMaterial", data: nodeMaterialSerializedJson }
  * );
  *
  * // Update an existing snippet (creates a new revision)
- * const updated = await saveSnippet(
+ * const updated = await SaveSnippet(
  *   { type: "playground", code: "updated code..." },
  *   { snippetId: result.snippetId }
  * );
