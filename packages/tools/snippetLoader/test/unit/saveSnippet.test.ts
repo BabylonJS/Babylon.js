@@ -19,8 +19,8 @@ import type { IV2Manifest, ISnippetServerResponse } from "../../src/types";
 // Mock fetch
 // ---------------------------------------------------------------------------
 
+const originalFetch = globalThis.fetch;
 const mockFetch = jest.fn<Promise<Response>, [RequestInfo | URL, RequestInit?]>();
-(globalThis as any).fetch = mockFetch;
 
 function mockFetchSuccess(id: string, version: string | number = "0") {
     mockFetch.mockResolvedValueOnce({
@@ -51,6 +51,11 @@ function lastInnerPayload(): Record<string, unknown> {
 describe("SaveSnippet", () => {
     beforeEach(() => {
         mockFetch.mockReset();
+        (globalThis as any).fetch = mockFetch;
+    });
+
+    afterAll(() => {
+        globalThis.fetch = originalFetch;
     });
 
     // -------------------------------------------------------------------

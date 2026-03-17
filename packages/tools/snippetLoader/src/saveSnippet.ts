@@ -50,6 +50,7 @@ function BuildPlaygroundCodePayload(input: ISavePlaygroundCodeInput): string {
         code,
         unicode,
         engine: input.engine,
+        language: input.language,
     });
 }
 
@@ -127,7 +128,7 @@ function BaseSnippetId(snippetId: string): string {
  *   { type: "playground", code: "var createScene = function(engine, canvas) { ... }" },
  *   { metadata: { name: "My snippet", description: "Demo", tags: "test" } }
  * );
- * console.log(result.snippetId); // "ABC123#0"
+ * console.log(result.snippetId); // "ABC123"
  *
  * // Save a node material
  * const nmeResult = await saveSnippet(

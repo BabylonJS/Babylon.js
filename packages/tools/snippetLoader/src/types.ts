@@ -380,7 +380,7 @@ export interface ISavePlaygroundCodeInput {
     type: "playground";
     /** The code string to save. */
     code: string;
-    /** Source language. When omitted the loader guesses from the code content. */
+    /** Source language. When omitted the loader guesses from the code content on load. When provided, it is persisted in the payload. */
     language?: "JS" | "TS";
     /** The engine type to store (e.g. "WebGL2", "WebGPU"). */
     engine?: string;
