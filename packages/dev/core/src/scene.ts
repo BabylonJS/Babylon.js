@@ -1342,8 +1342,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      * @returns the step Id
      */
-    public getStepId(paramBreakingChange: number): number {
-        return this._currentStepId + paramBreakingChange;
+    public getStepId(): number {
+        return this._currentStepId;
     }
 
     /**
@@ -5486,8 +5486,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this.isDisposed) {
             return;
         }
-
-        console.log(`BAD STUFF: ${JSON.stringify({ this: "is bad" })}`);
 
         if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === null) {
             this._checkIsReady();
