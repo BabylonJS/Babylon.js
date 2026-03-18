@@ -1,24 +1,6 @@
-import { Avatars, Animations } from "./data";
+import { Logger } from "core/Misc/logger";
 
 let CurrentSnippetToken = "";
-
-export function FindAvatarFromPath(path: string): string {
-    for (const name in Avatars) {
-        if (Avatars[name].path === path) {
-            return name;
-        }
-    }
-    return "";
-}
-
-export function FindAnimationFromPath(path: string): string {
-    for (const name in Animations) {
-        if (Animations[name].path === path) {
-            return name;
-        }
-    }
-    return "";
-}
 
 export function DistancePointToLine(
     point: { x: number; y: number; z: number },
@@ -48,6 +30,7 @@ function PackSnippetData(code: string) {
         language: "TS",
         entry: "index.ts",
         imports: {},
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         files: { "index.ts": code },
     };
     const codeToSave = JSON.stringify(v2);
@@ -88,7 +71,7 @@ export function SaveSnippet(code: string) {
                 }
                 window.open(newUrl, "_blank");
             } else {
-                console.error("Unable to save your code. It may be too long.");
+                Logger.Error("Unable to save your code. It may be too long.");
             }
         }
     };

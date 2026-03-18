@@ -24,8 +24,7 @@ import { CreateSkeletonFromTransformNodeHierarchy } from "core/Bones/skeleton.fu
 // Side-effect import needed for scene.createPickingRay (prototype-augmented)
 import "core/Culling/ray";
 
-import { Animations } from "./data";
-import { FindAnimationFromPath, DistancePointToLine } from "./helperFunctions";
+import { DistancePointToLine } from "./helperFunctions";
 import type { GizmoType } from "./avatar";
 
 const ShadowLayerMask = 0x20000000;
@@ -78,9 +77,9 @@ export class AnimationSource {
         this._gizmoManager.coordinatesMode = GizmoCoordinatesMode.Local;
     }
 
-    public async loadAsync(path: string, updateRestPose: boolean): Promise<void> {
+    public async loadAsync(path: string, restPoseUpdate?: RestPoseDataUpdate): Promise<void> {
         this._cleanScene();
-        await this._loadFileAsync(path, updateRestPose);
+        await this._loadFileAsync(path, restPoseUpdate);
     }
 
     /** Returns a sorted list of transform node names targeted by the animation group. */
@@ -155,14 +154,13 @@ export class AnimationSource {
     }
 
     /** Builds the rest-pose export data for the playground code generator. */
-    public buildExportData(animationPath: string, animationUpdateRestPose: boolean, epsilon: number): RestPoseDataUpdate {
+    public buildExportData(_animationUrl: string, animationUpdateRestPose: boolean, epsilon: number, restPoseUpdate?: RestPoseDataUpdate): RestPoseDataUpdate {
         const animationTransformNodes: RestPoseDataUpdate = [];
 
         if (!animationUpdateRestPose) {
             return animationTransformNodes;
         }
 
-        const restPoseUpdate = Animations[FindAnimationFromPath(animationPath)]?.restPoseUpdate;
         if (restPoseUpdate) {
             for (const dataBlock of restPoseUpdate) {
                 animationTransformNodes.push(dataBlock);
@@ -226,13 +224,34 @@ export class AnimationSource {
             return;
         }
         this._animationGroup.stop();
-        if (this._inRestPose) {
-            this._restPoseTransformNodeTransformations.clear();
-            this._saveTransformNodes(this._restPoseTransformNodeTransformations);
-        }
         this._restoreTransformNodes(this._restPoseTransformNodeTransformations);
         this._inRestPose = true;
         this.onPlayingObservable.notifyObservers(false);
+    }
+
+    /**
+     * Captures the current transform node transformations (while in rest pose, possibly edited via gizmo)
+     * as a `RestPoseDataUpdate`. All transform node transformations are saved as absolute values.
+     */
+    public saveAsRestPose(): RestPoseDataUpdate {
+        const result: RestPoseDataUpdate = [];
+        if (!this._rootNode) {
+            return result;
+        }
+        this._rootNode.getChildTransformNodes(false).forEach((node) => {
+            if (!node.rotationQuaternion) {
+                return;
+            }
+            const data: { position?: number[]; scaling?: number[]; quaternion?: number[] } = {};
+            data.position = node.position.asArray();
+            data.scaling = node.scaling.asArray();
+            data.quaternion = node.rotationQuaternion.asArray();
+            result.push({ name: node.name, data });
+        });
+        // Update internal rest pose baseline
+        this._restPoseTransformNodeTransformations.clear();
+        this._saveTransformNodes(this._restPoseTransformNodeTransformations);
+        return result;
     }
 
     public setSkeletonVisible(visible: boolean): void {
@@ -296,8 +315,12 @@ export class AnimationSource {
         this._gizmoManager.dispose();
     }
 
-    private async _loadFileAsync(path: string, updateRestPose: boolean): Promise<void> {
-        await AppendSceneAsync(path, this._scene);
+    private async _loadFileAsync(path: string, restPoseUpdate?: RestPoseDataUpdate): Promise<void> {
+        if (path.startsWith("file:")) {
+            await AppendSceneAsync(path.substring(5), this._scene, { rootUrl: "file:" });
+        } else {
+            await AppendSceneAsync(path, this._scene);
+        }
 
         this._rootNode = this._scene.getMeshByName("__root__");
         if (!this._rootNode) {
@@ -401,8 +424,8 @@ export class AnimationSource {
         this._gizmoSelectedNode.renderingGroupId = 3;
         this._gizmoSelectedNode.position.copyFrom(hipsNode.absolutePosition);
 
-        if (updateRestPose) {
-            this._updateRestPose(path);
+        if (restPoseUpdate && restPoseUpdate.length > 0) {
+            this._applyRestPoseUpdate(restPoseUpdate);
         }
 
         this._initialTransformNodeTransformations.clear();
@@ -485,12 +508,8 @@ export class AnimationSource {
         });
     }
 
-    private _updateRestPose(path: string): void {
+    private _applyRestPoseUpdate(restPoseUpdate: RestPoseDataUpdate): void {
         if (!this._rootNode) {
-            return;
-        }
-        const restPoseUpdate = Animations[FindAnimationFromPath(path)]?.restPoseUpdate;
-        if (!restPoseUpdate) {
             return;
         }
         for (const dataBlock of restPoseUpdate) {

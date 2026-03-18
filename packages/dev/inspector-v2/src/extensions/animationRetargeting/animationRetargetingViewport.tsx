@@ -62,7 +62,6 @@ export const AnimationRetargetingViewport: FunctionComponent<AnimationRetargetin
             managerRef.current = null;
         };
         // onManagerReady is intentionally not in deps - it's a stable callback from the service
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

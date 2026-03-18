@@ -1,4 +1,4 @@
-const StorageKey = "BabylonInspector_NamingSchemeManager";
+const StorageKey = "BabylonInspector_AnimRetargeting_NamingSchemeManager";
 
 /**
  * A bone/node entry in a naming scheme.

@@ -10,6 +10,7 @@ import { ShadowOnlyMaterial } from "materials/shadowOnly/shadowOnlyMaterial";
 import { GridMaterial } from "materials/grid/gridMaterial";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Observable } from "core/Misc/observable";
+import { Logger } from "core/Misc/logger";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Scene } from "core/scene";
@@ -17,21 +18,20 @@ import { Scene } from "core/scene";
 import { Avatar } from "./avatar";
 import { AnimationSource } from "./animation";
 import { HTMLConsole } from "./htmlConsole";
-import { Avatars, Animations } from "./data";
 import type { NamingSchemeManager } from "./namingSchemeManager";
-import { FindAvatarFromPath, FindAnimationFromPath, SaveSnippet, TestPlaygroundCode } from "./helperFunctions";
+import type { AvatarManager } from "./avatarManager";
+import type { AnimationManager } from "./animationManager";
+import { SaveSnippet, TestPlaygroundCode } from "./helperFunctions";
 
 export type { GizmoType } from "./avatar";
 
 export interface IRetargetingParams {
     // Avatar
-    avatarPath: string;
-    avatarUpdateRestPose: boolean;
+    avatarName: string;
     avatarRescaleAvatar: boolean;
     avatarAnimSpeed: number;
     // Animation
-    animationPath: string;
-    animationUpdateRestPose: boolean;
+    animationName: string;
     animationSpeed: number;
     // Retarget
     fixAnimations: boolean;
@@ -61,6 +61,8 @@ export class RetargetingSceneManager {
 
     private _retargetOptions: Nullable<IRetargetOptions> = null;
     private _lastRetargetParams: Nullable<IRetargetingParams> = null;
+    private _lastAvatarRestPose: import("./data").RestPoseDataUpdate | undefined;
+    private _lastAnimationRestPose: import("./data").RestPoseDataUpdate | undefined;
     private _isRetargeted = false;
 
     public readonly onRetargetDoneObservable = new Observable<void>();
@@ -165,24 +167,26 @@ export class RetargetingSceneManager {
         this._engine.runRenderLoop(() => this._scene?.render());
     }
 
-    public retarget(params: IRetargetingParams, namingSchemeManager: NamingSchemeManager): void {
+    public retarget(params: IRetargetingParams, namingSchemeManager: NamingSchemeManager, avatarManager: AvatarManager, animationManager: AnimationManager): void {
         const { avatar, animationSource } = this;
         if (!avatar?.animatorAvatar || !animationSource?.animationGroup) {
             return;
         }
 
-        this._lastRetargetParams = params;
-
-        avatar.prepareRetargeting();
-        animationSource.prepareRetargeting();
-
-        const avatarName = FindAvatarFromPath(params.avatarPath);
-        const animationName = FindAnimationFromPath(params.animationPath);
-        const sourceScheme = Animations[animationName]?.namingScheme;
-        const targetScheme = Avatars[avatarName]?.namingScheme;
+        const storedAvatar = avatarManager.getAvatar(params.avatarName);
+        const storedAnimation = animationManager.getAnimation(params.animationName);
+        const sourceScheme = storedAnimation?.namingScheme;
+        const targetScheme = storedAvatar?.namingScheme;
         if (!sourceScheme || !targetScheme) {
             return;
         }
+
+        this._lastRetargetParams = params;
+        this._lastAvatarRestPose = storedAvatar?.restPoseUpdate;
+        this._lastAnimationRestPose = storedAnimation?.restPoseUpdate;
+
+        avatar.prepareRetargeting();
+        animationSource.prepareRetargeting();
 
         this._retargetOptions = {
             animationGroupName: "avatar",
@@ -207,16 +211,39 @@ export class RetargetingSceneManager {
         this.onRetargetDoneObservable.notifyObservers();
     }
 
-    public exportToPlayground(): void {
+    public async exportToPlaygroundAsync(avatarManager: AvatarManager, animationManager: AnimationManager): Promise<boolean> {
         if (!this._isRetargeted || !this._retargetOptions || !this._lastRetargetParams || !this.avatar || !this.animationSource) {
-            return;
+            return false;
+        }
+
+        const params = this._lastRetargetParams;
+        const storedAvatar = avatarManager.getAvatar(params.avatarName);
+        const storedAnimation = animationManager.getAnimation(params.animationName);
+        if (!storedAvatar || !storedAnimation) {
+            return false;
+        }
+
+        // Resolve URLs — for file-based entries, convert main file to a base64 data URL
+        let avatarUrl = storedAvatar.url ?? "";
+        let animationUrl = storedAnimation.url ?? "";
+
+        if (storedAvatar.source === "file" && storedAvatar.fileNames?.length) {
+            avatarUrl = await this._fileToDataUrlAsync(avatarManager, storedAvatar.id, storedAvatar.fileNames);
+        }
+        if (storedAnimation.source === "file" && storedAnimation.fileNames?.length) {
+            avatarUrl.length; // ensure avatar is resolved first
+            animationUrl = await this._fileToDataUrlAsync(animationManager, storedAnimation.id, storedAnimation.fileNames);
+        }
+
+        if (!avatarUrl || !animationUrl) {
+            Logger.Warn("Cannot export to playground: failed to resolve avatar/animation files.");
+            return false;
         }
 
         const epsilon = 1e-4;
-        const params = this._lastRetargetParams;
 
-        const boneTransformations = this.avatar.buildExportData(params.avatarPath, params.avatarUpdateRestPose, epsilon);
-        const animationTransformNodes = this.animationSource.buildExportData(params.animationPath, params.animationUpdateRestPose, epsilon);
+        const boneTransformations = this.avatar.buildExportData(avatarUrl, true, epsilon, this._lastAvatarRestPose);
+        const animationTransformNodes = this.animationSource.buildExportData(animationUrl, true, epsilon, this._lastAnimationRestPose);
 
         const mapNodes: string[] = [];
         const map = this._retargetOptions.mapNodeNames;
@@ -227,14 +254,39 @@ export class RetargetingSceneManager {
         }
 
         const optionsCopy = { ...this._retargetOptions, mapNodeNames: undefined };
-        const code = TestPlaygroundCode.replace("%avatarPath%", params.avatarPath.replace(/"/g, '\\"'))
-            .replace("%animationPath%", params.animationPath.replace(/"/g, '\\"'))
+        const code = TestPlaygroundCode.replace("%avatarPath%", avatarUrl.replace(/"/g, '\\"'))
+            .replace("%animationPath%", animationUrl.replace(/"/g, '\\"'))
             .replace("%retargetOptions%", JSON.stringify(optionsCopy, undefined, 8))
             .replace("%avatarRestPoseUpdate%", JSON.stringify(boneTransformations))
             .replace("%animationRestPoseUpdate%", JSON.stringify(animationTransformNodes))
             .replace("%nameRemapping%", JSON.stringify(mapNodes));
 
         SaveSnippet(code);
+        return true;
+    }
+
+    /** Reads files from IndexedDB, finds the main scene file, and converts it to a base64 data URL. */
+    private async _fileToDataUrlAsync(manager: { getFilesAsync(id: string, fileNames: string[]): Promise<File[]> }, id: string, fileNames: string[]): Promise<string> {
+        const files = await manager.getFilesAsync(id, fileNames);
+        // Find the main scene file (the one with a registered loader plugin)
+        let mainFile: File | undefined;
+        for (const file of files) {
+            const ext = file.name.toLowerCase().split(".").pop();
+            if (ext === "glb" || ext === "gltf" || ext === "babylon") {
+                mainFile = file;
+                break;
+            }
+        }
+        if (!mainFile) {
+            return "";
+        }
+        const buffer = await mainFile.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        let binary = "";
+        for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return "data:;base64," + btoa(binary);
     }
 
     public resize(): void {

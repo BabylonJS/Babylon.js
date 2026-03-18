@@ -7,9 +7,7 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { TransformNode } from "core/Meshes/transformNode";
 
 import { Color3 } from "core/Maths/math.color";
-import type { Vector3 } from "core/Maths/math.vector";
-
-import { Matrix, TmpVectors } from "core/Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Mesh } from "core/Meshes/mesh";
@@ -25,8 +23,8 @@ import type { Bone } from "core/Bones/bone";
 // Side-effect import needed for scene.createPickingRay (prototype-augmented)
 import "core/Culling/ray";
 
-import { Avatars } from "./data";
-import { FindAvatarFromPath, DistancePointToLine } from "./helperFunctions";
+import type { RestPoseDataUpdate } from "./data";
+import { DistancePointToLine } from "./helperFunctions";
 
 export type GizmoType = "Position" | "Rotation" | "Scale";
 
@@ -91,9 +89,9 @@ export class Avatar {
         this._gizmoManager.coordinatesMode = GizmoCoordinatesMode.Local;
     }
 
-    public async loadAsync(path: string, updateRestPose: boolean, rescaleAvatar: boolean): Promise<void> {
+    public async loadAsync(path: string, rescaleAvatar: boolean, restPoseUpdate?: RestPoseDataUpdate): Promise<void> {
         this._cleanScene();
-        await this._loadFileAsync(path, updateRestPose, rescaleAvatar);
+        await this._loadFileAsync(path, rescaleAvatar, restPoseUpdate);
     }
 
     /** Returns the list of all bone names in the avatar skeleton, in hierarchy order. */
@@ -150,9 +148,6 @@ export class Avatar {
         this._animationGroup?.stop();
         if (this._animatorAvatar) {
             for (const skeleton of this._animatorAvatar.skeletons) {
-                if (this._inRestPose) {
-                    skeleton.setCurrentPoseAsRest();
-                }
                 skeleton.returnToRest();
                 skeleton.prepare(true);
             }
@@ -165,21 +160,45 @@ export class Avatar {
         this.onPlayingObservable.notifyObservers(false);
     }
 
+    /**
+     * Captures the current bone transformations (while in rest pose, possibly edited via gizmo)
+     * as a `RestPoseDataUpdate`. All bone transformations are saved as absolute values.
+     */
+    public saveAsRestPose(): RestPoseDataUpdate {
+        const result: RestPoseDataUpdate = [];
+        if (!this._animatorAvatar) {
+            return result;
+        }
+        const [skeleton] = this._animatorAvatar.skeletons;
+        for (const bone of skeleton.bones) {
+            const data: { position?: number[]; scaling?: number[]; quaternion?: number[] } = {};
+            data.position = bone.position.asArray();
+            data.scaling = bone.scaling.asArray();
+            if (bone.rotationQuaternion) {
+                data.quaternion = bone.rotationQuaternion.asArray();
+            }
+            result.push({ name: bone.name, data });
+        }
+        // Update internal rest pose so subsequent retargeting uses the new baseline
+        for (const skel of this._animatorAvatar.skeletons) {
+            skel.setCurrentPoseAsRest();
+        }
+        return result;
+    }
+
     public prepareRetargeting(): void {
         this.returnToRest(true);
         this._retargetedBoneTransformations.clear();
         this._saveBoneTransformations(this._retargetedBoneTransformations);
     }
 
-    public buildExportData(avatarPath: string, avatarUpdateRestPose: boolean, epsilon: number): import("./data").RestPoseDataUpdate {
-        const boneTransformations: import("./data").RestPoseDataUpdate = [];
+    public buildExportData(_avatarUrl: string, avatarUpdateRestPose: boolean, epsilon: number, restPoseUpdate?: RestPoseDataUpdate): RestPoseDataUpdate {
+        const boneTransformations: RestPoseDataUpdate = [];
 
         if (!avatarUpdateRestPose) {
             return boneTransformations;
         }
 
-        const avatarName = FindAvatarFromPath(avatarPath);
-        const restPoseUpdate = Avatars[avatarName]?.restPoseUpdate;
         if (restPoseUpdate) {
             for (const dataBlock of restPoseUpdate) {
                 boneTransformations.push(dataBlock);
@@ -280,8 +299,13 @@ export class Avatar {
         this._gizmoManager.dispose();
     }
 
-    private async _loadFileAsync(path: string, updateRestPose: boolean, rescaleAvatar: boolean): Promise<void> {
-        const result = await ImportMeshAsync(path, this._scene);
+    private async _loadFileAsync(path: string, rescaleAvatar: boolean, restPoseUpdate?: RestPoseDataUpdate): Promise<void> {
+        let result;
+        if (path.startsWith("file:")) {
+            result = await ImportMeshAsync(path.substring(5), this._scene, { rootUrl: "file:" });
+        } else {
+            result = await ImportMeshAsync(path, this._scene);
+        }
         const avatarRootNode = result.meshes[0];
         avatarRootNode.name = "avatar";
 
@@ -319,8 +343,8 @@ export class Avatar {
             this._shadowGenerator.addShadowCaster(mesh);
         }
 
-        if (updateRestPose) {
-            this._updateRestPose(path);
+        if (restPoseUpdate && restPoseUpdate.length > 0) {
+            this._applyRestPoseUpdate(restPoseUpdate);
         }
 
         this._initialBoneTransformations.clear();
@@ -380,10 +404,8 @@ export class Avatar {
         this._scene.getAnimationGroupByName("avatar")?.dispose();
     }
 
-    private _updateRestPose(path: string): void {
-        const avatarName = FindAvatarFromPath(path);
-        const restPoseUpdate = Avatars[avatarName]?.restPoseUpdate;
-        if (!restPoseUpdate || !this._animatorAvatar) {
+    private _applyRestPoseUpdate(restPoseUpdate: RestPoseDataUpdate): void {
+        if (!this._animatorAvatar) {
             return;
         }
 
@@ -393,13 +415,13 @@ export class Avatar {
             if (index !== -1) {
                 const bone = avatarSkeleton.bones[index];
                 if (dataBlock.data.position) {
-                    bone.position = TmpVectors.Vector3[0].fromArray(dataBlock.data.position);
+                    bone.position = Vector3.FromArray(dataBlock.data.position);
                 }
                 if (dataBlock.data.scaling) {
-                    bone.scaling = TmpVectors.Vector3[0].fromArray(dataBlock.data.scaling);
+                    bone.scaling = Vector3.FromArray(dataBlock.data.scaling);
                 }
                 if (dataBlock.data.quaternion) {
-                    bone.rotationQuaternion = TmpVectors.Quaternion[0].fromArray(dataBlock.data.quaternion);
+                    bone.rotationQuaternion = Quaternion.FromArray(dataBlock.data.quaternion);
                 }
             }
         }

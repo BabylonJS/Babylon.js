@@ -1,5 +1,7 @@
 import type { FunctionComponent } from "react";
 import type { Observable } from "core/Misc/observable";
+import { FilesInputStore } from "core/Misc/filesInputStore";
+import { SceneLoader } from "core/Loading/sceneLoader";
 import type { Transform } from "../../components/properties/transformProperties";
 import { makeStyles, tokens, Body1Strong } from "@fluentui/react-components";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -10,10 +12,10 @@ import { StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/prop
 import { BoneDropdown } from "./boneDropdown";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { TransformProperties } from "../../components/properties/transformProperties";
-import { Avatars, Animations } from "./data";
-import { FindAvatarFromPath, FindAnimationFromPath } from "./helperFunctions";
 import type { RetargetingSceneManager } from "./retargetingSceneManager";
 import type { NamingSchemeManager } from "./namingSchemeManager";
+import type { AvatarManager } from "./avatarManager";
+import type { AnimationManager } from "./animationManager";
 import type { GizmoType } from "./avatar";
 
 /**
@@ -21,11 +23,16 @@ import type { GizmoType } from "./avatar";
  * to only those that have a bone remapping entry for the current avatar/animation pair.
  * Matches original PG behaviour for "Root node" and "Ground ref. node" dropdowns.
  */
-function buildFilteredBoneList(names: string[], animPath: string, avatarPath: string, namingSchemeManager: NamingSchemeManager): string[] {
-    const animName = FindAnimationFromPath(animPath);
-    const avatarName = FindAvatarFromPath(avatarPath);
-    const sourceScheme = Animations[animName]?.namingScheme;
-    const targetScheme = Avatars[avatarName]?.namingScheme;
+function BuildFilteredBoneList(
+    names: string[],
+    animName: string,
+    avatarName: string,
+    namingSchemeManager: NamingSchemeManager,
+    avatarManager: AvatarManager,
+    animationManager: AnimationManager
+): string[] {
+    const sourceScheme = animationManager.getAnimation(animName)?.namingScheme;
+    const targetScheme = avatarManager.getAvatar(avatarName)?.namingScheme;
     if (!sourceScheme || !targetScheme) {
         return names;
     }
@@ -99,8 +106,6 @@ const useStyles = makeStyles({
     },
 });
 
-const AvatarOptions = Object.keys(Avatars).map((name) => ({ label: name, value: Avatars[name].path }));
-const AnimationOptions = Object.keys(Animations).map((name) => ({ label: name, value: Animations[name].path }));
 const GizmoTypeOptions: { label: string; value: string }[] = [
     { label: "Position", value: "Position" },
     { label: "Rotation", value: "Rotation" },
@@ -114,8 +119,7 @@ const VerticalAxisOptions: { label: string; value: string }[] = [
 ];
 
 export type PanelStateStore = {
-    avatarPath: string;
-    avatarUpdateRestPose: boolean;
+    avatarName: string;
     avatarRescaleAvatar: boolean;
     avatarAnimSpeed: number;
     avatarShowSkeleton: boolean;
@@ -123,10 +127,8 @@ export type PanelStateStore = {
     avatarGizmoEnabled: boolean;
     avatarGizmoType: string;
     avatarGizmoSelectedNode: string;
-    animationPath: string;
-    animationUpdateRestPose: boolean;
+    animationName: string;
     animationSpeed: number;
-    animationShowSkeleton: boolean;
     animationShowSkeletonLocalAxes: boolean;
     animationGizmoEnabled: boolean;
     animationGizmoType: string;
@@ -142,9 +144,8 @@ export type PanelStateStore = {
     groundReferenceVerticalAxis: string;
 };
 
-export const defaultPanelState: PanelStateStore = {
-    avatarPath: Avatars["Goblin"].path,
-    avatarUpdateRestPose: true,
+export const DefaultPanelState: PanelStateStore = {
+    avatarName: "",
     avatarRescaleAvatar: true,
     avatarAnimSpeed: 1,
     avatarShowSkeleton: false,
@@ -152,10 +153,8 @@ export const defaultPanelState: PanelStateStore = {
     avatarGizmoEnabled: false,
     avatarGizmoType: "Rotation",
     avatarGizmoSelectedNode: "",
-    animationPath: Animations["Rumba Dancing"].path,
-    animationUpdateRestPose: true,
+    animationName: "",
     animationSpeed: 1,
-    animationShowSkeleton: true,
     animationShowSkeletonLocalAxes: false,
     animationGizmoEnabled: false,
     animationGizmoType: "Rotation",
@@ -174,9 +173,12 @@ export const defaultPanelState: PanelStateStore = {
 export type AnimationRetargetingPanelProps = {
     initialIsEnabled: boolean;
     isEnabledObs: Observable<boolean>;
+    onConfigChangedObs: Observable<void>;
     onManagerReadyObs: Observable<RetargetingSceneManager>;
     getCurrentManager: () => RetargetingSceneManager | null;
     namingSchemeManager: NamingSchemeManager;
+    avatarManager: AvatarManager;
+    animationManager: AnimationManager;
     /** Persisted across remounts (e.g. when the panel is docked elsewhere). Lives in the extension closure. */
     stateStore: PanelStateStore;
 };
@@ -184,9 +186,12 @@ export type AnimationRetargetingPanelProps = {
 export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPanelProps> = ({
     initialIsEnabled,
     isEnabledObs,
+    onConfigChangedObs,
     onManagerReadyObs,
     getCurrentManager,
     namingSchemeManager,
+    avatarManager,
+    animationManager,
     stateStore,
 }) => {
     const classes = useStyles();
@@ -195,8 +200,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
     const [, forceUpdate] = useState(0);
 
     // Avatar state
-    const [avatarPath, setAvatarPath] = useState(() => stateStore.avatarPath);
-    const [avatarUpdateRestPose, setAvatarUpdateRestPose] = useState(() => stateStore.avatarUpdateRestPose);
+    const [avatarName, setAvatarName] = useState(() => stateStore.avatarName);
     const [avatarRescaleAvatar, setAvatarRescaleAvatar] = useState(() => stateStore.avatarRescaleAvatar);
     const [avatarAnimSpeed, setAvatarAnimSpeed] = useState(() => stateStore.avatarAnimSpeed);
     const [avatarShowSkeleton, setAvatarShowSkeleton] = useState(() => stateStore.avatarShowSkeleton);
@@ -206,10 +210,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
     const [avatarGizmoSelectedNode, setAvatarGizmoSelectedNode] = useState(() => stateStore.avatarGizmoSelectedNode);
 
     // Animation state
-    const [animationPath, setAnimationPath] = useState(() => stateStore.animationPath);
-    const [animationUpdateRestPose, setAnimationUpdateRestPose] = useState(() => stateStore.animationUpdateRestPose);
+    const [animationName, setAnimationName] = useState(() => stateStore.animationName);
     const [animationSpeed, setAnimationSpeed] = useState(() => stateStore.animationSpeed);
-    const [animationShowSkeleton, setAnimationShowSkeleton] = useState(() => stateStore.animationShowSkeleton);
     const [animationShowSkeletonLocalAxes, setAnimationShowSkeletonLocalAxes] = useState(() => stateStore.animationShowSkeletonLocalAxes);
     const [animationGizmoEnabled, setAnimationGizmoEnabled] = useState(() => stateStore.animationGizmoEnabled);
     const [animationGizmoType, setAnimationGizmoType] = useState<string>(() => stateStore.animationGizmoType);
@@ -231,6 +233,10 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
     const [rootNodeOptions, setRootNodeOptions] = useState([{ label: "Auto", value: "Auto" }]);
     const [groundRefNodeOptions, setGroundRefNodeOptions] = useState<{ label: string; value: string }[]>([]);
 
+    // Dropdown options derived from managers — refreshed when config dialog closes
+    const [avatarOptions, setAvatarOptions] = useState(() => avatarManager.getAllAvatars().map((a) => ({ label: a.name, value: a.name })));
+    const [animationOptions, setAnimationOptions] = useState(() => animationManager.getAllAnimations().map((a) => ({ label: a.name, value: a.name })));
+
     // Selected bone/node transforms for the Properties section
     const [avatarGizmoSelectedTransform, setAvatarGizmoSelectedTransform] = useState<Transform | null>(null);
     const [animGizmoSelectedTransform, setAnimGizmoSelectedTransform] = useState<Transform | null>(null);
@@ -247,8 +253,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
     // Updated synchronously during render so callbacks always read the latest values.
     // Also used to save all state to stateStore on unmount.
     const stateSnapshotRef = useRef({
-        avatarPath,
-        avatarUpdateRestPose,
+        avatarName,
         avatarRescaleAvatar,
         avatarAnimSpeed,
         avatarShowSkeleton,
@@ -256,10 +261,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
         avatarGizmoEnabled,
         avatarGizmoType,
         avatarGizmoSelectedNode,
-        animationPath,
-        animationUpdateRestPose,
+        animationName,
         animationSpeed,
-        animationShowSkeleton,
         animationShowSkeletonLocalAxes,
         animationGizmoEnabled,
         animationGizmoType,
@@ -275,8 +278,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
         groundReferenceVerticalAxis,
     });
     stateSnapshotRef.current = {
-        avatarPath,
-        avatarUpdateRestPose,
+        avatarName,
         avatarRescaleAvatar,
         avatarAnimSpeed,
         avatarShowSkeleton,
@@ -284,10 +286,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
         avatarGizmoEnabled,
         avatarGizmoType,
         avatarGizmoSelectedNode,
-        animationPath,
-        animationUpdateRestPose,
+        animationName,
         animationSpeed,
-        animationShowSkeleton,
         animationShowSkeletonLocalAxes,
         animationGizmoEnabled,
         animationGizmoType,
@@ -308,7 +308,6 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
         return () => {
             Object.assign(stateStore, stateSnapshotRef.current);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Subscribe to isEnabled observable
@@ -318,6 +317,32 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
             isEnabledObs.remove(obs);
         };
     }, [isEnabledObs]);
+
+    // Refresh dropdown options when the config dialog closes.
+    // If the current avatar/animation was removed, clear it and dispose the loaded model.
+    useEffect(() => {
+        const obs = onConfigChangedObs.add(() => {
+            const newAvatarOptions = avatarManager.getAllAvatars().map((a) => ({ label: a.name, value: a.name }));
+            const newAnimationOptions = animationManager.getAllAnimations().map((a) => ({ label: a.name, value: a.name }));
+            setAvatarOptions(newAvatarOptions);
+            setAnimationOptions(newAnimationOptions);
+
+            const s = stateSnapshotRef.current;
+            if (s.avatarName && !avatarManager.getAvatar(s.avatarName)) {
+                setAvatarName("");
+                setIsAvatarLoaded(false);
+                setIsRetargeted(false);
+            }
+            if (s.animationName && !animationManager.getAnimation(s.animationName)) {
+                setAnimationName("");
+                setIsAnimLoaded(false);
+                setIsRetargeted(false);
+            }
+        });
+        return () => {
+            onConfigChangedObs.remove(obs);
+        };
+    }, [onConfigChangedObs, avatarManager, animationManager]);
 
     // Subscribe to manager ready observable -- re-subscribe each time a new manager is created
     useEffect(() => {
@@ -333,8 +358,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
 
             // Helper: rebuild "Root node" / "Ground ref. node" dropdowns using bone-remapping filtering.
             // Mirrors original gui.ts _getSourceTransformNodeList + updateBoneList logic.
-            const rebuildBoneLists = (allNames: string[], allOptions: { label: string; value: string }[], animPath: string, avatarPath: string, currentGroundRef: string) => {
-                const filtered = buildFilteredBoneList(allNames, animPath, avatarPath, namingSchemeManager);
+            const rebuildBoneLists = (allNames: string[], allOptions: { label: string; value: string }[], animName: string, avatarName: string, currentGroundRef: string) => {
+                const filtered = BuildFilteredBoneList(allNames, animName, avatarName, namingSchemeManager, avatarManager, animationManager);
                 const filteredSet = new Set(filtered);
                 const filteredOptions = allOptions.filter((o) => filteredSet.has(o.value));
                 setRootNodeOptions([{ label: "Auto", value: "Auto" }, ...filteredOptions]);
@@ -364,8 +389,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                     rebuildBoneLists(
                         manager.animationSource.getTransformNodeNames(),
                         manager.animationSource.getTransformNodeOptions(),
-                        s.animationPath,
-                        s.avatarPath,
+                        s.animationName,
+                        s.avatarName,
                         s.groundReferenceNodeName
                     );
                 }
@@ -395,12 +420,12 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 // Return avatar to rest pose when a new animation is loaded
                 manager.avatar?.returnToRest();
                 // Restore visual state
-                manager.animationSource!.setSkeletonVisible(s.animationShowSkeleton);
+                manager.animationSource!.setSkeletonVisible(true);
                 manager.animationSource!.setSkeletonLocalAxes(s.animationShowSkeletonLocalAxes);
                 manager.animationSource!.setGizmo(s.animationGizmoEnabled, s.animationGizmoType as GizmoType);
                 // Rebuild bone list dropdowns using filtered names (matching original updateBoneList logic)
                 const allNames = manager.animationSource!.getTransformNodeNames();
-                rebuildBoneLists(allNames, manager.animationSource!.getTransformNodeOptions(), s.animationPath, s.avatarPath, stateSnapshotRef.current.groundReferenceNodeName);
+                rebuildBoneLists(allNames, manager.animationSource!.getTransformNodeOptions(), s.animationName, s.avatarName, stateSnapshotRef.current.groundReferenceNodeName);
             });
 
             const animGizmoObs = manager.animationSource!.onGizmoNodeSelectedObservable.add((name) => {
@@ -431,10 +456,54 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 setIsAnimLoaded(false);
                 setIsAvatarPlaying(false);
                 setIsAnimPlaying(false);
-                manager.avatar!.loadAsync(s.avatarPath, s.avatarUpdateRestPose, s.avatarRescaleAvatar);
-                manager.animationSource!.loadAsync(s.animationPath, s.animationUpdateRestPose).then(() => {
-                    manager.animationSource?.play(stateSnapshotRef.current.animationSpeed);
-                });
+                const storedAv = avatarManager.getAvatar(s.avatarName);
+                const storedAn = animationManager.getAnimation(s.animationName);
+                if (storedAv) {
+                    if (storedAv.source === "url" && storedAv.url) {
+                        manager.avatar!.loadAsync(storedAv.url, s.avatarRescaleAvatar, storedAv.restPoseUpdate);
+                    } else if (storedAv.source === "file" && storedAv.fileNames?.length) {
+                        void (async () => {
+                            const files = await avatarManager.getFilesAsync(storedAv.id, storedAv.fileNames!);
+                            let sceneFile: File | undefined;
+                            for (const file of files) {
+                                const lowerName = file.name.toLowerCase();
+                                FilesInputStore.FilesToLoad[lowerName] = file;
+                                const ext = lowerName.split(".").pop();
+                                if (ext && SceneLoader.IsPluginForExtensionAvailable("." + ext)) {
+                                    sceneFile = file;
+                                }
+                            }
+                            if (sceneFile) {
+                                manager.avatar!.loadAsync("file:" + sceneFile.name, s.avatarRescaleAvatar, storedAv.restPoseUpdate);
+                            }
+                        })();
+                    }
+                }
+                if (storedAn) {
+                    const loadAndPlayAsync = async (path: string) => {
+                        await manager.animationSource!.loadAsync(path, storedAn.restPoseUpdate);
+                        manager.animationSource?.play(stateSnapshotRef.current.animationSpeed);
+                    };
+                    if (storedAn.source === "url" && storedAn.url) {
+                        void loadAndPlayAsync(storedAn.url);
+                    } else if (storedAn.source === "file" && storedAn.fileNames?.length) {
+                        void (async () => {
+                            const files = await animationManager.getFilesAsync(storedAn.id, storedAn.fileNames!);
+                            let sceneFile: File | undefined;
+                            for (const file of files) {
+                                const lowerName = file.name.toLowerCase();
+                                FilesInputStore.FilesToLoad[lowerName] = file;
+                                const ext = lowerName.split(".").pop();
+                                if (ext && SceneLoader.IsPluginForExtensionAvailable("." + ext)) {
+                                    sceneFile = file;
+                                }
+                            }
+                            if (sceneFile) {
+                                void loadAndPlayAsync("file:" + sceneFile.name);
+                            }
+                        })();
+                    }
+                }
             } else {
                 // Remount: scene is already loaded -- restore UI state from the manager directly
                 const avatarLoaded = manager.avatar!.isLoaded;
@@ -454,8 +523,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                     rebuildBoneLists(
                         manager.animationSource!.getTransformNodeNames(),
                         manager.animationSource!.getTransformNodeOptions(),
-                        s.animationPath,
-                        s.avatarPath,
+                        s.animationName,
+                        s.avatarName,
                         s.groundReferenceNodeName
                     );
                     setAnimGizmoSelectedTransform(manager.animationSource!.selectedTransformNode as Transform | null);
@@ -490,36 +559,83 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
             onManagerReadyObs.remove(obs);
             cleanup?.();
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [onManagerReadyObs]);
 
-    const handleLoadAvatar = useCallback((path: string, updateRestPose: boolean, rescale: boolean) => {
-        const manager = managerRef.current;
-        if (!manager?.avatar) {
-            return;
-        }
-        setIsLoading(true);
-        setIsAvatarLoaded(false);
-        setIsRetargeted(false);
-        manager.avatar.loadAsync(path, updateRestPose, rescale);
-    }, []);
+    const handleLoadAvatar = useCallback(
+        async (name: string, rescale: boolean) => {
+            const manager = managerRef.current;
+            if (!manager?.avatar) {
+                return;
+            }
+            const storedAvatar = avatarManager.getAvatar(name);
+            if (!storedAvatar) {
+                return;
+            }
+            setIsLoading(true);
+            setIsAvatarLoaded(false);
+            setIsRetargeted(false);
+
+            if (storedAvatar.source === "url" && storedAvatar.url) {
+                manager.avatar.loadAsync(storedAvatar.url, rescale, storedAvatar.restPoseUpdate);
+            } else if (storedAvatar.source === "file" && storedAvatar.fileNames?.length) {
+                const files = await avatarManager.getFilesAsync(storedAvatar.id, storedAvatar.fileNames);
+                let sceneFile: File | undefined;
+                for (const file of files) {
+                    const lowerName = file.name.toLowerCase();
+                    FilesInputStore.FilesToLoad[lowerName] = file;
+                    const ext = lowerName.split(".").pop();
+                    if (ext && SceneLoader.IsPluginForExtensionAvailable("." + ext)) {
+                        sceneFile = file;
+                    }
+                }
+                if (sceneFile) {
+                    manager.avatar.loadAsync("file:" + sceneFile.name, rescale, storedAvatar.restPoseUpdate);
+                }
+            }
+        },
+        [avatarManager]
+    );
 
     const handleLoadAnimation = useCallback(
-        (path: string, updateRestPose: boolean) => {
+        async (name: string) => {
             const manager = managerRef.current;
             if (!manager?.animationSource) {
+                return;
+            }
+            const storedAnimation = animationManager.getAnimation(name);
+            if (!storedAnimation) {
                 return;
             }
             setIsLoading(true);
             setIsAnimLoaded(false);
             setIsRetargeted(false);
-            manager.animationSource.loadAsync(path, updateRestPose).then(() => {
-                manager.animationSource!.setSkeletonVisible(animationShowSkeleton);
+
+            let loadPath: string | undefined;
+            if (storedAnimation.source === "url" && storedAnimation.url) {
+                loadPath = storedAnimation.url;
+            } else if (storedAnimation.source === "file" && storedAnimation.fileNames?.length) {
+                const files = await animationManager.getFilesAsync(storedAnimation.id, storedAnimation.fileNames);
+                let sceneFile: File | undefined;
+                for (const file of files) {
+                    const lowerName = file.name.toLowerCase();
+                    FilesInputStore.FilesToLoad[lowerName] = file;
+                    const ext = lowerName.split(".").pop();
+                    if (ext && SceneLoader.IsPluginForExtensionAvailable("." + ext)) {
+                        sceneFile = file;
+                    }
+                }
+                if (sceneFile) {
+                    loadPath = "file:" + sceneFile.name;
+                }
+            }
+
+            if (loadPath) {
+                await manager.animationSource.loadAsync(loadPath, storedAnimation.restPoseUpdate);
+                manager.animationSource!.setSkeletonVisible(true);
                 manager.animationSource?.play(stateSnapshotRef.current.animationSpeed);
-            });
+            }
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [animationShowSkeleton]
+        [animationManager]
     );
 
     const handleRetarget = useCallback(() => {
@@ -531,12 +647,10 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
         manager.htmlConsole.clear();
         manager.retarget(
             {
-                avatarPath,
-                avatarUpdateRestPose,
+                avatarName,
                 avatarRescaleAvatar,
                 avatarAnimSpeed,
-                animationPath,
-                animationUpdateRestPose,
+                animationName,
                 animationSpeed,
                 fixAnimations,
                 checkHierarchy,
@@ -548,15 +662,15 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 groundReferenceNodeName,
                 groundReferenceVerticalAxis: groundReferenceVerticalAxis as "" | "X" | "Y" | "Z",
             },
-            namingSchemeManager
+            namingSchemeManager,
+            avatarManager,
+            animationManager
         );
     }, [
-        avatarPath,
-        avatarUpdateRestPose,
+        avatarName,
         avatarRescaleAvatar,
         avatarAnimSpeed,
-        animationPath,
-        animationUpdateRestPose,
+        animationName,
         animationSpeed,
         fixAnimations,
         checkHierarchy,
@@ -579,7 +693,11 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 <>
                     <div className={classes.actionRow}>
                         <ButtonLine label="Retarget" onClick={handleRetarget} disabled={!isAvatarLoaded || !isAnimLoaded || isLoading} />
-                        <ButtonLine label="Export to Playground" onClick={() => managerRef.current?.exportToPlayground()} disabled={!isRetargeted} />
+                        <ButtonLine
+                            label="Export to Playground"
+                            onClick={() => managerRef.current?.exportToPlaygroundAsync(avatarManager, animationManager)}
+                            disabled={!isRetargeted}
+                        />
                     </div>
                     <div className={classes.scrollContent}>
                         {loadingText && <div style={{ padding: "4px 12px", fontSize: "12px", color: tokens.colorNeutralForeground3 }}>{loadingText}</div>}
@@ -588,19 +706,11 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                             <BabylonAccordionSection title="Avatar">
                                 <StringDropdownPropertyLine
                                     label="Name"
-                                    value={avatarPath}
-                                    options={AvatarOptions}
-                                    onChange={(path) => {
-                                        setAvatarPath(path);
-                                        handleLoadAvatar(path, avatarUpdateRestPose, avatarRescaleAvatar);
-                                    }}
-                                />
-                                <CheckboxPropertyLine
-                                    label="Update rest pose"
-                                    value={avatarUpdateRestPose}
-                                    onChange={(v) => {
-                                        setAvatarUpdateRestPose(v);
-                                        handleLoadAvatar(avatarPath, v, avatarRescaleAvatar);
+                                    value={avatarName}
+                                    options={avatarOptions}
+                                    onChange={(name) => {
+                                        setAvatarName(name);
+                                        handleLoadAvatar(name, avatarRescaleAvatar);
                                     }}
                                 />
                                 <CheckboxPropertyLine
@@ -608,7 +718,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                     value={avatarRescaleAvatar}
                                     onChange={(v) => {
                                         setAvatarRescaleAvatar(v);
-                                        handleLoadAvatar(avatarPath, avatarUpdateRestPose, v);
+                                        handleLoadAvatar(avatarName, v);
                                     }}
                                 />
                                 <CheckboxPropertyLine
@@ -640,6 +750,19 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                     }}
                                 />
                                 <ButtonLine label="Return to rest" onClick={() => managerRef.current?.avatar?.returnToRest()} disabled={!isAvatarLoaded} />
+                                <ButtonLine
+                                    label="Save as rest pose"
+                                    disabled={!isAvatarLoaded || isAvatarPlaying}
+                                    onClick={() => {
+                                        const restPose = managerRef.current?.avatar?.saveAsRestPose();
+                                        if (restPose && avatarName) {
+                                            const stored = avatarManager.getAvatar(avatarName);
+                                            if (stored) {
+                                                avatarManager.addAvatar({ ...stored, restPoseUpdate: restPose });
+                                            }
+                                        }
+                                    }}
+                                />
                                 <ButtonLine label="Play" onClick={() => managerRef.current?.avatar?.play(avatarAnimSpeed)} disabled={!isRetargeted} />
                             </BabylonAccordionSection>
                             {/* Avatar Gizmo */}
@@ -685,33 +808,16 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                             <BabylonAccordionSection title="Animation">
                                 <StringDropdownPropertyLine
                                     label="Name"
-                                    value={animationPath}
-                                    options={AnimationOptions}
-                                    onChange={(path) => {
-                                        setAnimationPath(path);
-                                        handleLoadAnimation(path, animationUpdateRestPose);
-                                    }}
-                                />
-                                <CheckboxPropertyLine
-                                    label="Update rest pose"
-                                    value={animationUpdateRestPose}
-                                    onChange={(v) => {
-                                        setAnimationUpdateRestPose(v);
-                                        handleLoadAnimation(animationPath, v);
-                                    }}
-                                />
-                                <CheckboxPropertyLine
-                                    label="Show skeleton"
-                                    value={animationShowSkeleton}
-                                    onChange={(v) => {
-                                        setAnimationShowSkeleton(v);
-                                        managerRef.current?.animationSource?.setSkeletonVisible(v);
+                                    value={animationName}
+                                    options={animationOptions}
+                                    onChange={(name) => {
+                                        setAnimationName(name);
+                                        handleLoadAnimation(name);
                                     }}
                                 />
                                 <CheckboxPropertyLine
                                     label="Show skel. local axes"
                                     value={animationShowSkeletonLocalAxes}
-                                    disabled={!animationShowSkeleton}
                                     onChange={(v) => {
                                         setAnimationShowSkeletonLocalAxes(v);
                                         managerRef.current?.animationSource?.setSkeletonLocalAxes(v);
@@ -729,6 +835,19 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                     }}
                                 />
                                 <ButtonLine label="Return to rest" onClick={() => managerRef.current?.animationSource?.returnToRest()} disabled={!isAnimLoaded} />
+                                <ButtonLine
+                                    label="Save as rest pose"
+                                    disabled={!isAnimLoaded || isAnimPlaying}
+                                    onClick={() => {
+                                        const restPose = managerRef.current?.animationSource?.saveAsRestPose();
+                                        if (restPose && animationName) {
+                                            const stored = animationManager.getAnimation(animationName);
+                                            if (stored) {
+                                                animationManager.addAnimation({ ...stored, restPoseUpdate: restPose });
+                                            }
+                                        }
+                                    }}
+                                />
                                 <ButtonLine label="Play" onClick={() => managerRef.current?.animationSource?.play(animationSpeed)} disabled={!isAnimLoaded} />
                             </BabylonAccordionSection>
                             {/* Animation Gizmo */}

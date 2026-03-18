@@ -1,5 +1,7 @@
 import type { FunctionComponent } from "react";
 import type { NamingSchemeManager, BoneEntry } from "./namingSchemeManager";
+import type { AvatarManager, StoredAvatar } from "./avatarManager";
+import type { AnimationManager, StoredAnimation } from "./animationManager";
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
@@ -20,8 +22,15 @@ import {
     tokens,
     Body1Strong,
     Caption1,
+    Spinner,
 } from "@fluentui/react-components";
 import { Add20Regular, Delete20Regular, Edit20Regular, ArrowCounterclockwise20Regular, ArrowBidirectionalUpDown20Regular, Dismiss20Regular } from "@fluentui/react-icons";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Scene } from "core/scene";
+import { ImportMeshAsync, SceneLoader } from "core/Loading/sceneLoader";
+import { FilesInputStore } from "core/Misc/filesInputStore";
+import { AvatarsPanel } from "./avatarsPanel";
+import { AnimationsPanel } from "./animationsPanel";
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
@@ -214,7 +223,7 @@ const useStyles = makeStyles({
 });
 
 // Session-only size persistence: survives dialog close/reopen but not page reload.
-let _savedDialogSize: { width: number; height: number } | null = null;
+let SavedDialogSize: { width: number; height: number } | null = null;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -231,17 +240,58 @@ type RemappingEdit = {
     isNew: boolean;
 };
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Loads a stored avatar or animation into a scene (handles both URL and file sources). */
+async function LoadIntoScene(scene: Scene, entry: StoredAvatar | StoredAnimation, manager: { getFilesAsync(id: string, fileNames: string[]): Promise<File[]> }): Promise<void> {
+    if (entry.source === "url" && entry.url) {
+        await ImportMeshAsync(entry.url, scene);
+    } else if (entry.source === "file" && entry.fileNames?.length) {
+        const files = await manager.getFilesAsync(entry.id, entry.fileNames);
+        let sceneFile: File | undefined;
+        for (const file of files) {
+            const lowerName = file.name.toLowerCase();
+            FilesInputStore.FilesToLoad[lowerName] = file;
+            const ext = lowerName.split(".").pop();
+            if (ext && SceneLoader.IsPluginForExtensionAvailable("." + ext)) {
+                sceneFile = file;
+            }
+        }
+        if (!sceneFile) {
+            throw new Error("No loadable scene file found.");
+        }
+        await ImportMeshAsync(sceneFile.name, scene, { rootUrl: "file:" });
+    } else {
+        throw new Error("No URL or files available for this entry.");
+    }
+}
+
 // ─── Schemes Panel ────────────────────────────────────────────────────────────
 
 const SchemesPanel: FunctionComponent<{
     manager: NamingSchemeManager;
+    avatarManager: AvatarManager;
+    animationManager: AnimationManager;
     onMutate: () => void;
     onEditingChange: (editing: boolean) => void;
-}> = ({ manager, onMutate, onEditingChange }) => {
+}> = ({ manager, avatarManager, animationManager, onMutate, onEditingChange }) => {
     const classes = useStyles();
     const [editing, setEditing] = useState<SchemeEdit | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+    const [isPopulating, setIsPopulating] = useState(false);
+
+    // Build populate options from avatars and animations
+    const populateOptions = useMemo(() => {
+        const options: { label: string; value: string }[] = [{ label: "(select)", value: "" }];
+        for (const av of avatarManager.getAllAvatars()) {
+            options.push({ label: `Avatar: ${av.name}`, value: `avatar:${av.name}` });
+        }
+        for (const an of animationManager.getAllAnimations()) {
+            options.push({ label: `Animation: ${an.name}`, value: `animation:${an.name}` });
+        }
+        return options;
+    }, [avatarManager, animationManager]);
 
     const setEditingWithNotify = useCallback(
         (value: SchemeEdit | null) => {
@@ -268,9 +318,27 @@ const SchemesPanel: FunctionComponent<{
         [manager, setEditingWithNotify]
     );
 
-    const handleDelete = useCallback((name: string) => {
-        setConfirmDelete(name);
-    }, []);
+    const handleDelete = useCallback(
+        (name: string) => {
+            // Check if any avatar or animation uses this scheme
+            const usingAvatars = avatarManager.getAllAvatars().filter((a) => a.namingScheme === name);
+            const usingAnimations = animationManager.getAllAnimations().filter((a) => a.namingScheme === name);
+            const users: string[] = [];
+            for (const a of usingAvatars) {
+                users.push(`avatar "${a.name}"`);
+            }
+            for (const a of usingAnimations) {
+                users.push(`animation "${a.name}"`);
+            }
+            if (users.length > 0) {
+                setError(`Cannot delete: scheme is used by ${users.join(", ")}.`);
+                return;
+            }
+            setError(null);
+            setConfirmDelete(name);
+        },
+        [avatarManager, animationManager]
+    );
 
     const handleConfirmDelete = useCallback(() => {
         if (!confirmDelete) {
@@ -291,6 +359,89 @@ const SchemesPanel: FunctionComponent<{
             onMutate();
         }
     }, [manager, onMutate]);
+
+    /** Loads an avatar or animation into a temp scene and populates the bone names textarea. */
+    const handlePopulate = useCallback(
+        async (key: string) => {
+            if (!key || !editing) {
+                return;
+            }
+            setIsPopulating(true);
+            setError(null);
+
+            let engine: NullEngine | null = null;
+            try {
+                engine = new NullEngine();
+                const scene = new Scene(engine);
+
+                const isAvatar = key.startsWith("avatar:");
+                const name = key.substring(key.indexOf(":") + 1);
+
+                if (isAvatar) {
+                    const avatar = avatarManager.getAvatar(name);
+                    if (!avatar) {
+                        throw new Error(`Avatar "${name}" not found.`);
+                    }
+                    await LoadIntoScene(scene, avatar, avatarManager);
+
+                    // Extract bone names from the first skeleton, with indentation for hierarchy
+                    const skeleton = scene.skeletons[0];
+                    if (!skeleton) {
+                        throw new Error("No skeleton found in this avatar.");
+                    }
+                    const lines: string[] = [];
+                    for (const bone of skeleton.bones) {
+                        let depth = 0;
+                        let p = bone.parent;
+                        while (p) {
+                            depth++;
+                            p = p.parent;
+                        }
+                        lines.push("  ".repeat(depth) + bone.name);
+                    }
+                    setEditing({ ...editing, namesText: lines.join("\n") });
+                } else {
+                    const animation = animationManager.getAnimation(name);
+                    if (!animation) {
+                        throw new Error(`Animation "${name}" not found.`);
+                    }
+                    await LoadIntoScene(scene, animation, animationManager);
+
+                    // Extract target names from animation groups, with hierarchy indentation
+                    // Collect unique targets first, then sort by hierarchy
+                    const targetMap = new Map<string, import("core/Meshes/transformNode").TransformNode>();
+                    for (const group of scene.animationGroups) {
+                        for (const ta of group.targetedAnimations) {
+                            const target = ta.target as import("core/Meshes/transformNode").TransformNode;
+                            if (target?.name && target.parent !== undefined) {
+                                targetMap.set(target.name, target);
+                            }
+                        }
+                    }
+                    if (targetMap.size === 0) {
+                        throw new Error("No animation targets found.");
+                    }
+                    const lines: string[] = [];
+                    for (const [nodeName, node] of targetMap) {
+                        let depth = 0;
+                        let p = node.parent;
+                        while (p) {
+                            depth++;
+                            p = p.parent;
+                        }
+                        lines.push("  ".repeat(depth) + nodeName);
+                    }
+                    setEditing({ ...editing, namesText: lines.join("\n") });
+                }
+            } catch (e) {
+                setError(e instanceof Error ? e.message : String(e));
+            } finally {
+                engine?.dispose();
+                setIsPopulating(false);
+            }
+        },
+        [editing, avatarManager, animationManager]
+    );
 
     const handleSave = useCallback(() => {
         if (!editing) {
@@ -390,12 +541,33 @@ const SchemesPanel: FunctionComponent<{
                     );
                 })}
             </div>
+            {!editing && error && <span className={classes.errorText}>{error}</span>}
             {editing && (
                 <div className={classes.editSectionFlex}>
                     <Body1Strong>{editing.originalName ? `Editing "${editing.originalName}"` : "New Scheme"}</Body1Strong>
                     <div className={classes.formRow}>
                         <Label className={classes.formLabel}>Name</Label>
                         <Input className={classes.formControl} value={editing.name} onChange={(_, d) => setEditing({ ...editing, name: d.value })} />
+                    </div>
+                    <div className={classes.formRow}>
+                        <Label className={classes.formLabel}>Populate from</Label>
+                        <Select
+                            className={classes.formControl}
+                            size="small"
+                            disabled={isPopulating}
+                            onChange={(_, d) => {
+                                if (d.value) {
+                                    void handlePopulate(d.value);
+                                }
+                            }}
+                        >
+                            {populateOptions.map((o) => (
+                                <option key={o.value} value={o.value}>
+                                    {o.label}
+                                </option>
+                            ))}
+                        </Select>
+                        {isPopulating && <Spinner size="tiny" />}
                     </div>
                     <div style={{ display: "flex", flex: 1, minHeight: 0, gap: tokens.spacingHorizontalS }}>
                         <Label className={classes.formLabel} style={{ paddingTop: "6px", flexShrink: 0 }}>
@@ -424,10 +596,12 @@ const SchemesPanel: FunctionComponent<{
 };
 
 // Returns the set of from-bone names whose mapped-to target appears more than once (duplicate targets).
-function computeFaultyBones(map: Map<string, string>): Set<string> {
+function ComputeFaultyBones(map: Map<string, string>): Set<string> {
     const targetCount = new Map<string, string[]>();
     for (const [from, to] of map) {
-        if (to === "") continue;
+        if (to === "") {
+            continue;
+        }
         const list = targetCount.get(to) ?? [];
         list.push(from);
         targetCount.set(to, list);
@@ -435,7 +609,9 @@ function computeFaultyBones(map: Map<string, string>): Set<string> {
     const faulty = new Set<string>();
     for (const froms of targetCount.values()) {
         if (froms.length > 1) {
-            for (const f of froms) faulty.add(f);
+            for (const f of froms) {
+                faulty.add(f);
+            }
         }
     }
     return faulty;
@@ -481,7 +657,7 @@ const RemappingsPanel: FunctionComponent<{
             const map = manager.getRemapping(fromScheme, toScheme) ?? new Map();
             setEditingWithNotify({ fromScheme, toScheme, map, isNew: false });
             setError(null);
-            setFaultyBones(computeFaultyBones(map));
+            setFaultyBones(ComputeFaultyBones(map));
         },
         [manager, setEditingWithNotify]
     );
@@ -556,7 +732,7 @@ const RemappingsPanel: FunctionComponent<{
             const newMap = new Map(editing.map);
             newMap.set(fromBone, toBone);
             setEditing({ ...editing, map: newMap });
-            const faulty = computeFaultyBones(newMap);
+            const faulty = ComputeFaultyBones(newMap);
             setFaultyBones(faulty);
             if (faulty.size === 0) {
                 setError(null);
@@ -592,17 +768,9 @@ const RemappingsPanel: FunctionComponent<{
         setFaultyBones(new Set());
     }, [setEditingWithNotify]);
 
-    const fromSchemeEntries = useMemo(
-        () => (editing ? (manager.getNamingScheme(editing.fromScheme) ?? []) : []),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [editing?.fromScheme, manager]
-    );
+    const fromSchemeEntries = useMemo(() => (editing ? (manager.getNamingScheme(editing.fromScheme) ?? []) : []), [editing?.fromScheme, manager]);
 
-    const toSchemeEntries = useMemo(
-        () => (editing ? (manager.getNamingScheme(editing.toScheme) ?? []) : []),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [editing?.toScheme, manager]
-    );
+    const toSchemeEntries = useMemo(() => (editing ? (manager.getNamingScheme(editing.toScheme) ?? []) : []), [editing?.toScheme, manager]);
 
     // For new remappings, check in real-time whether a remapping between these two schemes already exists.
     const schemeConflict = editing?.isNew
@@ -742,15 +910,17 @@ const RemappingsPanel: FunctionComponent<{
 
 // ─── Main Dialog ──────────────────────────────────────────────────────────────
 
-export type NamingSchemeManagerDialogProps = {
+export type RetargetingConfigDialogProps = {
     manager: NamingSchemeManager;
+    avatarManager: AvatarManager;
+    animationManager: AnimationManager;
     open: boolean;
     onClose: () => void;
 };
 
-export const NamingSchemeManagerDialog: FunctionComponent<NamingSchemeManagerDialogProps> = ({ manager, open, onClose }) => {
+export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogProps> = ({ manager, avatarManager, animationManager, open, onClose }) => {
     const classes = useStyles();
-    const [activeTab, setActiveTab] = useState<"schemes" | "remappings">("schemes");
+    const [activeTab, setActiveTab] = useState<"avatars" | "animations" | "schemes" | "remappings">("avatars");
     const [version, setVersion] = useState(0);
     const [isEditing, setIsEditing] = useState(false);
     const [confirmClose, setConfirmClose] = useState(false);
@@ -771,7 +941,7 @@ export const NamingSchemeManagerDialog: FunctionComponent<NamingSchemeManagerDia
             return;
         }
         const observer = new ResizeObserver(() => {
-            _savedDialogSize = { width: el.offsetWidth, height: el.offsetHeight };
+            SavedDialogSize = { width: el.offsetWidth, height: el.offsetHeight };
         });
         observer.observe(el);
         return () => observer.disconnect();
@@ -800,11 +970,11 @@ export const NamingSchemeManagerDialog: FunctionComponent<NamingSchemeManagerDia
             <DialogSurface
                 ref={surfaceRef as React.Ref<HTMLDivElement>}
                 className={classes.surface}
-                style={_savedDialogSize ? { width: `${_savedDialogSize.width}px`, height: `${_savedDialogSize.height}px` } : undefined}
+                style={SavedDialogSize ? { width: `${SavedDialogSize.width}px`, height: `${SavedDialogSize.height}px` } : undefined}
             >
                 <DialogBody className={classes.body}>
                     <div className={classes.titleRow}>
-                        <DialogTitle action={null}>Naming Scheme Manager</DialogTitle>
+                        <DialogTitle action={null}>Retargeting Configuration</DialogTitle>
                         <Button appearance="subtle" icon={<Dismiss20Regular />} onClick={handleClose} title="Close" aria-label="Close" />
                     </div>
                     {/* Confirm close when edits are pending */}
@@ -842,10 +1012,16 @@ export const NamingSchemeManagerDialog: FunctionComponent<NamingSchemeManagerDia
                         selectedValue={activeTab}
                         onTabSelect={(_, d) => {
                             if (!isEditing) {
-                                setActiveTab(d.value as "schemes" | "remappings");
+                                setActiveTab(d.value as "avatars" | "animations" | "schemes" | "remappings");
                             }
                         }}
                     >
+                        <Tab value="avatars" disabled={isEditing && activeTab !== "avatars"}>
+                            Avatars
+                        </Tab>
+                        <Tab value="animations" disabled={isEditing && activeTab !== "animations"}>
+                            Animations
+                        </Tab>
                         <Tab value="schemes" disabled={isEditing && activeTab !== "schemes"}>
                             Naming Schemes
                         </Tab>
@@ -854,8 +1030,18 @@ export const NamingSchemeManagerDialog: FunctionComponent<NamingSchemeManagerDia
                         </Tab>
                     </TabList>
                     <DialogContent className={classes.content}>
-                        {activeTab === "schemes" ? (
-                            <SchemesPanel manager={manager} onMutate={onMutate} onEditingChange={onEditingChange} />
+                        {activeTab === "avatars" ? (
+                            <AvatarsPanel avatarManager={avatarManager} namingSchemeManager={manager} onMutate={onMutate} onEditingChange={onEditingChange} />
+                        ) : activeTab === "animations" ? (
+                            <AnimationsPanel animationManager={animationManager} namingSchemeManager={manager} onMutate={onMutate} onEditingChange={onEditingChange} />
+                        ) : activeTab === "schemes" ? (
+                            <SchemesPanel
+                                manager={manager}
+                                avatarManager={avatarManager}
+                                animationManager={animationManager}
+                                onMutate={onMutate}
+                                onEditingChange={onEditingChange}
+                            />
                         ) : (
                             <RemappingsPanel manager={manager} onMutate={onMutate} onEditingChange={onEditingChange} />
                         )}

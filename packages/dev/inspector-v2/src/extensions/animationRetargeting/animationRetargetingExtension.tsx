@@ -10,11 +10,13 @@ import { Eye20Regular, EyeOff20Regular, WindowConsole20Regular, Database20Regula
 import { Button } from "@fluentui/react-components";
 
 import { AnimationRetargetingViewport } from "./animationRetargetingViewport";
-import { AnimationRetargetingPanel, defaultPanelState } from "./animationRetargetingPanel";
+import { AnimationRetargetingPanel, DefaultPanelState } from "./animationRetargetingPanel";
 import type { PanelStateStore } from "./animationRetargetingPanel";
 import type { RetargetingSceneManager } from "./retargetingSceneManager";
 import { NamingSchemeManager } from "./namingSchemeManager";
-import { NamingSchemeManagerDialog } from "./namingSchemeManagerDialog";
+import { AvatarManager } from "./avatarManager";
+import { AnimationManager } from "./animationManager";
+import { RetargetingConfigDialog } from "./retargetingConfigDialog";
 
 /**
  * Service definition for the Animation Retargeting extension.
@@ -30,15 +32,23 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
         const onManagerReadyObs = new Observable<RetargetingSceneManager>();
         // Observable that broadcasts enable/disable state changes to the panel
         const isEnabledObs = new Observable<boolean>();
+        // Observable that fires when the config dialog closes — panel refreshes dropdowns
+        const onConfigChangedObs = new Observable<void>();
 
         // Naming scheme manager — persists across extension lifetime via localStorage
         const namingSchemeManager = new NamingSchemeManager();
+
+        // Avatar manager — persists across extension lifetime via localStorage + IndexedDB
+        const avatarManager = new AvatarManager();
+
+        // Animation manager — persists across extension lifetime via localStorage + IndexedDB
+        const animationManager = new AnimationManager();
 
         let isEnabled = false;
         let viewportReg: IDisposable | null = null;
         let currentManager: RetargetingSceneManager | null = null;
         // Persists all panel UI state across remounts (e.g. when the panel is docked elsewhere)
-        const persistedPanelState: PanelStateStore = { ...defaultPanelState };
+        const persistedPanelState: PanelStateStore = { ...DefaultPanelState };
 
         function setEnabled(enabled: boolean): void {
             if (enabled === isEnabled) {
@@ -126,8 +136,17 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
                         disabled={!localIsEnabled}
                         onClick={() => currentManager?.htmlConsole.toggle()}
                     />
-                    <Button appearance="transparent" size="small" icon={<Database20Regular />} title="Manage naming schemes" onClick={() => setIsDialogOpen(true)} />
-                    <NamingSchemeManagerDialog manager={namingSchemeManager} open={isDialogOpen} onClose={() => setIsDialogOpen(false)} />
+                    <Button appearance="transparent" size="small" icon={<Database20Regular />} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
+                    <RetargetingConfigDialog
+                        manager={namingSchemeManager}
+                        avatarManager={avatarManager}
+                        animationManager={animationManager}
+                        open={isDialogOpen}
+                        onClose={() => {
+                            setIsDialogOpen(false);
+                            onConfigChangedObs.notifyObservers();
+                        }}
+                    />
                 </>
             );
         };
@@ -143,9 +162,12 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
                 <AnimationRetargetingPanel
                     initialIsEnabled={isEnabled}
                     isEnabledObs={isEnabledObs}
+                    onConfigChangedObs={onConfigChangedObs}
                     onManagerReadyObs={onManagerReadyObs}
                     getCurrentManager={() => currentManager}
                     namingSchemeManager={namingSchemeManager}
+                    avatarManager={avatarManager}
+                    animationManager={animationManager}
                     stateStore={persistedPanelState}
                 />
             ),
@@ -157,6 +179,7 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
                 panelReg.dispose();
                 onManagerReadyObs.clear();
                 isEnabledObs.clear();
+                onConfigChangedObs.clear();
             },
         };
     },
