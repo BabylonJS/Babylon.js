@@ -1,4 +1,4 @@
-import type { RestPoseDataUpdate } from "./data";
+export type RestPoseDataUpdate = Array<{ name: string; data: { position?: number[]; scaling?: number[]; quaternion?: number[] } }>;
 
 const AvatarStorageKey = "BabylonInspector_AnimRetargeting_AvatarManager";
 const IDBName = "BabylonInspector_AnimRetargeting";
@@ -219,20 +219,21 @@ export class AvatarManager {
      * Returns all avatars in a JSON-serializable format, including base64-encoded file data for file-based entries.
      */
     public async exportDataAsync(): Promise<Array<StoredAvatar & { fileData?: Record<string, string> }>> {
-        const result: Array<StoredAvatar & { fileData?: Record<string, string> }> = [];
-        for (const avatar of this._avatars) {
-            const entry: StoredAvatar & { fileData?: Record<string, string> } = { ...avatar };
-            if (avatar.source === "file" && avatar.fileNames?.length) {
-                const fileData: Record<string, string> = {};
-                const files = await this.getFilesAsync(avatar.id, avatar.fileNames);
-                for (const file of files) {
-                    fileData[file.name] = await BlobToBase64(file);
+        return await Promise.all(
+            this._avatars.map(async (avatar) => {
+                const entry: StoredAvatar & { fileData?: Record<string, string> } = { ...avatar };
+                if (avatar.source === "file" && avatar.fileNames?.length) {
+                    const files = await this.getFilesAsync(avatar.id, avatar.fileNames);
+                    const pairs = await Promise.all(files.map(async (file) => [file.name, await BlobToBase64(file)] as const));
+                    const fileData: Record<string, string> = {};
+                    for (const [name, b64] of pairs) {
+                        fileData[name] = b64;
+                    }
+                    entry.fileData = fileData;
                 }
-                entry.fileData = fileData;
-            }
-            result.push(entry);
-        }
-        return result;
+                return entry;
+            })
+        );
     }
 
     /**
@@ -245,6 +246,7 @@ export class AvatarManager {
             this._avatars = [];
         }
 
+        // Sequential processing needed: each entry may depend on prior state for duplicate detection
         for (const avatar of avatars) {
             if (mode === "append" && this._avatars.some((a) => a.name === avatar.name)) {
                 skipped.push(`avatar "${avatar.name}"`);
@@ -254,13 +256,15 @@ export class AvatarManager {
                 this._avatars.push({ ...avatarData, id: newId });
 
                 if (avatarData.source === "file" && fileData) {
-                    const fileNames: string[] = [];
-                    for (const [fileName, base64] of Object.entries(fileData)) {
-                        const blob = Base64ToBlob(base64);
-                        await IdbPut(`avatar:${newId}/${fileName}`, blob);
-                        fileNames.push(fileName);
-                    }
-                    this._avatars[this._avatars.length - 1].fileNames = fileNames;
+                    const fileEntries = Object.entries(fileData);
+                    // eslint-disable-next-line no-await-in-loop
+                    await Promise.all(
+                        fileEntries.map(async ([fileName, base64]) => {
+                            const blob = Base64ToBlob(base64);
+                            await IdbPut(`avatar:${newId}/${fileName}`, blob);
+                        })
+                    );
+                    this._avatars[this._avatars.length - 1].fileNames = fileEntries.map(([n]) => n);
                 }
             }
         }

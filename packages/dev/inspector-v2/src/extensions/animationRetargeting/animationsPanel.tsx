@@ -1,6 +1,7 @@
 import type { FunctionComponent } from "react";
 import type { AnimationManager, StoredAnimation, AnimationGroupMapping } from "./animationManager";
 import type { NamingSchemeManager } from "./namingSchemeManager";
+import type { RestPoseDataUpdate } from "./avatarManager";
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
@@ -26,6 +27,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { ImportMeshAsync, SceneLoader } from "core/Loading/sceneLoader";
 import { FilesInputStore } from "core/Misc/filesInputStore";
+import type { Node } from "core/node";
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
@@ -175,9 +177,35 @@ const useStyles = makeStyles({
         fontSize: "11px",
         flexShrink: 0,
     },
+    nodeTree: {
+        flex: 1,
+        overflowY: "auto",
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
+        borderRadius: tokens.borderRadiusMedium,
+        minHeight: "60px",
+        maxHeight: "150px",
+    },
+    nodeRow: {
+        padding: `0 ${tokens.spacingHorizontalS}`,
+        fontSize: "12px",
+        lineHeight: "13px",
+        fontFamily: "monospace",
+        cursor: "pointer",
+        whiteSpace: "pre",
+    },
+    nodeRowSelected: {
+        backgroundColor: tokens.colorBrandBackground2,
+        fontWeight: "bold",
+    },
 });
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+type NodeInfo = {
+    name: string;
+    depth: number;
+    prefix: string;
+};
 
 type AnimationEdit = {
     id: string | null;
@@ -187,11 +215,30 @@ type AnimationEdit = {
     files: File[];
     /** One row per animation group found in the file. */
     mappings: AnimationGroupMapping[];
+    rootNodeName: string;
     namingScheme: string;
     restPoseJson: string;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function BuildNodeList(node: Node, depth: number, list: NodeInfo[], ancestorContinues: boolean[]): void {
+    let prefix = "";
+    if (depth > 0) {
+        for (let i = 1; i < depth; i++) {
+            prefix += ancestorContinues[i] ? "│  " : "   ";
+        }
+        const isLast = !ancestorContinues[depth];
+        prefix += isLast ? "└─ " : "├─ ";
+    }
+    list.push({ name: node.name, depth, prefix });
+    const children = node.getChildren();
+    for (let i = 0; i < children.length; i++) {
+        const isLastChild = i === children.length - 1;
+        ancestorContinues[depth + 1] = !isLastChild;
+        BuildNodeList(children[i], depth + 1, list, ancestorContinues);
+    }
+}
 
 /**
  * Detects the best matching naming scheme by checking how many target names
@@ -238,6 +285,7 @@ export const AnimationsPanel: FunctionComponent<{
     const [confirmDelete, setConfirmDelete] = useState<{ id: string; label: string } | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isDragOver, setIsDragOver] = useState(false);
+    const [nodeList, setNodeList] = useState<NodeInfo[]>([]);
 
     const tempEngineRef = useRef<NullEngine | null>(null);
     const tempSceneRef = useRef<Scene | null>(null);
@@ -316,6 +364,16 @@ export const AnimationsPanel: FunctionComponent<{
                     detectedScheme = DetectNamingScheme(targetNames, namingSchemeManager);
                 }
 
+                // Build the node tree from root nodes
+                const nodes: NodeInfo[] = [];
+                const rootNodes = scene.rootNodes;
+                for (let i = 0; i < rootNodes.length; i++) {
+                    const ancestorContinues: boolean[] = [];
+                    ancestorContinues[0] = i < rootNodes.length - 1;
+                    BuildNodeList(rootNodes[i], 0, nodes, ancestorContinues);
+                }
+                setNodeList(nodes);
+
                 // Build mappings from the loaded animation groups, preserving existing display names by index
                 setEditing((prev) => {
                     if (!prev) {
@@ -335,6 +393,7 @@ export const AnimationsPanel: FunctionComponent<{
                     return {
                         ...prev,
                         mappings: newMappings,
+                        rootNodeName: prev.rootNodeName || (nodes.length > 0 ? nodes[0].name : ""),
                         ...(detectedScheme ? { namingScheme: detectedScheme } : {}),
                     };
                 });
@@ -357,10 +416,12 @@ export const AnimationsPanel: FunctionComponent<{
             url: "",
             files: [],
             mappings: [],
+            rootNodeName: "",
             namingScheme: schemeNames[0] ?? "",
             restPoseJson: "",
         });
         setError(null);
+        setNodeList([]);
     }, [schemeNames, setEditingWithNotify]);
 
     const startEdit = useCallback(
@@ -372,6 +433,7 @@ export const AnimationsPanel: FunctionComponent<{
                 url: animation.url ?? "",
                 files: [],
                 mappings: animation.animations.map((m) => ({ ...m })),
+                rootNodeName: animation.rootNodeName ?? "",
                 namingScheme: animation.namingScheme,
                 restPoseJson: animation.restPoseUpdate ? JSON.stringify(animation.restPoseUpdate, undefined, 2) : "",
             });
@@ -391,6 +453,7 @@ export const AnimationsPanel: FunctionComponent<{
     const handleCancel = useCallback(() => {
         setEditingWithNotify(null);
         setError(null);
+        setNodeList([]);
         tempSceneRef.current?.dispose();
         tempSceneRef.current = null;
         tempEngineRef.current?.dispose();
@@ -442,7 +505,7 @@ export const AnimationsPanel: FunctionComponent<{
                 fileNames = existing?.fileNames;
             }
 
-            let restPoseUpdate: import("./data").RestPoseDataUpdate | undefined;
+            let restPoseUpdate: RestPoseDataUpdate | undefined;
             if (editing.restPoseJson.trim()) {
                 try {
                     restPoseUpdate = JSON.parse(editing.restPoseJson);
@@ -459,6 +522,7 @@ export const AnimationsPanel: FunctionComponent<{
                 url: editing.sourceType === "url" ? editing.url.trim() : undefined,
                 fileNames: editing.sourceType === "file" ? fileNames : undefined,
                 namingScheme: editing.namingScheme,
+                rootNodeName: editing.rootNodeName,
                 animations: editing.mappings.map((m) => ({ ...m, displayName: m.displayName.trim() })),
                 restPoseUpdate,
             };
@@ -473,6 +537,7 @@ export const AnimationsPanel: FunctionComponent<{
 
             setEditingWithNotify(null);
             setError(null);
+            setNodeList([]);
             onMutate();
         } catch (e) {
             setError(e instanceof Error ? e.message : String(e));
@@ -708,6 +773,24 @@ export const AnimationsPanel: FunctionComponent<{
                                         </div>
                                     );
                                 })}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Node tree for root node selection */}
+                    {nodeList.length > 0 && (
+                        <>
+                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>Select the root node for skeleton creation ({nodeList.length} nodes found):</Caption1>
+                            <div className={classes.nodeTree}>
+                                {nodeList.map((node) => (
+                                    <div
+                                        key={node.name}
+                                        className={mergeClasses(classes.nodeRow, editing.rootNodeName === node.name ? classes.nodeRowSelected : undefined)}
+                                        onClick={() => setEditing({ ...editing, rootNodeName: node.name })}
+                                    >
+                                        {node.prefix + node.name}
+                                    </div>
+                                ))}
                             </div>
                         </>
                     )}

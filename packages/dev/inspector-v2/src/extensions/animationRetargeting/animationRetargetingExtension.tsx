@@ -6,7 +6,7 @@ import { ShellServiceIdentity } from "../../services/shellService";
 
 import { useState, useEffect } from "react";
 import { Observable } from "core/Misc/observable";
-import { Eye20Regular, EyeOff20Regular, WindowConsole20Regular, Database20Regular, PersonRunning20Regular } from "@fluentui/react-icons";
+import { Eye20Regular, EyeOff20Regular, WindowConsole20Regular, Database20Regular, PersonRunning20Regular, QuestionCircle20Regular } from "@fluentui/react-icons";
 import { Button } from "@fluentui/react-components";
 
 import { AnimationRetargetingViewport } from "./animationRetargetingViewport";
@@ -149,6 +149,13 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
                         onClick={() => currentManager?.htmlConsole.toggle()}
                     />
                     <Button appearance="transparent" size="small" icon={<Database20Regular />} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
+                    <Button
+                        appearance="transparent"
+                        size="small"
+                        icon={<QuestionCircle20Regular />}
+                        title="Documentation"
+                        onClick={() => window.open("https://doc.babylonjs.com/features/featuresDeepDive/animation/animationRetargeting/", "_blank")}
+                    />
                     <RetargetingConfigDialog
                         manager={namingSchemeManager}
                         avatarManager={avatarManager}

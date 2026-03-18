@@ -23,7 +23,7 @@ import type { Bone } from "core/Bones/bone";
 // Side-effect import needed for scene.createPickingRay (prototype-augmented)
 import "core/Culling/ray";
 
-import type { RestPoseDataUpdate } from "./data";
+import type { RestPoseDataUpdate } from "./avatarManager";
 import { DistancePointToLine } from "./helperFunctions";
 
 export type GizmoType = "Position" | "Rotation" | "Scale";

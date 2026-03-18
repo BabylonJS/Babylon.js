@@ -1,5 +1,5 @@
 import type { FunctionComponent } from "react";
-import type { AvatarManager, StoredAvatar } from "./avatarManager";
+import type { AvatarManager, StoredAvatar, RestPoseDataUpdate } from "./avatarManager";
 import type { NamingSchemeManager } from "./namingSchemeManager";
 
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -479,7 +479,7 @@ export const AvatarsPanel: FunctionComponent<{
                 fileNames = existing?.fileNames;
             }
 
-            let restPoseUpdate: import("./data").RestPoseDataUpdate | undefined;
+            let restPoseUpdate: RestPoseDataUpdate | undefined;
             if (editing.restPoseJson.trim()) {
                 try {
                     restPoseUpdate = JSON.parse(editing.restPoseJson);

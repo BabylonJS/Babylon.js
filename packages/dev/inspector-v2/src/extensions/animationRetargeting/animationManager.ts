@@ -1,4 +1,4 @@
-import type { RestPoseDataUpdate } from "./data";
+import type { RestPoseDataUpdate } from "./avatarManager";
 
 const AnimationStorageKey = "BabylonInspector_AnimRetargeting_AnimationManager";
 const IDBName = "BabylonInspector_AnimRetargeting";
@@ -25,6 +25,8 @@ export type StoredAnimation = {
     url?: string;
     fileNames?: string[];
     namingScheme: string;
+    /** User-selected root node for skeleton creation. */
+    rootNodeName: string;
     /** One entry per animation group in the file. */
     animations: AnimationGroupMapping[];
     restPoseUpdate?: RestPoseDataUpdate;
@@ -270,20 +272,21 @@ export class AnimationManager {
      * Returns all animations in a JSON-serializable format, including base64-encoded file data for file-based entries.
      */
     public async exportDataAsync(): Promise<Array<StoredAnimation & { fileData?: Record<string, string> }>> {
-        const result: Array<StoredAnimation & { fileData?: Record<string, string> }> = [];
-        for (const animation of this._animations) {
-            const entry: StoredAnimation & { fileData?: Record<string, string> } = { ...animation };
-            if (animation.source === "file" && animation.fileNames?.length) {
-                const fileData: Record<string, string> = {};
-                const files = await this.getFilesAsync(animation.id, animation.fileNames);
-                for (const file of files) {
-                    fileData[file.name] = await BlobToBase64(file);
+        return await Promise.all(
+            this._animations.map(async (animation) => {
+                const entry: StoredAnimation & { fileData?: Record<string, string> } = { ...animation };
+                if (animation.source === "file" && animation.fileNames?.length) {
+                    const files = await this.getFilesAsync(animation.id, animation.fileNames);
+                    const pairs = await Promise.all(files.map(async (file) => [file.name, await BlobToBase64(file)] as const));
+                    const fileData: Record<string, string> = {};
+                    for (const [name, b64] of pairs) {
+                        fileData[name] = b64;
+                    }
+                    entry.fileData = fileData;
                 }
-                entry.fileData = fileData;
-            }
-            result.push(entry);
-        }
-        return result;
+                return entry;
+            })
+        );
     }
 
     /**
@@ -296,6 +299,7 @@ export class AnimationManager {
             this._animations = [];
         }
 
+        // Sequential processing needed: each entry may depend on prior state for duplicate detection
         for (const animation of animations) {
             if (mode === "append" && this._animations.some((a) => a.name === animation.name)) {
                 skipped.push(`animation "${animation.name}"`);
@@ -305,13 +309,15 @@ export class AnimationManager {
                 this._animations.push({ ...animData, id: newId });
 
                 if (animData.source === "file" && fileData) {
-                    const fileNames: string[] = [];
-                    for (const [fileName, base64] of Object.entries(fileData)) {
-                        const blob = Base64ToBlob(base64);
-                        await IdbPut(`animation:${newId}/${fileName}`, blob);
-                        fileNames.push(fileName);
-                    }
-                    this._animations[this._animations.length - 1].fileNames = fileNames;
+                    const fileEntries = Object.entries(fileData);
+                    // eslint-disable-next-line no-await-in-loop
+                    await Promise.all(
+                        fileEntries.map(async ([fileName, base64]) => {
+                            const blob = Base64ToBlob(base64);
+                            await IdbPut(`animation:${newId}/${fileName}`, blob);
+                        })
+                    );
+                    this._animations[this._animations.length - 1].fileNames = fileEntries.map(([n]) => n);
                 }
             }
         }
@@ -328,15 +334,15 @@ export class AnimationManager {
             return;
         }
         const baseUrl = "https://assets.babylonjs.com/mixamo/Animations/";
-        const defaults: { name: string; file: string; scheme: string; displayName: string }[] = [
-            { name: "Rumba Dancing", file: "Rumba Dancing.glb", scheme: "Mixamo", displayName: "Rumba Dancing" },
-            { name: "Hip Hop Dancing", file: "Hip Hop Dancing.glb", scheme: "Mixamo", displayName: "Hip Hop Dancing" },
-            { name: "Sitting Clap", file: "Sitting Clap.glb", scheme: "Mixamo", displayName: "Sitting Clap" },
-            { name: "Walking", file: "Walking.glb", scheme: "Mixamo", displayName: "Walking" },
-            { name: "Catwalk Walking", file: "Catwalk Walking.glb", scheme: "Mixamo", displayName: "Catwalk Walking" },
-            { name: "Praying", file: "Praying.glb", scheme: "Mixamo", displayName: "Praying" },
-            { name: "Mousey Walking", file: "Mousey_walking.glb", scheme: "Mixamo", displayName: "Mousey Walking" },
-            { name: "Hip Hop", file: "hiphop.glb", scheme: "Mixamo No Namespace", displayName: "Hip Hop" },
+        const defaults: { name: string; file: string; scheme: string; displayName: string; rootNode: string }[] = [
+            { name: "Rumba Dancing", file: "Rumba Dancing.glb", scheme: "Mixamo", displayName: "Rumba Dancing", rootNode: "mixamorig:Hips" },
+            { name: "Hip Hop Dancing", file: "Hip Hop Dancing.glb", scheme: "Mixamo", displayName: "Hip Hop Dancing", rootNode: "mixamorig:Hips" },
+            { name: "Sitting Clap", file: "Sitting Clap.glb", scheme: "Mixamo", displayName: "Sitting Clap", rootNode: "mixamorig:Hips" },
+            { name: "Walking", file: "Walking.glb", scheme: "Mixamo", displayName: "Walking", rootNode: "mixamorig:Hips" },
+            { name: "Catwalk Walking", file: "Catwalk Walking.glb", scheme: "Mixamo", displayName: "Catwalk Walking", rootNode: "mixamorig:Hips" },
+            { name: "Praying", file: "Praying.glb", scheme: "Mixamo", displayName: "Praying", rootNode: "mixamorig:Hips" },
+            { name: "Mousey Walking", file: "Mousey_walking.glb", scheme: "Mixamo", displayName: "Mousey Walking", rootNode: "mixamorig:Hips" },
+            { name: "Hip Hop", file: "hiphop.glb", scheme: "Mixamo No Namespace", displayName: "Hip Hop", rootNode: "Hips" },
         ];
         for (const d of defaults) {
             this.addAnimation({
@@ -345,6 +351,7 @@ export class AnimationManager {
                 source: "url",
                 url: baseUrl + d.file,
                 namingScheme: d.scheme,
+                rootNodeName: d.rootNode,
                 animations: [{ index: 0, groupName: d.displayName, displayName: d.displayName }],
             });
         }
@@ -377,6 +384,9 @@ export class AnimationManager {
                 }
                 if (!entry.name) {
                     entry.name = "Unnamed";
+                }
+                if (!entry.rootNodeName) {
+                    entry.rootNodeName = "";
                 }
                 return entry as StoredAnimation;
             });

@@ -19,7 +19,7 @@ import { Avatar } from "./avatar";
 import { AnimationSource } from "./animation";
 import { HTMLConsole } from "./htmlConsole";
 import type { NamingSchemeManager } from "./namingSchemeManager";
-import type { AvatarManager } from "./avatarManager";
+import type { AvatarManager, RestPoseDataUpdate } from "./avatarManager";
 import type { AnimationManager } from "./animationManager";
 import { SaveSnippet, TestPlaygroundCode } from "./helperFunctions";
 
@@ -61,8 +61,8 @@ export class RetargetingSceneManager {
 
     private _retargetOptions: Nullable<IRetargetOptions> = null;
     private _lastRetargetParams: Nullable<IRetargetingParams> = null;
-    private _lastAvatarRestPose: import("./data").RestPoseDataUpdate | undefined;
-    private _lastAnimationRestPose: import("./data").RestPoseDataUpdate | undefined;
+    private _lastAvatarRestPose: RestPoseDataUpdate | undefined;
+    private _lastAnimationRestPose: RestPoseDataUpdate | undefined;
     private _isRetargeted = false;
 
     public readonly onRetargetDoneObservable = new Observable<void>();

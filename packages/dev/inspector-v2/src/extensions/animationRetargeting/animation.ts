@@ -6,7 +6,7 @@ import type { AnimationGroup } from "core/Animations/animationGroup";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { TransformNode } from "core/Meshes/transformNode";
 import type { Vector3, Quaternion } from "core/Maths/math.vector";
-import type { RestPoseDataUpdate } from "./data";
+import type { RestPoseDataUpdate } from "./avatarManager";
 
 import { Color3 } from "core/Maths/math.color";
 import { Matrix } from "core/Maths/math.vector";
@@ -38,6 +38,7 @@ type TransformNodeTransformations = Map<TransformNode, { position: Vector3; scal
 export class AnimationSource {
     private _animationGroup: Nullable<AnimationGroup> = null;
     private _skeletonViewer: Nullable<SkeletonViewer> = null;
+    private _skeletonMesh: Nullable<Mesh> = null;
     private _rootNode: Nullable<AbstractMesh> = null;
     private _gizmoManager: GizmoManager;
     private _gizmoSelectedNode: Nullable<Mesh> = null;
@@ -77,9 +78,9 @@ export class AnimationSource {
         this._gizmoManager.coordinatesMode = GizmoCoordinatesMode.Local;
     }
 
-    public async loadAsync(path: string, restPoseUpdate?: RestPoseDataUpdate): Promise<void> {
+    public async loadAsync(path: string, restPoseUpdate?: RestPoseDataUpdate, skeletonRootNodeName?: string): Promise<void> {
         this._cleanScene();
-        await this._loadFileAsync(path, restPoseUpdate);
+        await this._loadFileAsync(path, restPoseUpdate, skeletonRootNodeName);
     }
 
     public clearScene(): void {
@@ -319,7 +320,7 @@ export class AnimationSource {
         this._gizmoManager.dispose();
     }
 
-    private async _loadFileAsync(path: string, restPoseUpdate?: RestPoseDataUpdate): Promise<void> {
+    private async _loadFileAsync(path: string, restPoseUpdate?: RestPoseDataUpdate, skeletonRootNodeName?: string): Promise<void> {
         if (path.startsWith("file:")) {
             await AppendSceneAsync(path.substring(5), this._scene, { rootUrl: "file:" });
         } else {
@@ -372,22 +373,28 @@ export class AnimationSource {
                 (mesh as Mesh).dispose();
             });
 
-        // Find the hips/pelvis node to determine the skeleton root
-        let hipsNode: Nullable<TransformNode> = this._rootNode.getChildTransformNodes(false, (node) => node.name === "mixamorig:Hips")?.[0] ?? null;
-        if (!hipsNode) {
-            hipsNode = this._rootNode.getChildTransformNodes(false, (node) => node.name === "Hips")[0] ?? null;
-        }
-        if (!hipsNode) {
-            hipsNode = this._rootNode.getChildTransformNodes(false, (node) => node.name.toLowerCase().indexOf("hips") >= 0)[0] ?? null;
-        }
-        if (!hipsNode) {
-            hipsNode = this._rootNode.getChildTransformNodes(false, (node) => node.name.toLowerCase().indexOf("pelvis") >= 0)[0] ?? null;
-        }
-        // Use the hips' parent as skeleton root (so siblings like Spine are included),
-        // but fall back to hips itself or the root node.
-        let skeletonRoot: TransformNode = hipsNode ?? this._rootNode;
-        if (hipsNode && hipsNode.parent && hipsNode.parent !== this._rootNode) {
-            skeletonRoot = hipsNode.parent as TransformNode;
+        // Use the user-selected root node, or fall back to hips heuristic
+        let skeletonRoot: TransformNode = this._rootNode;
+        if (skeletonRootNodeName) {
+            const found = this._rootNode.getChildTransformNodes(false, (node) => node.name === skeletonRootNodeName)[0];
+            if (found) {
+                skeletonRoot = found;
+            }
+        } else {
+            // Legacy heuristic: find hips/pelvis node
+            let hipsNode: Nullable<TransformNode> = this._rootNode.getChildTransformNodes(false, (node) => node.name === "mixamorig:Hips")?.[0] ?? null;
+            if (!hipsNode) {
+                hipsNode = this._rootNode.getChildTransformNodes(false, (node) => node.name === "Hips")[0] ?? null;
+            }
+            if (!hipsNode) {
+                hipsNode = this._rootNode.getChildTransformNodes(false, (node) => node.name.toLowerCase().indexOf("hips") >= 0)[0] ?? null;
+            }
+            if (!hipsNode) {
+                hipsNode = this._rootNode.getChildTransformNodes(false, (node) => node.name.toLowerCase().indexOf("pelvis") >= 0)[0] ?? null;
+            }
+            if (hipsNode) {
+                skeletonRoot = hipsNode;
+            }
         }
 
         // Create a skeleton + visualization mesh from the transform node hierarchy
@@ -399,10 +406,11 @@ export class AnimationSource {
 
         const animSkeleton = CreateSkeletonFromTransformNodeHierarchy(skeletonRoot, this._scene, meshOptions);
         const meshAnim = meshOptions.mesh!;
+        this._skeletonMesh = meshAnim;
         meshAnim.layerMask = ShadowLayerMask;
-        this._shadowGenerator.addShadowCaster(meshAnim);
+        meshAnim.isVisible = false;
 
-        const initialNode = hipsNode ?? skeletonRoot;
+        const initialNode = skeletonRoot;
         this._selectedTransformNode = initialNode;
         this._gizmoManager.attachToNode(initialNode);
         this.onGizmoNodeSelectedObservable.notifyObservers(initialNode.name);
@@ -540,10 +548,15 @@ export class AnimationSource {
 
     private _cleanScene(): void {
         this._animationGroup?.dispose();
-        this._skeletonViewer?.skeleton.dispose();
+        if (this._skeletonViewer) {
+            this._skeletonViewer.skeleton.dispose();
+            this._skeletonViewer.dispose();
+            this._skeletonViewer = null;
+        }
+        this._skeletonMesh?.dispose();
+        this._skeletonMesh = null;
         this._rootNode?.dispose(false, true);
         this._animationGroup = null;
-        this._skeletonViewer = null;
         this._rootNode = null;
         this._selectedTransformNode = null;
     }

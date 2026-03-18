@@ -507,7 +507,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 }
                 if (storedAn) {
                     const loadAndPlayAsync = async (path: string) => {
-                        await manager.animationSource!.loadAsync(path, storedAn.restPoseUpdate);
+                        await manager.animationSource!.loadAsync(path, storedAn.restPoseUpdate, storedAn.rootNodeName);
                         manager.animationSource?.play(stateSnapshotRef.current.animationSpeed);
                     };
                     if (storedAn.source === "url" && storedAn.url) {
@@ -656,7 +656,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
             }
 
             if (loadPath) {
-                await manager.animationSource.loadAsync(loadPath, storedAnimation.restPoseUpdate);
+                await manager.animationSource.loadAsync(loadPath, storedAnimation.restPoseUpdate, storedAnimation.rootNodeName);
                 manager.animationSource!.setSkeletonVisible(true);
                 manager.animationSource?.play(stateSnapshotRef.current.animationSpeed);
             }
@@ -726,7 +726,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                             label="Retarget"
                             title="Apply the animation from the source to the avatar using the current settings"
                             onClick={handleRetarget}
-                            disabled={!isAvatarLoaded || !isAnimLoaded || isLoading}
+                            disabled={!isAvatarLoaded || !isAnimLoaded || isLoading || (rootNodeName !== "Auto" && rootNodeName === groundReferenceNodeName)}
                         />
                         <ButtonLine
                             label="Export to Playground"
@@ -1035,6 +1035,11 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         />
                                     </div>
                                 </div>
+                                {rootNodeName !== "Auto" && rootNodeName === groundReferenceNodeName && (
+                                    <span style={{ color: tokens.colorPaletteRedForeground1, fontSize: "12px", paddingLeft: "16px" }}>
+                                        Root node and Ground ref. node must be different.
+                                    </span>
+                                )}
                                 <div className={classes.boneDropdownWrapper}>
                                     <Body1Strong className={classes.boneDropdownLabel}>Ground ref. node</Body1Strong>
                                     <div className={classes.boneDropdownControl}>
