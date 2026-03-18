@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(node -e:*)",
+      "Bash(gh api \"repos/BabylonJS/Babylon.js/commits/093f820990fc2ec8c30f924f6768b7e5bc699a21/pulls\")",
+      "Bash(gh search prs --repo BabylonJS/Babylon.js \"isFrozen previousRenderId\" --json number,title,url,createdAt)",
+      "Bash(gh api \"repos/BabylonJS/Babylon.js/commits/093f820990fc2ec8c30f924f6768b7e5bc699a21\" --jq '.commit.message,.html_url')",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npx tsc --noEmit -p packages/dev/inspector-v2/tsconfig.json)"
+    ]
+  }
+}
