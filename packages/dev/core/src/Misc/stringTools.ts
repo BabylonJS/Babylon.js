@@ -76,27 +76,12 @@ interface Uint8ArrayConstructorBase64 {
 
 /**
  * Checks if the native Uint8Array base64 API is available and spec-compliant,
- * rejecting known polyfills (core-js, es-shims).
+ * Also note for bundler/polyfill users, if polyfill for Uint8Array base64 API is enabled,
+ * performance of base64 encoding/decoding might be slower.
  * @returns true if the native base64 API is available and trustworthy
  */
 function HasNativeBase64(): boolean {
-    if (!(Uint8Array.prototype as unknown as Uint8ArrayBase64).toBase64 || !(Uint8Array as unknown as Uint8ArrayConstructorBase64).fromBase64) {
-        return false;
-    }
-    try {
-        (Uint8Array.prototype as unknown as Uint8ArrayBase64).toBase64.call(null);
-        // spec here: https://tc39.es/ecma262/multipage/indexed-collections.html#sec-validateuint8array
-        return false; // must throw, or not spec compliant
-    } catch (e: unknown) {
-        // e must be TypeError
-        // chrome: Method Uint8Array.prototype.toBase64 called on incompatible receiver null
-        // firefox: toBase64 method called on incompatible null
-        // webkit: Uint8Array.prototype.toBase64 requires that |this| be a Uint8Array
-        // core-js: Argument is not an Uint8Array
-        // es-shims: `this` value must be a Uint8Array'
-        const message = (e as Error).message;
-        return message !== "Argument is not an Uint8Array" && message !== "`this` value must be a Uint8Array'";
-    }
+    return !!((Uint8Array.prototype as unknown as Uint8ArrayBase64).toBase64 && (Uint8Array as unknown as Uint8ArrayConstructorBase64).fromBase64);
 }
 
 function NativeEncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string {
