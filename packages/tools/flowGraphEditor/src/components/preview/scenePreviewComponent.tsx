@@ -4,8 +4,8 @@ import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { SceneContext } from "../../sceneContext";
 import { LogEntry } from "../log/logComponent";
-import { loadSnippet } from "@tools/snippet-loader";
-import type { PlaygroundSnippetResult } from "@tools/snippet-loader";
+import { LoadSnippet } from "@tools/snippet-loader";
+import type { IPlaygroundSnippetResult } from "@tools/snippet-loader";
 
 import "./scenePreview.scss";
 
@@ -131,13 +131,13 @@ export class ScenePreviewComponent extends React.Component<IScenePreviewComponen
 
         try {
             const cleanId = this._extractSnippetId(snippetId);
-            const result = await loadSnippet(cleanId, { moduleFormat: "script", assetBaseUrl: "https://playground.babylonjs.com/" });
+            const result = await LoadSnippet(cleanId, { moduleFormat: "script", assetBaseUrl: "https://playground.babylonjs.com/" });
 
             if (result.type !== "playground") {
                 throw new Error(`Only playground snippets are supported (got "${result.type}")`);
             }
 
-            const pgResult = result as PlaygroundSnippetResult;
+            const pgResult = result as IPlaygroundSnippetResult;
 
             // Dispose old preview context if any
             const oldCtx = this.props.globalState.sceneContext;
