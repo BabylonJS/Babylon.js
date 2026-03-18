@@ -82,6 +82,10 @@ export class AnimationSource {
         await this._loadFileAsync(path, restPoseUpdate);
     }
 
+    public clearScene(): void {
+        this._cleanScene();
+    }
+
     /** Returns a sorted list of transform node names targeted by the animation group. */
     public getTransformNodeNames(): string[] {
         if (!this._animationGroup || !this._rootNode) {
@@ -368,7 +372,7 @@ export class AnimationSource {
                 (mesh as Mesh).dispose();
             });
 
-        // Find the hips/pelvis node to use as skeleton root
+        // Find the hips/pelvis node to determine the skeleton root
         let hipsNode: Nullable<TransformNode> = this._rootNode.getChildTransformNodes(false, (node) => node.name === "mixamorig:Hips")?.[0] ?? null;
         if (!hipsNode) {
             hipsNode = this._rootNode.getChildTransformNodes(false, (node) => node.name === "Hips")[0] ?? null;
@@ -379,7 +383,12 @@ export class AnimationSource {
         if (!hipsNode) {
             hipsNode = this._rootNode.getChildTransformNodes(false, (node) => node.name.toLowerCase().indexOf("pelvis") >= 0)[0] ?? null;
         }
-        hipsNode = hipsNode ?? this._rootNode;
+        // Use the hips' parent as skeleton root (so siblings like Spine are included),
+        // but fall back to hips itself or the root node.
+        let skeletonRoot: TransformNode = hipsNode ?? this._rootNode;
+        if (hipsNode && hipsNode.parent && hipsNode.parent !== this._rootNode) {
+            skeletonRoot = hipsNode.parent as TransformNode;
+        }
 
         // Create a skeleton + visualization mesh from the transform node hierarchy
         const meshOptions: { name?: string; boneMeshSize?: number; createMesh?: boolean; mesh?: Mesh } = {
@@ -388,14 +397,15 @@ export class AnimationSource {
             createMesh: true,
         };
 
-        const animSkeleton = CreateSkeletonFromTransformNodeHierarchy(hipsNode, this._scene, meshOptions);
+        const animSkeleton = CreateSkeletonFromTransformNodeHierarchy(skeletonRoot, this._scene, meshOptions);
         const meshAnim = meshOptions.mesh!;
         meshAnim.layerMask = ShadowLayerMask;
         this._shadowGenerator.addShadowCaster(meshAnim);
 
-        this._selectedTransformNode = hipsNode;
-        this._gizmoManager.attachToNode(hipsNode);
-        this.onGizmoNodeSelectedObservable.notifyObservers(hipsNode.name);
+        const initialNode = hipsNode ?? skeletonRoot;
+        this._selectedTransformNode = initialNode;
+        this._gizmoManager.attachToNode(initialNode);
+        this.onGizmoNodeSelectedObservable.notifyObservers(initialNode.name);
 
         const meshAnimExtendSize = meshAnim.getBoundingInfo().boundingBox.extendSizeWorld;
 
@@ -422,7 +432,7 @@ export class AnimationSource {
         this._gizmoSelectedNode.material = mat;
         this._gizmoSelectedNode.layerMask = ShadowLayerMask;
         this._gizmoSelectedNode.renderingGroupId = 3;
-        this._gizmoSelectedNode.position.copyFrom(hipsNode.absolutePosition);
+        this._gizmoSelectedNode.position.copyFrom(initialNode.absolutePosition);
 
         if (restPoseUpdate && restPoseUpdate.length > 0) {
             this._applyRestPoseUpdate(restPoseUpdate);

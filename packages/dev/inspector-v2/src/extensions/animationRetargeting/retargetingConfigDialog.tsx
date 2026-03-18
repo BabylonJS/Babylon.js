@@ -24,7 +24,16 @@ import {
     Caption1,
     Spinner,
 } from "@fluentui/react-components";
-import { Add20Regular, Delete20Regular, Edit20Regular, ArrowCounterclockwise20Regular, ArrowBidirectionalUpDown20Regular, Dismiss20Regular } from "@fluentui/react-icons";
+import {
+    Add20Regular,
+    Delete20Regular,
+    Edit20Regular,
+    ArrowCounterclockwise20Regular,
+    ArrowBidirectionalUpDown20Regular,
+    ArrowDownload20Regular,
+    ArrowUpload20Regular,
+    Dismiss20Regular,
+} from "@fluentui/react-icons";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { ImportMeshAsync, SceneLoader } from "core/Loading/sceneLoader";
@@ -288,7 +297,12 @@ const SchemesPanel: FunctionComponent<{
             options.push({ label: `Avatar: ${av.name}`, value: `avatar:${av.name}` });
         }
         for (const an of animationManager.getAllAnimations()) {
-            options.push({ label: `Animation: ${an.name}`, value: `animation:${an.name}` });
+            const label =
+                an.animations
+                    .filter((m) => m.displayName)
+                    .map((m) => m.displayName)
+                    .join(", ") || an.id;
+            options.push({ label: `Animation: ${label}`, value: `animation:${an.id}` });
         }
         return options;
     }, [avatarManager, animationManager]);
@@ -328,7 +342,12 @@ const SchemesPanel: FunctionComponent<{
                 users.push(`avatar "${a.name}"`);
             }
             for (const a of usingAnimations) {
-                users.push(`animation "${a.name}"`);
+                const label =
+                    a.animations
+                        .filter((m) => m.displayName)
+                        .map((m) => m.displayName)
+                        .join(", ") || a.id;
+                users.push(`animation "${label}"`);
             }
             if (users.length > 0) {
                 setError(`Cannot delete: scheme is used by ${users.join(", ")}.`);
@@ -384,52 +403,57 @@ const SchemesPanel: FunctionComponent<{
                     }
                     await LoadIntoScene(scene, avatar, avatarManager);
 
-                    // Extract bone names from the first skeleton, with indentation for hierarchy
+                    // Extract bone names from the first skeleton in hierarchy order (DFS)
                     const skeleton = scene.skeletons[0];
                     if (!skeleton) {
                         throw new Error("No skeleton found in this avatar.");
                     }
                     const lines: string[] = [];
-                    for (const bone of skeleton.bones) {
-                        let depth = 0;
-                        let p = bone.parent;
-                        while (p) {
-                            depth++;
-                            p = p.parent;
-                        }
+                    const visitBone = (bone: import("core/Bones/bone").Bone, depth: number) => {
                         lines.push("  ".repeat(depth) + bone.name);
+                        for (const child of bone.children) {
+                            visitBone(child, depth + 1);
+                        }
+                    };
+                    for (const bone of skeleton.bones) {
+                        if (!bone.parent) {
+                            visitBone(bone, 0);
+                        }
                     }
                     setEditing({ ...editing, namesText: lines.join("\n") });
                 } else {
-                    const animation = animationManager.getAnimation(name);
+                    const animation = animationManager.getAnimationById(name);
                     if (!animation) {
                         throw new Error(`Animation "${name}" not found.`);
                     }
                     await LoadIntoScene(scene, animation, animationManager);
 
-                    // Extract target names from animation groups, with hierarchy indentation
-                    // Collect unique targets first, then sort by hierarchy
-                    const targetMap = new Map<string, import("core/Meshes/transformNode").TransformNode>();
+                    // Collect animation target names, then sort by scene hierarchy (DFS order)
+                    const targetNames = new Set<string>();
                     for (const group of scene.animationGroups) {
                         for (const ta of group.targetedAnimations) {
-                            const target = ta.target as import("core/Meshes/transformNode").TransformNode;
-                            if (target?.name && target.parent !== undefined) {
-                                targetMap.set(target.name, target);
+                            if (ta.target?.name) {
+                                targetNames.add(ta.target.name as string);
                             }
                         }
                     }
-                    if (targetMap.size === 0) {
+                    if (targetNames.size === 0) {
                         throw new Error("No animation targets found.");
                     }
+                    // Walk scene in DFS order, include only animation targets
                     const lines: string[] = [];
-                    for (const [nodeName, node] of targetMap) {
-                        let depth = 0;
-                        let p = node.parent;
-                        while (p) {
-                            depth++;
-                            p = p.parent;
+                    const visited = new Set<string>();
+                    const walkNode = (node: import("core/node").Node, depth: number) => {
+                        if (targetNames.has(node.name) && !visited.has(node.name)) {
+                            visited.add(node.name);
+                            lines.push("  ".repeat(depth) + node.name);
                         }
-                        lines.push("  ".repeat(depth) + nodeName);
+                        for (const child of node.getChildren()) {
+                            walkNode(child, depth + 1);
+                        }
+                    };
+                    for (const rootNode of scene.rootNodes) {
+                        walkNode(rootNode, 0);
                     }
                     setEditing({ ...editing, namesText: lines.join("\n") });
                 }
@@ -924,7 +948,11 @@ export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogP
     const [version, setVersion] = useState(0);
     const [isEditing, setIsEditing] = useState(false);
     const [confirmClose, setConfirmClose] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [pendingImport, setPendingImport] = useState<any>(null);
+    const [importResult, setImportResult] = useState<string | null>(null);
     const surfaceRef = useRef<HTMLElement>(null);
+    const importInputRef = useRef<HTMLInputElement>(null);
     const onMutate = useCallback(() => setVersion((v) => v + 1), []);
     const onEditingChange = useCallback((editing: boolean) => setIsEditing(editing), []);
 
@@ -955,6 +983,65 @@ export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogP
         }
     }, [isEditing, onClose]);
 
+    const handleExport = useCallback(async () => {
+        const exportObj = {
+            avatars: await avatarManager.exportDataAsync(),
+            animations: await animationManager.exportDataAsync(),
+            namingSchemes: manager.exportData(),
+        };
+        const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "retargeting-config.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }, [avatarManager, animationManager, manager]);
+
+    const handleImportFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) {
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                const data = JSON.parse(reader.result as string);
+                setPendingImport(data);
+            } catch {
+                setImportResult("Failed to parse JSON file.");
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = ""; // reset so same file can be re-selected
+    }, []);
+
+    const handleImport = useCallback(
+        async (mode: "replace" | "append") => {
+            if (!pendingImport) {
+                return;
+            }
+            const skipped: string[] = [];
+            if (pendingImport.namingSchemes) {
+                skipped.push(...manager.importData(pendingImport.namingSchemes, mode));
+            }
+            if (pendingImport.avatars) {
+                skipped.push(...(await avatarManager.importDataAsync(pendingImport.avatars, mode)));
+            }
+            if (pendingImport.animations) {
+                skipped.push(...(await animationManager.importDataAsync(pendingImport.animations, mode)));
+            }
+            setPendingImport(null);
+            onMutate();
+            if (skipped.length > 0) {
+                setImportResult(`Imported with ${skipped.length} skipped: ${skipped.join(", ")}`);
+            } else {
+                setImportResult("Import completed successfully.");
+            }
+        },
+        [pendingImport, manager, avatarManager, animationManager, onMutate]
+    );
+
     // version is read to force a re-render of the child panels after mutations
     void version;
 
@@ -975,8 +1062,69 @@ export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogP
                 <DialogBody className={classes.body}>
                     <div className={classes.titleRow}>
                         <DialogTitle action={null}>Retargeting Configuration</DialogTitle>
-                        <Button appearance="subtle" icon={<Dismiss20Regular />} onClick={handleClose} title="Close" aria-label="Close" />
+                        <div style={{ display: "flex", gap: "4px" }}>
+                            <Button appearance="subtle" icon={<ArrowDownload20Regular />} onClick={handleExport} title="Export configuration" disabled={isEditing} />
+                            <Button
+                                appearance="subtle"
+                                icon={<ArrowUpload20Regular />}
+                                onClick={() => importInputRef.current?.click()}
+                                title="Import configuration"
+                                disabled={isEditing}
+                            />
+                            <input ref={importInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={handleImportFile} />
+                            <Button appearance="subtle" icon={<Dismiss20Regular />} onClick={handleClose} title="Close" aria-label="Close" />
+                        </div>
                     </div>
+                    {/* Import mode chooser dialog */}
+                    <Dialog
+                        open={pendingImport !== null}
+                        onOpenChange={(_, d) => {
+                            if (!d.open) {
+                                setPendingImport(null);
+                            }
+                        }}
+                    >
+                        <DialogSurface className={classes.confirmSurface}>
+                            <DialogBody>
+                                <DialogTitle>Import Configuration</DialogTitle>
+                                <DialogContent>
+                                    <strong>Replace</strong> all existing data, or <strong>Append</strong> and skip duplicates?
+                                </DialogContent>
+                                <DialogActions>
+                                    <Button appearance="secondary" onClick={() => setPendingImport(null)}>
+                                        Cancel
+                                    </Button>
+                                    <Button appearance="primary" onClick={() => handleImport("replace")}>
+                                        Replace
+                                    </Button>
+                                    <Button appearance="primary" onClick={() => handleImport("append")}>
+                                        Append
+                                    </Button>
+                                </DialogActions>
+                            </DialogBody>
+                        </DialogSurface>
+                    </Dialog>
+                    {/* Import result dialog */}
+                    <Dialog
+                        open={importResult !== null}
+                        onOpenChange={(_, d) => {
+                            if (!d.open) {
+                                setImportResult(null);
+                            }
+                        }}
+                    >
+                        <DialogSurface className={classes.confirmSurface}>
+                            <DialogBody>
+                                <DialogTitle>Import Result</DialogTitle>
+                                <DialogContent>{importResult}</DialogContent>
+                                <DialogActions>
+                                    <Button appearance="primary" onClick={() => setImportResult(null)}>
+                                        OK
+                                    </Button>
+                                </DialogActions>
+                            </DialogBody>
+                        </DialogSurface>
+                    </Dialog>
                     {/* Confirm close when edits are pending */}
                     <Dialog
                         open={confirmClose}
@@ -1026,7 +1174,7 @@ export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogP
                             Naming Schemes
                         </Tab>
                         <Tab value="remappings" disabled={isEditing && activeTab !== "remappings"}>
-                            Remappings
+                            Scheme Remappings
                         </Tab>
                     </TabList>
                     <DialogContent className={classes.content}>

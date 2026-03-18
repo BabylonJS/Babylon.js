@@ -289,7 +289,7 @@ export const AvatarsPanel: FunctionComponent<{
     // ─── Load preview ─────────────────────────────────────────────────────
 
     const loadPreview = useCallback(
-        async (sourceType: "url" | "file", url: string, files: File[]) => {
+        async (sourceType: "url" | "file", url: string, files: File[], autoDetectScheme: boolean) => {
             setIsLoading(true);
             setNodeList([]);
             setError(null);
@@ -336,23 +336,27 @@ export const AvatarsPanel: FunctionComponent<{
                 }
                 setNodeList(nodes);
 
-                // Auto-select first node and try to detect the naming scheme from loaded nodes
+                // Auto-select first node and optionally detect the naming scheme
                 if (nodes.length > 0) {
-                    const nodeNames = new Set(nodes.map((n) => n.name));
-                    let detectedScheme = DetectNamingScheme(nodeNames, namingSchemeManager);
+                    let detectedScheme: string | null = null;
 
-                    // Fallback: if no match from node names, try skeleton bone names
-                    if (!detectedScheme) {
-                        const boneNames = new Set<string>();
-                        for (const mesh of scene.meshes) {
-                            if (mesh.skeleton) {
-                                for (const bone of mesh.skeleton.bones) {
-                                    boneNames.add(bone.name);
+                    if (autoDetectScheme) {
+                        const nodeNames = new Set(nodes.map((n) => n.name));
+                        detectedScheme = DetectNamingScheme(nodeNames, namingSchemeManager);
+
+                        // Fallback: if no match from node names, try skeleton bone names
+                        if (!detectedScheme) {
+                            const boneNames = new Set<string>();
+                            for (const mesh of scene.meshes) {
+                                if (mesh.skeleton) {
+                                    for (const bone of mesh.skeleton.bones) {
+                                        boneNames.add(bone.name);
+                                    }
                                 }
                             }
-                        }
-                        if (boneNames.size > 0) {
-                            detectedScheme = DetectNamingScheme(boneNames, namingSchemeManager);
+                            if (boneNames.size > 0) {
+                                detectedScheme = DetectNamingScheme(boneNames, namingSchemeManager);
+                            }
                         }
                     }
 
@@ -411,11 +415,11 @@ export const AvatarsPanel: FunctionComponent<{
             setNodeList([]);
             // Auto-load preview
             if (avatar.source === "url" && avatar.url) {
-                void loadPreview("url", avatar.url, []);
+                void loadPreview("url", avatar.url, [], false);
             } else if (avatar.source === "file" && avatar.fileNames?.length) {
                 const files = await avatarManager.getFilesAsync(avatar.id, avatar.fileNames);
                 if (files.length > 0) {
-                    void loadPreview("file", "", files);
+                    void loadPreview("file", "", files, false);
                 }
             }
         },
@@ -553,7 +557,7 @@ export const AvatarsPanel: FunctionComponent<{
             if (droppedFiles.length > 0) {
                 const updated = { ...editing, sourceType: "file" as const, files: droppedFiles, url: "" };
                 setEditing(updated);
-                void loadPreview("file", "", droppedFiles);
+                void loadPreview("file", "", droppedFiles, true);
             }
         },
         [editing, loadPreview]
@@ -568,7 +572,7 @@ export const AvatarsPanel: FunctionComponent<{
             if (selectedFiles.length > 0) {
                 const updated = { ...editing, sourceType: "file" as const, files: selectedFiles, url: "" };
                 setEditing(updated);
-                void loadPreview("file", "", selectedFiles);
+                void loadPreview("file", "", selectedFiles, true);
             }
         },
         [editing, loadPreview]
@@ -647,13 +651,13 @@ export const AvatarsPanel: FunctionComponent<{
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && editing.url.trim()) {
                                     setEditing({ ...editing, sourceType: "url", files: [] });
-                                    void loadPreview("url", editing.url, []);
+                                    void loadPreview("url", editing.url, [], true);
                                 }
                             }}
                             input={{
                                 onBlur: () => {
                                     if (editing.url.trim() && editing.sourceType !== "file") {
-                                        void loadPreview("url", editing.url, []);
+                                        void loadPreview("url", editing.url, [], true);
                                     }
                                 },
                             }}

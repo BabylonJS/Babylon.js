@@ -1,5 +1,5 @@
 import type { FunctionComponent } from "react";
-import type { AnimationManager, StoredAnimation } from "./animationManager";
+import type { AnimationManager, StoredAnimation, AnimationGroupMapping } from "./animationManager";
 import type { NamingSchemeManager } from "./namingSchemeManager";
 
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -77,7 +77,7 @@ const useStyles = makeStyles({
     },
     editSectionFlex: {
         flex: 1,
-        overflow: "hidden",
+        overflowY: "auto",
         borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
         paddingTop: tokens.spacingVerticalS,
         display: "flex",
@@ -152,13 +152,28 @@ const useStyles = makeStyles({
         minHeight: "60px",
     },
     animRow: {
+        display: "flex",
+        alignItems: "center",
         padding: `2px ${tokens.spacingHorizontalS}`,
+        gap: tokens.spacingHorizontalS,
         fontSize: "12px",
-        cursor: "pointer",
+        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+        ":last-child": { borderBottom: "none" },
     },
-    animRowSelected: {
-        backgroundColor: tokens.colorBrandBackground2,
-        fontWeight: "bold",
+    animRowName: {
+        flex: "0 0 40%",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        color: tokens.colorNeutralForeground3,
+    },
+    animRowInput: {
+        flex: 1,
+    },
+    animRowError: {
+        color: tokens.colorPaletteRedForeground1,
+        fontSize: "11px",
+        flexShrink: 0,
     },
 });
 
@@ -166,12 +181,12 @@ const useStyles = makeStyles({
 
 type AnimationEdit = {
     id: string | null;
-    originalName: string | null;
     name: string;
     sourceType: "url" | "file";
     url: string;
     files: File[];
-    animationGroupName: string;
+    /** One row per animation group found in the file. */
+    mappings: AnimationGroupMapping[];
     namingScheme: string;
     restPoseJson: string;
 };
@@ -220,8 +235,7 @@ export const AnimationsPanel: FunctionComponent<{
     const classes = useStyles();
     const [editing, setEditing] = useState<AnimationEdit | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
-    const [animGroupNames, setAnimGroupNames] = useState<string[]>([]);
+    const [confirmDelete, setConfirmDelete] = useState<{ id: string; label: string } | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isDragOver, setIsDragOver] = useState(false);
 
@@ -250,9 +264,8 @@ export const AnimationsPanel: FunctionComponent<{
     // ─── Load preview ─────────────────────────────────────────────────────
 
     const loadPreview = useCallback(
-        async (sourceType: "url" | "file", url: string, files: File[]) => {
+        async (sourceType: "url" | "file", url: string, files: File[], autoDetectScheme: boolean) => {
             setIsLoading(true);
-            setAnimGroupNames([]);
             setError(null);
 
             tempSceneRef.current?.dispose();
@@ -289,28 +302,39 @@ export const AnimationsPanel: FunctionComponent<{
                     return;
                 }
 
-                const names = groups.map((g) => g.name);
-                setAnimGroupNames(names);
-
-                // Collect target names for scheme detection
-                const targetNames = new Set<string>();
-                for (const group of groups) {
-                    for (const ta of group.targetedAnimations) {
-                        if (ta.target?.name) {
-                            targetNames.add(ta.target.name as string);
+                // Detect naming scheme only for new loads (not when editing an existing entry)
+                let detectedScheme: string | null = null;
+                if (autoDetectScheme) {
+                    const targetNames = new Set<string>();
+                    for (const group of groups) {
+                        for (const ta of group.targetedAnimations) {
+                            if (ta.target?.name) {
+                                targetNames.add(ta.target.name as string);
+                            }
                         }
                     }
+                    detectedScheme = DetectNamingScheme(targetNames, namingSchemeManager);
                 }
-                const detectedScheme = DetectNamingScheme(targetNames, namingSchemeManager);
 
-                // Auto-select first animation group
+                // Build mappings from the loaded animation groups, preserving existing display names by index
                 setEditing((prev) => {
                     if (!prev) {
                         return prev;
                     }
+                    const existingByIndex = new Map<number, string>();
+                    for (const m of prev.mappings) {
+                        if (m.displayName) {
+                            existingByIndex.set(m.index, m.displayName);
+                        }
+                    }
+                    const newMappings: AnimationGroupMapping[] = groups.map((g, i) => ({
+                        index: i,
+                        groupName: g.name,
+                        displayName: existingByIndex.get(i) ?? "",
+                    }));
                     return {
                         ...prev,
-                        animationGroupName: prev.animationGroupName || names[0],
+                        mappings: newMappings,
                         ...(detectedScheme ? { namingScheme: detectedScheme } : {}),
                     };
                 });
@@ -328,40 +352,36 @@ export const AnimationsPanel: FunctionComponent<{
     const startAdd = useCallback(() => {
         setEditingWithNotify({
             id: null,
-            originalName: null,
             name: "",
             sourceType: "url",
             url: "",
             files: [],
-            animationGroupName: "",
+            mappings: [],
             namingScheme: schemeNames[0] ?? "",
             restPoseJson: "",
         });
         setError(null);
-        setAnimGroupNames([]);
     }, [schemeNames, setEditingWithNotify]);
 
     const startEdit = useCallback(
         async (animation: StoredAnimation) => {
             setEditingWithNotify({
                 id: animation.id,
-                originalName: animation.name,
                 name: animation.name,
                 sourceType: animation.source,
                 url: animation.url ?? "",
                 files: [],
-                animationGroupName: animation.animationGroupName,
+                mappings: animation.animations.map((m) => ({ ...m })),
                 namingScheme: animation.namingScheme,
                 restPoseJson: animation.restPoseUpdate ? JSON.stringify(animation.restPoseUpdate, undefined, 2) : "",
             });
             setError(null);
-            setAnimGroupNames([]);
             if (animation.source === "url" && animation.url) {
-                void loadPreview("url", animation.url, []);
+                void loadPreview("url", animation.url, [], false);
             } else if (animation.source === "file" && animation.fileNames?.length) {
                 const files = await animationManager.getFilesAsync(animation.id, animation.fileNames);
                 if (files.length > 0) {
-                    void loadPreview("file", "", files);
+                    void loadPreview("file", "", files, false);
                 }
             }
         },
@@ -371,7 +391,6 @@ export const AnimationsPanel: FunctionComponent<{
     const handleCancel = useCallback(() => {
         setEditingWithNotify(null);
         setError(null);
-        setAnimGroupNames([]);
         tempSceneRef.current?.dispose();
         tempSceneRef.current = null;
         tempEngineRef.current?.dispose();
@@ -386,18 +405,26 @@ export const AnimationsPanel: FunctionComponent<{
             setError("Name is required.");
             return;
         }
-        if (!editing.animationGroupName) {
-            setError("Please load the file and select an animation.");
-            return;
-        }
         if (!editing.namingScheme) {
             setError("Please select a naming scheme.");
             return;
         }
-        if (editing.originalName !== editing.name.trim()) {
-            const existing = animationManager.getAnimation(editing.name.trim());
-            if (existing) {
-                setError(`An animation named "${editing.name.trim()}" already exists.`);
+
+        // Validate display names: check for duplicates within the current mappings
+        const seenNames = new Set<string>();
+        for (const m of editing.mappings) {
+            const dn = m.displayName.trim();
+            if (!dn) {
+                continue;
+            }
+            if (seenNames.has(dn)) {
+                setError(`Duplicate display name "${dn}" within this file.`);
+                return;
+            }
+            seenNames.add(dn);
+            // Check against other files
+            if (animationManager.isDisplayNameUsed(dn, editing.id ?? undefined)) {
+                setError(`Display name "${dn}" is already used by another animation file.`);
                 return;
             }
         }
@@ -432,7 +459,7 @@ export const AnimationsPanel: FunctionComponent<{
                 url: editing.sourceType === "url" ? editing.url.trim() : undefined,
                 fileNames: editing.sourceType === "file" ? fileNames : undefined,
                 namingScheme: editing.namingScheme,
-                animationGroupName: editing.animationGroupName,
+                animations: editing.mappings.map((m) => ({ ...m, displayName: m.displayName.trim() })),
                 restPoseUpdate,
             };
 
@@ -446,7 +473,6 @@ export const AnimationsPanel: FunctionComponent<{
 
             setEditingWithNotify(null);
             setError(null);
-            setAnimGroupNames([]);
             onMutate();
         } catch (e) {
             setError(e instanceof Error ? e.message : String(e));
@@ -454,7 +480,7 @@ export const AnimationsPanel: FunctionComponent<{
     }, [editing, animationManager, onMutate, setEditingWithNotify]);
 
     const handleDelete = useCallback((animation: StoredAnimation) => {
-        setConfirmDelete({ id: animation.id, name: animation.name });
+        setConfirmDelete({ id: animation.id, label: animation.name });
     }, []);
 
     const handleConfirmDelete = useCallback(async () => {
@@ -465,6 +491,44 @@ export const AnimationsPanel: FunctionComponent<{
         setConfirmDelete(null);
         onMutate();
     }, [confirmDelete, animationManager, onMutate]);
+
+    // ─── Mapping display name helpers ─────────────────────────────────────
+
+    const updateMappingDisplayName = useCallback(
+        (index: number, displayName: string) => {
+            if (!editing) {
+                return;
+            }
+            setEditing({
+                ...editing,
+                mappings: editing.mappings.map((m) => (m.index === index ? { ...m, displayName } : m)),
+            });
+        },
+        [editing]
+    );
+
+    const getMappingError = useCallback(
+        (mapping: AnimationGroupMapping): string | null => {
+            if (!editing) {
+                return null;
+            }
+            const dn = mapping.displayName.trim();
+            if (!dn) {
+                return null;
+            }
+            // Duplicate within current file
+            const duplicateInFile = editing.mappings.some((m) => m.index !== mapping.index && m.displayName.trim() === dn);
+            if (duplicateInFile) {
+                return "Duplicate name in this file";
+            }
+            // Duplicate in other files
+            if (animationManager.isDisplayNameUsed(dn, editing.id ?? undefined)) {
+                return "Name already used";
+            }
+            return null;
+        },
+        [editing, animationManager]
+    );
 
     // ─── Drag & drop ──────────────────────────────────────────────────────
 
@@ -492,7 +556,7 @@ export const AnimationsPanel: FunctionComponent<{
             if (droppedFiles.length > 0) {
                 const updated = { ...editing, sourceType: "file" as const, files: droppedFiles, url: "" };
                 setEditing(updated);
-                void loadPreview("file", "", droppedFiles);
+                void loadPreview("file", "", droppedFiles, true);
             }
         },
         [editing, loadPreview]
@@ -507,7 +571,7 @@ export const AnimationsPanel: FunctionComponent<{
             if (selectedFiles.length > 0) {
                 const updated = { ...editing, sourceType: "file" as const, files: selectedFiles, url: "" };
                 setEditing(updated);
-                void loadPreview("file", "", selectedFiles);
+                void loadPreview("file", "", selectedFiles, true);
             }
         },
         [editing, loadPreview]
@@ -530,7 +594,7 @@ export const AnimationsPanel: FunctionComponent<{
                     <DialogBody>
                         <DialogTitle>Delete Animation</DialogTitle>
                         <DialogContent>
-                            Delete animation <strong>"{confirmDelete?.name}"</strong> and all associated files?
+                            Delete animation <strong>"{confirmDelete?.label}"</strong> and all associated files?
                         </DialogContent>
                         <DialogActions>
                             <Button appearance="secondary" onClick={() => setConfirmDelete(null)}>
@@ -566,7 +630,7 @@ export const AnimationsPanel: FunctionComponent<{
 
             {editing && (
                 <div className={classes.editSectionFlex}>
-                    <Body1Strong>{editing.originalName ? `Editing "${editing.originalName}"` : "New Animation"}</Body1Strong>
+                    <Body1Strong>{editing.id ? "Edit Animation File" : "New Animation File"}</Body1Strong>
 
                     {/* Name */}
                     <div className={classes.formRow}>
@@ -586,13 +650,13 @@ export const AnimationsPanel: FunctionComponent<{
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && editing.url.trim()) {
                                     setEditing({ ...editing, sourceType: "url", files: [] });
-                                    void loadPreview("url", editing.url, []);
+                                    void loadPreview("url", editing.url, [], true);
                                 }
                             }}
                             input={{
                                 onBlur: () => {
                                     if (editing.url.trim() && editing.sourceType !== "file") {
-                                        void loadPreview("url", editing.url, []);
+                                        void loadPreview("url", editing.url, [], true);
                                     }
                                 },
                             }}
@@ -619,20 +683,31 @@ export const AnimationsPanel: FunctionComponent<{
                         </Caption1>
                     )}
 
-                    {/* Animation group list */}
-                    {animGroupNames.length > 0 && (
+                    {/* Animation group mapping table */}
+                    {editing.mappings.length > 0 && (
                         <>
-                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>Select the animation to use ({animGroupNames.length} found):</Caption1>
+                            <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                                Assign display names to animation groups ({editing.mappings.length} found). Leave empty to exclude an animation.
+                            </Caption1>
                             <div className={classes.animList}>
-                                {animGroupNames.map((name) => (
-                                    <div
-                                        key={name}
-                                        className={mergeClasses(classes.animRow, editing.animationGroupName === name ? classes.animRowSelected : undefined)}
-                                        onClick={() => setEditing({ ...editing, animationGroupName: name })}
-                                    >
-                                        {name}
-                                    </div>
-                                ))}
+                                {editing.mappings.map((mapping) => {
+                                    const rowError = getMappingError(mapping);
+                                    return (
+                                        <div key={mapping.index} className={classes.animRow}>
+                                            <span className={classes.animRowName} title={mapping.groupName}>
+                                                {mapping.groupName}
+                                            </span>
+                                            <Input
+                                                className={classes.animRowInput}
+                                                size="small"
+                                                placeholder="Display name"
+                                                value={mapping.displayName}
+                                                onChange={(_, d) => updateMappingDisplayName(mapping.index, d.value)}
+                                            />
+                                            {rowError && <span className={classes.animRowError}>{rowError}</span>}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </>
                     )}

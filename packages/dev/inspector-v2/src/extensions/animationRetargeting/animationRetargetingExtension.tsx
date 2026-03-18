@@ -44,11 +44,23 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
         // Animation manager — persists across extension lifetime via localStorage + IndexedDB
         const animationManager = new AnimationManager();
 
+        // Create default entries if both lists are empty (first-time use)
+        if (avatarManager.getAllAvatars().length === 0 && animationManager.getAllDisplayNames().length === 0) {
+            avatarManager.createDefaults();
+            animationManager.createDefaults();
+        }
+
         let isEnabled = false;
         let viewportReg: IDisposable | null = null;
         let currentManager: RetargetingSceneManager | null = null;
         // Persists all panel UI state across remounts (e.g. when the panel is docked elsewhere)
-        const persistedPanelState: PanelStateStore = { ...DefaultPanelState };
+        const allAvatars = avatarManager.getAllAvatars();
+        const allDisplayNames = animationManager.getAllDisplayNames();
+        const persistedPanelState: PanelStateStore = {
+            ...DefaultPanelState,
+            avatarName: allAvatars.length > 0 ? allAvatars[0].name : "",
+            animationName: allDisplayNames.length > 0 ? allDisplayNames[0] : "",
+        };
 
         function setEnabled(enabled: boolean): void {
             if (enabled === isEnabled) {

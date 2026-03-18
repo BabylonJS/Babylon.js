@@ -42,6 +42,11 @@ export class HTMLConsole {
 
         this._originalHandler = Logger.OnNewCacheEntry;
         Logger.OnNewCacheEntry = (entry: string) => {
+            if (entry.indexOf("RetargetAnimationGroup") === -1) {
+                this._originalHandler?.(entry);
+                return;
+            }
+
             // Strip function-name prefix (e.g. "RetargetAnimationGroup...: ") and trailing <br>.
             const cleaned = entry
                 .replace(/RetargetAnimationGroup.*?: /g, "")

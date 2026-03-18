@@ -94,6 +94,10 @@ export class Avatar {
         await this._loadFileAsync(path, rescaleAvatar, restPoseUpdate);
     }
 
+    public clearScene(): void {
+        this._cleanScene();
+    }
+
     /** Returns the list of all bone names in the avatar skeleton, in hierarchy order. */
     public getBoneNames(): string[] {
         if (!this._animatorAvatar) {

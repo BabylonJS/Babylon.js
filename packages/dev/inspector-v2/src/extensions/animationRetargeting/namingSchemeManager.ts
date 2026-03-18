@@ -461,6 +461,70 @@ export class NamingSchemeManager {
     }
 
     /**
+     * Returns all naming schemes and remappings in a JSON-serializable format.
+     */
+    public exportData(): { schemes: Record<string, BoneEntry[]>; remappings: Array<{ fromScheme: string; toScheme: string; map: [string, string][] }> } {
+        const schemes: Record<string, BoneEntry[]> = {};
+        for (const [name, entries] of this._schemes) {
+            schemes[name] = [...entries];
+        }
+        const remappings: Array<{ fromScheme: string; toScheme: string; map: [string, string][] }> = [];
+        for (const r of this._remappings) {
+            remappings.push({
+                fromScheme: r.fromScheme,
+                toScheme: r.toScheme,
+                map: Array.from(r.map.entries()),
+            });
+        }
+        return { schemes, remappings };
+    }
+
+    /**
+     * Imports naming schemes and remappings.
+     * @param data - The data to import, in the same format as `exportData` returns.
+     * @param mode - "replace" clears all existing data first. "append" skips entries with duplicate names.
+     * @returns List of skipped entry descriptions (for "append" mode).
+     */
+    public importData(
+        data: { schemes?: Record<string, BoneEntry[]>; remappings?: Array<{ fromScheme: string; toScheme: string; map: [string, string][] }> },
+        mode: "replace" | "append"
+    ): string[] {
+        const skipped: string[] = [];
+
+        if (mode === "replace") {
+            this._schemes.clear();
+            this._remappings = [];
+        }
+
+        if (data.schemes) {
+            for (const [name, entries] of Object.entries(data.schemes)) {
+                if (mode === "append" && this._schemes.has(name)) {
+                    skipped.push(`scheme "${name}"`);
+                } else {
+                    this._schemes.set(name, [...entries]);
+                }
+            }
+        }
+
+        if (data.remappings) {
+            for (const r of data.remappings) {
+                if (mode === "append" && this._remappings.some((existing) => this._sameSchemes(existing, r.fromScheme, r.toScheme))) {
+                    skipped.push(`remapping "${r.fromScheme}" ↔ "${r.toScheme}"`);
+                } else {
+                    if (mode === "append") {
+                        // Remove any existing remapping between these schemes before adding.
+                        this._remappings = this._remappings.filter((existing) => !this._sameSchemes(existing, r.fromScheme, r.toScheme));
+                    }
+                    this._remappings.push({ fromScheme: r.fromScheme, toScheme: r.toScheme, map: new Map(r.map) });
+                }
+            }
+        }
+
+        this._saveToStorage();
+        return skipped;
+    }
+
+    /**
      * Removes the remapping between the two given schemes (regardless of the direction it was stored in).
      * @throws Error if no such remapping exists.
      */

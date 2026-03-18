@@ -174,7 +174,7 @@ export class RetargetingSceneManager {
         }
 
         const storedAvatar = avatarManager.getAvatar(params.avatarName);
-        const storedAnimation = animationManager.getAnimation(params.animationName);
+        const storedAnimation = animationManager.getByDisplayName(params.animationName)?.entry;
         const sourceScheme = storedAnimation?.namingScheme;
         const targetScheme = storedAvatar?.namingScheme;
         if (!sourceScheme || !targetScheme) {
@@ -218,7 +218,7 @@ export class RetargetingSceneManager {
 
         const params = this._lastRetargetParams;
         const storedAvatar = avatarManager.getAvatar(params.avatarName);
-        const storedAnimation = animationManager.getAnimation(params.animationName);
+        const storedAnimation = animationManager.getByDisplayName(params.animationName)?.entry;
         if (!storedAvatar || !storedAnimation) {
             return false;
         }

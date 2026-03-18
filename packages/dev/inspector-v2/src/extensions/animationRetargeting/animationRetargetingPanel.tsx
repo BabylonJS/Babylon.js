@@ -3,7 +3,8 @@ import type { Observable } from "core/Misc/observable";
 import { FilesInputStore } from "core/Misc/filesInputStore";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import type { Transform } from "../../components/properties/transformProperties";
-import { makeStyles, tokens, Body1Strong } from "@fluentui/react-components";
+import { makeStyles, tokens, Body1Strong, Button } from "@fluentui/react-components";
+import { ArrowClockwise20Regular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Accordion as BabylonAccordion, AccordionSection as BabylonAccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
@@ -31,7 +32,7 @@ function BuildFilteredBoneList(
     avatarManager: AvatarManager,
     animationManager: AnimationManager
 ): string[] {
-    const sourceScheme = animationManager.getAnimation(animName)?.namingScheme;
+    const sourceScheme = animationManager.getByDisplayName(animName)?.entry.namingScheme;
     const targetScheme = avatarManager.getAvatar(avatarName)?.namingScheme;
     if (!sourceScheme || !targetScheme) {
         return names;
@@ -196,6 +197,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
 }) => {
     const classes = useStyles();
     const managerRef = useRef<RetargetingSceneManager | null>(null);
+    const handleLoadAvatarRef = useRef<(name: string, rescale: boolean) => void>(() => {});
+    const handleLoadAnimationRef = useRef<(name: string) => void>(() => {});
     const [isEnabled, setIsEnabled] = useState(initialIsEnabled);
     const [, forceUpdate] = useState(0);
 
@@ -235,7 +238,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
 
     // Dropdown options derived from managers — refreshed when config dialog closes
     const [avatarOptions, setAvatarOptions] = useState(() => avatarManager.getAllAvatars().map((a) => ({ label: a.name, value: a.name })));
-    const [animationOptions, setAnimationOptions] = useState(() => animationManager.getAllAnimations().map((a) => ({ label: a.name, value: a.name })));
+    const [animationOptions, setAnimationOptions] = useState(() => animationManager.getAllDisplayNames().map((n) => ({ label: n, value: n })));
 
     // Selected bone/node transforms for the Properties section
     const [avatarGizmoSelectedTransform, setAvatarGizmoSelectedTransform] = useState<Transform | null>(null);
@@ -323,19 +326,42 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
     useEffect(() => {
         const obs = onConfigChangedObs.add(() => {
             const newAvatarOptions = avatarManager.getAllAvatars().map((a) => ({ label: a.name, value: a.name }));
-            const newAnimationOptions = animationManager.getAllAnimations().map((a) => ({ label: a.name, value: a.name }));
+            const newAnimationOptions = animationManager.getAllDisplayNames().map((n) => ({ label: n, value: n }));
             setAvatarOptions(newAvatarOptions);
             setAnimationOptions(newAnimationOptions);
 
             const s = stateSnapshotRef.current;
             if (s.avatarName && !avatarManager.getAvatar(s.avatarName)) {
-                setAvatarName("");
-                setIsAvatarLoaded(false);
+                const firstAvatar = newAvatarOptions.length > 0 ? newAvatarOptions[0].value : "";
+                setAvatarName(firstAvatar);
+                if (firstAvatar) {
+                    handleLoadAvatarRef.current(firstAvatar, s.avatarRescaleAvatar);
+                } else {
+                    managerRef.current?.avatar?.clearScene();
+                    managerRef.current?.avatar?.setGizmo(false, s.avatarGizmoType as GizmoType);
+                    setAvatarGizmoEnabled(false);
+                    setAvatarBoneOptions([]);
+                    setAvatarGizmoSelectedTransform(null);
+                    setIsAvatarLoaded(false);
+                    setIsAvatarPlaying(false);
+                }
                 setIsRetargeted(false);
             }
-            if (s.animationName && !animationManager.getAnimation(s.animationName)) {
-                setAnimationName("");
-                setIsAnimLoaded(false);
+            if (s.animationName && !animationManager.getByDisplayName(s.animationName)) {
+                const firstAnim = newAnimationOptions.length > 0 ? newAnimationOptions[0].value : "";
+                setAnimationName(firstAnim);
+                if (firstAnim) {
+                    handleLoadAnimationRef.current(firstAnim);
+                } else {
+                    managerRef.current?.animationSource?.clearScene();
+                    managerRef.current?.animationSource?.setGizmo(false, s.animationGizmoType as GizmoType);
+                    setAnimationGizmoEnabled(false);
+                    setRootNodeOptions([{ label: "Auto", value: "Auto" }]);
+                    setGroundRefNodeOptions([]);
+                    setAnimGizmoSelectedTransform(null);
+                    setIsAnimLoaded(false);
+                    setIsAnimPlaying(false);
+                }
                 setIsRetargeted(false);
             }
         });
@@ -457,7 +483,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 setIsAvatarPlaying(false);
                 setIsAnimPlaying(false);
                 const storedAv = avatarManager.getAvatar(s.avatarName);
-                const storedAn = animationManager.getAnimation(s.animationName);
+                const storedAn = animationManager.getByDisplayName(s.animationName)?.entry;
                 if (storedAv) {
                     if (storedAv.source === "url" && storedAv.url) {
                         manager.avatar!.loadAsync(storedAv.url, s.avatarRescaleAvatar, storedAv.restPoseUpdate);
@@ -602,7 +628,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
             if (!manager?.animationSource) {
                 return;
             }
-            const storedAnimation = animationManager.getAnimation(name);
+            const storedAnimation = animationManager.getByDisplayName(name)?.entry;
             if (!storedAnimation) {
                 return;
             }
@@ -637,6 +663,10 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
         },
         [animationManager]
     );
+
+    // Keep refs up to date so the config-changed handler can call the latest versions
+    handleLoadAvatarRef.current = handleLoadAvatar;
+    handleLoadAnimationRef.current = handleLoadAnimation;
 
     const handleRetarget = useCallback(() => {
         const manager = managerRef.current;
@@ -692,9 +722,15 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
             ) : (
                 <>
                     <div className={classes.actionRow}>
-                        <ButtonLine label="Retarget" onClick={handleRetarget} disabled={!isAvatarLoaded || !isAnimLoaded || isLoading} />
+                        <ButtonLine
+                            label="Retarget"
+                            title="Apply the animation from the source to the avatar using the current settings"
+                            onClick={handleRetarget}
+                            disabled={!isAvatarLoaded || !isAnimLoaded || isLoading}
+                        />
                         <ButtonLine
                             label="Export to Playground"
+                            title="Export the retargeted animation as a Babylon.js Playground snippet"
                             onClick={() => managerRef.current?.exportToPlaygroundAsync(avatarManager, animationManager)}
                             disabled={!isRetargeted}
                         />
@@ -704,17 +740,31 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                         <BabylonAccordion>
                             {/* Avatar */}
                             <BabylonAccordionSection title="Avatar">
-                                <StringDropdownPropertyLine
-                                    label="Name"
-                                    value={avatarName}
-                                    options={avatarOptions}
-                                    onChange={(name) => {
-                                        setAvatarName(name);
-                                        handleLoadAvatar(name, avatarRescaleAvatar);
-                                    }}
-                                />
+                                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                    <div style={{ flex: 1 }}>
+                                        <StringDropdownPropertyLine
+                                            label="Name"
+                                            description="Select the avatar model to retarget animations onto"
+                                            value={avatarName}
+                                            options={avatarOptions}
+                                            onChange={(name) => {
+                                                setAvatarName(name);
+                                                handleLoadAvatar(name, avatarRescaleAvatar);
+                                            }}
+                                        />
+                                    </div>
+                                    <Button
+                                        size="small"
+                                        appearance="subtle"
+                                        icon={<ArrowClockwise20Regular />}
+                                        title="Reload avatar"
+                                        disabled={!avatarName}
+                                        onClick={() => handleLoadAvatar(avatarName, avatarRescaleAvatar)}
+                                    />
+                                </div>
                                 <CheckboxPropertyLine
                                     label="Rescale"
+                                    description="Automatically rescale the avatar if it's too large or too small"
                                     value={avatarRescaleAvatar}
                                     onChange={(v) => {
                                         setAvatarRescaleAvatar(v);
@@ -723,6 +773,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                 />
                                 <CheckboxPropertyLine
                                     label="Show skeleton"
+                                    description="Display the avatar skeleton overlay"
                                     value={avatarShowSkeleton}
                                     onChange={(v) => {
                                         setAvatarShowSkeleton(v);
@@ -731,6 +782,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                 />
                                 <CheckboxPropertyLine
                                     label="Show skel. local axes"
+                                    description="Show local coordinate axes on each skeleton bone (requires Show skeleton)"
                                     value={avatarShowSkeletonLocalAxes}
                                     disabled={!avatarShowSkeleton}
                                     onChange={(v) => {
@@ -740,6 +792,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                 />
                                 <SyncedSliderPropertyLine
                                     label="Anim. speed"
+                                    description="Playback speed for the retargeted animation on the avatar"
                                     value={avatarAnimSpeed}
                                     min={0.01}
                                     max={2}
@@ -749,9 +802,15 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         managerRef.current?.avatar?.setAnimSpeed(v);
                                     }}
                                 />
-                                <ButtonLine label="Return to rest" onClick={() => managerRef.current?.avatar?.returnToRest()} disabled={!isAvatarLoaded} />
+                                <ButtonLine
+                                    label="Return to rest"
+                                    title="Stop playback and return the avatar to its rest pose"
+                                    onClick={() => managerRef.current?.avatar?.returnToRest()}
+                                    disabled={!isAvatarLoaded}
+                                />
                                 <ButtonLine
                                     label="Save as rest pose"
+                                    title="Save current bone positions as the rest pose for this avatar"
                                     disabled={!isAvatarLoaded || isAvatarPlaying}
                                     onClick={() => {
                                         const restPose = managerRef.current?.avatar?.saveAsRestPose();
@@ -763,14 +822,20 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         }
                                     }}
                                 />
-                                <ButtonLine label="Play" onClick={() => managerRef.current?.avatar?.play(avatarAnimSpeed)} disabled={!isRetargeted} />
+                                <ButtonLine
+                                    label="Play"
+                                    title="Play the retargeted animation on the avatar"
+                                    onClick={() => managerRef.current?.avatar?.play(avatarAnimSpeed)}
+                                    disabled={!isRetargeted}
+                                />
                             </BabylonAccordionSection>
                             {/* Avatar Gizmo */}
                             <BabylonAccordionSection title="Avatar Gizmo">
                                 <CheckboxPropertyLine
                                     label="Enabled"
+                                    description="Enable the transform gizmo to edit bone positions. Only available when the avatar is in rest pose"
                                     value={avatarGizmoEnabled && !isAvatarPlaying}
-                                    disabled={isAvatarPlaying}
+                                    disabled={isAvatarPlaying || !isAvatarLoaded}
                                     onChange={(v) => {
                                         setAvatarGizmoEnabled(v);
                                         managerRef.current?.avatar?.setGizmo(v, avatarGizmoType as GizmoType);
@@ -778,6 +843,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                 />
                                 <StringDropdownPropertyLine
                                     label="Type"
+                                    description="Type of transform gizmo: Position, Rotation, or Scale"
                                     value={avatarGizmoType}
                                     options={GizmoTypeOptions}
                                     onChange={(v) => {
@@ -806,17 +872,31 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                             </BabylonAccordionSection>
                             {/* Animation */}
                             <BabylonAccordionSection title="Animation">
-                                <StringDropdownPropertyLine
-                                    label="Name"
-                                    value={animationName}
-                                    options={animationOptions}
-                                    onChange={(name) => {
-                                        setAnimationName(name);
-                                        handleLoadAnimation(name);
-                                    }}
-                                />
+                                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                    <div style={{ flex: 1 }}>
+                                        <StringDropdownPropertyLine
+                                            label="Name"
+                                            description="Select the animation to retarget onto the avatar"
+                                            value={animationName}
+                                            options={animationOptions}
+                                            onChange={(name) => {
+                                                setAnimationName(name);
+                                                handleLoadAnimation(name);
+                                            }}
+                                        />
+                                    </div>
+                                    <Button
+                                        size="small"
+                                        appearance="subtle"
+                                        icon={<ArrowClockwise20Regular />}
+                                        title="Reload animation"
+                                        disabled={!animationName}
+                                        onClick={() => handleLoadAnimation(animationName)}
+                                    />
+                                </div>
                                 <CheckboxPropertyLine
                                     label="Show skel. local axes"
+                                    description="Show local coordinate axes on each animation bone"
                                     value={animationShowSkeletonLocalAxes}
                                     onChange={(v) => {
                                         setAnimationShowSkeletonLocalAxes(v);
@@ -825,6 +905,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                 />
                                 <SyncedSliderPropertyLine
                                     label="Anim. speed"
+                                    description="Playback speed for the source animation"
                                     value={animationSpeed}
                                     min={0.01}
                                     max={2}
@@ -834,28 +915,40 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         managerRef.current?.animationSource?.play(v);
                                     }}
                                 />
-                                <ButtonLine label="Return to rest" onClick={() => managerRef.current?.animationSource?.returnToRest()} disabled={!isAnimLoaded} />
+                                <ButtonLine
+                                    label="Return to rest"
+                                    title="Stop playback and return to the rest pose"
+                                    onClick={() => managerRef.current?.animationSource?.returnToRest()}
+                                    disabled={!isAnimLoaded}
+                                />
                                 <ButtonLine
                                     label="Save as rest pose"
+                                    title="Save current node positions as the rest pose for this animation"
                                     disabled={!isAnimLoaded || isAnimPlaying}
                                     onClick={() => {
                                         const restPose = managerRef.current?.animationSource?.saveAsRestPose();
                                         if (restPose && animationName) {
-                                            const stored = animationManager.getAnimation(animationName);
+                                            const stored = animationManager.getByDisplayName(animationName)?.entry;
                                             if (stored) {
                                                 animationManager.addAnimation({ ...stored, restPoseUpdate: restPose });
                                             }
                                         }
                                     }}
                                 />
-                                <ButtonLine label="Play" onClick={() => managerRef.current?.animationSource?.play(animationSpeed)} disabled={!isAnimLoaded} />
+                                <ButtonLine
+                                    label="Play"
+                                    title="Play the source animation"
+                                    onClick={() => managerRef.current?.animationSource?.play(animationSpeed)}
+                                    disabled={!isAnimLoaded}
+                                />
                             </BabylonAccordionSection>
                             {/* Animation Gizmo */}
                             <BabylonAccordionSection title="Animation Gizmo">
                                 <CheckboxPropertyLine
                                     label="Enabled"
+                                    description="Enable the transform gizmo to edit node positions. Only available when the animation is stopped"
                                     value={animationGizmoEnabled && !isAnimPlaying}
-                                    disabled={isAnimPlaying}
+                                    disabled={isAnimPlaying || !isAnimLoaded}
                                     onChange={(v) => {
                                         setAnimationGizmoEnabled(v);
                                         managerRef.current?.animationSource?.setGizmo(v, animationGizmoType as GizmoType);
@@ -863,6 +956,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                 />
                                 <StringDropdownPropertyLine
                                     label="Type"
+                                    description="Type of transform gizmo: Position, Rotation, or Scale"
                                     value={animationGizmoType}
                                     options={GizmoTypeOptions}
                                     onChange={(v) => {
@@ -891,14 +985,40 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                             </BabylonAccordionSection>
                             {/* Retarget Options */}
                             <BabylonAccordionSection title="Retarget Options">
-                                <CheckboxPropertyLine label="Fix animations" value={fixAnimations} onChange={setFixAnimations} />
-                                <CheckboxPropertyLine label="Check hierarchy" value={checkHierarchy} onChange={setCheckHierarchy} />
-                                <CheckboxPropertyLine label="Retarget keys" value={retargetAnimationKeys} onChange={setRetargetAnimationKeys} />
-                                <CheckboxPropertyLine label="Fix root position" value={fixRootPosition} onChange={setFixRootPosition} />
-                                <CheckboxPropertyLine label="Fix ground reference" value={fixGroundReference} onChange={setFixGroundReference} />
+                                <CheckboxPropertyLine
+                                    label="Fix animations"
+                                    description="Apply fixes to animation data before retargeting"
+                                    value={fixAnimations}
+                                    onChange={setFixAnimations}
+                                />
+                                <CheckboxPropertyLine
+                                    label="Check hierarchy"
+                                    description="Verify that the bone hierarchy matches between source and target"
+                                    value={checkHierarchy}
+                                    onChange={setCheckHierarchy}
+                                />
+                                <CheckboxPropertyLine
+                                    label="Retarget keys"
+                                    description="Retarget animation keyframes to match the avatar skeleton"
+                                    value={retargetAnimationKeys}
+                                    onChange={setRetargetAnimationKeys}
+                                />
+                                <CheckboxPropertyLine
+                                    label="Fix root position"
+                                    description="Correct the root bone position to prevent floating or sinking. Uses the Root node setting"
+                                    value={fixRootPosition}
+                                    onChange={setFixRootPosition}
+                                />
+                                <CheckboxPropertyLine
+                                    label="Fix ground reference"
+                                    description="Adjust the animation so feet stay on the ground. Uses the Ground ref. node setting"
+                                    value={fixGroundReference}
+                                    onChange={setFixGroundReference}
+                                />
                                 <div style={{ paddingLeft: "16px" }}>
                                     <CheckboxPropertyLine
                                         label="Dynamic ref. node"
+                                        description="Dynamically update the ground reference node each frame (requires Fix ground reference)"
                                         value={fixGroundReferenceDynamicRefNode}
                                         disabled={!fixGroundReference}
                                         onChange={setFixGroundReferenceDynamicRefNode}
@@ -929,6 +1049,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                 <div style={{ paddingLeft: "16px" }}>
                                     <StringDropdownPropertyLine
                                         label="Vertical axis"
+                                        description="The vertical axis used for ground reference correction (Auto detects automatically)"
                                         value={groundReferenceVerticalAxis}
                                         options={VerticalAxisOptions}
                                         disabled={!fixRootPosition && !fixGroundReference}

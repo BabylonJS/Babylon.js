@@ -28,6 +28,27 @@ function GenerateId(): string {
     return `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function BlobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const result = reader.result as string;
+            resolve(result.substring(result.indexOf(",") + 1));
+        };
+        reader.onerror = () => reject(new Error("Failed to read blob"));
+        reader.readAsDataURL(blob);
+    });
+}
+
+function Base64ToBlob(base64: string): Blob {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes]);
+}
+
 // ─── IndexedDB helpers ────────────────────────────────────────────────────────
 
 async function OpenIDB(): Promise<IDBDatabase> {
@@ -192,6 +213,87 @@ export class AvatarManager {
             })
         );
         return results.filter((f): f is File => f !== undefined);
+    }
+
+    /**
+     * Returns all avatars in a JSON-serializable format, including base64-encoded file data for file-based entries.
+     */
+    public async exportDataAsync(): Promise<Array<StoredAvatar & { fileData?: Record<string, string> }>> {
+        const result: Array<StoredAvatar & { fileData?: Record<string, string> }> = [];
+        for (const avatar of this._avatars) {
+            const entry: StoredAvatar & { fileData?: Record<string, string> } = { ...avatar };
+            if (avatar.source === "file" && avatar.fileNames?.length) {
+                const fileData: Record<string, string> = {};
+                const files = await this.getFilesAsync(avatar.id, avatar.fileNames);
+                for (const file of files) {
+                    fileData[file.name] = await BlobToBase64(file);
+                }
+                entry.fileData = fileData;
+            }
+            result.push(entry);
+        }
+        return result;
+    }
+
+    /**
+     * Imports avatars, including restoring file-based entries to IndexedDB from base64 data.
+     */
+    public async importDataAsync(avatars: Array<StoredAvatar & { fileData?: Record<string, string> }>, mode: "replace" | "append"): Promise<string[]> {
+        const skipped: string[] = [];
+
+        if (mode === "replace") {
+            this._avatars = [];
+        }
+
+        for (const avatar of avatars) {
+            if (mode === "append" && this._avatars.some((a) => a.name === avatar.name)) {
+                skipped.push(`avatar "${avatar.name}"`);
+            } else {
+                const newId = GenerateId();
+                const { fileData, ...avatarData } = avatar;
+                this._avatars.push({ ...avatarData, id: newId });
+
+                if (avatarData.source === "file" && fileData) {
+                    const fileNames: string[] = [];
+                    for (const [fileName, base64] of Object.entries(fileData)) {
+                        const blob = Base64ToBlob(base64);
+                        await IdbPut(`avatar:${newId}/${fileName}`, blob);
+                        fileNames.push(fileName);
+                    }
+                    this._avatars[this._avatars.length - 1].fileNames = fileNames;
+                }
+            }
+        }
+
+        this._saveToStorage();
+        return skipped;
+    }
+
+    /**
+     * Creates default avatar entries if the list is empty.
+     */
+    public createDefaults(): void {
+        if (this._avatars.length > 0) {
+            return;
+        }
+        const baseUrl = "https://assets.babylonjs.com/mixamo/Characters/";
+        const defaults: { name: string; file: string; scheme: string }[] = [
+            { name: "Big Vegas", file: "Big Vegas.glb", scheme: "Mixamo" },
+            { name: "Mousey", file: "Ch14_nonPBR.glb", scheme: "Mixamo" },
+            { name: "Goblin", file: "goblin_d_shareyko.glb", scheme: "Mixamo" },
+            { name: "Ready Player Me", file: "rpm.glb", scheme: "Mixamo No Namespace" },
+            { name: "White Clown", file: "Whiteclown N Hallin.glb", scheme: "Mixamo" },
+        ];
+        for (const d of defaults) {
+            this.addAvatar({
+                id: "",
+                name: d.name,
+                source: "url",
+                url: baseUrl + d.file,
+                namingScheme: d.scheme,
+                rootNodeName: "__root__",
+            });
+        }
     }
 
     // ─── Private ──────────────────────────────────────────────────────────────
