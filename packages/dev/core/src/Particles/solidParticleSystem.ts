@@ -382,8 +382,9 @@ export class SolidParticleSystem implements IDisposable {
         // Source meshes (e.g. from glTF) may provide RGB (3 components) vertex colors.
         if (meshCol) {
             const vertexCount = meshPos.length / 3;
-            const colorStride = Math.round(meshCol.length / vertexCount);
-            if (colorStride === 3) {
+            const colorBuffer = mesh.getVertexBuffer(VertexBuffer.ColorKind);
+            const colorStride = colorBuffer ? colorBuffer.getSize() : Math.round(meshCol.length / vertexCount);
+            if (colorStride === 3 && meshCol.length === vertexCount * 3) {
                 const rgba = new Float32Array(vertexCount * 4);
                 for (let i = 0; i < vertexCount; i++) {
                     rgba[i * 4] = meshCol[i * 3];
