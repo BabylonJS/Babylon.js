@@ -7,9 +7,9 @@ The snippet loader handles the full lifecycle — fetching from the snippet serv
 ## Quick Start
 
 ```ts
-import { loadSnippet } from "@tools/snippet-loader";
+import { LoadSnippet } from "@tools/snippet-loader";
 
-const result = await loadSnippet("ABC123#2");
+const result = await LoadSnippet("ABC123#2");
 
 if (result.type === "playground") {
     const canvas = document.getElementById("renderCanvas");
@@ -22,12 +22,12 @@ if (result.type === "playground") {
 
 ## API
 
-### `loadSnippet(snippetId, options?)`
+### `LoadSnippet(snippetId, options?)`
 
 Fetches a snippet from the snippet server, detects its type, transpiles TS if needed, and returns a typed result.
 
 ```ts
-const result = await loadSnippet("PIZ1GK#2388");
+const result = await LoadSnippet("PIZ1GK#2388");
 ```
 
 **Options:**
@@ -38,25 +38,25 @@ const result = await loadSnippet("PIZ1GK#2388");
 | `transpile`    | `TranspileFn`       | Built-in (Monaco TS)              | Custom TS → JS transpiler       |
 | `moduleFormat` | `"esm" \| "script"` | `"esm"`                           | Target module format            |
 
-### `parseSnippetResponse(response, snippetId, options?)`
+### `ParseSnippetResponse(response, snippetId, options?)`
 
-Same pipeline but from an already-fetched `SnippetServerResponse` — useful when you have your own fetching strategy or locally saved snippet JSON.
+Same pipeline but from an already-fetched `ISnippetServerResponse` — useful when you have your own fetching strategy or locally saved snippet JSON.
 
 ```ts
 const response = await fetch("https://snippet.babylonjs.com/ABC123/0").then((r) => r.json());
-const result = await parseSnippetResponse(response, "ABC123#0");
+const result = await ParseSnippetResponse(response, "ABC123#0");
 ```
 
-### `createTypeScriptTranspiler(tsInstance, moduleFormat?)`
+### `CreateTypeScriptTranspiler(tsInstance, moduleFormat?)`
 
 Creates a `TranspileFn` from any TypeScript compiler instance. Useful when you already have TS loaded and don't want to use the built-in Monaco transpiler.
 
 ```ts
 import ts from "typescript";
-import { loadSnippet, createTypeScriptTranspiler } from "@tools/snippet-loader";
+import { LoadSnippet, CreateTypeScriptTranspiler } from "@tools/snippet-loader";
 
-const transpile = createTypeScriptTranspiler(ts, "esm");
-const result = await loadSnippet("ABC123", { transpile });
+const transpile = CreateTypeScriptTranspiler(ts, "esm");
+const result = await LoadSnippet("ABC123", { transpile });
 ```
 
 ## Result Types
@@ -120,7 +120,7 @@ if (result.type === "unknown") {
 Code is loaded via blob URLs and dynamic `import()`. Bare `@babylonjs/*` imports are resolved to a synthetic proxy module that re-exports from `globalThis.BABYLON`. V2 manifest `imports` maps and relative imports are resolved automatically.
 
 ```ts
-const result = await loadSnippet("ABC123", { moduleFormat: "esm" });
+const result = await LoadSnippet("ABC123", { moduleFormat: "esm" });
 ```
 
 ### Script
@@ -128,7 +128,7 @@ const result = await loadSnippet("ABC123", { moduleFormat: "esm" });
 Code is stripped of module syntax and executed via `new Function()`. Suitable for environments where Babylon.js is loaded as a UMD global via `<script>` tags.
 
 ```ts
-const result = await loadSnippet("ABC123", { moduleFormat: "script" });
+const result = await LoadSnippet("ABC123", { moduleFormat: "script" });
 ```
 
 ## Runtime Features (Havok, Ammo, Recast)
@@ -136,7 +136,7 @@ const result = await loadSnippet("ABC123", { moduleFormat: "script" });
 The loader probes snippet source code for references to physics and navigation plugins and exposes what it finds:
 
 ```ts
-const result = await loadSnippet("ABC123");
+const result = await LoadSnippet("ABC123");
 if (result.type === "playground") {
     console.log(result.runtimeFeatures);
     // { havok: true, ammo: false, recast: false }
@@ -196,12 +196,12 @@ await result.initializeRuntimeAsync({
     <body>
         <canvas id="renderCanvas" style="width: 100%; height: 100vh;"></canvas>
         <script type="module">
-            import { loadSnippet } from "@tools/snippet-loader";
+            import { LoadSnippet } from "@tools/snippet-loader";
 
             const snippetId = location.hash.slice(1) || "PIZ1GK#2388";
             const canvas = document.getElementById("renderCanvas");
 
-            const result = await loadSnippet(snippetId);
+            const result = await LoadSnippet(snippetId);
 
             if (result.type !== "playground") {
                 console.error("Not a playground snippet:", result.type);

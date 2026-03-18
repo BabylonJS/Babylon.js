@@ -3,8 +3,6 @@
 
 precision highp float;
 
-const float DiffuseSkyIrradianceLutSampleCount = 32.0;
-
 #include<__decl__atmosphereFragment>
 
 uniform sampler2D transmittanceLut;
@@ -26,7 +24,7 @@ vec3 integrateForIrradiance(vec3 directionToLight, vec3 rayDirection, vec3 rayOr
         rayDirection.xzy,
         directionToLight.xzy,
         100000000.,
-        DiffuseSkyIrradianceLutSampleCount,
+        diffuseSkyIrradianceLutSampleCount,
         -1., // No planet hit.
         transmittance);
     return radiance;
