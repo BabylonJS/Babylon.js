@@ -192,11 +192,12 @@ function generateVersionMarkdown(versionPackages) {
     let markdown = "";
     const sortedPackages = Object.keys(versionPackages).sort();
     sortedPackages.forEach((prettyPackage) => {
+        const visiblePRs = versionPackages[prettyPackage].filter((pr) => !pr.tags || pr.tags.indexOf(skipChangelogTag) === -1);
+        if (visiblePRs.length === 0) {
+            return;
+        }
         markdown += `\n### ${prettyPackage}\n\n`;
-        versionPackages[prettyPackage].forEach((pr) => {
-            if (pr.tags && pr.tags.indexOf(skipChangelogTag) !== -1) {
-                return;
-            }
+        visiblePRs.forEach((pr) => {
             const tag = pr.tags.find((tag) => {
                 return tagNames[tag];
             });
