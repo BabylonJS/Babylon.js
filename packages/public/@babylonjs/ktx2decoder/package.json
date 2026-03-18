@@ -10,7 +10,8 @@
         "**/*.map",
         "**/*.wasm",
         "readme.md",
-        "license.md"
+        "license.md",
+        "NOTICE.md"
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
