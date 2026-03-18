@@ -623,7 +623,16 @@ export const AvatarsPanel: FunctionComponent<{
                         <span className={classes.listRowName}>{avatar.name}</span>
                         <span className={classes.listRowMeta}>{avatar.source === "url" ? "URL" : "File"}</span>
                         <span className={classes.listRowMeta}>{avatar.namingScheme}</span>
-                        <Button size="small" appearance="transparent" icon={<Edit20Regular />} title="Edit" disabled={!!editing} onClick={() => startEdit(avatar)} />
+                        <Button
+                            size="small"
+                            appearance="transparent"
+                            icon={<Edit20Regular />}
+                            title="Edit"
+                            disabled={!!editing}
+                            onClick={() => {
+                                void startEdit(avatar);
+                            }}
+                        />
                         <Button size="small" appearance="transparent" icon={<Delete20Regular />} title="Delete" disabled={!!editing} onClick={() => handleDelete(avatar)} />
                     </div>
                 ))}

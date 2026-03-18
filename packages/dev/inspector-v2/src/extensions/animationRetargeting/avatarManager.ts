@@ -28,8 +28,8 @@ function GenerateId(): string {
     return `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function BlobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
+async function BlobToBase64(blob: Blob): Promise<string> {
+    return await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => {
             const result = reader.result as string;

@@ -1094,10 +1094,20 @@ export const RetargetingConfigDialog: FunctionComponent<RetargetingConfigDialogP
                                     <Button appearance="secondary" onClick={() => setPendingImport(null)}>
                                         Cancel
                                     </Button>
-                                    <Button appearance="primary" onClick={() => handleImport("replace")}>
+                                    <Button
+                                        appearance="primary"
+                                        onClick={() => {
+                                            void handleImport("replace");
+                                        }}
+                                    >
                                         Replace
                                     </Button>
-                                    <Button appearance="primary" onClick={() => handleImport("append")}>
+                                    <Button
+                                        appearance="primary"
+                                        onClick={() => {
+                                            void handleImport("append");
+                                        }}
+                                    >
                                         Append
                                     </Button>
                                 </DialogActions>

@@ -197,8 +197,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
 }) => {
     const classes = useStyles();
     const managerRef = useRef<RetargetingSceneManager | null>(null);
-    const handleLoadAvatarRef = useRef<(name: string, rescale: boolean) => void>(() => {});
-    const handleLoadAnimationRef = useRef<(name: string) => void>(() => {});
+    const handleLoadAvatarRef = useRef<(name: string, rescale: boolean) => void | Promise<void>>(() => {});
+    const handleLoadAnimationRef = useRef<(name: string) => void | Promise<void>>(() => {});
     const [isEnabled, setIsEnabled] = useState(initialIsEnabled);
     const [, forceUpdate] = useState(0);
 
@@ -335,7 +335,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 const firstAvatar = newAvatarOptions.length > 0 ? newAvatarOptions[0].value : "";
                 setAvatarName(firstAvatar);
                 if (firstAvatar) {
-                    handleLoadAvatarRef.current(firstAvatar, s.avatarRescaleAvatar);
+                    void handleLoadAvatarRef.current(firstAvatar, s.avatarRescaleAvatar);
                 } else {
                     managerRef.current?.avatar?.clearScene();
                     managerRef.current?.avatar?.setGizmo(false, s.avatarGizmoType as GizmoType);
@@ -351,7 +351,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 const firstAnim = newAnimationOptions.length > 0 ? newAnimationOptions[0].value : "";
                 setAnimationName(firstAnim);
                 if (firstAnim) {
-                    handleLoadAnimationRef.current(firstAnim);
+                    void handleLoadAnimationRef.current(firstAnim);
                 } else {
                     managerRef.current?.animationSource?.clearScene();
                     managerRef.current?.animationSource?.setGizmo(false, s.animationGizmoType as GizmoType);
@@ -486,7 +486,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 const storedAn = animationManager.getByDisplayName(s.animationName)?.entry;
                 if (storedAv) {
                     if (storedAv.source === "url" && storedAv.url) {
-                        manager.avatar!.loadAsync(storedAv.url, s.avatarRescaleAvatar, storedAv.restPoseUpdate);
+                        void manager.avatar!.loadAsync(storedAv.url, s.avatarRescaleAvatar, storedAv.restPoseUpdate);
                     } else if (storedAv.source === "file" && storedAv.fileNames?.length) {
                         void (async () => {
                             const files = await avatarManager.getFilesAsync(storedAv.id, storedAv.fileNames!);
@@ -500,7 +500,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                 }
                             }
                             if (sceneFile) {
-                                manager.avatar!.loadAsync("file:" + sceneFile.name, s.avatarRescaleAvatar, storedAv.restPoseUpdate);
+                                void manager.avatar!.loadAsync("file:" + sceneFile.name, s.avatarRescaleAvatar, storedAv.restPoseUpdate);
                             }
                         })();
                     }
@@ -602,7 +602,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
             setIsRetargeted(false);
 
             if (storedAvatar.source === "url" && storedAvatar.url) {
-                manager.avatar.loadAsync(storedAvatar.url, rescale, storedAvatar.restPoseUpdate);
+                void manager.avatar.loadAsync(storedAvatar.url, rescale, storedAvatar.restPoseUpdate);
             } else if (storedAvatar.source === "file" && storedAvatar.fileNames?.length) {
                 const files = await avatarManager.getFilesAsync(storedAvatar.id, storedAvatar.fileNames);
                 let sceneFile: File | undefined;
@@ -615,7 +615,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                     }
                 }
                 if (sceneFile) {
-                    manager.avatar.loadAsync("file:" + sceneFile.name, rescale, storedAvatar.restPoseUpdate);
+                    void manager.avatar.loadAsync("file:" + sceneFile.name, rescale, storedAvatar.restPoseUpdate);
                 }
             }
         },
@@ -731,7 +731,9 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                         <ButtonLine
                             label="Export to Playground"
                             title="Export the retargeted animation as a Babylon.js Playground snippet"
-                            onClick={() => managerRef.current?.exportToPlaygroundAsync(avatarManager, animationManager)}
+                            onClick={() => {
+                                void managerRef.current?.exportToPlaygroundAsync(avatarManager, animationManager);
+                            }}
                             disabled={!isRetargeted}
                         />
                     </div>
@@ -749,7 +751,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                             options={avatarOptions}
                                             onChange={(name) => {
                                                 setAvatarName(name);
-                                                handleLoadAvatar(name, avatarRescaleAvatar);
+                                                void handleLoadAvatar(name, avatarRescaleAvatar);
                                             }}
                                         />
                                     </div>
@@ -759,7 +761,9 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         icon={<ArrowClockwise20Regular />}
                                         title="Reload avatar"
                                         disabled={!avatarName}
-                                        onClick={() => handleLoadAvatar(avatarName, avatarRescaleAvatar)}
+                                        onClick={() => {
+                                            void handleLoadAvatar(avatarName, avatarRescaleAvatar);
+                                        }}
                                     />
                                 </div>
                                 <CheckboxPropertyLine
@@ -768,7 +772,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                     value={avatarRescaleAvatar}
                                     onChange={(v) => {
                                         setAvatarRescaleAvatar(v);
-                                        handleLoadAvatar(avatarName, v);
+                                        void handleLoadAvatar(avatarName, v);
                                     }}
                                 />
                                 <CheckboxPropertyLine
@@ -881,7 +885,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                             options={animationOptions}
                                             onChange={(name) => {
                                                 setAnimationName(name);
-                                                handleLoadAnimation(name);
+                                                void handleLoadAnimation(name);
                                             }}
                                         />
                                     </div>
@@ -891,7 +895,9 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                                         icon={<ArrowClockwise20Regular />}
                                         title="Reload animation"
                                         disabled={!animationName}
-                                        onClick={() => handleLoadAnimation(animationName)}
+                                        onClick={() => {
+                                            void handleLoadAnimation(animationName);
+                                        }}
                                     />
                                 </div>
                                 <CheckboxPropertyLine

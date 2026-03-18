@@ -687,7 +687,16 @@ export const AnimationsPanel: FunctionComponent<{
                         <span className={classes.listRowName}>{animation.name}</span>
                         <span className={classes.listRowMeta}>{animation.source === "url" ? "URL" : "File"}</span>
                         <span className={classes.listRowMeta}>{animation.namingScheme}</span>
-                        <Button size="small" appearance="transparent" icon={<Edit20Regular />} title="Edit" disabled={!!editing} onClick={() => startEdit(animation)} />
+                        <Button
+                            size="small"
+                            appearance="transparent"
+                            icon={<Edit20Regular />}
+                            title="Edit"
+                            disabled={!!editing}
+                            onClick={() => {
+                                void startEdit(animation);
+                            }}
+                        />
                         <Button size="small" appearance="transparent" icon={<Delete20Regular />} title="Delete" disabled={!!editing} onClick={() => handleDelete(animation)} />
                     </div>
                 ))}
