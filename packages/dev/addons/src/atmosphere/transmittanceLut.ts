@@ -45,7 +45,6 @@ const ComputeLutUVToRef = (properties: AtmospherePhysicalProperties, radius: num
         (distanceToAtmosphereEdge - minDistanceToAtmosphereEdge) / Math.max(0.000001, maxDistanceToAtmosphereEdge - minDistanceToAtmosphereEdge);
     const distanceToHorizonCoordinate = distanceToHorizon / Math.max(0.000001, properties.horizonDistanceToAtmosphereEdge);
 
-    // Unit to UV.
     uv.x = EffectiveDomainInUVSpace.x * cosAngleLightToZenithCoordinate + HalfTexelSize.x;
     uv.y = EffectiveDomainInUVSpace.y * distanceToHorizonCoordinate + HalfTexelSize.y;
 };
@@ -104,7 +103,7 @@ export class TransmittanceLut {
      */
     public get renderTarget(): RenderTargetTexture {
         if (this._isDisposed || this._renderTarget === null) {
-            throw new Error();
+            throw new Error("TransmittanceLut has been disposed or render target is not initialized");
         }
         return this._renderTarget;
     }
@@ -164,7 +163,6 @@ export class TransmittanceLut {
         });
 
         this._effectRenderer = new EffectRenderer(engine, {
-            // Full screen triangle.
             indices: [0, 2, 1],
             positions: [-1, -1, -1, 3, 3, -1],
         });
@@ -187,7 +185,6 @@ export class TransmittanceLut {
             result.g = Color4Temp.g;
             result.b = Color4Temp.b;
         } else {
-            // Fallback.
             result.r = result.g = result.b = 1.0;
         }
         return result;
@@ -245,7 +242,6 @@ export class TransmittanceLut {
         this._isDirty = false;
         this._needsReadPixels = true;
 
-        // Defer readPixels to the end of the frame.
         this._atmosphere.scene.onAfterRenderObservable.addOnce(async () => {
             await this.readPixelsAsync();
         });

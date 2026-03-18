@@ -63,7 +63,7 @@ export class DiffuseSkyIrradianceLut {
      */
     public get renderTarget(): RenderTargetTexture {
         if (this._isDisposed || this._renderTarget === null) {
-            throw new Error();
+            throw new Error("DiffuseSkyIrradianceLut has been disposed or render target is not initialized");
         }
         return this._renderTarget;
     }
@@ -123,9 +123,7 @@ export class DiffuseSkyIrradianceLut {
                         : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/diffuseSkyIrradiance.fragment")]
                 );
 
-                // Replace the CUSTOM_IRRADIANCE_FILTERING_INPUT and CUSTOM_IRRADIANCE_FILTERING_FUNCTION placeholders.
-                // Note, the regex replacements look for lines that *only* contain these placeholder strings.
-                // Since buildShaders removes leading whitespace, the placeholders are expected to start at the beginning of the line.
+                // Replace shader placeholders with the actual irradiance integration function.
                 const includeStore = useWebGPU ? ShaderStore.IncludesShadersStoreWGSL : ShaderStore.IncludesShadersStore;
                 let patchedInclude = includeStore["hdrFilteringFunctions"];
                 patchedInclude = patchedInclude.replace(/^CUSTOM_IRRADIANCE_FILTERING_INPUT\s*$/gm, "");
@@ -143,7 +141,6 @@ export class DiffuseSkyIrradianceLut {
         });
 
         this._effectRenderer = new EffectRenderer(engine, {
-            // Full screen triangle.
             indices: [0, 2, 1],
             positions: [-1, -1, -1, 3, 3, -1],
         });
@@ -153,7 +150,6 @@ export class DiffuseSkyIrradianceLut {
         scene.environmentTexture.irradianceTexture = renderTarget;
         scene.environmentIntensity = 1.0;
 
-        // Prevent the irradiance LUT from being rendered redundantly at the beginning of the frame.
         scene.environmentTexture.isRenderTarget = false;
     }
 
@@ -235,7 +231,6 @@ export class DiffuseSkyIrradianceLut {
         this._isDirty = false;
         this._needsReadPixels = true;
 
-        // Defer readPixels to the end of the frame.
         this._atmosphere.scene.onAfterRenderObservable.addOnce(async () => {
             await this.readPixelsAsync();
         });
@@ -269,7 +264,7 @@ export class DiffuseSkyIrradianceLut {
     /**
      * Disposes the LUT.
      */
-    public dispose() {
+    public dispose(): void {
         if (this._renderTarget) {
             this._renderTarget.irradianceTexture = null;
             this._renderTarget.dispose();
