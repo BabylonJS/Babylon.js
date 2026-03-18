@@ -375,7 +375,7 @@ export class SolidParticleSystem implements IDisposable {
         const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         const meshInd = <IndicesArray>mesh.getIndices();
         const meshUV = <FloatArray>mesh.getVerticesData(this._getUVKind(mesh, options?.uvKind ?? 0));
-        const meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
+        let meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         const meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
         const storage = options && options.storage ? options.storage : null;
         // Normalize vertex colors to RGBA (4 components) since the code below always reads 4 components per color.
