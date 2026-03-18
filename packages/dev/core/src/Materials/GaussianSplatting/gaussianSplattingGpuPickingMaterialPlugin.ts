@@ -171,9 +171,10 @@ uniform vec3 pickingColor;
                 `,
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
 #if IS_COMPOUND
-    if (partVisibility[int(vPartIndex + 0.5)] < 0.5) discard;
+    if (vColor.a < 0.001) discard;
     finalColor = vec4(partPickingColors[int(vPartIndex + 0.5)], 1.0);
 #else
+    if (vColor.a < 0.001) discard;
     finalColor = vec4(pickingColor, 1.0);
 #endif
                 `,
@@ -206,9 +207,10 @@ uniform pickingColor: vec3f;
                 `,
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
 #if IS_COMPOUND
-    if (uniforms.partVisibility[i32(fragmentInputs.vPartIndex + 0.5)] < 0.5) { discard; }
+    if (fragmentInputs.vColor.a < 0.001) { discard; }
     finalColor = vec4f(uniforms.partPickingColors[i32(fragmentInputs.vPartIndex + 0.5)], 1.0);
 #else
+    if (fragmentInputs.vColor.a < 0.001) { discard; }
     finalColor = vec4f(uniforms.pickingColor, 1.0);
 #endif
                 `,
@@ -228,7 +230,7 @@ uniform pickingColor: vec3f;
         externalUniforms?: string[];
     } {
         return {
-            externalUniforms: ["pickingColor", "partPickingColors", "partVisibility"],
+            externalUniforms: ["pickingColor", "partPickingColors"],
         };
     }
 

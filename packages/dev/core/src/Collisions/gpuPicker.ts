@@ -400,6 +400,10 @@ export class GPUPicker {
                 this._meshUniqueIdToPickerId[mesh.uniqueId] = pickId;
                 nextFreeId++;
 
+                if (!mesh.isPickable || !mesh.isVisible) {
+                    continue;
+                }
+
                 // Create a GaussianSplattingMaterial with picking plugin for GPU picking
                 const gsPickingMaterial = this._createGaussianSplattingPickingMaterial(scene, mesh);
                 const plugin = gsPickingMaterial.pluginManager!.getPlugin<GaussianSplattingGpuPickingMaterialPlugin>("GaussianSplatGpuPicking")!;
