@@ -192,13 +192,17 @@ function generateVersionMarkdown(versionPackages) {
     let markdown = "";
     const sortedPackages = Object.keys(versionPackages).sort();
     sortedPackages.forEach((prettyPackage) => {
-        const visiblePRs = versionPackages[prettyPackage].filter((pr) => !pr.tags || pr.tags.indexOf(skipChangelogTag) === -1);
+        const visiblePRs = versionPackages[prettyPackage].filter((pr) => {
+            const tags = pr.tags ?? [];
+            return tags.indexOf(skipChangelogTag) === -1;
+        });
         if (visiblePRs.length === 0) {
             return;
         }
         markdown += `\n### ${prettyPackage}\n\n`;
         visiblePRs.forEach((pr) => {
-            const tag = pr.tags.find((tag) => {
+            const tags = pr.tags ?? [];
+            const tag = tags.find((tag) => {
                 return tagNames[tag];
             });
             markdown += `- ${pr.title} - ${tag ? `[_${tagNames[tag]}_] ` : ""}by [${pr.author.name}](${pr.author.url}) ([#${
