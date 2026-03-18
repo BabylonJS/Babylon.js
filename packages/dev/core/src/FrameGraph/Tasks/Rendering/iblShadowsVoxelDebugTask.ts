@@ -109,7 +109,6 @@ export class FrameGraphIblShadowsVoxelDebugTask extends FrameGraphTask {
         pass.addDependencies(this.voxelSlabTexture);
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
-            context.setTextureSamplingMode(this.voxelTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             context.setTextureSamplingMode(this.voxelSlabTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
 
             context.applyFullScreenEffect(

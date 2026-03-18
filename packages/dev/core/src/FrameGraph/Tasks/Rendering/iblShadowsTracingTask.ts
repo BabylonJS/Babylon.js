@@ -137,7 +137,6 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
         pass.addDependencies(this.blueNoiseTexture);
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
-            context.setTextureSamplingMode(this.voxelGridTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             context.setTextureSamplingMode(this.depthTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             context.setTextureSamplingMode(this.normalTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
             context.setTextureSamplingMode(this.icdfTexture!, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
