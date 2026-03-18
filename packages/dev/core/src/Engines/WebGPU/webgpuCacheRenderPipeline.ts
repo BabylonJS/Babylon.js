@@ -110,7 +110,7 @@ export abstract class WebGPUCacheRenderPipeline {
     private _clampDepth: boolean;
     private _rasterizationState: number;
     private _depthBias: number;
-    private _depthBiasClamp: number;
+    private _depthBiasClamp: number = 0;
     private _depthBiasSlopeScale: number;
     private _colorFormat: number;
     private _webgpuColorFormat: (GPUTextureFormat | null)[];
@@ -1121,6 +1121,16 @@ export abstract class WebGPUCacheRenderPipeline {
 
         const depthStencilFormatHasStencil = this._webgpuDepthStencilFormat ? WebGPUTextureHelper.HasStencilAspect(this._webgpuDepthStencilFormat) : false;
 
+        const primitiveState: GPUPrimitiveState = {
+            topology,
+            frontFace: this._frontFace === 1 ? WebGPUConstants.FrontFace.CCW : WebGPUConstants.FrontFace.CW,
+            cullMode: !this._cullEnabled ? WebGPUConstants.CullMode.None : this._cullFace === 2 ? WebGPUConstants.CullMode.Front : WebGPUConstants.CullMode.Back,
+        };
+
+        if (stripIndexFormat) {
+            primitiveState.stripIndexFormat = stripIndexFormat;
+        }
+
         return this._device.createRenderPipeline({
             label: `RenderPipeline_${colorStates[0]?.format ?? "nooutput"}_${this._webgpuDepthStencilFormat ?? "nodepth"}_samples${sampleCount}_textureState${this._textureState}`,
             layout: pipelineLayout,
@@ -1129,12 +1139,7 @@ export abstract class WebGPUCacheRenderPipeline {
                 entryPoint: webgpuPipelineContext.stages!.vertexStage.entryPoint,
                 buffers: inputStateDescriptor,
             },
-            primitive: {
-                topology,
-                stripIndexFormat,
-                frontFace: this._frontFace === 1 ? WebGPUConstants.FrontFace.CCW : WebGPUConstants.FrontFace.CW,
-                cullMode: !this._cullEnabled ? WebGPUConstants.CullMode.None : this._cullFace === 2 ? WebGPUConstants.CullMode.Front : WebGPUConstants.CullMode.Back,
-            },
+            primitive: primitiveState,
             fragment: !webgpuPipelineContext.stages!.fragmentStage
                 ? undefined
                 : {
@@ -1157,8 +1162,8 @@ export abstract class WebGPUCacheRenderPipeline {
                           format: this._webgpuDepthStencilFormat,
                           stencilFront: this._stencilEnabled && depthStencilFormatHasStencil ? stencilFront : undefined,
                           stencilBack: this._stencilEnabled && depthStencilFormatHasStencil ? stencilBack : undefined,
-                          stencilReadMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilReadMask : undefined,
-                          stencilWriteMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilWriteMask : undefined,
+                          stencilReadMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilReadMask : 0xffffffff,
+                          stencilWriteMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilWriteMask : 0xffffffff,
                           depthBias: this._depthBias,
                           depthBiasClamp: topologyIsTriangle ? this._depthBiasClamp : 0,
                           depthBiasSlopeScale: topologyIsTriangle ? this._depthBiasSlopeScale : 0,

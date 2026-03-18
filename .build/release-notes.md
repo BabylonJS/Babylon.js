@@ -1,10 +1,16 @@
 
 ### Core
 
-- WebGPU: Fix dual source blending detection - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18082](https://github.com/BabylonJS/Babylon.js/pull/18082))
-- WebGPU: Fix wrong selected meshes in the selection outline layer - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18080](https://github.com/BabylonJS/Babylon.js/pull/18080))
-- Clustered lights: Limit batch size for mobile devices - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18081](https://github.com/BabylonJS/Babylon.js/pull/18081))
+- Occlusion Query: allow queries to be performed for a specific render pass - by [Popov72](https://github.com/Popov72) ([#18106](https://github.com/BabylonJS/Babylon.js/pull/18106))
 
-### Node Particle Editor
+### Inspector
 
-- Removing auto movement of camera because of framing - by [VicenteCartas](https://github.com/VicenteCartas) ([#18077](https://github.com/BabylonJS/Babylon.js/pull/18077))
+- Feat/inspector add alphaCutOff - by [Jeggery](https://github.com/Jeggery) ([#18104](https://github.com/BabylonJS/Babylon.js/pull/18104))
+
+### Loaders
+
+- glTF loading: Fix loading base64 data uri - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18102](https://github.com/BabylonJS/Babylon.js/pull/18102))
+
+### Post Processes
+
+- Edge Detection post-process: Fix crash in WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18109](https://github.com/BabylonJS/Babylon.js/pull/18109))

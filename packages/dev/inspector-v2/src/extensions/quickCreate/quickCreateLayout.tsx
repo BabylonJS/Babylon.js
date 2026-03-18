@@ -1,9 +1,11 @@
 import type { FunctionComponent, ReactNode } from "react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
+import type { IDisposable } from "core/scene";
 import type { ISelectionService } from "../../services/selectionService";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { useToast } from "shared-ui-components/fluent/primitives/toast";
+import { useInterceptObservable } from "../../hooks/instrumentationHooks";
 import { SettingsPopover } from "./settingsPopover";
 import { LinkToEntity } from "../../components/properties/linkToEntityPropertyLine";
 
@@ -60,6 +62,10 @@ type QuickCreateItemProps = {
     children?: ReactNode;
 };
 
+function IsDisposable(entity: object): entity is IDisposable {
+    return "dispose" in entity && typeof (entity as IDisposable).dispose === "function";
+}
+
 /**
  * Reusable row component for entity creation. Renders a quick-create button, an optional settings popover
  * (with a baked-in Create button), and a "go to entity" button. Manages its own state for the last created entity
@@ -72,6 +78,15 @@ export const QuickCreateItem: FunctionComponent<QuickCreateItemProps> = ({ selec
     const [popoverOpen, setPopoverOpen] = useState(false);
     const { showToast } = useToast();
     const classes = useStyles();
+
+    // If the last created entity is disposable, intercept its dispose to clear the reference.
+    const disposableTarget = lastCreatedEntity && IsDisposable(lastCreatedEntity) ? lastCreatedEntity : null;
+    const afterDispose = useInterceptObservable("function", disposableTarget, "dispose");
+
+    useEffect(() => {
+        const observer = afterDispose.add(() => setLastCreatedEntity(null));
+        return () => observer.remove();
+    }, [afterDispose]);
 
     const handleCreate = useCallback(
         async (factory: () => CreatedEntity | Promise<CreatedEntity>) => {

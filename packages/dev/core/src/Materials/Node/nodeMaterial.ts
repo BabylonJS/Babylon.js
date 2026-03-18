@@ -1647,7 +1647,7 @@ export class NodeMaterial extends NodeMaterialBase {
             }
         }
 
-        if (!subMesh.materialDefines || typeof subMesh.materialDefines === "string") {
+        if (!subMesh.materialDefines) {
             subMesh.materialDefines = new NodeMaterialDefines();
         }
 

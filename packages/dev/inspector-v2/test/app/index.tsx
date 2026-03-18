@@ -28,7 +28,9 @@ import { Texture } from "core/Materials/Textures/texture";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Button } from "gui/2D/controls/button";
 import { Sound } from "core/Audio/sound";
-import { AssetContainer } from "core/assetContainer";
+import { PointLight } from "core/Lights/pointLight";
+import { SpotLight } from "core/Lights/spotLight";
+import { ClusteredLightContainer } from "core/Lights/Clustered/clusteredLightContainer";
 import { ShowInspector } from "../../src/inspector";
 // import "../../src/legacy/legacy";
 
@@ -142,6 +144,7 @@ function createTestMetadata() {
         test: "test string",
         description: "Material JSON metadata.",
         someNumber: 73,
+        doSomething: () => {},
     };
 
     const defaultMeta = MeshBuilder.CreateBox("default.metadata", { size: 0.15 }, scene);
@@ -208,6 +211,14 @@ async function createSound() {
     });
 }
 
+async function createClusteredLight() {
+    await import("core/Lights/Clustered/clusteredLightingSceneComponent");
+    const pointLight1 = new PointLight("clusteredPoint1", new Vector3(1, 1, 0), scene);
+    const pointLight2 = new PointLight("clusteredPoint2", new Vector3(-1, 1, 0), scene);
+    const spotLight1 = new SpotLight("clusteredSpot1", new Vector3(0, 2, 0), Vector3.Down(), Math.PI / 4, 2, scene);
+    new ClusteredLightContainer("clusteredLights", [pointLight1, pointLight2, spotLight1], scene);
+}
+
 (async () => {
     let assetContainer = await loadModelAsync();
     createCamera();
@@ -230,6 +241,8 @@ async function createSound() {
     createGui();
 
     createSound();
+
+    await createClusteredLight();
 
     engine.runRenderLoop(() => {
         scene.render();
