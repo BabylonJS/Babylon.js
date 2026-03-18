@@ -229,14 +229,14 @@
             "type": "msedge",
             "request": "launch",
             "name": "Flow Graph Editor development (Edge)",
-            "url": "http://localhost:1343",
+            "url": "http://localhost:1342",
             "preLaunchTask": "Flow Graph Editor Serve (Dev)"
         },
         {
             "type": "chrome",
             "request": "launch",
             "name": "Flow Graph Editor development (Chrome)",
-            "url": "http://localhost:1343",
+            "url": "http://localhost:1342",
             "preLaunchTask": "Flow Graph Editor Serve (Dev)"
         },
         {
@@ -325,14 +325,14 @@
             "type": "msedge",
             "request": "launch",
             "name": "Launch Flow Graph Editor (Edge)",
-            "url": "http://localhost:1343",
+            "url": "http://localhost:1342",
             "preLaunchTask": "Flow Graph Editor Serve for core (Dev)"
         },
         {
             "type": "chrome",
             "request": "launch",
             "name": "Launch Flow Graph Editor (Chrome)",
-            "url": "http://localhost:1343",
+            "url": "http://localhost:1342",
             "preLaunchTask": "Flow Graph Editor Serve for core (Dev)"
         },
         {

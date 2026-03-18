@@ -512,7 +512,7 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "FGE_PORT": "1343"
+                    "FGE_PORT": "1342"
                 }
             },
             "args": ["run", "serve", "-w", "@tools/flow-graph-editor"],
@@ -533,7 +533,7 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "FGE_PORT": "1343"
+                    "FGE_PORT": "1342"
                 }
             },
             "args": ["run", "serve", "-w", "@tools/flow-graph-editor"],
