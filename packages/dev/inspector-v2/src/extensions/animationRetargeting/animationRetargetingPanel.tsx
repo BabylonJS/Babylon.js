@@ -237,8 +237,18 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
     const [groundRefNodeOptions, setGroundRefNodeOptions] = useState<{ label: string; value: string }[]>([]);
 
     // Dropdown options derived from managers — refreshed when config dialog closes
-    const [avatarOptions, setAvatarOptions] = useState(() => avatarManager.getAllAvatars().map((a) => ({ label: a.name, value: a.name })));
-    const [animationOptions, setAnimationOptions] = useState(() => animationManager.getAllDisplayNames().map((n) => ({ label: n, value: n })));
+    const [avatarOptions, setAvatarOptions] = useState(() =>
+        avatarManager
+            .getAllAvatars()
+            .map((a) => ({ label: a.name, value: a.name }))
+            .sort((a, b) => a.label.localeCompare(b.label))
+    );
+    const [animationOptions, setAnimationOptions] = useState(() =>
+        animationManager
+            .getAllDisplayNames()
+            .map((n) => ({ label: n, value: n }))
+            .sort((a, b) => a.label.localeCompare(b.label))
+    );
 
     // Selected bone/node transforms for the Properties section
     const [avatarGizmoSelectedTransform, setAvatarGizmoSelectedTransform] = useState<Transform | null>(null);
@@ -325,8 +335,14 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
     // If the current avatar/animation was removed, clear it and dispose the loaded model.
     useEffect(() => {
         const obs = onConfigChangedObs.add(() => {
-            const newAvatarOptions = avatarManager.getAllAvatars().map((a) => ({ label: a.name, value: a.name }));
-            const newAnimationOptions = animationManager.getAllDisplayNames().map((n) => ({ label: n, value: n }));
+            const newAvatarOptions = avatarManager
+                .getAllAvatars()
+                .map((a) => ({ label: a.name, value: a.name }))
+                .sort((a, b) => a.label.localeCompare(b.label));
+            const newAnimationOptions = animationManager
+                .getAllDisplayNames()
+                .map((n) => ({ label: n, value: n }))
+                .sort((a, b) => a.label.localeCompare(b.label));
             setAvatarOptions(newAvatarOptions);
             setAnimationOptions(newAnimationOptions);
 

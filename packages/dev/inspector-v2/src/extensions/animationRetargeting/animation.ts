@@ -160,48 +160,7 @@ export class AnimationSource {
 
     /** Builds the rest-pose export data for the playground code generator. */
     public buildExportData(restPoseUpdate?: RestPoseDataUpdate): RestPoseDataUpdate {
-        const animationTransformNodes: RestPoseDataUpdate = [];
-
-        if (restPoseUpdate) {
-            for (const dataBlock of restPoseUpdate) {
-                animationTransformNodes.push(dataBlock);
-            }
-        }
-
-        for (const [node, newTransformations] of this._retargetedTransformNodeTransformations) {
-            const initialTransformations = this._initialTransformNodeTransformations.get(node);
-            if (!initialTransformations) {
-                continue;
-            }
-
-            const name = node.name.replace(/"/g, '\\"');
-            const entry = animationTransformNodes.find((v) => v.name === name);
-            let key = entry?.data;
-
-            if (!initialTransformations.scaling.equals(newTransformations.scaling)) {
-                if (!key) {
-                    key = {};
-                    animationTransformNodes.push({ name, data: key });
-                }
-                key.scaling = newTransformations.scaling.asArray();
-            }
-            if (!initialTransformations.quaternion.equals(newTransformations.quaternion)) {
-                if (!key) {
-                    key = {};
-                    animationTransformNodes.push({ name, data: key });
-                }
-                key.quaternion = newTransformations.quaternion.asArray();
-            }
-            if (!initialTransformations.position.equals(newTransformations.position)) {
-                if (!key) {
-                    key = {};
-                    animationTransformNodes.push({ name, data: key });
-                }
-                key.position = newTransformations.position.asArray();
-            }
-        }
-
-        return animationTransformNodes;
+        return restPoseUpdate ? [...restPoseUpdate] : [];
     }
 
     public play(speed: number): void {

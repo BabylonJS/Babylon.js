@@ -283,7 +283,7 @@ export const AvatarsPanel: FunctionComponent<{
         [onEditingChange]
     );
 
-    const allAvatars = avatarManager.getAllAvatars();
+    const allAvatars = [...avatarManager.getAllAvatars()].sort((a, b) => a.name.localeCompare(b.name));
     const schemeNames = namingSchemeManager.getAllSchemeNames();
 
     // ─── Load preview ─────────────────────────────────────────────────────

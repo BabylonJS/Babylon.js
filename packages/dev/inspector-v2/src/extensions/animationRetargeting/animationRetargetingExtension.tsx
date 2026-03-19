@@ -149,13 +149,6 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
                         onClick={() => currentManager?.htmlConsole.toggle()}
                     />
                     <Button appearance="transparent" size="small" icon={<Database20Regular />} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
-                    <Button
-                        appearance="transparent"
-                        size="small"
-                        icon={<QuestionCircle20Regular />}
-                        title="Documentation"
-                        onClick={() => window.open("https://doc.babylonjs.com/features/featuresDeepDive/animation/animationRetargeting/", "_blank")}
-                    />
                     <RetargetingConfigDialog
                         manager={namingSchemeManager}
                         avatarManager={avatarManager}
@@ -173,6 +166,16 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
         const panelReg = shellService.addSidePane({
             key: "AnimationRetargetingPanel",
             title: "Animation Retargeting",
+            titleContent: (
+                <>
+                    Animation Retargeting
+                    <QuestionCircle20Regular
+                        style={{ marginLeft: "4px", cursor: "pointer", verticalAlign: "middle" }}
+                        title="Documentation"
+                        onClick={() => window.open("https://doc.babylonjs.com/features/featuresDeepDive/animation/animationRetargeting/", "_blank")}
+                    />
+                </>
+            ),
             icon: PersonRunning20Regular,
             headerExtra: headerActions,
             horizontalLocation: "left",

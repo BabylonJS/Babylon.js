@@ -240,9 +240,7 @@ export class RetargetingSceneManager {
             return false;
         }
 
-        const epsilon = 1e-4;
-
-        const boneTransformations = this.avatar.buildExportData(epsilon, this._lastAvatarRestPose);
+        const boneTransformations = this.avatar.buildExportData(this._lastAvatarRestPose);
         const animationTransformNodes = this.animationSource.buildExportData(this._lastAnimationRestPose);
 
         const mapNodes: string[] = [];

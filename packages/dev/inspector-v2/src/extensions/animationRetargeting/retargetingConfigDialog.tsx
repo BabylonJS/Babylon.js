@@ -45,10 +45,10 @@ import { AnimationsPanel } from "./animationsPanel";
 
 const useStyles = makeStyles({
     surface: {
-        width: "820px",
+        width: "1000px",
         minWidth: "400px",
         maxWidth: "95vw",
-        height: "660px",
+        height: "800px",
         minHeight: "300px",
         maxHeight: "95vh",
         resize: "both",
@@ -315,7 +315,7 @@ const SchemesPanel: FunctionComponent<{
         [onEditingChange]
     );
 
-    const schemeNames = manager.getAllSchemeNames();
+    const schemeNames = manager.getAllSchemeNames().sort((a, b) => a.localeCompare(b));
 
     const startAdd = useCallback(() => {
         setEditingWithNotify({ originalName: null, name: "", namesText: "" });
@@ -662,8 +662,8 @@ const RemappingsPanel: FunctionComponent<{
         [onEditingChange]
     );
 
-    const schemeNames = manager.getAllSchemeNames();
-    const allRemappings = manager.getAllRemappings();
+    const schemeNames = manager.getAllSchemeNames().sort((a, b) => a.localeCompare(b));
+    const allRemappings = [...manager.getAllRemappings()].sort((a, b) => `${a.fromScheme}→${a.toScheme}`.localeCompare(`${b.fromScheme}→${b.toScheme}`));
 
     const startAdd = useCallback(() => {
         if (schemeNames.length < 2) {

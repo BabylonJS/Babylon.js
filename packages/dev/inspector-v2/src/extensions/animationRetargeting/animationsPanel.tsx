@@ -306,7 +306,7 @@ export const AnimationsPanel: FunctionComponent<{
         [onEditingChange]
     );
 
-    const allAnimations = animationManager.getAllAnimations();
+    const allAnimations = [...animationManager.getAllAnimations()].sort((a, b) => a.name.localeCompare(b.name));
     const schemeNames = namingSchemeManager.getAllSchemeNames();
 
     // ─── Load preview ─────────────────────────────────────────────────────

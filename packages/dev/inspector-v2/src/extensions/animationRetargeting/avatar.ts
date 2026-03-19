@@ -196,47 +196,8 @@ export class Avatar {
         this._saveBoneTransformations(this._retargetedBoneTransformations);
     }
 
-    public buildExportData(epsilon: number, restPoseUpdate?: RestPoseDataUpdate): RestPoseDataUpdate {
-        const boneTransformations: RestPoseDataUpdate = [];
-
-        if (restPoseUpdate) {
-            for (const dataBlock of restPoseUpdate) {
-                boneTransformations.push(dataBlock);
-            }
-        }
-
-        for (const [bone, newT] of this._retargetedBoneTransformations) {
-            const initT = this._initialBoneTransformations.get(bone);
-            if (!initT) {
-                continue;
-            }
-            const name = bone.name.replace(/"/g, '\\"');
-            const entry = boneTransformations.find((v) => v.name === name);
-            let key = entry?.data;
-            if (!initT.scaling.equalsWithEpsilon(newT.scaling)) {
-                if (!key) {
-                    key = {};
-                    boneTransformations.push({ name, data: key });
-                }
-                key.scaling = newT.scaling.asArray();
-            }
-            if (!initT.quaternion.equalsWithEpsilon(newT.quaternion, epsilon)) {
-                if (!key) {
-                    key = {};
-                    boneTransformations.push({ name, data: key });
-                }
-                key.quaternion = newT.quaternion.asArray();
-            }
-            if (!initT.position.equalsWithEpsilon(newT.position, epsilon)) {
-                if (!key) {
-                    key = {};
-                    boneTransformations.push({ name, data: key });
-                }
-                key.position = newT.position.asArray();
-            }
-        }
-
-        return boneTransformations;
+    public buildExportData(restPoseUpdate?: RestPoseDataUpdate): RestPoseDataUpdate {
+        return restPoseUpdate ? [...restPoseUpdate] : [];
     }
 
     public setRetargetedAnimation(animGroup: AnimationGroup, speed: number): void {

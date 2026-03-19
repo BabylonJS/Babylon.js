@@ -342,7 +342,6 @@ export class AnimationManager {
             { name: "Catwalk Walking", file: "Catwalk Walking.glb", scheme: "Mixamo", displayName: "Catwalk Walking", rootNode: "mixamorig:Hips" },
             { name: "Praying", file: "Praying.glb", scheme: "Mixamo", displayName: "Praying", rootNode: "mixamorig:Hips" },
             { name: "Mousey Walking", file: "Mousey_walking.glb", scheme: "Mixamo", displayName: "Mousey Walking", rootNode: "mixamorig:Hips" },
-            { name: "Hip Hop", file: "hiphop.glb", scheme: "Mixamo No Namespace", displayName: "Hip Hop", rootNode: "Hips" },
         ];
         for (const d of defaults) {
             this.addAnimation({
