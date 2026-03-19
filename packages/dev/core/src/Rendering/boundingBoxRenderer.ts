@@ -101,7 +101,6 @@ const TempVec1 = new Vector3();
 const TempVec2 = new Vector3();
 // `Matrix.asArray` returns its internal array, so it can be directly updated
 const TempMatrixArray = TempMatrix.asArray();
-const TempMatrix2Array = TempMatrix2.asArray();
 
 // BoundingBox copies from it, so it's safe to reuse vectors here
 const DummyBoundingBox = new BoundingBox(TempVec1, TempVec1);
@@ -661,9 +660,10 @@ export class BoundingBoxRenderer implements ISceneComponent {
             // Multiply into Float64 temp matrix, subtract offset in Float64, then copy to Float32 buffer
             // to preserve precision at large coordinates.
             TempMatrix.multiplyToRef(boundingBox.getWorldMatrix(), TempMatrix2);
-            TempMatrix2Array[12] -= floatingOriginOffset.x;
-            TempMatrix2Array[13] -= floatingOriginOffset.y;
-            TempMatrix2Array[14] -= floatingOriginOffset.z;
+            const resultM = TempMatrix2.asArray();
+            resultM[12] -= floatingOriginOffset.x;
+            resultM[13] -= floatingOriginOffset.y;
+            resultM[14] -= floatingOriginOffset.z;
             TempMatrix2.copyToArray(matrices, offset);
             instancesCount++;
         }

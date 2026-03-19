@@ -67,7 +67,11 @@ describe("InstancedMesh with LargeWorldRendering", () => {
         // Call _updateInstancedBuffers directly (no effect/fillMode so it won't try to draw)
         mesh._updateInstancedBuffers(mesh.subMeshes[0], batch, storage.instancesBufferSize, engine);
 
-        return storage.instancesData;
+        // Copy out the data before disposing the scene
+        const result = new Float32Array(storage.instancesData);
+        scene.dispose();
+
+        return result;
     }
 
     it("should apply floating origin offset with correct precision", () => {
@@ -143,5 +147,7 @@ describe("InstancedMesh with LargeWorldRendering", () => {
         expect(data[28]).toBeCloseTo(10, 2);
         expect(data[29]).toBeCloseTo(10, 2);
         expect(data[30]).toBeCloseTo(10, 2);
+
+        scene.dispose();
     });
 });
