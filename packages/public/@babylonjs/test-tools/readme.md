@@ -87,8 +87,8 @@ test("Should do the thing it should do!", async () => {
         {
             globalClassName: "SecondComponent",
             disposeFunctionName: "dispose",
-        }
-    ]
+        },
+    ];
     const init = await countObjects(page, classes);
     // do your thing on the page
     // run your asserts
