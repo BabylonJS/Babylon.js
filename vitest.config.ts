@@ -38,14 +38,6 @@ const createProjectConfig = (type: string) => {
         environment: "node",
         globalSetup,
         setupFiles,
-        deps: {
-            moduleDirectories: ["node_modules"],
-        },
-        server: {
-            deps: {
-                external: ["draco3dgltf"],
-            },
-        },
     };
 };
 
@@ -56,14 +48,11 @@ export default defineConfig({
         },
         extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
     },
-    server: {
-        deps: {
-            external: ["draco3dgltf"],
-        },
-    },
     test: {
         globals: true,
         environment: "node",
+        reporters: process.env.CI ? ["default", "junit"] : ["default"],
+        outputFile: process.env.CI ? { junit: "./junit.xml" } : undefined,
         projects: [
             {
                 test: createProjectConfig("unit"),
@@ -72,27 +61,9 @@ export default defineConfig({
                     extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
                 },
             },
-            {
-                test: createProjectConfig("integration"),
-                resolve: {
-                    alias: aliases,
-                    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
-                },
-            },
-            {
-                test: createProjectConfig("performance"),
-                resolve: {
-                    alias: aliases,
-                    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
-                },
-            },
-            {
-                test: createProjectConfig("interactions"),
-                resolve: {
-                    alias: aliases,
-                    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
-                },
-            },
+            // Integration, performance, and interactions tests require a browser
+            // (Puppeteer/Playwright) and are run separately via Playwright configs.
+            // They are not included here to avoid "page is not defined" errors.
         ],
     },
 });

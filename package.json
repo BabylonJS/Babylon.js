@@ -78,7 +78,7 @@
         "build:tools": "npm run build -w @dev/build-tools && npm run build -w eslint-plugin-babylonjs && npm run build:snippet-loader",
         "build:test-tools": "npm run build -w @tools/test-tools",
         "build:snippet-loader": "npm run build -w @tools/snippet-loader",
-        "test": "vitest run",
+        "test": "vitest run --project=unit",
         "test:unit": "npm run build:assets:smart-filters && vitest run --project=unit",
         "test:visualization": "playwright test -c ./playwright.config.ts",
         "test:visualization:ui": "playwright test -c ./playwright.config.ts --ui",
