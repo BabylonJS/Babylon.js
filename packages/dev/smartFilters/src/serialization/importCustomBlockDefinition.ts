@@ -1,8 +1,10 @@
 import { ConnectionPointType } from "../connection/connectionPointType.js";
+import { Logger } from "core/Misc/logger.js";
 import { HasGlslHeader, ParseFragmentShader } from "../utils/buildTools/shaderConverter.js";
 import type { SerializedBlockDefinition } from "./serializedBlockDefinition.js";
 import type { SerializedShaderBlockDefinition } from "./serializedShaderBlockDefinition.js";
 import type { InputAutoBindV1, SerializedInputConnectionPointV1 } from "./v1/shaderBlockSerialization.types.js";
+import { setLogger } from "../utils/buildTools/buildToolsLogger.js";
 
 /**
  * Imports a serialized custom block definition. Supports either serialized CustomShaderBlock definitions or
@@ -51,6 +53,7 @@ export function ImportCustomBlockDefinition(serializedData: string): SerializedB
  * @returns The serialized block definition
  */
 function ImportAnnotatedGlsl(fragmentShader: string): SerializedShaderBlockDefinition {
+    setLogger(Logger);
     const fragmentShaderInfo = ParseFragmentShader(fragmentShader);
 
     if (!fragmentShaderInfo.blockType) {

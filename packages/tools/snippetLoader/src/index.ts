@@ -1,22 +1,30 @@
-export { LoadSnippet as loadSnippet, ParseSnippetResponse as parseSnippetResponse, CreateTypeScriptTranspiler as createTypeScriptTranspiler } from "./snippetLoader";
-export type { ILoadSnippetOptions as LoadSnippetOptions } from "./snippetLoader";
-export { FetchSnippet as fetchSnippet, DEFAULT_SNIPPET_URL } from "./fetchSnippet";
+export { LoadSnippet, ParseSnippetResponse, CreateTypeScriptTranspiler } from "./snippetLoader";
+export type { ILoadSnippetOptions } from "./snippetLoader";
+export { FetchSnippet, DEFAULT_SNIPPET_URL } from "./fetchSnippet";
+export { SaveSnippet } from "./saveSnippet";
 export { DefaultRuntimeBaseUrl, RuntimeScriptPaths } from "./types";
 export type {
     SnippetContentType,
-    ISnippetServerResponse as SnippetServerResponse,
-    IV2Manifest as V2Manifest,
-    IPlaygroundPayload as PlaygroundPayload,
+    ISnippetServerResponse,
+    IV2Manifest,
+    IPlaygroundPayload,
     TranspileFn,
     ModuleFormat,
-    ICreateEngineOptions as CreateEngineOptions,
+    ICreateEngineOptions,
     CreateEngineSource,
-    ISnippetMetadata as SnippetMetadata,
-    IRuntimeFeatures as RuntimeFeatures,
-    IInitializeRuntimeOptions as InitializeRuntimeOptions,
+    ISnippetMetadata,
+    IRuntimeFeatures,
+    IInitializeRuntimeOptions,
     SnippetResult,
-    ISnippetResultBase as SnippetResultBase,
-    IPlaygroundSnippetResult as PlaygroundSnippetResult,
-    IDataSnippetResult as DataSnippetResult,
-    IUnknownSnippetResult as UnknownSnippetResult,
+    ISnippetResultBase,
+    IPlaygroundSnippetResult,
+    IDataSnippetResult,
+    IUnknownSnippetResult,
+    SaveSnippetInput,
+    ISavePlaygroundCodeInput,
+    ISavePlaygroundManifestInput,
+    SaveDataSnippetInput,
+    DataSnippetType,
+    ISaveSnippetOptions,
+    ISaveSnippetResult,
 } from "./types";

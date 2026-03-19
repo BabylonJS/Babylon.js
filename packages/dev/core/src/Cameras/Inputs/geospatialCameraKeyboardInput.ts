@@ -12,7 +12,7 @@ import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 /**
  * Manage the keyboard inputs to control the movement of a geospatial camera.
- * Arrow keys + Modifier key (ctrl/alt, cmd/option on mac): rotate
+ * Arrow keys + Modifier key (ctrl/alt/option on mac): rotate
  * Arrow keys alone: pan
  * + / - keys: zoom in/out
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
@@ -118,7 +118,7 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
             // Block metaKey for other keys to avoid capturing browser shortcuts (e.g., Cmd+=/Cmd+-).
             if (!evt.metaKey || isArrowKey) {
                 if (info.type === KeyboardEventTypes.KEYDOWN) {
-                    this._modifierPressed = evt.ctrlKey || evt.metaKey || evt.altKey;
+                    this._modifierPressed = evt.ctrlKey || evt.altKey;
 
                     if (
                         this.keysUp.indexOf(evt.keyCode) !== -1 ||

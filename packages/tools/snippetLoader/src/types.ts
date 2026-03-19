@@ -367,3 +367,91 @@ export interface IInitializeRuntimeOptions {
 
 /** Union of all possible snippet results. */
 export type SnippetResult = IPlaygroundSnippetResult | IDataSnippetResult | IUnknownSnippetResult;
+
+// ---------------------------------------------------------------------------
+// Save types
+// ---------------------------------------------------------------------------
+
+/**
+ * Input for saving a playground snippet from a single code string (V1 style).
+ */
+export interface ISavePlaygroundCodeInput {
+    /** Discriminant for playground snippets. */
+    type: "playground";
+    /** The code string to save. */
+    code: string;
+    /** Source language. When omitted the loader guesses from the code content on load. When provided, it is persisted in the payload. */
+    language?: "JS" | "TS";
+    /** The engine type to store (e.g. "WebGL2", "WebGPU"). */
+    engine?: string;
+}
+
+/**
+ * Input for saving a playground snippet from a V2 multi-file manifest.
+ */
+export interface ISavePlaygroundManifestInput {
+    /** Discriminant for playground snippets. */
+    type: "playground";
+    /** The V2 multi-file manifest to save. */
+    manifest: IV2Manifest;
+    /** The engine type to store (e.g. "WebGL2", "WebGPU"). */
+    engine?: string;
+}
+
+/** Content types that use the data snippet format (excludes playground and unknown). */
+export type DataSnippetType = Exclude<SnippetContentType, "playground" | "unknown">;
+
+/**
+ * Input for saving a data snippet (NME, NGE, GUI, particles, etc.).
+ *
+ * This is a discriminated union on `type` — each snippet content type
+ * is a distinct member. `data` is typed as `unknown` because the
+ * serialisation schemas are owned by each tool's package, not by the
+ * snippet loader.  Callers with access to the concrete data types can
+ * narrow via the `type` discriminant.
+ */
+export type SaveDataSnippetInput = {
+    [K in DataSnippetType]: {
+        /** The snippet content type. */
+        type: K;
+        /** The data to save (JSON-serialisable). */
+        data: unknown;
+    };
+}[DataSnippetType];
+
+/** Discriminated union of all save input shapes. */
+export type SaveSnippetInput = ISavePlaygroundCodeInput | ISavePlaygroundManifestInput | SaveDataSnippetInput;
+
+/**
+ * Options for the {@link SaveSnippet} function.
+ */
+export interface ISaveSnippetOptions {
+    /** Override the snippet server URL. Defaults to `https://snippet.babylonjs.com`. */
+    snippetUrl?: string;
+    /**
+     * An existing snippet ID to create a new revision of.
+     * When provided the server stores the payload as a new version
+     * of this snippet rather than creating a brand-new ID.
+     *
+     * Accepts formats like `"ABC123"` or `"ABC123#2"` — the `#revision`
+     * part is stripped automatically (only the base ID is sent).
+     */
+    snippetId?: string;
+    /** Optional metadata to attach to the snippet envelope. */
+    metadata?: Partial<ISnippetMetadata>;
+}
+
+/**
+ * Result returned by {@link SaveSnippet} after a successful save.
+ */
+export interface ISaveSnippetResult {
+    /**
+     * Full snippet identifier including revision, e.g. `"ABC123#1"`.
+     * For the first revision this is just the base ID (e.g. `"ABC123"`).
+     */
+    snippetId: string;
+    /** The base snippet ID without revision, e.g. `"ABC123"`. */
+    id: string;
+    /** The revision number as a string, e.g. `"0"`, `"1"`. */
+    version: string;
+}
