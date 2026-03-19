@@ -148,6 +148,10 @@ function AsPersonMetadata(person: string | PersonMetadata): PersonMetadata {
     return person;
 }
 
+function GetAvatarImage(person: PersonMetadata): { src: string } | undefined {
+    return person.avatar ? { src: `data:image/png;base64,${person.avatar}` } : undefined;
+}
+
 function usePeopleMetadata(people?: readonly (string | PersonMetadata | undefined)[]): PersonMetadata[] {
     const definedPeople = useMemo(() => (people ? people.filter((person): person is string | PersonMetadata => !!person) : []), [people]);
     return useMemo(() => definedPeople.map(AsPersonMetadata), [definedPeople]);
@@ -182,7 +186,7 @@ const PersonDetailsPopover: FunctionComponent<TriggerProps & { person: PersonMet
             <PopoverTrigger disableButtonEnhancement>{children}</PopoverTrigger>
             <PopoverSurface>
                 <div className={classes.personPopoverSurfaceDiv}>
-                    <Persona name={person.name} secondaryText={title} avatar={{ image: person.avatar ? { src: `data:image/png;base64,${person.avatar}` } : undefined }} />
+                    <Persona name={person.name} secondaryText={title} avatar={{ image: GetAvatarImage(person) }} />
                     {person.email && <WebResource url={`mailto:${person.email}`} urlDisplay={person.email} icon={<MailRegular />} label="Email" />}
                     {person.url && <WebResource url={person.url} urlDisplay={person.url} icon={<LinkRegular />} label="Website" />}
                     {person.forumUserName && (
@@ -276,7 +280,7 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
                                             <Persona
                                                 name={author.name}
                                                 secondaryText="Author"
-                                                avatar={{ image: author.avatar ? { src: `data:image/png;base64,${author.avatar}` } : undefined }}
+                                                avatar={{ image: GetAvatarImage(author) }}
                                                 style={{ cursor: hasAuthorDetails ? "pointer" : "default" }}
                                             />
                                         </PersonDetailsPopover>
@@ -286,11 +290,7 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
                                             {contributors.map((contributor) => {
                                                 return (
                                                     <PersonDetailsPopover key={contributor.name} person={contributor} title="Contributor">
-                                                        <AvatarGroupItem
-                                                            name={contributor.name}
-                                                            className={classes.avatarGroupItem}
-                                                            image={contributor.avatar ? { src: `data:image/png;base64,${contributor.avatar}` } : undefined}
-                                                        />
+                                                        <AvatarGroupItem name={contributor.name} className={classes.avatarGroupItem} image={GetAvatarImage(contributor)} />
                                                     </PersonDetailsPopover>
                                                 );
                                             })}
