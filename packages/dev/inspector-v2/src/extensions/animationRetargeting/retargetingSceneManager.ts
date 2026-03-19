@@ -242,8 +242,8 @@ export class RetargetingSceneManager {
 
         const epsilon = 1e-4;
 
-        const boneTransformations = this.avatar.buildExportData(avatarUrl, true, epsilon, this._lastAvatarRestPose);
-        const animationTransformNodes = this.animationSource.buildExportData(animationUrl, true, epsilon, this._lastAnimationRestPose);
+        const boneTransformations = this.avatar.buildExportData(epsilon, this._lastAvatarRestPose);
+        const animationTransformNodes = this.animationSource.buildExportData(this._lastAnimationRestPose);
 
         const mapNodes: string[] = [];
         const map = this._retargetOptions.mapNodeNames;

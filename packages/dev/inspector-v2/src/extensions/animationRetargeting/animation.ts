@@ -159,12 +159,8 @@ export class AnimationSource {
     }
 
     /** Builds the rest-pose export data for the playground code generator. */
-    public buildExportData(_animationUrl: string, animationUpdateRestPose: boolean, epsilon: number, restPoseUpdate?: RestPoseDataUpdate): RestPoseDataUpdate {
+    public buildExportData(restPoseUpdate?: RestPoseDataUpdate): RestPoseDataUpdate {
         const animationTransformNodes: RestPoseDataUpdate = [];
-
-        if (!animationUpdateRestPose) {
-            return animationTransformNodes;
-        }
 
         if (restPoseUpdate) {
             for (const dataBlock of restPoseUpdate) {

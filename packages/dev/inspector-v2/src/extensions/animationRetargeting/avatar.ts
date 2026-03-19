@@ -196,12 +196,8 @@ export class Avatar {
         this._saveBoneTransformations(this._retargetedBoneTransformations);
     }
 
-    public buildExportData(_avatarUrl: string, avatarUpdateRestPose: boolean, epsilon: number, restPoseUpdate?: RestPoseDataUpdate): RestPoseDataUpdate {
+    public buildExportData(epsilon: number, restPoseUpdate?: RestPoseDataUpdate): RestPoseDataUpdate {
         const boneTransformations: RestPoseDataUpdate = [];
-
-        if (!avatarUpdateRestPose) {
-            return boneTransformations;
-        }
 
         if (restPoseUpdate) {
             for (const dataBlock of restPoseUpdate) {
