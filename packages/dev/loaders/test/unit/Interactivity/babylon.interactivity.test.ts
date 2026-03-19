@@ -14,7 +14,7 @@ import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectMode
 describe("Babylon Interactivity", () => {
     let engine;
     let scene: Scene;
-    const log: jest.SpyInstance = jest.spyOn(Logger, "Log");
+    const log: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Log");
     let mockGltf: any;
     const pathConverter = GetPathToObjectConverter(mockGltf);
 

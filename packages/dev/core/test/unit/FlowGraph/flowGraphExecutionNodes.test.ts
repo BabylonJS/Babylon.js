@@ -37,7 +37,7 @@ describe("Flow Graph Execution Nodes", () => {
             lockstepMaxSteps: 1,
         });
 
-        Logger.Log = jest.fn();
+        Logger.Log = vi.fn();
         scene = new Scene(engine);
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
         flowGraph = flowGraphCoordinator.createGraph();

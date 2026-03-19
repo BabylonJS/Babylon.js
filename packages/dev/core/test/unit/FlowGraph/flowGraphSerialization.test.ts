@@ -39,12 +39,12 @@ describe("Flow Graph Serialization", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
-        Logger.Log = jest.fn();
+        Logger.Log = vi.fn();
 
         scene = new Scene(engine);
     });
     it("Serializes and Parses a connection", () => {
-        const block = jest.mock("core/FlowGraph/flowGraphBlock") as any;
+        const block = {} as any;
         block.uniqueId = "test";
         const connection = new FlowGraphDataConnection("test", FlowGraphConnectionType.Input, block, RichTypeNumber);
         const serialized: any = {};
@@ -95,7 +95,7 @@ describe("Flow Graph Serialization", () => {
 
     it("Serializes and parses a block", () => {
         // Serialize a block with path
-        // const mockContext: any = jest.mock("core/FlowGraph/flowGraphContext") as any;
+        // const mockContext: any = vi.mock("core/FlowGraph/flowGraphContext") as any;
         // const pathConverter = new FlowGraphPathConverter(mockContext);
 
         const block = new FlowGraphPlayAnimationBlock();
@@ -169,7 +169,7 @@ describe("Flow Graph Serialization", () => {
     });
 
     it("Serializes and parses a graph", async () => {
-        const mockContext: any = jest.mock("core/FlowGraph/flowGraphContext") as any;
+        const mockContext: any = {};
         const pathConverter = new FlowGraphPathConverter(mockContext);
 
         const coordinator = new FlowGraphCoordinator({ scene });

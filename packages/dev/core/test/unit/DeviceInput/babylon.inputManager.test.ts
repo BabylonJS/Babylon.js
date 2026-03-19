@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import { ArcRotateCamera, FreeCamera } from "core/Cameras";
@@ -38,22 +38,18 @@ NullEngine.prototype.getInputElementClientRect = function (): Nullable<DOMRect> 
 };
 
 // Required for timers (eg. setTimeout) to work
-jest.useFakeTimers();
-jest.mock("core/DeviceInput/webDeviceInputSystem", () => {
+vi.useFakeTimers();
+vi.mock("core/DeviceInput/webDeviceInputSystem", () => {
     return {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        WebDeviceInputSystem: jest
-            .fn()
-            .mockImplementation(
-                (
-                    engine: Engine,
-                    onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
-                    onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void,
-                    onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void
-                ) => {
-                    return new TestDeviceInputSystem(engine, onDeviceConnected, onDeviceDisconnected, onInputChanged);
-                }
-            ),
+        WebDeviceInputSystem: function (
+            engine: Engine,
+            onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
+            onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void,
+            onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void
+        ) {
+            return new TestDeviceInputSystem(engine, onDeviceConnected, onDeviceDisconnected, onInputChanged);
+        },
     };
 });
 
@@ -65,7 +61,7 @@ describe("InputManager", () => {
 
     beforeEach(() => {
         // So that GetPointerPrefix knows we are going to simulate pointer events
-        window.PointerEvent = jest.fn() as any;
+        window.PointerEvent = vi.fn() as any;
 
         engine = new NullEngine({
             renderHeight: 256,
@@ -95,10 +91,10 @@ describe("InputManager", () => {
 
         let meshA: Nullable<Mesh>;
         let meshB: Nullable<Mesh>;
-        let onPickDownCallback: jest.Mock<any, any>;
+        let onPickDownCallback: Mock;
 
         beforeEach(() => {
-            onPickDownCallback = jest.fn();
+            onPickDownCallback = vi.fn();
 
             meshA = MeshBuilder.CreateSphere("meshA", { diameter: 2, segments: 32 }, scene);
             meshA.isPickable = true;
@@ -309,7 +305,7 @@ describe("InputManager", () => {
         const box = MeshBuilder.CreateBox("box", { size: 1 }, scene);
         box.enablePointerMoveEvents = true;
 
-        const pickSpy = jest.spyOn(scene!, "pick");
+        const pickSpy = vi.spyOn(scene!, "pick");
 
         const observer = scene?.onPointerObservable.add((eventData) => {
             const gen = eventData._generatePickInfo.bind(eventData);
@@ -362,7 +358,7 @@ describe("InputManager", () => {
             // Clear the observable and try the same actions again
             scene?.onPointerObservable.remove(observer!);
             // Since the remove function uses setTimeout (with a time of 0), we need to force it to run the timer.
-            jest.runOnlyPendingTimers();
+            vi.runOnlyPendingTimers();
 
             // Perform single move over mesh, then click
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 128, false);
@@ -649,7 +645,7 @@ describe("InputManager", () => {
 
             // Because the input manager uses the system clock, we need to use real timers
             // and wait for the double click delay to pass so that we can work with a clean slate
-            jest.useRealTimers();
+            vi.useRealTimers();
             await new Promise((resolve) => setTimeout(resolve, t));
 
             // Expect a single tap only
@@ -699,7 +695,7 @@ describe("InputManager", () => {
             await new Promise((resolve) => setTimeout(resolve, t));
 
             // Reset to fake timers
-            jest.useFakeTimers();
+            vi.useFakeTimers();
         }
         // Since this is static, we should reset it to false for other tests
         InputManager.ExclusiveDoubleClickMode = false;
@@ -891,7 +887,7 @@ describe("InputManager", () => {
             // Set flag to constantly update the mesh that's under the pointer (not use lazy picking)
             scene.constantlyUpdateMeshUnderPointer = true;
             scene.onPointerObservable.add((pointerInfo) => {
-                const generateSpy = jest.spyOn(pointerInfo, "_generatePickInfo");
+                const generateSpy = vi.spyOn(pointerInfo, "_generatePickInfo");
                 if (pointerInfo.pickInfo?.hit) {
                     pickedTestMesh = pointerInfo.pickInfo.pickedMesh;
                 }

@@ -4,7 +4,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 import eslintPluginPrettier from "eslint-plugin-prettier";
 import eslintConfigPrettier from "eslint-config-prettier";
-import eslintPluginJest from "eslint-plugin-jest";
+import eslintPluginVitest from "@vitest/eslint-plugin";
 import eslintPluginJsdoc from "eslint-plugin-jsdoc";
 import eslintPluginGithub from "eslint-plugin-github";
 import eslintPluginImport from "eslint-plugin-import";
@@ -202,7 +202,7 @@ export default tseslint.config(
             jsdoc: eslintPluginJsdoc,
             github: eslintPluginGithub,
             import: eslintPluginImport,
-            jest: eslintPluginJest,
+            vitest: eslintPluginVitest,
         },
         settings: {
             react: {
@@ -217,9 +217,9 @@ export default tseslint.config(
     },
 
     // ===========================================
-    // Jest plugin config
+    // Vitest plugin config
     // ===========================================
-    eslintPluginJest.configs["flat/recommended"],
+    eslintPluginVitest.configs.recommended,
 
     // ===========================================
     // Global rules (apply to all matched files)

@@ -180,7 +180,7 @@ describe("Babylon Mesh Levels of Details", () => {
                     return null;
                 };
 
-                const registerSpy = jest.spyOn(knot0, "onLODLevelSelection");
+                const registerSpy = vi.spyOn(knot0, "onLODLevelSelection");
 
                 expect(registerSpy).toHaveBeenCalledTimes(0);
 

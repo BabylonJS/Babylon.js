@@ -10,7 +10,7 @@ const numberOfPasses = 8;
 const acceptedThreshold = 0.05; // 5% compensation
 
 describe("Performance - scene", () => {
-    jest.setTimeout(40000);
+    vi.setConfig({ testTimeout: 40000 });
 
     it("Should have same or better performance with default scene", async () => {
         const stable = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "stable", evaluateDefaultScene, numberOfPasses, framesToRender);

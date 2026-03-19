@@ -5,7 +5,7 @@ export class AudioTestHelper {
      * https://github.com/BabylonJS/Babylon.js/blob/7e6ad554/packages/dev/core/src/Audio/sound.ts#L888-L891
      */
     static WaitForAudioContextSuspendedDoubleCheck() {
-        jest.advanceTimersByTime(500);
+        vi.advanceTimersByTime(500);
     }
 
     static WhenAudioContextResumes(callback: () => void) {

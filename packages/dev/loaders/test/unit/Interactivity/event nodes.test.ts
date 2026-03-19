@@ -21,8 +21,8 @@ import {
 describe("Interactivity event nodes", () => {
     let engine: NullEngine;
     let scene: Scene;
-    const log: jest.SpyInstance = jest.spyOn(Logger, "Log").mockImplementation(() => {});
-    const errorLog: jest.SpyInstance = jest.spyOn(Logger, "Error").mockImplementation(() => {});
+    const log: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Log").mockImplementation(() => {});
+    const errorLog: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Error").mockImplementation(() => {});
     let renderInterval: any;
 
     async function generateSimpleNodeGraph(

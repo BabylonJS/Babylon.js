@@ -10,7 +10,7 @@ const playgrounds = ["#WIR77Z", "#2AH4YH", "#YEZPVT", "#6HWS9M#28", "#XCPP9Y#1",
 // declare const BABYLON: typeof import("core/index");
 
 describe("Playground Memory Leaks", () => {
-    jest.setTimeout(40000);
+    vi.setConfig({ testTimeout: 40000 });
 
     // eslint-disable-next-line jest/expect-expect
     test.each(playgrounds)(

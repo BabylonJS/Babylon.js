@@ -76,7 +76,7 @@ describe("OctreeBlock", function () {
 
             // Call intersectsRay
             const ray = { intersectsBoxMinMax: (_min, _max) => true } as Ray;
-            const rayIntersectsBoxMinMaxSpy = jest.spyOn(ray, "intersectsBoxMinMax");
+            const rayIntersectsBoxMinMaxSpy = vi.spyOn(ray, "intersectsBoxMinMax");
             const selection = new SmartArrayNoDuplicate<AbstractMesh>(128);
             blockWithEntries!.intersectsRay(ray, selection);
 
@@ -103,7 +103,7 @@ describe("OctreeBlock", function () {
 
             // Call intersectsRay
             const ray = { intersectsBoxMinMax: (_min, _max) => true } as Ray;
-            const rayIntersectsBoxMinMaxSpy = jest.spyOn(ray, "intersectsBoxMinMax");
+            const rayIntersectsBoxMinMaxSpy = vi.spyOn(ray, "intersectsBoxMinMax");
             const selection = new SmartArrayNoDuplicate<AbstractMesh>(128);
             blockWithSubBlocks!.intersectsRay(ray, selection);
 

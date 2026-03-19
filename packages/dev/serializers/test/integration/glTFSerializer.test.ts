@@ -22,7 +22,7 @@ describe("Babylon glTF Serializer", () => {
     beforeAll(async () => {
         await logPageErrors(page, debug);
     });
-    jest.setTimeout(debug ? 1000000 : 30000);
+    vi.setConfig({ testTimeout: debug ? 1000000 : 30000 });
 
     beforeEach(async () => {
         await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {

@@ -2,15 +2,16 @@ import { Engine } from "core/Engines";
 
 import { AudioBuffer, AudioTestSamples } from "./audioTestSamples";
 
-const realSetTimeout = jest.requireActual("timers").setTimeout;
+// Use globalThis.setTimeout before vi.useFakeTimers replaces it
+const realSetTimeout = globalThis.setTimeout;
 
 class AudioParamMock {
-    public cancelScheduledValues = jest.fn().mockName("cancelScheduledValues");
-    public exponentialRampToValueAtTime = jest.fn().mockName("exponentialRampToValueAtTime");
-    public linearRampToValueAtTime = jest.fn().mockName("linearRampToValueAtTime");
-    public setTargetAtTime = jest.fn().mockName("setTargetAtTime");
-    public setValueAtTime = jest.fn().mockName("setValueAtTime");
-    public setValueCurveAtTime = jest.fn().mockName("setValueCurveAtTime");
+    public cancelScheduledValues = vi.fn().mockName("cancelScheduledValues");
+    public exponentialRampToValueAtTime = vi.fn().mockName("exponentialRampToValueAtTime");
+    public linearRampToValueAtTime = vi.fn().mockName("linearRampToValueAtTime");
+    public setTargetAtTime = vi.fn().mockName("setTargetAtTime");
+    public setValueAtTime = vi.fn().mockName("setValueAtTime");
+    public setValueCurveAtTime = vi.fn().mockName("setValueCurveAtTime");
     public value = 0;
 }
 
@@ -37,10 +38,10 @@ class AnalyserNodeMock extends AudioNodeMock {
     maxDecibels = -30;
     smoothingTimeConstant = 0.8;
 
-    getFloatFrequencyData = jest.fn().mockName("getFloatFrequencyData");
-    getByteFrequencyData = jest.fn().mockName("getByteFrequencyData");
-    getFloatTimeDomainData = jest.fn().mockName("getFloatTimeDomainData");
-    getByteTimeDomainData = jest.fn().mockName("getByteTimeDomainData");
+    getFloatFrequencyData = vi.fn().mockName("getFloatFrequencyData");
+    getByteFrequencyData = vi.fn().mockName("getByteFrequencyData");
+    getFloatTimeDomainData = vi.fn().mockName("getFloatTimeDomainData");
+    getByteTimeDomainData = vi.fn().mockName("getByteTimeDomainData");
 }
 
 class AudioBufferSourceNodeMock extends AudioNodeMock {
@@ -68,14 +69,14 @@ class AudioBufferSourceNodeMock extends AudioNodeMock {
         }
     }
 
-    start = jest
+    start = vi
         .fn()
         .mockName("start")
         .mockImplementation(() => {
             this.startTime = MockedAudioObjects.Instance.audioContext.currentTime;
         });
 
-    stop = jest
+    stop = vi
         .fn()
         .mockName("stop")
         .mockImplementation(() => {
@@ -86,7 +87,7 @@ class AudioBufferSourceNodeMock extends AudioNodeMock {
             }
         });
 
-    addEventListener = jest
+    addEventListener = vi
         .fn()
         .mockName("addEventListener")
         .mockImplementation((type: string, listener: () => void) => {
@@ -95,7 +96,7 @@ class AudioBufferSourceNodeMock extends AudioNodeMock {
             }
         });
 
-    removeEventListener = jest
+    removeEventListener = vi
         .fn()
         .mockName("removeEventListener")
         .mockImplementation((type: string, listener: () => void) => {
@@ -125,7 +126,7 @@ class PannerNodeMock extends AudioNodeMock {
     positionY = new AudioParamMock();
     positionZ = new AudioParamMock();
 
-    setOrientation = jest.fn().mockName("setOrientation");
+    setOrientation = vi.fn().mockName("setOrientation");
 }
 
 class StereoPannerNodeMock extends AudioNodeMock {
@@ -168,7 +169,7 @@ export class AudioContextMock {
         }
     }
 
-    close = jest
+    close = vi
         .fn()
         .mockName("close")
         .mockImplementation(() => {
@@ -176,7 +177,7 @@ export class AudioContextMock {
             return Promise.resolve();
         });
 
-    createBufferSource = jest
+    createBufferSource = vi
         .fn()
         .mockName("createBufferSource")
         .mockImplementation(() => {
@@ -185,7 +186,7 @@ export class AudioContextMock {
             return bufferSource;
         });
 
-    createGain = jest
+    createGain = vi
         .fn()
         .mockName("createGain")
         .mockImplementation(() => {
@@ -196,7 +197,7 @@ export class AudioContextMock {
             return new GainNodeMock();
         });
 
-    createMediaElementSource = jest
+    createMediaElementSource = vi
         .fn()
         .mockName("createMediaElementSource")
         .mockImplementation((mediaElement: HTMLMediaElement) => {
@@ -204,14 +205,14 @@ export class AudioContextMock {
             return new MediaElementAudioSourceNodeMock();
         });
 
-    createPanner = jest
+    createPanner = vi
         .fn()
         .mockName("createPanner")
         .mockImplementation(() => {
             return new PannerNodeMock();
         });
 
-    decodeAudioData = jest
+    decodeAudioData = vi
         .fn()
         .mockName("decodeAudioData")
         .mockImplementation((data: ArrayBuffer, success?: (buffer: AudioBuffer) => void) => {
@@ -220,7 +221,7 @@ export class AudioContextMock {
             }
         });
 
-    resume = jest
+    resume = vi
         .fn()
         .mockName("resume")
         .mockImplementation(() => {
@@ -231,7 +232,7 @@ export class AudioContextMock {
             return Promise.resolve();
         });
 
-    suspend = jest
+    suspend = vi
         .fn()
         .mockName("suspend")
         .mockImplementation(() => {
@@ -239,8 +240,8 @@ export class AudioContextMock {
             return Promise.resolve();
         });
 
-    addEventListener = jest.fn().mockName("addEventListener");
-    removeEventListener = jest.fn().mockName("removeEventListener");
+    addEventListener = vi.fn().mockName("addEventListener");
+    removeEventListener = vi.fn().mockName("removeEventListener");
 }
 
 class OfflineAudioContextMock {}
@@ -254,58 +255,55 @@ export class MockedAudioObjects {
     constructor() {
         MockedAudioObjects.Instance = this;
 
-        document.body.appendChild = jest.fn().mockName("appendChild");
-        document.body.removeChild = jest.fn().mockName("removeChild");
+        document.body.appendChild = vi.fn().mockName("appendChild");
+        document.body.removeChild = vi.fn().mockName("removeChild");
 
         // Mock XMLHttpRequest so that WebRequest-based audio loading (used by static sound URL loading)
         // works in the test environment without making real network requests.
-        global.XMLHttpRequest = jest
-            .fn()
-            .mockName("XMLHttpRequest")
-            .mockImplementation(() => {
-                let readystateChangeListener: (() => void) | null = null;
-                const xhr = {
-                    open: jest.fn().mockName("open"),
-                    send: jest
-                        .fn()
-                        .mockName("send")
-                        .mockImplementation(() => {
-                            realSetTimeout(() => {
-                                xhr.readyState = 4;
-                                xhr.status = 200;
-                                xhr.statusText = "OK";
-                                xhr.response = new ArrayBuffer(8);
-                                if (readystateChangeListener) {
-                                    readystateChangeListener();
-                                }
-                            }, 0);
-                        }),
-                    setRequestHeader: jest.fn().mockName("setRequestHeader"),
-                    getResponseHeader: jest.fn().mockName("getResponseHeader").mockReturnValue("audio/mpeg"),
-                    addEventListener: jest
-                        .fn()
-                        .mockName("addEventListener")
-                        .mockImplementation((type: string, listener: () => void) => {
-                            if (type === "readystatechange") {
-                                readystateChangeListener = listener;
+        global.XMLHttpRequest = function () {
+            let readystateChangeListener: (() => void) | null = null;
+            const xhr = {
+                open: vi.fn().mockName("open"),
+                send: vi
+                    .fn()
+                    .mockName("send")
+                    .mockImplementation(() => {
+                        realSetTimeout(() => {
+                            xhr.readyState = 4;
+                            xhr.status = 200;
+                            xhr.statusText = "OK";
+                            xhr.response = new ArrayBuffer(8);
+                            if (readystateChangeListener) {
+                                readystateChangeListener();
                             }
-                        }),
-                    removeEventListener: jest.fn().mockName("removeEventListener"),
-                    abort: jest.fn().mockName("abort"),
-                    readyState: 0,
-                    status: 0,
-                    statusText: "",
-                    response: null as any,
-                    responseText: "",
-                    responseType: "" as XMLHttpRequestResponseType,
-                    responseURL: "",
-                    timeout: 0,
-                    onprogress: null,
-                };
-                return xhr;
-            }) as any;
+                        }, 0);
+                    }),
+                setRequestHeader: vi.fn().mockName("setRequestHeader"),
+                getResponseHeader: vi.fn().mockName("getResponseHeader").mockReturnValue("audio/mpeg"),
+                addEventListener: vi
+                    .fn()
+                    .mockName("addEventListener")
+                    .mockImplementation((type: string, listener: () => void) => {
+                        if (type === "readystatechange") {
+                            readystateChangeListener = listener;
+                        }
+                    }),
+                removeEventListener: vi.fn().mockName("removeEventListener"),
+                abort: vi.fn().mockName("abort"),
+                readyState: 0,
+                status: 0,
+                statusText: "",
+                response: null as any,
+                responseText: "",
+                responseType: "" as XMLHttpRequestResponseType,
+                responseURL: "",
+                timeout: 0,
+                onprogress: null,
+            };
+            return xhr;
+        } as any;
 
-        global.fetch = jest
+        global.fetch = vi
             .fn()
             .mockName("fetch")
             .mockResolvedValue({
@@ -316,53 +314,50 @@ export class MockedAudioObjects {
                 headers: { get: (_name: string) => null },
             } as unknown as Response);
 
-        global.Audio = jest
-            .fn()
-            .mockName("Audio")
-            .mockImplementation(() => {
-                let canPlayThroughListener: () => void = () => void 0;
-                let endedListener: (() => void) | null = null;
+        global.Audio = function () {
+            let canPlayThroughListener: () => void = () => void 0;
+            let endedListener: (() => void) | null = null;
 
-                return {
-                    addEventListener: jest
-                        .fn()
-                        .mockName("addEventListener")
-                        .mockImplementation((type: string, listener: () => void) => {
-                            if (type === "canplaythrough") {
-                                canPlayThroughListener = listener;
-                            } else if (type === "ended") {
-                                endedListener = listener;
-                            }
-                        }),
-                    removeEventListener: jest
-                        .fn()
-                        .mockName("removeEventListener")
-                        .mockImplementation((type: string, listener: () => void) => {
-                            if (type === "ended" && endedListener === listener) {
-                                endedListener = null;
-                            }
-                        }),
-                    canPlayType: jest.fn().mockName("canPlayType").mockReturnValue(""),
-                    children: [],
-                    controls: true,
-                    crossOrigin: null,
-                    currentTime: 0,
-                    loop: false,
-                    load: jest
-                        .fn()
-                        .mockName("load")
-                        .mockImplementation(() => {
-                            // Simulate that the audio is ready to play through after load() is called.
-                            realSetTimeout(() => {
-                                canPlayThroughListener();
-                            }, 0);
-                        }),
-                    pause: jest.fn().mockName("pause"),
-                    play: jest.fn().mockName("play").mockReturnValue(Promise.resolve()),
-                    preload: "none",
-                };
-            });
-        global.MediaStream = jest.fn().mockName("MediaStream");
+            return {
+                addEventListener: vi
+                    .fn()
+                    .mockName("addEventListener")
+                    .mockImplementation((type: string, listener: () => void) => {
+                        if (type === "canplaythrough") {
+                            canPlayThroughListener = listener;
+                        } else if (type === "ended") {
+                            endedListener = listener;
+                        }
+                    }),
+                removeEventListener: vi
+                    .fn()
+                    .mockName("removeEventListener")
+                    .mockImplementation((type: string, listener: () => void) => {
+                        if (type === "ended" && endedListener === listener) {
+                            endedListener = null;
+                        }
+                    }),
+                canPlayType: vi.fn().mockName("canPlayType").mockReturnValue(""),
+                children: [],
+                controls: true,
+                crossOrigin: null,
+                currentTime: 0,
+                loop: false,
+                load: vi
+                    .fn()
+                    .mockName("load")
+                    .mockImplementation(() => {
+                        // Simulate that the audio is ready to play through after load() is called.
+                        realSetTimeout(() => {
+                            canPlayThroughListener();
+                        }, 0);
+                    }),
+                pause: vi.fn().mockName("pause"),
+                play: vi.fn().mockName("play").mockReturnValue(Promise.resolve()),
+                preload: "none",
+            };
+        } as any;
+        global.MediaStream = vi.fn().mockName("MediaStream") as any;
 
         // AudioContext mock.
         this._previousAudioContext = window.AudioContext;

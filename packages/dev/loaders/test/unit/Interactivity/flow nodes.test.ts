@@ -12,9 +12,9 @@ import { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivi
 describe("Flow Nodes", () => {
     let engine;
     let scene: Scene;
-    const log: jest.SpyInstance = jest.spyOn(Logger, "Log").mockImplementation(() => {});
-    const errorLog: jest.SpyInstance = jest.spyOn(Logger, "Error").mockImplementation(() => {});
-    const warnLog: jest.SpyInstance = jest.spyOn(Logger, "Warn").mockImplementation(() => {});
+    const log: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Log").mockImplementation(() => {});
+    const errorLog: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+    const warnLog: ReturnType<typeof vi.spyOn> = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
     let mockGltf: any;
     const pathConverter = GetPathToObjectConverter(mockGltf);
     let renderInterval: any;
