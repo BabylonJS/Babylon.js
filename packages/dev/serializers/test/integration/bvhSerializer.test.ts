@@ -1,3 +1,4 @@
+import { test, expect, Page } from "@playwright/test";
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -20,10 +21,20 @@ const debug = process.env.DEBUG === "true";
 /**
  * Describes the test suite for BVH Serializer
  */
-describe("Babylon BVH Serializer", () => {
+let page: Page;
+
+test.describe("Babylon BVH Serializer", () => {
     let datasetBvhContent: string;
 
-    beforeAll(async () => {
+    test.beforeAll(async ({ browser }) => {
+        page = await browser.newPage();
+        await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
+            waitUntil: "load",
+            timeout: 0,
+        });
+        await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
+        await page.waitForFunction(() => window.BABYLON);
+        page.setDefaultTimeout(0);
         await logPageErrors(page, debug);
 
         // Read the test fixture - using dataset-1_walk_normal_001.bvh from fixtures folder
@@ -31,9 +42,9 @@ describe("Babylon BVH Serializer", () => {
         datasetBvhContent = readFileSync(fixturePath, "utf-8");
     });
 
-    vi.setConfig({ testTimeout: debug ? 1000000 : 30000 });
+    test.setTimeout(debug ? 1000000 : 30000 );
 
-    beforeEach(async () => {
+    test.beforeEach(async () => {
         await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
             waitUntil: "load",
             timeout: 0,
@@ -42,16 +53,19 @@ describe("Babylon BVH Serializer", () => {
         await page.evaluate(evaluateCreateScene);
     });
 
-    afterEach(async () => {
-        debug && (await jestPuppeteer.debug());
+    test.afterEach(async () => {
         await page.evaluate(evaluateDisposeEngine);
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     /**
      * Tests the complete BVH round-trip: load -> skeleton -> export
      */
-    describe("#BVH Round-trip Serialization", () => {
-        it("should load BVH file and create skeleton with correct structure", async () => {
+    test.describe("#BVH Round-trip Serialization", () => {
+        test("should load BVH file and create skeleton with correct structure", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -86,7 +100,7 @@ describe("Babylon BVH Serializer", () => {
             expect(assertionData.frameCount).toBeGreaterThan(0); // Will be determined by the actual file
         });
 
-        it("should export BVH with exact hierarchy structure matching fixture", async () => {
+        test("should export BVH with exact hierarchy structure matching fixture", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -195,7 +209,7 @@ describe("Babylon BVH Serializer", () => {
             }
         });
 
-        it("should export skeleton to BVH with matching structure", async () => {
+        test("should export skeleton to BVH with matching structure", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -221,7 +235,7 @@ describe("Babylon BVH Serializer", () => {
             expect(assertionData.hasExportedAnimationRange).toBe(true);
         });
 
-        it("should handle empty animation names by exporting all available animations", async () => {
+        test("should handle empty animation names by exporting all available animations", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -251,7 +265,7 @@ describe("Babylon BVH Serializer", () => {
             expect(assertionData.skeletonAnimationCount).toBeGreaterThan(0);
         });
 
-        it("should preserve exact joint hierarchy and names", async () => {
+        test("should preserve exact joint hierarchy and names", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -318,7 +332,7 @@ describe("Babylon BVH Serializer", () => {
             }
         });
 
-        it("should preserve exact channel definitions matching fixture", async () => {
+        test("should preserve exact channel definitions matching fixture", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -408,7 +422,7 @@ describe("Babylon BVH Serializer", () => {
             expect(rootChannels!.channelTypes).toEqual(["Xposition", "Yposition", "Zposition", "Zrotation", "Xrotation", "Yrotation"]);
         });
 
-        it("should preserve bone offsets with precise values matching fixture", async () => {
+        test("should preserve bone offsets with precise values matching fixture", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -507,7 +521,7 @@ describe("Babylon BVH Serializer", () => {
             }
         });
 
-        it("should preserve exact motion data structure matching fixture", async () => {
+        test("should preserve exact motion data structure matching fixture", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -631,7 +645,7 @@ describe("Babylon BVH Serializer", () => {
             });
         });
 
-        it("should mark first bone as ROOT in exported BVH", async () => {
+        test("should mark first bone as ROOT in exported BVH", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -692,7 +706,7 @@ describe("Babylon BVH Serializer", () => {
             expect(assertionData.jointCount).toBeGreaterThan(0);
         });
 
-        it("should preserve end sites with correct structure and placement", async () => {
+        test("should preserve end sites with correct structure and placement", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -777,7 +791,7 @@ describe("Babylon BVH Serializer", () => {
             });
         });
 
-        it("should export multiple keyframes with proper animation data", async () => {
+        test("should export multiple keyframes with proper animation data", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -882,7 +896,7 @@ describe("Babylon BVH Serializer", () => {
             });
         });
 
-        it("should handle animation keyframe interpolation correctly", async () => {
+        test("should handle animation keyframe interpolation correctly", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -942,7 +956,7 @@ describe("Babylon BVH Serializer", () => {
             });
         });
 
-        it("should preserve animation timing and frame rate accuracy", async () => {
+        test("should preserve animation timing and frame rate accuracy", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -998,7 +1012,7 @@ describe("Babylon BVH Serializer", () => {
             }
         });
 
-        it("should validate keyframe data structure and animation values", async () => {
+        test("should validate keyframe data structure and animation values", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);
@@ -1124,7 +1138,7 @@ describe("Babylon BVH Serializer", () => {
             expect(hasRotationChannels).toBe(true);
         });
 
-        it("should produce BVH file with identical structure to input", async () => {
+        test("should produce BVH file with identical structure to input", async () => {
             const assertionData = await page.evaluate((bvhContent) => {
                 // Load the BVH file into a skeleton
                 const skeleton = BABYLON.BVH.ReadBvh(bvhContent);

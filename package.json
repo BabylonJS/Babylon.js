@@ -84,7 +84,7 @@
         "test:visualization:ui": "playwright test -c ./playwright.config.ts --ui",
         "test:visualization:devhost": "playwright test -c ./playwright.devhost.config.ts",
         "test:visualization:devhost:ui": "playwright test -c ./playwright.devhost.config.ts --ui",
-        "test:integration": "vitest run --project=integration && npm run test -w @tools/memory-leak-tests",
+        "test:integration": "playwright test -c ./playwright.config.ts --project=integration && npm run test -w @tools/memory-leak-tests",
         "test:performance": "playwright test -c ./playwright.config.ts --project=performance",
         "test:interactions": "playwright test -c ./playwright.config.ts --project=interaction",
         "test:audioV2": "playwright test --project=audioV2",
