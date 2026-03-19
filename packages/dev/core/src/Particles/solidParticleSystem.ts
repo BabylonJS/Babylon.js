@@ -375,12 +375,12 @@ export class SolidParticleSystem implements IDisposable {
         const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         const meshInd = <IndicesArray>mesh.getIndices();
         const meshUV = <FloatArray>mesh.getVerticesData(this._getUVKind(mesh, options?.uvKind ?? 0));
-        let meshCol = <Nullable<FloatArray>>mesh.getVerticesData(VertexBuffer.ColorKind);
+        let meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         const meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
         const storage = options && options.storage ? options.storage : null;
         // Normalize vertex colors to RGBA (4 components) since the code below always reads 4 components per color.
         // Source meshes (e.g. from glTF) may provide RGB (3 components) vertex colors.
-        meshCol = this._normalizeMeshVertexColors(mesh, meshPos, meshCol);
+        meshCol = this._normalizeMeshVertexColors(mesh, meshPos, meshCol)!;
 
         let f: number = 0; // facet counter
         const totalFacets: number = meshInd.length / 3; // a facet is a triangle, so 3 indices
@@ -814,12 +814,12 @@ export class SolidParticleSystem implements IDisposable {
         const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         const meshInd = <IndicesArray>mesh.getIndices();
         const meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
-        let meshCol = <Nullable<FloatArray>>mesh.getVerticesData(VertexBuffer.ColorKind);
+        let meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         const meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
         this.recomputeNormals = meshNor ? false : true;
         // Normalize vertex colors to RGBA (4 components) since _meshBuilder always reads 4 components per color.
         // Source meshes (e.g. from glTF) may provide RGB (3 components) vertex colors.
-        meshCol = this._normalizeMeshVertexColors(mesh, meshPos, meshCol);
+        meshCol = this._normalizeMeshVertexColors(mesh, meshPos, meshCol)!;
         const indices = Array.from(meshInd);
         const shapeNormals = meshNor ? Array.from(meshNor) : [];
         const shapeColors = meshCol ? Array.from(meshCol) : [];
