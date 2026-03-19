@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-/// <reference path="uint8ArrayBase64.d.ts" />
-
 /**
  * Checks for a matching suffix at the end of a string (for ES5 and lower)
  * @param str Source string
