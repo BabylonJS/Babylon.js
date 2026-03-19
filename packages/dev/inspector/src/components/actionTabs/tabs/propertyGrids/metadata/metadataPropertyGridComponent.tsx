@@ -228,7 +228,7 @@ export class MetadataGridComponent extends React.Component<
         return false;
     }
 
-    /* TODO: Convert testObjectCanSafelyStringify() to Jest unit tests
+    /* TODO: Convert testObjectCanSafelyStringify() to unit tests
     testObjectCanSafelyStringify() {
         const scene = this.props.entity._scene;
         console.log("/// test Truthy and Falsey ///");
