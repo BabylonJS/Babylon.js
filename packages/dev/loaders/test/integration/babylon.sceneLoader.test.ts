@@ -44,7 +44,7 @@ test.describe("Babylon Scene Loader", function () {
         page.setDefaultTimeout(0);
         await logPageErrors(page, debug);
     });
-    test.setTimeout(debug ? 1000000 : 30000 );
+    test.setTimeout(debug ? 1000000 : 30000);
 
     test.beforeEach(async () => {
         await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {

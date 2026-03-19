@@ -33,7 +33,7 @@ test.describe("Babylon glTF Serializer", () => {
         page.setDefaultTimeout(0);
         await logPageErrors(page, debug);
     });
-    test.setTimeout(debug ? 1000000 : 30000 );
+    test.setTimeout(debug ? 1000000 : 30000);
 
     test.beforeEach(async () => {
         await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {

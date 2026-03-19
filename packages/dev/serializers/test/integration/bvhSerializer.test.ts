@@ -42,7 +42,7 @@ test.describe("Babylon BVH Serializer", () => {
         datasetBvhContent = readFileSync(fixturePath, "utf-8");
     });
 
-    test.setTimeout(debug ? 1000000 : 30000 );
+    test.setTimeout(debug ? 1000000 : 30000);
 
     test.beforeEach(async () => {
         await page.goto(getGlobalConfig().baseUrl + `/empty.html`, {
