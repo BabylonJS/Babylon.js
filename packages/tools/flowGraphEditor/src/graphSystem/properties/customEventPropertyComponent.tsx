@@ -123,6 +123,35 @@ export class CustomEventPropertyComponent extends React.Component<IPropertyCompo
         return entry.type?.typeName || "any";
     }
 
+    private _changeEntryType(key: string, newTypeName: string) {
+        const block = this._getBlock();
+        const config = block.config as any;
+        const eventData = config.eventData;
+        if (!eventData || !(key in eventData)) {
+            return;
+        }
+
+        const richType = getRichTypeByFlowGraphType(newTypeName);
+        eventData[key].type = richType;
+
+        // Update the richType on the matching data connection so port colours refresh
+        if (this._isReceiveBlock()) {
+            const output = block.getDataOutput(key);
+            if (output) {
+                (output as any).richType = richType;
+            }
+        } else {
+            const input = block.getDataInput(key);
+            if (input) {
+                (input as any).richType = richType;
+            }
+        }
+
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+        this.forceUpdate();
+    }
+
     override render() {
         const { stateManager, nodeData } = this.props;
         const eventData = this._getEventData();
@@ -138,10 +167,18 @@ export class CustomEventPropertyComponent extends React.Component<IPropertyCompo
                     {keys.map((key) => {
                         const typeName = this._getTypeName(eventData[key]);
                         return (
-                            <div key={key} style={{ display: "flex", alignItems: "center", padding: "0 4px" }}>
-                                <span style={{ flex: 1, color: "#ccc", fontSize: "12px", paddingLeft: "8px" }}>
-                                    {key} <span style={{ color: "#888" }}>({typeName})</span>
-                                </span>
+                            <div key={key} style={{ display: "flex", alignItems: "center", padding: "0 4px", gap: "4px" }}>
+                                <span style={{ color: "#ccc", fontSize: "12px", paddingLeft: "8px", minWidth: "60px" }}>{key}</span>
+                                <OptionsLine
+                                    label=""
+                                    options={FLOW_GRAPH_TYPE_OPTIONS as any}
+                                    target={eventData[key]}
+                                    propertyName="type"
+                                    valuesAreStrings={true}
+                                    noDirectUpdate={true}
+                                    extractValue={() => typeName}
+                                    onSelect={(v) => this._changeEntryType(key, v as string)}
+                                />
                                 <button
                                     onClick={() => this._removeEntry(key)}
                                     style={{
