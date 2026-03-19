@@ -96,10 +96,12 @@ Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
 });
 
 const TempMatrix = Matrix.Identity();
+const TempMatrix2 = new Matrix();
 const TempVec1 = new Vector3();
 const TempVec2 = new Vector3();
 // `Matrix.asArray` returns its internal array, so it can be directly updated
 const TempMatrixArray = TempMatrix.asArray();
+const TempMatrix2Array = TempMatrix2.asArray();
 
 // BoundingBox copies from it, so it's safe to reuse vectors here
 const DummyBoundingBox = new BoundingBox(TempVec1, TempVec1);
@@ -656,11 +658,13 @@ export class BoundingBoxRenderer implements ISceneComponent {
             m[11] = median._z; // Translate Z
 
             const offset = instancesCount * 16;
-            TempMatrix.multiplyToArray(boundingBox.getWorldMatrix(), matrices, offset);
-
-            matrices[offset + 12] -= floatingOriginOffset.x;
-            matrices[offset + 13] -= floatingOriginOffset.y;
-            matrices[offset + 14] -= floatingOriginOffset.z;
+            // Multiply into Float64 temp matrix, subtract offset in Float64, then copy to Float32 buffer
+            // to preserve precision at large coordinates.
+            TempMatrix.multiplyToRef(boundingBox.getWorldMatrix(), TempMatrix2);
+            TempMatrix2Array[12] -= floatingOriginOffset.x;
+            TempMatrix2Array[13] -= floatingOriginOffset.y;
+            TempMatrix2Array[14] -= floatingOriginOffset.z;
+            TempMatrix2.copyToArray(matrices, offset);
             instancesCount++;
         }
 
