@@ -892,7 +892,7 @@ describe("InputManager", () => {
                     pickedTestMesh = pointerInfo.pickInfo.pickedMesh;
                 }
                 // We expect this to not be called at all as the picking should already be done by this point
-                // eslint-disable-next-line jest/no-conditional-expect
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(generateSpy).toHaveBeenCalledTimes(0);
             });
 

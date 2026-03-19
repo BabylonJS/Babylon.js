@@ -12,7 +12,7 @@ const playgrounds = ["#WIR77Z", "#2AH4YH", "#YEZPVT", "#6HWS9M#28", "#XCPP9Y#1",
 describe("Playground Memory Leaks", () => {
     vi.setConfig({ testTimeout: 40000 });
 
-    // eslint-disable-next-line jest/expect-expect
+    // eslint-disable-next-line vitest/expect-expect
     test.each(playgrounds)(
         "Performance for playground %s",
         async (playgroundId) => {

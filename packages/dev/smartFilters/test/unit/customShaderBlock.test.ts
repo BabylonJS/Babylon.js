@@ -1,4 +1,4 @@
-/* eslint-disable jest/no-conditional-expect */
+/* eslint-disable vitest/no-conditional-expect */
 import { Logger } from "../../src";
 import { SmartFilter } from "../../src/smartFilter.js";
 import { ImportCustomBlockDefinition } from "../../src/serialization/importCustomBlockDefinition.js";

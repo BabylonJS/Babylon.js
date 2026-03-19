@@ -22,12 +22,12 @@ const convertPathsToAliases = () => {
 const aliases = convertPathsToAliases();
 
 const createProjectConfig = (type: string) => {
-    const setupFileLocation = path.resolve(".", `jest.${type}.setup.ts`);
-    const setupFilesAfterEnvLocation = path.resolve(".", `jest.${type}.setup.afterEnv.ts`);
-    const globalSetup = fs.existsSync(setupFileLocation) ? setupFileLocation : undefined;
+    const globalSetupLocation = path.resolve(".", `vitest.${type}.setup.ts`);
+    const setupFileLocation = path.resolve(".", `vitest.${type}.setup.afterEnv.ts`);
+    const globalSetup = fs.existsSync(globalSetupLocation) ? globalSetupLocation : undefined;
     const setupFiles: string[] = [path.resolve(".", "vitest.setup.ts")];
-    if (fs.existsSync(setupFilesAfterEnvLocation)) {
-        setupFiles.push(setupFilesAfterEnvLocation);
+    if (fs.existsSync(setupFileLocation)) {
+        setupFiles.push(setupFileLocation);
     }
 
     return {

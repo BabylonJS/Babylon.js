@@ -7,7 +7,7 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "resolveJsonModule": true,
-        "allowSyntheticDefaultImports": true,
+        "allowSyntheticDefaultImports": true
     },
 
     "include": ["./src/**/*"]
