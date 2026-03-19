@@ -108,15 +108,7 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
 
         this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
             const evt = info.event;
-            const isArrowKey =
-                this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                this.keysRight.indexOf(evt.keyCode) !== -1;
-            // Allow metaKey (Cmd on Mac) through for arrow keys so Cmd+Arrow
-            // works as the Mac equivalent of Ctrl+Arrow for rotation.
-            // Block metaKey for other keys to avoid capturing browser shortcuts (e.g., Cmd+=/Cmd+-).
-            if (!evt.metaKey || isArrowKey) {
+            if (!evt.metaKey) {
                 if (info.type === KeyboardEventTypes.KEYDOWN) {
                     this._modifierPressed = evt.ctrlKey || evt.altKey;
 
