@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/ktx2decoder",
-    "version": "8.55.4",
+    "version": "8.56.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -20,7 +20,7 @@
         "postcompile": "build-tools -c add-js-to-es6 && build-tools -c cp -f \"../../../tools/babylonServer/public/ktx2Transcoders/1\" -t ./wasm && build-tools -c cp -f \"../../../tools/babylonServer/public/zstddec.wasm\" -t ./wasm"
     },
     "devDependencies": {
-        "@babylonjs/core": "8.55.4",
+        "@babylonjs/core": "8.56.0",
         "@dev/build-tools": "^1.0.0",
         "@tools/ktx2decoder": "^1.0.0"
     },
