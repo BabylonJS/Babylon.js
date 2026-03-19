@@ -1,7 +1,20 @@
-import type { FrameGraphTextureHandle, Scene, FrameGraph, AbstractMesh, ObjectRendererOptions, FrameGraphRenderContext, FrameGraphRenderPass, ObjectRenderer } from "core/index";
+import type {
+    FrameGraphTextureHandle,
+    Scene,
+    FrameGraph,
+    AbstractMesh,
+    SubMesh,
+    ObjectRendererOptions,
+    FrameGraphRenderContext,
+    FrameGraphRenderPass,
+    ObjectRenderer,
+    Nullable,
+    Effect,
+} from "core/index";
 import { Color4 } from "core/Maths/math.color";
 import { MaterialHelperGeometryRendering, GeometryRenderingTextureClearType } from "core/Materials/materialHelper.geometryrendering";
 import { Constants } from "core/Engines/constants";
+import { SceneComponentConstants } from "core/sceneComponent";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";
 
 /**
@@ -161,6 +174,8 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
 
     private _clearAttachmentsLayout: Map<GeometryRenderingTextureClearType, number[]>;
     private _allAttachmentsLayout: number[];
+    private _defaultAttachmentsLayout: number[];
+    private _isDisposed = false;
 
     /**
      * Constructs a new geometry renderer task.
@@ -195,6 +210,10 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
 
         this._clearAttachmentsLayout = new Map();
         this._allAttachmentsLayout = [];
+        this._defaultAttachmentsLayout = [];
+
+        this._scene._beforeRenderingMeshStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERINGMESH_PREPASS, this as any, this._beforeRenderingMeshStageForAttachments);
+        this._scene._afterRenderingMeshStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERINGMESH_PREPASS, this as any, this._afterRenderingMeshStageForAttachments);
 
         this.geometryViewDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryNormViewDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
@@ -311,6 +330,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
     }
 
     public override dispose(): void {
+        this._isDisposed = true;
         MaterialHelperGeometryRendering.DeleteConfiguration(this._renderer.renderPassId);
         this._renderer.dispose();
         super.dispose();
@@ -489,6 +509,9 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         });
 
         this._allAttachmentsLayout = this._engine.buildTextureLayout(allAttachmentsLayout);
+
+        const defaultAttachmentsLayout = allAttachmentsLayout.map((_, index) => index === 0);
+        this._defaultAttachmentsLayout = this._engine.buildTextureLayout(defaultAttachmentsLayout);
     }
 
     private _registerForRenderPassId(renderPassId: number) {
@@ -507,5 +530,28 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         }
 
         configuration.reverseCulling = this.reverseCulling;
+    }
+
+    private _beforeRenderingMeshStageForAttachments(_mesh: AbstractMesh, subMesh: SubMesh, _batch: unknown, effect: Nullable<Effect>) {
+        if (this._isDisposed || this._engine.currentRenderPassId !== this._renderer.renderPassId || !effect) {
+            return;
+        }
+
+        const material = subMesh.getMaterial();
+        const isGeometryCapable = !!material?.isPrePassCapable;
+
+        if (effect._multiTarget && isGeometryCapable) {
+            this._engine.bindAttachments(this._allAttachmentsLayout);
+        } else {
+            this._engine.bindAttachments(this._defaultAttachmentsLayout);
+        }
+    }
+
+    private _afterRenderingMeshStageForAttachments(_mesh: AbstractMesh) {
+        if (this._isDisposed || this._engine.currentRenderPassId !== this._renderer.renderPassId) {
+            return;
+        }
+
+        this._engine.bindAttachments(this._allAttachmentsLayout);
     }
 }
