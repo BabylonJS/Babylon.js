@@ -4,6 +4,7 @@ import type { IShellService } from "../../services/shellService";
 import { ShellServiceIdentity } from "../../services/shellService";
 
 import { Observable } from "core/Misc/observable";
+import { Body1, Link } from "@fluentui/react-components";
 import { PersonRunning20Regular } from "@fluentui/react-icons";
 
 import { AnimationRetargetingViewport } from "./animationRetargetingViewport";
@@ -95,13 +96,13 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
             key: "AnimationRetargetingPanel",
             title: "Animation Retargeting",
             infoLabel: (
-                <span>
+                <Body1>
                     Click{" "}
-                    <a href="https://doc.babylonjs.com/features/featuresDeepDive/animation/animationRetargeting/" target="_blank" rel="noopener noreferrer">
+                    <Link href="https://doc.babylonjs.com/features/featuresDeepDive/animation/animationRetargeting/" target="_blank" inline>
                         here
-                    </a>{" "}
+                    </Link>{" "}
                     to open the documentation.
-                </span>
+                </Body1>
             ),
             icon: PersonRunning20Regular,
             horizontalLocation: "left",

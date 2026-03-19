@@ -409,6 +409,10 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
         const setupManager = (manager: RetargetingSceneManager, triggerLoads: boolean) => {
             managerRef.current = manager;
 
+            // Track console visibility
+            setIsConsoleVisible(manager.htmlConsole.isVisible);
+            const consoleObs = manager.htmlConsole.onVisibilityChangedObservable.add((v) => setIsConsoleVisible(v));
+
             // Helper: rebuild "Root node" / "Ground ref. node" dropdowns using bone-remapping filtering.
             // Mirrors original gui.ts _getSourceTransformNodeList + updateBoneList logic.
             const rebuildBoneLists = (allNames: string[], allOptions: { label: string; value: string }[], animName: string, avatarName: string, currentGroundRef: string) => {
@@ -594,6 +598,7 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                 manager.animationSource?.onGizmoNodeSelectedObservable.remove(animGizmoObs);
                 manager.animationSource?.onPlayingObservable.remove(animPlayingObs);
                 manager.onRetargetDoneObservable.remove(retargetObs);
+                manager.htmlConsole.onVisibilityChangedObservable.remove(consoleObs);
             };
         };
 
@@ -752,7 +757,14 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                     title={isEnabled ? "Disable viewport" : "Enable viewport"}
                     onClick={() => onSetEnabled(!isEnabled)}
                 />
-                <Button appearance="transparent" size="small" icon={<WindowConsole20Regular />} title="Toggle console" disabled={!isEnabled} onClick={onToggleConsole} />
+                <Button
+                    appearance={isConsoleVisible ? "primary" : "transparent"}
+                    size="small"
+                    icon={<WindowConsole20Regular />}
+                    title="Toggle console"
+                    disabled={!isEnabled}
+                    onClick={onToggleConsole}
+                />
                 <Button appearance="transparent" size="small" icon={<Settings20Regular />} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
                 <RetargetingConfigDialog
                     manager={namingSchemeManager}
