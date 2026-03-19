@@ -3,9 +3,13 @@
 /**
  * Resizes a PNG image to a 32x32 avatar and prints its base64 encoding to stdout.
  *
- * Usage: node scripts/makeAvatar.mjs <path-or-url> [zoom]
+ * Usage: node scripts/makeAvatar.mjs <source> [zoom]
  *
- * The first argument can be a local file path or an HTTP/HTTPS URL.
+ * The source can be:
+ *   - A local file path
+ *   - An HTTP/HTTPS URL pointing to a raw image
+ *   - A Babylon.js forum username (e.g. "RaananW") — the avatar is fetched from the forum
+ *
  * The optional zoom argument (0–1) crops to a centered portion of the source
  * before resizing. For example, 0.75 keeps the inner 75% of the image.
  */
@@ -18,7 +22,7 @@ import sharp from "sharp";
 
 const inputPath = process.argv[2];
 if (!inputPath) {
-    console.error("Usage: node scripts/makeAvatar.mjs <path-or-url> [zoom]");
+    console.error("Usage: node scripts/makeAvatar.mjs <file-path | url | forum-username> [zoom]");
     process.exit(1);
 }
 
@@ -52,8 +56,29 @@ function fetchUrl(url, maxRedirects = 5) {
     });
 }
 
+async function fetchForumAvatarUrl(username, size = 96) {
+    const userJson = JSON.parse((await fetchUrl(`https://forum.babylonjs.com/u/${username}.json`)).toString("utf-8"));
+    const avatarTemplate = userJson.user?.avatar_template;
+    if (!avatarTemplate) {
+        throw new Error(`No avatar found for forum user "${username}"`);
+    }
+    const relativePath = avatarTemplate.replace("{size}", String(size));
+    return `https://forum.babylonjs.com${relativePath}`;
+}
+
 const isUrl = /^https?:\/\//i.test(inputPath);
-const inputBuffer = isUrl ? await fetchUrl(inputPath) : await readFile(resolve(inputPath));
+const isFilePath = inputPath.includes("/") || inputPath.includes("\\") || inputPath.includes(".");
+
+let inputBuffer;
+if (isUrl) {
+    inputBuffer = await fetchUrl(inputPath);
+} else if (isFilePath) {
+    inputBuffer = await readFile(resolve(inputPath));
+} else {
+    // Treat as a Babylon.js forum username
+    const avatarUrl = await fetchForumAvatarUrl(inputPath);
+    inputBuffer = await fetchUrl(avatarUrl);
+}
 
 let pipeline = sharp(inputBuffer);
 
