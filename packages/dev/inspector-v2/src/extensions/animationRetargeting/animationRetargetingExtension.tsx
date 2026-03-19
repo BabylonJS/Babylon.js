@@ -1,13 +1,10 @@
 import type { IDisposable } from "core/index";
-import type { FunctionComponent } from "react";
 import type { ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { IShellService } from "../../services/shellService";
 import { ShellServiceIdentity } from "../../services/shellService";
 
-import { useState, useEffect } from "react";
 import { Observable } from "core/Misc/observable";
-import { Eye20Regular, EyeOff20Regular, WindowConsole20Regular, Settings20Regular, PersonRunning20Regular, QuestionCircle20Regular } from "@fluentui/react-icons";
-import { Button } from "@fluentui/react-components";
+import { PersonRunning20Regular } from "@fluentui/react-icons";
 
 import { AnimationRetargetingViewport } from "./animationRetargetingViewport";
 import { AnimationRetargetingPanel, DefaultPanelState } from "./animationRetargetingPanel";
@@ -16,7 +13,6 @@ import type { RetargetingSceneManager } from "./retargetingSceneManager";
 import { NamingSchemeManager } from "./namingSchemeManager";
 import { AvatarManager } from "./avatarManager";
 import { AnimationManager } from "./animationManager";
-import { RetargetingConfigDialog } from "./retargetingConfigDialog";
 
 /**
  * Service definition for the Animation Retargeting extension.
@@ -95,89 +91,19 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
         // Start disabled so the user opts-in to the viewport
         setEnabled(false);
 
-        // Header icon buttons: enable/disable toggle and console toggle.
-        const headerActions: FunctionComponent = () => {
-            const [localIsEnabled, setLocalIsEnabled] = useState(isEnabled);
-            const [isConsoleVisible, setIsConsoleVisible] = useState(false);
-            const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-            useEffect(() => {
-                const obs = isEnabledObs.add((v) => setLocalIsEnabled(v));
-                return () => {
-                    isEnabledObs.remove(obs);
-                };
-            }, []);
-
-            useEffect(() => {
-                const manager = currentManager;
-                if (!manager) {
-                    return;
-                }
-                setIsConsoleVisible(manager.htmlConsole.isVisible);
-                const obs = manager.htmlConsole.onVisibilityChangedObservable.add((v) => setIsConsoleVisible(v));
-                return () => {
-                    manager.htmlConsole.onVisibilityChangedObservable.remove(obs);
-                };
-            }, []);
-
-            // Re-subscribe to the console observable whenever a new manager becomes ready.
-            useEffect(() => {
-                const managerObs = onManagerReadyObs.add((manager) => {
-                    setIsConsoleVisible(manager.htmlConsole.isVisible);
-                    manager.htmlConsole.onVisibilityChangedObservable.add((v) => setIsConsoleVisible(v));
-                });
-                return () => {
-                    onManagerReadyObs.remove(managerObs);
-                };
-            }, []);
-
-            return (
-                <>
-                    <Button
-                        appearance="transparent"
-                        size="small"
-                        icon={localIsEnabled ? <EyeOff20Regular /> : <Eye20Regular />}
-                        title={localIsEnabled ? "Disable viewport" : "Enable viewport"}
-                        onClick={() => setEnabled(!localIsEnabled)}
-                    />
-                    <Button
-                        appearance={isConsoleVisible ? "primary" : "transparent"}
-                        size="small"
-                        icon={<WindowConsole20Regular />}
-                        title="Toggle console"
-                        disabled={!localIsEnabled}
-                        onClick={() => currentManager?.htmlConsole.toggle()}
-                    />
-                    <Button appearance="transparent" size="small" icon={<Settings20Regular />} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
-                    <RetargetingConfigDialog
-                        manager={namingSchemeManager}
-                        avatarManager={avatarManager}
-                        animationManager={animationManager}
-                        open={isDialogOpen}
-                        onClose={() => {
-                            setIsDialogOpen(false);
-                            onConfigChangedObs.notifyObservers();
-                        }}
-                    />
-                </>
-            );
-        };
-
         const panelReg = shellService.addSidePane({
             key: "AnimationRetargetingPanel",
             title: "Animation Retargeting",
-            titleContent: (
-                <>
-                    Animation Retargeting
-                    <QuestionCircle20Regular
-                        style={{ marginLeft: "4px", cursor: "pointer", verticalAlign: "middle" }}
-                        title="Documentation"
-                        onClick={() => window.open("https://doc.babylonjs.com/features/featuresDeepDive/animation/animationRetargeting/", "_blank")}
-                    />
-                </>
+            infoLabel: (
+                <span>
+                    Click{" "}
+                    <a href="https://doc.babylonjs.com/features/featuresDeepDive/animation/animationRetargeting/" target="_blank" rel="noopener noreferrer">
+                        here
+                    </a>{" "}
+                    to open the documentation.
+                </span>
             ),
             icon: PersonRunning20Regular,
-            headerExtra: headerActions,
             horizontalLocation: "left",
             verticalLocation: "top",
             content: () => (
@@ -191,6 +117,8 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
                     avatarManager={avatarManager}
                     animationManager={animationManager}
                     stateStore={persistedPanelState}
+                    onSetEnabled={setEnabled}
+                    onToggleConsole={() => currentManager?.htmlConsole.toggle()}
                 />
             ),
         });

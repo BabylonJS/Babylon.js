@@ -1,5 +1,5 @@
 import type { MenuTriggerProps } from "@fluentui/react-components";
-import type { ComponentType, FunctionComponent, ReactNode } from "react";
+import type { ComponentType, FunctionComponent } from "react";
 
 import type { IDisposable, Nullable } from "core/index";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
@@ -8,6 +8,7 @@ import type { SettingDescriptor } from "./settingsStore";
 import {
     Button,
     Divider,
+    InfoLabel as FluentInfoLabel,
     Toolbar as FluentToolbar,
     makeStyles,
     Menu,
@@ -200,13 +201,6 @@ export type SidePaneDefinition = {
     title: string;
 
     /**
-     * Optional rich content to render in place of the plain text title in the pane header.
-     * When provided, this is used instead of `title` for the header display.
-     * The plain `title` string is still used for tooltips, teaching moments, and error boundaries.
-     */
-    titleContent?: ReactNode;
-
-    /**
      * An optional teaching moment info. The default assumes the side pane was added by an extension and provides a generic title and description based on the display name or id, which is helpful for discoverability of new items.
      * Set this to false to suppress the teaching moment, which may be desirable for built in items or items that are added in a non-dynamic way.
      * Set it to an object with a title and description to provide a custom teaching moment, which may be desirable if the generic title and description are not sufficient.
@@ -221,10 +215,9 @@ export type SidePaneDefinition = {
     keepMounted?: boolean;
 
     /**
-     * An optional component to render at the right side of the pane header, between the title and
-     * the dock menu button. Useful for adding icon-button actions specific to the pane.
+     * Optional info popup content shown next to the title.
      */
-    headerExtra?: ComponentType;
+    infoLabel?: JSX.Element;
 };
 
 type RegisteredSidePane = {
@@ -636,9 +629,8 @@ const DockMenu: FunctionComponent<
 const PaneHeader: FunctionComponent<{
     id: string;
     title: string;
-    titleContent?: ReactNode;
     icon?: ComponentType;
-    headerExtra?: ComponentType;
+    infoLabel?: JSX.Element;
     dockOptions: Map<DockLocation, (sidePaneKey: string) => void>;
 }> = (props) => {
     const { id, title, dockOptions } = props;
@@ -652,8 +644,17 @@ const PaneHeader: FunctionComponent<{
                     <props.icon />
                 </div>
             )}
-            <Subtitle2Stronger className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}>{props.titleContent ?? title}</Subtitle2Stronger>
-            {props.headerExtra && <props.headerExtra />}
+            {props.infoLabel ? (
+                <FluentInfoLabel
+                    htmlFor={id}
+                    info={<div style={{ whiteSpace: "normal", wordBreak: "break-word" }}>{props.infoLabel}</div>}
+                    className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}
+                >
+                    <Subtitle2Stronger>{title}</Subtitle2Stronger>
+                </FluentInfoLabel>
+            ) : (
+                <Subtitle2Stronger className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}>{title}</Subtitle2Stronger>
+            )}
             <DockMenu sidePaneId={id} dockOptions={dockOptions}>
                 <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
             </DockMenu>
@@ -1090,9 +1091,8 @@ function usePane(
                                 <PaneHeader
                                     id={topSelectedTab.key}
                                     title={topSelectedTab.title}
-                                    titleContent={topSelectedTab.titleContent}
                                     icon={topPanes.length > 1 ? undefined : topSelectedTab.icon}
-                                    headerExtra={topSelectedTab.headerExtra}
+                                    infoLabel={topSelectedTab.infoLabel}
                                     dockOptions={validTopDockOptions}
                                 />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
@@ -1132,9 +1132,8 @@ function usePane(
                                 <PaneHeader
                                     id={bottomSelectedTab.key}
                                     title={bottomSelectedTab.title}
-                                    titleContent={bottomSelectedTab.titleContent}
                                     icon={bottomPanes.length > 1 ? undefined : bottomSelectedTab.icon}
-                                    headerExtra={bottomSelectedTab.headerExtra}
+                                    infoLabel={bottomSelectedTab.infoLabel}
                                     dockOptions={validBottomDockOptions}
                                 />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}

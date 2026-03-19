@@ -4,7 +4,7 @@ import { FilesInputStore } from "core/Misc/filesInputStore";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import type { Transform } from "../../components/properties/transformProperties";
 import { makeStyles, tokens, Body1Strong, Button } from "@fluentui/react-components";
-import { ArrowClockwise20Regular } from "@fluentui/react-icons";
+import { ArrowClockwise20Regular, Eye20Regular, EyeOff20Regular, WindowConsole20Regular, Settings20Regular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Accordion as BabylonAccordion, AccordionSection as BabylonAccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
@@ -18,6 +18,7 @@ import type { NamingSchemeManager } from "./namingSchemeManager";
 import type { AvatarManager } from "./avatarManager";
 import type { AnimationManager } from "./animationManager";
 import type { GizmoType } from "./avatar";
+import { RetargetingConfigDialog } from "./retargetingConfigDialog";
 
 /**
  * Mirrors gui.ts _getSourceTransformNodeList: returns animation transform nodes filtered
@@ -57,8 +58,12 @@ const useStyles = makeStyles({
         height: "100%",
         overflow: "hidden",
     },
-    enableRow: {
-        display: "none", // removed: button moved to title bar headerExtra
+    toolbar: {
+        display: "flex",
+        gap: "2px",
+        padding: "4px",
+        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+        flexShrink: 0,
     },
     actionRow: {
         flexShrink: 0,
@@ -182,6 +187,8 @@ export type AnimationRetargetingPanelProps = {
     animationManager: AnimationManager;
     /** Persisted across remounts (e.g. when the panel is docked elsewhere). Lives in the extension closure. */
     stateStore: PanelStateStore;
+    onSetEnabled: (enabled: boolean) => void;
+    onToggleConsole: () => void;
 };
 
 export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPanelProps> = ({
@@ -194,6 +201,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
     avatarManager,
     animationManager,
     stateStore,
+    onSetEnabled,
+    onToggleConsole,
 }) => {
     const classes = useStyles();
     const managerRef = useRef<RetargetingSceneManager | null>(null);
@@ -201,6 +210,8 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
     const handleLoadAnimationRef = useRef<(name: string) => void | Promise<void>>(() => {});
     const [isEnabled, setIsEnabled] = useState(initialIsEnabled);
     const [, forceUpdate] = useState(0);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isConsoleVisible, setIsConsoleVisible] = useState(false);
 
     // Avatar state
     const [avatarName, setAvatarName] = useState(() => stateStore.avatarName);
@@ -733,6 +744,27 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
 
     return (
         <div className={classes.root}>
+            <div className={classes.toolbar}>
+                <Button
+                    appearance="transparent"
+                    size="small"
+                    icon={isEnabled ? <EyeOff20Regular /> : <Eye20Regular />}
+                    title={isEnabled ? "Disable viewport" : "Enable viewport"}
+                    onClick={() => onSetEnabled(!isEnabled)}
+                />
+                <Button appearance="transparent" size="small" icon={<WindowConsole20Regular />} title="Toggle console" disabled={!isEnabled} onClick={onToggleConsole} />
+                <Button appearance="transparent" size="small" icon={<Settings20Regular />} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
+                <RetargetingConfigDialog
+                    manager={namingSchemeManager}
+                    avatarManager={avatarManager}
+                    animationManager={animationManager}
+                    open={isDialogOpen}
+                    onClose={() => {
+                        setIsDialogOpen(false);
+                        onConfigChangedObs.notifyObservers();
+                    }}
+                />
+            </div>
             {!isEnabled ? (
                 <div className={classes.disabledOverlay}>Extension is disabled -- original scene is shown</div>
             ) : (
