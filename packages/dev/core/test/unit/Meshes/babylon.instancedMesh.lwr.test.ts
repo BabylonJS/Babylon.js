@@ -1,5 +1,5 @@
 import type { Engine } from "core/Engines";
-import { NullEngine } from "core/Engines";
+import { NullEngine } from "core/Engines/nullEngine";
 import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
 import { Vector3 } from "core/Maths/math.vector";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
@@ -18,9 +18,12 @@ describe("InstancedMesh with LargeWorldRendering", () => {
             lockstepMaxSteps: 1,
         });
 
-        // Enable 64-bit matrix precision AFTER engine creation,
-        // since the engine constructor calls SetMatrixPrecision(false).
+        // NullEngine doesn't support useLargeWorldRendering in its constructor options,
+        // so we manually configure the two things it would set:
+        // 1. Float64 matrix precision (normally set by AbstractEngine constructor)
         PerformanceConfigurator.SetMatrixPrecision(true);
+        // 2. Scene floating origin mode (normally triggered by engine.getCreationOptions().useLargeWorldRendering)
+        //    — handled by passing { useFloatingOrigin: true } to each Scene constructor below
     });
 
     afterEach(() => {
@@ -30,6 +33,10 @@ describe("InstancedMesh with LargeWorldRendering", () => {
     /**
      * Helper: sets up a scene with LWR, creates a mesh + instance at the given positions,
      * triggers _updateInstancedBuffers, and returns the Float32 instance data.
+     * @param cameraPos Position of the camera
+     * @param meshPos Position of the master mesh
+     * @param instancePos Position of the instance mesh
+     * @returns Float32Array containing the instance data as it would be sent to the shader, for both master and instance.
      */
     function setupAndGetInstanceData(cameraPos: Vector3, meshPos: Vector3, instancePos: Vector3): Float32Array {
         const scene = new Scene(engine, { useFloatingOrigin: true });
