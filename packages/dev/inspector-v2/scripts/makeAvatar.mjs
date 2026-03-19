@@ -14,6 +14,7 @@
  * before resizing. For example, 0.75 keeps the inner 75% of the image.
  */
 
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { get as httpsGet } from "node:https";
 import { get as httpGet } from "node:http";
@@ -41,7 +42,8 @@ function fetchUrl(url, maxRedirects = 5) {
                     reject(new Error("Too many redirects"));
                     return;
                 }
-                resolve(fetchUrl(res.headers.location, maxRedirects - 1));
+                const redirectUrl = new URL(res.headers.location, url).href;
+                resolve(fetchUrl(redirectUrl, maxRedirects - 1));
                 return;
             }
             if (res.statusCode !== 200) {
@@ -67,7 +69,7 @@ async function fetchForumAvatarUrl(username, size = 96) {
 }
 
 const isUrl = /^https?:\/\//i.test(inputPath);
-const isFilePath = inputPath.includes("/") || inputPath.includes("\\") || inputPath.includes(".");
+const isFilePath = !isUrl && (inputPath.includes("/") || inputPath.includes("\\") || existsSync(resolve(inputPath)));
 
 let inputBuffer;
 if (isUrl) {
@@ -80,17 +82,19 @@ if (isUrl) {
     inputBuffer = await fetchUrl(avatarUrl);
 }
 
-let pipeline = sharp(inputBuffer);
+const pipeline = sharp(inputBuffer);
 
 if (zoom !== undefined && zoom < 1) {
-    const metadata = await sharp(inputBuffer).metadata();
-    const srcWidth = metadata.width;
-    const srcHeight = metadata.height;
-    const cropWidth = Math.round(srcWidth * zoom);
-    const cropHeight = Math.round(srcHeight * zoom);
-    const left = Math.round((srcWidth - cropWidth) / 2);
-    const top = Math.round((srcHeight - cropHeight) / 2);
-    pipeline = pipeline.extract({ left, top, width: cropWidth, height: cropHeight });
+    const { width, height } = await pipeline.metadata();
+    if (width === undefined || height === undefined) {
+        console.error("Unable to determine image dimensions.");
+        process.exit(1);
+    }
+    const cropWidth = Math.round(width * zoom);
+    const cropHeight = Math.round(height * zoom);
+    const left = Math.round((width - cropWidth) / 2);
+    const top = Math.round((height - cropHeight) / 2);
+    pipeline.extract({ left, top, width: cropWidth, height: cropHeight });
 }
 
 const resizedBuffer = await pipeline
