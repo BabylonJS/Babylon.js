@@ -1,5 +1,5 @@
 import type { MenuTriggerProps } from "@fluentui/react-components";
-import type { ComponentType, FunctionComponent } from "react";
+import type { ComponentType, FunctionComponent, ReactNode } from "react";
 
 import type { IDisposable, Nullable } from "core/index";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
@@ -198,6 +198,13 @@ export type SidePaneDefinition = {
      * The title of the side pane, displayed as a standardized header at the top of the pane.
      */
     title: string;
+
+    /**
+     * Optional rich content to render in place of the plain text title in the pane header.
+     * When provided, this is used instead of `title` for the header display.
+     * The plain `title` string is still used for tooltips, teaching moments, and error boundaries.
+     */
+    titleContent?: ReactNode;
 
     /**
      * An optional teaching moment info. The default assumes the side pane was added by an extension and provides a generic title and description based on the display name or id, which is helpful for discoverability of new items.
@@ -629,6 +636,7 @@ const DockMenu: FunctionComponent<
 const PaneHeader: FunctionComponent<{
     id: string;
     title: string;
+    titleContent?: ReactNode;
     icon?: ComponentType;
     headerExtra?: ComponentType;
     dockOptions: Map<DockLocation, (sidePaneKey: string) => void>;
@@ -644,7 +652,7 @@ const PaneHeader: FunctionComponent<{
                     <props.icon />
                 </div>
             )}
-            <Subtitle2Stronger className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}>{title}</Subtitle2Stronger>
+            <Subtitle2Stronger className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}>{props.titleContent ?? title}</Subtitle2Stronger>
             {props.headerExtra && <props.headerExtra />}
             <DockMenu sidePaneId={id} dockOptions={dockOptions}>
                 <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
@@ -1082,6 +1090,7 @@ function usePane(
                                 <PaneHeader
                                     id={topSelectedTab.key}
                                     title={topSelectedTab.title}
+                                    titleContent={topSelectedTab.titleContent}
                                     icon={topPanes.length > 1 ? undefined : topSelectedTab.icon}
                                     headerExtra={topSelectedTab.headerExtra}
                                     dockOptions={validTopDockOptions}
@@ -1123,6 +1132,7 @@ function usePane(
                                 <PaneHeader
                                     id={bottomSelectedTab.key}
                                     title={bottomSelectedTab.title}
+                                    titleContent={bottomSelectedTab.titleContent}
                                     icon={bottomPanes.length > 1 ? undefined : bottomSelectedTab.icon}
                                     headerExtra={bottomSelectedTab.headerExtra}
                                     dockOptions={validBottomDockOptions}
