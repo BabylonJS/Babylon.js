@@ -8,7 +8,6 @@ import type { SettingDescriptor } from "./settingsStore";
 import {
     Button,
     Divider,
-    InfoLabel as FluentInfoLabel,
     Toolbar as FluentToolbar,
     makeStyles,
     Menu,
@@ -37,6 +36,7 @@ import {
     PanelRightContractRegular,
     PanelRightExpandRegular,
     PictureInPictureEnterRegular,
+    InfoRegular,
 } from "@fluentui/react-icons";
 import { Fade as FluentFade } from "@fluentui/react-motion-components-preview";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -215,9 +215,15 @@ export type SidePaneDefinition = {
     keepMounted?: boolean;
 
     /**
-     * Optional info popup content shown next to the title.
+     * Optional info content shown in a popup next to the title when hovering the info icon.
      */
     infoLabel?: JSX.Element;
+
+    /**
+     * Optional callback invoked when the info icon is clicked.
+     * When provided without `infoLabel`, the icon acts as a simple button.
+     */
+    onInfoClick?: () => void;
 };
 
 type RegisteredSidePane = {
@@ -631,6 +637,7 @@ const PaneHeader: FunctionComponent<{
     title: string;
     icon?: ComponentType;
     infoLabel?: JSX.Element;
+    onInfoClick?: () => void;
     dockOptions: Map<DockLocation, (sidePaneKey: string) => void>;
 }> = (props) => {
     const { id, title, dockOptions } = props;
@@ -644,17 +651,19 @@ const PaneHeader: FunctionComponent<{
                     <props.icon />
                 </div>
             )}
-            {props.infoLabel ? (
-                <FluentInfoLabel
-                    htmlFor={id}
-                    info={<div style={{ whiteSpace: "normal", wordBreak: "break-word" }}>{props.infoLabel}</div>}
-                    className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}
-                >
-                    <Subtitle2Stronger>{title}</Subtitle2Stronger>
-                </FluentInfoLabel>
-            ) : (
-                <Subtitle2Stronger className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}>{title}</Subtitle2Stronger>
-            )}
+            <Subtitle2Stronger className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}>
+                {title}
+                {(props.infoLabel || props.onInfoClick) && (
+                    <Button
+                        appearance="transparent"
+                        size="small"
+                        icon={<InfoRegular />}
+                        style={{ marginLeft: "4px", verticalAlign: "middle" }}
+                        title={props.infoLabel ? undefined : "Info"}
+                        onClick={props.onInfoClick}
+                    />
+                )}
+            </Subtitle2Stronger>
             <DockMenu sidePaneId={id} dockOptions={dockOptions}>
                 <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
             </DockMenu>
@@ -1093,6 +1102,7 @@ function usePane(
                                     title={topSelectedTab.title}
                                     icon={topPanes.length > 1 ? undefined : topSelectedTab.icon}
                                     infoLabel={topSelectedTab.infoLabel}
+                                    onInfoClick={topSelectedTab.onInfoClick}
                                     dockOptions={validTopDockOptions}
                                 />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
@@ -1134,6 +1144,7 @@ function usePane(
                                     title={bottomSelectedTab.title}
                                     icon={bottomPanes.length > 1 ? undefined : bottomSelectedTab.icon}
                                     infoLabel={bottomSelectedTab.infoLabel}
+                                    onInfoClick={bottomSelectedTab.onInfoClick}
                                     dockOptions={validBottomDockOptions}
                                 />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
