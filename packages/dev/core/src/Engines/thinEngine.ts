@@ -2636,7 +2636,7 @@ export class ThinEngine extends AbstractEngine {
             return false;
         }
 
-        this._gl.uniformMatrix4fv(uniform, false, matrices);
+        this._gl.uniformMatrix4fv(uniform, false, matrices as Float32List);
         return true;
     }
 
