@@ -172,7 +172,6 @@ export default tseslint.config(
             globals: {
                 ...globals.browser,
                 ...globals.node,
-                ...globals.jest,
             },
             parser: tseslint.parser,
             parserOptions: {
@@ -248,9 +247,9 @@ export default tseslint.config(
             "template-curly-spacing": "error",
             "template-tag-spacing": "error",
 
-            // Jest rules
-            "jest/no-standalone-expect": ["error", { additionalTestBlockFunctions: ["afterEach"] }],
-            "jest/valid-expect": "off",
+            // Vitest rules
+            "vitest/no-standalone-expect": ["error", { additionalTestBlockFunctions: ["afterEach"] }],
+            "vitest/valid-expect": "off",
 
             // Babylon.js custom rules
             "babylonjs/syntax": "warn",

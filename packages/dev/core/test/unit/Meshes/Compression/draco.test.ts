@@ -1,6 +1,7 @@
-import { DracoDecoder } from "../../dracoDecoder";
-import type { IDracoCodecConfiguration } from "../../dracoCodec";
-import { DracoCompression } from "../../dracoCompression";
+import { describe, it, expect, afterEach } from "vitest";
+import { DracoDecoder } from "core/Meshes/Compression/dracoDecoder";
+import type { IDracoCodecConfiguration } from "core/Meshes/Compression/dracoCodec";
+import { DracoCompression } from "core/Meshes/Compression/dracoCompression";
 
 describe("Draco Mesh Compression tests", () => {
     describe("DracoDecoder's configuration is affected by updates to DracoCompression's", () => {
