@@ -38,14 +38,6 @@ const createProjectConfig = (type: string) => {
         environment: "node",
         globalSetup,
         setupFiles,
-        deps: {
-            moduleDirectories: ["node_modules"],
-        },
-        server: {
-            deps: {
-                external: ["draco3dgltf"],
-            },
-        },
     };
 };
 
@@ -56,14 +48,11 @@ export default defineConfig({
         },
         extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
     },
-    server: {
-        deps: {
-            external: ["draco3dgltf"],
-        },
-    },
     test: {
         globals: true,
         environment: "node",
+        reporters: process.env.CI ? ["default", "junit"] : ["default"],
+        outputFile: process.env.CI ? { junit: "./junit.xml" } : undefined,
         projects: [
             {
                 test: createProjectConfig("unit"),
