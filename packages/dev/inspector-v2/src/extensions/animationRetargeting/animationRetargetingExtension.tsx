@@ -6,7 +6,7 @@ import { ShellServiceIdentity } from "../../services/shellService";
 
 import { useState, useEffect } from "react";
 import { Observable } from "core/Misc/observable";
-import { Eye20Regular, EyeOff20Regular, WindowConsole20Regular, Database20Regular, PersonRunning20Regular, QuestionCircle20Regular } from "@fluentui/react-icons";
+import { Eye20Regular, EyeOff20Regular, WindowConsole20Regular, Settings20Regular, PersonRunning20Regular, QuestionCircle20Regular } from "@fluentui/react-icons";
 import { Button } from "@fluentui/react-components";
 
 import { AnimationRetargetingViewport } from "./animationRetargetingViewport";
@@ -148,7 +148,7 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
                         disabled={!localIsEnabled}
                         onClick={() => currentManager?.htmlConsole.toggle()}
                     />
-                    <Button appearance="transparent" size="small" icon={<Database20Regular />} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
+                    <Button appearance="transparent" size="small" icon={<Settings20Regular />} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
                     <RetargetingConfigDialog
                         manager={namingSchemeManager}
                         avatarManager={avatarManager}

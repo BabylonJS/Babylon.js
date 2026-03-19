@@ -102,70 +102,6 @@ const MixamoBones: BoneEntry[] = [
     { name: "mixamorig:Crotch4", depth: 2 },
 ];
 
-// prettier-ignore
-// Each entry carries the Mixamo No Namespace name, the Dude bone name, and the depth of the Dude bone.
-// An empty mixamoNoNs string means no counterpart exists for that Dude bone.
-const DudeRemapToMixamo: Array<{ mixamoNoNs: string; dude: string; depth: number }> = [
-    { mixamoNoNs: "Hips", dude: "bone0", depth: 0 },
-    { mixamoNoNs: "", dude: "bone1", depth: 0 },
-    { mixamoNoNs: "Spine", dude: "bone2", depth: 1 },
-    { mixamoNoNs: "Spine1", dude: "bone3", depth: 2 },
-    { mixamoNoNs: "Spine2", dude: "bone4", depth: 3 },
-    { mixamoNoNs: "", dude: "bone5", depth: 3 },
-    { mixamoNoNs: "", dude: "bone6", depth: 3 },
-    { mixamoNoNs: "Neck", dude: "bone7", depth: 4 },
-    { mixamoNoNs: "", dude: "bone8", depth: 4 },
-    { mixamoNoNs: "", dude: "bone9", depth: 4 },
-    { mixamoNoNs: "RightEye", dude: "bone10", depth: 5 },
-    { mixamoNoNs: "LeftEye", dude: "bone11", depth: 5 },
-    { mixamoNoNs: "RightShoulder", dude: "bone12", depth: 4 },
-    { mixamoNoNs: "RightArm", dude: "bone13", depth: 5 },
-    { mixamoNoNs: "RightForeArm", dude: "bone14", depth: 6 },
-    { mixamoNoNs: "RightHand", dude: "bone15", depth: 7 },
-    { mixamoNoNs: "RightHandThumb1", dude: "bone16", depth: 8 },
-    { mixamoNoNs: "RightHandThumb2", dude: "bone17", depth: 9 },
-    { mixamoNoNs: "RightHandThumb3", dude: "bone18", depth: 10 },
-    { mixamoNoNs: "RightHandIndex1", dude: "bone19", depth: 8 },
-    { mixamoNoNs: "RightHandIndex2", dude: "bone20", depth: 9 },
-    { mixamoNoNs: "RightHandIndex3", dude: "bone21", depth: 10 },
-    { mixamoNoNs: "RightHandMiddle1", dude: "bone22", depth: 8 },
-    { mixamoNoNs: "RightHandMiddle2", dude: "bone23", depth: 9 },
-    { mixamoNoNs: "RightHandMiddle3", dude: "bone24", depth: 10 },
-    { mixamoNoNs: "RightHandRing1", dude: "bone25", depth: 8 },
-    { mixamoNoNs: "RightHandRing2", dude: "bone26", depth: 9 },
-    { mixamoNoNs: "RightHandRing3", dude: "bone27", depth: 10 },
-    { mixamoNoNs: "RightHandPinky1", dude: "bone28", depth: 8 },
-    { mixamoNoNs: "RightHandPinky2", dude: "bone29", depth: 9 },
-    { mixamoNoNs: "RightHandPinky3", dude: "bone30", depth: 10 },
-    { mixamoNoNs: "LeftShoulder", dude: "bone31", depth: 4 },
-    { mixamoNoNs: "LeftArm", dude: "bone32", depth: 5 },
-    { mixamoNoNs: "LeftForeArm", dude: "bone33", depth: 6 },
-    { mixamoNoNs: "LeftHand", dude: "bone34", depth: 7 },
-    { mixamoNoNs: "LeftHandThumb1", dude: "bone35", depth: 8 },
-    { mixamoNoNs: "LeftHandThumb2", dude: "bone36", depth: 9 },
-    { mixamoNoNs: "LeftHandThumb3", dude: "bone37", depth: 10 },
-    { mixamoNoNs: "LeftHandIndex1", dude: "bone38", depth: 8 },
-    { mixamoNoNs: "LeftHandIndex2", dude: "bone39", depth: 9 },
-    { mixamoNoNs: "LeftHandIndex3", dude: "bone40", depth: 10 },
-    { mixamoNoNs: "LeftHandMiddle1", dude: "bone41", depth: 8 },
-    { mixamoNoNs: "LeftHandMiddle2", dude: "bone42", depth: 9 },
-    { mixamoNoNs: "LeftHandMiddle3", dude: "bone43", depth: 10 },
-    { mixamoNoNs: "LeftHandRing1", dude: "bone44", depth: 8 },
-    { mixamoNoNs: "LeftHandRing2", dude: "bone45", depth: 9 },
-    { mixamoNoNs: "LeftHandRing3", dude: "bone46", depth: 10 },
-    { mixamoNoNs: "LeftHandPinky1", dude: "bone47", depth: 8 },
-    { mixamoNoNs: "LeftHandPinky2", dude: "bone48", depth: 9 },
-    { mixamoNoNs: "LeftHandPinky3", dude: "bone49", depth: 10 },
-    { mixamoNoNs: "RightUpLeg", dude: "bone50", depth: 1 },
-    { mixamoNoNs: "RightLeg", dude: "bone51", depth: 2 },
-    { mixamoNoNs: "RightFoot", dude: "bone52", depth: 3 },
-    { mixamoNoNs: "RightToeBase", dude: "bone53", depth: 4 },
-    { mixamoNoNs: "LeftUpLeg", dude: "bone54", depth: 1 },
-    { mixamoNoNs: "LeftLeg", dude: "bone55", depth: 2 },
-    { mixamoNoNs: "LeftFoot", dude: "bone56", depth: 3 },
-    { mixamoNoNs: "LeftToeBase", dude: "bone57", depth: 4 },
-];
-
 type StoredRemapping = {
     fromScheme: string;
     toScheme: string;
@@ -229,7 +165,7 @@ export class NamingSchemeManager {
     }
 
     /**
-     * Recreates any missing default naming schemes (Mixamo, Mixamo No Namespace, Dude).
+     * Recreates any missing default naming schemes (Mixamo, Mixamo No Namespace).
      * Existing schemes with those names are not modified.
      * @returns true if at least one scheme was added.
      */
@@ -246,13 +182,6 @@ export class NamingSchemeManager {
             );
             changed = true;
         }
-        if (!this._schemes.has("Dude")) {
-            this._schemes.set(
-                "Dude",
-                DudeRemapToMixamo.map((e) => ({ name: e.dude, depth: e.depth }))
-            );
-            changed = true;
-        }
         if (changed) {
             this._saveToStorage();
         }
@@ -260,15 +189,15 @@ export class NamingSchemeManager {
     }
 
     /**
-     * Recreates any missing default remappings (Mixamo ↔ Mixamo No Namespace, Dude ↔ Mixamo No Namespace,
-     * Dude ↔ Mixamo). Also ensures the required schemes exist, creating any that are absent.
+     * Recreates any missing default remappings (Mixamo ↔ Mixamo No Namespace).
+     * Also ensures the required schemes exist, creating any that are absent.
      * Existing remappings are not modified.
      * @returns true if at least one remapping or scheme was added.
      */
     public recreateDefaultRemappings(): boolean {
         let changed = false;
 
-        // Ensure all three default schemes exist before building remappings.
+        // Ensure default schemes exist before building remappings.
         if (!this._schemes.has("Mixamo")) {
             this._schemes.set("Mixamo", [...MixamoBones]);
             changed = true;
@@ -280,13 +209,6 @@ export class NamingSchemeManager {
             );
             changed = true;
         }
-        if (!this._schemes.has("Dude")) {
-            this._schemes.set(
-                "Dude",
-                DudeRemapToMixamo.map((e) => ({ name: e.dude, depth: e.depth }))
-            );
-            changed = true;
-        }
 
         // Mixamo → Mixamo No Namespace
         if (!this._remappings.some((r) => this._sameSchemes(r, "Mixamo", "Mixamo No Namespace"))) {
@@ -295,26 +217,6 @@ export class NamingSchemeManager {
                 map.set(entry.name, entry.name.replace("mixamorig:", ""));
             }
             this._remappings.push({ fromScheme: "Mixamo", toScheme: "Mixamo No Namespace", map });
-            changed = true;
-        }
-
-        // Dude → Mixamo No Namespace
-        if (!this._remappings.some((r) => this._sameSchemes(r, "Dude", "Mixamo No Namespace"))) {
-            const map = new Map<string, string>();
-            for (const entry of DudeRemapToMixamo) {
-                map.set(entry.dude, entry.mixamoNoNs);
-            }
-            this._remappings.push({ fromScheme: "Dude", toScheme: "Mixamo No Namespace", map });
-            changed = true;
-        }
-
-        // Dude → Mixamo
-        if (!this._remappings.some((r) => this._sameSchemes(r, "Dude", "Mixamo"))) {
-            const map = new Map<string, string>();
-            for (const entry of DudeRemapToMixamo) {
-                map.set(entry.dude, entry.mixamoNoNs !== "" ? "mixamorig:" + entry.mixamoNoNs : "");
-            }
-            this._remappings.push({ fromScheme: "Dude", toScheme: "Mixamo", map });
             changed = true;
         }
 
@@ -590,10 +492,6 @@ export class NamingSchemeManager {
             "Mixamo No Namespace",
             MixamoBones.map((e) => ({ name: e.name.replace("mixamorig:", ""), depth: e.depth }))
         );
-        this._schemes.set(
-            "Dude",
-            DudeRemapToMixamo.map((e) => ({ name: e.dude, depth: e.depth }))
-        );
 
         // Mixamo → Mixamo No Namespace remapping.
         const mixamoMap = new Map<string, string>();
@@ -601,20 +499,6 @@ export class NamingSchemeManager {
             mixamoMap.set(entry.name, entry.name.replace("mixamorig:", ""));
         }
         this._remappings.push({ fromScheme: "Mixamo", toScheme: "Mixamo No Namespace", map: mixamoMap });
-
-        // Dude → Mixamo No Namespace remapping.
-        const dudeToNoNsMap = new Map<string, string>();
-        for (const entry of DudeRemapToMixamo) {
-            dudeToNoNsMap.set(entry.dude, entry.mixamoNoNs);
-        }
-        this._remappings.push({ fromScheme: "Dude", toScheme: "Mixamo No Namespace", map: dudeToNoNsMap });
-
-        // Dude → Mixamo (full namespace) remapping.
-        const dudeToMixamoMap = new Map<string, string>();
-        for (const entry of DudeRemapToMixamo) {
-            dudeToMixamoMap.set(entry.dude, entry.mixamoNoNs !== "" ? "mixamorig:" + entry.mixamoNoNs : "");
-        }
-        this._remappings.push({ fromScheme: "Dude", toScheme: "Mixamo", map: dudeToMixamoMap });
 
         this._saveToStorage();
     }
