@@ -9,7 +9,7 @@ import {
     Button,
     Divider,
     Toolbar as FluentToolbar,
-    InfoLabel,
+    Subtitle2Stronger,
     makeStyles,
     Menu,
     MenuGroup,
@@ -22,7 +22,6 @@ import {
     SplitButton,
     tokens,
     ToolbarRadioButton,
-    typographyStyles,
 } from "@fluentui/react-components";
 import {
     LayoutColumnTwoFocusLeftFilled,
@@ -213,11 +212,6 @@ export type SidePaneDefinition = {
      * user to lose the complex visual state when switching between tabs.
      */
     keepMounted?: boolean;
-
-    /**
-     * Optional info content shown in a popup next to the title when hovering the info icon.
-     */
-    description?: JSX.Element;
 };
 
 type RegisteredSidePane = {
@@ -481,9 +475,6 @@ const useStyles = makeStyles({
     paneHeaderText: {
         flex: 1,
     },
-    paneHeaderLabel: {
-        ...typographyStyles.subtitle2Stronger,
-    },
     paneHeaderTextNoIcon: {
         marginLeft: tokens.spacingHorizontalM,
     },
@@ -633,11 +624,9 @@ const PaneHeader: FunctionComponent<{
     id: string;
     title: string;
     icon?: ComponentType;
-    description?: JSX.Element;
-    onInfoClick?: () => void;
     dockOptions: Map<DockLocation, (sidePaneKey: string) => void>;
 }> = (props) => {
-    const { id, title, description, dockOptions } = props;
+    const { id, title, dockOptions } = props;
 
     const classes = useStyles();
 
@@ -648,14 +637,7 @@ const PaneHeader: FunctionComponent<{
                     <props.icon />
                 </div>
             )}
-            <InfoLabel
-                className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}
-                label={{ className: classes.paneHeaderLabel }}
-                htmlFor={id}
-                info={description}
-            >
-                {title}
-            </InfoLabel>
+            <Subtitle2Stronger className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}>{title}</Subtitle2Stronger>
             <DockMenu sidePaneId={id} dockOptions={dockOptions}>
                 <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
             </DockMenu>
@@ -1093,7 +1075,6 @@ function usePane(
                                     id={topSelectedTab.key}
                                     title={topSelectedTab.title}
                                     icon={topPanes.length > 1 ? undefined : topSelectedTab.icon}
-                                    description={topSelectedTab.description}
                                     dockOptions={validTopDockOptions}
                                 />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
@@ -1134,7 +1115,6 @@ function usePane(
                                     id={bottomSelectedTab.key}
                                     title={bottomSelectedTab.title}
                                     icon={bottomPanes.length > 1 ? undefined : bottomSelectedTab.icon}
-                                    description={bottomSelectedTab.description}
                                     dockOptions={validBottomDockOptions}
                                 />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}

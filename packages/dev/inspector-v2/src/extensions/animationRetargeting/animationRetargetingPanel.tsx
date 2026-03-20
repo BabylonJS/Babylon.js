@@ -5,7 +5,7 @@ import { SceneLoader } from "core/Loading/sceneLoader";
 import type { Transform } from "../../components/properties/transformProperties";
 import { makeStyles, tokens, Body1Strong } from "@fluentui/react-components";
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import { ArrowClockwiseRegular, EyeRegular, EyeOffRegular, WindowConsoleRegular, SettingsRegular } from "@fluentui/react-icons";
+import { ArrowClockwiseRegular, EyeRegular, EyeOffRegular, WindowConsoleRegular, SettingsRegular, InfoRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Accordion as BabylonAccordion, AccordionSection as BabylonAccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
@@ -787,6 +787,12 @@ export const AnimationRetargetingPanel: FunctionComponent<AnimationRetargetingPa
                     onClick={onToggleConsole}
                 />
                 <Button appearance="transparent" icon={SettingsRegular} title="Retargeting configuration" onClick={() => setIsDialogOpen(true)} />
+                <Button
+                    appearance="transparent"
+                    icon={InfoRegular}
+                    title="Documentation"
+                    onClick={() => window.open("https://doc.babylonjs.com/features/featuresDeepDive/animation/animationRetargeting/", "_blank")}
+                />
                 <RetargetingConfigDialog
                     manager={namingSchemeManager}
                     avatarManager={avatarManager}

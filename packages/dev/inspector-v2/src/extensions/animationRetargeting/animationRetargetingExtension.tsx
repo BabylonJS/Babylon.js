@@ -7,7 +7,6 @@ import { SettingsStoreIdentity } from "../../services/settingsStore";
 
 import { Observable } from "core/Misc/observable";
 import { PersonRunningRegular } from "@fluentui/react-icons";
-import { Body1 } from "@fluentui/react-components";
 
 import { AnimationRetargetingViewport } from "./animationRetargetingViewport";
 import { AnimationRetargetingPanel, DefaultPanelState } from "./animationRetargetingPanel";
@@ -16,7 +15,6 @@ import type { RetargetingSceneManager } from "./retargetingSceneManager";
 import { NamingSchemeManager } from "./namingSchemeManager";
 import { AvatarManager } from "./avatarManager";
 import { AnimationManager } from "./animationManager";
-import { Link } from "shared-ui-components/fluent/primitives/link";
 
 /**
  * Service definition for the Animation Retargeting extension.
@@ -98,11 +96,6 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
         const panelReg = shellService.addSidePane({
             key: "AnimationRetargetingPanel",
             title: "Animation Retargeting",
-            description: (
-                <Body1>
-                    Learn more in the <Link url="https://doc.babylonjs.com/features/featuresDeepDive/animation/animationRetargeting/" value="docs" />.
-                </Body1>
-            ),
             icon: PersonRunningRegular,
             horizontalLocation: "left",
             verticalLocation: "top",
