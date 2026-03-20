@@ -659,8 +659,8 @@ export class BoundingBoxRenderer implements ISceneComponent {
             const offset = instancesCount * 16;
             // Multiply into Float64 temp matrix, subtract offset in Float64, then copy to Float32 buffer
             // to preserve precision at large coordinates.
-            TempMatrix.multiplyToRef(boundingBox.getWorldMatrix(), TempMatrix2);
             const resultM = TempMatrix2.asArray();
+            TempMatrix.multiplyToArray(boundingBox.getWorldMatrix(), resultM, 0);
             resultM[12] -= floatingOriginOffset.x;
             resultM[13] -= floatingOriginOffset.y;
             resultM[14] -= floatingOriginOffset.z;
