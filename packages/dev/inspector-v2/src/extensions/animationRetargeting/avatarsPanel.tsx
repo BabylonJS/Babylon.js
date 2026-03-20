@@ -18,7 +18,15 @@ import {
     DialogContent,
     DialogActions,
     Spinner,
+    DataGrid,
+    DataGridHeader,
+    DataGridBody,
+    DataGridRow,
+    DataGridHeaderCell,
+    DataGridCell,
+    createTableColumn,
 } from "@fluentui/react-components";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
 import { StringDropdown } from "shared-ui-components/fluent/primitives/dropdown";
@@ -50,33 +58,6 @@ const useStyles = makeStyles({
         display: "flex",
         gap: tokens.spacingHorizontalXS,
     },
-    listArea: {
-        overflowY: "auto",
-        border: `1px solid ${tokens.colorNeutralStroke2}`,
-        borderRadius: tokens.borderRadiusMedium,
-        display: "flex",
-        flexDirection: "column",
-    },
-    listRow: {
-        display: "flex",
-        alignItems: "center",
-        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
-        gap: tokens.spacingHorizontalXS,
-        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-        ":last-child": { borderBottom: "none" },
-    },
-    listRowName: {
-        flex: 1,
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
-    },
-    listRowMeta: {
-        color: tokens.colorNeutralForeground3,
-        fontSize: "12px",
-        flexShrink: 0,
-        marginRight: tokens.spacingHorizontalXS,
-    },
     editSectionFlex: {
         flex: 1,
         overflowY: "auto",
@@ -98,6 +79,9 @@ const useStyles = makeStyles({
     },
     formControl: {
         flex: 1,
+        textAlign: "left",
+        "& span": { textAlign: "left" },
+        "& input": { textAlign: "left" },
     },
     actionRow: {
         display: "flex",
@@ -286,6 +270,37 @@ export const AvatarsPanel: FunctionComponent<{
 
     const allAvatars = [...avatarManager.getAllAvatars()].sort((a, b) => a.name.localeCompare(b.name));
     const schemeNames = namingSchemeManager.getAllSchemeNames();
+
+    const avatarColumnSizing: TableColumnSizingOptions = {
+        name: { defaultWidth: 150 },
+        source: { defaultWidth: 60 },
+        scheme: { defaultWidth: 150 },
+        actions: { defaultWidth: 80 },
+    };
+
+    const avatarColumns: TableColumnDefinition<StoredAvatar>[] = [
+        createTableColumn({ columnId: "name", renderHeaderCell: () => "Name", renderCell: (item) => item.name }),
+        createTableColumn({ columnId: "source", renderHeaderCell: () => "Source", renderCell: (item) => (item.source === "url" ? "URL" : "File") }),
+        createTableColumn({ columnId: "scheme", renderHeaderCell: () => "Scheme", renderCell: (item) => item.namingScheme }),
+        createTableColumn({
+            columnId: "actions",
+            renderHeaderCell: () => "",
+            renderCell: (item) => (
+                <>
+                    <Button
+                        appearance="transparent"
+                        icon={EditRegular}
+                        title="Edit"
+                        disabled={!!editing}
+                        onClick={() => {
+                            void startEdit(item);
+                        }}
+                    />
+                    <Button appearance="transparent" icon={DeleteRegular} title="Delete" disabled={!!editing} onClick={() => handleDelete(item)} />
+                </>
+            ),
+        }),
+    ];
 
     // ─── Load preview ─────────────────────────────────────────────────────
 
@@ -611,26 +626,22 @@ export const AvatarsPanel: FunctionComponent<{
                     <Button icon={AddRegular} label="Add" onClick={startAdd} disabled={!!editing} />
                 </div>
             </div>
-            <div className={classes.listArea} style={{ flex: editing ? "0 0 auto" : 1, maxHeight: editing ? "140px" : undefined }}>
-                {allAvatars.length === 0 && <span className={classes.emptyMsg}>No custom avatars defined.</span>}
-                {allAvatars.map((avatar) => (
-                    <div key={avatar.id} className={classes.listRow}>
-                        <span className={classes.listRowName}>{avatar.name}</span>
-                        <span className={classes.listRowMeta}>{avatar.source === "url" ? "URL" : "File"}</span>
-                        <span className={classes.listRowMeta}>{avatar.namingScheme}</span>
-                        <Button
-                            appearance="transparent"
-                            icon={EditRegular}
-                            title="Edit"
-                            disabled={!!editing}
-                            onClick={() => {
-                                void startEdit(avatar);
-                            }}
-                        />
-                        <Button appearance="transparent" icon={DeleteRegular} title="Delete" disabled={!!editing} onClick={() => handleDelete(avatar)} />
-                    </div>
-                ))}
-            </div>
+            {allAvatars.length === 0 && <span className={classes.emptyMsg}>No custom avatars defined.</span>}
+            <DataGrid
+                items={allAvatars}
+                columns={avatarColumns}
+                getRowId={(item) => item.id}
+                style={{ flex: editing ? undefined : 1, maxHeight: editing ? "140px" : undefined, overflowY: "auto" }}
+                resizableColumns
+                columnSizingOptions={avatarColumnSizing}
+            >
+                <DataGridHeader>
+                    <DataGridRow>{({ renderHeaderCell }) => <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>}</DataGridRow>
+                </DataGridHeader>
+                <DataGridBody<StoredAvatar>>
+                    {({ item, rowId }) => <DataGridRow<StoredAvatar> key={rowId}>{({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}</DataGridRow>}
+                </DataGridBody>
+            </DataGrid>
 
             {editing && (
                 <div className={classes.editSectionFlex}>

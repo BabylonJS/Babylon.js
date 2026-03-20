@@ -21,7 +21,15 @@ import {
     Body1Strong,
     Caption1,
     Spinner,
+    DataGrid,
+    DataGridHeader,
+    DataGridBody,
+    DataGridRow,
+    DataGridHeaderCell,
+    DataGridCell,
+    createTableColumn,
 } from "@fluentui/react-components";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { Button } from "shared-ui-components/fluent/primitives/button";
 import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
 import { StringDropdown } from "shared-ui-components/fluent/primitives/dropdown";
@@ -97,33 +105,6 @@ const useStyles = makeStyles({
         flexShrink: 0,
         paddingBottom: tokens.spacingVerticalXS,
     },
-    listArea: {
-        overflowY: "auto",
-        border: `1px solid ${tokens.colorNeutralStroke2}`,
-        borderRadius: tokens.borderRadiusMedium,
-        display: "flex",
-        flexDirection: "column",
-    },
-    listRow: {
-        display: "flex",
-        alignItems: "center",
-        padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS}`,
-        gap: tokens.spacingHorizontalXS,
-        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-        ":last-child": { borderBottom: "none" },
-    },
-    listRowName: {
-        flex: 1,
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
-    },
-    listRowMeta: {
-        color: tokens.colorNeutralForeground3,
-        fontSize: "12px",
-        flexShrink: 0,
-        marginRight: tokens.spacingHorizontalXS,
-    },
     editSection: {
         flexShrink: 0,
         borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
@@ -153,6 +134,9 @@ const useStyles = makeStyles({
     },
     formControl: {
         flex: 1,
+        textAlign: "left",
+        "& span": { textAlign: "left" },
+        "& input": { textAlign: "left" },
     },
     mappingTable: {
         flex: 1,
@@ -254,6 +238,16 @@ type RemappingEdit = {
     isNew: boolean;
 };
 
+type SchemeRow = {
+    name: string;
+    boneCount: number;
+};
+
+type RemappingRow = {
+    fromScheme: string;
+    toScheme: string;
+};
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Loads a stored avatar or animation into a scene (handles both URL and file sources). */
@@ -321,6 +315,36 @@ const SchemesPanel: FunctionComponent<{
     );
 
     const schemeNames = manager.getAllSchemeNames().sort((a, b) => a.localeCompare(b));
+
+    const schemeRows: SchemeRow[] = schemeNames.map((name) => ({
+        name,
+        boneCount: manager.getNamingScheme(name)?.length ?? 0,
+    }));
+
+    const schemeColumnSizing: TableColumnSizingOptions = {
+        name: { defaultWidth: 200 },
+        bones: { defaultWidth: 80 },
+        actions: { defaultWidth: 80 },
+    };
+
+    const schemeColumns: TableColumnDefinition<SchemeRow>[] = [
+        createTableColumn({ columnId: "name", renderHeaderCell: () => "Name", renderCell: (item) => item.name }),
+        createTableColumn({
+            columnId: "bones",
+            renderHeaderCell: () => "Bones",
+            renderCell: (item) => `${item.boneCount} bone${item.boneCount !== 1 ? "s" : ""}`,
+        }),
+        createTableColumn({
+            columnId: "actions",
+            renderHeaderCell: () => "",
+            renderCell: (item) => (
+                <>
+                    <Button appearance="transparent" icon={EditRegular} title="Edit" disabled={!!editing} onClick={() => startEdit(item.name)} />
+                    <Button appearance="transparent" icon={DeleteRegular} title="Delete" disabled={!!editing} onClick={() => handleDelete(item.name)} />
+                </>
+            ),
+        }),
+    ];
 
     const startAdd = useCallback(() => {
         setEditingWithNotify({ originalName: null, name: "", namesText: "" });
@@ -546,22 +570,22 @@ const SchemesPanel: FunctionComponent<{
                     <Button icon={AddRegular} label="Add" onClick={startAdd} disabled={!!editing} />
                 </div>
             </div>
-            <div className={classes.listArea} style={{ flex: editing ? "0 0 auto" : 1, maxHeight: editing ? "160px" : undefined }}>
-                {schemeNames.length === 0 && <span className={classes.emptyMsg}>No naming schemes defined.</span>}
-                {schemeNames.map((name) => {
-                    const count = manager.getNamingScheme(name)?.length ?? 0;
-                    return (
-                        <div key={name} className={classes.listRow}>
-                            <span className={classes.listRowName}>{name}</span>
-                            <span className={classes.listRowMeta}>
-                                {count} bone{count !== 1 ? "s" : ""}
-                            </span>
-                            <Button appearance="transparent" icon={EditRegular} title="Edit" disabled={!!editing} onClick={() => startEdit(name)} />
-                            <Button appearance="transparent" icon={DeleteRegular} title="Delete" disabled={!!editing} onClick={() => handleDelete(name)} />
-                        </div>
-                    );
-                })}
-            </div>
+            {schemeNames.length === 0 && <span className={classes.emptyMsg}>No naming schemes defined.</span>}
+            <DataGrid
+                items={schemeRows}
+                columns={schemeColumns}
+                getRowId={(item) => item.name}
+                style={{ flex: editing ? undefined : 1, maxHeight: editing ? "160px" : undefined, overflowY: "auto" }}
+                resizableColumns
+                columnSizingOptions={schemeColumnSizing}
+            >
+                <DataGridHeader>
+                    <DataGridRow>{({ renderHeaderCell }) => <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>}</DataGridRow>
+                </DataGridHeader>
+                <DataGridBody<SchemeRow>>
+                    {({ item, rowId }) => <DataGridRow<SchemeRow> key={rowId}>{({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}</DataGridRow>}
+                </DataGridBody>
+            </DataGrid>
             {!editing && error && <span className={classes.errorText}>{error}</span>}
             {editing && (
                 <div className={classes.editSectionFlex}>
@@ -656,7 +680,30 @@ const RemappingsPanel: FunctionComponent<{
     );
 
     const schemeNames = manager.getAllSchemeNames().sort((a, b) => a.localeCompare(b));
-    const allRemappings = [...manager.getAllRemappings()].sort((a, b) => `${a.fromScheme}→${a.toScheme}`.localeCompare(`${b.fromScheme}→${b.toScheme}`));
+    const allRemappings: RemappingRow[] = [...manager.getAllRemappings()].sort((a, b) => `${a.fromScheme}→${a.toScheme}`.localeCompare(`${b.fromScheme}→${b.toScheme}`));
+
+    const remappingColumnSizing: TableColumnSizingOptions = {
+        mapping: { defaultWidth: 300 },
+        actions: { defaultWidth: 80 },
+    };
+
+    const remappingColumns: TableColumnDefinition<RemappingRow>[] = [
+        createTableColumn({
+            columnId: "mapping",
+            renderHeaderCell: () => "Mapping",
+            renderCell: (item) => `${item.fromScheme} → ${item.toScheme}`,
+        }),
+        createTableColumn({
+            columnId: "actions",
+            renderHeaderCell: () => "",
+            renderCell: (item) => (
+                <>
+                    <Button appearance="transparent" icon={EditRegular} title="Edit" disabled={!!editing} onClick={() => startEdit(item.fromScheme, item.toScheme)} />
+                    <Button appearance="transparent" icon={DeleteRegular} title="Delete" disabled={!!editing} onClick={() => handleDelete(item.fromScheme, item.toScheme)} />
+                </>
+            ),
+        }),
+    ];
 
     const startAdd = useCallback(() => {
         if (schemeNames.length < 2) {
@@ -832,18 +879,22 @@ const RemappingsPanel: FunctionComponent<{
                     <Button icon={AddRegular} label="Add" onClick={startAdd} disabled={!!editing || schemeNames.length < 2} />
                 </div>
             </div>
-            <div className={classes.listArea} style={{ flex: editing ? "0 0 auto" : 1, maxHeight: editing ? "140px" : undefined }}>
-                {allRemappings.length === 0 && <span className={classes.emptyMsg}>No remappings defined.</span>}
-                {allRemappings.map(({ fromScheme, toScheme }) => (
-                    <div key={`${fromScheme}|${toScheme}`} className={classes.listRow}>
-                        <span className={classes.listRowName}>
-                            {fromScheme} → {toScheme}
-                        </span>
-                        <Button appearance="transparent" icon={EditRegular} title="Edit" disabled={!!editing} onClick={() => startEdit(fromScheme, toScheme)} />
-                        <Button appearance="transparent" icon={DeleteRegular} title="Delete" disabled={!!editing} onClick={() => handleDelete(fromScheme, toScheme)} />
-                    </div>
-                ))}
-            </div>
+            {allRemappings.length === 0 && <span className={classes.emptyMsg}>No remappings defined.</span>}
+            <DataGrid
+                items={allRemappings}
+                columns={remappingColumns}
+                getRowId={(item) => `${item.fromScheme}|${item.toScheme}`}
+                style={{ flex: editing ? undefined : 1, maxHeight: editing ? "140px" : undefined, overflowY: "auto" }}
+                resizableColumns
+                columnSizingOptions={remappingColumnSizing}
+            >
+                <DataGridHeader>
+                    <DataGridRow>{({ renderHeaderCell }) => <DataGridHeaderCell>{renderHeaderCell()}</DataGridHeaderCell>}</DataGridRow>
+                </DataGridHeader>
+                <DataGridBody<RemappingRow>>
+                    {({ item, rowId }) => <DataGridRow<RemappingRow> key={rowId}>{({ renderCell }) => <DataGridCell>{renderCell(item)}</DataGridCell>}</DataGridRow>}
+                </DataGridBody>
+            </DataGrid>
             {editing && (
                 <div className={classes.editSectionFlex}>
                     <Body1Strong>{editing.isNew ? "New Remapping" : `Editing "${editing.fromScheme}" → "${editing.toScheme}"`}</Body1Strong>
