@@ -124,14 +124,17 @@ function isVersionedResource(url) {
 function networkFirst(event, cache) {
     return fetch(event.request)
         .then((networkResponse) => {
-            if (networkResponse.ok) {
-                // Update cache with the fresh response
-                cache.put(event.request, networkResponse.clone());
+            if (networkResponse.ok || networkResponse.type === "opaque") {
+                // Update cache with the fresh response; use waitUntil to
+                // ensure writes complete before the SW is terminated
+                const cacheUpdates = [];
+                cacheUpdates.push(cache.put(event.request, networkResponse.clone()));
                 // Also cache without query string so offline fallback works
                 const url = new URL(event.request.url);
                 if (url.search) {
-                    cache.put(url.origin + url.pathname, networkResponse.clone());
+                    cacheUpdates.push(cache.put(url.origin + url.pathname, networkResponse.clone()));
                 }
+                event.waitUntil(Promise.allSettled(cacheUpdates));
             }
             return networkResponse;
         })
@@ -160,7 +163,7 @@ function staleWhileRevalidate(event, cache) {
         // For external resources, try matching without query string
         const requestUrl = new URL(event.request.url);
         const urlWithoutQuery = requestUrl.origin + requestUrl.pathname;
-        if (requestUrl.search && !requestUrl.hostname.includes(self.location.hostname)) {
+        if (requestUrl.search && requestUrl.origin !== self.location.origin) {
             return cache.match(urlWithoutQuery);
         }
         return null;
@@ -170,8 +173,8 @@ function staleWhileRevalidate(event, cache) {
         // Start network fetch in background (don't await)
         const fetchPromise = fetch(event.request)
             .then((networkResponse) => {
-                // Update cache with fresh version
-                if (networkResponse.ok) {
+                // Update cache with fresh version (including opaque cross-origin responses)
+                if (networkResponse.ok || networkResponse.type === "opaque") {
                     cache.put(event.request, networkResponse.clone());
                 }
                 return networkResponse;
