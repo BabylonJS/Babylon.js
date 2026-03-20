@@ -43,37 +43,6 @@ export const Decode = (buffer: Uint8Array | Uint16Array): string => {
     return result;
 };
 
-// TODO: these interfaces will not be needed in the future
-//  (once the version of typescript we are using has that as part of the standard declaration)
-interface Uint8ArrayBase64 {
-    /**
-     * Converts the `Uint8Array` to a base64-encoded string.
-     * @param options If provided, sets the alphabet and padding behavior used.
-     * @returns A base64-encoded string.
-     */
-    toBase64(options?: { alphabet?: "base64" | "base64url" | undefined; omitPadding?: boolean | undefined }): string;
-}
-
-// TODO: these interfaces will not be needed in the future
-//  (once the version of typescript we are using has that as part of the standard declaration)
-interface Uint8ArrayConstructorBase64 {
-    /**
-     * Creates a new `Uint8Array` from a base64-encoded string.
-     * @param string The base64-encoded string.
-     * @param options If provided, specifies the alphabet and handling of the last chunk.
-     * @returns A new `Uint8Array` instance.
-     * @throws {SyntaxError} If the input string contains characters outside the specified alphabet, or if the last
-     * chunk is inconsistent with the `lastChunkHandling` option.
-     */
-    fromBase64(
-        string: string,
-        options?: {
-            alphabet?: "base64" | "base64url" | undefined;
-            lastChunkHandling?: "loose" | "strict" | "stop-before-partial" | undefined;
-        }
-    ): Uint8Array<ArrayBuffer>;
-}
-
 /**
  * Checks if the native Uint8Array base64 API is available and spec-compliant,
  * Also note for bundler/polyfill users, if polyfill for Uint8Array base64 API is enabled,
@@ -81,12 +50,12 @@ interface Uint8ArrayConstructorBase64 {
  * @returns true if the native base64 API is available and trustworthy
  */
 function HasNativeBase64(): boolean {
-    return !!((Uint8Array.prototype as unknown as Uint8ArrayBase64).toBase64 && (Uint8Array as unknown as Uint8ArrayConstructorBase64).fromBase64);
+    return !!(Uint8Array.prototype.toBase64 && Uint8Array.fromBase64);
 }
 
 function NativeEncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string {
     const bytes = ArrayBuffer.isView(buffer) ? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength) : new Uint8Array(buffer);
-    return (bytes as unknown as Uint8ArrayBase64).toBase64();
+    return bytes.toBase64!();
 }
 
 function JsEncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string {
@@ -118,7 +87,7 @@ function JsEncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): str
 }
 
 function NativeDecodeBase64ToBinary(base64Data: string): ArrayBuffer {
-    return (Uint8Array as unknown as Uint8ArrayConstructorBase64).fromBase64(base64Data).buffer;
+    return Uint8Array.fromBase64!(base64Data).buffer;
 }
 
 function JsDecodeBase64ToBinary(base64Data: string): ArrayBuffer {
