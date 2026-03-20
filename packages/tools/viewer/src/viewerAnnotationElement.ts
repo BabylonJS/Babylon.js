@@ -71,7 +71,7 @@ export class HTML3DAnnotationElement extends LitElement {
      * The name of the hotspot to track.
      */
     @property({ attribute: "hotspot" })
-    public hotSpot: string = "";
+    public accessor hotSpot: string = "";
 
     /** @internal */
     public override connectedCallback(): void {

@@ -4,7 +4,7 @@ import { GeneralPropertyTabComponent, GenericPropertyComponent } from "./generic
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent.js";
 import type { IInspectableOptions } from "core/Misc/iInspectable.js";
-import { ConnectionPointType, type AnyInputBlock } from "smart-filters";
+import { ConnectionPointType, type AnyInputBlock, getSmartFilterEditableProperties } from "smart-filters";
 import { Color3PropertyTabComponent } from "../../components/propertyTab/properties/color3PropertyTabComponent.js";
 import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent.js";
 import { ImageSourcePropertyTabComponent } from "../../components/propertyTab/properties/imageSourcePropertyTabComponent.js";
@@ -30,9 +30,9 @@ export class InputPropertyComponent extends react.Component<IPropertyComponentPr
     }
 
     override render() {
-        // If this InputBlock has our reserved _propStore, it means it uses @editableProperty to define its properties
+        // If this InputBlock has editable properties, it means it uses @editableProperty to define its properties
         // So we will assume that the developer of that InputBlock intends to use the GenericPropertyComponent
-        if (this.props.nodeData.data._propStore) {
+        if (getSmartFilterEditableProperties(this.props.nodeData.data).length) {
             return <GenericPropertyComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />;
         }
 

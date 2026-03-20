@@ -22,7 +22,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      */
     @serializeAsColor3()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
-    public baseColor: Color3;
+    public accessor baseColor: Color3;
 
     /**
      * Base texture of the metallic workflow. It contains both the baseColor information in RGB as
@@ -30,7 +30,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoTexture")
-    public baseTexture: Nullable<BaseTexture>;
+    public accessor baseTexture: Nullable<BaseTexture>;
 
     /**
      * Specifies the metallic scalar value of the material.
@@ -38,7 +38,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallic: number;
+    public accessor metallic: number;
 
     /**
      * Specifies the roughness scalar value of the material.
@@ -46,7 +46,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public roughness: number;
+    public accessor roughness: number;
 
     /**
      * Texture containing both the metallic value in the B channel and the
@@ -54,7 +54,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_metallicTexture")
-    public metallicRoughnessTexture: Nullable<BaseTexture>;
+    public accessor metallicRoughnessTexture: Nullable<BaseTexture>;
 
     /**
      * Instantiates a new PBRMetalRoughnessMaterial instance.

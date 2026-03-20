@@ -50,7 +50,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public directIntensity: number = 1.0;
+    public accessor directIntensity: number = 1.0;
 
     /**
      * Intensity of the emissive part of the material.
@@ -58,7 +58,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public emissiveIntensity: number = 1.0;
+    public accessor emissiveIntensity: number = 1.0;
 
     /**
      * Intensity of the environment e.g. how much the environment will light the object
@@ -66,7 +66,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public environmentIntensity: number = 1.0;
+    public accessor environmentIntensity: number = 1.0;
 
     /**
      * This is a special control allowing the reduction of the specular highlights coming from the
@@ -74,49 +74,49 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public specularIntensity: number = 1.0;
+    public accessor specularIntensity: number = 1.0;
 
     /**
      * Debug Control allowing disabling the bump map on this material.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public disableBumpMap: boolean = false;
+    public accessor disableBumpMap: boolean = false;
 
     /**
      * AKA Diffuse Texture in standard nomenclature.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public albedoTexture: Nullable<BaseTexture>;
+    public accessor albedoTexture: Nullable<BaseTexture>;
 
     /**
      * OpenPBR Base Weight texture (multiplier to the diffuse and metal lobes).
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public baseWeightTexture: Nullable<BaseTexture>;
+    public accessor baseWeightTexture: Nullable<BaseTexture>;
 
     /**
      * OpenPBR Base Diffuse Roughness texture (roughness of the diffuse lobe).
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public baseDiffuseRoughnessTexture: Nullable<BaseTexture>;
+    public accessor baseDiffuseRoughnessTexture: Nullable<BaseTexture>;
 
     /**
      * AKA Occlusion Texture in other nomenclature.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientTexture: Nullable<BaseTexture>;
+    public accessor ambientTexture: Nullable<BaseTexture>;
 
     /**
      * AKA Occlusion Texture Intensity in other nomenclature.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientTextureStrength: number = 1.0;
+    public accessor ambientTextureStrength: number = 1.0;
 
     /**
      * Defines how much the AO map is occluding the analytical lights (point spot...).
@@ -125,42 +125,42 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientTextureImpactOnAnalyticalLights: number = PBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
+    public accessor ambientTextureImpactOnAnalyticalLights: number = PBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
     /**
      * Stores the alpha values in a texture. Use luminance if texture.getAlphaFromRGB is true.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public opacityTexture: Nullable<BaseTexture>;
+    public accessor opacityTexture: Nullable<BaseTexture>;
 
     /**
      * Stores the reflection values in a texture.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectionTexture: Nullable<BaseTexture>;
+    public accessor reflectionTexture: Nullable<BaseTexture>;
 
     /**
      * Stores the emissive values in a texture.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public emissiveTexture: Nullable<BaseTexture>;
+    public accessor emissiveTexture: Nullable<BaseTexture>;
 
     /**
      * AKA Specular texture in other nomenclature.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectivityTexture: Nullable<BaseTexture>;
+    public accessor reflectivityTexture: Nullable<BaseTexture>;
 
     /**
      * Used to switch from specular/glossiness to metallic/roughness workflow.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallicTexture: Nullable<BaseTexture>;
+    public accessor metallicTexture: Nullable<BaseTexture>;
 
     /**
      * Specifies the metallic scalar of the metallic/roughness workflow.
@@ -168,7 +168,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallic: Nullable<number>;
+    public accessor metallic: Nullable<number>;
 
     /**
      * Specifies the roughness scalar of the metallic/roughness workflow.
@@ -176,7 +176,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public roughness: Nullable<number>;
+    public accessor roughness: Nullable<number>;
 
     /**
      * In metallic workflow, specifies an F0 factor to help configuring the material F0.
@@ -189,7 +189,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallicF0Factor = 1;
+    public accessor metallicF0Factor = 1;
 
     /**
      * In metallic workflow, specifies an F0 color.
@@ -202,7 +202,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsColor3()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallicReflectanceColor = Color3.White();
+    public accessor metallicReflectanceColor = Color3.White();
 
     /**
      * Specifies that only the A channel from metallicReflectanceTexture should be used.
@@ -210,7 +210,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useOnlyMetallicFromMetallicReflectanceTexture = false;
+    public accessor useOnlyMetallicFromMetallicReflectanceTexture = false;
 
     /**
      * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
@@ -219,7 +219,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallicReflectanceTexture: Nullable<BaseTexture>;
+    public accessor metallicReflectanceTexture: Nullable<BaseTexture>;
 
     /**
      * Defines to store reflectanceColor in RGB
@@ -229,7 +229,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectanceTexture: Nullable<BaseTexture>;
+    public accessor reflectanceTexture: Nullable<BaseTexture>;
 
     /**
      * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
@@ -237,21 +237,21 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public microSurfaceTexture: Nullable<BaseTexture>;
+    public accessor microSurfaceTexture: Nullable<BaseTexture>;
 
     /**
      * Stores surface normal data used to displace a mesh in a texture.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public bumpTexture: Nullable<BaseTexture>;
+    public accessor bumpTexture: Nullable<BaseTexture>;
 
     /**
      * Stores the pre-calculated light information of a mesh in a texture.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
-    public lightmapTexture: Nullable<BaseTexture>;
+    public accessor lightmapTexture: Nullable<BaseTexture>;
 
     /**
      * Stores the refracted light information in a texture.
@@ -273,56 +273,56 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsColor3("ambient")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientColor = new Color3(0, 0, 0);
+    public accessor ambientColor = new Color3(0, 0, 0);
 
     /**
      * AKA Diffuse Color in other nomenclature.
      */
     @serializeAsColor3("albedo")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public albedoColor = new Color3(1, 1, 1);
+    public accessor albedoColor = new Color3(1, 1, 1);
 
     /**
      * OpenPBR Base Weight (multiplier to the diffuse and metal lobes).
      */
     @serialize("baseWeight")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public baseWeight = 1;
+    public accessor baseWeight = 1;
 
     /**
      * OpenPBR Base Diffuse Roughness (roughness of the diffuse lobe).
      */
     @serialize("baseDiffuseRoughness")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public baseDiffuseRoughness: Nullable<number>;
+    public accessor baseDiffuseRoughness: Nullable<number>;
 
     /**
      * AKA Specular Color in other nomenclature.
      */
     @serializeAsColor3("reflectivity")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectivityColor = new Color3(1, 1, 1);
+    public accessor reflectivityColor = new Color3(1, 1, 1);
 
     /**
      * The color reflected from the material.
      */
     @serializeAsColor3("reflection")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectionColor = new Color3(1.0, 1.0, 1.0);
+    public accessor reflectionColor = new Color3(1.0, 1.0, 1.0);
 
     /**
      * The color emitted from the material.
      */
     @serializeAsColor3("emissive")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public emissiveColor = new Color3(0, 0, 0);
+    public accessor emissiveColor = new Color3(0, 0, 0);
 
     /**
      * AKA Glossiness in other nomenclature.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public microSurface = 1.0;
+    public accessor microSurface = 1.0;
 
     /**
      * Index of refraction of the material base layer.
@@ -368,28 +368,28 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useLightmapAsShadowmap = false;
+    public accessor useLightmapAsShadowmap = false;
 
     /**
      * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public useAlphaFromAlbedoTexture = false;
+    public accessor useAlphaFromAlbedoTexture = false;
 
     /**
      * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public forceAlphaTest = false;
+    public accessor forceAlphaTest = false;
 
     /**
      * Defines the alpha limits in alpha test mode.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public alphaCutOff = 0.4;
+    public accessor alphaCutOff = 0.4;
 
     /**
      * Specifies that the material will keep the specular highlights over a transparent surface (only the most luminous ones).
@@ -397,21 +397,21 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useSpecularOverAlpha = true;
+    public accessor useSpecularOverAlpha = true;
 
     /**
      * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useMicroSurfaceFromReflectivityMapAlpha = false;
+    public accessor useMicroSurfaceFromReflectivityMapAlpha = false;
 
     /**
      * Specifies if the metallic texture contains the roughness information in its alpha channel.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useRoughnessFromMetallicTextureAlpha = true;
+    public accessor useRoughnessFromMetallicTextureAlpha = true;
 
     /**
      * Specifies if the metallic texture contains the roughness information in its green channel.
@@ -419,28 +419,28 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useRoughnessFromMetallicTextureGreen = false;
+    public accessor useRoughnessFromMetallicTextureGreen = false;
 
     /**
      * Specifies if the metallic texture contains the metallness information in its blue channel.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useMetallnessFromMetallicTextureBlue = false;
+    public accessor useMetallnessFromMetallicTextureBlue = false;
 
     /**
      * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useAmbientOcclusionFromMetallicTextureRed = false;
+    public accessor useAmbientOcclusionFromMetallicTextureRed = false;
 
     /**
      * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useAmbientInGrayScale = false;
+    public accessor useAmbientInGrayScale = false;
 
     /**
      * In case the reflectivity map does not contain the microsurface information in its alpha channel,
@@ -448,7 +448,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useAutoMicroSurfaceFromReflectivityMap = false;
+    public accessor useAutoMicroSurfaceFromReflectivityMap = false;
 
     /**
      * BJS is using an hardcoded light falloff based on a manually sets up range.
@@ -510,77 +510,77 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useRadianceOverAlpha = true;
+    public accessor useRadianceOverAlpha = true;
 
     /**
      * Allows using an object space normal map (instead of tangent space).
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useObjectSpaceNormalMap = false;
+    public accessor useObjectSpaceNormalMap = false;
 
     /**
      * Allows using the bump map in parallax mode.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useParallax = false;
+    public accessor useParallax = false;
 
     /**
      * Allows using the bump map in parallax occlusion mode.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useParallaxOcclusion = false;
+    public accessor useParallaxOcclusion = false;
 
     /**
      * Controls the scale bias of the parallax mode.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public parallaxScaleBias = 0.05;
+    public accessor parallaxScaleBias = 0.05;
 
     /**
      * If sets to true, disables all the lights affecting the material.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public disableLighting = false;
+    public accessor disableLighting = false;
 
     /**
      * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public forceIrradianceInFragment = false;
+    public accessor forceIrradianceInFragment = false;
 
     /**
      * Number of Simultaneous lights allowed on the material.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public maxSimultaneousLights = 4;
+    public accessor maxSimultaneousLights = 4;
 
     /**
      * If sets to true, x component of normal map value will invert (x = 1.0 - x).
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public invertNormalMapX = false;
+    public accessor invertNormalMapX = false;
 
     /**
      * If sets to true, y component of normal map value will invert (y = 1.0 - y).
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public invertNormalMapY = false;
+    public accessor invertNormalMapY = false;
 
     /**
      * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public twoSidedLighting = false;
+    public accessor twoSidedLighting = false;
 
     /**
      * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
@@ -588,7 +588,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useAlphaFresnel = false;
+    public accessor useAlphaFresnel = false;
 
     /**
      * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
@@ -596,7 +596,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useLinearAlphaFresnel = false;
+    public accessor useLinearAlphaFresnel = false;
 
     /**
      * Let user defines the brdf lookup texture used for IBL.
@@ -607,14 +607,14 @@ export class PBRMaterial extends PBRBaseMaterial {
      * * LEGACY Default None correlated 16bit pixel depth https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public environmentBRDFTexture: Nullable<BaseTexture> = null;
+    public accessor environmentBRDFTexture: Nullable<BaseTexture> = null;
 
     /**
      * Force normal to face away from face.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public forceNormalForward = false;
+    public accessor forceNormalForward = false;
 
     /**
      * Enables specular anti aliasing in the PBR shader.
@@ -623,7 +623,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public enableSpecularAntiAliasing = false;
+    public accessor enableSpecularAntiAliasing = false;
 
     /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
@@ -631,7 +631,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useHorizonOcclusion = true;
+    public accessor useHorizonOcclusion = true;
 
     /**
      * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
@@ -639,21 +639,21 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useRadianceOcclusion = true;
+    public accessor useRadianceOcclusion = true;
 
     /**
      * If set to true, no lighting calculations will be applied.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public unlit = false;
+    public accessor unlit = false;
 
     /**
      * If sets to true, the decal map will be applied after the detail map. Else, it is applied before (default: false)
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public applyDecalMapAfterDetailMap = false;
+    public accessor applyDecalMapAfterDetailMap = false;
 
     /**
      * Instantiates a new PBRMaterial instance.

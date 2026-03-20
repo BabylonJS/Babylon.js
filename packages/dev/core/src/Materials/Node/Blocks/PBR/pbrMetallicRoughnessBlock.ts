@@ -320,7 +320,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
     /** Indicates that no code should be generated in the vertex shader. Can be useful in some specific circumstances (like when doing ray marching for eg) */
     @editableInPropertyPage("Generate only fragment code", PropertyTypeForEdition.Boolean, "ADVANCED", {
-        notifiers: { rebuild: true, update: true, onValidation: PBRMetallicRoughnessBlock._OnGenerateOnlyFragmentCodeChanged },
+        notifiers: { rebuild: true, update: true, onValidation: (block, prop) => PBRMetallicRoughnessBlock._OnGenerateOnlyFragmentCodeChanged(block, prop) },
     })
     public generateOnlyFragmentCode = false;
 

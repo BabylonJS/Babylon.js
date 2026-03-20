@@ -83,7 +83,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
+    public accessor useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
 
     private _useSmithVisibilityHeightCorrelated = PBRBRDFConfiguration.DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED;
     /**
@@ -96,7 +96,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public useSmithVisibilityHeightCorrelated = PBRBRDFConfiguration.DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED;
+    public accessor useSmithVisibilityHeightCorrelated = PBRBRDFConfiguration.DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED;
 
     private _useSphericalHarmonics = PBRBRDFConfiguration.DEFAULT_USE_SPHERICAL_HARMONICS;
     /**
@@ -108,7 +108,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public useSphericalHarmonics = PBRBRDFConfiguration.DEFAULT_USE_SPHERICAL_HARMONICS;
+    public accessor useSphericalHarmonics = PBRBRDFConfiguration.DEFAULT_USE_SPHERICAL_HARMONICS;
 
     private _useSpecularGlossinessInputEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION;
     /**
@@ -119,7 +119,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public useSpecularGlossinessInputEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION;
+    public accessor useSpecularGlossinessInputEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION;
 
     private _mixIblRadianceWithIrradiance = PBRBRDFConfiguration.DEFAULT_MIX_IBL_RADIANCE_WITH_IRRADIANCE;
     /**
@@ -129,7 +129,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public mixIblRadianceWithIrradiance = PBRBRDFConfiguration.DEFAULT_MIX_IBL_RADIANCE_WITH_IRRADIANCE;
+    public accessor mixIblRadianceWithIrradiance = PBRBRDFConfiguration.DEFAULT_MIX_IBL_RADIANCE_WITH_IRRADIANCE;
 
     private _useLegacySpecularEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_LEGACY_SPECULAR_ENERGY_CONSERVATION;
     /**
@@ -138,7 +138,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public useLegacySpecularEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_LEGACY_SPECULAR_ENERGY_CONSERVATION;
+    public accessor useLegacySpecularEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_LEGACY_SPECULAR_ENERGY_CONSERVATION;
 
     private _baseDiffuseModel: number = PBRBRDFConfiguration.DEFAULT_DIFFUSE_MODEL;
     /**
@@ -146,7 +146,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
      */
     @serialize("baseDiffuseModel")
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public baseDiffuseModel: number = PBRBRDFConfiguration.DEFAULT_DIFFUSE_MODEL;
+    public accessor baseDiffuseModel: number = PBRBRDFConfiguration.DEFAULT_DIFFUSE_MODEL;
 
     private _dielectricSpecularModel: number = PBRBRDFConfiguration.DEFAULT_DIELECTRIC_SPECULAR_MODEL;
     /**
@@ -154,7 +154,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
      */
     @serialize("dielectricSpecularModel")
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public dielectricSpecularModel: number = PBRBRDFConfiguration.DEFAULT_DIELECTRIC_SPECULAR_MODEL;
+    public accessor dielectricSpecularModel: number = PBRBRDFConfiguration.DEFAULT_DIELECTRIC_SPECULAR_MODEL;
 
     private _conductorSpecularModel: number = PBRBRDFConfiguration.DEFAULT_CONDUCTOR_SPECULAR_MODEL;
     /**
@@ -162,7 +162,7 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
      */
     @serialize("conductorSpecularModel")
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public conductorSpecularModel: number = PBRBRDFConfiguration.DEFAULT_CONDUCTOR_SPECULAR_MODEL;
+    public accessor conductorSpecularModel: number = PBRBRDFConfiguration.DEFAULT_CONDUCTOR_SPECULAR_MODEL;
 
     /** @internal */
     private _internalMarkAllSubMeshesAsMiscDirty: () => void;

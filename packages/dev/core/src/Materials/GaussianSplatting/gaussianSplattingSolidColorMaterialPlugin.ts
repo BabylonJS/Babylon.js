@@ -28,7 +28,7 @@ export class GaussianSplattingSolidColorMaterialPlugin extends MaterialPluginBas
      */
     @serialize()
     @expandToProperty("_onIsEnabledChanged")
-    public isEnabled = true;
+    public accessor isEnabled = true;
 
     /** @internal */
     public _onIsEnabledChanged(): void {

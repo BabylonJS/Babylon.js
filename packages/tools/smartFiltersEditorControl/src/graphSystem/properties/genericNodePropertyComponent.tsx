@@ -3,7 +3,7 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent.js";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent.js";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { type BaseBlock, PropertyTypeForEdition, type IEditablePropertyOption, type IPropertyDescriptionForEdition } from "smart-filters";
+import { type BaseBlock, PropertyTypeForEdition, type IEditablePropertyOption, type IPropertyDescriptionForEdition, getSmartFilterEditableProperties } from "smart-filters";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent.js";
 import { FloatSliderComponent } from "../../sharedComponents/floatSliderComponent.js";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent.js";
@@ -99,8 +99,8 @@ export class GenericPropertyTabComponent extends react.Component<IPropertyCompon
         // }
 
         // Check if options for a specific block changed
-        const currentOptions = (this.props.nodeData.data as any)?._propStore;
-        const prevOptions = (prevProps.nodeData.data as any)?._propStore;
+        const currentOptions = getSmartFilterEditableProperties(this.props.nodeData.data);
+        const prevOptions = getSmartFilterEditableProperties(prevProps.nodeData.data);
 
         if (JSON.stringify(currentOptions) !== JSON.stringify(prevOptions)) {
             this.forceUpdate();
@@ -109,24 +109,17 @@ export class GenericPropertyTabComponent extends react.Component<IPropertyCompon
 
     override render() {
         const block = this.props.nodeData.data as BaseBlock;
-        const propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
+        const propStore: IPropertyDescriptionForEdition[] = getSmartFilterEditableProperties(block);
 
-        if (!propStore) {
+        if (!propStore.length) {
             return <></>;
         }
 
         const componentList: { [groupName: string]: JSX.Element[] } = {};
         const groups: string[] = [];
 
-        const classes: string[] = [];
-        let proto = Object.getPrototypeOf(block);
-        while (proto) {
-            classes.push(proto.constructor.name);
-            proto = Object.getPrototypeOf(proto);
-        }
-
         for (const propDescription of propStore) {
-            const { displayName, type, groupName, options, className } = propDescription;
+            const { displayName, type, groupName, options } = propDescription;
             let propertyName = propDescription.propertyName;
             let target: unknown = block;
 
@@ -137,10 +130,6 @@ export class GenericPropertyTabComponent extends react.Component<IPropertyCompon
             }
 
             let components = componentList[groupName];
-
-            if (classes.indexOf(className) === -1) {
-                continue;
-            }
 
             if (options.blockType) {
                 if (options.blockType !== (block as any)._blockType) {

@@ -257,7 +257,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * The basic texture of the material as viewed under a light.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public diffuseTexture: Nullable<BaseTexture>;
+    public accessor diffuseTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("ambientTexture")
     private _ambientTexture: Nullable<BaseTexture> = null;
@@ -265,7 +265,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * AKA Occlusion Texture in other nomenclature, it helps adding baked shadows into your material.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientTexture: Nullable<BaseTexture>;
+    public accessor ambientTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("opacityTexture")
     private _opacityTexture: Nullable<BaseTexture> = null;
@@ -275,7 +275,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * or from the luminance or the current texel (if texture.getAlphaFromRGB is true)
      */
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public opacityTexture: Nullable<BaseTexture>;
+    public accessor opacityTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("reflectionTexture")
     private _reflectionTexture: Nullable<BaseTexture> = null;
@@ -284,7 +284,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#how-to-obtain-reflections-and-refractions
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectionTexture: Nullable<BaseTexture>;
+    public accessor reflectionTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("emissiveTexture")
     private _emissiveTexture: Nullable<BaseTexture> = null;
@@ -293,7 +293,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * This will be mixed in the final result even in the absence of light.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public emissiveTexture: Nullable<BaseTexture>;
+    public accessor emissiveTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("specularTexture")
     private _specularTexture: Nullable<BaseTexture> = null;
@@ -301,7 +301,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * Define how the color and intensity of the highlight given by the light in the material.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public specularTexture: Nullable<BaseTexture>;
+    public accessor specularTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("bumpTexture")
     private _bumpTexture: Nullable<BaseTexture> = null;
@@ -311,7 +311,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials#bump-map
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public bumpTexture: Nullable<BaseTexture>;
+    public accessor bumpTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("lightmapTexture")
     private _lightmapTexture: Nullable<BaseTexture> = null;
@@ -321,7 +321,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction#lightmaps
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public lightmapTexture: Nullable<BaseTexture>;
+    public accessor lightmapTexture: Nullable<BaseTexture>;
 
     @serializeAsTexture("refractionTexture")
     private _refractionTexture: Nullable<BaseTexture> = null;
@@ -330,7 +330,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#how-to-obtain-reflections-and-refractions
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public refractionTexture: Nullable<BaseTexture>;
+    public accessor refractionTexture: Nullable<BaseTexture>;
 
     /**
      * The color of the material lit by the environmental background lighting.
@@ -372,7 +372,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * Does the transparency come from the diffuse texture alpha channel.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public useAlphaFromDiffuseTexture: boolean;
+    public accessor useAlphaFromDiffuseTexture: boolean;
 
     @serialize("useEmissiveAsIllumination")
     private _useEmissiveAsIllumination = false;
@@ -380,7 +380,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * If true, the emissive value is added into the end result, otherwise it is multiplied in.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useEmissiveAsIllumination: boolean;
+    public accessor useEmissiveAsIllumination: boolean;
 
     @serialize("linkEmissiveWithDiffuse")
     private _linkEmissiveWithDiffuse = false;
@@ -389,7 +389,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * the emissive level when the final color is close to one.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public linkEmissiveWithDiffuse: boolean;
+    public accessor linkEmissiveWithDiffuse: boolean;
 
     @serialize("useSpecularOverAlpha")
     private _useSpecularOverAlpha = false;
@@ -398,7 +398,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useSpecularOverAlpha: boolean;
+    public accessor useSpecularOverAlpha: boolean;
 
     @serialize("useReflectionOverAlpha")
     private _useReflectionOverAlpha = false;
@@ -407,7 +407,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useReflectionOverAlpha: boolean;
+    public accessor useReflectionOverAlpha: boolean;
 
     @serialize("disableLighting")
     private _disableLighting = false;
@@ -416,7 +416,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * It can be a nice trick for performance to disable lighting on a fully emissive material.
      */
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public disableLighting: boolean;
+    public accessor disableLighting: boolean;
 
     @serialize("useObjectSpaceNormalMap")
     private _useObjectSpaceNormalMap = false;
@@ -424,7 +424,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * Allows using an object space normal map (instead of tangent space).
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useObjectSpaceNormalMap: boolean;
+    public accessor useObjectSpaceNormalMap: boolean;
 
     @serialize("useParallax")
     private _useParallax = false;
@@ -433,7 +433,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/parallaxMapping
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useParallax: boolean;
+    public accessor useParallax: boolean;
 
     @serialize("useParallaxOcclusion")
     private _useParallaxOcclusion = false;
@@ -443,7 +443,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/parallaxMapping
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useParallaxOcclusion: boolean;
+    public accessor useParallaxOcclusion: boolean;
 
     /**
      * Apply a scaling factor that determine which "depth" the height map should reprensent. A value between 0.05 and 0.1 is reasonnable in Parallax, you can reach 0.2 using Parallax Occlusion.
@@ -457,7 +457,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * Helps to define how blurry the reflections should appears in the material.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public roughness: number;
+    public accessor roughness: number;
 
     /**
      * In case of refraction, define the value of the index of refraction.
@@ -486,7 +486,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * In case of light mapping, define whether the map contains light or shadow informations.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useLightmapAsShadowmap: boolean;
+    public accessor useLightmapAsShadowmap: boolean;
 
     // Fresnel
     @serializeAsFresnelParameters("diffuseFresnelParameters")
@@ -496,7 +496,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-    public diffuseFresnelParameters: FresnelParameters;
+    public accessor diffuseFresnelParameters: FresnelParameters;
 
     @serializeAsFresnelParameters("opacityFresnelParameters")
     private _opacityFresnelParameters: FresnelParameters;
@@ -505,7 +505,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelAndMiscDirty")
-    public opacityFresnelParameters: FresnelParameters;
+    public accessor opacityFresnelParameters: FresnelParameters;
 
     @serializeAsFresnelParameters("reflectionFresnelParameters")
     private _reflectionFresnelParameters: FresnelParameters;
@@ -514,7 +514,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-    public reflectionFresnelParameters: FresnelParameters;
+    public accessor reflectionFresnelParameters: FresnelParameters;
 
     @serializeAsFresnelParameters("refractionFresnelParameters")
     private _refractionFresnelParameters: FresnelParameters;
@@ -523,7 +523,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-    public refractionFresnelParameters: FresnelParameters;
+    public accessor refractionFresnelParameters: FresnelParameters;
 
     @serializeAsFresnelParameters("emissiveFresnelParameters")
     private _emissiveFresnelParameters: FresnelParameters;
@@ -532,7 +532,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-    public emissiveFresnelParameters: FresnelParameters;
+    public accessor emissiveFresnelParameters: FresnelParameters;
 
     @serialize("useReflectionFresnelFromSpecular")
     private _useReflectionFresnelFromSpecular = false;
@@ -541,7 +541,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-    public useReflectionFresnelFromSpecular: boolean;
+    public accessor useReflectionFresnelFromSpecular: boolean;
 
     @serialize("useGlossinessFromSpecularMapAlpha")
     private _useGlossinessFromSpecularMapAlpha = false;
@@ -549,7 +549,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * Defines if the glossiness/roughness of the material should be read from the specular map alpha channel
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useGlossinessFromSpecularMapAlpha: boolean;
+    public accessor useGlossinessFromSpecularMapAlpha: boolean;
 
     @serialize("maxSimultaneousLights")
     private _maxSimultaneousLights = 4;
@@ -557,7 +557,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * Defines the maximum number of lights that can be used in the material
      */
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public maxSimultaneousLights: number;
+    public accessor maxSimultaneousLights: number;
 
     @serialize("invertNormalMapX")
     private _invertNormalMapX = false;
@@ -565,7 +565,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * If sets to true, x component of normal map value will invert (x = 1.0 - x).
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public invertNormalMapX: boolean;
+    public accessor invertNormalMapX: boolean;
 
     @serialize("invertNormalMapY")
     private _invertNormalMapY = false;
@@ -573,7 +573,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * If sets to true, y component of normal map value will invert (y = 1.0 - y).
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public invertNormalMapY: boolean;
+    public accessor invertNormalMapY: boolean;
 
     @serialize("twoSidedLighting")
     private _twoSidedLighting = false;
@@ -581,7 +581,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public twoSidedLighting: boolean;
+    public accessor twoSidedLighting: boolean;
 
     @serialize("applyDecalMapAfterDetailMap")
     private _applyDecalMapAfterDetailMap = false;
@@ -589,7 +589,7 @@ export class StandardMaterial extends StandardMaterialBase {
      * If sets to true, the decal map will be applied after the detail map. Else, it is applied before (default: false)
      */
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public applyDecalMapAfterDetailMap: boolean;
+    public accessor applyDecalMapAfterDetailMap: boolean;
 
     private _shadersLoaded = false;
 

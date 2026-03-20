@@ -4,7 +4,7 @@ import { SmartFilter } from "../../src/smartFilter.js";
 import { ImportCustomBlockDefinition } from "../../src/serialization/importCustomBlockDefinition.js";
 import { CustomShaderBlock } from "../../src/blockFoundation/customShaderBlock.js";
 import { SerializedShaderBlockDefinitionV1 } from "../../src/serialization/v1/shaderBlockSerialization.types";
-import { IPropertyDescriptionForEdition, PropertyTypeForEdition } from "../../src/editorUtils/editableInPropertyPage.js";
+import { PropertyTypeForEdition, getSmartFilterEditableProperties } from "../../src/editorUtils/editableInPropertyPage.js";
 
 const glslValidFloatDefaultValue = `
 // { "smartFilterBlockType": "TestBlock", "namespace": "Bug.Repro" }
@@ -245,7 +245,7 @@ vec4 test(vec2 vUV) { // main
             const customShaderBlock = CustomShaderBlock.Create(smartFilter, "TestBlock", blockDefinition);
 
             // Assert
-            expect((customShaderBlock as any)._propStore as IPropertyDescriptionForEdition[]).toContainEqual({
+            expect(getSmartFilterEditableProperties(customShaderBlock)).toContainEqual({
                 propertyName: "cp",
                 displayName: "cp",
                 type: PropertyTypeForEdition.List,

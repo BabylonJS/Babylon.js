@@ -115,7 +115,7 @@ export class LavaMaterial extends PushMaterial {
     @serializeAsTexture("diffuseTexture")
     private _diffuseTexture: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture: BaseTexture;
+    public accessor diffuseTexture: BaseTexture;
 
     @serializeAsTexture()
     public noiseTexture: BaseTexture;
@@ -143,17 +143,17 @@ export class LavaMaterial extends PushMaterial {
     @serialize("disableLighting")
     private _disableLighting = false;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public disableLighting: boolean;
+    public accessor disableLighting: boolean;
 
     @serialize("unlit")
     private _unlit = false;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public unlit: boolean;
+    public accessor unlit: boolean;
 
     @serialize("maxSimultaneousLights")
     private _maxSimultaneousLights = 4;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public maxSimultaneousLights: number;
+    public accessor maxSimultaneousLights: number;
 
     private _scaledDiffuse = new Color3();
 

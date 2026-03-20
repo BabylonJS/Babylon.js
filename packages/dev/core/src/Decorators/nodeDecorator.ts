@@ -107,19 +107,50 @@ export function editableInPropertyPage(
     groupName: string = "PROPERTIES",
     options?: IEditablePropertyOption
 ) {
-    return (target: any, propertyKey: string) => {
-        let propStore: IPropertyDescriptionForEdition[] = target._propStore;
-        if (!propStore) {
+    return (_value: unknown, context: { name: string | symbol; metadata: DecoratorMetadataObject }) => {
+        const meta = context.metadata;
+        let propStore: IPropertyDescriptionForEdition[];
+        if (Object.hasOwn(meta, __bjsPropStoreKey)) {
+            propStore = meta[__bjsPropStoreKey] as IPropertyDescriptionForEdition[];
+        } else {
             propStore = [];
-            target._propStore = propStore;
+            meta[__bjsPropStoreKey] = propStore;
         }
         propStore.push({
-            propertyName: propertyKey,
+            propertyName: String(context.name),
             displayName: displayName,
             type: propertyType,
             groupName: groupName,
             options: options ?? {},
-            className: target.getClassName(),
+            className: "",
         });
     };
+}
+
+/** @internal */
+export const __bjsPropStoreKey = "__bjs_prop_store__";
+
+/**
+ * Gets the editable properties for a given target using TC39 decorator metadata.
+ * Walks the metadata prototype chain to include properties from parent classes.
+ * @param target - the target object (instance or constructor)
+ * @returns array of property descriptions
+ */
+export function getEditableProperties(target: any): IPropertyDescriptionForEdition[] {
+    const ctor = typeof target === "function" ? target : target?.constructor;
+    const metadata: DecoratorMetadataObject | undefined = ctor?.[Symbol.metadata];
+    if (!metadata) {
+        return [];
+    }
+
+    const result: IPropertyDescriptionForEdition[] = [];
+    let currentMeta: any = metadata;
+    while (currentMeta) {
+        if (Object.hasOwn(currentMeta, __bjsPropStoreKey)) {
+            const store = currentMeta[__bjsPropStoreKey] as IPropertyDescriptionForEdition[];
+            result.push(...store);
+        }
+        currentMeta = Object.getPrototypeOf(currentMeta);
+    }
+    return result;
 }

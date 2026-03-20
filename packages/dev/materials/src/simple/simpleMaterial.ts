@@ -73,7 +73,7 @@ export class SimpleMaterial extends PushMaterial {
     @serializeAsTexture("diffuseTexture")
     private _diffuseTexture: BaseTexture;
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public diffuseTexture: BaseTexture;
+    public accessor diffuseTexture: BaseTexture;
 
     @serializeAsColor3("diffuse")
     public diffuseColor = new Color3(1, 1, 1);
@@ -81,12 +81,12 @@ export class SimpleMaterial extends PushMaterial {
     @serialize("disableLighting")
     private _disableLighting = false;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public disableLighting: boolean;
+    public accessor disableLighting: boolean;
 
     @serialize("maxSimultaneousLights")
     private _maxSimultaneousLights = 4;
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public maxSimultaneousLights: number;
+    public accessor maxSimultaneousLights: number;
 
     constructor(name: string, scene?: Scene) {
         super(name, scene);

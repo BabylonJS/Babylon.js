@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serializeAsImageProcessingConfiguration } from "../Misc/decorators";
+import { GetDirectStoreFromMetadata } from "../Misc/decorators.functions";
 import type { Nullable } from "../types";
 import type { ImageProcessingConfiguration } from "./imageProcessingConfiguration";
 import type { Observer } from "../Misc/observable";
@@ -20,9 +20,17 @@ export function ImageProcessingMixin<Tbase extends ImageProcessingMixinConstruct
          */
         constructor(...args: any[]) {
             super(...args);
-            // Decorators don't work on this annonymous class
-            // so I'm setting this up manually.
-            serializeAsImageProcessingConfiguration()(this, "_imageProcessingConfiguration");
+            // Decorators don't work on this anonymous class
+            // so manually register the serialization metadata.
+            const ctor = new.target as any;
+            if (!ctor[Symbol.metadata]) {
+                const parentMeta = Object.getPrototypeOf(ctor)?.[Symbol.metadata];
+                ctor[Symbol.metadata] = parentMeta ? Object.create(parentMeta) : {};
+            }
+            const store = GetDirectStoreFromMetadata(ctor[Symbol.metadata]);
+            if (!store["_imageProcessingConfiguration"]) {
+                store["_imageProcessingConfiguration"] = { type: 9, sourceName: undefined };
+            }
         }
         /**
          * Default configuration related to image processing available in the standard Material.

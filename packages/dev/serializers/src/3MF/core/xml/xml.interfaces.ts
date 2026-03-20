@@ -49,9 +49,11 @@ type FieldMeta = {
 const XML_CLASS_META = Symbol("__xml:meta$__");
 const XML_CLASS_NAME = Symbol("__xml:name$__");
 
-function AddXmlMeta(target: any, meta: FieldMeta) {
-    const ctor = target.constructor;
-    (ctor[XML_CLASS_META] ??= []).push(meta);
+function AddXmlMeta(context: { metadata: DecoratorMetadataObject }, meta: FieldMeta) {
+    if (!Object.hasOwn(context.metadata, XML_CLASS_META)) {
+        context.metadata[XML_CLASS_META] = [];
+    }
+    (context.metadata[XML_CLASS_META] as FieldMeta[]).push(meta);
 }
 
 /**
@@ -59,7 +61,7 @@ function AddXmlMeta(target: any, meta: FieldMeta) {
  * @returns
  */
 export function XmlName(name: XmlName) {
-    return (ctor: Function) => {
+    return (ctor: Function, _context: ClassDecoratorContext) => {
         (ctor as any)[XML_CLASS_NAME] = name;
     };
 }
@@ -69,7 +71,8 @@ export function XmlName(name: XmlName) {
  * @returns
  */
 export function XmlIgnore() {
-    return (target: any, prop: string) => AddXmlMeta(target, { kind: "none", prop, ignore: true });
+    return (_value: unknown, context: { name: string | symbol; metadata: DecoratorMetadataObject }) =>
+        AddXmlMeta(context, { kind: "none", prop: String(context.name), ignore: true });
 }
 
 /**
@@ -77,7 +80,7 @@ export function XmlIgnore() {
  * @returns
  */
 export function XmlAttr(opts?: { name: XmlName; formatter?: FormatterCtor<any> }) {
-    return (target: any, prop: string) => AddXmlMeta(target, { kind: "attr", prop, ...opts });
+    return (_value: unknown, context: { name: string | symbol; metadata: DecoratorMetadataObject }) => AddXmlMeta(context, { kind: "attr", prop: String(context.name), ...opts });
 }
 
 /**
@@ -86,7 +89,7 @@ export function XmlAttr(opts?: { name: XmlName; formatter?: FormatterCtor<any> }
  * @returns
  */
 export function XmlElem(opts?: { name: XmlName }) {
-    return (target: any, prop: string) => AddXmlMeta(target, { kind: "elem", prop, ...opts });
+    return (_value: unknown, context: { name: string | symbol; metadata: DecoratorMetadataObject }) => AddXmlMeta(context, { kind: "elem", prop: String(context.name), ...opts });
 }
 
 /**
@@ -95,7 +98,19 @@ export function XmlElem(opts?: { name: XmlName }) {
  * @returns
  */
 export function GetXmlFieldMeta(obj: any): FieldMeta[] {
-    return (obj?.constructor?.[XML_CLASS_META] ?? []) as FieldMeta[];
+    const ctor = typeof obj === "function" ? obj : obj?.constructor;
+    const metadata: DecoratorMetadataObject | undefined = ctor?.[Symbol.metadata];
+    if (!metadata) return [];
+    // Walk metadata chain to collect all field metadata
+    const result: FieldMeta[] = [];
+    let currentMeta: any = metadata;
+    while (currentMeta) {
+        if (Object.hasOwn(currentMeta, XML_CLASS_META)) {
+            result.push(...(currentMeta[XML_CLASS_META] as FieldMeta[]));
+        }
+        currentMeta = Object.getPrototypeOf(currentMeta);
+    }
+    return result;
 }
 
 /**
