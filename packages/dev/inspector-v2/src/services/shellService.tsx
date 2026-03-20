@@ -9,6 +9,7 @@ import {
     Button,
     Divider,
     Toolbar as FluentToolbar,
+    InfoLabel,
     makeStyles,
     Menu,
     MenuGroup,
@@ -19,9 +20,9 @@ import {
     MenuTrigger,
     mergeClasses,
     SplitButton,
-    Subtitle2Stronger,
     tokens,
     ToolbarRadioButton,
+    typographyStyles,
 } from "@fluentui/react-components";
 import {
     LayoutColumnTwoFocusLeftFilled,
@@ -36,7 +37,6 @@ import {
     PanelRightContractRegular,
     PanelRightExpandRegular,
     PictureInPictureEnterRegular,
-    InfoRegular,
 } from "@fluentui/react-icons";
 import { Fade as FluentFade } from "@fluentui/react-motion-components-preview";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -217,13 +217,7 @@ export type SidePaneDefinition = {
     /**
      * Optional info content shown in a popup next to the title when hovering the info icon.
      */
-    infoLabel?: JSX.Element;
-
-    /**
-     * Optional callback invoked when the info icon is clicked.
-     * When provided without `infoLabel`, the icon acts as a simple button.
-     */
-    onInfoClick?: () => void;
+    description?: JSX.Element;
 };
 
 type RegisteredSidePane = {
@@ -487,6 +481,9 @@ const useStyles = makeStyles({
     paneHeaderText: {
         flex: 1,
     },
+    paneHeaderLabel: {
+        ...typographyStyles.subtitle2Stronger,
+    },
     paneHeaderTextNoIcon: {
         marginLeft: tokens.spacingHorizontalM,
     },
@@ -636,11 +633,11 @@ const PaneHeader: FunctionComponent<{
     id: string;
     title: string;
     icon?: ComponentType;
-    infoLabel?: JSX.Element;
+    description?: JSX.Element;
     onInfoClick?: () => void;
     dockOptions: Map<DockLocation, (sidePaneKey: string) => void>;
 }> = (props) => {
-    const { id, title, dockOptions } = props;
+    const { id, title, description, dockOptions } = props;
 
     const classes = useStyles();
 
@@ -651,19 +648,14 @@ const PaneHeader: FunctionComponent<{
                     <props.icon />
                 </div>
             )}
-            <Subtitle2Stronger className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}>
+            <InfoLabel
+                className={mergeClasses(classes.paneHeaderText, !props.icon && classes.paneHeaderTextNoIcon)}
+                label={{ className: classes.paneHeaderLabel }}
+                htmlFor={id}
+                info={description}
+            >
                 {title}
-                {(props.infoLabel || props.onInfoClick) && (
-                    <Button
-                        appearance="transparent"
-                        size="small"
-                        icon={<InfoRegular />}
-                        style={{ marginLeft: "4px", verticalAlign: "middle" }}
-                        title={props.infoLabel ? undefined : "Info"}
-                        onClick={props.onInfoClick}
-                    />
-                )}
-            </Subtitle2Stronger>
+            </InfoLabel>
             <DockMenu sidePaneId={id} dockOptions={dockOptions}>
                 <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
             </DockMenu>
@@ -1101,8 +1093,7 @@ function usePane(
                                     id={topSelectedTab.key}
                                     title={topSelectedTab.title}
                                     icon={topPanes.length > 1 ? undefined : topSelectedTab.icon}
-                                    infoLabel={topSelectedTab.infoLabel}
-                                    onInfoClick={topSelectedTab.onInfoClick}
+                                    description={topSelectedTab.description}
                                     dockOptions={validTopDockOptions}
                                 />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
@@ -1143,8 +1134,7 @@ function usePane(
                                     id={bottomSelectedTab.key}
                                     title={bottomSelectedTab.title}
                                     icon={bottomPanes.length > 1 ? undefined : bottomSelectedTab.icon}
-                                    infoLabel={bottomSelectedTab.infoLabel}
-                                    onInfoClick={bottomSelectedTab.onInfoClick}
+                                    description={bottomSelectedTab.description}
                                     dockOptions={validBottomDockOptions}
                                 />
                                 {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
