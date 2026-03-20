@@ -1,9 +1,12 @@
 import type { IDisposable } from "core/index";
+import type { Engine } from "core/Engines/engine";
 import type { ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { IShellService } from "../../services/shellService";
 import type { ISettingsStore } from "../../services/settingsStore";
+import type { ISceneContext } from "../../services/sceneContext";
 import { ShellServiceIdentity } from "../../services/shellService";
 import { SettingsStoreIdentity } from "../../services/settingsStore";
+import { SceneContextIdentity } from "../../services/sceneContext";
 
 import { Observable } from "core/Misc/observable";
 import { PersonRunningRegular } from "@fluentui/react-icons";
@@ -22,10 +25,10 @@ import { AnimationManager } from "./animationManager";
  * - Registers a controls side pane with Avatar / Animation / Retarget sections.
  * - Exposes an Enable / Disable toggle to restore the original inspector scene.
  */
-export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShellService, ISettingsStore]> = {
+export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShellService, ISettingsStore, ISceneContext]> = {
     friendlyName: "Animation Retargeting",
-    consumes: [ShellServiceIdentity, SettingsStoreIdentity],
-    factory: (shellService, settingsStore) => {
+    consumes: [ShellServiceIdentity, SettingsStoreIdentity, SceneContextIdentity],
+    factory: (shellService, settingsStore, sceneContext) => {
         // Observable that fires whenever a new scene manager is ready (on each enable)
         const onManagerReadyObs = new Observable<RetargetingSceneManager>();
         // Observable that broadcasts enable/disable state changes to the panel
@@ -67,12 +70,19 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
             isEnabled = enabled;
 
             if (enabled) {
-                // Register the central-content viewport; the component creates the Engine+Scene
+                const scene = sceneContext.currentScene;
+                if (!scene) {
+                    return;
+                }
+                const engine = scene.getEngine() as Engine;
+
+                // Register the central-content viewport; the component uses the PG's engine
                 viewportReg = shellService.addCentralContent({
                     key: "AnimationRetargetingViewport",
                     order: 10,
                     component: () => (
                         <AnimationRetargetingViewport
+                            engine={engine}
                             onManagerReady={(manager) => {
                                 currentManager = manager;
                                 onManagerReadyObs.notifyObservers(manager);
@@ -81,7 +91,7 @@ export const AnimationRetargetingServiceDefinition: ServiceDefinition<[], [IShel
                     ),
                 });
             } else {
-                // Dispose viewport — the component's useEffect cleanup will dispose Engine+Scene
+                // Dispose viewport — the component's useEffect cleanup will restore the PG's render loops
                 viewportReg?.dispose();
                 viewportReg = null;
                 currentManager = null;

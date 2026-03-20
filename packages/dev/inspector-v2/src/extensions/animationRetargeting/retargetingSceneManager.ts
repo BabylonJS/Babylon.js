@@ -1,8 +1,8 @@
 import type { Nullable } from "core/types";
 import type { IRetargetOptions } from "core/Animations/animatorAvatar";
+import type { Engine } from "core/Engines/engine";
 
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { Engine } from "core/Engines/engine";
 import { Vector3 } from "core/Maths/math.vector";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
@@ -54,6 +54,7 @@ const ShadowLayerMask2 = 0x20000000;
 export class RetargetingSceneManager {
     private _engine: Nullable<Engine> = null;
     private _scene: Nullable<Scene> = null;
+    private _savedRenderLoops: Array<() => void> = [];
 
     public avatar: Nullable<Avatar> = null;
     public animationSource: Nullable<AnimationSource> = null;
@@ -77,8 +78,13 @@ export class RetargetingSceneManager {
 
     public constructor() {}
 
-    public initialize(canvas: HTMLCanvasElement): void {
-        this._engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+    public initialize(engine: Engine): void {
+        this._engine = engine;
+
+        // Save and clear existing render loops so we can run our own
+        this._savedRenderLoops = [...(engine as any)._activeRenderLoops];
+        engine.stopRenderLoop();
+
         this.htmlConsole = new HTMLConsole();
         this._scene = new Scene(this._engine);
         this._scene.environmentTexture = CubeTexture.CreateFromPrefilteredData("https://playground.babylonjs.com/textures/environment.env", this._scene);
@@ -287,16 +293,21 @@ export class RetargetingSceneManager {
         return "data:;base64," + btoa(binary);
     }
 
-    public resize(): void {
-        this._engine?.resize();
-    }
-
     public dispose(): void {
         this.avatar?.dispose();
         this.animationSource?.dispose();
         this.htmlConsole.dispose();
         this._scene?.dispose();
-        this._engine?.dispose();
+
+        // Restore original render loops instead of disposing the engine — we don't own it
+        if (this._engine) {
+            this._engine.stopRenderLoop();
+            for (const loop of this._savedRenderLoops) {
+                this._engine.runRenderLoop(loop);
+            }
+            this._savedRenderLoops = [];
+        }
+
         this.avatar = null;
         this.animationSource = null;
         this._scene = null;

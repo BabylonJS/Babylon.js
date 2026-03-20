@@ -1,5 +1,6 @@
 import type { FunctionComponent } from "react";
 
+import type { Engine } from "core/Engines/engine";
 import { makeStyles } from "@fluentui/react-components";
 import { useEffect, useRef } from "react";
 
@@ -10,13 +11,7 @@ const useStyles = makeStyles({
         position: "absolute",
         inset: "0",
         overflow: "hidden",
-        backgroundColor: "#1a1a1a",
-    },
-    canvas: {
-        width: "100%",
-        height: "100%",
-        display: "block",
-        outline: "none",
+        pointerEvents: "none",
     },
     labels: {
         position: "absolute",
@@ -30,30 +25,34 @@ const useStyles = makeStyles({
         fontSize: "13px",
         fontFamily: "sans-serif",
     },
+    consoleContainer: {
+        pointerEvents: "auto",
+    },
 });
 
 type AnimationRetargetingViewportProps = {
+    engine: Engine;
     onManagerReady: (manager: RetargetingSceneManager) => void;
 };
 
-export const AnimationRetargetingViewport: FunctionComponent<AnimationRetargetingViewportProps> = ({ onManagerReady }) => {
+export const AnimationRetargetingViewport: FunctionComponent<AnimationRetargetingViewportProps> = ({ engine, onManagerReady }) => {
     const classes = useStyles();
     const containerRef = useRef<HTMLDivElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
     const managerRef = useRef<RetargetingSceneManager | null>(null);
 
     useEffect(() => {
-        if (!canvasRef.current || !containerRef.current) {
+        if (!containerRef.current) {
             return;
         }
 
         const manager = new RetargetingSceneManager();
         managerRef.current = manager;
-        manager.initialize(canvasRef.current);
+        manager.initialize(engine);
         manager.htmlConsole.attachToContainer(containerRef.current);
         onManagerReady(manager);
 
-        const resizeObserver = new ResizeObserver(() => manager.resize());
+        // Resize the engine when the central content area changes size
+        const resizeObserver = new ResizeObserver(() => engine.resize());
         resizeObserver.observe(containerRef.current);
 
         return () => {
@@ -62,11 +61,10 @@ export const AnimationRetargetingViewport: FunctionComponent<AnimationRetargetin
             managerRef.current = null;
         };
         // onManagerReady is intentionally not in deps - it's a stable callback from the service
-    }, []);
+    }, [engine]);
 
     return (
         <div ref={containerRef} className={classes.container}>
-            <canvas ref={canvasRef} className={classes.canvas} />
             <div className={classes.labels}>
                 <span>◀ Avatar</span>
                 <span>Animation ▶</span>
