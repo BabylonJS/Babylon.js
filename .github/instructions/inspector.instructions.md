@@ -53,7 +53,7 @@ import { Add20Regular, Delete24Regular } from "@fluentui/react-icons";
 Extensions should persist user settings through the `ISettingsStore` service (identity: `SettingsStoreIdentity`) rather than reading/writing `localStorage` directly. `ISettingsStore` namespaces keys under `Babylon/` automatically and provides change notifications via `onChanged`.
 
 ```tsx
-import { SettingsStoreIdentity } from "../../services/settingsStore";
+import { SettingsStoreIdentity } from "./settingsStore";
 
 // Define a setting descriptor
 const MySetting: SettingDescriptor<boolean> = { key: "MyExtension/enabled", default: false };
