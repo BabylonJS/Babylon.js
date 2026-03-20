@@ -64,6 +64,10 @@ describe("OctreeBlock", function () {
         scene.render();
     });
 
+    afterEach(() => {
+        engine.dispose();
+    });
+
     describe("intersectsRay", () => {
         it("should set selection with block entries", () => {
             // Create octree
@@ -131,7 +135,7 @@ describe("OctreeBlock", function () {
             expect(selection.length).toEqual(0);
         });
 
-        it('should save selection content after method call', () => {
+        it("should save selection content after method call", () => {
             // Create octree
             scene.createOrUpdateSelectionOctree(4);
 
@@ -142,12 +146,12 @@ describe("OctreeBlock", function () {
             // After first call selection should contain only one mesh
             scene.selectionOctree.blocks[4]!.intersectsRay(ray, selection);
             expect(selection.length).toEqual(1);
-            expect(selection.data.filter(Boolean).map(x => x.name)).toEqual(["box_17"]);
+            expect(selection.data.filter(Boolean).map((x) => x.name)).toEqual(["box_17"]);
 
             // After second call selection should contain the previous selected mesh and more
             scene.selectionOctree.blocks[5]!.intersectsRay(ray, selection);
             expect(selection.length).toEqual(3);
-            expect(selection.data.filter(Boolean).map(x => x.name)).toEqual(["box_17", "box_11", "box_29"]);
+            expect(selection.data.filter(Boolean).map((x) => x.name)).toEqual(["box_17", "box_11", "box_29"]);
         });
     });
 
@@ -215,7 +219,7 @@ describe("OctreeBlock", function () {
             expect(selection.length).toEqual(0);
         });
 
-        it('should save selection content after method call', () => {
+        it("should save selection content after method call", () => {
             // Create octree
             scene.createOrUpdateSelectionOctree(4);
 
@@ -225,12 +229,12 @@ describe("OctreeBlock", function () {
             // After first call selection should contain only one mesh
             scene.selectionOctree.blocks[4].intersects(new Vector3(0, 0, 0), 10, selection);
             expect(selection.length).toEqual(1);
-            expect(selection.data.filter(Boolean).map(x => x.name)).toEqual(["box_17"]);
+            expect(selection.data.filter(Boolean).map((x) => x.name)).toEqual(["box_17"]);
 
             // After second call selection should contain the previous selected mesh and more
             scene.selectionOctree.blocks[5].intersects(new Vector3(0, 0, 0), 10, selection);
             expect(selection.length).toEqual(3);
-            expect(selection.data.filter(Boolean).map(x => x.name)).toEqual(["box_17", "box_11", "box_29"]);
+            expect(selection.data.filter(Boolean).map((x) => x.name)).toEqual(["box_17", "box_11", "box_29"]);
         });
     });
 
@@ -443,7 +447,7 @@ describe("OctreeBlock", function () {
             expect(selection7.data.filter(Boolean).map((x) => x.name)).toEqual(["box_28", "box_28", "box_11", "box_15", "box_14", "box_15", "box_16"]);
         });
 
-        it('should save selection content after method call', () => {
+        it("should save selection content after method call", () => {
             // Create octree
             scene.createOrUpdateSelectionOctree(4);
 

@@ -21,9 +21,13 @@ describe("ShadowGenerator", () => {
             });
         });
 
+        afterEach(function () {
+            subject.dispose();
+        });
+
         it("should be able to be instantiated with a null engine", () => {
             const scene = new Scene(subject);
-            const light = new PointLight("Point", new Vector3(1,1,1), scene);
+            const light = new PointLight("Point", new Vector3(1, 1, 1), scene);
             const generator = new ShadowGenerator(1024, light);
 
             expect(generator).not.toBeUndefined();

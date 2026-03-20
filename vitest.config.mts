@@ -39,11 +39,6 @@ const createProjectConfig = (type: string) => {
         exclude: ["**/node_modules/**", "**/packages/*/src/**"],
         globals: true,
         environment: "node",
-        // Babylon.js registers shaders via cascading side-effect imports that
-        // may resolve after a test finishes. Using 'forks' isolates each test
-        // file in its own process, avoiding EnvironmentTeardownError from
-        // in-flight module resolution in the shared thread pool.
-        pool: "forks",
         globalSetup,
         setupFiles,
     };

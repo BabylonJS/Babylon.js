@@ -64,6 +64,10 @@ describe("Babylon Mesh Levels of Details", () => {
         );
     });
 
+    afterEach(() => {
+        subject.dispose();
+    });
+
     describe("getLOD method", () => {
         let cameraArc: ArcRotateCamera;
         let cameraOrthographic: ArcRotateCamera;

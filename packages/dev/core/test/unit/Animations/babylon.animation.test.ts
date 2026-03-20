@@ -27,6 +27,10 @@ describe("Babylon Animation", function () {
         subject.getCaps().standardDerivatives = true;
     });
 
+    afterEach(function () {
+        subject.dispose();
+    });
+
     /**
      * Animation tests.
      */

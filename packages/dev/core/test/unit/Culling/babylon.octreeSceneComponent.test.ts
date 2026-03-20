@@ -56,6 +56,10 @@ describe("OctreeSceneComponent", () => {
             new ArcRotateCamera("Camera", 0, Math.PI / 2, 5, new Vector3(0, 0, 0), scene);
         });
 
+        afterEach(function () {
+            engine.dispose();
+        });
+
         it("should return nothing if scene has no meshes", () => {
             const component = new OctreeSceneComponent(scene);
             const activeMeshes = component.getActiveMeshCandidates();
