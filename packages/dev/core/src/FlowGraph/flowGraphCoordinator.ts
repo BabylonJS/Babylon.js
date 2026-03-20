@@ -109,7 +109,11 @@ export class FlowGraphCoordinator {
         });
 
         // Add itself to the SceneCoordinators list for the Inspector.
-        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene) ?? [];
+        let coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene);
+        if (!coordinators) {
+            coordinators = [];
+            FlowGraphCoordinator.SceneCoordinators.set(this.config.scene, coordinators);
+        }
         coordinators.push(this);
     }
 
